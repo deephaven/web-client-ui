@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
 import {
   Type as FilterType,
-  TypeValue as FilterTypeValue,
+  type TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import GotoRow from './GotoRow';

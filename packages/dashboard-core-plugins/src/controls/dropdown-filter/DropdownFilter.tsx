@@ -4,10 +4,10 @@
 
 import React, {
   Component,
-  KeyboardEvent,
-  MouseEvent,
-  ReactElement,
-  RefObject,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -25,7 +25,7 @@ import debounce from 'lodash.debounce';
 import { nanoid } from 'nanoid';
 import Log from '@deephaven/log';
 import './DropdownFilter.scss';
-import { LinkPoint } from '../../linker/LinkerUtils';
+import { type LinkPoint } from '../../linker/LinkerUtils';
 
 const log = Log.module('DropdownFilter');
 const UPDATE_DEBOUNCE = 150;

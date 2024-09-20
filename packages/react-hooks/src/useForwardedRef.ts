@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Takes a ref from forwardRef and makes it safe to use.

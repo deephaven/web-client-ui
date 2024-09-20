@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  TableColumnFormat,
+  type TableColumnFormat,
   TableColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import CustomFormatAction from './CustomFormatAction';

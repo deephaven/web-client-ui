@@ -1,4 +1,4 @@
-import { useState, ReactElement, useRef, useCallback } from 'react';
+import { useState, type ReactElement, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';

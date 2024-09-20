@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { EventShimCustomEvent } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
 import CustomColumnBuilder, {
-  CustomColumnBuilderProps,
+  type CustomColumnBuilderProps,
 } from './CustomColumnBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 import IrisGridModel from '../IrisGridModel';

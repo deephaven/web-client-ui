@@ -1,9 +1,9 @@
-import { Key, useCallback, useMemo, useState } from 'react';
+import { type Key, useCallback, useMemo, useState } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
-  FilterConditionFactory,
+  type FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import {
   useDebouncedCallback,
@@ -11,9 +11,9 @@ import {
   usePromiseFactory,
 } from '@deephaven/react-hooks';
 import { usePickerItemScale } from '@deephaven/components';
-import { KeyedItem, SelectionT } from '@deephaven/utils';
+import { type KeyedItem, type SelectionT } from '@deephaven/utils';
 import useFilterConditionFactories from './useFilterConditionFactories';
-import useViewportData, { UseViewportDataResult } from './useViewportData';
+import useViewportData, { type UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
 import useTableUtils from './useTableUtils';
 import useTableClose from './useTableClose';

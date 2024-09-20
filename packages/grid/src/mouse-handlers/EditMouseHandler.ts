@@ -1,10 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 import { isEditableGridModel } from '../EditableGridModel';
-import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
+import { type EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
 import GridMouseHandler from '../GridMouseHandler';
 import GridRange from '../GridRange';
-import { GridPoint } from '../GridUtils';
+import { type GridPoint } from '../GridUtils';
 
 /**
  * Handles clicking on a cell to edit it in an editable grid

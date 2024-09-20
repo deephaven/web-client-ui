@@ -1,16 +1,16 @@
 import React, {
   Component,
-  FocusEvent,
-  MouseEvent,
-  ReactElement,
+  type FocusEvent,
+  type MouseEvent,
+  type ReactElement,
   Suspense,
   lazy,
 } from 'react';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import {
-  ClosedPanel,
-  DashboardPanelProps,
+  type ClosedPanel,
+  type DashboardPanelProps,
   getClosedPanelsForDashboard,
   LayoutUtils,
   PanelEvent,
@@ -19,7 +19,7 @@ import Log from '@deephaven/log';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
-import { RootState } from '@deephaven/redux';
+import { type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
 import Panel from './Panel';
 import MarkdownContainer from '../controls/markdown/MarkdownContainer';

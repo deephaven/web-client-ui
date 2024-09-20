@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { dh } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { type dh } from '@deephaven/jsapi-types';
+import { type TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { useGetItemIndexByValue } from './useGetItemIndexByValue';
 import { useTableUtils } from './useTableUtils';

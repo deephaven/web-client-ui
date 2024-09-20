@@ -1,10 +1,14 @@
 /* eslint-disable class-methods-use-this */
 import { getOrThrow } from '@deephaven/utils';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { VisibleIndex, Coordinate, BoxCoordinates } from './GridMetrics';
+import {
+  type VisibleIndex,
+  type Coordinate,
+  type BoxCoordinates,
+} from './GridMetrics';
 import GridRenderer from './GridRenderer';
-import { GridRenderState } from './GridRendererTypes';
-import { GridColor } from './GridTheme';
+import { type GridRenderState } from './GridRendererTypes';
+import { type GridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
 
 export type CellRenderType = 'text' | 'dataBar';

@@ -1,10 +1,10 @@
-import { AdvancedFilterOptions } from '@deephaven/jsapi-utils';
-import { ModelIndex } from '@deephaven/grid';
+import { type AdvancedFilterOptions } from '@deephaven/jsapi-utils';
+import { type ModelIndex } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
-import { Shortcut } from '@deephaven/components';
-import { IconDefinition } from '@deephaven/icons';
-import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { OptionType } from './sidebar';
+import { type Shortcut } from '@deephaven/components';
+import { type IconDefinition } from '@deephaven/icons';
+import type AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import { type OptionType } from './sidebar';
 
 export type RowIndex = ModelIndex;
 

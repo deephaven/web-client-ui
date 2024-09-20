@@ -1,4 +1,4 @@
-import TimeUtils, { TimeString } from './TimeUtils';
+import TimeUtils, { type TimeString } from './TimeUtils';
 
 describe('formatElapsedTime parsing tests', () => {
   function testFormatElapsedTime(time: number, expectedResult: string) {

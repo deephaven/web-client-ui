@@ -1,12 +1,12 @@
 import {
   LIST_VIEW_ROW_HEIGHTS,
   ListViewNormalized,
-  ListViewNormalizedProps,
-  NormalizedItemData,
+  type ListViewNormalizedProps,
+  type NormalizedItemData,
   useSpectrumThemeProvider,
 } from '@deephaven/components';
-import { dh as DhType } from '@deephaven/jsapi-types';
-import { Settings } from '@deephaven/jsapi-utils';
+import { type dh as DhType } from '@deephaven/jsapi-types';
+import { type Settings } from '@deephaven/jsapi-utils';
 import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';

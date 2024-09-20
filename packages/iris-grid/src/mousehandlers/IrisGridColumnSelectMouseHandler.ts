@@ -1,12 +1,12 @@
 /* eslint class-methods-use-this: "off" */
 import {
   GridMouseHandler,
-  GridPoint,
-  EventHandlerResult,
+  type GridPoint,
+  type EventHandlerResult,
 } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import type IrisGrid from '../IrisGrid';
-import { DisplayColumn } from '../IrisGridModel';
+import { type DisplayColumn } from '../IrisGridModel';
 
 /**
  * Handles interaction with tables when the Linker tool is active

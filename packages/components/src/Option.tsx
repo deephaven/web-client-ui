@@ -1,4 +1,4 @@
-import React, { OptionHTMLAttributes } from 'react';
+import React, { type OptionHTMLAttributes } from 'react';
 
 export type OptionProps = OptionHTMLAttributes<HTMLOptionElement> & {
   children: React.ReactNode;

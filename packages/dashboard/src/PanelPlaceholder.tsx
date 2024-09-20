@@ -1,7 +1,7 @@
-import React, { ForwardedRef } from 'react';
+import React, { type ForwardedRef } from 'react';
 import './PanelPlaceholder.scss';
 import LayoutUtils from './layout/LayoutUtils';
-import { PanelProps } from './DashboardPlugin';
+import { type PanelProps } from './DashboardPlugin';
 
 /**
  * Displays a placeholder for unregistered panel types.

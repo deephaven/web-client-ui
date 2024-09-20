@@ -1,5 +1,5 @@
 import TableColumnFormatter, {
-  TableColumnFormat,
+  type TableColumnFormat,
 } from './TableColumnFormatter';
 
 const VALID_FORMAT: TableColumnFormat = {

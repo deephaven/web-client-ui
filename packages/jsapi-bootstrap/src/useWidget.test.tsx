@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { dh } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import { useWidget } from './useWidget';
 import { ObjectFetchManagerContext } from './useObjectFetch';

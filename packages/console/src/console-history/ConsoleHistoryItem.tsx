@@ -1,7 +1,7 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent, type ReactElement } from 'react';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
@@ -11,7 +11,7 @@ import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
 import './ConsoleHistoryItem.scss';
-import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
+import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 const log = Log.module('ConsoleHistoryItem');
 

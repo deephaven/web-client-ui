@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { InputFilter } from '@deephaven/iris-grid';
-import ChartFilterOverlay, { ColumnMap } from './ChartFilterOverlay';
+import { type InputFilter } from '@deephaven/iris-grid';
+import ChartFilterOverlay, { type ColumnMap } from './ChartFilterOverlay';
 
 const emptyTestMap = new Map<string, InputFilter>([]);
 

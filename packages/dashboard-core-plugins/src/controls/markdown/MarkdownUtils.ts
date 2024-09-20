@@ -1,4 +1,4 @@
-import { ClosedPanels } from '@deephaven/dashboard';
+import { type ClosedPanels } from '@deephaven/dashboard';
 import memoize from 'memoize-one';
 
 class MarkdownUtils {

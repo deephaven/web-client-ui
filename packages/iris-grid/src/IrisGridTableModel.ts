@@ -1,6 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import { GridRange, ModelIndex } from '@deephaven/grid';
+import { GridRange, type ModelIndex } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter } from '@deephaven/jsapi-utils';
@@ -11,9 +11,13 @@ import {
   EMPTY_ARRAY,
 } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
-import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
+import {
+  type ColumnName,
+  type UIRow,
+  type UITotalsTableConfig,
+} from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
-import { PartitionedGridModelProvider } from './PartitionedGridModel';
+import { type PartitionedGridModelProvider } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridTableModel');
 

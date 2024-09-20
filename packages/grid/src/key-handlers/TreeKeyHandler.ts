@@ -1,7 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import { isExpandableGridModel } from '../ExpandableGridModel';
-import Grid from '../Grid';
-import GridRange from '../GridRange';
+import type Grid from '../Grid';
+import type GridRange from '../GridRange';
 import KeyHandler from '../KeyHandler';
 
 class TreeKeyHandler extends KeyHandler {

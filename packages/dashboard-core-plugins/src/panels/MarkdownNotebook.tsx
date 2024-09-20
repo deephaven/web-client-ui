@@ -1,12 +1,12 @@
 import React, {
   PureComponent,
-  ReactElement,
-  RefObject,
-  MouseEvent,
-  MouseEventHandler,
+  type ReactElement,
+  type RefObject,
+  type MouseEvent,
+  type MouseEventHandler,
 } from 'react';
 import classNames from 'classnames';
-import Markdown, { Options } from 'react-markdown';
+import Markdown, { type Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeMathjax from 'rehype-mathjax';
@@ -14,7 +14,7 @@ import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
 import './MarkdownNotebook.scss';
-import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
+import { type ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
 import { assertNotNull } from '@deephaven/utils';
 
 interface MarkdownNotebookProps {

@@ -1,15 +1,15 @@
-import { ComponentType, useCallback } from 'react';
+import { type ComponentType, useCallback } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import { nanoid } from 'nanoid';
 import {
-  DashboardPanelProps,
-  DashboardPluginComponentProps,
-  DehydratedDashboardPanelProps,
-  PanelComponentType,
-  PanelDehydrateFunction,
-  PanelHydrateFunction,
+  type DashboardPanelProps,
+  type DashboardPluginComponentProps,
+  type DehydratedDashboardPanelProps,
+  type PanelComponentType,
+  type PanelDehydrateFunction,
+  type PanelHydrateFunction,
 } from '../DashboardPlugin';
-import { PanelOpenEventDetail, usePanelOpenListener } from '../PanelEvent';
+import { type PanelOpenEventDetail, usePanelOpenListener } from '../PanelEvent';
 import LayoutUtils from './LayoutUtils';
 import usePanelRegistration from './usePanelRegistration';
 

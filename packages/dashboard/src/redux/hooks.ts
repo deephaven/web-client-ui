@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { PluginData, RootState } from '@deephaven/redux';
+import { type PluginData, type RootState } from '@deephaven/redux';
 import { getPluginDataForDashboard } from './selectors';
 import { setDashboardPluginData } from './actions';
 

@@ -2,19 +2,19 @@
 // Will probably need to handle window popping out from golden layout here.
 import React, {
   PureComponent,
-  ReactElement,
-  ReactNode,
-  RefObject,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
 } from 'react';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import {
-  DashboardPanelProps,
+  type DashboardPanelProps,
   DEFAULT_DASHBOARD_ID,
   LayoutUtils,
-  PanelComponent,
-  PanelMetadata,
+  type PanelComponent,
+  type PanelMetadata,
 } from '@deephaven/dashboard';
 import {
   AdvancedSettings,
@@ -23,55 +23,55 @@ import {
   IrisGridModel,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
-  ColumnName,
-  PendingDataMap,
-  InputFilter,
-  IrisGridThemeType,
-  ReadonlyAdvancedFilterMap,
-  AggregationSettings,
-  AdvancedSettingsType,
-  UIRollupConfig,
-  UIRow,
-  ReadonlyQuickFilterMap,
-  FilterMap,
-  QuickFilter,
-  AdvancedFilter,
-  SidebarFormattingRule,
-  IrisGridState,
-  ChartBuilderSettings,
-  DehydratedIrisGridState,
-  DehydratedIrisGridPanelState,
-  ColumnHeaderGroup,
-  IrisGridContextMenuData,
-  PartitionConfig,
+  type ColumnName,
+  type PendingDataMap,
+  type InputFilter,
+  type IrisGridThemeType,
+  type ReadonlyAdvancedFilterMap,
+  type AggregationSettings,
+  type AdvancedSettingsType,
+  type UIRollupConfig,
+  type UIRow,
+  type ReadonlyQuickFilterMap,
+  type FilterMap,
+  type QuickFilter,
+  type AdvancedFilter,
+  type SidebarFormattingRule,
+  type IrisGridState,
+  type ChartBuilderSettings,
+  type DehydratedIrisGridState,
+  type DehydratedIrisGridPanelState,
+  type ColumnHeaderGroup,
+  type IrisGridContextMenuData,
+  type PartitionConfig,
 } from '@deephaven/iris-grid';
 import {
-  AdvancedFilterOptions,
-  FormattingRule,
-  ReverseType,
+  type AdvancedFilterOptions,
+  type FormattingRule,
+  type ReverseType,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getSettings,
   getUser,
-  RootState,
-  User,
-  WorkspaceSettings,
+  type RootState,
+  type User,
+  type WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
-  CancelablePromise,
-  EventT,
+  type CancelablePromise,
+  type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
-import { ResolvableContextAction } from '@deephaven/components';
+import { type ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
-  GridState,
-  ModelIndex,
-  ModelSizeMap,
-  MoveOperation,
+  type GridState,
+  type ModelIndex,
+  type ModelSizeMap,
+  type MoveOperation,
 } from '@deephaven/grid';
 import type {
   TablePluginComponent,
@@ -85,13 +85,13 @@ import {
 } from '../redux';
 import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
-import { Link, LinkColumn } from '../linker/LinkerUtils';
+import { type Link, type LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
 import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './IrisGridPanelTypes';
-import { WidgetPanelDescriptor } from './WidgetPanelTypes';
+import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 

@@ -1,5 +1,5 @@
-import { ValueOf } from '@deephaven/utils';
-import TabEvent from './TabEvent';
+import { type ValueOf } from '@deephaven/utils';
+import type TabEvent from './TabEvent';
 
 export type TabEventType = ValueOf<typeof TabEvent>;
 

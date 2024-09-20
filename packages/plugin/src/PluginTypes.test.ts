@@ -5,7 +5,7 @@ import {
   isTablePlugin,
   isThemePlugin,
   isWidgetPlugin,
-  Plugin,
+  type Plugin,
   isPlugin,
 } from './PluginTypes';
 

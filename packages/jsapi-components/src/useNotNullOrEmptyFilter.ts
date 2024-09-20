@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import {
   createFilterConditionFactory,
   createNotNullOrEmptyFilterCondition,
-  FilterConditionFactory,
+  type FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import useTableUtils from './useTableUtils';
 

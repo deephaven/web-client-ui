@@ -2,8 +2,8 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IrisGridTestUtils } from '@deephaven/iris-grid';
-import DropdownFilter, { DropdownFilterProps } from './DropdownFilter';
-import { LinkPoint } from '../../linker/LinkerUtils';
+import DropdownFilter, { type DropdownFilterProps } from './DropdownFilter';
+import { type LinkPoint } from '../../linker/LinkerUtils';
 
 type MakeContainerProps = Partial<DropdownFilterProps> & {
   ref?: React.RefObject<DropdownFilter>;

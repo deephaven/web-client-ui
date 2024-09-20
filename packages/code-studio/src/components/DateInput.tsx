@@ -1,8 +1,8 @@
-import React, { useState, ReactElement } from 'react';
+import React, { useState, type ReactElement } from 'react';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { MaskedInput, SelectionSegment } from '@deephaven/components';
+import { MaskedInput, type SelectionSegment } from '@deephaven/components';
 
 const log = Log.module('DateInput');
 

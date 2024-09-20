@@ -1,7 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
 import type { TimeZone } from '@deephaven/jsapi-types';
 import DateTimeColumnFormatter from './DateTimeColumnFormatter';
-import { TableColumnFormat } from './TableColumnFormatter';
+import { type TableColumnFormat } from './TableColumnFormatter';
 
 function makeFormatter({
   timeZone,

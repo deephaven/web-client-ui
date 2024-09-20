@@ -1,9 +1,9 @@
 /* eslint class-methods-use-this: "off" */
 import { getOrThrow } from '@deephaven/utils';
-import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
+import { type EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
 import GridMouseHandler from '../GridMouseHandler';
-import GridUtils, { GridPoint } from '../GridUtils';
+import GridUtils, { type GridPoint } from '../GridUtils';
 
 /**
  * Detect when the tree expand/collapse button is clicked

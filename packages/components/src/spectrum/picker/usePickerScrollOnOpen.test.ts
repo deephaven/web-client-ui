@@ -3,7 +3,7 @@ import { TestUtils } from '@deephaven/test-utils';
 import {
   findSpectrumPickerScrollArea,
   usePopoverOnScrollRef,
-  UsePopoverOnScrollRefResult,
+  type UsePopoverOnScrollRefResult,
 } from '@deephaven/react-hooks';
 import { usePickerScrollOnOpen } from './usePickerScrollOnOpen';
 

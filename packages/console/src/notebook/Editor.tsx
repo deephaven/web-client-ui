@@ -1,7 +1,7 @@
 /**
  * Editor editor for large blocks of code
  */
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';

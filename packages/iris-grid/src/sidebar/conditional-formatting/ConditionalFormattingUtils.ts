@@ -6,7 +6,7 @@ import {
   makeRowFormatColumn,
   makeTernaryFormatRule,
 } from './ConditionalFormattingAPIUtils';
-import { ColumnName } from '../../CommonTypes';
+import { type ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingUtils');
 

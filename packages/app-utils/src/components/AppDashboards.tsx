@@ -2,14 +2,15 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import {
   DashboardUtils,
-  DehydratedDashboardPanelProps,
+  type DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
 import { useObjectFetcher } from '@deephaven/jsapi-bootstrap';
-import LayoutManager, {
-  ItemConfig,
-  Settings as LayoutSettings,
+import {
+  type ItemConfig,
+  type Settings as LayoutSettings,
 } from '@deephaven/golden-layout';
+import type LayoutManager from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
 
 interface AppDashboardsProps {

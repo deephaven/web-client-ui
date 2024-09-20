@@ -7,22 +7,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
 import {
   Operator as FilterOperator,
-  OperatorValue as FilterOperatorValue,
-  TypeValue as FilterTypeValue,
+  type OperatorValue as FilterOperatorValue,
+  type TypeValue as FilterTypeValue,
   assertOperatorValue as assertFilterOperatorValue,
 } from '@deephaven/filters';
 import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
 import {
-  Formatter,
+  type Formatter,
   TableUtils,
-  SortDirection,
-  FilterItem,
+  type SortDirection,
+  type FilterItem,
 } from '@deephaven/jsapi-utils';
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   assertNotNull,
-  CancelablePromise,
+  type CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
@@ -30,8 +30,8 @@ import { nanoid } from 'nanoid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
-import IrisGridModel from './IrisGridModel';
-import { AdvancedFilterOptions } from './CommonTypes';
+import type IrisGridModel from './IrisGridModel';
+import { type AdvancedFilterOptions } from './CommonTypes';
 
 const log = Log.module('AdvancedFilterCreator');
 

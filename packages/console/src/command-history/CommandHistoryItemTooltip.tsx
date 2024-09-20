@@ -1,17 +1,18 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import debounce from 'lodash.debounce';
 import memoize from 'memoizee';
 import { LoadingSpinner } from '@deephaven/components';
 import { TimeUtils } from '@deephaven/utils';
-import { StorageListenerRemover } from '@deephaven/storage';
+import { type StorageListenerRemover } from '@deephaven/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsWarning } from '@deephaven/icons';
 import Code from '../common/Code';
 import './CommandHistoryItemTooltip.scss';
-import CommandHistoryStorage, {
-  CommandHistoryStorageData,
-  CommandHistoryStorageItem,
+import {
+  type CommandHistoryStorageData,
+  type CommandHistoryStorageItem,
 } from './CommandHistoryStorage';
+import type CommandHistoryStorage from './CommandHistoryStorage';
 
 interface CommandHistoryItemTooltipProps {
   item: CommandHistoryStorageItem;

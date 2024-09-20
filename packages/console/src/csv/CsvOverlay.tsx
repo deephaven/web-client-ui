@@ -1,16 +1,16 @@
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   Component,
-  DragEvent,
-  MouseEvent,
-  ReactElement,
-  RefObject,
+  type DragEvent,
+  type MouseEvent,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import memoize from 'memoize-one';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
-  ContextAction,
+  type ContextAction,
   ContextActions,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';
@@ -18,7 +18,7 @@ import {
   dhFileCsv,
   dhFileDownload,
   dhFileSpreadsheet,
-  IconDefinition,
+  type IconDefinition,
   vsClippy,
   vsFileZip,
   vsTrash,

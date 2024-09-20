@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ThemeData } from '@deephaven/components';
+import { type ThemeData } from '@deephaven/components';
 import { dhTruck, vsPreview } from '@deephaven/icons';
 import {
   type DashboardPlugin,

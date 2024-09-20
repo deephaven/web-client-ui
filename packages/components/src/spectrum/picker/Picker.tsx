@@ -1,6 +1,6 @@
 import {
   Picker as SpectrumPicker,
-  SpectrumPickerProps,
+  type SpectrumPickerProps,
 } from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';

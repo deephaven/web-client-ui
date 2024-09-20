@@ -1,7 +1,7 @@
 import {
-  DehydratedDashboardPanelProps,
-  DehydratedPanelConfig,
-  PanelConfig,
+  type DehydratedDashboardPanelProps,
+  type DehydratedPanelConfig,
+  type PanelConfig,
 } from './DashboardPlugin';
 
 export { canHaveRef } from '@deephaven/components';

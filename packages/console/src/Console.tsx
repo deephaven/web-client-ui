@@ -2,16 +2,16 @@
  * Console display for use in the Iris environment.
  */
 import React, {
-  DragEvent,
+  type DragEvent,
   PureComponent,
-  ReactElement,
-  ReactNode,
-  RefObject,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
 } from 'react';
 import {
   ContextActions,
-  DropdownAction,
-  ResolvableContextAction,
+  type DropdownAction,
+  type ResolvableContextAction,
 } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
 import classNames from 'classnames';
@@ -22,7 +22,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
-import { ConsoleHistoryActionItem } from './console-history/ConsoleHistoryTypes';
+import { type ConsoleHistoryActionItem } from './console-history/ConsoleHistoryTypes';
 import SHORTCUTS from './ConsoleShortcuts';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
@@ -31,8 +31,8 @@ import CsvInputBar from './csv/CsvInputBar';
 import './Console.scss';
 import ConsoleStatusBar from './ConsoleStatusBar';
 import {
-  CommandHistoryStorage,
-  CommandHistoryStorageItem,
+  type CommandHistoryStorage,
+  type CommandHistoryStorageItem,
 } from './command-history';
 import ConsoleObjectsMenu from './ConsoleObjectsMenu';
 

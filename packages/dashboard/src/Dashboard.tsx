@@ -1,7 +1,7 @@
 import React, {
-  ComponentType,
-  ForwardRefExoticComponent,
-  RefAttributes,
+  type ComponentType,
+  type ForwardRefExoticComponent,
+  type RefAttributes,
   useEffect,
   useMemo,
   useRef,
@@ -16,9 +16,9 @@ import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout from './DashboardLayout';
 import {
-  PanelDehydrateFunction,
-  PanelHydrateFunction,
-  PanelProps,
+  type PanelDehydrateFunction,
+  type PanelHydrateFunction,
+  type PanelProps,
 } from './DashboardPlugin';
 import './Dashboard.scss';
 import { LayoutManagerContext } from './layout';

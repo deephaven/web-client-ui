@@ -2,11 +2,11 @@
 import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { VisibleIndex } from './GridMetrics';
-import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
-import GridUtils, { TokenBox, Token } from './GridUtils';
+import { type VisibleIndex } from './GridMetrics';
+import { DEFAULT_FONT_WIDTH, type GridRenderState } from './GridRendererTypes';
+import GridUtils, { type TokenBox, type Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
-import TokenBoxCellRenderer from './TokenBoxCellRenderer';
+import type TokenBoxCellRenderer from './TokenBoxCellRenderer';
 
 class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
   drawCellContent(

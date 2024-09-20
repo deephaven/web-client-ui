@@ -4,12 +4,12 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  ReactNode,
-  ReactElement,
+  type ReactNode,
+  type ReactElement,
 } from 'react';
 import classNames from 'classnames';
 import {
-  DropdownAction,
+  type DropdownAction,
   DropdownMenu,
   GLOBAL_SHORTCUTS,
 } from '@deephaven/components';

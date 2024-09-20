@@ -1,7 +1,7 @@
 /**
  * Script editor for large blocks of code
  */
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, { Component, type ReactElement, type RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';

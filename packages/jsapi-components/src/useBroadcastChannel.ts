@@ -1,7 +1,7 @@
 import {
   BROADCAST_CHANNEL_NAME,
   isMessage,
-  Message,
+  type Message,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { EMPTY_FUNCTION } from '@deephaven/utils';

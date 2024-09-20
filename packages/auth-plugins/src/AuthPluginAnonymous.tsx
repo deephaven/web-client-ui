@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from './AuthHandlerTypes';
-import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import { type AuthPlugin, type AuthPluginProps } from './AuthPlugin';
 import AuthPluginBase from './AuthPluginBase';
 import {
-  UserPermissionsOverride,
+  type UserPermissionsOverride,
   UserPermissionsOverrideContext,
 } from './UserContexts';
 

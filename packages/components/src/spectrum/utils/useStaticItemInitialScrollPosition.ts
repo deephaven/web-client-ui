@@ -3,9 +3,9 @@ import {
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
   isSectionElement,
-  ItemElement,
-  ItemKey,
-  SectionElement,
+  type ItemElement,
+  type ItemKey,
+  type SectionElement,
 } from './itemUtils';
 
 export interface UseStaticItemInitialScrollPositionOptions {

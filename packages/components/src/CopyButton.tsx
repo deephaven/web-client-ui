@@ -1,7 +1,7 @@
 import React from 'react';
 import { vsPassFilled, vsCopy } from '@deephaven/icons';
 import { useCopyToClipboard } from '@deephaven/react-hooks';
-import Button, { ButtonKind } from './Button';
+import Button, { type ButtonKind } from './Button';
 
 type CopyButtonProps = {
   /** The value to copy when clicked, accepts string or function returning a string. */

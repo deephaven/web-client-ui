@@ -4,7 +4,10 @@ import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+import {
+  type PartitionConfig,
+  type PartitionedGridModel,
+} from './PartitionedGridModel';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 

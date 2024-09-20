@@ -1,20 +1,20 @@
 import {
-  CommandHistoryStorageItem,
-  CommandHistoryTable,
+  type CommandHistoryStorageItem,
+  type CommandHistoryTable,
 } from '@deephaven/console';
 import { Type as FilterType } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import {
-  StorageTableViewport,
+  type StorageTableViewport,
   StorageUtils,
-  ViewportData,
+  type ViewportData,
 } from '@deephaven/storage';
 import { PromiseUtils } from '@deephaven/utils';
-import PouchCommandHistoryCache from './PouchCommandHistoryCache';
+import type PouchCommandHistoryCache from './PouchCommandHistoryCache';
 import { siftPrunableItems } from './pouchCommandHistoryUtils';
 import PouchStorageTable, {
-  PouchDBSort,
-  PouchStorageItem,
+  type PouchDBSort,
+  type PouchStorageItem,
 } from './PouchStorageTable';
 
 const COMMAND_HISTORY_ITEMS_MAX = 2500;

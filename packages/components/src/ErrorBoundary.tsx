@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import React, { Component, ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 import LoadingOverlay from './LoadingOverlay';
 
 const log = Log.module('ErrorBoundary');

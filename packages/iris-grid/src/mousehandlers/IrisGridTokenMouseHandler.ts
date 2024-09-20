@@ -1,16 +1,16 @@
 import {
-  EventHandlerResult,
+  type EventHandlerResult,
   getOrThrow,
-  Grid,
+  type Grid,
   GridMouseHandler,
-  GridPoint,
+  type GridPoint,
   GridUtils,
   isLinkToken,
-  TokenBox,
+  type TokenBox,
   isTokenBoxCellRenderer,
 } from '@deephaven/grid';
 import deepEqual from 'fast-deep-equal';
-import IrisGrid from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 class IrisGridTokenMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;

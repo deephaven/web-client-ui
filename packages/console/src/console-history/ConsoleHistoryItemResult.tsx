@@ -1,7 +1,7 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { ReactElement, ReactNode } from 'react';
+import React, { type ReactElement, type ReactNode } from 'react';
 import PropTypes from 'prop-types';
 
 function ConsoleHistoryItemResult({

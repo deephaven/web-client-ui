@@ -2,7 +2,7 @@ import { TestUtils } from '@deephaven/test-utils';
 import {
   makeMessage,
   makeResponse,
-  Message,
+  type Message,
   requestParentResponse,
 } from './MessageUtils';
 

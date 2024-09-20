@@ -1,10 +1,14 @@
-import React, { ChangeEvent, PureComponent, ReactElement } from 'react';
+import React, {
+  type ChangeEvent,
+  PureComponent,
+  type ReactElement,
+} from 'react';
 import classNames from 'classnames';
 import {
   GridUtils,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
+  type ModelIndex,
+  type MoveOperation,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import { TextUtils, assertNotNull, DbNameValidator } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -29,18 +33,19 @@ import { Button, SearchInput } from '@deephaven/components';
 import clamp from 'lodash.clamp';
 import throttle from 'lodash.throttle';
 import './VisibilityOrderingBuilder.scss';
-import IrisGridModel, { DisplayColumn } from '../../IrisGridModel';
-import { ColumnName } from '../../CommonTypes';
+import { type DisplayColumn } from '../../IrisGridModel';
+import type IrisGridModel from '../../IrisGridModel';
+import { type ColumnName } from '../../CommonTypes';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';
 import VisibilityOrderingItem from './VisibilityOrderingItem';
 import {
-  FlattenedIrisGridTreeItem,
+  type FlattenedIrisGridTreeItem,
   flattenTree,
   getTreeItems,
-  IrisGridTreeItem,
+  type IrisGridTreeItem,
 } from './sortable-tree/utilities';
 import SortableTree from './sortable-tree/SortableTree';
-import { TreeItemRenderFn } from './sortable-tree/TreeItem';
+import { type TreeItemRenderFn } from './sortable-tree/TreeItem';
 import {
   moveItemsFromDrop,
   moveToGroup,

@@ -1,9 +1,9 @@
 /* eslint no-console: "off" */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import type PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { DraggableItemList } from '@deephaven/components';
-import { Range } from '@deephaven/utils';
+import { type Range } from '@deephaven/utils';
 
 interface DraggableListInputProps {
   draggablePrefix: string;

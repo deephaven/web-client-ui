@@ -1,15 +1,15 @@
-import { Key, ReactElement, ReactNode } from 'react';
+import { type Key, type ReactElement, type ReactNode } from 'react';
 import type { ItemRenderer } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { ensureArray, KeyedItem, SelectionT } from '@deephaven/utils';
+import { ensureArray, type KeyedItem, type SelectionT } from '@deephaven/utils';
 import {
   Item,
-  ItemElementOrPrimitive,
-  ItemProps,
+  type ItemElementOrPrimitive,
+  type ItemProps,
   Section,
-  SectionProps,
+  type SectionProps,
 } from '../shared';
-import { PopperOptions } from '../../popper';
+import { type PopperOptions } from '../../popper';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
 

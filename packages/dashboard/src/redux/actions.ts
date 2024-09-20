@@ -1,4 +1,8 @@
-import { DashboardData, PluginData, RootState } from '@deephaven/redux';
+import {
+  type DashboardData,
+  type PluginData,
+  type RootState,
+} from '@deephaven/redux';
 import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
 import { SET_DASHBOARD_DATA } from './actionTypes';

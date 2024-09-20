@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { FilterCondition, Table } from '@deephaven/jsapi-types';
 import useViewportFilter from './useViewportFilter';
-import { UseViewportDataResult } from './useViewportData';
+import { type UseViewportDataResult } from './useViewportData';
 
 beforeEach(() => {
   jest.clearAllMocks();

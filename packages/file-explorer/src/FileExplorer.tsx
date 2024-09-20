@@ -1,13 +1,14 @@
 import { BasicModal } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { type CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
-import FileStorage, {
-  FileStorageItem,
-  FileStorageTable,
+import {
+  type FileStorageItem,
+  type FileStorageTable,
   isDirectory,
 } from './FileStorage';
+import type FileStorage from './FileStorage';
 import './FileExplorer.scss';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';

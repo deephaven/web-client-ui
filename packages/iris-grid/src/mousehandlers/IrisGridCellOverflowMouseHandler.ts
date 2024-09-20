@@ -1,11 +1,11 @@
 import {
-  GridPoint,
+  type GridPoint,
   GridMouseHandler,
-  EventHandlerResult,
+  type EventHandlerResult,
 } from '@deephaven/grid';
 import deepEqual from 'fast-deep-equal';
 import type IrisGrid from '../IrisGrid';
-import { IrisGridRenderState } from '../IrisGridRenderer';
+import { type IrisGridRenderState } from '../IrisGridRenderer';
 
 /**
  * Handles cursor and click action for cell overflow button

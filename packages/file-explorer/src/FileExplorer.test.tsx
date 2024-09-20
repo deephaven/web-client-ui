@@ -8,11 +8,9 @@ import userEvent from '@testing-library/user-event/';
 import { MockFileStorage } from '@deephaven/dashboard-core-plugins';
 import { ContextMenuRoot } from '@deephaven/components';
 import { TestUtils } from '@deephaven/test-utils';
-import FileStorage, {
-  DirectoryStorageItem,
-  FileStorageItem,
-} from './FileStorage';
-import FileExplorer, { FileExplorerProps } from './FileExplorer';
+import { type DirectoryStorageItem, type FileStorageItem } from './FileStorage';
+import type FileStorage from './FileStorage';
+import FileExplorer, { type FileExplorerProps } from './FileExplorer';
 import { makeDirectories, makeFiles, makeNested } from './FileTestUtils';
 
 function makeMockFileStorage(): FileStorage {

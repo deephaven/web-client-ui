@@ -1,5 +1,5 @@
-import { ModelIndex } from '@deephaven/grid';
-import { ColumnName } from './CommonTypes';
+import { type ModelIndex } from '@deephaven/grid';
+import { type ColumnName } from './CommonTypes';
 
 class MissingKeyError extends Error {
   isMissingKey = true;

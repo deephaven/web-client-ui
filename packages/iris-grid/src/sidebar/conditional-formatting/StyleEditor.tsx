@@ -13,7 +13,7 @@ import { Button, DropdownMenu } from '@deephaven/components';
 import {
   FormatStyleType,
   getLabelForStyleType,
-  FormatStyleConfig,
+  type FormatStyleConfig,
   getBackgroundForStyleConfig,
   getColorForStyleConfig,
 } from './ConditionalFormattingUtils';

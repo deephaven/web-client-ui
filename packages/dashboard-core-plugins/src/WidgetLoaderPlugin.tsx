@@ -3,11 +3,11 @@ import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
-  DehydratedDashboardPanelProps,
-  PanelOpenEventDetail,
+  type DashboardPluginComponentProps,
+  type DehydratedDashboardPanelProps,
+  type PanelOpenEventDetail,
   LayoutUtils,
-  PanelProps,
+  type PanelProps,
   canHaveRef,
   usePanelOpenListener,
 } from '@deephaven/dashboard';
@@ -18,7 +18,7 @@ import {
   type WidgetPlugin,
 } from '@deephaven/plugin';
 import { WidgetPanel } from './panels';
-import { WidgetPanelDescriptor } from './panels/WidgetPanelTypes';
+import { type WidgetPanelDescriptor } from './panels/WidgetPanelTypes';
 
 const log = Log.module('WidgetLoaderPlugin');
 

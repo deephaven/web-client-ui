@@ -3,7 +3,7 @@ import { useSlotProps } from '@react-spectrum/utils';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { Tooltip } from './popper';
 
 const BUTTON_KINDS = [

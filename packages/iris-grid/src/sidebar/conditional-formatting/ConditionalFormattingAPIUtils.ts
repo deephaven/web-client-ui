@@ -1,6 +1,6 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
-  BaseFormatConfig,
+  type BaseFormatConfig,
   getConditionDBString,
   getStyleDBString,
 } from './ConditionalFormattingUtils';

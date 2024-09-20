@@ -1,26 +1,26 @@
 /* eslint-disable class-methods-use-this */
 import type { Event, EventTarget } from 'event-target-shim';
 import {
-  BoundedAxisRange,
-  DataBarGridModel,
-  DataBarOptions,
-  GridCell,
+  type BoundedAxisRange,
+  type DataBarGridModel,
+  type DataBarOptions,
+  type GridCell,
   GridModel,
-  GridRange,
-  GridThemeType,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
+  type GridRange,
+  type GridThemeType,
+  type ModelIndex,
+  type MoveOperation,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { type Formatter } from '@deephaven/jsapi-utils';
 import {
-  ColumnName,
-  UITotalsTableConfig,
-  PendingDataMap,
-  PendingDataErrorMap,
+  type ColumnName,
+  type UITotalsTableConfig,
+  type PendingDataMap,
+  type PendingDataErrorMap,
 } from './CommonTypes';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
 export type DisplayColumn = DhType.Column & {
   /**

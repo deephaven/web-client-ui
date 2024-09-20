@@ -1,10 +1,18 @@
 import { PureComponent } from 'react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
-import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
-  CancelablePromise,
+  type GridRange,
+  type GridRangeIndex,
+  memoizeClear,
+} from '@deephaven/grid';
+import {
+  type Formatter,
+  FormatterUtils,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
+import {
+  type CancelablePromise,
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';

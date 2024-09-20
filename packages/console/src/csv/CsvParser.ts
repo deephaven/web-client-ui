@@ -1,10 +1,14 @@
-import Papa, { ParseLocalConfig, Parser, ParseResult } from 'papaparse';
+import Papa, {
+  type ParseLocalConfig,
+  type Parser,
+  type ParseResult,
+} from 'papaparse';
 import Log from '@deephaven/log';
 import { assertNotNull, DbNameValidator } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
-import { CsvTypes } from './CsvFormats';
+import { type CsvTypes } from './CsvFormats';
 import makeZipStreamHelper from './ZipStreamHelper';
 
 const log = Log.module('CsvParser');

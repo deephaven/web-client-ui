@@ -1,4 +1,4 @@
-import { PanelMetadata } from '@deephaven/dashboard';
+import { type PanelMetadata } from '@deephaven/dashboard';
 
 /**
  * @deprecated use `IrisGridPanelMetadata` instead

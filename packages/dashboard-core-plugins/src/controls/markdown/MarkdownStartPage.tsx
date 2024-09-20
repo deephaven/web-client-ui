@@ -1,8 +1,8 @@
 import React, {
-  Key,
-  MouseEventHandler,
+  type Key,
+  type MouseEventHandler,
   PureComponent,
-  ReactElement,
+  type ReactElement,
 } from 'react';
 import {
   Button,

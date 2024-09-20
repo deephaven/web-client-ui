@@ -3,12 +3,12 @@
 // background click is just a convience method, not an actual a11y issue
 
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   Component,
-  RefObject,
-  MouseEvent,
-  KeyboardEvent,
-  ReactElement,
+  type RefObject,
+  type MouseEvent,
+  type KeyboardEvent,
+  type ReactElement,
 } from 'react';
 import { Button, CardFlip, Select } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

@@ -19,8 +19,8 @@ import {
   Button,
 } from '@deephaven/components';
 import type { DraggableRenderItemProps, Range } from '@deephaven/components';
-import { ModelIndex } from '@deephaven/grid';
-import AggregationOperation from './AggregationOperation';
+import { type ModelIndex } from '@deephaven/grid';
+import type AggregationOperation from './AggregationOperation';
 import AggregationUtils, { SELECTABLE_OPTIONS } from './AggregationUtils';
 import './Aggregations.scss';
 

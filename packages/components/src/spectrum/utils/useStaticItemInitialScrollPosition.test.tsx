@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { Item, Section } from '../shared';
-import { ItemElement } from './itemUtils';
+import { type ItemElement } from './itemUtils';
 import { useStaticItemInitialScrollPosition } from './useStaticItemInitialScrollPosition';
 
 beforeEach(() => {

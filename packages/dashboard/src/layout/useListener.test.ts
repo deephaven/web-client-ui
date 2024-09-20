@@ -1,4 +1,4 @@
-import { EventEmitter } from '@deephaven/golden-layout';
+import { type EventEmitter } from '@deephaven/golden-layout';
 import { TestUtils } from '@deephaven/test-utils';
 import { renderHook } from '@testing-library/react-hooks';
 import useListener from './useListener';

@@ -1,7 +1,7 @@
 import {
-  CalendarDate,
-  CalendarDateTime,
-  ZonedDateTime,
+  type CalendarDate,
+  type CalendarDateTime,
+  type ZonedDateTime,
 } from '@internationalized/date';
 
 export {

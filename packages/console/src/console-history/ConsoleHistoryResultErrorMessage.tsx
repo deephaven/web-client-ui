@@ -2,10 +2,10 @@
  * Error message that can be expanded
  */
 import React, {
-  KeyboardEvent,
-  MouseEvent,
+  type KeyboardEvent,
+  type MouseEvent,
   PureComponent,
-  ReactElement,
+  type ReactElement,
 } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

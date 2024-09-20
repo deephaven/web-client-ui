@@ -6,13 +6,13 @@ import {
   getLabelForDateFilter,
   getLabelForNumberFilter,
   getLabelForTextFilter,
-  TypeValue as FilterTypeValue,
+  type TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { vsTrash } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import {
-  AdvancedFilterItemType,
-  Formatter,
+  type AdvancedFilterItemType,
+  type Formatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';

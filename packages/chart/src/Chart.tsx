@@ -1,31 +1,31 @@
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, { Component, type ReactElement, type RefObject } from 'react';
 import deepEqual from 'fast-deep-equal';
 import memoize from 'memoize-one';
 import {
   vsLoading,
   dhGraphLineDown,
   dhWarningFilled,
-  IconDefinition,
+  type IconDefinition,
 } from '@deephaven/icons';
 import {
   Formatter,
   FormatterUtils,
   DateUtils,
-  DateTimeColumnFormatterOptions,
-  DecimalColumnFormatterOptions,
-  IntegerColumnFormatterOptions,
-  FormattingRule,
-  ColumnFormatSettings,
-  DateTimeFormatSettings,
+  type DateTimeColumnFormatterOptions,
+  type DecimalColumnFormatterOptions,
+  type IntegerColumnFormatterOptions,
+  type FormattingRule,
+  type ColumnFormatSettings,
+  type DateTimeFormatSettings,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
-  Config as PlotlyConfig,
-  Layout,
-  Icon,
-  Data,
-  PlotData,
-  ModeBarButtonAny,
+  type Config as PlotlyConfig,
+  type Layout,
+  type Icon,
+  type Data,
+  type PlotData,
+  type ModeBarButtonAny,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
 import { mergeRefs } from '@deephaven/react-hooks';
@@ -34,8 +34,8 @@ import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
 import ChartErrorOverlay from './ChartErrorOverlay';
-import { ChartTheme } from './ChartTheme';
-import ChartUtils, { ChartModelSettings } from './ChartUtils';
+import { type ChartTheme } from './ChartTheme';
+import ChartUtils, { type ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
 import DownsamplingError from './DownsamplingError';
 import useChartTheme from './useChartTheme';

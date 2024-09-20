@@ -1,4 +1,9 @@
-import { DependencyList, EffectCallback, useEffect, useRef } from 'react';
+import {
+  type DependencyList,
+  type EffectCallback,
+  useEffect,
+  useRef,
+} from 'react';
 
 /**
  * Custom useEffect hook that runs an effect function up to `n` times as long

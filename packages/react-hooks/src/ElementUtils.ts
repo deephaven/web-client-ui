@@ -1,10 +1,10 @@
 import {
-  Component,
-  FunctionComponent,
+  type Component,
+  type FunctionComponent,
   isValidElement,
-  JSXElementConstructor,
-  ReactElement,
-  ReactNode,
+  type JSXElementConstructor,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
 
 /**

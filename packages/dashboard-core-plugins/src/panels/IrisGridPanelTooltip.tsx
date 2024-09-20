@@ -1,7 +1,7 @@
-import React, { ReactElement } from 'react';
-import { IrisGridModel } from '@deephaven/iris-grid';
+import React, { type ReactElement } from 'react';
+import { type IrisGridModel } from '@deephaven/iris-grid';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
-import { WidgetPanelTooltipProps } from './WidgetPanelTypes';
+import { type WidgetPanelTooltipProps } from './WidgetPanelTypes';
 
 type IrisGridPanelTooltipProps = WidgetPanelTooltipProps & {
   model?: IrisGridModel;

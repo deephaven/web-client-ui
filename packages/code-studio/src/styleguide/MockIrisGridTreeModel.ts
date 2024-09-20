@@ -1,25 +1,25 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 /* eslint no-empty-function: "off" */
-import { EventTarget, Event } from 'event-target-shim';
+import { type EventTarget, type Event } from 'event-target-shim';
 import memoize from 'memoize-one';
 import {
-  EditableGridModel,
-  EditOperation,
-  ExpandableGridModel,
+  type EditableGridModel,
+  type EditOperation,
+  type ExpandableGridModel,
   GridRange,
   MockTreeGridModel,
-  ModelIndex,
-  MoveOperation,
+  type ModelIndex,
+  type MoveOperation,
 } from '@deephaven/grid';
 import {
   IrisGridModel,
-  PendingDataMap,
-  UITreeRow,
-  ColumnHeaderGroup,
+  type PendingDataMap,
+  type UITreeRow,
+  type ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { type Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
 type CustomEventType = EventTarget.EventData<

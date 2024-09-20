@@ -1,5 +1,5 @@
-import { ComponentType } from 'react';
-import GoldenLayout from '@deephaven/golden-layout';
+import { type ComponentType } from 'react';
+import type GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
   ContentItem,
@@ -11,9 +11,9 @@ import PanelEvent from './PanelEvent';
 import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
   isWrappedComponent,
-  PanelComponent,
-  PanelComponentType,
-  PanelProps,
+  type PanelComponent,
+  type PanelComponentType,
+  type PanelProps,
 } from './DashboardPlugin';
 
 const log = Log.module('PanelManager');

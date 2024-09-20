@@ -22,7 +22,7 @@ import {
   ScatterIcon,
 } from './icons';
 import './ChartBuilder.scss';
-import IrisGridModel from '../IrisGridModel';
+import type IrisGridModel from '../IrisGridModel';
 
 const log = Log.module('ChartBuilder');
 

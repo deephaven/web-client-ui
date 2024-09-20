@@ -1,5 +1,5 @@
-import GridRange from './GridRange';
-import GridModel from './GridModel';
+import type GridRange from './GridRange';
+import type GridModel from './GridModel';
 import { AssertionError } from './errors';
 
 export function isDeletableGridModel(

@@ -8,7 +8,7 @@ import {
 } from '@deephaven/components';
 import {
   ObjectFetcherContext,
-  ObjectFetchManager,
+  type ObjectFetchManager,
   ObjectFetchManagerContext,
   sanitizeVariableDescriptor,
   useApi,

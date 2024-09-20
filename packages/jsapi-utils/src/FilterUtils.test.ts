@@ -1,7 +1,7 @@
-import { Key } from 'react';
+import { type Key } from 'react';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { KeyedItem } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   createComboboxFilterArgs,

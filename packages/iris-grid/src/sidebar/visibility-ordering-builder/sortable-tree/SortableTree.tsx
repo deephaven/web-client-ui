@@ -11,10 +11,10 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragMoveEvent,
-  DragEndEvent,
-  DragOverEvent,
+  type DragStartEvent,
+  type DragMoveEvent,
+  type DragEndEvent,
+  type DragOverEvent,
   MeasuringStrategy,
 } from '@dnd-kit/core';
 import {

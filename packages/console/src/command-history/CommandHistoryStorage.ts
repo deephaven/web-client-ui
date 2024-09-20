@@ -1,9 +1,9 @@
 import {
-  StorageTable,
-  StorageItem,
-  StorageItemListener,
-  StorageListenerRemover,
-  StorageErrorListener,
+  type StorageTable,
+  type StorageItem,
+  type StorageItemListener,
+  type StorageListenerRemover,
+  type StorageErrorListener,
 } from '@deephaven/storage';
 
 export interface CommandHistoryStorageData {

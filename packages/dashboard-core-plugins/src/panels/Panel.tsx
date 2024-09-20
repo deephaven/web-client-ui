@@ -1,21 +1,25 @@
 import React, {
-  FocusEvent,
-  FocusEventHandler,
+  type FocusEvent,
+  type FocusEventHandler,
   PureComponent,
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import {
-  ContextAction,
+  type ContextAction,
   ContextActions,
   createXComponent,
   LoadingOverlay,
   Tooltip,
 } from '@deephaven/components';
-import { LayoutUtils, PanelComponent, PanelEvent } from '@deephaven/dashboard';
+import {
+  LayoutUtils,
+  type PanelComponent,
+  PanelEvent,
+} from '@deephaven/dashboard';
 import type {
   Container,
   EventEmitter,

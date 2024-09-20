@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { Table } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { type TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import useCheckIfExistsValue from './useCheckIfExistsValue';
 import useTableUtils from './useTableUtils';

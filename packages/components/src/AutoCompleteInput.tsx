@@ -21,7 +21,7 @@ import PropTypes from 'prop-types';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
-import { PopperOptions } from 'popper.js';
+import { type PopperOptions } from 'popper.js';
 import { Popper } from './popper';
 
 import './AutoCompleteInput.scss';

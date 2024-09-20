@@ -5,12 +5,12 @@ import { act, render, screen } from '@testing-library/react';
 import {
   ConnectionContext,
   LocalWorkspaceStorage,
-  LayoutStorage,
+  type LayoutStorage,
 } from '@deephaven/app-utils';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import {
   ApiContext,
-  ObjectFetcher,
+  type ObjectFetcher,
   ObjectFetcherContext,
 } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
@@ -20,7 +20,7 @@ import type {
   VariableChanges,
 } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
-import { Workspace, createMockStore } from '@deephaven/redux';
+import { type Workspace, createMockStore } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import { AppMainContainer } from './AppMainContainer';

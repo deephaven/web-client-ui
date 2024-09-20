@@ -1,7 +1,7 @@
 import convert from 'color-convert';
-import { HEX } from 'color-convert/conversions';
+import { type HEX } from 'color-convert/conversions';
 import clamp from 'lodash.clamp';
-import { GridColor } from './GridTheme';
+import { type GridColor } from './GridTheme';
 
 export type RGB = { r: number; g: number; b: number };
 export type Oklab = { L: number; a: number; b: number };

@@ -1,10 +1,10 @@
 import { act } from '@testing-library/react-hooks';
-import { dh } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   ITEM_KEY_PREFIX,
-  OnTableUpdatedEvent,
-  RowDeserializer,
+  type OnTableUpdatedEvent,
+  type RowDeserializer,
   createOnTableUpdatedHandler,
   defaultRowDeserializer,
   generateEmptyKeyedItems,
