@@ -1,18 +1,18 @@
 import {
-  AppStore,
-  DashboardData,
-  PluginData,
-  PluginDataMap,
-  RootDispatch,
-  RootState,
+  type AppStore,
+  type DashboardData,
+  type PluginData,
+  type PluginDataMap,
+  type RootDispatch,
+  type RootState,
 } from '@deephaven/redux';
 import {
-  TypedUseSelectorHook,
+  type TypedUseSelectorHook,
   useDispatch,
   useSelector,
   useStore,
 } from 'react-redux';
-import { ClosedPanels, OpenedPanelMap } from '../PanelManager';
+import { type ClosedPanels, type OpenedPanelMap } from '../PanelManager';
 
 const EMPTY_MAP = new Map();
 

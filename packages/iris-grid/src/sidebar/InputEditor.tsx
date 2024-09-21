@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import * as monaco from 'monaco-editor';
 import classNames from 'classnames';
 import './InputEditor.scss';

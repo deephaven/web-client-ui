@@ -4,13 +4,13 @@ import {
   type AuthPlugin,
   type AuthPluginComponent,
   isAuthPlugin,
-  LegacyAuthPlugin,
-  LegacyPlugin,
-  Plugin,
+  type LegacyAuthPlugin,
+  type LegacyPlugin,
+  type Plugin,
   PluginType,
   isLegacyAuthPlugin,
   isLegacyPlugin,
-  PluginModule,
+  type PluginModule,
   isPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';

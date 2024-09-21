@@ -9,7 +9,7 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import { UITotalsTableConfig } from './CommonTypes';
+import { type UITotalsTableConfig } from './CommonTypes';
 
 jest.useFakeTimers();
 

@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { Button, LoadingSpinner } from '@deephaven/components';
 import { vsClose } from '@deephaven/icons';

@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';

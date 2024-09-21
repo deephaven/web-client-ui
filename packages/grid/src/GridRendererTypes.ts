@@ -1,9 +1,10 @@
-import GridMetrics, { VisibleIndex, Coordinate } from './GridMetrics';
-import GridModel from './GridModel';
-import GridRange from './GridRange';
-import { GridTheme } from './GridTheme';
-import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
+import { type VisibleIndex, type Coordinate } from './GridMetrics';
+import type GridMetrics from './GridMetrics';
+import type GridModel from './GridModel';
+import type GridRange from './GridRange';
+import { type GridTheme } from './GridTheme';
+import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;

@@ -13,6 +13,7 @@
     { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../redux" },
+    { "path": "../test-utils" },
     { "path": "../utils" }
   ]
 }

@@ -1,5 +1,5 @@
-import { IconDefinition } from '@deephaven/icons';
-import React from 'react';
+import { type IconDefinition } from '@deephaven/icons';
+import type React from 'react';
 import type { Shortcut } from '../shortcuts';
 
 export type ResolvableContextAction =
@@ -10,11 +10,11 @@ export type ResolvableContextAction =
 export type MenuItem = ContextAction | Promise<ContextAction[]>;
 
 export interface ContextAction {
-  title?: string;
+  title?: string | JSX.Element;
   description?: string;
   action?: (event: Event) => void;
   actions?: ResolvableContextAction[];
-  icon?: IconDefinition | React.ReactElement;
+  icon?: IconDefinition | React.ReactElement<unknown>;
   iconColor?: string;
   shortcut?: Shortcut;
 

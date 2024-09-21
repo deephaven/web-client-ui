@@ -3,9 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   FileListItemEditor,
-  FileListItemEditorProps,
+  type FileListItemEditorProps,
 } from './FileListItemEditor';
-import { FileStorageItem } from './FileStorage';
+import { type FileStorageItem } from './FileStorage';
 
 function makeItem(name = 'DEFAULT_NAME'): FileStorageItem {
   return {

@@ -9,7 +9,7 @@ import GoldenLayout from '@deephaven/golden-layout';
 import type { ContentItem, Tab } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 import PanelEvent from './PanelEvent';
-import { PanelProps } from './DashboardPlugin';
+import { type PanelProps } from './DashboardPlugin';
 
 type TestComponentProps = { id: string } & PanelProps;
 

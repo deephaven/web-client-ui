@@ -1,12 +1,12 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { type Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Button, FadeTransition } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
-import { ColumnName } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
   dh: typeof DhType;

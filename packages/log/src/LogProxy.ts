@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { EventTarget, Event } from 'event-target-shim';
+import { EventTarget, type Event } from 'event-target-shim';
 import Log from './Log';
 
 export enum LOG_PROXY_TYPE {
@@ -124,15 +124,20 @@ export class LogProxy {
     type: LOG_PROXY_TYPE,
     listener: (event: CustomEvent<unknown[]>) => void
   ): void {
-    // The cast as EventListener is a dumb TypeScript issue
-    this.eventTarget.addEventListener(type, listener as EventListener);
+    this.eventTarget.addEventListener(
+      type,
+      listener as Parameters<EventTarget['addEventListener']>[1]
+    );
   }
 
   removeEventListener(
     type: LOG_PROXY_TYPE,
     listener: (event: CustomEvent<unknown[]>) => void
   ): void {
-    this.eventTarget.removeEventListener(type, listener as EventListener);
+    this.eventTarget.removeEventListener(
+      type,
+      listener as Parameters<EventTarget['removeEventListener']>[1]
+    );
   }
 }
 

@@ -1,6 +1,6 @@
 import React, {
-  ChangeEvent,
-  KeyboardEvent,
+  type ChangeEvent,
+  type KeyboardEvent,
   useCallback,
   useMemo,
   useState,
@@ -8,7 +8,7 @@ import React, {
 import classNames from 'classnames';
 import clamp from 'lodash.clamp';
 import { vsAdd, vsTrash } from '@deephaven/icons';
-import { Range, RangeUtils } from '@deephaven/utils';
+import { type Range, RangeUtils } from '@deephaven/utils';
 import Button from './Button';
 import ItemList from './ItemList';
 

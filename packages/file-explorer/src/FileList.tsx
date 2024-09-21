@@ -1,4 +1,4 @@
-import { ItemList, Range } from '@deephaven/components';
+import { ItemList, type Range } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { RangeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
@@ -9,10 +9,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
+import {
+  type FileStorageItem,
+  type FileStorageTable,
+  isDirectory,
+} from './FileStorage';
 import './FileList.scss';
 import { DEFAULT_ROW_HEIGHT, getMoveOperation } from './FileListUtils';
-import { FileListItem, FileListRenderItemProps } from './FileListItem';
+import { FileListItem, type FileListRenderItemProps } from './FileListItem';
 
 const log = Log.module('FileList');
 

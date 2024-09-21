@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ItemKey } from './itemUtils';
+import { type ItemKey } from './itemUtils';
 
 export interface UseOnChangeTrackUncontrolledOptions {
   defaultSelectedKey?: ItemKey;

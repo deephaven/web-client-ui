@@ -3,9 +3,9 @@ import type { FilterCondition } from '@deephaven/jsapi-types';
 import {
   createFilterConditionFactory,
   createShowOnlyEmptyFilterCondition,
-  TableUtils,
+  type TableUtils,
 } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useShowOnlyEmptyFilter from './useShowOnlyEmptyFilter';
 import useTableUtils from './useTableUtils';
 

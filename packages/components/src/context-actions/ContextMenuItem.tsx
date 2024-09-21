@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsChevronRight, IconDefinition } from '@deephaven/icons';
+import { vsChevronRight, type IconDefinition } from '@deephaven/icons';
 import type { ContextAction } from './ContextActionUtils';
 
 interface ContextMenuItemProps {

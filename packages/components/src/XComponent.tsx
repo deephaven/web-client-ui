@@ -1,6 +1,6 @@
-import React, { ComponentType, forwardRef } from 'react';
+import React, { type ComponentType, forwardRef } from 'react';
 import { canHaveRef } from './ComponentUtils';
-import { useXComponent, XComponentType } from './XComponentMap';
+import { useXComponent, type XComponentType } from './XComponentMap';
 
 /**
  * Helper function that will wrap the provided component, and return an ExtendableComponent type.

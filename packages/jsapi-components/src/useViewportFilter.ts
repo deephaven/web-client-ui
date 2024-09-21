@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
-import { UseViewportDataResult } from './useViewportData';
+import { type UseViewportDataResult } from './useViewportData';
 
 /**
  * Applies a filter to a viewport.

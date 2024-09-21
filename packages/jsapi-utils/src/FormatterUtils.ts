@@ -1,11 +1,15 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
-import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
-import Settings, {
-  ColumnFormatSettings,
-  DateTimeFormatSettings,
+import {
+  type DateTimeColumnFormatter,
+  TableColumnFormatter,
+} from './formatters';
+import {
+  type ColumnFormatSettings,
+  type DateTimeFormatSettings,
 } from './Settings';
+import type Settings from './Settings';
 
 /**
  * Instantiate a `Formatter` from the given settings.

@@ -1,4 +1,4 @@
-import { cloneElement, ReactNode } from 'react';
+import { cloneElement, type ReactNode } from 'react';
 import { Item } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dh as dhIcons } from '@deephaven/icons';
@@ -8,12 +8,12 @@ import {
   getItemTextValue,
   isItemElement,
   isSectionElement,
-  ItemElement,
-  ItemIconSlot,
-  ItemOrSection,
+  type ItemElement,
+  type ItemIconSlot,
+  type ItemOrSection,
   ITEM_EMPTY_STRING_TEXT_VALUE,
-  SectionElement,
-  TooltipOptions,
+  type SectionElement,
+  type TooltipOptions,
 } from './itemUtils';
 import { ItemContent } from '../ItemContent';
 import { Icon } from '../icons';

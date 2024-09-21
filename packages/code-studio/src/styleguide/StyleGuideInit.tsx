@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
-  CustomizableWorkspace,
+  type CustomizableWorkspace,
   getWorkspace,
-  PayloadActionCreator,
-  RootState,
+  type PayloadActionCreator,
+  type RootState,
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
 import {

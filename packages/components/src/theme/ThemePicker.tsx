@@ -1,4 +1,4 @@
-import { Key, useCallback } from 'react';
+import { type Key, useCallback } from 'react';
 import { Item, Picker } from '@adobe/react-spectrum';
 import useTheme from './useTheme';
 

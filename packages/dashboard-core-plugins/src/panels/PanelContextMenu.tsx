@@ -1,17 +1,24 @@
-import React, { PureComponent, ReactElement } from 'react';
-import { ContextAction, ContextActions } from '@deephaven/components';
+import React, { PureComponent, type ReactElement } from 'react';
+import {
+  ContextActions,
+  type ResolvableContextAction,
+} from '@deephaven/components';
 import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
 import {
-  CustomizableWorkspace,
-  RootState,
+  type CustomizableWorkspace,
+  type RootState,
   getWorkspace,
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
 import { connect } from 'react-redux';
-import { ClosedPanel, LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import {
+  type ClosedPanel,
+  LayoutUtils,
+  PanelEvent,
+} from '@deephaven/dashboard';
 
 interface PanelContextMenuProps {
-  additionalActions: ContextAction[];
+  additionalActions: ResolvableContextAction[];
   glContainer: Container;
   glEventHub: EventEmitter;
   workspace: CustomizableWorkspace;
@@ -132,9 +139,7 @@ class PanelContextMenu extends PureComponent<
   render(): ReactElement {
     const { additionalActions, glContainer } = this.props;
 
-    const contextActions: (ContextAction | (() => ContextAction))[] = [
-      ...additionalActions,
-    ];
+    const contextActions = [...additionalActions];
 
     contextActions.push(() => ({
       title: 'Re-open closed panel',

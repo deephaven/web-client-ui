@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
 } from '@deephaven/dashboard';
 import Linker from './linker/Linker';
 

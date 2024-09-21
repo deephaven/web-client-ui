@@ -1,4 +1,8 @@
-import React, { ChangeEvent, KeyboardEvent, PureComponent } from 'react';
+import React, {
+  type ChangeEvent,
+  type KeyboardEvent,
+  PureComponent,
+} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import {
@@ -10,7 +14,7 @@ import {
   Button,
 } from '@deephaven/components';
 import {
-  CancelablePromise,
+  type CancelablePromise,
   Pending,
   PromiseUtils,
   ValidationError,
@@ -19,7 +23,8 @@ import Log from '@deephaven/log';
 import { vsHome } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FileExplorer from './FileExplorer';
-import FileStorage, { FileStorageItem, FileType } from './FileStorage';
+import { type FileStorageItem, type FileType } from './FileStorage';
+import type FileStorage from './FileStorage';
 import FileUtils from './FileUtils';
 
 import './NewItemModal.scss';

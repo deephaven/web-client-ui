@@ -1,10 +1,10 @@
 import {
-  NormalizedItem,
-  PickerPropsT,
-  SpectrumPickerProps,
+  type NormalizedItem,
+  type PickerPropsT,
+  type SpectrumPickerProps,
 } from '@deephaven/components';
-import { dh as DhType } from '@deephaven/jsapi-types';
-import { Settings } from '@deephaven/jsapi-utils';
+import { type dh as DhType } from '@deephaven/jsapi-types';
+import { type Settings } from '@deephaven/jsapi-utils';
 
 export type PickerWithTableProps<TProps> = Omit<
   PickerPropsT<TProps>,

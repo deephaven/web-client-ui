@@ -3,12 +3,16 @@ import { getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { isDataBarGridModel } from './DataBarGridModel';
-import { ModelIndex, VisibleIndex, VisibleToModelMap } from './GridMetrics';
+import {
+  type ModelIndex,
+  type VisibleIndex,
+  type VisibleToModelMap,
+} from './GridMetrics';
 import GridColorUtils from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
-import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
-import GridModel from './GridModel';
+import { DEFAULT_FONT_WIDTH, type GridRenderState } from './GridRendererTypes';
+import type GridModel from './GridModel';
 
 interface DataBarRenderMetrics {
   /** The total width the entire bar from the min to max value can take up (rightmostPosition - leftmostPosition) */

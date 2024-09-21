@@ -2,14 +2,14 @@ import {
   Children,
   cloneElement,
   isValidElement,
-  ReactNode,
+  type ReactNode,
   useState,
 } from 'react';
 import cl from 'classnames';
 import { isElementOfType, useCheckOverflow } from '@deephaven/react-hooks';
 import { NON_BREAKING_SPACE } from '@deephaven/utils';
 import { Text } from './Text';
-import { TooltipOptions } from './utils';
+import { type TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
 import stylesCommon from '../SpectrumComponent.module.scss';
 

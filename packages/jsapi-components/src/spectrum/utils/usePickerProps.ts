@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ItemKey,
-  NormalizedItem,
-  NormalizedSection,
+  type ItemKey,
+  type NormalizedItem,
+  type NormalizedSection,
   PICKER_TOP_OFFSET,
   usePickerItemScale,
 } from '@deephaven/components';

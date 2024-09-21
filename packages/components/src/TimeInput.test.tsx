@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TimeUtils } from '@deephaven/utils';
 import type { SelectionSegment } from './MaskedInput';
-import TimeInput, { TimeInputElement } from './TimeInput';
+import TimeInput, { type TimeInputElement } from './TimeInput';
 
 type SelectionDirection = SelectionSegment['selectionDirection'];
 

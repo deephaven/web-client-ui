@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import usePromiseFactory, {
-  UsePromiseFactoryResult,
+  type UsePromiseFactoryResult,
 } from './usePromiseFactory';
 
 const defaultState: UsePromiseFactoryResult<string> = {

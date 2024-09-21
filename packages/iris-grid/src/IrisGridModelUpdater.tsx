@@ -2,16 +2,24 @@
 /* eslint-disable no-param-reassign */
 import { useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
-import { ModelIndex, MoveOperation } from '@deephaven/grid';
-import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
+import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
+import {
+  type Formatter,
+  type ReverseType,
+  TableUtils,
+} from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import { useOnChange } from '@deephaven/react-hooks';
 import IrisGridUtils from './IrisGridUtils';
-import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
-import IrisGridModel from './IrisGridModel';
+import {
+  type ColumnName,
+  type UITotalsTableConfig,
+  type PendingDataMap,
+} from './CommonTypes';
+import type IrisGridModel from './IrisGridModel';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
-  PartitionConfig,
+  type PartitionConfig,
   isPartitionedGridModel,
 } from './PartitionedGridModel';
 import { isIrisGridTreeTableModel } from './IrisGridTreeTableModel';

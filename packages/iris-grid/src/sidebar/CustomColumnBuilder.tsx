@@ -1,12 +1,16 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  Droppable,
+  type DropResult,
+} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
-import { DbNameValidator } from '@deephaven/utils';
+import { DbNameValidator, type EventT } from '@deephaven/utils';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
@@ -211,7 +215,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  handleRequestFailed(event: Event): void {
+  handleRequestFailed(event: EventT): void {
     const customEvent = event as CustomEvent;
     const { isCustomColumnApplying } = this.state;
     if (!isCustomColumnApplying) {

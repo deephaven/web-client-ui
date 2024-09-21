@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import { PromiseUtils, CancelablePromise } from '@deephaven/utils';
+import { PromiseUtils, type CancelablePromise } from '@deephaven/utils';
 import ContextActionUtils, {
-  ContextAction,
-  ResolvableContextAction,
+  type ContextAction,
+  type ResolvableContextAction,
 } from './ContextActionUtils';
 import ContextMenuItem from './ContextMenuItem';
 import LoadingSpinner from '../LoadingSpinner';

@@ -1,13 +1,13 @@
 import React from 'react';
 import {
   ComboBox as SpectrumComboBox,
-  SpectrumComboBoxProps,
+  type SpectrumComboBoxProps,
 } from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import { useMergeRef } from '@deephaven/react-hooks';
 import type { NormalizedItem } from '../utils';
-import { PickerPropsT, usePickerProps } from '../picker';
+import { type PickerPropsT, usePickerProps } from '../picker';
 
 export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 

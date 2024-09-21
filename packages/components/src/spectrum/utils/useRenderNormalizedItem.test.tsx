@@ -1,11 +1,11 @@
-import React, { Key } from 'react';
+import React, { type Key } from 'react';
 import { Item } from '@adobe/react-spectrum';
 import { renderHook } from '@testing-library/react-hooks';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { ItemContent } from '../ItemContent';
 import { useRenderNormalizedItem } from './useRenderNormalizedItem';
-import { getItemKey, NormalizedItem } from './itemUtils';
+import { getItemKey, type NormalizedItem } from './itemUtils';
 import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
 import { ListActionGroup } from '../ListActionGroup';
 import { ActionGroup } from '../ActionGroup';

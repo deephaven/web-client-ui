@@ -1,14 +1,14 @@
 /* eslint class-methods-use-this: "off" */
 import {
-  Grid,
+  type Grid,
   GridMouseHandler,
-  GridPoint,
+  type GridPoint,
   GridUtils,
-  GridWheelEvent,
+  type GridWheelEvent,
   isEditableGridModel,
 } from '@deephaven/grid';
 import { assertNotNull } from '@deephaven/utils';
-import IrisGrid from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 /**
  * Handles sending data selected via double click

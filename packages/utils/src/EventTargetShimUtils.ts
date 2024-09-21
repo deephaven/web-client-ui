@@ -1,4 +1,9 @@
-import type { Event, EventTarget } from 'event-target-shim';
+import type {
+  Event as EventT,
+  EventTarget as EventTargetT,
+} from 'event-target-shim';
+
+export type { EventT };
 
 /**
  * A CustomEvent extension which combines the browser CustomEvent and event-target-shim's Event types for type safety
@@ -15,13 +20,13 @@ export class EventShimCustomEvent<
   // https://github.com/babel/babel/issues/12128#issuecomment-702119272
   declare type: T;
 
-  declare target: EventTarget | null;
+  declare target: (EventTargetT & EventTarget) | null;
 
-  declare srcElement: EventTarget | null;
+  declare srcElement: (EventTargetT & EventTarget) | null;
 
-  declare currentTarget: EventTarget | null;
+  declare currentTarget: (EventTargetT & EventTarget) | null;
 
-  declare composedPath: () => EventTarget[];
+  declare composedPath: () => (EventTargetT & EventTarget)[];
 
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(typeArg: T, eventInitDict?: CustomEventInit<D>) {
@@ -38,8 +43,8 @@ export type CustomEventMap<M extends Record<string, Event | CustomEvent>> = {
   [T in keyof M]: T extends string
     ? M[T] extends CustomEvent<infer D>
       ? EventShimCustomEvent<T, D>
-      : M[T] extends Event
-      ? Event<T>
+      : M[T] extends EventT
+      ? EventT<T>
       : never
     : never;
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { type IconProp } from '@fortawesome/fontawesome-svg-core';
 import Modal from './Modal';
 import ModalBody from './ModalBody';
 import './InfoModal.scss';

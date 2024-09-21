@@ -8,7 +8,7 @@ import {
   KEY,
   MODIFIER,
   Shortcut,
-  DropdownAction,
+  type DropdownAction,
   Button,
 } from '@deephaven/components';
 import {

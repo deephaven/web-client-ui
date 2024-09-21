@@ -6,14 +6,14 @@ import {
   ContextActions,
   KEY,
   MODIFIER,
-  ResolvableContextAction,
+  type ResolvableContextAction,
   Shortcut,
 } from '@deephaven/components';
 import {
   vsBell,
   dhFilePrint,
   vsQuestion,
-  IconDefinition,
+  type IconDefinition,
 } from '@deephaven/icons';
 import SampleSection from './SampleSection';
 

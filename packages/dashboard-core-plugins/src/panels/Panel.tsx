@@ -1,20 +1,26 @@
 import React, {
-  FocusEvent,
-  FocusEventHandler,
+  type FocusEvent,
+  type FocusEventHandler,
   PureComponent,
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import {
-  ContextAction,
+  type ContextAction,
   ContextActions,
+  createXComponent,
   LoadingOverlay,
+  type ResolvableContextAction,
   Tooltip,
 } from '@deephaven/components';
-import { LayoutUtils, PanelComponent, PanelEvent } from '@deephaven/dashboard';
+import {
+  LayoutUtils,
+  type PanelComponent,
+  PanelEvent,
+} from '@deephaven/dashboard';
 import type {
   Container,
   EventEmitter,
@@ -31,7 +37,7 @@ import './Panel.scss';
 
 const log = Log.module('Panel');
 
-interface PanelProps {
+export type CorePanelProps = {
   /**
    * Reference to the component panel.
    * Will wait until it is set before emitting mount/unmount events.
@@ -59,13 +65,13 @@ interface PanelProps {
   onTabBlur?: (...args: unknown[]) => void;
   onTabFocus?: (...args: unknown[]) => void;
   renderTabTooltip?: () => ReactNode;
-  additionalActions?: ContextAction[];
+  additionalActions?: ResolvableContextAction[];
   errorMessage?: string;
   isLoading?: boolean;
   isLoaded?: boolean;
   isClonable?: boolean;
   isRenamable?: boolean;
-}
+};
 
 interface PanelState {
   title?: string | null;
@@ -77,8 +83,8 @@ interface PanelState {
  * Also wires up some triggers for common events:
  * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
  */
-class Panel extends PureComponent<PanelProps, PanelState> {
-  constructor(props: PanelProps) {
+class Panel extends PureComponent<CorePanelProps, PanelState> {
+  constructor(props: CorePanelProps) {
     super(props);
 
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
@@ -292,7 +298,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
 
   getAdditionalActions = memoize(
     (
-      actions: readonly ContextAction[],
+      actions: readonly ResolvableContextAction[],
       isClonable: boolean,
       isRenamable: boolean
     ) => {
@@ -379,4 +385,6 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 }
 
-export default Panel;
+const XPanel = createXComponent(Panel);
+
+export default XPanel;

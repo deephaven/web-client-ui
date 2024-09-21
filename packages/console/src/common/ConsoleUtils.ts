@@ -1,4 +1,4 @@
-import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
+import ShellQuote, { type ParseEntry, type ControlOperator } from 'shell-quote';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
 class ConsoleUtils {

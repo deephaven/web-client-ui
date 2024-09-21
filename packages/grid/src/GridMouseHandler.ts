@@ -1,8 +1,8 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
-import { EventHandlerResult } from './EventHandlerResult';
-import Grid from './Grid';
-import { GridPoint } from './GridUtils';
+import { type EventHandlerResult } from './EventHandlerResult';
+import type Grid from './Grid';
+import { type GridPoint } from './GridUtils';
 
 /**
  * Some events we listen to are a native mouse event, and others are wrapped with React's SyntheticEvent.

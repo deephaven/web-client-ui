@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { KeyedItem, SelectionMaybeInverted } from '@deephaven/utils';
+import { type KeyedItem, type SelectionMaybeInverted } from '@deephaven/utils';
 import { mapSelection, optimizeSelection } from './SelectionUtils';
 import type { WindowedListData } from './useWindowedListData';
 

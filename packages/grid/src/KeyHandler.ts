@@ -5,8 +5,8 @@
  * Return true from any of the events to indicate they're consumed, and stopPropagation/preventDefault will be called.
  */
 
-import React from 'react';
-import { EventHandlerResult } from './EventHandlerResult';
+import type React from 'react';
+import { type EventHandlerResult } from './EventHandlerResult';
 import type Grid from './Grid';
 
 /**

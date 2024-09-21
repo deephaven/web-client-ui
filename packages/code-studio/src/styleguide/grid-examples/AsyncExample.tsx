@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Grid, GridMetrics, ViewportDataGridModel } from '@deephaven/grid';
+import { Grid, type GridMetrics, ViewportDataGridModel } from '@deephaven/grid';
 
 /**
  * An example showing data loading asnychronously for a grid.

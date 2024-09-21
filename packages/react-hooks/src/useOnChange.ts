@@ -1,4 +1,4 @@
-import { DependencyList } from 'react';
+import { type DependencyList } from 'react';
 import usePrevious from './usePrevious';
 
 /**

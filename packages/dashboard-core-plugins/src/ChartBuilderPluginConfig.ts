@@ -1,4 +1,4 @@
-import { PluginType, DashboardPlugin } from '@deephaven/plugin';
+import { PluginType, type DashboardPlugin } from '@deephaven/plugin';
 import ChartBuilderPlugin from './ChartBuilderPlugin';
 
 const ChartBuilderPluginConfig: DashboardPlugin = {

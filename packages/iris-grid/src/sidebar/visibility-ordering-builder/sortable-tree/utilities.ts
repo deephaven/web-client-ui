@@ -1,8 +1,12 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import type { dh } from '@deephaven/jsapi-types';
-import { GridUtils, ModelIndex, MoveOperation } from '@deephaven/grid';
+import {
+  GridUtils,
+  type ModelIndex,
+  type MoveOperation,
+} from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
-import { isFlattenedTreeItem, ReadonlyTreeItems } from './types';
+import { isFlattenedTreeItem, type ReadonlyTreeItems } from './types';
 import type { FlattenedItem, TreeItem } from './types';
 
 /**

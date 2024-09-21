@@ -1,7 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
 import DecimalColumnFormatter from './DecimalColumnFormatter';
 import IntegerColumnFormatter from './IntegerColumnFormatter';
-import { TableColumnFormat } from './TableColumnFormatter';
+import { type TableColumnFormat } from './TableColumnFormatter';
 
 const numberColumnFormatters = [
   {

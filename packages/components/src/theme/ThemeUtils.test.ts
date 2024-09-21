@@ -1,14 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ColorUtils, TestUtils } from '@deephaven/utils';
+import { ColorUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   SVG_ICON_MANUAL_COLOR_MAP,
-  ThemeData,
-  ThemePreloadColorVariable,
-  ThemeRegistrationData,
+  type ThemeData,
+  type ThemePreloadColorVariable,
+  type ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
 } from './ThemeModel';

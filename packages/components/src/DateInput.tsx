@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import MaskedInput, { SelectionSegment } from './MaskedInput';
+import MaskedInput, { type SelectionSegment } from './MaskedInput';
 import { getNextSegmentValue } from './DateInputUtils';
 
 const log = Log.module('DateInput');

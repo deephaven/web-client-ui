@@ -1,8 +1,9 @@
-import React, {
-  ComponentType,
-  ForwardRefExoticComponent,
-  RefAttributes,
+import {
+  type ComponentType,
+  type ForwardRefExoticComponent,
+  type RefAttributes,
 } from 'react';
+import type React from 'react';
 import { ForwardRef } from 'react-is';
 
 export type Props = Record<string, unknown> | RefAttributes<unknown>;

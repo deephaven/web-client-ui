@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/auth-plugins",
-  "version": "0.92.0",
+  "version": "0.95.0",
   "description": "Deephaven Auth Plugins",
   "keywords": [
     "Deephaven",
@@ -45,6 +45,7 @@
     "js-cookie": "^3.0.5"
   },
   "devDependencies": {
+    "@deephaven/test-utils": "file:../test-utils",
     "@types/react": "^17.0.2"
   },
   "peerDependencies": {

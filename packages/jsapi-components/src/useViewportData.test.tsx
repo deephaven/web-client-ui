@@ -2,15 +2,14 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import {
-  OnTableUpdatedEvent,
-  ViewportRow,
+  type OnTableUpdatedEvent,
   generateEmptyKeyedItems,
   isClosed,
   ITEM_KEY_PREFIX,
 } from '@deephaven/jsapi-utils';
 import { useOnScrollOffsetChangeCallback } from '@deephaven/react-hooks';
-import { TestUtils } from '@deephaven/utils';
-import useViewportData, { UseViewportDataProps } from './useViewportData';
+import { TestUtils } from '@deephaven/test-utils';
+import useViewportData, { type UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
 import { useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
@@ -23,13 +22,9 @@ jest.mock('@deephaven/react-hooks', () => ({
 jest.mock('./useSetPaddedViewportCallback');
 jest.mock('./useTableSize');
 
-function mockViewportRow(offsetInSnapshot: number): ViewportRow {
-  return { offsetInSnapshot } as ViewportRow;
-}
-
 function mockUpdateEvent(
   offset: number,
-  rows: ViewportRow[]
+  rows: DhType.Row[]
 ): OnTableUpdatedEvent {
   return {
     detail: {
@@ -213,14 +208,14 @@ it('should update state on dh.Table.EVENT_UPDATED event', () => {
   );
 
   const offset = 3;
-  const row = mockViewportRow(5);
+  const row = TestUtils.createMockProxy<DhType.Row>();
   const event = mockUpdateEvent(offset, [row]);
 
   act(() => {
     updateEventHandler?.(event);
   });
 
-  const expectedKeyIndex = offset + row.offsetInSnapshot;
+  const expectedKeyIndex = offset;
   const expectedInitialItems = [...generateEmptyKeyedItems(0, table.size - 1)];
   const expectedItems = [
     ...expectedInitialItems.slice(0, expectedKeyIndex),

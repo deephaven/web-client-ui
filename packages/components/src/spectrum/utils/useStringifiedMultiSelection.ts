@@ -1,10 +1,10 @@
-import { Key, useCallback, useMemo } from 'react';
+import { type Key, useCallback, useMemo } from 'react';
 import {
   getItemKey,
-  ItemKey,
-  ItemSelection,
+  type ItemKey,
+  type ItemSelection,
   itemSelectionToStringSet,
-  NormalizedItem,
+  type NormalizedItem,
 } from './itemUtils';
 
 export interface UseStringifiedMultiSelectionOptions {

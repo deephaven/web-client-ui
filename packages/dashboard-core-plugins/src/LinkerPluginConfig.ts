@@ -1,4 +1,4 @@
-import { PluginType, DashboardPlugin } from '@deephaven/plugin';
+import { PluginType, type DashboardPlugin } from '@deephaven/plugin';
 import LinkerPlugin from './LinkerPlugin';
 
 const LinkerPluginConfig: DashboardPlugin = {

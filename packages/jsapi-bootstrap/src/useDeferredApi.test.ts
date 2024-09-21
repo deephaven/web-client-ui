@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { useContext } from 'react';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useDeferredApi } from './useDeferredApi';
-import { VariableDescriptor } from './useObjectFetcher';
+import { type VariableDescriptor } from './useObjectFetcher';
 
 const { asMock, createMockProxy, flushPromises } = TestUtils;
 
@@ -29,7 +29,10 @@ describe('useDeferredApi', () => {
     expect(result.current).toEqual([dh1, null]);
 
     const { result: result2 } = renderHook(() =>
-      useDeferredApi({ type: 'foo', foo: 'bar' })
+      useDeferredApi({
+        type: 'foo',
+        foo: 'bar',
+      } as DhType.ide.VariableDescriptor)
     );
     expect(result2.current).toEqual([dh1, null]);
   });
@@ -66,6 +69,12 @@ describe('useDeferredApi', () => {
     asMock(useContext).mockReturnValue(null);
 
     const { result } = renderHook(() => useDeferredApi(objectMetadata));
+    expect(result.current).toEqual([null, expect.any(Error)]);
+  });
+
+  it('returns an error if the metadata is null', async () => {
+    asMock(useContext).mockReturnValue(dh1);
+    const { result } = renderHook(() => useDeferredApi(null));
     expect(result.current).toEqual([null, expect.any(Error)]);
   });
 });

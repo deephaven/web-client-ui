@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import dh from '@deephaven/jsapi-shim';
 import { useContext } from 'react';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useApi } from './useApi';
 
 const { asMock } = TestUtils;

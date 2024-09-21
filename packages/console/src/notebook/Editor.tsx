@@ -1,14 +1,14 @@
 /**
  * Editor editor for large blocks of code
  */
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 import './Editor.scss';
 
-interface EditorProps {
+export interface EditorProps {
   className: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;

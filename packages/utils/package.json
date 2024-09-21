@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/utils",
-  "version": "0.92.0",
+  "version": "0.95.0",
   "description": "Deephaven Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,5 +27,8 @@
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@deephaven/test-utils": "file:../test-utils"
   }
 }

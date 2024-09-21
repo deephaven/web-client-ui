@@ -3,7 +3,7 @@ import {
   DragDropContext,
   Draggable,
   Droppable,
-  DropResult,
+  type DropResult,
 } from 'react-beautiful-dnd';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,8 +13,8 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './ConditionalFormattingMenu.scss';
 import {
-  BaseFormatConfig,
-  FormattingRule,
+  type BaseFormatConfig,
+  type FormattingRule,
   FormatterType,
   getBackgroundForStyleConfig,
   getColorForStyleConfig,
@@ -23,7 +23,7 @@ import {
   StringCondition,
   DateCondition,
 } from './ConditionalFormattingUtils';
-import { ColumnName } from '../../CommonTypes';
+import { type ColumnName } from '../../CommonTypes';
 
 const log = Log.module('ConditionalFormattingMenu');
 

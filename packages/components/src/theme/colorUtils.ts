@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 
 /**
  * Color values for the DH color palette exposed to end users in spectrum components.

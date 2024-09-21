@@ -1,21 +1,21 @@
 import React, {
-  ClipboardEvent,
-  ChangeEvent,
+  type ClipboardEvent,
+  type ChangeEvent,
   Component,
-  ReactElement,
-  RefObject,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { type RouteComponentProps, withRouter } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
   GLOBAL_SHORTCUTS,
   Popper,
-  ContextAction,
+  type ContextAction,
   Button,
   Logo,
   BasicModal,
@@ -26,10 +26,10 @@ import {
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
-  CreateDashboardPayload,
+  type CreateDashboardPayload,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
-  DehydratedDashboardPanelProps,
+  type DehydratedDashboardPanelProps,
   emitPanelOpen,
   getAllDashboardsData,
   getDashboardData,
@@ -55,7 +55,7 @@ import { vsGear, dhShapes, dhPanels, vsTerminal } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { SessionConfig } from '@deephaven/jsapi-utils';
+import { type SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -64,12 +64,12 @@ import {
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
-  WorkspaceData,
-  RootState,
-  User,
-  ServerConfigValues,
-  CustomizableWorkspace,
-  DashboardData,
+  type WorkspaceData,
+  type RootState,
+  type User,
+  type ServerConfigValues,
+  type CustomizableWorkspace,
+  type DashboardData,
 } from '@deephaven/redux';
 import {
   bindAllMethods,
@@ -78,12 +78,12 @@ import {
   EMPTY_ARRAY,
   assertNotNull,
 } from '@deephaven/utils';
-import GoldenLayout, { EventHub } from '@deephaven/golden-layout';
-import type { ItemConfig } from '@deephaven/golden-layout';
+import type GoldenLayout from '@deephaven/golden-layout';
+import type { ItemConfig, EventHub } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
 import {
   AppDashboards,
-  LayoutStorage,
+  type LayoutStorage,
   UserLayoutUtils,
 } from '@deephaven/app-utils';
 import JSZip from 'jszip';
@@ -91,7 +91,7 @@ import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
-import WidgetList, { WindowMouseEvent } from './WidgetList';
+import WidgetList, { type WindowMouseEvent } from './WidgetList';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 

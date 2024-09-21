@@ -8,6 +8,7 @@ function makeModal({
   className,
   children,
   keyboard,
+  clickOutside,
   isOpen,
   centered,
   onOpened,
@@ -17,6 +18,7 @@ function makeModal({
   className?: string;
   children?;
   keyboard?: boolean;
+  clickOutside?: boolean;
   isOpen?: boolean;
   centered?: boolean;
   onOpened?: () => void;
@@ -27,6 +29,7 @@ function makeModal({
     <Modal
       className={className}
       keyboard={keyboard}
+      clickOutside={clickOutside}
       isOpen={isOpen}
       centered={centered}
       onOpened={onOpened}
@@ -100,6 +103,32 @@ it('closes only when clicking outside the modal', async () => {
   jest.clearAllMocks();
   const modalContent = document.querySelector('.modal-content')!;
   await user.click(modalContent);
+  expect(toggle).toBeCalledTimes(0);
+});
+
+it('does not close on mouseUp outside the modal when initiated from inside the modal', async () => {
+  const user = userEvent.setup();
+  const toggle = jest.fn();
+  render(makeModal({ isOpen: true, toggle }));
+
+  const modalContent = document.querySelector('.modal-content')!;
+  await user.pointer({ target: modalContent, keys: '[MouseLeft>]' });
+  expect(toggle).toBeCalledTimes(0);
+
+  await user.pointer({
+    target: screen.getByRole('dialog'),
+    keys: '[/MouseLeft]',
+  });
+  expect(toggle).toBeCalledTimes(0);
+});
+
+it('does not close when clicking outside when clickOutside is false', async () => {
+  const user = userEvent.setup();
+  const toggle = jest.fn();
+  render(makeModal({ isOpen: true, toggle, clickOutside: false }));
+
+  // note that outer div covers the entire screen
+  await user.click(screen.getByRole('dialog'));
   expect(toggle).toBeCalledTimes(0);
 });
 

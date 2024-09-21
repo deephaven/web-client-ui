@@ -4,7 +4,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { Datum, Layout, PlotData } from 'plotly.js';
 import ChartModel from './ChartModel';
-import { ChartTheme, defaultChartTheme } from './ChartTheme';
+import { type ChartTheme, defaultChartTheme } from './ChartTheme';
 import ChartUtils from './ChartUtils';
 
 interface Series {

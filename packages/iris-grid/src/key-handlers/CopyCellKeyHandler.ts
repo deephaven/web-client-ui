@@ -1,4 +1,4 @@
-import { KeyboardEvent } from 'react';
+import { type KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { ContextActionUtils } from '@deephaven/components';
 import type { Grid } from '@deephaven/grid';

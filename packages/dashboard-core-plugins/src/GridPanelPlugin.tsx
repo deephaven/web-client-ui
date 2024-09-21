@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { WidgetPanelProps } from '@deephaven/plugin';
+import { type WidgetPanelProps } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
 import useHydrateGrid from './useHydrateGrid';
 import ConnectedIrisGridPanel, {

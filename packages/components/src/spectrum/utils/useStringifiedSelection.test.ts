@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { NormalizedItem } from './itemUtils';
+import { type NormalizedItem } from './itemUtils';
 import { useStringifiedSelection } from './useStringifiedSelection';
 
 describe('useStringifiedSelection', () => {

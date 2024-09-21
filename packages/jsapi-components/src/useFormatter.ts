@@ -1,8 +1,8 @@
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   createFormatterFromSettings,
-  Formatter,
-  Settings,
+  type Formatter,
+  type Settings,
 } from '@deephaven/jsapi-utils';
 import { bindAllMethods } from '@deephaven/utils';
 import { useMemo } from 'react';

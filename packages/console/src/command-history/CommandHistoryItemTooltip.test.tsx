@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CommandHistoryItemTooltip } from './CommandHistoryItemTooltip';
-import { CommandHistoryStorageItem } from './CommandHistoryStorage';
+import { type CommandHistoryStorageItem } from './CommandHistoryStorage';
 
 jest.mock('../common/Code', () => () => 'Code');
 

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
-  AuthConfigMap,
+  type AuthConfigMap,
   AuthPluginAnonymous,
   AuthPluginParent,
   AuthPluginPsk,

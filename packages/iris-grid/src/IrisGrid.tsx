@@ -1,9 +1,9 @@
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   Component,
-  CSSProperties,
-  ReactElement,
-  ReactNode,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
 import memoize from 'memoizee';
 import classNames from 'classnames';
@@ -20,30 +20,30 @@ import {
   Popper,
   ThemeExport,
   Tooltip,
-  ContextAction,
-  PopperOptions,
-  ReferenceObject,
+  type ContextAction,
+  type PopperOptions,
+  type ReferenceObject,
   Button,
   ContextActionUtils,
-  ResolvableContextAction,
+  type ResolvableContextAction,
   SlideTransition,
 } from '@deephaven/components';
 import {
   Grid,
-  GridMetrics,
-  GridMouseHandler,
+  type GridMetrics,
+  type GridMouseHandler,
   GridRange,
-  GridRangeIndex,
-  GridThemeType,
+  type GridRangeIndex,
+  type GridThemeType,
   GridUtils,
-  KeyHandler,
-  ModelIndex,
-  ModelSizeMap,
-  MoveOperation,
-  VisibleIndex,
-  GridState,
+  type KeyHandler,
+  type ModelIndex,
+  type ModelSizeMap,
+  type MoveOperation,
+  type VisibleIndex,
+  type GridState,
   isEditableGridModel,
-  BoundedAxisRange,
+  type BoundedAxisRange,
   isExpandableGridModel,
   isDeletableGridModel,
 } from '@deephaven/grid';
@@ -70,13 +70,13 @@ import {
   Formatter,
   FormatterUtils,
   TableUtils,
-  FormattingRule,
-  ReverseType,
-  RowDataMap,
-  SortDirection,
-  DateTimeColumnFormatterOptions,
-  TableColumnFormat,
-  Settings,
+  type FormattingRule,
+  type ReverseType,
+  type RowDataMap,
+  type SortDirection,
+  type DateTimeColumnFormatterOptions,
+  type TableColumnFormat,
+  type Settings,
   isSortDirection,
 } from '@deephaven/jsapi-utils';
 import {
@@ -88,20 +88,21 @@ import {
   PromiseUtils,
   ValidationError,
   getOrThrow,
+  type EventT,
 } from '@deephaven/utils';
 import {
   Type as FilterType,
-  TypeValue as FilterTypeValue,
+  type TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
 import clamp from 'lodash.clamp';
 import {
-  FormattingRule as SidebarFormattingRule,
+  type FormattingRule as SidebarFormattingRule,
   getFormatColumns,
 } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import PendingDataBottomBar from './PendingDataBottomBar';
-import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
+import IrisGridCopyHandler, { type CopyOperation } from './IrisGridCopyHandler';
 import FilterInputField from './FilterInputField';
 import {
   CopyCellKeyHandler,
@@ -127,7 +128,10 @@ import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
-import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
+import {
+  createDefaultIrisGridTheme,
+  type IrisGridThemeType,
+} from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
@@ -149,45 +153,45 @@ import CrossColumnSearch from './CrossColumnSearch';
 import IrisGridModel from './IrisGridModel';
 import {
   isPartitionedGridModel,
-  PartitionConfig,
-  PartitionedGridModel,
+  type PartitionConfig,
+  type PartitionedGridModel,
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu, {
-  AdvancedSettingsMenuCallback,
+  type AdvancedSettingsMenuCallback,
 } from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
 import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow, { GotoRowElement } from './GotoRow';
+import GotoRow, { type GotoRowElement } from './GotoRow';
 import {
-  Aggregation,
-  AggregationSettings,
+  type Aggregation,
+  type AggregationSettings,
 } from './sidebar/aggregations/Aggregations';
-import { ChartBuilderSettings } from './sidebar/ChartBuilder';
+import { type ChartBuilderSettings } from './sidebar/ChartBuilder';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { UIRollupConfig } from './sidebar/RollupRows';
+import { type UIRollupConfig } from './sidebar/RollupRows';
 import {
-  Action,
-  AdvancedFilterMap,
-  AdvancedFilterOptions,
-  ColumnName,
-  InputFilter,
-  OperationMap,
-  OptionItem,
-  PendingDataErrorMap,
-  PendingDataMap,
-  QuickFilterMap,
-  ReadonlyAdvancedFilterMap,
-  ReadonlyAggregationMap,
-  ReadonlyQuickFilterMap,
-  UITotalsTableConfig,
+  type Action,
+  type AdvancedFilterMap,
+  type AdvancedFilterOptions,
+  type ColumnName,
+  type InputFilter,
+  type OperationMap,
+  type OptionItem,
+  type PendingDataErrorMap,
+  type PendingDataMap,
+  type QuickFilterMap,
+  type ReadonlyAdvancedFilterMap,
+  type ReadonlyAggregationMap,
+  type ReadonlyQuickFilterMap,
+  type UITotalsTableConfig,
 } from './CommonTypes';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 
@@ -3103,7 +3107,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }));
   }
 
-  handleRequestFailed(event: Event): void {
+  handleRequestFailed(event: EventT): void {
     const { detail: error } = event as CustomEvent;
     log.error('request failed:', error);
     this.stopLoading();

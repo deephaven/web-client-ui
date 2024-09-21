@@ -1,14 +1,14 @@
-import React, { ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import Grid from './Grid';
 import GridRange from './GridRange';
 import GridRenderer from './GridRenderer';
-import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
+import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
 import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
-import { VisibleIndex } from './GridMetrics';
-import GridModel from './GridModel';
+import { type VisibleIndex } from './GridMetrics';
+import type GridModel from './GridModel';
 
 function makeMockContext(): CanvasRenderingContext2D {
   // Just return a partial mock

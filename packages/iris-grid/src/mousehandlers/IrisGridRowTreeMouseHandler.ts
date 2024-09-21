@@ -1,8 +1,8 @@
 import {
-  EventHandlerResult,
-  Grid,
+  type EventHandlerResult,
+  type Grid,
   GridMouseHandler,
-  GridPoint,
+  type GridPoint,
   GridRowTreeMouseHandler,
   isExpandableGridModel,
 } from '@deephaven/grid';

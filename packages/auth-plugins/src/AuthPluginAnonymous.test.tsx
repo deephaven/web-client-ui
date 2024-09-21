@@ -5,7 +5,7 @@ import { dh } from '@deephaven/jsapi-shim';
 import type { CoreClient } from '@deephaven/jsapi-types';
 import AuthPluginAnonymous from './AuthPluginAnonymous';
 import { AUTH_HANDLER_TYPE_ANONYMOUS as AUTH_TYPE } from './AuthHandlerTypes';
-import { AuthConfigMap } from './AuthPlugin';
+import { type AuthConfigMap } from './AuthPlugin';
 
 const mockChildText = 'Mock Auth Anonymous Child';
 const mockChild = <div>{mockChildText}</div>;

@@ -8,12 +8,15 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  DirectoryStorageItem,
-  FileStorageItem,
+  type DirectoryStorageItem,
+  type FileStorageItem,
 } from '@deephaven/file-explorer';
 import type { Container } from '@deephaven/golden-layout';
-import { TestUtils } from '@deephaven/utils';
-import { FileExplorerPanel, FileExplorerPanelProps } from './FileExplorerPanel';
+import { TestUtils } from '@deephaven/test-utils';
+import {
+  FileExplorerPanel,
+  type FileExplorerPanelProps,
+} from './FileExplorerPanel';
 import MockFileStorage from './MockFileStorage';
 
 function makeFileName(index = 0): string {

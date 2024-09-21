@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MockFileStorage } from '@deephaven/dashboard-core-plugins';
 import { ContextMenuRoot } from '@deephaven/components';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
-  DirectoryStorageItem,
-  FileStorageItem,
-  FileStorageTable,
+  type DirectoryStorageItem,
+  type FileStorageItem,
+  type FileStorageTable,
 } from './FileStorage';
-import FileList, { FileListProps } from './FileList';
+import FileList, { type FileListProps } from './FileList';
 import {
   makeDirectories,
   makeDirectory,

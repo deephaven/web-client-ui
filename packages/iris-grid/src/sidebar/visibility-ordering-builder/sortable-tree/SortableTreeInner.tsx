@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 import classNames from 'classnames';
 import {
   DragOverlay,
-  DropAnimation,
-  Modifier,
+  type DropAnimation,
+  type Modifier,
   defaultDropAnimation,
   useDndContext,
 } from '@dnd-kit/core';

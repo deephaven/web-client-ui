@@ -1,4 +1,4 @@
-import { LinkToken } from './GridUtils';
+import { type LinkToken } from './GridUtils';
 import MockGridModel from './MockGridModel';
 
 describe('tokensForCell', () => {

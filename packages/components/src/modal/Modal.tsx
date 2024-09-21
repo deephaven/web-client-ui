@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useRef,
@@ -16,6 +16,7 @@ interface ModalProps {
   children?: ReactNode;
   role?: string;
   keyboard?: boolean;
+  clickOutside?: boolean;
   isOpen?: boolean;
   centered?: boolean;
   size?: 'sm' | 'lg' | 'xl' | undefined;
@@ -30,6 +31,7 @@ function Modal({
   children,
   role = 'role',
   keyboard = true,
+  clickOutside = true,
   isOpen = false,
   centered = false,
   size,
@@ -146,6 +148,7 @@ function Modal({
               onMouseUp={e => {
                 if (
                   backgroundClicked &&
+                  clickOutside &&
                   e.target === background.current &&
                   toggle !== undefined
                 ) {

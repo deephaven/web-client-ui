@@ -1,8 +1,8 @@
 import React, {
-  MouseEventHandler,
+  type MouseEventHandler,
   PureComponent,
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

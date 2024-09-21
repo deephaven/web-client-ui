@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Text } from './spectrum';
 import stylesCommon from './SpectrumComponent.module.scss';
-import { PopperOptions, Tooltip } from './popper';
+import { type PopperOptions, Tooltip } from './popper';
 
 export interface TextWithTooltipProps {
   text?: string | null;

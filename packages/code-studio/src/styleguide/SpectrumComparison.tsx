@@ -10,7 +10,7 @@ import {
   Icon,
   Item,
   Picker,
-  SpectrumButtonProps,
+  type SpectrumButtonProps,
   TextField,
 } from '@adobe/react-spectrum';
 import {

@@ -4,15 +4,16 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   Operator as FilterOperator,
   Type as FilterType,
-  TypeValue as FilterTypeValue,
+  type TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import { getAllMethodNames, TestUtils } from '@deephaven/utils';
-import TableUtils, { DataType, SortDirection } from './TableUtils';
+import { getAllMethodNames } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
+import TableUtils, { type DataType, type SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
-import { ColumnName } from './Formatter';
-import { createValueFilter, FilterConditionFactory } from './FilterUtils';
+import { type ColumnName } from './Formatter';
+import { createValueFilter, type FilterConditionFactory } from './FilterUtils';
 import { getSize } from './ViewportDataUtils';
 
 type Column = DhType.Column;

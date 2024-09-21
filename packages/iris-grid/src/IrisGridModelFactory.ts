@@ -1,6 +1,6 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import IrisGridModel from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 /**

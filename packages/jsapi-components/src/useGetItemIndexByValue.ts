@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { dh } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { useTableUtils } from './useTableUtils';
 
 /**

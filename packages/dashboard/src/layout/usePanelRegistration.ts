@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  DashboardPanelProps,
-  DashboardPluginComponentProps,
-  PanelComponentType,
-  PanelDehydrateFunction,
-  PanelHydrateFunction,
+  type DashboardPanelProps,
+  type DashboardPluginComponentProps,
+  type PanelComponentType,
+  type PanelDehydrateFunction,
+  type PanelHydrateFunction,
 } from '../DashboardPlugin';
 
 /**

@@ -6,20 +6,24 @@ import {
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import {
-  FilterConfig,
-  FilterValue,
-  SortConfig,
-  StorageItem,
-  StorageTable,
-  StorageListenerRemover,
-  StorageTableViewport,
-  StorageItemListener,
-  StorageSnapshot,
-  ViewportData,
-  ViewportUpdateCallback,
-  IndexRange,
+  type FilterConfig,
+  type FilterValue,
+  type SortConfig,
+  type StorageItem,
+  type StorageTable,
+  type StorageListenerRemover,
+  type StorageTableViewport,
+  type StorageItemListener,
+  type StorageSnapshot,
+  type ViewportData,
+  type ViewportUpdateCallback,
+  type IndexRange,
 } from '@deephaven/storage';
-import { CancelablePromise, OnlyOneProp, PromiseUtils } from '@deephaven/utils';
+import {
+  type CancelablePromise,
+  type OnlyOneProp,
+  PromiseUtils,
+} from '@deephaven/utils';
 
 const log = Log.module('PouchStorageTable');
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   dh,
-  IconDefinition,
+  type IconDefinition,
   vsOrganization,
   dhSquareFilled,
   dhAddSmall,

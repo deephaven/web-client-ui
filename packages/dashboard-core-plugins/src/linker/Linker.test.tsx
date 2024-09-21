@@ -1,16 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import {
-  OpenedPanelMap,
-  PanelComponent,
+  type OpenedPanelMap,
+  type PanelComponent,
   PanelManager,
 } from '@deephaven/dashboard';
-import GoldenLayout, { Config } from '@deephaven/golden-layout';
+import GoldenLayout, { type Config } from '@deephaven/golden-layout';
 import dh from '@deephaven/jsapi-shim';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import ToolType from './ToolType';
 import { Linker } from './Linker';
-import { Link, LinkPoint, LinkType } from './LinkerUtils';
+import { type Link, type LinkPoint, type LinkType } from './LinkerUtils';
 
 function makeLayout() {
   return new GoldenLayout({} as Config, undefined);

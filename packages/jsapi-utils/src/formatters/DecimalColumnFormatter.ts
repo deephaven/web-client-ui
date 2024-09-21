@@ -2,7 +2,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
-  TableColumnFormat,
+  type TableColumnFormat,
 } from './TableColumnFormatter';
 
 const log = Log.module('DecimalColumnFormatter');

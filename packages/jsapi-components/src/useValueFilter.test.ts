@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import {
   createValueFilter,
-  FilterConditionFactory,
-  TableUtils,
+  type FilterConditionFactory,
+  type TableUtils,
 } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useValueFilter from './useValueFilter';
 import useTableUtils from './useTableUtils';
 

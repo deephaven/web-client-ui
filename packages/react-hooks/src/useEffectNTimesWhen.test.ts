@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { DependencyList } from 'react';
+import { type DependencyList } from 'react';
 import { nanoid } from 'nanoid';
 import useEffectNTimesWhen from './useEffectNTimesWhen';
 

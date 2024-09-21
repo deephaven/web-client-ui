@@ -1,46 +1,22 @@
-import React, { PureComponent, ReactElement, ReactNode } from 'react';
+import React, { PureComponent, type ReactElement } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { PanelComponent } from '@deephaven/dashboard';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { ContextActions, createXComponent } from '@deephaven/components';
-import { copyToClipboard } from '@deephaven/utils';
-import Panel from './Panel';
+import {
+  ContextActions,
+  createXComponent,
+  type ResolvableContextAction,
+} from '@deephaven/components';
+import type { dh } from '@deephaven/jsapi-types';
+import { copyToClipboard, EMPTY_ARRAY } from '@deephaven/utils';
+import Panel, { type CorePanelProps } from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
-import { WidgetPanelDescriptor } from './WidgetPanelTypes';
+import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
 
-export type WidgetPanelProps = {
-  children: ReactNode;
-
+export type WidgetPanelProps = CorePanelProps & {
   descriptor: WidgetPanelDescriptor;
-  componentPanel?: PanelComponent;
-
-  glContainer: Container;
-  glEventHub: EventEmitter;
-
-  className?: string;
-  errorMessage?: string;
-  isClonable?: boolean;
-  isDisconnected?: boolean;
-  isLoading?: boolean;
-  isLoaded?: boolean;
-  isRenamable?: boolean;
   showTabTooltip?: boolean;
-
-  renderTabTooltip?: () => ReactNode;
-
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onHide?: () => void;
-  onClearAllFilters?: () => void;
-  onResize?: () => void;
-  onSessionClose?: (...args: unknown[]) => void;
-  onSessionOpen?: (...args: unknown[]) => void;
-  onShow?: () => void;
-  onTabBlur?: () => void;
-  onTabFocus?: () => void;
-  onTabClicked?: () => void;
+  isDisconnected?: boolean;
 };
 
 interface WidgetPanelState {
@@ -68,7 +44,6 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
     super(props);
 
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
-    this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleCopyName = this.handleCopyName.bind(this);
 
     this.state = {
@@ -119,28 +94,29 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
         : undefined
   );
 
-  getCachedActions = memoize((descriptor: WidgetPanelDescriptor) => [
-    {
-      title: `Copy ${descriptor.displayType ?? descriptor.type} Name`,
-      group: ContextActions.groups.medium,
-      order: 20,
-      action: this.handleCopyName,
-    },
-  ]);
+  getCachedActions = memoize(
+    (
+      descriptor: WidgetPanelDescriptor,
+      propsAdditionalActions: readonly ResolvableContextAction[] = EMPTY_ARRAY
+    ) => [
+      ...propsAdditionalActions,
+      {
+        title: `Copy ${descriptor.displayType ?? descriptor.type} Name`,
+        group: ContextActions.groups.medium,
+        order: 20,
+        action: this.handleCopyName,
+      },
+    ]
+  );
 
-  handleSessionClosed(...args: unknown[]): void {
+  handleSessionClosed(session: dh.IdeSession): void {
     const { onSessionClose } = this.props;
     // The session has closed and we won't be able to reconnect, as this widget isn't persisted
     this.setState({
       isPanelDisconnected: true,
       isWaitingForReconnect: false,
     });
-    onSessionClose?.(...args);
-  }
-
-  handleSessionOpened(...args: unknown[]): void {
-    const { onSessionOpen } = this.props;
-    onSessionOpen?.(...args);
+    onSessionClose?.(session);
   }
 
   render(): ReactElement {
@@ -164,10 +140,13 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       onFocus,
       onBlur,
       onResize,
+      onSessionOpen,
       onShow,
       onTabBlur,
       onTabFocus,
       onTabClicked,
+
+      additionalActions: propsAdditionalActions,
     } = this.props;
 
     const { isPanelDisconnected, isWidgetDisconnected, isPanelInactive } =
@@ -177,7 +156,10 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       renderTabTooltip ??
       this.getCachedRenderTabTooltip(showTabTooltip, descriptor);
 
-    const additionalActions = this.getCachedActions(descriptor);
+    const additionalActions = this.getCachedActions(
+      descriptor,
+      propsAdditionalActions
+    );
 
     return (
       <Panel
@@ -196,7 +178,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
         onResize={onResize}
         onShow={onShow}
         onSessionClose={this.handleSessionClosed}
-        onSessionOpen={this.handleSessionOpened}
+        onSessionOpen={onSessionOpen}
         onTabBlur={onTabBlur}
         onTabFocus={onTabFocus}
         onTabClicked={onTabClicked}
@@ -215,6 +197,6 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   }
 }
 
-const XWidgetPanel = createXComponent(WidgetPanel);
+const XWidgetPanel = createXComponent<WidgetPanelProps>(WidgetPanel);
 
 export default XWidgetPanel;

@@ -2,17 +2,18 @@ import { renderHook } from '@testing-library/react-hooks';
 import {
   createKeyedItemKey,
   createSelectedValuesFilter,
-  FilterConditionFactory,
-  TableUtils,
+  type FilterConditionFactory,
+  type TableUtils,
 } from '@deephaven/jsapi-utils';
 import {
   isSelectionMaybeInvertedEqual,
   useDebouncedValue,
   useIsEqualMemo,
   useMappedSelection,
-  WindowedListData,
+  type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useDebouncedViewportSelectionFilter, {
   DEBOUNCE_MS,
 } from './useDebouncedViewportSelectionFilter';
