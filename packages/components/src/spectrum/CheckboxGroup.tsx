@@ -22,17 +22,11 @@ export function CheckboxGroup({
 }: CheckboxGroupProps): JSX.Element {
   const wrappedChildren = useMemo(
     () =>
-      ensureArray(children).map((child, index) =>
+      ensureArray(children).map(child =>
         isElementOfType(child, Checkbox) ? (
-          React.cloneElement(child, {
-            key: `${index}-${String(child)}`,
-            value: `${index}-${String(child)}`,
-          })
+          child
         ) : (
-          <Checkbox
-            key={`${index}-${String(child)}`}
-            value={`${index}-${String(child)}`}
-          >
+          <Checkbox key={String(child)} value={String(child)}>
             {String(child)}
           </Checkbox>
         )

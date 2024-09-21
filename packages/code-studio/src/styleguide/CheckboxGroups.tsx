@@ -12,16 +12,16 @@ export function CheckboxGroups(): JSX.Element {
         <Flex direction="column">
           <Text>Single Child</Text>
           <CheckboxGroup aria-label="Single Child">
-            <Checkbox>Aaa</Checkbox>
+            <Checkbox value="Aaa">Aaa</Checkbox>
           </CheckboxGroup>
         </Flex>
 
         <Flex direction="column">
           <Text>Multiple Children</Text>
           <CheckboxGroup aria-label="Multiple Children">
-            <Checkbox>Aaa</Checkbox>
-            <Checkbox>Bbb</Checkbox>
-            <Checkbox>Ccc</Checkbox>
+            <Checkbox value="Aaa">Aaa</Checkbox>
+            <Checkbox value="Bbb">Bbb</Checkbox>
+            <Checkbox value="Ccc">Ccc</Checkbox>
           </CheckboxGroup>
         </Flex>
 
