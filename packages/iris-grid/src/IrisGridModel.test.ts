@@ -150,6 +150,16 @@ it('updates the model correctly when adding and removing a rollup config', async
   expect(table.rollup).not.toHaveBeenCalled();
 });
 
+it('isRollupAvailable checks if the rollup method is defined', async () => {
+  const table = irisGridTestUtils.makeTable();
+
+  const mock = jest.fn();
+  table.rollup = mock;
+  const model = irisGridTestUtils.makeModel(table);
+
+  expect(model.isRollupAvailable).toBe(true);
+});
+
 it('closes the table correctly when the model is closed', () => {
   const table = irisGridTestUtils.makeTable();
   table.close = jest.fn();
