@@ -26,6 +26,23 @@ describe('IrisGridTreeTableModel virtual columns', () => {
       expect(model.columns).toEqual(expected);
     }
   );
+
+  test.each([
+    ['filter', 'Filter'],
+    ['sort', 'Sort'],
+    ['formatColor', 'Color'],
+    ['get', 'get'],
+    ['getFormat', 'getFormat'],
+    ['formatNumber', 'formatNumber'],
+    ['formatDate', 'formatDate'],
+  ])('virtual column method %s is not implemented', (method, displayName) => {
+    const groupedColumns = columns.slice(0, 2);
+    const table = irisGridTestUtils.makeTreeTable(columns, groupedColumns);
+    const model = new IrisGridTreeTableModel(dh, table);
+    expect(() => model.columns[0][method]()).toThrow(
+      new Error(`${displayName} not implemented for virtual column`)
+    );
+  });
 });
 
 describe('IrisGridTreeTableModel layoutHints', () => {
@@ -70,5 +87,15 @@ describe('IrisGridTreeTableModel layoutHints', () => {
     const model = new IrisGridTreeTableModel(dh, table);
 
     expect(model.layoutHints).toEqual(undefined);
+  });
+});
+
+describe('IrisGridTreeTableModel values table', () => {
+  it('is available for tree tables', () => {
+    const columns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(columns, columns, 100, []);
+    const model = new IrisGridTreeTableModel(dh, table);
+
+    expect(model.isValuesTableAvailable).toBe(true);
   });
 });
