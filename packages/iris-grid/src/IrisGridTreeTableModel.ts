@@ -30,7 +30,7 @@ const VirtualGroupColumn = Object.freeze({
     throw new Error('Filter not implemented for virtual column');
   },
   sort: () => {
-    throw new Error('Sort not implemented virtual column');
+    throw new Error('Sort not implemented for virtual column');
   },
   formatColor: () => {
     throw new Error('Color not implemented for virtual column');
