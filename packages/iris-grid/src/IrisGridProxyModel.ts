@@ -436,6 +436,14 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       : false;
   }
 
+  get formatter(): Formatter {
+    return this.originalModel.formatter;
+  }
+
+  set formatter(formatter: Formatter) {
+    this.originalModel.formatter = formatter;
+  }
+
   setViewport = (
     top: number,
     bottom: number,
