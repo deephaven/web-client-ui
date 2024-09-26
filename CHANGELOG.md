@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.5](https://github.com/deephaven/web-client-ui/compare/v0.85.4...v0.85.5) (2024-09-26)
+
+### Bug Fixes
+
+- Cherry-pick DH-17537: Fix Advanced Filter dialog not showing the values list on tree tables ([#2235](https://github.com/deephaven/web-client-ui/issues/2235)) ([790566a](https://github.com/deephaven/web-client-ui/commit/790566a8336d57e0767912c1735108e4e32f92c4))
+
 ## [0.85.4](https://github.com/deephaven/web-client-ui/compare/v0.85.3...v0.85.4) (2024-08-20)
 
 ### Bug Fixes
