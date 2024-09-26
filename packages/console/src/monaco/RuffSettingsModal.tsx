@@ -14,12 +14,16 @@ import {
   Text,
 } from '@deephaven/components';
 import { vsLinkExternal, vsDiscard } from '@deephaven/icons';
-import { useDebouncedCallback } from '@deephaven/react-hooks';
+import {
+  useDebouncedCallback,
+  usePromiseFactory,
+} from '@deephaven/react-hooks';
 import { assertNotNull, EMPTY_FUNCTION } from '@deephaven/utils';
 import Editor from '../notebook/Editor';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
 import ruffSchema from './ruffSchema';
 import './RuffSettingsModal.scss';
+import MonacoProviders from './MonacoProviders';
 
 interface RuffSettingsModalProps {
   text: string;
@@ -57,6 +61,11 @@ function registerRuffSchema(): void {
   }
 }
 
+async function getRuffVersion(): Promise<string> {
+  await MonacoProviders.initRuff();
+  return `v${Workspace.version()}`;
+}
+
 export default function RuffSettingsModal({
   text,
   isOpen,
@@ -66,14 +75,9 @@ export default function RuffSettingsModal({
   const [isValid, setIsValid] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
-  const [ruffVersion] = useState(() => {
-    // This throws if using Groovy or Ruff is not loaded
-    try {
-      return `v${Workspace.version()}`;
-    } catch {
-      return '';
-    }
-  });
+
+  const { data: ruffVersion } = usePromiseFactory(getRuffVersion);
+
   const [model] = useState(() =>
     monaco.editor.createModel(text, 'json', RUFF_SETTINGS_URI)
   );
