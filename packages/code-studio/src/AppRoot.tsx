@@ -2,6 +2,7 @@ import React from 'react';
 import { MonacoUtils } from '@deephaven/console';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import MonacoJsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import AppRouter from './main/AppRouter';
 
 // load addional css for playwright docker tests
@@ -16,7 +17,14 @@ export function AppRoot(): JSX.Element {
       window.location.href
     )
   );
-  MonacoUtils.init({ getWorker: () => new MonacoWorker() });
+  MonacoUtils.init({
+    getWorker: (id: string, label: string) => {
+      if (label === 'json') {
+        return new MonacoJsonWorker();
+      }
+      return new MonacoWorker();
+    },
+  });
 
   // disable annoying dnd-react warnings
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

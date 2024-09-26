@@ -23,10 +23,15 @@ it('should debounce a given callback', () => {
 
   jest.advanceTimersByTime(debounceMs - 1);
 
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs - 1);
+
   expect(callback).not.toHaveBeenCalled();
 
-  jest.advanceTimersByTime(1);
+  jest.advanceTimersByTime(debounceMs * 2);
 
+  expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(arg);
 });
 
@@ -72,4 +77,102 @@ it('should cancel debounce if callback reference changes', () => {
   jest.advanceTimersByTime(1);
 
   expect(callback).not.toHaveBeenCalled();
+});
+
+it('should call immediately if given the leading option', () => {
+  const { result } = renderHook(() =>
+    useDebouncedCallback(callback, debounceMs, { leading: true })
+  );
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(1);
+
+  expect(callback).toHaveBeenCalledWith(arg);
+
+  result.current('arg2');
+
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(callback).toHaveBeenCalledTimes(2);
+  expect(callback).toHaveBeenLastCalledWith('arg2');
+});
+
+it('should call immediately if given the leading option', () => {
+  const { result } = renderHook(() =>
+    useDebouncedCallback(callback, debounceMs, { leading: true })
+  );
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(1);
+
+  expect(callback).toHaveBeenCalledWith(arg);
+
+  result.current('arg2');
+
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(callback).toHaveBeenCalledTimes(2);
+  expect(callback).toHaveBeenLastCalledWith('arg2');
+});
+
+it('should only call immediately for one call with leading true', () => {
+  const { result } = renderHook(() =>
+    useDebouncedCallback(callback, debounceMs, {
+      leading: true,
+    })
+  );
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(1);
+
+  expect(callback).toHaveBeenCalledWith(arg);
+
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(callback).toHaveBeenCalledTimes(1);
+});
+
+it('should not call at end if trailing is false', () => {
+  const { result } = renderHook(() =>
+    useDebouncedCallback(callback, debounceMs, {
+      trailing: false,
+    })
+  );
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs * 0.5);
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(callback).not.toHaveBeenCalled();
+});
+
+it('should call after maxWait', () => {
+  const { result } = renderHook(() =>
+    useDebouncedCallback(callback, debounceMs, {
+      maxWait: debounceMs,
+    })
+  );
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs * 0.5);
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs * 0.5);
+
+  expect(callback).toHaveBeenCalledWith(arg);
+
+  result.current(arg);
+
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(callback).toHaveBeenCalledTimes(2);
 });

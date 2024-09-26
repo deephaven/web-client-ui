@@ -47,7 +47,7 @@
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "monaco-editor": "^0.41.0",
+    "monaco-editor": "^0.43.0",
     "nanoid": "^5.0.7",
     "pouchdb-browser": "^7.2.2",
     "pouchdb-find": "^7.2.2",

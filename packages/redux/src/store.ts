@@ -55,8 +55,15 @@ export interface WorkspaceSettings {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };
   };
-  defaultNotebookSettings: {
+  notebookSettings: {
     isMinimapEnabled?: boolean;
+    formatOnSave?: boolean;
+    python?: {
+      linter?: {
+        isEnabled?: boolean;
+        config?: Record<string, unknown>;
+      };
+    };
   };
   webgl: boolean;
   webglEditable: boolean;

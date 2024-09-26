@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+import { EMPTY_ARRAY } from '@deephaven/utils';
 import { useState, useCallback, useEffect } from 'react';
 
 /**
@@ -42,7 +43,7 @@ export interface UsePromiseFactoryResult<T> {
  */
 export default function usePromiseFactory<T, TArgs extends unknown[]>(
   promiseFactory: (...args: TArgs) => Promise<T>,
-  args: TArgs,
+  args: TArgs = EMPTY_ARRAY as unknown as TArgs,
   { autoLoad = true }: UsePromiseFactoryOptions = {}
 ): UsePromiseFactoryResult<T> {
   const [data, setData] = useState<T | null>(null);

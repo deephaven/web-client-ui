@@ -22,8 +22,11 @@ import ScalaLang from './lang/scala';
 import DbLang from './lang/db';
 import LogLang from './lang/log';
 import { type Language } from './lang/Language';
+import MonacoProviders from './MonacoProviders';
 
 const log = Log.module('MonacoUtils');
+
+const CONSOLE_URI_PREFIX = 'inmemory://dh-console/';
 
 declare global {
   interface Window {
@@ -51,6 +54,21 @@ class MonacoUtils {
     initTheme();
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+
+    monaco.languages.onLanguage('python', () => {
+      monaco.languages.registerCodeActionProvider(
+        'python',
+        {
+          provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
+        },
+        { providedCodeActionKinds: ['quickfix'] }
+      );
+
+      monaco.languages.registerDocumentFormattingEditProvider('python', {
+        provideDocumentFormattingEdits:
+          MonacoProviders.handlePythonFormatRequest,
+      });
+    });
 
     MonacoUtils.removeConflictingKeybindings();
 
@@ -511,6 +529,23 @@ class MonacoUtils {
     return {
       links: newTokens,
     };
+  }
+
+  /**
+   * Generates a console URI for use with monaco.
+   * @returns A new console URI
+   */
+  static generateConsoleUri(): monaco.Uri {
+    return monaco.Uri.parse(`${CONSOLE_URI_PREFIX}${nanoid()}`);
+  }
+
+  /**
+   * Checks if a model is a console model based on its URI.
+   * @param model The monaco model to check
+   * @returns If the model is a console model
+   */
+  static isConsoleModel(model: monaco.editor.ITextModel): boolean {
+    return model.uri.toString().startsWith(CONSOLE_URI_PREFIX);
   }
 }
 

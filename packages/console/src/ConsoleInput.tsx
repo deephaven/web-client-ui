@@ -158,6 +158,11 @@ export class ConsoleInput extends PureComponent<
 
   initCommandEditor(): void {
     const { language, session } = this.props;
+    const model = monaco.editor.createModel(
+      '',
+      language,
+      MonacoUtils.generateConsoleUri()
+    );
     const commandSettings = {
       copyWithSyntaxHighlighting: false,
       cursorStyle: 'block',
@@ -184,6 +189,7 @@ export class ConsoleInput extends PureComponent<
       value: '',
       wordWrap: 'on',
       autoClosingBrackets: 'beforeWhitespace',
+      model,
     } as const;
 
     const element = this.commandContainer.current;
@@ -218,7 +224,6 @@ export class ConsoleInput extends PureComponent<
       const position = commandEditor?.getPosition();
       assertNotNull(position);
       const { lineNumber } = position;
-      const model = commandEditor?.getModel();
       if (
         keyEvent.code === 'ArrowUp' &&
         !this.isSuggestionMenuPopulated() &&

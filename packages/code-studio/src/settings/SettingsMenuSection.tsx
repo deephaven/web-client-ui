@@ -22,7 +22,7 @@ function SettingsMenuSection(props: SettingsMenuSectionProps): ReactElement {
           className="btn-collapse-trigger"
           onClick={() => onToggle(sectionKey)}
         >
-          <div className="flex-grow-1">{title}</div>
+          <div className="d-flex align-items-center flex-grow-1">{title}</div>
           <div className="flex-shrink-0">
             <FontAwesomeIcon
               transform={isExpanded ? 'flip-v' : ''}
