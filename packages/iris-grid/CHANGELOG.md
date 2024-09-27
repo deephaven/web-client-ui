@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.6](https://github.com/deephaven/web-client-ui/compare/v0.85.5...v0.85.6) (2024-09-27)
+
+### Bug Fixes
+
+- DH-17730: Fix Proxy Model Undefined Formatter ([#2237](https://github.com/deephaven/web-client-ui/issues/2237)) ([#2238](https://github.com/deephaven/web-client-ui/issues/2238)) ([cf20b7f](https://github.com/deephaven/web-client-ui/commit/cf20b7f345431a8affc34ae01050f6669257ee49))
+
 ## [0.85.5](https://github.com/deephaven/web-client-ui/compare/v0.85.4...v0.85.5) (2024-09-26)
 
 ### Bug Fixes
