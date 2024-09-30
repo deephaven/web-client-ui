@@ -149,8 +149,8 @@ class LayoutUtils {
       const inverseRowOrColConfig = parent.layoutManager.createContentItem(
         {
           type: !columnPreferred ? 'column' : 'row',
-          height: newParent.config.height,
-          width: newParent.config.width,
+          height: newParent.config?.height,
+          width: newParent.config?.width,
         },
         parent
       );
