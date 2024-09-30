@@ -65,9 +65,8 @@ class DragListener extends EventEmitter {
   }
 
   onMouseDown(oEvent: DragListenerEvent) {
+    oEvent.preventDefault();
     if (oEvent.button === 0) {
-      oEvent.preventDefault();
-
       var coordinates = this._getCoordinates(oEvent);
 
       this._nOriginalX = coordinates.x ?? 0;
