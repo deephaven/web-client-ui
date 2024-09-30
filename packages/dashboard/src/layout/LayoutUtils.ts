@@ -143,12 +143,18 @@ class LayoutUtils {
     const isCorrectType = !columnPreferred
       ? newParent.isColumn
       : newParent.isRow;
+
+    // This is usually triggered because we hit a stack within the last row/column
     if (!isCorrectType) {
-      const inverseRowOrColConfig: ItemConfig = {
-        type: !columnPreferred ? 'column' : 'row',
-      };
-      parent.addChild(inverseRowOrColConfig);
-      parent.removeChild(newParent, true);
+      const inverseRowOrColConfig = parent.layoutManager.createContentItem(
+        {
+          type: !columnPreferred ? 'column' : 'row',
+          height: newParent.config.height,
+          width: newParent.config.width,
+        },
+        parent
+      );
+      parent.replaceChild(newParent, inverseRowOrColConfig);
       parent.contentItems[parent.contentItems.length - 1].addChild(newParent);
       newParent = parent.contentItems[parent.contentItems.length - 1];
     }
