@@ -279,8 +279,8 @@ export default class Tab {
    */
   _onMouseUp(event: JQuery.TriggeredEvent) {
     if (event.button === 1) {
-      event.preventDefault();
-      event.stopPropagation();
+      event.preventDefault(); // This seems to prevent the paste event from firing
+      event.stopPropagation(); // Stop propagation just in case
     }
   }
 
