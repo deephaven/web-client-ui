@@ -66,6 +66,7 @@ export default class Tab {
 
     this.element.on('click', this._onTabClick);
     this.element.on('auxclick', this._onTabClick);
+    this.element.on('mouseup', this._onMouseUp);
 
     if (this.contentItem.config.isClosable) {
       this.closeElement.on('click', this._onCloseClick);
@@ -128,6 +129,7 @@ export default class Tab {
   _$destroy() {
     this.element.off('click', this._onTabClick);
     this.element.off('auxclick', this._onTabClick);
+    this.element.off('mouseup', this._onMouseUp);
     this.closeElement.off('click', this._onCloseClick);
     if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
@@ -267,6 +269,18 @@ export default class Tab {
       this.contentItem.container.close();
     } else {
       this.header.parent.removeChild(this.contentItem);
+    }
+  }
+
+  /**
+   * Callback to prevent paste into active input on Linux
+   * when closing a tab via middle click.
+   * @param event
+   */
+  _onMouseUp(event: JQuery.TriggeredEvent) {
+    if (event.button === 1) {
+      event.preventDefault(); // This seems to prevent the paste event from firing
+      event.stopPropagation(); // Stop propagation just in case
     }
   }
 
