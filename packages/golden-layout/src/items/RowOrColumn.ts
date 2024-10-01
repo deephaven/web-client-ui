@@ -179,13 +179,18 @@ export default class RowOrColumn extends AbstractContentItem {
   /**
    * Replaces a child of this Row or Column with another contentItem
    *
-   * @param oldChild
-   * @param newChild
+   * @param oldChild The old child to replace
+   * @param newChild The new child to take the old child's place
+   * @param destroyOldChild If the old child should be destroyed or not
    */
-  replaceChild(oldChild: AbstractContentItem, newChild: AbstractContentItem) {
+  replaceChild(
+    oldChild: AbstractContentItem,
+    newChild: AbstractContentItem,
+    destroyOldChild = false
+  ) {
     var size = oldChild.config[this._dimension];
-    super.replaceChild(oldChild, newChild);
     newChild.config[this._dimension] = size;
+    super.replaceChild(oldChild, newChild, destroyOldChild);
     this.callDownwards('setSize');
     this.emitBubblingEvent('stateChanged');
   }

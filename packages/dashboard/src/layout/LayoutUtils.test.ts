@@ -24,11 +24,20 @@ function makeContentItem(type = 'root'): Partial<ContentItem> {
         contentItems.splice(index, 1);
       }
     }),
+    replaceChild: jest.fn((oldChild, newChild) => {
+      const index = contentItems.indexOf(oldChild);
+      if (index >= 0) {
+        contentItems[index] = newChild;
+      }
+    }),
     isComponent: type === 'component',
     isColumn: type === 'column',
     isRow: type === 'row',
     isRoot: type === 'root',
     type,
+    layoutManager: {
+      createContentItem: ({ type: newType }) => makeContentItem(newType),
+    },
   };
 }
 
