@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import EventEmitter from './EventEmitter';
 
 type AsArray<P> = P extends unknown[] ? P : [P];
@@ -16,7 +16,7 @@ export type EventEmitFunction<TParameters = []> = (
 ) => void;
 
 export type EventListenerHook<TParameters = []> = (
-  eventEmitter: EventEmitter,
+  eventEmitter: EventEmitter | null | undefined,
   handler: EventHandlerFunction<TParameters>
 ) => void;
 
@@ -57,10 +57,19 @@ export function makeUseListenerFunction<TParameters = []>(
   event: string
 ): EventListenerHook<TParameters> {
   return (eventEmitter, handler) => {
-    useEffect(
-      () => listenForEvent(eventEmitter, event, handler),
-      [eventEmitter, handler]
-    );
+    const eventEmitterRef = useRef<typeof eventEmitter>(null);
+    const handlerRef = useRef<typeof handler>(() => false);
+
+    if (
+      eventEmitterRef.current != eventEmitter ||
+      handlerRef.current != handler
+    ) {
+      eventEmitterRef.current?.off(event, handlerRef.current);
+      eventEmitter?.on(event, handler);
+    }
+
+    eventEmitterRef.current = eventEmitter;
+    handlerRef.current = handler;
   };
 }
 

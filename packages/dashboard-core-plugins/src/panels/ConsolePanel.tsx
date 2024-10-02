@@ -14,6 +14,7 @@ import {
 } from '@deephaven/console';
 import {
   type DashboardPanelProps,
+  emitCloseDashboard,
   emitPanelOpen,
   LayoutManagerContext,
   LayoutUtils,
@@ -278,6 +279,8 @@ export class ConsolePanel extends PureComponent<
       if (id != null) {
         const { glEventHub } = this.props;
         glEventHub.emit(PanelEvent.CLOSE, id);
+        // Just emit for all panels since there shouldn't be dashboard and panel name conflicts
+        emitCloseDashboard(glEventHub, title);
       }
     }
   }

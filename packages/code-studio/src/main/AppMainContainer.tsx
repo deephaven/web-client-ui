@@ -34,10 +34,10 @@ import {
   getAllDashboardsData,
   getDashboardData,
   listenForCreateDashboard,
+  listenForCloseDashboard,
   PanelEvent,
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
-  stopListenForCreateDashboard,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -189,6 +189,8 @@ export class AppMainContainer extends Component<
     const { allDashboardData } = this.props;
 
     this.dashboardLayouts = new Map();
+    this.createDashboardListenerRemovers = new Map();
+    this.closeDashboardListenerRemovers = new Map();
 
     this.state = {
       contextActions: [
@@ -275,9 +277,8 @@ export class AppMainContainer extends Component<
   componentWillUnmount(): void {
     this.deinitWidgets();
 
-    this.dashboardLayouts.forEach(layout => {
-      stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
-    });
+    this.createDashboardListenerRemovers.forEach(rm => rm());
+    this.closeDashboardListenerRemovers.forEach(rm => rm());
 
     window.removeEventListener(
       'beforeunload',
@@ -287,6 +288,12 @@ export class AppMainContainer extends Component<
 
   /** Map from the dashboard ID to the GoldenLayout instance for that dashboard */
   dashboardLayouts: Map<string, GoldenLayout>;
+
+  /** Map from dashboard ID to remover functions for create dashboard listener */
+  createDashboardListenerRemovers: Map<string, () => void>;
+
+  /** Map from dashboard ID to remover functions for close dashboard listener */
+  closeDashboardListenerRemovers: Map<string, () => void>;
 
   importElement: RefObject<HTMLInputElement>;
 
@@ -504,16 +511,21 @@ export class AppMainContainer extends Component<
     const oldLayout = this.dashboardLayouts.get(activeTabKey);
     if (oldLayout === newLayout) return;
 
-    if (oldLayout != null) {
-      stopListenForCreateDashboard(
-        oldLayout.eventHub,
-        this.handleCreateDashboard
-      );
-    }
-
     this.dashboardLayouts.set(activeTabKey, newLayout);
 
-    listenForCreateDashboard(newLayout.eventHub, this.handleCreateDashboard);
+    if (oldLayout != null) {
+      this.createDashboardListenerRemovers.get(activeTabKey)?.();
+      this.closeDashboardListenerRemovers.get(activeTabKey)?.();
+    }
+
+    this.createDashboardListenerRemovers.set(
+      activeTabKey,
+      listenForCreateDashboard(newLayout.eventHub, this.handleCreateDashboard)
+    );
+    this.closeDashboardListenerRemovers.set(
+      activeTabKey,
+      listenForCloseDashboard(newLayout.eventHub, this.handleCloseDashboard)
+    );
   }
 
   handleCreateDashboard({
@@ -524,16 +536,38 @@ export class AppMainContainer extends Component<
     const newId = nanoid();
     const { setDashboardPluginData } = this.props;
     setDashboardPluginData(newId, pluginId, data);
-    this.setState(({ tabs }) => ({
-      tabs: [
-        ...tabs,
-        {
-          key: newId,
-          title,
-        },
-      ],
-      activeTabKey: newId,
-    }));
+    this.setState(({ tabs }) => {
+      const existingTab = tabs.findIndex(
+        ({ title: tabTitle }) => tabTitle === title
+      );
+      if (existingTab !== -1) {
+        // Replace the existing tab
+        return {
+          tabs: tabs.map((tab, index) =>
+            index === existingTab ? { key: newId, title } : tab
+          ),
+          activeTabKey: newId,
+        };
+      }
+      return {
+        tabs: [
+          ...tabs,
+          {
+            key: newId,
+            title,
+          },
+        ],
+        activeTabKey: newId,
+      };
+    });
+  }
+
+  handleCloseDashboard(title: string): void {
+    const { tabs } = this.state;
+    const tab = tabs.find(t => t.title === title);
+    if (tab != null) {
+      this.handleTabClose(tab.key);
+    }
   }
 
   handleWidgetMenuClick(): void {

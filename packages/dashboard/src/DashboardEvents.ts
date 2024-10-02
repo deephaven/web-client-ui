@@ -1,6 +1,8 @@
-import type { EventHub } from '@deephaven/golden-layout';
+import { makeEventFunctions } from '@deephaven/golden-layout';
 
 export const CREATE_DASHBOARD = 'CREATE_DASHBOARD';
+
+export const CLOSE_DASHBOARD = 'CLOSE_DASHBOARD';
 
 export interface CreateDashboardPayload<T = unknown> {
   pluginId: string;
@@ -8,28 +10,14 @@ export interface CreateDashboardPayload<T = unknown> {
   data: T;
 }
 
-export function stopListenForCreateDashboard<T = unknown>(
-  eventHub: EventHub,
-  handler: (p: CreateDashboardPayload<T>) => void
-): void {
-  try {
-    eventHub.off(CREATE_DASHBOARD, handler);
-  } catch {
-    // golden-layout throws if the handler is not found. Instead catch it and no-op
-  }
-}
+export const {
+  listen: listenForCreateDashboard,
+  emit: emitCreateDashboard,
+  useListener: useCreateDashboardListener,
+} = makeEventFunctions<[detail: CreateDashboardPayload]>(CREATE_DASHBOARD);
 
-export function listenForCreateDashboard<T = unknown>(
-  eventHub: EventHub,
-  handler: (p: CreateDashboardPayload<T>) => void
-): () => void {
-  eventHub.on(CREATE_DASHBOARD, handler);
-  return () => stopListenForCreateDashboard(eventHub, handler);
-}
-
-export function emitCreateDashboard<T = unknown>(
-  eventHub: EventHub,
-  payload: CreateDashboardPayload<T>
-): void {
-  eventHub.emit(CREATE_DASHBOARD, payload);
-}
+export const {
+  listen: listenForCloseDashboard,
+  emit: emitCloseDashboard,
+  useListener: useCloseDashboardListener,
+} = makeEventFunctions<[title: string]>(CLOSE_DASHBOARD);

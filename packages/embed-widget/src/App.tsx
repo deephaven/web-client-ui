@@ -24,11 +24,10 @@ import Log from '@deephaven/log';
 import { useDashboardPlugins } from '@deephaven/plugin';
 import {
   getAllDashboardsData,
-  listenForCreateDashboard,
   type CreateDashboardPayload,
   setDashboardPluginData,
-  stopListenForCreateDashboard,
   emitPanelOpen,
+  useCreateDashboardListener,
 } from '@deephaven/dashboard';
 import {
   getVariableDescriptor,
@@ -147,30 +146,16 @@ function App(): JSX.Element {
   const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
   const [dashboardId, setDashboardId] = useState('default-embed-widget'); // Can't be DEFAULT_DASHBOARD_ID because its dashboard layout is not stored in dashboardData
 
-  const handleGoldenLayoutChange = useCallback(
-    (newLayout: GoldenLayout) => {
-      function handleCreateDashboard({
-        pluginId,
-        data,
-      }: CreateDashboardPayload) {
-        const id = nanoid();
-        dispatch(setDashboardPluginData(id, pluginId, data));
-        setDashboardId(id);
-      }
-
-      setGoldenLayout(oldLayout => {
-        if (oldLayout != null) {
-          stopListenForCreateDashboard(
-            oldLayout.eventHub,
-            handleCreateDashboard
-          );
-        }
-        listenForCreateDashboard(newLayout.eventHub, handleCreateDashboard);
-        return newLayout;
-      });
+  const handleCreateDashboard = useCallback(
+    ({ pluginId, data }: CreateDashboardPayload) => {
+      const id = nanoid();
+      dispatch(setDashboardPluginData(id, pluginId, data));
+      setDashboardId(id);
     },
     [dispatch]
   );
+
+  useCreateDashboardListener(goldenLayout?.eventHub, handleCreateDashboard);
 
   const [hasEmittedWidget, setHasEmittedWidget] = useState(false);
 
@@ -243,7 +228,7 @@ function App(): JSX.Element {
             ]}
             activeDashboard={dashboardId}
             onLayoutInitialized={handleDashboardInitialized}
-            onGoldenLayoutChange={handleGoldenLayoutChange}
+            onGoldenLayoutChange={setGoldenLayout}
             plugins={dashboardPlugins}
           />
         </ErrorBoundary>
