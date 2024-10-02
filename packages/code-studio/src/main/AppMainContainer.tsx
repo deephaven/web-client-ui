@@ -524,16 +524,30 @@ export class AppMainContainer extends Component<
     const newId = nanoid();
     const { setDashboardPluginData } = this.props;
     setDashboardPluginData(newId, pluginId, data);
-    this.setState(({ tabs }) => ({
-      tabs: [
-        ...tabs,
-        {
-          key: newId,
-          title,
-        },
-      ],
-      activeTabKey: newId,
-    }));
+    this.setState(({ tabs }) => {
+      const existingTab = tabs.findIndex(
+        ({ title: tabTitle }) => tabTitle === title
+      );
+      if (existingTab !== -1) {
+        // Replace the existing tab
+        return {
+          tabs: tabs.map((tab, index) =>
+            index === existingTab ? { key: newId, title } : tab
+          ),
+          activeTabKey: newId,
+        };
+      }
+      return {
+        tabs: [
+          ...tabs,
+          {
+            key: newId,
+            title,
+          },
+        ],
+        activeTabKey: newId,
+      };
+    });
   }
 
   handleWidgetMenuClick(): void {
