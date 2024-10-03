@@ -11,6 +11,7 @@
     { "path": "../components" },
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-shim" },
+    { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../storage" },
     { "path": "../test-utils" },

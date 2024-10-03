@@ -16,4 +16,3 @@ export * from './console-history';
 export * from './monaco';
 export { default as LogView } from './log/LogView';
 export { default as HeapUsage } from './HeapUsage';
-export { default as NewTableColumnTypes } from './csv/NewTableColumnTypes';

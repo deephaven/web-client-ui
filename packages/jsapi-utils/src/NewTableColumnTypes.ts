@@ -1,7 +1,7 @@
 /**
  * Valid column types to be used for a call to newTable.
  */
-class NewTableColumnTypes {
+export class NewTableColumnTypes {
   static INTEGER = 'int';
 
   static LONG = 'long';

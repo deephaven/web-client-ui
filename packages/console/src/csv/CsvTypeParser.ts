@@ -7,7 +7,7 @@ import Papa, {
 } from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
 /* eslint-disable no-restricted-globals */
-import NewTableColumnTypes from './NewTableColumnTypes';
+import { NewTableColumnTypes } from '@deephaven/jsapi-utils';
 import makeZipStreamHelper from './ZipStreamHelper';
 
 // Initially column types start as unknown

@@ -6,6 +6,7 @@ export * from './Formatter';
 export { default as FormatterUtils } from './FormatterUtils';
 export * from './FormatterUtils';
 export * from './MessageUtils';
+export * from './NewTableColumnTypes';
 export * from './NoConsolesError';
 export * from './SessionUtils';
 export * from './Settings';
