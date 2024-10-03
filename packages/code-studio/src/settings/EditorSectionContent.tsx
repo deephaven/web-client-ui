@@ -51,7 +51,16 @@ export function EditorSectionContent(): JSX.Element {
     (newValue: Record<string, unknown>) => {
       dispatch(
         updateNotebookSettings({
-          python: { linter: { ...ruffSettings, config: newValue } },
+          python: {
+            linter: {
+              ...ruffSettings,
+              config:
+                JSON.stringify(newValue) ===
+                JSON.stringify(RUFF_DEFAULT_SETTINGS)
+                  ? undefined
+                  : newValue,
+            },
+          },
         })
       );
       MonacoProviders.setRuffSettings(newValue);
@@ -59,7 +68,7 @@ export function EditorSectionContent(): JSX.Element {
     [dispatch, ruffSettings]
   );
 
-  const [val, setVal] = useState(JSON.stringify(ruffConfig, null, 2));
+  const val = JSON.stringify(ruffConfig, null, 2);
 
   const [isRuffSettingsOpen, setIsRuffSettingsOpen] = useState(false);
 
@@ -70,7 +79,6 @@ export function EditorSectionContent(): JSX.Element {
   const handleRuffSettingsSave = useCallback(
     (v: Record<string, unknown>) => {
       handleRuffConfigChange(v);
-      setVal(JSON.stringify(v, null, 2));
       handleRuffSettingsClose();
     },
     [handleRuffConfigChange, handleRuffSettingsClose]
