@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.96.0](https://github.com/deephaven/web-client-ui/compare/v0.95.0...v0.96.0) (2024-10-04)
+
+### ⚠ BREAKING CHANGES
+
+- The app should call `MonacoUtils.init` with a `getWorker` function that
+  uses the JSON worker in addition to the general fallback worker when
+  adding support for configuring ruff.
+
+### Features
+
+- checkbox_group re-export ([#2212](https://github.com/deephaven/web-client-ui/issues/2212)) ([a24dc8c](https://github.com/deephaven/web-client-ui/commit/a24dc8c447bc892aea2947641c32371d348042dc)), closes [#2211](https://github.com/deephaven/web-client-ui/issues/2211)
+- Ruff Python formatter and linter ([#2233](https://github.com/deephaven/web-client-ui/issues/2233)) ([4839d72](https://github.com/deephaven/web-client-ui/commit/4839d72d3f0b9060efaa83ba054c40e0bff86522)), closes [#1255](https://github.com/deephaven/web-client-ui/issues/1255)
+
+### Bug Fixes
+
+- improve color contrast of editor find in dark mode ([#2248](https://github.com/deephaven/web-client-ui/issues/2248)) ([f8dd133](https://github.com/deephaven/web-client-ui/commit/f8dd1332b2027f93c5b9cbb174f79261298d0ea5))
+
 ## [0.95.0](https://github.com/deephaven/web-client-ui/compare/v0.94.0...v0.95.0) (2024-09-20)
 
 ### ⚠ BREAKING CHANGES

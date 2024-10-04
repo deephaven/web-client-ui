@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.96.0](https://github.com/deephaven/web-client-ui/compare/v0.95.0...v0.96.0) (2024-10-04)
+
+### ⚠ BREAKING CHANGES
+
+- The app should call `MonacoUtils.init` with a `getWorker` function that
+  uses the JSON worker in addition to the general fallback worker when
+  adding support for configuring ruff.
+
+### Features
+
+- Ruff Python formatter and linter ([#2233](https://github.com/deephaven/web-client-ui/issues/2233)) ([4839d72](https://github.com/deephaven/web-client-ui/commit/4839d72d3f0b9060efaa83ba054c40e0bff86522)), closes [#1255](https://github.com/deephaven/web-client-ui/issues/1255)
+
+### Bug Fixes
+
+- DH-17537: Fix Advanced Filter dialog not showing the values list on tree tables ([#2232](https://github.com/deephaven/web-client-ui/issues/2232)) ([86e16ee](https://github.com/deephaven/web-client-ui/commit/86e16eec31eed6a4e89a18c6412d4396a724bac0))
+- DH-17730: Fix Proxy Model Undefined Formatter ([#2237](https://github.com/deephaven/web-client-ui/issues/2237)) ([ee1bc2f](https://github.com/deephaven/web-client-ui/commit/ee1bc2f0d5d4bfe69ae667d51cc9d94bfed905d4))
+
 ## [0.95.0](https://github.com/deephaven/web-client-ui/compare/v0.94.0...v0.95.0) (2024-09-20)
 
 ### ⚠ BREAKING CHANGES

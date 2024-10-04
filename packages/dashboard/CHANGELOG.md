@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.96.0](https://github.com/deephaven/web-client-ui/compare/v0.95.0...v0.96.0) (2024-10-04)
+
+### Bug Fixes
+
+- Layout shifts when opening and closing panels from a fresh state ([#2241](https://github.com/deephaven/web-client-ui/issues/2241)) ([aad0aa6](https://github.com/deephaven/web-client-ui/commit/aad0aa6a52d45cc7e5faf89d967a33d6b3714aa9)), closes [#1268](https://github.com/deephaven/web-client-ui/issues/1268)
+- Reuse dashboard tabs when reassigning the variable ([#2243](https://github.com/deephaven/web-client-ui/issues/2243)) ([d2c6eab](https://github.com/deephaven/web-client-ui/commit/d2c6eabb1fe313708fadd6676858466710159fda)), closes [#1971](https://github.com/deephaven/web-client-ui/issues/1971)
+
 ## [0.95.0](https://github.com/deephaven/web-client-ui/compare/v0.94.0...v0.95.0) (2024-09-20)
 
 ### ⚠ BREAKING CHANGES
