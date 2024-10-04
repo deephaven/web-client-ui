@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
 import {
@@ -177,18 +177,6 @@ function IrisGridModelUpdater({
     [model, isTotalsAvailable, totalsConfig]
   );
   useOnChange(
-    function updatePendingRowCount() {
-      model.pendingRowCount = pendingRowCount;
-    },
-    [model, pendingRowCount]
-  );
-  useOnChange(
-    function updatePendingDataMap() {
-      model.pendingDataMap = pendingDataMap;
-    },
-    [model, pendingDataMap]
-  );
-  useOnChange(
     function updateFrozenColumns() {
       if (frozenColumns) {
         model.updateFrozenColumns(frozenColumns);
@@ -209,6 +197,20 @@ function IrisGridModelUpdater({
       }
     },
     [model, partitionConfig]
+  );
+  // These setters are wrapped in useEffect instead of useOnChange because they emit an event
+  // that potentially causes side effects, violating the rule that render should be a pure function.
+  useEffect(
+    function updatePendingRowCount() {
+      model.pendingRowCount = pendingRowCount;
+    },
+    [model, pendingRowCount]
+  );
+  useEffect(
+    function updatePendingDataMap() {
+      model.pendingDataMap = pendingDataMap;
+    },
+    [model, pendingDataMap]
   );
 
   return null;
