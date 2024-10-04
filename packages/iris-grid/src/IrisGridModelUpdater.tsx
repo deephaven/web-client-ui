@@ -198,7 +198,7 @@ function IrisGridModelUpdater({
     },
     [model, partitionConfig]
   );
-  // These setters are whapped in useEffect instead of useOnChange because they fire an event
+  // These setters are wrapped in useEffect instead of useOnChange because they emit an event
   // that potentially causes side effects, violating the rule that render should be a pure function.
   useEffect(
     function updatePendingRowCount() {
