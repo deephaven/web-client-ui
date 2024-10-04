@@ -59,8 +59,10 @@
   /* Find */
   --dh-color-editor-find-bg: var(--dh-color-gray-200);
   --dh-color-editor-find-match-bg: var(--dh-color-highlight-selected);
-  --dh-color-editor-find-match-highlight-bg: var(
-    --dh-color-highlight-selected-hover
+  --dh-color-editor-find-match-highlight-bg: color-mix(
+    in srgb,
+    var(--dh-color-orange-800) 35%,
+    transparent
   );
   --dh-color-editor-find-option-active-bg: var(--dh-color-accent-700);
   --dh-color-editor-find-option-active-fg: var(--dh-color-gray-900);
