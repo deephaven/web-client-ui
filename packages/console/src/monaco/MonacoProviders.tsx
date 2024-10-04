@@ -108,21 +108,25 @@ class MonacoProviders extends PureComponent<
       return;
     }
 
+    const diagnostics = MonacoProviders.getDiagnostics(model);
+    log.debug(`Linting Python document: ${model.uri.toString()}`, diagnostics);
+
     monaco.editor.setModelMarkers(
       model,
       'ruff',
-      MonacoProviders.getDiagnostics(model).map((d: Diagnostic) => {
-        // Unused variable or import. Mark as warning and unnecessary to fade the text
+      diagnostics.map((d: Diagnostic) => {
+        // Unused variable or import. Mark as unnecessary to fade the text
         const isUnnecessary = d.code === 'F401' || d.code === 'F841';
+        const isSyntaxError = d.code == null; // SyntaxError has no error code
         return {
           startLineNumber: d.location.row,
           startColumn: d.location.column,
           endLineNumber: d.end_location.row,
           endColumn: d.end_location.column,
-          message: d.code != null ? `${d.code}: ${d.message}` : d.message, // SyntaxError has no code
-          severity: isUnnecessary
-            ? monaco.MarkerSeverity.Warning
-            : monaco.MarkerSeverity.Error,
+          message: isSyntaxError ? d.message : `${d.code}: ${d.message}`,
+          severity: isSyntaxError
+            ? monaco.MarkerSeverity.Error
+            : monaco.MarkerSeverity.Warning,
           tags: isUnnecessary ? [monaco.MarkerTag.Unnecessary] : [],
         };
       })
@@ -373,6 +377,8 @@ class MonacoProviders extends PureComponent<
     if (!MonacoProviders.ruffWorkspace) {
       return;
     }
+
+    log.debug(`Formatting Python document: ${model.uri.toString}`);
 
     return [
       {
