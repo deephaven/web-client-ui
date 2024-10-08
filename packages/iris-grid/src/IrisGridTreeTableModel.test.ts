@@ -1,4 +1,8 @@
+import { GridRange } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
+import { type dh as DhType } from '@deephaven/jsapi-types';
+import { TestUtils } from '@deephaven/test-utils';
+import { act } from 'react-dom/test-utils';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 
@@ -103,5 +107,54 @@ describe('IrisGridTreeTableModel values table', () => {
     const model = new IrisGridTreeTableModel(dh, table);
 
     expect(model.isValuesTableAvailable).toBe(true);
+  });
+});
+
+describe('IrisGridTreeTableModel snapshot', () => {
+  it(`doesn't throw if selection extends past the viewport`, async () => {
+    function getLastRegisteredEventHandler(
+      table: DhType.TreeTable,
+      eventName: string
+    ): ((event) => void) | undefined {
+      const { calls } = TestUtils.asMock(table.addEventListener).mock;
+      const [lastCall] = calls.filter(call => call[0] === eventName).slice(-1);
+      return lastCall?.[1];
+    }
+    function mockUpdateEvent(
+      offset: number,
+      rows: DhType.TreeRow[],
+      columns: DhType.Column[]
+    ): CustomEvent {
+      return {
+        detail: {
+          offset,
+          rows,
+          columns,
+        },
+      } as CustomEvent;
+    }
+    const columns = irisGridTestUtils.makeColumns();
+    const table = TestUtils.createMockProxy<DhType.TreeTable>({
+      columns,
+      groupedColumns: columns,
+      size: 100,
+    });
+    const model = new IrisGridTreeTableModel(dh, table);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    model.addEventListener(IrisGridTreeTableModel.EVENT.UPDATED, () => {});
+    model.setViewport(0, 5, columns);
+    // Trigger update event to populate viewport data in the model
+    const updateEventHandler = getLastRegisteredEventHandler(
+      table,
+      dh.Table.EVENT_UPDATED
+    );
+    const row = irisGridTestUtils.makeRow(0);
+    const event = mockUpdateEvent(0, Array(6).fill(row), columns);
+    act(() => {
+      updateEventHandler?.(event);
+    });
+    // Get the snapshot for rows 2-10 with the viewport at 0-5
+    const snapshot = await model.snapshot([new GridRange(0, 2, 0, 10)]);
+    expect(snapshot.length).toBe(4);
   });
 });
