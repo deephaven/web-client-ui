@@ -197,9 +197,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
     const viewportRange = new GridRange(
       0,
-      this.viewportData?.offset,
+      this.viewportData.offset,
       columns.length,
-      this.viewportData.offset + this.viewportData.rows.length
+      this.viewportData.offset + this.viewportData.rows.length - 1
     );
 
     for (let i = 0; i < ranges.length; i += 1) {
