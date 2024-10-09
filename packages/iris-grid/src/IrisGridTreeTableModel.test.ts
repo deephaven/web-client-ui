@@ -116,9 +116,10 @@ describe('IrisGridTreeTableModel snapshot', () => {
       table: DhType.TreeTable,
       eventName: string
     ): ((event) => void) | undefined {
-      const { calls } = TestUtils.asMock(table.addEventListener).mock;
-      const [lastCall] = calls.filter(call => call[0] === eventName).slice(-1);
-      return lastCall?.[1];
+      return TestUtils.findLastCall(
+        table.addEventListener,
+        ([name]) => name === eventName
+      )?.[1];
     }
     function mockUpdateEvent(
       offset: number,
