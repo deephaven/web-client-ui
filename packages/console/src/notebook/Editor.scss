@@ -15,3 +15,16 @@
     color: $link-color;
   }
 }
+
+.rendered-markdown.markdown-docs {
+  min-width: 12rem;
+  
+  hr {
+    background-color: $text-muted;
+    height: 1px;
+  }
+
+  blockquote {
+    margin-left: $spacer-4;
+  }
+}

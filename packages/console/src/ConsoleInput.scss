@@ -74,16 +74,3 @@ $console-input-margin-color: $foreground;
     }
   }
 }
-
-.docs {
-  min-width: 200px;
-  
-  hr {
-    background-color: $text-muted;
-    height: 1px;
-  }
-
-  blockquote {
-    margin-left: 20px;
-  }
-}
