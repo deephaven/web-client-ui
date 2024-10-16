@@ -8,6 +8,7 @@ $tooltip-container-width: 300px;
   align-items: first baseline;
   max-width: $tooltip-container-width;
   text-align: left;
+  column-gap: $spacer-3;
 
   .tab-tooltip-title {
     font-weight: 700;
