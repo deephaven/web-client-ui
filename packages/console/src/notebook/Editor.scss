@@ -16,6 +16,7 @@
   }
 }
 
+// Override Monaco's default markdown popups (i.e signature help) to resemble VS Code closer
 .rendered-markdown.markdown-docs {
   min-width: 12rem;
   
