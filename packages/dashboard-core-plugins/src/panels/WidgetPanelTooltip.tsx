@@ -7,9 +7,13 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   const { children, descriptor } = props;
   const { name, type, description, displayName } = descriptor;
 
+  // Convert PascalCase to Title Case
+  // ex. PartitionedTable -> Partitioned Table
+  const formattedType = type.replace(/([a-z])([A-Z])/g, '$1 $2');
+
   return (
     <div className="tab-tooltip-grid-container">
-      <span className="tab-tooltip-title">{type} Name</span>
+      <span className="tab-tooltip-title">{formattedType} Name</span>
       <div className="tab-tooltip-name-wrapper">
         <span className="tab-tooltip-name">{name}</span>
         <CopyButton
