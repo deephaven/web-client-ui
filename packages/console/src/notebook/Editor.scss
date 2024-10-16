@@ -17,6 +17,7 @@
 }
 
 // Override Monaco's default markdown popups (i.e signature help) to resemble VS Code closer
+// The classes come from Monaco itself, not core or web-client-ui
 .rendered-markdown.markdown-docs {
   min-width: 12rem;
   
