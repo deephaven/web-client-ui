@@ -3,10 +3,7 @@ import { Provider } from 'react-redux';
 import { store } from '@deephaven/redux';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
-import {
-  RefreshTokenBootstrap,
-  useBroadcastLoginListener,
-} from '@deephaven/jsapi-components';
+import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import { type Plugin } from '@deephaven/plugin';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
@@ -70,17 +67,15 @@ export function AppBootstrap({
               options={clientOptions}
               key={logoutCount}
             >
-              <RefreshTokenBootstrap>
-                <AuthBootstrap>
-                  <ServerConfigBootstrap>
-                    <UserBootstrap>
-                      <ConnectionBootstrap>
-                        <FontsLoaded>{children}</FontsLoaded>
-                      </ConnectionBootstrap>
-                    </UserBootstrap>
-                  </ServerConfigBootstrap>
-                </AuthBootstrap>
-              </RefreshTokenBootstrap>
+              <AuthBootstrap>
+                <ServerConfigBootstrap>
+                  <UserBootstrap>
+                    <ConnectionBootstrap>
+                      <FontsLoaded>{children}</FontsLoaded>
+                    </ConnectionBootstrap>
+                  </UserBootstrap>
+                </ServerConfigBootstrap>
+              </AuthBootstrap>
             </ClientBootstrap>
           </ThemeBootstrap>
         </PluginsBootstrap>

@@ -37,7 +37,6 @@ const mockChannel = {
 };
 jest.mock('@deephaven/jsapi-components', () => ({
   ...jest.requireActual('@deephaven/jsapi-components'),
-  RefreshTokenBootstrap: jest.fn(({ children }) => children),
   useBroadcastChannel: jest.fn(() => mockChannel),
   useBroadcastLoginListener: jest.fn(),
 }));
