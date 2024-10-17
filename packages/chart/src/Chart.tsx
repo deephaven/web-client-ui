@@ -88,7 +88,7 @@ interface ChartState {
   layout: Partial<Layout>;
   revision: number;
 
-  /** A message that blocks the chart from rendering */
+  /** A message that blocks the chart from rendering. It can be bypassed by the user to continue rendering.  */
   shownBlocker: string | null;
 }
 
@@ -728,7 +728,46 @@ class Chart extends Component<ChartProps, ChartState> {
       data ?? [],
       error
     );
+    const { model } = this.props;
     const isPlotShown = data != null && shownBlocker == null;
+
+    let errorOverlay: React.ReactNode = null;
+    if (shownBlocker != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${shownBlocker}`}
+          onConfirm={() => {
+            model.fireBlockerClear();
+          }}
+        />
+      );
+    } else if (shownError != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${downsamplingError}`}
+          onDiscard={() => {
+            this.handleDownsampleErrorClose();
+          }}
+          onConfirm={() => {
+            this.handleDownsampleErrorClose();
+            this.handleDownsampleClick();
+          }}
+        />
+      );
+    } else if (downsamplingError != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${downsamplingError}`}
+          onDiscard={() => {
+            this.handleDownsampleErrorClose();
+          }}
+          onConfirm={() => {
+            this.handleDownsampleErrorClose();
+            this.handleDownsampleClick();
+          }}
+        />
+      );
+    }
 
     return (
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapperMerged}>
@@ -749,34 +788,7 @@ class Chart extends Component<ChartProps, ChartState> {
             style={{ height: '100%', width: '100%' }}
           />
         )}
-        {downsamplingError != null &&
-          shownError == null &&
-          shownBlocker == null && (
-            <ChartErrorOverlay
-              errorMessage={`${downsamplingError}`}
-              onDiscard={() => {
-                this.handleDownsampleErrorClose();
-              }}
-              onConfirm={() => {
-                this.handleDownsampleErrorClose();
-                this.handleDownsampleClick();
-              }}
-            />
-          )}
-        {shownError != null && shownBlocker == null && (
-          <ChartErrorOverlay
-            errorMessage={`${shownError}`}
-            onDiscard={() => {
-              this.handleErrorClose();
-            }}
-          />
-        )}
-        {shownBlocker != null && (
-          <ChartErrorOverlay
-            errorMessage={`${shownBlocker}`}
-            onConfirm={this.props.model.fireBlockerClear}
-          />
-        )}
+        {errorOverlay}
       </div>
     );
   }
