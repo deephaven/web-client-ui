@@ -2,7 +2,7 @@
 
 Deephaven utils for consuming Jsapi from a server. It can optionally convert the
 server module format from `ESM` -> `CJS` or `CJS` -> `ESM` if the server and
-consumer don't use the same modules.
+consumer don't use the same module format.
 
 ## Install
 
