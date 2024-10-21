@@ -6,11 +6,11 @@ import path from 'node:path';
  * @param dirPaths The paths of the directories to create.
  */
 export function ensureDirectoriesExist(dirPaths: string[]): void {
-  for (const dirPath of dirPaths) {
+  dirPaths.forEach(dirPath => {
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
     }
-  }
+  });
 }
 
 /**

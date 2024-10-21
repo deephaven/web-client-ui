@@ -30,7 +30,9 @@ export async function downloadFromURL(
       transporter = https;
     } else {
       reject(
-        `Only http: and https: protocols are supported. Received ${urlObj.protocol}`
+        new Error(
+          `Only http: and https: protocols are supported. Received ${urlObj.protocol}`
+        )
       );
       return;
     }
@@ -135,6 +137,7 @@ export async function hasStatusCode(
  */
 export function urlToDirectoryName(url: string | URL): string {
   if (typeof url === 'string') {
+    // eslint-disable-next-line no-param-reassign
     url = new URL(url);
   }
 

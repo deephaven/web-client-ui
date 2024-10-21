@@ -10,9 +10,9 @@ export function hasErrorCode(
 ): err is { code: string } {
   if (
     err != null &&
-    typeof err === "object" &&
-    "code" in err &&
-    typeof err.code === "string"
+    typeof err === 'object' &&
+    'code' in err &&
+    typeof err.code === 'string'
   ) {
     return code == null || err.code === code;
   }
@@ -30,5 +30,5 @@ export function isAggregateError(
   err: unknown,
   code?: string
 ): err is { code: string } {
-  return hasErrorCode(err, code) && String(err) === "AggregateError";
+  return hasErrorCode(err, code) && String(err) === 'AggregateError';
 }
