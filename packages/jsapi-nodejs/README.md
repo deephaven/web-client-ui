@@ -1,13 +1,13 @@
 # @deephaven/jsapi-components
 
-Deephaven utils for consuming Jsapi from a server. It can optionally convert the
-server module format from `ESM` -> `CJS` or `CJS` -> `ESM` if the server and
-consumer don't use the same module format.
+Deephaven utils for consuming Jsapi from a server from a nodejs app. It can 
+optionally convert the server module format from `ESM` -> `CJS` or `CJS` -> `ESM` 
+if the server and consumer don't use the same module format.
 
 ## Install
 
 ```bash
-npm install --save @deephaven/jsapi-download
+npm install --save @deephaven/jsapi-nodejs
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ npm install --save @deephaven/jsapi-download
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { loadModules } from '@deephaven/jsapi-download';
+import { loadModules } from '@deephaven/jsapi-nodejs';
 
 const tmpDir = path.join(__dirname, 'tmp');
 
