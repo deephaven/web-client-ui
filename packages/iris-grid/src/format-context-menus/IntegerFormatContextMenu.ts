@@ -28,6 +28,10 @@ class IntegerFormatContextMenu {
   ): FormatContextMenuOption[] {
     const formatItems = [
       {
+        format: IntegerColumnFormatter.FORMAT_THOUSANDS,
+        group: IntegerFormatContextMenu.presetGroup,
+      },
+      {
         format: IntegerColumnFormatter.FORMAT_MILLIONS,
         group: IntegerFormatContextMenu.presetGroup,
       },
