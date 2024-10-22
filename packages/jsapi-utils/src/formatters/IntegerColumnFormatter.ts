@@ -121,6 +121,12 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
 
   static DEFAULT_FORMAT_STRING = '###,##0';
 
+  static FORMAT_THOUSANDS = IntegerColumnFormatter.makePresetFormat(
+    'Thousands',
+    '##0.000 k',
+    0.001
+  );
+
   static FORMAT_MILLIONS = IntegerColumnFormatter.makePresetFormat(
     'Millions',
     '###,##0.000 mm',
