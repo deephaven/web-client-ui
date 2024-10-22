@@ -37,6 +37,10 @@ class ChartModel {
 
   static EVENT_ERROR = 'ChartModel.EVENT_ERROR';
 
+  static EVENT_BLOCKER = 'ChartModel.EVENT_BLOCKER';
+
+  static EVENT_BLOCKER_CLEAR = 'ChartModel.EVENT_BLOCKER_CLEAR';
+
   constructor(dh: typeof DhType) {
     this.dh = dh;
     this.listeners = [];
@@ -183,6 +187,14 @@ class ChartModel {
 
   fireError(detail: string[]): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_ERROR, { detail }));
+  }
+
+  fireBlocker(detail: string[]): void {
+    this.fireEvent(new CustomEvent(ChartModel.EVENT_BLOCKER, { detail }));
+  }
+
+  fireBlockerClear(): void {
+    this.fireEvent(new CustomEvent(ChartModel.EVENT_BLOCKER_CLEAR));
   }
 }
 
