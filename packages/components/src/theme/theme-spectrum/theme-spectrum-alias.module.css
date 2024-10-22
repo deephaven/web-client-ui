@@ -41,7 +41,7 @@
   /* Shadows / Overlays */
   --spectrum-alias-dropshadow-color: var(--dh-color-dropshadow);
   --spectrum-alias-background-color-modal-overlay: var(
-    --dh-color-modal-overlay-bg
+    --dh-color-overlay-modal-bg
   );
   --spectrum-alias-background-color-hover-overlay: var(
     --dh-color-overlay-hover-bg
