@@ -111,6 +111,12 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
     10000
   );
 
+  static FORMAT_THOUSANDS = DecimalColumnFormatter.makePresetFormat(
+    'Thousands',
+    '##0.000 k',
+    0.001
+  );
+
   static FORMAT_MILLIONS = DecimalColumnFormatter.makePresetFormat(
     'Millions',
     '###,##0.000 mm',
