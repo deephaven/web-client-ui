@@ -1,4 +1,4 @@
-# @deephaven/jsapi-components
+# @deephaven/jsapi-nodejs
 
 Deephaven utils for consuming Jsapi from a server from a nodejs app. It can 
 optionally convert the server module format from `ESM` -> `CJS` or `CJS` -> `ESM` 

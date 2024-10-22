@@ -1,6 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    // NodeNext is the recommended module setting for Node.js v12 or later. This
+    // allows CommonJS and ESM consumers to use this package.
+    "module": "NodeNext",
+    // This is the required setting when `module` is set to `NodeNext`. One side
+    // effect of this setting is that relative imports require explicit `.js`
+    // extensions.
+    "moduleResolution": "NodeNext",
     "rootDir": "src/",
     "outDir": "dist/"
   },
