@@ -17,7 +17,12 @@
     "excludeDirectories": ["**/node_modules", "**/dist"]
   },
   "references": [
+    // `npm run types` relies on project references to build types. All packages
+    // must be included in the reference tree somewhere. Top-level packages need
+    // to be included here, and their respective `tsconfig.json` files should
+    // reference their dependencies.
     { "path": "./packages/code-studio" },
-    { "path": "./packages/embed-widget" }
+    { "path": "./packages/embed-widget" },
+    { "path": "./packages/jsapi-nodejs" }
   ]
 }
