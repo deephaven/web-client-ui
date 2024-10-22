@@ -1,0 +1,38 @@
+{
+  "name": "@deephaven/jsapi-nodejs",
+  "version": "0.96.0",
+  "description": "Deephaven utils for consuming Jsapi from a server",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/jsapi-nodejs"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+  },
+  "dependencies": {
+    "esbuild": "^0.24.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/ws": "^8.5.12"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}

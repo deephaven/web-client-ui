@@ -174,6 +174,7 @@
     "@deephaven/iris-grid": "file:packages/iris-grid",
     "@deephaven/jsapi-bootstrap": "file:packages/jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:packages/jsapi-components",
+    "@deephaven/jsapi-nodejs": "file:packages/jsapi-nodejs",
     "@deephaven/jsapi-shim": "file:packages/jsapi-shim",
     "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
     "@deephaven/jsapi-utils": "file:packages/jsapi-utils",
