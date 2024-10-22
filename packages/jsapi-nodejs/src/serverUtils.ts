@@ -1,6 +1,6 @@
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { hasErrorCode, isAggregateError } from './errorUtils';
+import { hasErrorCode, isAggregateError } from './errorUtils.js';
 
 export const SERVER_STATUS_CHECK_TIMEOUT = 3000;
 

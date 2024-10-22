@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import esbuild from 'esbuild';
 
-import { downloadFromURL, urlToDirectoryName } from './serverUtils';
-import { polyfillWs } from './polyfillWs';
-import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils';
+import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
+import { polyfillWs } from './polyfillWs.js';
+import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
 
 type NonEmptyArray<T> = [T, ...T[]];
 
