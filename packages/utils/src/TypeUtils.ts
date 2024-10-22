@@ -1,3 +1,21 @@
+/*
+ * Branded type helpers. Allows creating "branded" types that satisfy a base type
+ * but are distinct from other types that satisfy the same base type.
+ *
+ * e.g. These 2 types are still strings, but they are unique from each other:
+ * declare const UserID: Brand<string, 'userId'>;
+ * declare const RoleID: Brand<string, 'roleID'>;
+ *
+ * This protects against accidentally assigning one type to another.
+ * const roleId: RoleID = '123';
+ * const userId: UserID = roleId; // Compiler error
+ */
+// eslint-disable-next-line no-underscore-dangle
+declare const __brand: unique symbol;
+export type Brand<T extends string, TBase = string> = TBase & {
+  readonly [__brand]: T;
+};
+
 /**
  * Util type to create a "subtype" of T. Useful for creating subsets of union
  * types.
