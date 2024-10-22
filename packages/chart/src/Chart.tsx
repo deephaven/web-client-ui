@@ -82,11 +82,14 @@ interface ChartState {
   isDownsampleInProgress: boolean;
   isDownsamplingDisabled: boolean;
 
-  /** Any other kind of error */
+  /** Any other kind of error that doesn't completely block the chart from rendering */
   error: unknown;
   shownError: string | null;
   layout: Partial<Layout>;
   revision: number;
+
+  /** A message that blocks the chart from rendering. It can be bypassed by the user to continue rendering.  */
+  shownBlocker: string | null;
 }
 
 class Chart extends Component<ChartProps, ChartState> {
@@ -180,6 +183,7 @@ class Chart extends Component<ChartProps, ChartState> {
         datarevision: 0,
       },
       revision: 0,
+      shownBlocker: null,
     };
   }
 
@@ -512,6 +516,15 @@ class Chart extends Component<ChartProps, ChartState> {
         onError(new Error(error));
         break;
       }
+      case ChartModel.EVENT_BLOCKER: {
+        const blocker = `${detail}`;
+        this.setState({ shownBlocker: blocker });
+        break;
+      }
+      case ChartModel.EVENT_BLOCKER_CLEAR: {
+        this.setState({ shownBlocker: null });
+        break;
+      }
       default:
         log.debug('Unknown event type', type, event);
     }
@@ -705,6 +718,7 @@ class Chart extends Component<ChartProps, ChartState> {
       shownError,
       layout,
       revision,
+      shownBlocker,
     } = this.state;
     const config = this.getCachedConfig(
       downsamplingError,
@@ -714,7 +728,46 @@ class Chart extends Component<ChartProps, ChartState> {
       data ?? [],
       error
     );
-    const isPlotShown = data != null;
+    const { model } = this.props;
+    const isPlotShown = data != null && shownBlocker == null;
+
+    let errorOverlay: React.ReactNode = null;
+    if (shownBlocker != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${shownBlocker}`}
+          onConfirm={() => {
+            model.fireBlockerClear();
+          }}
+        />
+      );
+    } else if (shownError != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${downsamplingError}`}
+          onDiscard={() => {
+            this.handleDownsampleErrorClose();
+          }}
+          onConfirm={() => {
+            this.handleDownsampleErrorClose();
+            this.handleDownsampleClick();
+          }}
+        />
+      );
+    } else if (downsamplingError != null) {
+      errorOverlay = (
+        <ChartErrorOverlay
+          errorMessage={`${downsamplingError}`}
+          onDiscard={() => {
+            this.handleDownsampleErrorClose();
+          }}
+          onConfirm={() => {
+            this.handleDownsampleErrorClose();
+            this.handleDownsampleClick();
+          }}
+        />
+      );
+    }
 
     return (
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapperMerged}>
@@ -735,26 +788,7 @@ class Chart extends Component<ChartProps, ChartState> {
             style={{ height: '100%', width: '100%' }}
           />
         )}
-        {downsamplingError != null && shownError == null && (
-          <ChartErrorOverlay
-            errorMessage={`${downsamplingError}`}
-            onDiscard={() => {
-              this.handleDownsampleErrorClose();
-            }}
-            onConfirm={() => {
-              this.handleDownsampleErrorClose();
-              this.handleDownsampleClick();
-            }}
-          />
-        )}
-        {shownError != null && (
-          <ChartErrorOverlay
-            errorMessage={`${shownError}`}
-            onDiscard={() => {
-              this.handleErrorClose();
-            }}
-          />
-        )}
+        {errorOverlay}
       </div>
     );
   }
