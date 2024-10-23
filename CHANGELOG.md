@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
+
+### Features
+
+- @deephaven/jsapi-nodejs npm package ([#2260](https://github.com/deephaven/web-client-ui/issues/2260)) ([72507d3](https://github.com/deephaven/web-client-ui/commit/72507d3e03c74a7004b1f42b48bc95b80cdbea42))
+- add monaco docs CSS override ([#2250](https://github.com/deephaven/web-client-ui/issues/2250)) ([6b949d5](https://github.com/deephaven/web-client-ui/commit/6b949d5de15d0d34abf2a9b4115d505b84dc9967)), closes [#2247](https://github.com/deephaven/web-client-ui/issues/2247)
+- Add render blocking errors to Chart ([#2255](https://github.com/deephaven/web-client-ui/issues/2255)) ([74a5cb7](https://github.com/deephaven/web-client-ui/commit/74a5cb7bd89a82b811434c982f95d1143c596b44))
+- add thousands format for numbers ([#2261](https://github.com/deephaven/web-client-ui/issues/2261)) ([0802f8a](https://github.com/deephaven/web-client-ui/commit/0802f8afc0eae6d4926ddee4ffcc29b327ce4d7c)), closes [#2253](https://github.com/deephaven/web-client-ui/issues/2253)
+- Branded type utils ([#2264](https://github.com/deephaven/web-client-ui/issues/2264)) ([fff0155](https://github.com/deephaven/web-client-ui/commit/fff0155f2e7b431faca755e028e7dbe3123dac63)), closes [#2263](https://github.com/deephaven/web-client-ui/issues/2263)
+
+### Bug Fixes
+
+- add gap between type and name in widget panel tooltip ([#2258](https://github.com/deephaven/web-client-ui/issues/2258)) ([4e8ad58](https://github.com/deephaven/web-client-ui/commit/4e8ad58c0ae5c162e8aca360cc009f9deafe3a29)), closes [#2254](https://github.com/deephaven/web-client-ui/issues/2254)
+- Fix Type in Spectrum Modal Overlay Background Color ([#2267](https://github.com/deephaven/web-client-ui/issues/2267)) ([9d84d8d](https://github.com/deephaven/web-client-ui/commit/9d84d8df388031f73aea16cefece9b0bea2790a4))
+- Remove RefreshBootstrap and refresh token handling ([#2257](https://github.com/deephaven/web-client-ui/issues/2257)) ([5686032](https://github.com/deephaven/web-client-ui/commit/5686032603e583de4cc85e320f189f4b17de4e47))
+
 ## [0.96.1](https://github.com/deephaven/web-client-ui/compare/v0.96.0...v0.96.1) (2024-10-11)
 
 ### Bug Fixes

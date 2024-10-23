@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
+
+### Bug Fixes
+
+- Remove RefreshBootstrap and refresh token handling ([#2257](https://github.com/deephaven/web-client-ui/issues/2257)) ([5686032](https://github.com/deephaven/web-client-ui/commit/5686032603e583de4cc85e320f189f4b17de4e47))
+
 ## [0.96.1](https://github.com/deephaven/web-client-ui/compare/v0.96.0...v0.96.1) (2024-10-11)
 
 **Note:** Version bump only for package @deephaven/app-utils

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
+
+### Bug Fixes
+
+- add gap between type and name in widget panel tooltip ([#2258](https://github.com/deephaven/web-client-ui/issues/2258)) ([4e8ad58](https://github.com/deephaven/web-client-ui/commit/4e8ad58c0ae5c162e8aca360cc009f9deafe3a29)), closes [#2254](https://github.com/deephaven/web-client-ui/issues/2254)
+
 ## [0.96.1](https://github.com/deephaven/web-client-ui/compare/v0.96.0...v0.96.1) (2024-10-11)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

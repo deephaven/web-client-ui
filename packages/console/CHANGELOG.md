@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
+
+### Features
+
+- add monaco docs CSS override ([#2250](https://github.com/deephaven/web-client-ui/issues/2250)) ([6b949d5](https://github.com/deephaven/web-client-ui/commit/6b949d5de15d0d34abf2a9b4115d505b84dc9967)), closes [#2247](https://github.com/deephaven/web-client-ui/issues/2247)
+
 ## [0.96.0](https://github.com/deephaven/web-client-ui/compare/v0.95.0...v0.96.0) (2024-10-04)
 
 ### ⚠ BREAKING CHANGES
