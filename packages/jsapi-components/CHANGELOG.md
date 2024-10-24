@@ -5,6 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
 
+### ⚠ BREAKING CHANGES
+
+- `RefreshToken` related classes have been removed from `@deephaven/jsapi-components`. This functionality did not actually work in Core, and was unused. The `RefreshToken` type is now defined in `@deephaven/jsapi-types`, as `dh.RefreshToken`.
+
 ### Bug Fixes
 
 - Remove RefreshBootstrap and refresh token handling ([#2257](https://github.com/deephaven/web-client-ui/issues/2257)) ([5686032](https://github.com/deephaven/web-client-ui/commit/5686032603e583de4cc85e320f189f4b17de4e47))
