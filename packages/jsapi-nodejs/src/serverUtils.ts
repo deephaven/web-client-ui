@@ -45,6 +45,11 @@ export async function downloadFromURL(
         });
 
         res.on('end', async () => {
+          if (res.statusCode === 404) {
+            reject(new Error(`File not found: "${url}"`));
+            return;
+          }
+
           resolve(file);
         });
       })
