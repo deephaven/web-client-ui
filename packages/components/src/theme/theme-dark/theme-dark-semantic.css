@@ -143,12 +143,12 @@
   );
   --dh-color-overlay-modal-bg: color-mix(
     in srgb,
-    var(--dh-color-visual-gray) 60%,
+    var(--dh-color-black) 50%,
     transparent
   );
   --dh-color-overlay-hover-bg: color-mix(
     in srgb,
-    var(--dh-color-visual-gray) 8%,
+    var(--dh-color-black) 8%,
     transparent
   );
 
