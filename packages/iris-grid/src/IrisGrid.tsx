@@ -301,7 +301,7 @@ export interface IrisGridProps {
   sorts: readonly DhType.Sort[];
 
   /** @deprecated use `reverse` instead */
-  reverseType: ReverseType;
+  reverseType?: ReverseType;
   reverse: boolean;
   quickFilters: ReadonlyQuickFilterMap | null;
   customColumns: readonly ColumnName[];
@@ -498,7 +498,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     quickFilters: EMPTY_MAP,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
-    reverseType: TableUtils.REVERSE_TYPE.NONE,
     reverse: false,
     customColumns: EMPTY_ARRAY,
     aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,

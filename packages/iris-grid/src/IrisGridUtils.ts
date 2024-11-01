@@ -1668,7 +1668,7 @@ class IrisGridUtils {
           return null;
         })
         // If we can't find the column any more, it's null, filter it out
-        // If the item is a reverse sort item, filter it out - it will get applied with the `reverseType` property
+        // If the item is a reverse sort item, filter it out - it will get applied with the `reverse` property
         // This should only happen when loading a legacy dashboard
         .filter(
           item =>

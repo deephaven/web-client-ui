@@ -12,7 +12,7 @@ import {
   type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
-import { TableUtils, type ReverseType } from '@deephaven/jsapi-utils';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
   type ReadonlyAdvancedFilterMap,
@@ -42,7 +42,7 @@ export type IrisGridRenderState = GridRenderState & {
   hoverSelectColumn: GridRangeIndex;
   isSelectingColumn: boolean;
   loadingScrimProgress: number;
-  reverseType: ReverseType;
+  reverse: boolean;
   isFilterBarShown: boolean;
   advancedFilters: ReadonlyAdvancedFilterMap;
   quickFilters: ReadonlyQuickFilterMap;
@@ -352,7 +352,7 @@ export class IrisGridRenderer extends GridRenderer {
   ): void {
     super.drawColumnHeaders(context, state);
 
-    const { theme, metrics, model, reverseType } = state;
+    const { theme, metrics, model, reverse } = state;
     const { columnHeaderHeight } = metrics;
 
     this.drawFilterHeaders(context, state);
@@ -364,10 +364,8 @@ export class IrisGridRenderer extends GridRenderer {
     const { sort } = model;
     // if there is only one sort bar, it is interior to the header to save space
     if (sort.length === 1) {
-      const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
-
       let color;
-      if (hasReverse) {
+      if (reverse) {
         color = theme.headerReverseBarColor;
       } else {
         color = theme.headerSortBarColor;
@@ -376,15 +374,12 @@ export class IrisGridRenderer extends GridRenderer {
         context,
         state,
         color,
-        hasReverse ? theme.reverseHeaderBarHeight : theme.sortHeaderBarHeight
+        reverse ? theme.reverseHeaderBarHeight : theme.sortHeaderBarHeight
       );
     } else if (sort.length > 1) {
       // if there's multiple bars, the sort is interior to header
       // and the reverse claims space in the table
-      if (
-        // has table reverse
-        reverseType !== TableUtils.REVERSE_TYPE.NONE
-      ) {
+      if (reverse) {
         this.drawHeaderBar(
           context,
           state,
