@@ -2,7 +2,7 @@
 import JSZip from 'jszip';
 import dh from '@deephaven/jsapi-shim';
 import { store } from '@deephaven/redux';
-import { logHistory } from './LogInit';
+import type { LogHistory } from '@deephaven/log';
 
 const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
@@ -113,17 +113,8 @@ function getReduxDataString(blacklist: string[][]): string {
   );
 }
 
-function getMetadata(
-  blacklist: string[][],
-  meta?: Record<string, unknown>
-): string {
-  const metadata = {
-    uiVersion: import.meta.env.npm_package_version,
-    userAgent: navigator.userAgent,
-    ...meta,
-  };
-
-  return JSON.stringify(metadata, stringifyReplacer(blacklist), 2);
+function getMetadata(metadata?: Record<string, unknown>): string {
+  return JSON.stringify(metadata, null, 2);
 }
 
 /**
@@ -134,6 +125,7 @@ function getMetadata(
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
+  logHistory: LogHistory,
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
     FILENAME_DATE_FORMAT,
     new Date()
@@ -145,7 +137,9 @@ export async function exportLogs(
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
   folder.file('redux.json', getReduxDataString(blacklist));
-  folder.file('metadata.json', getMetadata(blacklist, metadata));
+  if (metadata != null) {
+    folder.file('metadata.json', getMetadata(metadata));
+  }
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');

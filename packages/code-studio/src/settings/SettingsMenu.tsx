@@ -36,6 +36,7 @@ import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
+import { logHistory } from '../log/LogInit';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 import {
@@ -143,7 +144,9 @@ export class SettingsMenu extends Component<
   handleExportSupportLogs(): void {
     const { serverConfigValues, pluginData } = this.props;
     const pluginInfo = getFormattedPluginInfo(pluginData);
-    exportLogs(undefined, {
+    exportLogs(logHistory, undefined, {
+      uiVersion: import.meta.env.npm_package_version,
+      userAgent: navigator.userAgent,
       ...Object.fromEntries(serverConfigValues),
       pluginInfo,
     });
