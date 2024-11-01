@@ -1,0 +1,38 @@
+{
+  "name": "@deephaven/log-export",
+  "version": "0.96.0",
+  "description": "Deephaven Log Exporter",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/log-export"
+  },
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+  },
+  "dependencies": {
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/redux": "file:../redux",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@deephaven/log": "file:../log"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
