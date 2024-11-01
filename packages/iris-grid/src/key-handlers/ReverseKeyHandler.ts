@@ -1,6 +1,5 @@
 import { type KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
-import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGrid from '../IrisGrid';
 import IrisGridShortcuts from '../IrisGridShortcuts';
 
@@ -18,12 +17,8 @@ class ReverseKeyHandler extends KeyHandler {
       if (!this.irisGrid.isReversible()) {
         return false;
       }
-      const { reverseType } = this.irisGrid.state;
-      if (reverseType === TableUtils.REVERSE_TYPE.NONE) {
-        this.irisGrid.reverse(TableUtils.REVERSE_TYPE.POST_SORT);
-      } else {
-        this.irisGrid.reverse(TableUtils.REVERSE_TYPE.NONE);
-      }
+      const { reverse } = this.irisGrid.state;
+      this.irisGrid.reverse(!reverse);
       return true;
     }
     return false;
