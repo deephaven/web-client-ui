@@ -31,11 +31,11 @@ import {
   makeMessage,
 } from '@deephaven/jsapi-utils';
 import { type PluginModuleMap } from '@deephaven/plugin';
+import exportLogs from '@deephaven/log-export';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
-import { exportLogs } from '../log/LogExport';
 import { logHistory } from '../log/LogInit';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';

@@ -25,6 +25,7 @@
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
+    { "path": "../log-export" },
     { "path": "../app-utils" },
     { "path": "../plugin" },
     { "path": "../pouch-storage" },
