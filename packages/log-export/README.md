@@ -12,8 +12,8 @@ npm install --save @deephaven/log-export
 
 ```javascript
 import exportLogs from '@deephaven/log-export'
-...
-exportLogs(....);
+
+exportLogs(logHistory, 'support-logs', { additionalFields: '...' });
 
 # Legal Notices
 
