@@ -401,6 +401,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       return;
     }
 
+    this.scrollConsoleHistoryToBottom();
     this.updateHistory(result, newHistoryItem);
     this.updateKnownObjects(newHistoryItem);
     this.updateWorkspaceHistoryItem(
