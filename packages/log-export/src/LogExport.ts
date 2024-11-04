@@ -123,7 +123,7 @@ function getFormattedMetadata(metadata?: Record<string, unknown>): string {
  * @returns A string formatted as YYYY-MM-DD-HHMMSS
  */
 function formatDate(date: Date): string {
-  const day = date.getDay();
+  const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
   const h = date.getHours();
