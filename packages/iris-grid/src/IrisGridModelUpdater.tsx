@@ -3,11 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
-import {
-  type Formatter,
-  type ReverseType,
-  TableUtils,
-} from '@deephaven/jsapi-utils';
+import { type Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import { useOnChange } from '@deephaven/react-hooks';
 import IrisGridUtils from './IrisGridUtils';
@@ -34,7 +30,7 @@ interface IrisGridModelUpdaterProps {
   right: number | null;
   filter: readonly dh.FilterCondition[];
   sorts: readonly dh.Sort[];
-  reverseType?: ReverseType;
+  reverse?: boolean;
   customColumns: readonly ColumnName[];
   movedColumns: readonly MoveOperation[];
   hiddenColumns: readonly ModelIndex[];
@@ -63,7 +59,7 @@ function IrisGridModelUpdater({
   right,
   filter,
   formatter,
-  reverseType = TableUtils.REVERSE_TYPE.NONE,
+  reverse = false,
   sorts,
   customColumns,
   movedColumns,
@@ -117,12 +113,12 @@ function IrisGridModelUpdater({
   useOnChange(
     function updateSorts() {
       const sortsForModel = [...sorts];
-      if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
+      if (reverse) {
         sortsForModel.push(model.dh.Table.reverse());
       }
       model.sort = sortsForModel;
     },
-    [model, sorts, reverseType]
+    [model, sorts, reverse]
   );
   useOnChange(
     function updateFormatter() {

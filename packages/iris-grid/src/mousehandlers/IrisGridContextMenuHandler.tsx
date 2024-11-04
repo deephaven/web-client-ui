@@ -188,13 +188,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const {
-      metrics,
-      reverseType,
-      quickFilters,
-      advancedFilters,
-      searchFilter,
-    } = irisGrid.state;
+    const { metrics, reverse, quickFilters, advancedFilters, searchFilter } =
+      irisGrid.state;
     const theme = irisGrid.getTheme();
     assertNotNull(metrics);
     const {
@@ -206,7 +201,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const modelSort = model.sort;
     const columnSort = TableUtils.getSortForColumn(modelSort, column.name);
-    const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
     const { userColumnWidths } = metrics;
     const isColumnHidden = [...userColumnWidths.values()].some(
       columnWidth => columnWidth === 0
@@ -301,8 +295,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
        * */
       disabled:
         (columnSort && modelSort.length === 1) ||
-        (hasReverse && modelSort.length === 1) ||
-        (columnSort && hasReverse && modelSort.length === 2) ||
+        (reverse && modelSort.length === 1) ||
+        (columnSort && reverse && modelSort.length === 2) ||
         modelSort.length === 0 ||
         !isColumnSortable,
       group: IrisGridContextMenuHandler.GROUP_SORT,
@@ -313,7 +307,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'Clear Table Sorting',
       disabled:
         // reverse is a type of sort, but special and needs to be exluded despite being part of model.sort
-        modelSort.length === 0 || (hasReverse && modelSort.length === 1),
+        modelSort.length === 0 || (reverse && modelSort.length === 1),
       group: IrisGridContextMenuHandler.GROUP_SORT,
       action: () => {
         this.irisGrid.sortColumn(
@@ -324,10 +318,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       order: 30,
     });
     actions.push({
-      title:
-        reverseType === TableUtils.REVERSE_TYPE.NONE
-          ? 'Reverse Table'
-          : 'Clear Reverse Table',
+      title: reverse ? 'Clear Reverse Table' : 'Reverse Table',
       icon: vsRemove,
       iconColor: contextMenuReverseIconColor,
       group: IrisGridContextMenuHandler.GROUP_SORT,
@@ -336,11 +327,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
       shortcut: SHORTCUTS.TABLE.REVERSE,
       action: () => {
-        if (reverseType === TableUtils.REVERSE_TYPE.NONE) {
-          this.irisGrid.reverse(TableUtils.REVERSE_TYPE.POST_SORT);
-        } else {
-          this.irisGrid.reverse(TableUtils.REVERSE_TYPE.NONE);
-        }
+        this.irisGrid.reverse(!reverse);
       },
     });
     actions.push({

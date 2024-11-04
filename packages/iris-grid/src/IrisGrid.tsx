@@ -219,7 +219,7 @@ function isEmptyConfig({
   aggregationSettings,
   customColumns,
   quickFilters,
-  reverseType,
+  reverse,
   rollupConfig,
   searchFilter,
   selectDistinctColumns,
@@ -229,7 +229,7 @@ function isEmptyConfig({
   aggregationSettings: AggregationSettings;
   customColumns: readonly ColumnName[];
   quickFilters: ReadonlyQuickFilterMap;
-  reverseType: ReverseType;
+  reverse: boolean;
   rollupConfig?: UIRollupConfig;
   searchFilter?: DhType.FilterCondition;
   selectDistinctColumns: readonly ColumnName[];
@@ -240,7 +240,7 @@ function isEmptyConfig({
     aggregationSettings.aggregations.length === 0 &&
     customColumns.length === 0 &&
     quickFilters.size === 0 &&
-    reverseType === TableUtils.REVERSE_TYPE.NONE &&
+    !reverse &&
     rollupConfig == null &&
     searchFilter == null &&
     selectDistinctColumns.length === 0 &&
@@ -299,7 +299,10 @@ export interface IrisGridProps {
   partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
   sorts: readonly DhType.Sort[];
-  reverseType: ReverseType;
+
+  /** @deprecated use `reverse` instead */
+  reverseType?: ReverseType;
+  reverse: boolean;
   quickFilters: ReadonlyQuickFilterMap | null;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
@@ -378,7 +381,7 @@ export interface IrisGridState {
   hoverAdvancedFilter: number | null;
 
   sorts: readonly DhType.Sort[];
-  reverseType: ReverseType;
+  reverse: boolean;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
 
@@ -495,7 +498,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     quickFilters: EMPTY_MAP,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
-    reverseType: TableUtils.REVERSE_TYPE.NONE,
+    reverse: false,
     customColumns: EMPTY_ARRAY,
     aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
     rollupConfig: undefined,
@@ -806,7 +809,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       shownAdvancedFilter: null,
       hoverAdvancedFilter: null,
       sorts: [],
-      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      reverse: false,
       customColumns: [],
       selectDistinctColumns,
 
@@ -1004,7 +1007,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     | 'aggregationSettings'
     | 'customColumns'
     | 'quickFilters'
-    | 'reverseType'
+    | 'reverse'
     | 'rollupConfig'
     | 'searchFilter'
     | 'selectDistinctColumns'
@@ -1372,10 +1375,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters: ReadonlyQuickFilterMap,
       advancedFilters: ReadonlyAdvancedFilterMap,
       sorts: readonly DhType.Sort[],
-      reverseType: ReverseType,
+      reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
-    ) => ({
+    ): Partial<IrisGridState & IrisGridProps> => ({
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
@@ -1383,7 +1386,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters,
       advancedFilters,
       sorts,
-      reverseType,
+      reverse,
       rollupConfig,
       isMenuShown,
     }),
@@ -2026,6 +2029,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       inputFilters,
       sorts,
       model,
+      reverse,
       reverseType,
       customColumns,
       searchValue,
@@ -2053,7 +2057,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.setState({
       sorts,
-      reverseType,
+      reverse: reverse || reverseType === TableUtils.REVERSE_TYPE.POST_SORT,
       customColumns,
       isReady: true,
       searchFilter,
@@ -2292,7 +2296,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         aggregationSettings,
         customColumns,
         quickFilters,
-        reverseType,
+        reverse,
         rollupConfig,
         searchFilter,
         selectDistinctColumns,
@@ -2305,7 +2309,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         aggregationSettings,
         customColumns,
         quickFilters,
-        reverseType,
+        reverse,
         rollupConfig,
         searchFilter,
         selectDistinctColumns,
@@ -2318,7 +2322,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
         customColumns: [],
         quickFilters: new Map(),
-        reverseType: TableUtils.REVERSE_TYPE.NONE,
+        reverse: false,
         rollupConfig: undefined,
         selectDistinctColumns: [],
         sorts: [],
@@ -2700,9 +2704,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.forceUpdate();
   }
 
-  reverse(reverseType: ReverseType): void {
+  reverse(reverse: boolean): void {
     this.startLoading('Reversing...');
-    this.setState({ reverseType });
+    this.setState({ reverse });
     this.grid?.forceUpdate();
   }
 
@@ -3136,7 +3140,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       aggregationSettings,
       customColumns,
       quickFilters,
-      reverseType,
+      reverse,
       rollupConfig,
       searchFilter,
       selectDistinctColumns,
@@ -3148,7 +3152,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       aggregationSettings,
       customColumns,
       quickFilters,
-      reverseType,
+      reverse,
       rollupConfig,
       searchFilter,
       selectDistinctColumns,
@@ -3507,7 +3511,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       movedColumns: [],
       frozenColumns: [],
       sorts: [],
-      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      reverse: false,
       selectDistinctColumns: [],
     });
   }
@@ -3530,7 +3534,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       selectDistinctColumns: columnNames,
       movedColumns: [],
       sorts: [],
-      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      reverse: false,
     });
   }
 
@@ -4248,7 +4252,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormatEditIndex,
 
       sorts,
-      reverseType,
+      reverse,
       customColumns,
 
       selectedRanges,
@@ -4311,7 +4315,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters,
       advancedFilters,
       sorts,
-      reverseType,
+      reverse,
       rollupConfig,
       isMenuShown
     );
@@ -4830,7 +4834,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 filter={filter}
                 formatter={formatter}
                 sorts={sorts}
-                reverseType={reverseType}
+                reverse={reverse}
                 movedColumns={movedColumns}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
