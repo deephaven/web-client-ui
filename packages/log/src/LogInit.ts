@@ -11,10 +11,10 @@ declare global {
 export const logProxy = new LogProxy();
 export const logHistory = new LogHistory(logProxy);
 
-export default function logInit(): void {
-  Log.setLogLevel(parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10));
+export function logInit(logLevel = 2, enableProxy = true): void {
+  Log.setLogLevel(logLevel);
 
-  if (import.meta.env.VITE_ENABLE_LOG_PROXY === 'true') {
+  if (enableProxy) {
     logProxy.enable();
     logHistory.enable();
   }
@@ -26,3 +26,5 @@ export default function logInit(): void {
     window.DHLogHistory = logHistory;
   }
 }
+
+export default logInit;

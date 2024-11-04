@@ -20,7 +20,7 @@ import {
   ThemePicker,
   Tooltip,
 } from '@deephaven/components';
-import { ServerConfigValues, User } from '@deephaven/redux';
+import { type ServerConfigValues, type User, store } from '@deephaven/redux';
 import {
   BROADCAST_CHANNEL_NAME,
   BROADCAST_LOGOUT_MESSAGE,
@@ -28,11 +28,11 @@ import {
 } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import { PluginModuleMap } from '@deephaven/plugin';
+import { exportLogs, logHistory } from '@deephaven/log';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
-import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 import {
@@ -136,10 +136,16 @@ export class SettingsMenu extends Component<
   handleExportSupportLogs(): void {
     const { serverConfigValues, pluginData } = this.props;
     const pluginInfo = getFormattedPluginInfo(pluginData);
-    exportLogs(undefined, {
-      ...Object.fromEntries(serverConfigValues),
-      pluginInfo,
-    });
+    exportLogs(
+      logHistory,
+      {
+        uiVersion: import.meta.env.npm_package_version,
+        userAgent: navigator.userAgent,
+        ...Object.fromEntries(serverConfigValues),
+        pluginInfo,
+      },
+      store.getState()
+    );
   }
 
   render(): ReactElement {
