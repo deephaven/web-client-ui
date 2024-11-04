@@ -21,7 +21,6 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/redux": "file:../redux",
     "jszip": "^3.10.1"
   },

@@ -1,9 +1,6 @@
 import JSZip from 'jszip';
-import dh from '@deephaven/jsapi-shim';
 import { store } from '@deephaven/redux';
 import type { LogHistory } from '@deephaven/log';
-
-const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
 // List of objects to blacklist
 // '' represents the root object
@@ -116,6 +113,17 @@ function getMetadata(metadata?: Record<string, unknown>): string {
   return JSON.stringify(metadata, null, 2);
 }
 
+function formatDateTime(date: Date): string {
+  const day = date.getDay();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  const h = date.getHours();
+  const m = date.getMinutes();
+  const s = date.getSeconds();
+
+  return `${year}-${month}-${day}-${h}${m}${s}`;
+}
+
 /**
  * Export support logs with the given name.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
@@ -125,10 +133,7 @@ function getMetadata(metadata?: Record<string, unknown>): string {
  */
 export async function exportLogs(
   logHistory: LogHistory,
-  fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
-    FILENAME_DATE_FORMAT,
-    new Date()
-  )}_support_logs`,
+  fileNamePrefix = `${formatDateTime(new Date())}_support_logs`,
   metadata?: Record<string, unknown>,
   blacklist: string[][] = DEFAULT_PATH_BLACKLIST
 ): Promise<void> {
