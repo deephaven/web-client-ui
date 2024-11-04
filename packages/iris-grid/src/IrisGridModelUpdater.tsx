@@ -2,8 +2,8 @@
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
-import { ModelIndex, MoveOperation } from '@deephaven/grid';
-import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
+import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
+import { type Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
@@ -25,7 +25,7 @@ interface IrisGridModelUpdaterProps {
   right: number | null;
   filter: readonly dh.FilterCondition[];
   sorts: readonly dh.Sort[];
-  reverseType?: ReverseType;
+  reverse?: boolean;
   customColumns: readonly ColumnName[];
   movedColumns: readonly MoveOperation[];
   hiddenColumns: readonly ModelIndex[];
@@ -55,7 +55,7 @@ const IrisGridModelUpdater = React.memo(
     right,
     filter,
     formatter,
-    reverseType = TableUtils.REVERSE_TYPE.NONE,
+    reverse = false,
     sorts,
     customColumns,
     movedColumns,
@@ -101,12 +101,12 @@ const IrisGridModelUpdater = React.memo(
     useEffect(
       function updateSorts() {
         const sortsForModel = [...sorts];
-        if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
+        if (reverse) {
           sortsForModel.push(model.dh.Table.reverse());
         }
         model.sort = sortsForModel;
       },
-      [model, sorts, reverseType]
+      [model, sorts, reverse]
     );
     useEffect(
       function updateFormatter() {
