@@ -1,4 +1,7 @@
-import { LogProxy, LogHistory, Logger, Log } from '@deephaven/log';
+import Log from './Log';
+import type Logger from './Logger';
+import LogHistory from './LogHistory';
+import LogProxy from './LogProxy';
 
 declare global {
   interface Window {
