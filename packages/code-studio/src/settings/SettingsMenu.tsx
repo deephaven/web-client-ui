@@ -31,8 +31,7 @@ import {
   makeMessage,
 } from '@deephaven/jsapi-utils';
 import { type PluginModuleMap } from '@deephaven/plugin';
-import { logHistory } from '@deephaven/log';
-import exportLogs from '@deephaven/log-export';
+import { exportLogs, logHistory } from '@deephaven/log';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';

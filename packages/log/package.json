@@ -21,7 +21,8 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "event-target-shim": "^6.0.2"
+    "event-target-shim": "^6.0.2",
+    "jszip": "^3.10.1"
   },
   "files": [
     "dist"

@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import type { LogHistory } from '@deephaven/log';
+import type LogHistory from './LogHistory';
 
 // List of objects to blacklist
 // '' represents the root object
@@ -123,12 +123,12 @@ function getFormattedMetadata(metadata?: Record<string, unknown>): string {
  * @returns A string formatted as YYYY-MM-DD-HHMMSS
  */
 function formatDate(date: Date): string {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
   const year = date.getFullYear();
-  const h = date.getHours();
-  const m = date.getMinutes();
-  const s = date.getSeconds();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
 
   return `${year}-${month}-${day}-${h}${m}${s}`;
 }
