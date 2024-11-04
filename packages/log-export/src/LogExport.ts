@@ -1,5 +1,4 @@
 import JSZip from 'jszip';
-import { store } from '@deephaven/redux';
 import type { LogHistory } from '@deephaven/log';
 
 // List of objects to blacklist
@@ -37,6 +36,10 @@ function stringifyReplacer(blacklist: string[][]) {
       }
     }
 
+    if (value instanceof Map) {
+      return Array.from(value.entries());
+    }
+
     // not in blacklist, return value
     return value;
   };
@@ -62,7 +65,7 @@ function makeSafeToStringify(
   blacklist: string[][],
   path = 'root',
   potentiallyCircularValues: Map<Record<string, unknown>, string> = new Map([
-    [obj, ''],
+    [obj, 'root'],
   ])
 ): Record<string, unknown> {
   const output: Record<string, unknown> = {};
@@ -100,8 +103,10 @@ function makeSafeToStringify(
   return output;
 }
 
-function getReduxDataString(blacklist: string[][]): string {
-  const reduxData = store.getState();
+export function getReduxDataString(
+  reduxData: Record<string, unknown>,
+  blacklist: string[][] = []
+): string {
   return JSON.stringify(
     makeSafeToStringify(reduxData, blacklist),
     stringifyReplacer(blacklist),
@@ -109,11 +114,15 @@ function getReduxDataString(blacklist: string[][]): string {
   );
 }
 
-function getMetadata(metadata?: Record<string, unknown>): string {
+function getFormattedMetadata(metadata?: Record<string, unknown>): string {
   return JSON.stringify(metadata, null, 2);
 }
 
-function formatDateTime(date: Date): string {
+/** Format a date to a string that can be used as a file name
+ * @param date Date to format
+ * @returns A string formatted as YYYY-MM-DD-HHMMSS
+ */
+function formatDate(date: Date): string {
   const day = date.getDay();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -126,23 +135,28 @@ function formatDateTime(date: Date): string {
 
 /**
  * Export support logs with the given name.
- * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param logHistory Log history to include in the console.txt file
  * @param metadata Additional metadata to include in the metadata.json file
- * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @param reduxData Redux data to include in the redux.json file
+ * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
   logHistory: LogHistory,
-  fileNamePrefix = `${formatDateTime(new Date())}_support_logs`,
   metadata?: Record<string, unknown>,
-  blacklist: string[][] = DEFAULT_PATH_BLACKLIST
+  reduxData?: Record<string, unknown>,
+  blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
+  fileNamePrefix = `${formatDate(new Date())}_support_logs`
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
-  folder.file('redux.json', getReduxDataString(blacklist));
   if (metadata != null) {
-    folder.file('metadata.json', getMetadata(metadata));
+    folder.file('metadata.json', getFormattedMetadata(metadata));
+  }
+  if (reduxData != null) {
+    folder.file('redux.json', getReduxDataString(reduxData, blacklist));
   }
 
   const blob = await zip.generateAsync({ type: 'blob' });

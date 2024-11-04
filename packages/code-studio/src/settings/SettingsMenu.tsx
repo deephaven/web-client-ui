@@ -24,7 +24,7 @@ import {
   Logo,
   Tooltip,
 } from '@deephaven/components';
-import { type ServerConfigValues, type User } from '@deephaven/redux';
+import { type ServerConfigValues, type User, store } from '@deephaven/redux';
 import {
   BROADCAST_CHANNEL_NAME,
   BROADCAST_LOGOUT_MESSAGE,
@@ -144,12 +144,16 @@ export class SettingsMenu extends Component<
   handleExportSupportLogs(): void {
     const { serverConfigValues, pluginData } = this.props;
     const pluginInfo = getFormattedPluginInfo(pluginData);
-    exportLogs(logHistory, undefined, {
-      uiVersion: import.meta.env.npm_package_version,
-      userAgent: navigator.userAgent,
-      ...Object.fromEntries(serverConfigValues),
-      pluginInfo,
-    });
+    exportLogs(
+      logHistory,
+      {
+        uiVersion: import.meta.env.npm_package_version,
+        userAgent: navigator.userAgent,
+        ...Object.fromEntries(serverConfigValues),
+        pluginInfo,
+      },
+      store.getState()
+    );
   }
 
   render(): ReactElement {
