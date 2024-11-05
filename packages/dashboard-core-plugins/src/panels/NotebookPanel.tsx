@@ -15,7 +15,12 @@ import {
   type DropdownAction,
   LoadingOverlay,
 } from '@deephaven/components';
-import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
+import {
+  MonacoUtils,
+  ScriptEditor,
+  ScriptEditorUtils,
+  SHORTCUTS,
+} from '@deephaven/console';
 import {
   type FileStorage,
   FileUtils,
@@ -1005,18 +1010,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   canFormat(): boolean {
-    return (
-      this.notebook?.editor
-        ?.getAction('editor.action.formatDocument')
-        ?.isSupported() === true
-    );
+    return this.notebook?.editor != null
+      ? MonacoUtils.canFormat(this.notebook.editor)
+      : false;
   }
 
   async handleFormat(): Promise<void> {
-    if (this.canFormat()) {
-      await this.notebook?.editor
-        ?.getAction('editor.action.formatDocument')
-        ?.run();
+    if (this.notebook?.editor != null) {
+      await MonacoUtils.formatDocument(this.notebook.editor);
     }
   }
 
@@ -1321,6 +1322,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     ];
 
     const portal = tab?.element.find('.lm_title_before').get(0);
+
+    console.log(this.notebook?.editor);
 
     return (
       <>
