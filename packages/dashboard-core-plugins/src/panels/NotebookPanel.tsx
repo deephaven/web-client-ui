@@ -1323,8 +1323,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     const portal = tab?.element.find('.lm_title_before').get(0);
 
-    console.log(this.notebook?.editor);
-
     return (
       <>
         {portal != null &&
