@@ -51,7 +51,9 @@ export function AppBootstrap({
   const [logoutCount, setLogoutCount] = useState(0);
   const onLogin = useCallback(() => undefined, []);
   const onLogout = useCallback(() => {
-    setLogoutCount(value => value + 1);
+    requestAnimationFrame(() => {
+      setLogoutCount(value => value + 1);
+    });
   }, []);
   useBroadcastLoginListener(onLogin, onLogout);
   return (
