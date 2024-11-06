@@ -65,6 +65,10 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
+    '^@astral-sh/ruff-wasm-web$': path.join(
+      __dirname,
+      './__mocks__/@astral-sh/ruff-wasm-web.js'
+    ),
     // Handle pouchdb modules
     '^pouchdb-browser$': path.join(
       __dirname,
