@@ -1,6 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Switch, ActionButton, Icon, Text } from '@deephaven/components';
+import {
+  Switch,
+  ActionButton,
+  Icon,
+  Text,
+  ContextualHelp,
+  Heading,
+  Content,
+} from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
 import { getNotebookSettings, updateNotebookSettings } from '@deephaven/redux';
 import { vsSettings } from '@deephaven/icons';
@@ -95,10 +103,23 @@ export function EditorSectionContent(): JSX.Element {
           Enable Minimap
         </Switch>
       </div>
-      <div className="form-row pl-1">
-        <Switch isSelected={formatOnSave} onChange={handleFormatOnSaveChange}>
+      <div className="form-row align-items-center pl-1">
+        <Switch
+          isSelected={formatOnSave}
+          onChange={handleFormatOnSaveChange}
+          margin={0}
+        >
           Format on Save
         </Switch>
+        <ContextualHelp variant="info">
+          <Heading>Format on Save</Heading>
+          <Content>
+            <Text>
+              The Ruff settings control formatting options. Notebooks can be
+              formatted manually using the right-click context menu.
+            </Text>
+          </Content>
+        </ContextualHelp>
       </div>
       <div className="form-row pl-1">
         <Switch
