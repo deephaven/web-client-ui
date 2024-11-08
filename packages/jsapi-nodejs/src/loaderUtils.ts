@@ -15,7 +15,10 @@ export type LoadModuleOptions = {
   storageDir: string;
   sourceModuleType: 'esm' | 'cjs';
   targetModuleType?: 'esm' | 'cjs';
-  esbuildOptions?: Omit<BuildOptions, 'entryPoints' | 'outdir'>;
+  esbuildOptions?: Omit<
+    BuildOptions,
+    'entryPoints' | 'format' | 'outdir' | 'platform'
+  >;
 };
 
 /**
@@ -74,13 +77,15 @@ export async function loadModules<TMainModule>({
     // Transpile if source and target module types differ
     if (needsTranspile) {
       await esbuild.build({
+        // These can be overridden by esbuildOptions
         bundle: false,
-        format: targetModuleType,
         logLevel: 'error',
-        platform: 'node',
         ...esbuildOptions,
+        // These cannot be overridden
         entryPoints: downloadPaths,
+        format: targetModuleType,
         outdir: targetDir,
+        platform: 'node',
       });
     }
   }
