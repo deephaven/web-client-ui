@@ -7,8 +7,9 @@ import {
   type NullableGridColor,
 } from './GridTheme';
 import memoizeClear from './memoizeClear';
-import GridUtils, { type GridPoint, type Token } from './GridUtils';
+import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
+import { type GridRangeIndex } from './GridRange';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 
@@ -71,7 +72,7 @@ abstract class GridModel<
    */
   abstract textForCell(column: ModelIndex, row: ModelIndex): string;
 
-  tooltipForCell(gridPoint: GridPoint): string | null {
+  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
     return null;
   }
 

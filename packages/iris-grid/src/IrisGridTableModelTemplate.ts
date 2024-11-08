@@ -6,8 +6,8 @@ import {
   type DeletableGridModel,
   type EditableGridModel,
   type EditOperation,
-  type GridPoint,
   GridRange,
+  type GridRangeIndex,
   GridUtils,
   memoizeClear,
   type ModelIndex,
@@ -26,7 +26,6 @@ import {
   TableUtils,
   Formatter,
   FormatterUtils,
-  DateTimeColumnFormatter,
   DateUtils,
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
@@ -689,13 +688,13 @@ class IrisGridTableModelTemplate<
     return null;
   }
 
-  tooltipForCell(gridPoint: GridPoint): string | null {
-    if (gridPoint.column === null || gridPoint.row === null) return null;
-    if (TableUtils.isDateType(this.columns[gridPoint.column].type)) {
+  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
+    if (column === null || row === null) return null;
+    if (TableUtils.isDateType(this.columns[column].type)) {
       return this.displayString(
-        this.valueForCell(gridPoint.column, gridPoint.row),
-        this.columns[gridPoint.column].type,
-        this.columns[gridPoint.column].name,
+        this.valueForCell(column, row),
+        this.columns[column].type,
+        this.columns[column].name,
         { formatString: DateUtils.FULL_DATE_FORMAT }
       );
     }

@@ -40,7 +40,7 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { model } = this.irisGrid.props;
     const isUserHoveringLink = this.isHoveringLink(gridPoint, grid);
-    const dateTooltip = model.tooltipForCell(gridPoint);
+    const dateTooltip = model.tooltipForCell(gridPoint.column, gridPoint.row);
 
     if (
       isUserHoveringLink &&
@@ -76,22 +76,27 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
         width: 1,
         height: 1,
       };
-      if (
-        (hoverTooltipProps == null ||
+      if (!deepEqual(hoverTooltipProps, newProps)) {
+        if (hoverTooltipProps == null) {
+          this.irisGrid.setState({
+            hoverTooltipProps: newProps,
+            hoverDisplayValue: dateTooltip,
+          });
+        } else if (
           this.lastColumn !== gridPoint.column ||
-          this.lastRow !== gridPoint.row) &&
-        !deepEqual(hoverTooltipProps, newProps)
-      ) {
-        this.irisGrid.setState(
-          {
-            hoverTooltipProps: null,
-          },
-          () =>
-            this.irisGrid.setState({
-              hoverTooltipProps: newProps,
-              hoverDisplayValue: dateTooltip,
-            })
-        );
+          this.lastRow !== gridPoint.row
+        ) {
+          this.irisGrid.setState(
+            {
+              hoverTooltipProps: null,
+            },
+            () =>
+              this.irisGrid.setState({
+                hoverTooltipProps: newProps,
+                hoverDisplayValue: dateTooltip,
+              })
+          );
+        }
       }
     } else {
       this.destroyTooltip();

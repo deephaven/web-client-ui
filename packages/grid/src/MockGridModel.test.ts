@@ -57,4 +57,10 @@ describe('tokensForCell', () => {
     expect(tokens).toHaveLength(0);
     expect(tokens).toEqual(expectedValue);
   });
+
+  it('should return no tooltip for non-datetime cells', () => {
+    const model = new MockGridModel({ editedData: [['Hello, World!']] });
+    const tooltip = model.tooltipForCell(0, 0);
+    expect(tooltip).toBeNull();
+  });
 });
