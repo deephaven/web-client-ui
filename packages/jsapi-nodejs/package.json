@@ -21,12 +21,15 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "esbuild": "^0.24.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
-    "@types/ws": "^8.5.12"
+    "@types/ws": "^8.5.12",
+    "esbuild": "^0.24.0"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.24.0"
   },
   "files": [
     "dist"
