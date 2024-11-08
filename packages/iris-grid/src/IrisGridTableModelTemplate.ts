@@ -6,6 +6,7 @@ import {
   type DeletableGridModel,
   type EditableGridModel,
   type EditOperation,
+  type GridPoint,
   GridRange,
   GridUtils,
   memoizeClear,
@@ -21,7 +22,13 @@ import {
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
-import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
+import {
+  TableUtils,
+  Formatter,
+  FormatterUtils,
+  DateTimeColumnFormatter,
+  DateUtils,
+} from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -678,6 +685,19 @@ class IrisGridTableModelTemplate<
     const column = this.columnAtDepth(x, depth);
     if (isColumnHeaderGroup(column)) {
       return column.color ?? null;
+    }
+    return null;
+  }
+
+  tooltipForCell(gridPoint: GridPoint): string | null {
+    if (gridPoint.column === null || gridPoint.row === null) return null;
+    if (TableUtils.isDateType(this.columns[gridPoint.column].type)) {
+      return this.displayString(
+        this.valueForCell(gridPoint.column, gridPoint.row),
+        this.columns[gridPoint.column].type,
+        this.columns[gridPoint.column].name,
+        { formatString: DateUtils.FULL_DATE_FORMAT }
+      );
     }
     return null;
   }

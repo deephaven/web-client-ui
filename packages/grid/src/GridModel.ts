@@ -7,7 +7,7 @@ import {
   type NullableGridColor,
 } from './GridTheme';
 import memoizeClear from './memoizeClear';
-import GridUtils, { type Token } from './GridUtils';
+import GridUtils, { type GridPoint, type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
@@ -70,6 +70,10 @@ abstract class GridModel<
    * @returns Text for the specified cell
    */
   abstract textForCell(column: ModelIndex, row: ModelIndex): string;
+
+  tooltipForCell(gridPoint: GridPoint): string | null {
+    return null;
+  }
 
   /**
    * Get the character to replace text when truncated for a specific cell.

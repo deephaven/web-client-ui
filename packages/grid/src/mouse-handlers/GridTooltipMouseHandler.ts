@@ -13,7 +13,7 @@ import GridUtils, {
 } from '../GridUtils';
 import { isTokenBoxCellRenderer } from '../TokenBoxCellRenderer';
 
-class GridTokenMouseHandler extends GridMouseHandler {
+class GridTooltipMouseHandler extends GridMouseHandler {
   timeoutId?: ReturnType<typeof setTimeout>;
 
   private isHold = false;
@@ -21,7 +21,7 @@ class GridTokenMouseHandler extends GridMouseHandler {
   private isDown = false;
 
   // Stores the current hovered token box if it exists with translated coordinates
-  private currentLinkBox?: TokenBox;
+  protected currentLinkBox?: TokenBox;
 
   private static HOLD_LENGTH = 1000;
 
@@ -86,7 +86,7 @@ class GridTokenMouseHandler extends GridMouseHandler {
    * @param grid The grid
    * @returns False
    */
-  private setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+  protected setCursor(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.isHoveringLink(gridPoint, grid)) {
       this.cursor = 'pointer';
     } else {
@@ -138,7 +138,7 @@ class GridTokenMouseHandler extends GridMouseHandler {
       ) {
         grid.startEditing(column, row);
       }
-    }, GridTokenMouseHandler.HOLD_LENGTH);
+    }, GridTooltipMouseHandler.HOLD_LENGTH);
 
     return true;
   }
@@ -170,4 +170,4 @@ class GridTokenMouseHandler extends GridMouseHandler {
   }
 }
 
-export default GridTokenMouseHandler;
+export default GridTooltipMouseHandler;

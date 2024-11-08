@@ -41,7 +41,7 @@ import {
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
   type GridSeparator,
-  GridTokenMouseHandler,
+  GridTooltipMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
 import {
@@ -424,7 +424,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       new GridHorizontalScrollBarMouseHandler(600),
       new GridScrollBarCornerMouseHandler(700),
       new GridRowTreeMouseHandler(800),
-      new GridTokenMouseHandler(875),
+      new GridTooltipMouseHandler(875),
       new GridSelectionMouseHandler(900),
     ];
 
