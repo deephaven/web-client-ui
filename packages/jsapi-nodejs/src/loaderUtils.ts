@@ -29,7 +29,7 @@ export type LoadModuleOptions = {
  * @param sourceModuleType module format from the server.
  * @param targetModuleType (optional) module format to be exported. Defaults to
  * sourceModuleType.
- * @param overrides (optional) Additional options to pass to esbuild.
+ * @param esbuildOptions (optional) Additional options to pass to esbuild.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>({
