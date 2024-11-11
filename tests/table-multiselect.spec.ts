@@ -47,10 +47,8 @@ async function filterAndScreenshot(
       gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
       { button: 'right' }
     );
-    await expect(async () => {
-      await page.waitForTimeout(500);
-      await expectContextMenus(page, 1);
-    }).toPass();
+    await page.waitForTimeout(500);
+    await expectContextMenus(page, 1);
   });
 
   await test.step('Apply filter', async () => {
