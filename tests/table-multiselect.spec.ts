@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { expectContextMenus, gotoPage, openTable } from './utils';
 
 const rowHeight = 19;
@@ -47,8 +47,10 @@ async function filterAndScreenshot(
       gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
       { button: 'right' }
     );
-    await page.waitForTimeout(500);
-    await expectContextMenus(page, 1);
+    await expect(async () => {
+      await page.waitForTimeout(500);
+      await expectContextMenus(page, 1);
+    }).toPass();
   });
 
   await test.step('Apply filter', async () => {
