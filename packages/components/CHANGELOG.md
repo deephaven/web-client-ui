@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.98.0](https://github.com/deephaven/web-client-ui/compare/v0.97.0...v0.98.0) (2024-11-12)
+
+### Bug Fixes
+
+- --dh-color-overlay-modal-bg theme background color to be black not gray ([#2277](https://github.com/deephaven/web-client-ui/issues/2277)) ([aba019a](https://github.com/deephaven/web-client-ui/commit/aba019af902d74a3c8c558c0549b535b985234a4)), closes [#2276](https://github.com/deephaven/web-client-ui/issues/2276)
+
 ## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
 
 ### Bug Fixes
