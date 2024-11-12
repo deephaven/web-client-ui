@@ -4,6 +4,8 @@ describe('getFormattedVersionInfo', () => {
   it('should return the formatted version information', () => {
     const serverConfigValues = new Map<string, string>();
     serverConfigValues.set('deephaven.version', '1.0.0');
+    serverConfigValues.set('python.version', '3.9.7');
+    serverConfigValues.set('groovy.version', '11.0.1');
     serverConfigValues.set('java.version', '11.0.1');
     serverConfigValues.set('barrage.version', '2.3.4');
 
@@ -20,10 +22,12 @@ describe('getFormattedVersionInfo', () => {
     expect(result).toEqual({
       'Engine Version': '1.0.0',
       'Web UI Version': '0.0.1',
+      'Python Version': '3.9.7',
       'Java Version': '11.0.1',
+      'Groovy Version': '11.0.1',
       'Barrage Version': '2.3.4',
       'Browser Name': 'Chrome 96',
-      'OS Name': 'Windows NT 10.0',
+      'User Agent OS': 'Windows NT 10.0',
     });
   });
 
@@ -43,9 +47,10 @@ describe('getFormattedVersionInfo', () => {
       'Engine Version': 'Unknown',
       'Web UI Version': '0.0.1',
       'Java Version': 'Unknown',
+      'Groovy Version': 'Unknown',
       'Barrage Version': 'Unknown',
       'Browser Name': 'Unknown',
-      'OS Name': 'Unknown',
+      'User Agent OS': 'Unknown',
     });
   });
 });
