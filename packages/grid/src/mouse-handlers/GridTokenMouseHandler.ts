@@ -13,7 +13,8 @@ import GridUtils, {
 } from '../GridUtils';
 import { isTokenBoxCellRenderer } from '../TokenBoxCellRenderer';
 
-class GridTooltipMouseHandler extends GridMouseHandler {
+// Handler also helps with other tooltips
+class GridTokenMouseHandler extends GridMouseHandler {
   timeoutId?: ReturnType<typeof setTimeout>;
 
   private isHold = false;
@@ -138,7 +139,7 @@ class GridTooltipMouseHandler extends GridMouseHandler {
       ) {
         grid.startEditing(column, row);
       }
-    }, GridTooltipMouseHandler.HOLD_LENGTH);
+    }, GridTokenMouseHandler.HOLD_LENGTH);
 
     return true;
   }
@@ -170,4 +171,4 @@ class GridTooltipMouseHandler extends GridMouseHandler {
   }
 }
 
-export default GridTooltipMouseHandler;
+export default GridTokenMouseHandler;

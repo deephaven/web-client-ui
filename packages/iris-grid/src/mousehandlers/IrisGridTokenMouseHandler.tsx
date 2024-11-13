@@ -3,13 +3,14 @@ import {
   type Grid,
   type GridPoint,
   isLinkToken,
-  GridTooltipMouseHandler,
+  GridTokenMouseHandler,
   type GridRangeIndex,
 } from '@deephaven/grid';
 import deepEqual from 'fast-deep-equal';
 import type IrisGrid from '../IrisGrid';
 
-class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
+// Handler also helps with other tooltips
+class IrisGridTokenMouseHandler extends GridTokenMouseHandler {
   private irisGrid: IrisGrid;
 
   private lastColumn: GridRangeIndex;
@@ -40,7 +41,7 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { model } = this.irisGrid.props;
     const isUserHoveringLink = this.isHoveringLink(gridPoint, grid);
-    const dateTooltip = model.tooltipForCell(gridPoint.column, gridPoint.row);
+    const tooltip = model.tooltipForCell(gridPoint.column, gridPoint.row);
 
     if (
       isUserHoveringLink &&
@@ -68,7 +69,7 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
           ),
         });
       }
-    } else if (dateTooltip !== null) {
+    } else if (tooltip !== null) {
       const { hoverTooltipProps } = this.irisGrid.state;
       const newProps = {
         left: gridPoint.x,
@@ -80,7 +81,7 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
         if (hoverTooltipProps == null) {
           this.irisGrid.setState({
             hoverTooltipProps: newProps,
-            hoverDisplayValue: dateTooltip,
+            hoverDisplayValue: tooltip,
           });
         } else if (
           this.lastColumn !== gridPoint.column ||
@@ -93,7 +94,7 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
             () =>
               this.irisGrid.setState({
                 hoverTooltipProps: newProps,
-                hoverDisplayValue: dateTooltip,
+                hoverDisplayValue: tooltip,
               })
           );
         }
@@ -129,4 +130,4 @@ class IrisGridTooltipMouseHandler extends GridTooltipMouseHandler {
   }
 }
 
-export default IrisGridTooltipMouseHandler;
+export default IrisGridTokenMouseHandler;

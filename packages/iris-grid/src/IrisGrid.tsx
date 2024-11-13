@@ -121,7 +121,7 @@ import {
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
-  IrisGridTooltipMouseHandler,
+  IrisGridTokenMouseHandler,
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
@@ -743,7 +743,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const mouseHandlers: GridMouseHandler[] = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
-      new IrisGridTooltipMouseHandler(this),
+      new IrisGridTokenMouseHandler(this),
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
@@ -3976,33 +3976,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  getHoverTooltip = memoize(
-    (linkHoverTooltipProps: CSSProperties): ReactNode => {
-      if (linkHoverTooltipProps == null) {
-        return null;
-      }
-
-      const { hoverDisplayValue } = this.state;
-
-      const wrapperStyle: CSSProperties = {
-        position: 'absolute',
-        ...linkHoverTooltipProps,
-        pointerEvents: 'none',
-      };
-
-      const popperOptions: PopperOptions = {
-        placement: 'bottom',
-      };
-
-      return (
-        <div style={wrapperStyle}>
-          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
-            <div className="link-hover-tooltip">{hoverDisplayValue}</div>
-          </Tooltip>
-        </div>
-      );
+  getHoverTooltip = memoize((hoverTooltipProps: CSSProperties): ReactNode => {
+    if (hoverTooltipProps == null) {
+      return null;
     }
-  );
+
+    const { hoverDisplayValue } = this.state;
+
+    const wrapperStyle: CSSProperties = {
+      position: 'absolute',
+      ...hoverTooltipProps,
+      pointerEvents: 'none',
+    };
+
+    const popperOptions: PopperOptions = {
+      placement: 'bottom',
+    };
+
+    return (
+      <div style={wrapperStyle}>
+        <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
+          <div className="link-hover-tooltip">{hoverDisplayValue}</div>
+        </Tooltip>
+      </div>
+    );
+  });
 
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;
