@@ -27,6 +27,7 @@ const sampleSectionIds: string[] = [
   'sample-section-navigations',
   'sample-section-list-views',
   'sample-section-pickers',
+  'sample-section-toast',
   'sample-section-tooltips',
   'sample-section-icons',
   'sample-section-editors',
