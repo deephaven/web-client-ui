@@ -25,6 +25,7 @@ import Modals from './Modals';
 import Progress from './Progress';
 import TimeSliderInputs from './TimeSliderInputs';
 import Tooltips from './Tooltips';
+import Toast from './Toast';
 import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
@@ -126,6 +127,7 @@ function StyleGuide(): React.ReactElement {
         <ContextMenus />
         <DropdownMenus />
         <Navigations />
+        <Toast />
         <Tooltips />
         <Icons />
         <Editors />
