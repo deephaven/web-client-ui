@@ -7,6 +7,7 @@ import {
   ThemePicker,
   useTheme,
   Flex,
+  ToastContainer,
 } from '@deephaven/components';
 
 import Buttons from './Buttons';
@@ -140,6 +141,7 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
+        <ToastContainer />
       </div>
     </div>
   );
