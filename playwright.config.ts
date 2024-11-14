@@ -32,7 +32,7 @@ const config: PlaywrightTestConfig = {
   /* Global setup file for initializing before all other tests */
   globalSetup: require.resolve('./tests/globalSetup.ts'),
   /* Retry on CI only */
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   /* Default to 50% of cores, don't want too many as core or web will become bottleneck */
   workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -59,7 +59,7 @@ const config: PlaywrightTestConfig = {
      * saving entirely which is notably slow in webkit. See:
      * https://github.com/microsoft/playwright/issues/18119#issuecomment-1867426196
      */
-    video: 'retain-on-failure',
+    video: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
