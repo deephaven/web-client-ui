@@ -73,7 +73,7 @@ class IrisGridTokenMouseHandler extends GridTokenMouseHandler {
       const { hoverTooltipProps } = this.irisGrid.state;
       const newProps = {
         left: gridPoint.x,
-        top: gridPoint.y,
+        top: gridPoint.y + 1,
         width: 1,
         height: 1,
       };
