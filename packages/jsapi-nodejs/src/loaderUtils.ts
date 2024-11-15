@@ -1,12 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import esbuild from 'esbuild';
+import esbuild, { type BuildOptions } from 'esbuild';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
 import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
 
 type NonEmptyArray<T> = [T, ...T[]];
+
+export type LoadModuleOptions = {
+  serverUrl: URL;
+  serverPaths: NonEmptyArray<string>;
+  download: boolean;
+  storageDir: string;
+  sourceModuleType: 'esm' | 'cjs';
+  targetModuleType?: 'esm' | 'cjs';
+  esbuildOptions?: Omit<
+    BuildOptions,
+    'entryPoints' | 'format' | 'outdir' | 'platform'
+  >;
+};
 
 /**
  * Load a list of modules from a server.
@@ -17,8 +30,9 @@ type NonEmptyArray<T> = [T, ...T[]];
  * the storage directory.
  * @param storageDir The directory to store the downloaded modules.
  * @param sourceModuleType module format from the server.
- * @param targetFormat (optional) format to be exported. Defaults to
+ * @param targetModuleType (optional) module format to be exported. Defaults to
  * sourceModuleType.
+ * @param esbuildOptions (optional) Additional options to pass to esbuild.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>({
@@ -28,14 +42,8 @@ export async function loadModules<TMainModule>({
   storageDir,
   sourceModuleType,
   targetModuleType = sourceModuleType,
-}: {
-  serverUrl: URL;
-  serverPaths: NonEmptyArray<string>;
-  download: boolean;
-  storageDir: string;
-  sourceModuleType: 'esm' | 'cjs';
-  targetModuleType?: 'esm' | 'cjs';
-}): Promise<TMainModule> {
+  esbuildOptions,
+}: LoadModuleOptions): Promise<TMainModule> {
   polyfillWs();
 
   const serverStorageDir = path.join(storageDir, urlToDirectoryName(serverUrl));
@@ -69,12 +77,15 @@ export async function loadModules<TMainModule>({
     // Transpile if source and target module types differ
     if (needsTranspile) {
       await esbuild.build({
-        entryPoints: downloadPaths,
+        // These can be overridden by esbuildOptions
         bundle: false,
-        format: targetModuleType,
         logLevel: 'error',
-        platform: 'node',
+        ...esbuildOptions,
+        // These cannot be overridden
+        entryPoints: downloadPaths,
+        format: targetModuleType,
         outdir: targetDir,
+        platform: 'node',
       });
     }
   }

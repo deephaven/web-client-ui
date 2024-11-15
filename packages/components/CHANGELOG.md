@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
+
+### Features
+
+- Export Spectrum Toast from Components Package ([#2294](https://github.com/deephaven/web-client-ui/issues/2294)) ([a0961ad](https://github.com/deephaven/web-client-ui/commit/a0961ad161adf261c205642a3c3b9203b8892409))
+
+### Bug Fixes
+
+- missing search field import ([#2292](https://github.com/deephaven/web-client-ui/issues/2292)) ([cb1f11f](https://github.com/deephaven/web-client-ui/commit/cb1f11f43cc753fb5eb825f7a524f4285e3d1400)), closes [#2287](https://github.com/deephaven/web-client-ui/issues/2287)
+
+## [0.98.0](https://github.com/deephaven/web-client-ui/compare/v0.97.0...v0.98.0) (2024-11-12)
+
+### Bug Fixes
+
+- --dh-color-overlay-modal-bg theme background color to be black not gray ([#2277](https://github.com/deephaven/web-client-ui/issues/2277)) ([aba019a](https://github.com/deephaven/web-client-ui/commit/aba019af902d74a3c8c558c0549b535b985234a4)), closes [#2276](https://github.com/deephaven/web-client-ui/issues/2276)
+
 ## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
 
 ### Bug Fixes

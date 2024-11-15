@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
+
+### Features
+
+- Export Spectrum Toast from Components Package ([#2294](https://github.com/deephaven/web-client-ui/issues/2294)) ([a0961ad](https://github.com/deephaven/web-client-ui/commit/a0961ad161adf261c205642a3c3b9203b8892409))
+- update version info pop-up with python/groovy version ([#2291](https://github.com/deephaven/web-client-ui/issues/2291)) ([a273b07](https://github.com/deephaven/web-client-ui/commit/a273b07228cbb82793e6762cbd9c65560bcd773c)), closes [#2184](https://github.com/deephaven/web-client-ui/issues/2184) [#2289](https://github.com/deephaven/web-client-ui/issues/2289)
+
+## [0.98.0](https://github.com/deephaven/web-client-ui/compare/v0.97.0...v0.98.0) (2024-11-12)
+
+### Features
+
+- Ruff updates for DHE support ([#2280](https://github.com/deephaven/web-client-ui/issues/2280)) ([a35625e](https://github.com/deephaven/web-client-ui/commit/a35625efe3b918cd75d1dc07b02946398e2bca19))
+
 ## [0.97.0](https://github.com/deephaven/web-client-ui/compare/v0.96.1...v0.97.0) (2024-10-23)
 
 **Note:** Version bump only for package @deephaven/code-studio

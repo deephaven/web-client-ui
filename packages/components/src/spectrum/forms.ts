@@ -9,6 +9,8 @@ export {
   RadioGroup,
   RangeSlider,
   type SpectrumRangeSliderProps as RangeSliderProps,
+  SearchField,
+  type SpectrumSearchFieldProps as SearchFieldProps,
   Slider,
   type SpectrumSliderProps as SliderProps,
   Switch,

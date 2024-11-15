@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import { Workspace } from '@astral-sh/ruff-wasm-web';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,13 +30,9 @@ interface RuffSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (value: Record<string, unknown>) => void;
+  readOnly?: boolean;
+  defaultSettings?: Record<string, unknown>;
 }
-
-const FORMATTED_DEFAULT_SETTINGS = JSON.stringify(
-  RUFF_DEFAULT_SETTINGS,
-  null,
-  2
-);
 
 const RUFF_SETTINGS_URI = monaco.Uri.parse(
   'inmemory://dh-config/ruff-settings.json'
@@ -71,10 +67,17 @@ export default function RuffSettingsModal({
   isOpen,
   onClose,
   onSave,
+  readOnly = false,
+  defaultSettings = RUFF_DEFAULT_SETTINGS,
 }: RuffSettingsModalProps): React.ReactElement | null {
   const [isValid, setIsValid] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+
+  const formattedDefaultSettings = useMemo(
+    () => JSON.stringify(defaultSettings, null, 2),
+    [defaultSettings]
+  );
 
   const { data: ruffVersion } = usePromiseFactory(getRuffVersion);
 
@@ -103,20 +106,23 @@ export default function RuffSettingsModal({
 
   const handleReset = useCallback((): void => {
     assertNotNull(model);
-    model.setValue(FORMATTED_DEFAULT_SETTINGS);
-  }, [model]);
+    model.setValue(formattedDefaultSettings);
+  }, [model, formattedDefaultSettings]);
 
-  const validate = useCallback(val => {
-    try {
-      JSON.parse(val);
-      setIsValid(true);
-    } catch {
-      setIsValid(false);
-    }
-    setIsDefault(
-      editorRef.current?.getModel()?.getValue() === FORMATTED_DEFAULT_SETTINGS
-    );
-  }, []);
+  const validate = useCallback(
+    val => {
+      try {
+        JSON.parse(val);
+        setIsValid(true);
+      } catch {
+        setIsValid(false);
+      }
+      setIsDefault(
+        editorRef.current?.getModel()?.getValue() === formattedDefaultSettings
+      );
+    },
+    [formattedDefaultSettings]
+  );
 
   const debouncedValidate = useDebouncedCallback(validate, 500, {
     leading: true,
@@ -172,6 +178,7 @@ export default function RuffSettingsModal({
         <Editor
           onEditorInitialized={onEditorInitialized}
           settings={{
+            readOnly,
             value: text,
             language: 'json',
             folding: true,
@@ -183,18 +190,26 @@ export default function RuffSettingsModal({
         />
       </ModalBody>
       <ModalFooter>
-        <Button kind="secondary" data-dismiss="modal" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button
-          kind="primary"
-          data-dismiss="modal"
-          tooltip={!isValid ? 'Cannot save invalid JSON' : undefined}
-          disabled={!isValid}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
+        {readOnly ? (
+          <Button kind="secondary" data-dismiss="modal" onClick={handleClose}>
+            Close
+          </Button>
+        ) : (
+          <>
+            <Button kind="secondary" data-dismiss="modal" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              kind="primary"
+              data-dismiss="modal"
+              tooltip={!isValid ? 'Cannot save invalid JSON' : undefined}
+              disabled={!isValid}
+              onClick={handleSave}
+            >
+              Save
+            </Button>
+          </>
+        )}
       </ModalFooter>
     </Modal>
   );

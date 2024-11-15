@@ -49,13 +49,17 @@ export function getFormattedVersionInfo(
     Number(parseFloat(ua.browser.version ?? '')) || ''
   }`;
   const os = `${ua.os.name ?? ''} ${ua.os.version ?? ''}`;
+  const pythonVersion = serverConfigValues.get('python.version') ?? '';
   return {
     'Engine Version': serverConfigValues.get('deephaven.version') ?? 'Unknown',
     'Web UI Version': import.meta.env.npm_package_version ?? 'Unknown',
+    // Python version is only available in python sessions
+    ...(pythonVersion !== '' ? { 'Python Version': pythonVersion } : {}),
     'Java Version': serverConfigValues.get('java.version') ?? 'Unknown',
+    'Groovy Version': serverConfigValues.get('groovy.version') ?? 'Unknown',
     'Barrage Version': serverConfigValues.get('barrage.version') ?? 'Unknown',
     'Browser Name': browser.trim() || 'Unknown',
-    'OS Name': os.trim() || 'Unknown',
+    'User Agent OS': os.trim() || 'Unknown',
   };
 }
 
