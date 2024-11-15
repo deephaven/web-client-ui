@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.97.0",
+  "version": "0.99.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -33,6 +33,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@internationalized/date": "^3.5.5",
     "@react-spectrum/theme-default": "^3.5.1",
+    "@react-spectrum/toast": "^3.0.0-beta.16",
     "@react-spectrum/utils": "^3.11.5",
     "@react-types/radio": "^3.8.1",
     "@react-types/shared": "^3.22.1",

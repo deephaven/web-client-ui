@@ -3,7 +3,6 @@
  */
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
-import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
@@ -64,7 +63,11 @@ class MonacoProviders extends PureComponent<
     MonacoProviders.ruffSettings = settings;
 
     // Ruff has not been initialized yet
-    if (MonacoProviders.ruffWorkspace == null) {
+    if (
+      MonacoProviders.ruffWorkspace == null &&
+      MonacoProviders.isRuffEnabled
+    ) {
+      MonacoProviders.initRuff();
       return;
     }
 
@@ -239,7 +242,7 @@ class MonacoProviders extends PureComponent<
     model: monaco.editor.ITextModel,
     range: monaco.Range
   ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
-    if (!MonacoProviders.ruffWorkspace) {
+    if (!MonacoProviders.isRuffEnabled || !MonacoProviders.ruffWorkspace) {
       return {
         actions: [],
         dispose: () => {
@@ -397,7 +400,7 @@ class MonacoProviders extends PureComponent<
   }
 
   componentDidMount(): void {
-    const { language, session, model } = this.props;
+    const { language, session } = this.props;
 
     this.registeredCompletionProvider =
       monaco.languages.registerCompletionItemProvider(language, {
@@ -420,23 +423,6 @@ class MonacoProviders extends PureComponent<
           provideHover: this.handleHoverRequest,
         }
       );
-    }
-
-    if (language === 'python') {
-      if (MonacoProviders.ruffWorkspace == null) {
-        MonacoProviders.initRuff(); // This will also lint all open editors
-      } else {
-        MonacoProviders.lintPython(model);
-      }
-
-      const throttledLint = throttle(
-        (m: monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
-        250
-      );
-
-      model.onDidChangeContent(() => {
-        throttledLint(model);
-      });
     }
   }
 

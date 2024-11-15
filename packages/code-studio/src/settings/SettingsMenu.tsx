@@ -9,7 +9,6 @@ import {
   vsClose,
   vsWatch,
   vsRecordKeys,
-  vsInfo,
   vsLayers,
   vsPaintcan,
   dhUserIncognito,
@@ -19,10 +18,12 @@ import {
 } from '@deephaven/icons';
 import {
   Button,
+  ContextualHelp,
+  Heading,
+  Content,
   CopyButton,
   GLOBAL_SHORTCUTS,
   Logo,
-  Tooltip,
 } from '@deephaven/components';
 import { type ServerConfigValues, type User, store } from '@deephaven/redux';
 import {
@@ -383,27 +384,30 @@ export class SettingsMenu extends Component<
               <div className="app-settings-footer-item">
                 <div className="font-weight-bold">Version</div>
                 <span className="d-inline-block text-muted">
-                  {deephavenVersion} <FontAwesomeIcon icon={vsInfo} />
-                  <Tooltip interactive>
-                    <div className="detailed-server-config">
-                      {Object.entries(versionInfo).map(([key, value]) =>
-                        getRow(key, value)
-                      )}
-                    </div>
-                    <CopyButton
-                      kind="inline"
-                      tooltip="Copy version numbers"
-                      copy={Object.entries({
-                        ...versionInfo,
-                        ...pluginInfo,
-                      })
-                        .map(([key, value]) => `${key}: ${value}`)
-                        .join('\n')}
-                    >
-                      Copy Versions
-                      <small className="text-muted">({copyShortcut})</small>
-                    </CopyButton>
-                  </Tooltip>
+                  {deephavenVersion}
+                  <ContextualHelp variant="info">
+                    <Heading>Version Info</Heading>
+                    <Content>
+                      <div className="detailed-server-config">
+                        {Object.entries(versionInfo).map(([key, value]) =>
+                          getRow(key, value)
+                        )}
+                      </div>
+                      <CopyButton
+                        kind="inline"
+                        tooltip="Copy version numbers"
+                        copy={Object.entries({
+                          ...versionInfo,
+                          ...pluginInfo,
+                        })
+                          .map(([key, value]) => `${key}: ${value}`)
+                          .join('\n')}
+                      >
+                        Copy Versions
+                        <small className="text-muted">({copyShortcut})</small>
+                      </CopyButton>
+                    </Content>
+                  </ContextualHelp>
                 </span>
               </div>
               <div className="app-settings-footer-item">

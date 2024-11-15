@@ -1,5 +1,5 @@
 import React, { type ReactElement } from 'react';
-import { ContextMenuRoot } from '@deephaven/components';
+import { ContextMenuRoot, ToastContainer } from '@deephaven/components';
 import AppMainContainer from './AppMainContainer';
 
 function App(): ReactElement {
@@ -7,6 +7,7 @@ function App(): ReactElement {
     <div className="app">
       <AppMainContainer />
       <ContextMenuRoot />
+      <ToastContainer />
     </div>
   );
 }

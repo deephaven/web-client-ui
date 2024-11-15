@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { nanoid } from 'nanoid';
+import throttle from 'lodash.throttle';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
@@ -68,6 +69,24 @@ class MonacoUtils {
         provideDocumentFormattingEdits:
           MonacoProviders.handlePythonFormatRequest,
       });
+    });
+
+    monaco.editor.onDidCreateModel(model => {
+      // Lint Python models on creation and on change
+      if (model.getLanguageId() === 'python') {
+        if (MonacoProviders.ruffWorkspace != null) {
+          MonacoProviders.lintPython(model);
+        }
+
+        const throttledLint = throttle(
+          (m: monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
+          250
+        );
+
+        model.onDidChangeContent(() => {
+          throttledLint(model);
+        });
+      }
     });
 
     MonacoUtils.removeConflictingKeybindings();
@@ -546,6 +565,27 @@ class MonacoUtils {
    */
   static isConsoleModel(model: monaco.editor.ITextModel): boolean {
     return model.uri.toString().startsWith(CONSOLE_URI_PREFIX);
+  }
+
+  /**
+   * Checks if the editor has the formatDocument action registered.
+   * @param editor The monaco editor to check
+   * @returns If the editor has a document formatter registered
+   */
+  static canFormat(editor: monaco.editor.IStandaloneCodeEditor): boolean {
+    return (
+      editor.getAction('editor.action.formatDocument')?.isSupported() === true
+    );
+  }
+
+  /**
+   * Runs the formatDocument action on the editor.
+   * @param editor The editor to format
+   */
+  static async formatDocument(
+    editor: monaco.editor.IStandaloneCodeEditor
+  ): Promise<void> {
+    await editor.getAction('editor.action.formatDocument')?.run();
   }
 }
 

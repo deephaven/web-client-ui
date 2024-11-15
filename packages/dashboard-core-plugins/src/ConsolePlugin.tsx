@@ -1,4 +1,4 @@
-import { MonacoProviders, type ScriptEditor } from '@deephaven/console';
+import { type ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
@@ -7,15 +7,13 @@ import {
   LayoutUtils,
   type PanelComponent,
   type PanelHydrateFunction,
-  useAppSelector,
   useListener,
   usePanelRegistration,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import { type CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { getNotebookSettings } from '@deephaven/redux';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
 import { ConsoleEvent, NotebookEvent } from './events';
@@ -27,6 +25,7 @@ import {
   NotebookPanel,
 } from './panels';
 import { setDashboardConsoleSettings } from './redux';
+import useConfigureRuff from './useConfigureRuff';
 
 const log = Log.module('ConsolePlugin');
 
@@ -76,15 +75,7 @@ export function ConsolePlugin(
     new Map<string, string>()
   );
 
-  const { python: { linter = {} } = {} } = useAppSelector(getNotebookSettings);
-  const { isEnabled: ruffEnabled = false, config: ruffConfig } = linter;
-  useEffect(
-    function setRuffSettings() {
-      MonacoProviders.isRuffEnabled = ruffEnabled;
-      MonacoProviders.setRuffSettings(ruffConfig);
-    },
-    [ruffEnabled, ruffConfig]
-  );
+  useConfigureRuff();
 
   const dispatch = useDispatch();
 
