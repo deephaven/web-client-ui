@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
+
+### Features
+
+- Export Spectrum Toast from Components Package ([#2294](https://github.com/deephaven/web-client-ui/issues/2294)) ([a0961ad](https://github.com/deephaven/web-client-ui/commit/a0961ad161adf261c205642a3c3b9203b8892409))
+
+### Bug Fixes
+
+- missing search field import ([#2292](https://github.com/deephaven/web-client-ui/issues/2292)) ([cb1f11f](https://github.com/deephaven/web-client-ui/commit/cb1f11f43cc753fb5eb825f7a524f4285e3d1400)), closes [#2287](https://github.com/deephaven/web-client-ui/issues/2287)
+
 ## [0.98.0](https://github.com/deephaven/web-client-ui/compare/v0.97.0...v0.98.0) (2024-11-12)
 
 ### Bug Fixes
