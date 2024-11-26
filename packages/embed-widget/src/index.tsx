@@ -3,7 +3,13 @@ import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss'; // Do NOT move any lower. This needs to be imported before any other styles
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
+import { logInit } from '@deephaven/log';
 import './index.scss';
+
+logInit(
+  parseInt(import.meta.env.VITE_LOG_LEVEL ?? '2', 10),
+  import.meta.env.VITE_ENABLE_LOG_PROXY === 'true'
+);
 
 preloadTheme();
 
