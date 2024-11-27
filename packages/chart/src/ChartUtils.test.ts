@@ -1,5 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
+import { type dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { type Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
@@ -519,8 +521,8 @@ it('creates correct bounds from business days', () => {
   expect(
     chartUtils.createBoundsFromDays(['MONDAY', 'TUESDAY', 'THURSDAY', 'FRIDAY'])
   ).toStrictEqual([
-    [6, 1],
     [3, 4],
+    [6, 1],
   ]);
   expect(
     chartUtils.createBoundsFromDays([
@@ -533,27 +535,130 @@ it('creates correct bounds from business days', () => {
   expect(
     chartUtils.createBoundsFromDays(['MONDAY', 'WEDNESDAY', 'FRIDAY'])
   ).toStrictEqual([
-    [6, 1],
     [2, 3],
     [4, 5],
+    [6, 1],
   ]);
   expect(
     chartUtils.createBoundsFromDays(['WEDNESDAY', 'THURSDAY'])
   ).toStrictEqual([[5, 3]]);
 });
 
-it('creates range breaks from holidays correctly', () => {
-  const holidays = [
-    new dh.Holiday('2020-06-22', []),
-    new dh.Holiday('2020-06-22', [new dh.BusinessPeriod('10:00', '14:00')]),
-    new dh.Holiday('2020-08-23', []),
-    new dh.Holiday('2020-03-12', [
-      new dh.BusinessPeriod('07:00', '08:00'),
-      new dh.BusinessPeriod('21:00', '22:00'),
-    ]),
-  ];
-  expect(chartUtils.createRangeBreakValuesFromHolidays(holidays)).toStrictEqual(
-    [
+describe('range breaks', () => {
+  function testCalendar(
+    calendar: Partial<DhType.calendar.BusinessCalendar>,
+    expected,
+    formatter = makeFormatter()
+  ) {
+    const businessCalendar =
+      TestUtils.createMockProxy<DhType.calendar.BusinessCalendar>({
+        businessDays: [],
+        businessPeriods: [],
+        holidays: [],
+        timeZone: {
+          id: 'UTC',
+          standardOffset: 0,
+        },
+        ...calendar,
+      });
+    expect(
+      chartUtils.createRangeBreaksFromBusinessCalendar(
+        businessCalendar,
+        formatter
+      )
+    ).toEqual(expected);
+  }
+
+  describe('closed periods for partial holidays', () => {
+    function testPeriods(holidayPeriods, calendarPeriods, expected) {
+      expect(
+        ChartUtils.createClosedRangesForPartialHoliday(
+          holidayPeriods,
+          calendarPeriods
+        )
+      ).toEqual(expected);
+    }
+
+    const calendarPeriods = [
+      [],
+      [new dh.BusinessPeriod('09:00', '17:00')],
+      [
+        new dh.BusinessPeriod('09:00', '12:00'),
+        new dh.BusinessPeriod('13:00', '17:00'),
+      ],
+      [new dh.BusinessPeriod('06:00', '23:00')],
+      [new dh.BusinessPeriod('00:00', '24:00')],
+    ];
+
+    it('handles shortened day', () => {
+      const holidayPeriod = [new dh.BusinessPeriod('10:00', '14:00')];
+      testPeriods(holidayPeriod, calendarPeriods[0], [
+        [0, 10],
+        [14, 24],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[1], [
+        [9, 10],
+        [14, 17],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[2], [
+        [9, 10],
+        [14, 17],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[3], [
+        [6, 10],
+        [14, 23],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[4], [
+        [0, 10],
+        [14, 24],
+      ]);
+    });
+
+    it('handles split holiday', () => {
+      const holidayPeriod = [
+        new dh.BusinessPeriod('09:00', '11:00'),
+        new dh.BusinessPeriod('13:30', '16:00'),
+      ];
+      testPeriods(holidayPeriod, calendarPeriods[0], [
+        [0, 9],
+        [11, 13.5],
+        [16, 24],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[1], [
+        [11, 13.5],
+        [16, 17],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[2], [
+        [11, 12],
+        [13, 13.5],
+        [16, 17],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[3], [
+        [6, 9],
+        [11, 13.5],
+        [16, 23],
+      ]);
+      testPeriods(holidayPeriod, calendarPeriods[4], [
+        [0, 9],
+        [11, 13.5],
+        [16, 24],
+      ]);
+    });
+  });
+
+  it('creates range breaks from holidays correctly', () => {
+    const holidays = [
+      new dh.Holiday('2020-06-22', []),
+      new dh.Holiday('2020-06-22', [new dh.BusinessPeriod('10:00', '14:00')]),
+      new dh.Holiday('2020-08-23', []),
+      new dh.Holiday('2020-03-12', [
+        new dh.BusinessPeriod('07:00', '08:00'),
+        new dh.BusinessPeriod('21:00', '22:00'),
+      ]),
+    ];
+    expect(
+      chartUtils.createRangeBreakValuesFromHolidays(holidays)
+    ).toStrictEqual([
       { values: ['2020-06-22 00:00:00.000000', '2020-08-23 00:00:00.000000'] },
       {
         dvalue: 36000000,
@@ -575,8 +680,126 @@ it('creates range breaks from holidays correctly', () => {
         dvalue: 7200000,
         values: ['2020-03-12 22:00:00.000000'],
       },
-    ]
-  );
+    ]);
+  });
+
+  describe('creates range breaks from business periods correctly', () => {
+    function testPeriods(periods: DhType.calendar.BusinessPeriod[], expected) {
+      return testCalendar({ businessPeriods: periods }, expected);
+    }
+
+    it('handles empty periods', () => {
+      testPeriods([], []);
+    });
+
+    it('handles single period', () => {
+      testPeriods(
+        [new dh.BusinessPeriod('9:00', '16:30')],
+        [
+          {
+            pattern: 'hour',
+            bounds: [16.5, 9],
+          },
+        ]
+      );
+    });
+
+    it('handles multiple periods', () => {
+      testPeriods(
+        [
+          new dh.BusinessPeriod('9:00', '11:30'),
+          new dh.BusinessPeriod('13:30', '16:30'),
+        ],
+        [
+          {
+            pattern: 'hour',
+            bounds: [11.5, 13.5],
+          },
+          {
+            pattern: 'hour',
+            bounds: [16.5, 9],
+          },
+        ]
+      );
+    });
+  });
+
+  describe('creates range breaks from business days correctly', () => {
+    function testDays(days: string[], expected) {
+      return testCalendar({ businessDays: days }, expected);
+    }
+
+    it('handles empty days', () => {
+      testDays([], []);
+    });
+
+    it('handles single day', () => {
+      testDays(
+        ['TUESDAY'],
+        [
+          {
+            pattern: 'day of week',
+            bounds: [3, 2],
+          },
+        ]
+      );
+    });
+
+    it('handles a regular business week', () => {
+      testDays(
+        ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+        [
+          {
+            pattern: 'day of week',
+            bounds: [6, 1],
+          },
+        ]
+      );
+    });
+
+    it('handles every day but Sunday', () => {
+      testDays(
+        ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
+        [
+          {
+            pattern: 'day of week',
+            bounds: [0, 1],
+          },
+        ]
+      );
+    });
+
+    it('handles a full week', () => {
+      testDays(
+        [
+          'SUNDAY',
+          'MONDAY',
+          'TUESDAY',
+          'WEDNESDAY',
+          'THURSDAY',
+          'FRIDAY',
+          'SATURDAY',
+        ],
+        []
+      );
+    });
+
+    it('handles a break in the middle of the week', () => {
+      testDays(
+        ['MONDAY', 'TUESDAY', 'THURSDAY', 'FRIDAY'],
+        [
+          {
+            pattern: 'day of week',
+            bounds: [3, 4],
+          },
+          {
+            pattern: 'day of week',
+            bounds: [6, 1],
+          },
+        ]
+      );
+    });
+  });
 });
 
 describe('axis property name', () => {
