@@ -16,11 +16,6 @@ import {
   type ResolvableContextAction,
   Tooltip,
 } from '@deephaven/components';
-import {
-  LayoutUtils,
-  type PanelComponent,
-  PanelEvent,
-} from '@deephaven/dashboard';
 import type {
   Container,
   EventEmitter,
@@ -29,15 +24,17 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { dh } from '@deephaven/jsapi-types';
-import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
+import LayoutUtils from './layout/LayoutUtils';
+import { type PanelComponent } from './DashboardPlugin';
+import PanelEvent from './PanelEvent';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
+import TabEvent from './TabEvent';
 import './Panel.scss';
 
 const log = Log.module('Panel');
 
-export type CorePanelProps = {
+export type BasePanelProps = {
   /**
    * Reference to the component panel.
    * Will wait until it is set before emitting mount/unmount events.
@@ -52,14 +49,8 @@ export type CorePanelProps = {
   onBlur?: FocusEventHandler<HTMLDivElement>;
   onTab?: (tab: Tab) => void;
   onTabClicked?: (e: MouseEvent) => void;
-  onClearAllFilters?: (...args: unknown[]) => void;
   onHide?: (...args: unknown[]) => void;
   onResize?: (...args: unknown[]) => void;
-  onSessionClose?: (session: dh.IdeSession) => void;
-  onSessionOpen?: (
-    session: dh.IdeSession,
-    { language, sessionId }: { language: string; sessionId: string }
-  ) => void;
   onBeforeShow?: (...args: unknown[]) => void;
   onShow?: (...args: unknown[]) => void;
   onTabBlur?: (...args: unknown[]) => void;
@@ -83,18 +74,15 @@ interface PanelState {
  * Also wires up some triggers for common events:
  * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
  */
-class Panel extends PureComponent<CorePanelProps, PanelState> {
-  constructor(props: CorePanelProps) {
+class Panel extends PureComponent<BasePanelProps, PanelState> {
+  constructor(props: BasePanelProps) {
     super(props);
 
-    this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
     this.handleCopyPanel = this.handleCopyPanel.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
     this.handleHide = this.handleHide.bind(this);
     this.handleResize = this.handleResize.bind(this);
-    this.handleSessionClosed = this.handleSessionClosed.bind(this);
-    this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleBeforeShow = this.handleBeforeShow.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
@@ -124,14 +112,8 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
     glContainer.on('hide', this.handleHide);
     glContainer.on('tab', this.handleTab);
     glContainer.on('tabClicked', this.handleTabClicked);
-    glEventHub.on(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
-    glEventHub.on(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
     glEventHub.on(TabEvent.focus, this.handleTabFocus);
     glEventHub.on(TabEvent.blur, this.handleTabBlur);
-    glEventHub.on(
-      InputFilterEvent.CLEAR_ALL_FILTERS,
-      this.handleClearAllFilters
-    );
 
     glEventHub.emit(PanelEvent.MOUNT, componentPanel ?? this);
 
@@ -150,14 +132,8 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
     glContainer.off('hide', this.handleHide);
     glContainer.off('tab', this.handleTab);
     glContainer.off('tabClicked', this.handleTabClicked);
-    glEventHub.off(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
-    glEventHub.off(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
     glEventHub.off(TabEvent.focus, this.handleTabFocus);
     glEventHub.off(TabEvent.blur, this.handleTabBlur);
-    glEventHub.off(
-      InputFilterEvent.CLEAR_ALL_FILTERS,
-      this.handleClearAllFilters
-    );
 
     glEventHub.emit(PanelEvent.UNMOUNT, componentPanel ?? this);
   }
@@ -183,11 +159,6 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
     onTabClicked?.(e);
   }
 
-  handleClearAllFilters(...args: unknown[]): void {
-    const { onClearAllFilters } = this.props;
-    onClearAllFilters?.(...args);
-  }
-
   handleFocus(event: FocusEvent<HTMLDivElement>): void {
     const { componentPanel, glEventHub } = this.props;
     glEventHub.emit(PanelEvent.FOCUS, componentPanel ?? this);
@@ -209,19 +180,6 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
   handleResize(...args: unknown[]): void {
     const { onResize } = this.props;
     onResize?.(...args);
-  }
-
-  handleSessionClosed(session: dh.IdeSession): void {
-    const { onSessionClose } = this.props;
-    onSessionClose?.(session);
-  }
-
-  handleSessionOpened(
-    session: dh.IdeSession,
-    params: { language: string; sessionId: string }
-  ): void {
-    const { onSessionOpen } = this.props;
-    onSessionOpen?.(session, params);
   }
 
   handleBeforeShow(...args: unknown[]): void {

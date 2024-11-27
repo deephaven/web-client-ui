@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { type RootState } from '@deephaven/redux';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import InputFilter, {
   type InputFilterColumn,
 } from '../controls/input-filter/InputFilter';
