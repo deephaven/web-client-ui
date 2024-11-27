@@ -25,6 +25,7 @@ export function useMappedSelection<TItem, TValue>(
     );
 
     return {
+      // TODO: Need to handle this... not sure how yet
       selection: mapSelection(selection, getItem, mapItem),
       isInverted,
     };
