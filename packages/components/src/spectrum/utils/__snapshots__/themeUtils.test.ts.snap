@@ -3,29 +3,29 @@
 exports[`themeDHDefault should merge Spectrum default with DH custom styles 1`] = `
 {
   "dark": {
-    "spectrum--darkest": "gP7gvq_spectrum--darkest",
+    "spectrum--darkest": "R-l9gW_spectrum--darkest",
     "theme-spectrum-alias": "theme-spectrum-alias",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "global": {
-    "spectrum": "zA6MfG_spectrum",
-    "spectrum--dark": "zA6MfG_spectrum--dark",
-    "spectrum--darkest": "zA6MfG_spectrum--darkest",
-    "spectrum--large": "zA6MfG_spectrum--large",
-    "spectrum--light": "zA6MfG_spectrum--light",
-    "spectrum--lightest": "zA6MfG_spectrum--lightest",
-    "spectrum--medium": "zA6MfG_spectrum--medium",
+    "spectrum": "XhWg9q_spectrum",
+    "spectrum--dark": "XhWg9q_spectrum--dark",
+    "spectrum--darkest": "XhWg9q_spectrum--darkest",
+    "spectrum--large": "XhWg9q_spectrum--large",
+    "spectrum--light": "XhWg9q_spectrum--light",
+    "spectrum--lightest": "XhWg9q_spectrum--lightest",
+    "spectrum--medium": "XhWg9q_spectrum--medium",
   },
   "large": {
-    "spectrum--large": "HAZavG_spectrum--large",
+    "spectrum--large": "_1DrGeG_spectrum--large",
   },
   "light": {
-    "spectrum--light": "PFjRbG_spectrum--light",
+    "spectrum--light": "YqfL3a_spectrum--light",
     "theme-spectrum-alias": "theme-spectrum-alias",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "medium": {
-    "spectrum--medium": "xSyFOq_spectrum--medium",
+    "spectrum--medium": "rfm_fq_spectrum--medium",
   },
 }
 `;

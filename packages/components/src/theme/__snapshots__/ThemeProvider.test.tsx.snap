@@ -18,7 +18,7 @@ exports[`ThemeProvider setSelectedThemeKey: [
 ./theme-light-components.css?raw
     </style>
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -52,7 +52,7 @@ exports[`ThemeProvider setSelectedThemeKey: [
       data-theme-key="themeA"
     />
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -69,7 +69,7 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: d
 <body>
   <div>
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -86,7 +86,7 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 <body>
   <div>
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -120,7 +120,7 @@ exports[`ThemeProvider should load themes based on default selected theme key. c
       data-theme-key="mockDefaultSelectedThemeKey"
     />
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -137,7 +137,7 @@ exports[`ThemeProvider should load themes based on default selected theme key. c
 <body>
   <div>
     <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
+      class="spectrum-theme-provider _t8qIa_spectrum kDKRXa_spectrum kDKRXa_i18nFontFamily YqfL3a_spectrum--light theme-spectrum-palette theme-spectrum-alias _1DrGeG_spectrum--large XhWg9q_spectrum XhWg9q_spectrum--dark XhWg9q_spectrum--darkest XhWg9q_spectrum--large XhWg9q_spectrum--light XhWg9q_spectrum--lightest XhWg9q_spectrum--medium"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
