@@ -757,6 +757,18 @@ describe('range breaks', () => {
       );
     });
 
+    it('handles every day but Sunday', () => {
+      testDays(
+        ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
+        [
+          {
+            pattern: 'day of week',
+            bounds: [0, 1],
+          },
+        ]
+      );
+    });
+
     it('handles a full week', () => {
       testDays(
         [

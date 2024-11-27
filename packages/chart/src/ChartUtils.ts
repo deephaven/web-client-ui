@@ -1613,7 +1613,7 @@ class ChartUtils {
     for (let i = 0; i < weekLength; i += 1) {
       if (
         !businessDaysSet.has(i) &&
-        businessDaysSet.has((i - 1) % weekLength)
+        businessDaysSet.has((i - 1 + weekLength) % weekLength)
       ) {
         closedDays.add(i);
       }
