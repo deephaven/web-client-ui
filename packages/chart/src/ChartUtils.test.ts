@@ -572,7 +572,7 @@ describe('range breaks', () => {
   describe('closed periods for partial holidays', () => {
     function testPeriods(holidayPeriods, calendarPeriods, expected) {
       expect(
-        ChartUtils.createClosedPeriodsForPartialHoliday(
+        ChartUtils.createClosedRangesForPartialHoliday(
           holidayPeriods,
           calendarPeriods
         )

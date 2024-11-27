@@ -1789,7 +1789,7 @@ class ChartUtils {
       }
     }
 
-    const closedPeriods = ChartUtils.createClosedPeriodsForPartialHoliday(
+    const closedPeriods = ChartUtils.createClosedRangesForPartialHoliday(
       holiday.businessPeriods,
       calendar?.businessPeriods ?? []
     );
