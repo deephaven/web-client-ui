@@ -40,7 +40,7 @@ export default function useFormWithDetachedSubmitButton(
 
   const submitButtonRef = useCallback(
     (buttonEl: FocusableRefValue<HTMLButtonElement> | null) => {
-      buttonEl?.UNSAFE_getDOMNode().setAttribute('form', formId);
+      buttonEl?.UNSAFE_getDOMNode()?.setAttribute('form', formId);
     },
     [formId]
   );

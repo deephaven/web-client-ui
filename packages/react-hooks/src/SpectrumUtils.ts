@@ -41,7 +41,7 @@ export function extractSpectrumHTMLElement<
 export function extractSpectrumLastChildHTMLElement<
   THtml extends HTMLElement = HTMLElement,
 >(ref: DOMRefValue<THtml> | null): HTMLElement | null {
-  const maybeHTMLElement = ref?.UNSAFE_getDOMNode().lastElementChild;
+  const maybeHTMLElement = ref?.UNSAFE_getDOMNode()?.lastElementChild;
   return identityExtractHTMLElement(maybeHTMLElement);
 }
 
