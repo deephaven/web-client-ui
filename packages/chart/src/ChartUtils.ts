@@ -580,9 +580,9 @@ class ChartUtils {
    *
    * @param holidayPeriods the business periods for the holiday
    * @param calendarPeriods the business periods for the calendar
-   * @returns an array of closed periods for the partial holiday. Should be the periods during the regular business hours that are _not_ specified by the holiday periods.
+   * @returns an array of closed ranges for the partial holiday. Should be the ranges during the regular business hours that are _not_ specified by the holiday periods.
    */
-  static createClosedPeriodsForPartialHoliday(
+  static createClosedRangesForPartialHoliday(
     holidayPeriods: DhType.calendar.BusinessPeriod[],
     calendarPeriods: DhType.calendar.BusinessPeriod[]
   ): Range[] {
