@@ -24,7 +24,7 @@
     "build:theme": "sass --embed-sources --style=compressed --load-path=../../node_modules ./src/theme:./dist/theme"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "3.35.1",
+    "@adobe/react-spectrum": "3.38.0",
     "@deephaven/icons": "file:../icons",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",

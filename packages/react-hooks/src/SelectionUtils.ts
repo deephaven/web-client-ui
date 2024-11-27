@@ -74,7 +74,7 @@ export function isSelectionMaybeInvertedEqual<T>(
  */
 export function mapSelection<TItem, TMap>(
   selectedItemKeys: Selection,
-  getItem: (key: React.Key) => KeyedItem<TItem>,
+  getItem: (key: React.Key) => KeyedItem<TItem> | undefined,
   mapItem: (item: KeyedItem<TItem>) => TMap
 ): SelectionT<TMap> {
   if (selectedItemKeys === 'all') {
@@ -83,7 +83,15 @@ export function mapSelection<TItem, TMap>(
 
   const keys = [...selectedItemKeys.keys()];
 
-  return new Set(keys.map(key => mapItem(getItem(key))));
+  return new Set(
+    keys.map(key => {
+      const item = getItem(key);
+      if (item === undefined) {
+        throw new Error(`Could not find item with key ${key}`);
+      }
+      return mapItem(item);
+    })
+  );
 }
 
 /**
