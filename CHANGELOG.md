@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.1](https://github.com/deephaven/web-client-ui/compare/v0.99.0...v0.99.1) (2024-11-29)
+
+### Bug Fixes
+
+- Embed-widget not setting log level on init ([#2301](https://github.com/deephaven/web-client-ui/issues/2301)) ([1309cd2](https://github.com/deephaven/web-client-ui/commit/1309cd21a893e58138535ddbbe04025475a4ef06))
+- open file blocks logout ([#2281](https://github.com/deephaven/web-client-ui/issues/2281)) ([7ff0e53](https://github.com/deephaven/web-client-ui/commit/7ff0e53ac41887fa22f2591b5df2439ac9984397)), closes [#1685](https://github.com/deephaven/web-client-ui/issues/1685)
+- Partial holidays range breaks ([#2297](https://github.com/deephaven/web-client-ui/issues/2297)) ([ab4c02f](https://github.com/deephaven/web-client-ui/commit/ab4c02fe50eea0339a585b40fb3d56376ea9517b))
+- Update react-spectrum packages ([#2303](https://github.com/deephaven/web-client-ui/issues/2303)) ([2216274](https://github.com/deephaven/web-client-ui/commit/2216274b416d9b1587a29c130dd19dd21accaa4b))
+
 ## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
 
 ### Features

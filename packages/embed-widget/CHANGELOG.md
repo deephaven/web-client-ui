@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.1](https://github.com/deephaven/web-client-ui/compare/v0.99.0...v0.99.1) (2024-11-29)
+
+### Bug Fixes
+
+- Embed-widget not setting log level on init ([#2301](https://github.com/deephaven/web-client-ui/issues/2301)) ([1309cd2](https://github.com/deephaven/web-client-ui/commit/1309cd21a893e58138535ddbbe04025475a4ef06))
+
 ## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.1](https://github.com/deephaven/web-client-ui/compare/v0.99.0...v0.99.1) (2024-11-29)
+
+### Bug Fixes
+
+- Partial holidays range breaks ([#2297](https://github.com/deephaven/web-client-ui/issues/2297)) ([ab4c02f](https://github.com/deephaven/web-client-ui/commit/ab4c02fe50eea0339a585b40fb3d56376ea9517b))
+
 ## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
 
 **Note:** Version bump only for package @deephaven/chart
