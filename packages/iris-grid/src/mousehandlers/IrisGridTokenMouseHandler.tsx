@@ -49,14 +49,12 @@ class IrisGridTokenMouseHandler extends GridTokenMouseHandler {
       isLinkToken(this.currentLinkBox.token)
     ) {
       const { hoverTooltipProps } = this.irisGrid.state;
-      if (this.currentLinkBox == null) {
-        return false;
-      }
       const { x1: left, y1: top, x2: right, y2: bottom } = this.currentLinkBox;
       const { href } = this.currentLinkBox.token;
       const width = right - left;
       const height = bottom - top;
       const newProps = { left, top: top + 1, width, height };
+
       if (!deepEqual(hoverTooltipProps, newProps)) {
         this.irisGrid.setState({
           hoverTooltipProps: newProps,
