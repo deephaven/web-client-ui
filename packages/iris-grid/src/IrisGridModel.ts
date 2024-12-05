@@ -7,6 +7,7 @@ import {
   type GridCell,
   GridModel,
   type GridRange,
+  type GridRangeIndex,
   type GridThemeType,
   type ModelIndex,
   type MoveOperation,
@@ -600,6 +601,10 @@ abstract class IrisGridModel<
     theme: GridThemeType
   ): DataBarOptions {
     throw new Error('Method not implemented.');
+  }
+
+  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
+    return null;
   }
 }
 

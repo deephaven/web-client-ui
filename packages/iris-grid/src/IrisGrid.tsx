@@ -446,8 +446,8 @@ export interface IrisGridState {
   overflowButtonTooltipProps: CSSProperties | null;
   expandCellTooltipProps: CSSProperties | null;
   expandTooltipDisplayValue: string;
-  linkHoverTooltipProps: CSSProperties | null;
-  linkHoverDisplayValue: string;
+  hoverTooltipProps: CSSProperties | null;
+  hoverDisplayValue: ReactNode;
 
   gotoRow: string;
   gotoRowError: string;
@@ -874,8 +874,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowButtonTooltipProps: null,
       expandCellTooltipProps: null,
       expandTooltipDisplayValue: 'expand',
-      linkHoverTooltipProps: null,
-      linkHoverDisplayValue: '',
+      hoverTooltipProps: null,
+      hoverDisplayValue: '',
       isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
@@ -3976,37 +3976,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
-  getLinkHoverTooltip = memoize(
-    (linkHoverTooltipProps: CSSProperties): ReactNode => {
-      if (linkHoverTooltipProps == null) {
-        return null;
-      }
-
-      const { linkHoverDisplayValue } = this.state;
-
-      const wrapperStyle: CSSProperties = {
-        position: 'absolute',
-        ...linkHoverTooltipProps,
-        pointerEvents: 'none',
-      };
-
-      const popperOptions: PopperOptions = {
-        placement: 'bottom',
-      };
-
-      return (
-        <div style={wrapperStyle}>
-          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
-            <div className="link-hover-tooltip">
-              {linkHoverDisplayValue} - Click once to follow.
-              <br />
-              Click and hold to select this cell.
-            </div>
-          </Tooltip>
-        </div>
-      );
+  getHoverTooltip = memoize((hoverTooltipProps: CSSProperties): ReactNode => {
+    if (hoverTooltipProps == null) {
+      return null;
     }
-  );
+
+    const { hoverDisplayValue } = this.state;
+
+    const wrapperStyle: CSSProperties = {
+      position: 'absolute',
+      ...hoverTooltipProps,
+      pointerEvents: 'none',
+    };
+
+    const popperOptions: PopperOptions = {
+      placement: 'bottom',
+    };
+
+    return (
+      <div style={wrapperStyle}>
+        <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
+          <div className="link-hover-tooltip">{hoverDisplayValue}</div>
+        </Tooltip>
+      </div>
+    );
+  });
 
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;
@@ -4282,7 +4276,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       expandCellTooltipProps,
-      linkHoverTooltipProps,
+      hoverTooltipProps,
       isGotoShown,
       gotoRow,
       gotoRowError,
@@ -4902,8 +4896,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
             {expandCellTooltipProps &&
               this.getExpandCellTooltip(expandCellTooltipProps)}
-            {linkHoverTooltipProps &&
-              this.getLinkHoverTooltip(linkHoverTooltipProps)}
+            {hoverTooltipProps && this.getHoverTooltip(hoverTooltipProps)}
           </Grid>
           <GotoRow
             ref={this.gotoRowRef}
