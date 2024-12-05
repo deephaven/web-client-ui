@@ -11,7 +11,7 @@ RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 # syntax=docker/dockerfile:1
 # Dockerfile for updating the snapshots.
 # Expects to be run from the root of the web-client-ui repo
-FROM mcr.microsoft.com/playwright:v1.44.0-jammy AS playwright
+FROM mcr.microsoft.com/playwright:v1.49.0-noble AS playwright
 WORKDIR /work/
 
 # Update packages list and install some build tools
