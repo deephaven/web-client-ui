@@ -423,7 +423,6 @@ export class IrisGridPanel extends PureComponent<
       }
 
       // TODO #2093: Find a better way to handle deprecated panel prop
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const deprecatedProps = {
         panel: this,
       };
@@ -440,6 +439,8 @@ export class IrisGridPanel extends PureComponent<
             selectedRanges={this.irisGrid.current?.state.selectedRanges}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...deprecatedProps}
           />
         </div>
       );
