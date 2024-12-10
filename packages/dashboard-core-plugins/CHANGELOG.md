@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.99.2](https://github.com/deephaven/web-client-ui/compare/v0.99.1...v0.99.2) (2024-12-10)
+
+### Bug Fixes
+
+- Table plugins - pass through deprecated props ([#2308](https://github.com/deephaven/web-client-ui/issues/2308)) ([#2309](https://github.com/deephaven/web-client-ui/issues/2309)) ([ada5ffb](https://github.com/deephaven/web-client-ui/commit/ada5ffb9923d3e534835f74898db5d1a4267856d)), closes [#2274](https://github.com/deephaven/web-client-ui/issues/2274)
+
 ## [0.99.1](https://github.com/deephaven/web-client-ui/compare/v0.99.0...v0.99.1) (2024-11-29)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
