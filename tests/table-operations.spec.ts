@@ -470,6 +470,18 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
+  await test.step('Rollup a double column', async () => {
+    const doubleColumn = page.getByRole('button', {
+      name: 'Double',
+      exact: true,
+    });
+    expect(doubleColumn).toBeTruthy();
+    await doubleColumn.dblclick();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
   await test.step('Aggregate columns', async () => {
     await page.getByText('Constituents').click();
     await page.getByText('Non-Aggregated Columns').click();

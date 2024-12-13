@@ -115,7 +115,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   }
 
   static isGroupable(column: dh.Column): boolean {
-    return !TableUtils.isDecimalType(column.type);
+    return (
+      !TableUtils.isBigDecimalType(column.type) &&
+      !TableUtils.isBigIntegerType(column.type)
+    );
   }
 
   constructor(props: RollupRowsProps) {
