@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   dhc-server:
-    image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
+    image: ghcr.io/deephaven/server:${DHC_VERSION:-0.35.2}
     pull_policy: always
     volumes:
       - ./data:/data
