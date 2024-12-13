@@ -14,7 +14,7 @@ on:
       - 'release/**'
       - 'feature/**'
 env:
-  DOCKER_TAG: edge
+  DOCKER_TAG: 0.35.2
 
 jobs:
   build:
