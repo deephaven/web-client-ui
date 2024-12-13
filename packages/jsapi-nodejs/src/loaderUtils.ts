@@ -76,12 +76,6 @@ export async function loadModules<TMainModule>({
 
     // Transpile if source and target module types differ
     if (needsTranspile) {
-      const wasmURL = require.resolve('esbuild-wasm/esbuild.wasm');
-
-      await esbuild.initialize({
-        wasmURL,
-      });
-
       await esbuild.build({
         // These can be overridden by esbuildOptions
         bundle: false,
