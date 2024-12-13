@@ -14,7 +14,7 @@ on:
       - 'release/**'
       - 'feature/**'
 env:
-  DHC_VERSION: edge
+  DHC_VERSION: 0.36.1
 
 jobs:
   build:
