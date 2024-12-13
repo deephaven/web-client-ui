@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import esbuild, { type BuildOptions } from 'esbuild';
+import esbuild, { type BuildOptions } from 'esbuild-wasm';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
@@ -76,6 +76,12 @@ export async function loadModules<TMainModule>({
 
     // Transpile if source and target module types differ
     if (needsTranspile) {
+      const wasmURL = require.resolve('esbuild-wasm/esbuild.wasm');
+
+      await esbuild.initialize({
+        wasmURL,
+      });
+
       await esbuild.build({
         // These can be overridden by esbuildOptions
         bundle: false,
