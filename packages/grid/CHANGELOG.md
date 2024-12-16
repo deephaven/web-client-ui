@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.7](https://github.com/deephaven/web-client-ui/compare/v0.85.6...v0.85.7) (2024-12-16)
+
+### Bug Fixes
+
+- Input Tables cannot paste more rows than number of visible rows ([#2313](https://github.com/deephaven/web-client-ui/issues/2313)) ([bb424d1](https://github.com/deephaven/web-client-ui/commit/bb424d1cd7943e832a6790112176a7600be193a7))
+
 ## [0.85.3](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.85.3) (2024-07-23)
 
 ### Bug Fixes
