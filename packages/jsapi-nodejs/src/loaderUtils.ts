@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import esbuild, { type BuildOptions } from 'esbuild';
+import esbuild, { type BuildOptions } from 'esbuild-wasm';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';

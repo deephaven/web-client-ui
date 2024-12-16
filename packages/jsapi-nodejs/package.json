@@ -26,10 +26,10 @@
   "devDependencies": {
     "@types/node": "^22.7.5",
     "@types/ws": "^8.5.12",
-    "esbuild": "^0.24.0"
+    "esbuild-wasm": "^0.24.0"
   },
   "peerDependencies": {
-    "esbuild": "^0.24.0"
+    "esbuild-wasm": "^0.24.0"
   },
   "files": [
     "dist"
