@@ -56,3 +56,4 @@ export { default as TimeSlider } from './TimeSlider';
 export { default as ToastNotification } from './ToastNotification';
 export * from './UIConstants';
 export { default as UISwitch } from './UISwitch';
+export * from './XComponent';
