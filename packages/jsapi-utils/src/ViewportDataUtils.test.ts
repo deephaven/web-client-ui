@@ -5,8 +5,6 @@ import {
   ITEM_KEY_PREFIX,
   OnTableUpdatedEvent,
   RowDeserializer,
-  ViewportRow,
-  createKeyFromOffsetRow,
   createOnTableUpdatedHandler,
   defaultRowDeserializer,
   generateEmptyKeyedItems,
@@ -17,10 +15,6 @@ import {
 } from './ViewportDataUtils';
 
 const { asMock, createMockProxy } = TestUtils;
-
-function mockViewportRow(offsetInSnapshot: number): ViewportRow {
-  return { offsetInSnapshot } as ViewportRow;
-}
 
 function mockColumn(name: string) {
   return {
@@ -44,28 +38,15 @@ describe('createdKeyedItemKey', () => {
   });
 });
 
-describe('createKeyFromOffsetRow', () => {
-  it.each([
-    [{ offsetInSnapshot: 4 } as ViewportRow, 5, `${ITEM_KEY_PREFIX}_9`],
-    [{ offsetInSnapshot: 27 } as ViewportRow, 99, `${ITEM_KEY_PREFIX}_126`],
-  ] as const)(
-    'should create a string key based on the actual row offset: %o',
-    (row, offset, expected) => {
-      const actual = createKeyFromOffsetRow(row, offset);
-      expect(actual).toEqual(expected);
-    }
-  );
-});
-
 describe('createOnTableUpdatedHandler', () => {
   const mock = {
     deserializeRow: jest.fn() as RowDeserializer<unknown>,
     rows: [
-      createMockProxy<ViewportRow>({ offsetInSnapshot: 0 }),
-      createMockProxy<ViewportRow>({ offsetInSnapshot: 1 }),
-      createMockProxy<ViewportRow>({ offsetInSnapshot: 2 }),
+      createMockProxy<dh.Row>(),
+      createMockProxy<dh.Row>(),
+      createMockProxy<dh.Row>(),
     ],
-    updateEvent: (offset: number, rows: ViewportRow[], columns: dh.Column[]) =>
+    updateEvent: (offset: number, rows: dh.Row[], columns: dh.Column[]) =>
       createMockProxy<OnTableUpdatedEvent>({
         detail: {
           offset,
@@ -107,10 +88,11 @@ describe('createOnTableUpdatedHandler', () => {
 
 describe('defaultRowDeserializer', () => {
   it('should map all columns with original names', () => {
-    const row = mockViewportRow(10);
-    // mock our get function by mapping capital column name to lowercase value
-    // e.g. A: 'a'
-    row.get = jest.fn(({ name }: { name: string }) => name.toLowerCase());
+    const row = createMockProxy<dh.Row>({
+      // mock our get function by mapping capital column name to lowercase value
+      // e.g. A: 'a'
+      get: jest.fn(({ name }: { name: string }) => name.toLowerCase()),
+    });
 
     const actual = defaultRowDeserializer(row, [
       mockColumn('A'),
