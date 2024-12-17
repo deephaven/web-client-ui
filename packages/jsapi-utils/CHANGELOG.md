@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.8](https://github.com/deephaven/web-client-ui/compare/v0.85.7...v0.85.8) (2024-12-17)
+
+### Bug Fixes
+
+- Use correct offset in snapshot ([#2318](https://github.com/deephaven/web-client-ui/issues/2318)) ([b02116d](https://github.com/deephaven/web-client-ui/commit/b02116d4cf4f41b60c2a4efda919586ed694ece4))
+
 ## [0.85.3](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.85.3) (2024-07-23)
 
 ### Features
