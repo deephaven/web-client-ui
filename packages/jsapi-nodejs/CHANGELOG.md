@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.100.0](https://github.com/deephaven/web-client-ui/compare/v0.99.1...v0.100.0) (2024-12-18)
+
+### Bug Fixes
+
+- Swapping esbuild for esbuild-wasm to fix OS specific dependency ([#2317](https://github.com/deephaven/web-client-ui/issues/2317)) ([f37d25f](https://github.com/deephaven/web-client-ui/commit/f37d25f329e780f66e85b27e0cd0e48e70dcfef3))
+
 ## [0.99.0](https://github.com/deephaven/web-client-ui/compare/v0.98.0...v0.99.0) (2024-11-15)
 
 **Note:** Version bump only for package @deephaven/jsapi-nodejs

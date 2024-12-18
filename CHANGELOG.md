@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.100.0](https://github.com/deephaven/web-client-ui/compare/v0.99.1...v0.100.0) (2024-12-18)
+
+### Features
+
+- datetime tooltip to show full value ([#2286](https://github.com/deephaven/web-client-ui/issues/2286)) ([238f611](https://github.com/deephaven/web-client-ui/commit/238f611c1707c06170509eb093485620bb0c5801)), closes [#614](https://github.com/deephaven/web-client-ui/issues/614)
+
+### Bug Fixes
+
+- Allow double and float types to be rollupable ([#2311](https://github.com/deephaven/web-client-ui/issues/2311)) ([ab5b3b6](https://github.com/deephaven/web-client-ui/commit/ab5b3b65e42426b63027c3c520d68605809ce222)), closes [#2295](https://github.com/deephaven/web-client-ui/issues/2295)
+- Swapping esbuild for esbuild-wasm to fix OS specific dependency ([#2317](https://github.com/deephaven/web-client-ui/issues/2317)) ([f37d25f](https://github.com/deephaven/web-client-ui/commit/f37d25f329e780f66e85b27e0cd0e48e70dcfef3))
+- Table plugins - pass through deprecated props ([#2308](https://github.com/deephaven/web-client-ui/issues/2308)) ([d884bff](https://github.com/deephaven/web-client-ui/commit/d884bffe5942af0baa0224a688661e5ea8917ea5)), closes [#2274](https://github.com/deephaven/web-client-ui/issues/2274)
+
 ## [0.99.1](https://github.com/deephaven/web-client-ui/compare/v0.99.0...v0.99.1) (2024-11-29)
 
 ### Bug Fixes
