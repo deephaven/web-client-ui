@@ -144,7 +144,7 @@ export function generateVarName(prefix = 'v'): string {
  * @param browser
  */
 export async function logBrowserInfo(): Promise<void> {
-  const launchers = [chromium, firefox, webkit];
+  const launchers = [chromium, firefox];
 
   await Promise.all(
     launchers.map(async launcher => {

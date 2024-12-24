@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
+        config: [chromium-1-1, firefox-1-1]
 
     steps:
       - name: Checkout
@@ -111,8 +111,6 @@ jobs:
           mkdir -p all-blob-reports
           mv playwright-report-blob-chromium-1-1/report-chromium-1.zip all-blob-reports/chromium-1-1.zip
           mv playwright-report-blob-firefox-1-1/report-firefox-1.zip all-blob-reports/firefox-1-1.zip
-          mv playwright-report-blob-webkit-1-2/report-webkit-1.zip all-blob-reports/webkit-1-2.zip
-          mv playwright-report-blob-webkit-2-2/report-webkit-2.zip all-blob-reports/webkit-2-2.zip
           npx playwright merge-reports --reporter html,github ./all-blob-reports
 
       - name: Upload HTML report
