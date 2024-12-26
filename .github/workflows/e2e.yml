@@ -14,7 +14,7 @@ on:
       - 'release/**'
       - 'feature/**'
 env:
-  DOCKER_TAG: edge
+  DHC_VERSION: 0.35.2
 
 jobs:
   build:
@@ -24,40 +24,19 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - name: Check installed fonts
-        run: 'fc-list : family'
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
+      - name: Build and Save docker image
+        run: |
+          docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
+          docker save e2e-ci -o e2e-ci.tar.gz
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
-
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --no-audit
-
-      - name: Build
-        run: npm run build
-
-      - name: Upload build for test jobs
+      - name: Store docker build for test matrix
         uses: actions/upload-artifact@v4
         with:
-          name: web-build
-          path: |
-            *
-            !node_modules
+          name: image-cache
+          path: e2e-ci.tar.gz
           retention-days: 1
 
   e2e-tests:
@@ -70,53 +49,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
+        config: [chromium-1-1, firefox-1-1]
 
     steps:
-      - name: Download build
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download docker image for test matrix
         uses: actions/download-artifact@v4
         with:
-          name: web-build
+          name: image-cache
 
-      - name: Run core server:${{ env.DOCKER_TAG }}
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 --name dh-core-server -v ./tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
-
-      - name: Install Playwright dependencies
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
-
-      - name: Playwright version
-        run: npx playwright --version
-
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --no-audit
+      - name: Load docker image
+        run: docker load -i e2e-ci.tar.gz
 
       - name: Extract browser config
         id: config
         env:
           MATRIX_CONFIG: ${{ matrix.config }}
         run: |
-          echo "browser=${MATRIX_CONFIG:0:-4}" >> $GITHUB_OUTPUT
-          echo "shard=${MATRIX_CONFIG: -3:1}" >> $GITHUB_OUTPUT
-          echo "shardTotal=${MATRIX_CONFIG: -1:1}" >> $GITHUB_OUTPUT
+          echo "BROWSER=${MATRIX_CONFIG:0:-4}" >> $GITHUB_ENV
+          echo "SHARD=${MATRIX_CONFIG: -3:1}" >> $GITHUB_ENV
+          echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
-      - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts --reporter=blob --project=${{ steps.config.outputs.browser }} --shard=${{ steps.config.outputs.shard }}/${{ steps.config.outputs.shardTotal }}
+      - name: Run tests
+        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: playwright-report-blob-${{ matrix.config }}
           path: blob-report/
@@ -124,7 +85,7 @@ jobs:
 
       - name: Dump server logs
         if: failure()
-        run: docker logs dh-core-server > /tmp/server-log.txt
+        run: docker logs dhc-server > /tmp/server-log.txt
 
       - name: Upload server logs
         if: failure()
@@ -132,6 +93,7 @@ jobs:
         with:
           name: server-logs-${{ matrix.config }}
           path: /tmp/server-log.txt
+          retention-days: 14
 
   merge-reports:
     if: ${{ !cancelled() }}
@@ -149,8 +111,6 @@ jobs:
           mkdir -p all-blob-reports
           mv playwright-report-blob-chromium-1-1/report-1.zip all-blob-reports/chromium-1-1.zip
           mv playwright-report-blob-firefox-1-1/report-1.zip all-blob-reports/firefox-1-1.zip
-          mv playwright-report-blob-webkit-1-2/report-1.zip all-blob-reports/webkit-1-2.zip
-          mv playwright-report-blob-webkit-2-2/report-2.zip all-blob-reports/webkit-2-2.zip
           npx playwright merge-reports --reporter html,github ./all-blob-reports
 
       - name: Upload HTML report
