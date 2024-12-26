@@ -109,8 +109,8 @@ jobs:
       - name: Merge into HTML Report
         run: |
           mkdir -p all-blob-reports
-          mv playwright-report-blob-chromium-1-1/report-chromium-1.zip all-blob-reports/chromium-1-1.zip
-          mv playwright-report-blob-firefox-1-1/report-firefox-1.zip all-blob-reports/firefox-1-1.zip
+          mv playwright-report-blob-chromium-1-1/report-1.zip all-blob-reports/chromium-1-1.zip
+          mv playwright-report-blob-firefox-1-1/report-1.zip all-blob-reports/firefox-1-1.zip
           npx playwright merge-reports --reporter html,github ./all-blob-reports
 
       - name: Upload HTML report
