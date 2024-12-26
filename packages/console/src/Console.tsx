@@ -377,6 +377,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       return;
     }
 
+    this.scrollConsoleHistoryToBottom();
     this.updateHistory(result, newHistoryItem);
     this.updateKnownObjects(newHistoryItem);
     this.updateWorkspaceHistoryItem(
@@ -649,7 +650,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
 
     window.requestAnimationFrame(() => {
-      pane.scrollTop = pane.scrollHeight;
+      pane.scrollTo({ top: pane.scrollHeight });
     });
   }
 
