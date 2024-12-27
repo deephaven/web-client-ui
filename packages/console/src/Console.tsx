@@ -215,7 +215,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.consoleHistoryScrollPane = React.createRef();
     this.pending = new Pending();
     this.queuedLogMessages = [];
-    this.visibilityObserver = new IntersectionObserver(
+    this.visibilityObserver = new window.IntersectionObserver(
       this.handleVisibilityChange
     );
 
