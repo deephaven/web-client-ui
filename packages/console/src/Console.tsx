@@ -7,6 +7,7 @@ import React, {
   type ReactElement,
   type ReactNode,
   type RefObject,
+  type UIEvent,
 } from 'react';
 import {
   ContextActions,
@@ -190,6 +191,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleOverflowActions = this.handleOverflowActions.bind(this);
     this.handleScrollPaneScroll = this.handleScrollPaneScroll.bind(this);
+    this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.handleToggleAutoLaunchPanels =
       this.handleToggleAutoLaunchPanels.bind(this);
     this.handleToggleClosePanelsOnDisconnect =
@@ -213,6 +215,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.consoleHistoryScrollPane = React.createRef();
     this.pending = new Pending();
     this.queuedLogMessages = [];
+    this.visibilityObserver = new IntersectionObserver(
+      this.handleVisibilityChange
+    );
 
     const { objectMap, settings } = this.props;
 
@@ -253,6 +258,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
 
     this.updateDimensions();
+
+    if (this.consolePane.current) {
+      this.visibilityObserver.observe(this.consolePane.current);
+    }
   }
 
   componentDidUpdate(prevProps: ConsoleProps, prevState: ConsoleState): void {
@@ -280,6 +289,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.processLogMessageQueue.cancel();
 
     this.deinitConsoleLogging();
+    this.visibilityObserver.disconnect();
   }
 
   cancelListener?: () => void;
@@ -293,6 +303,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   pending: Pending;
 
   queuedLogMessages: ConsoleHistoryActionItem[];
+
+  visibilityObserver: IntersectionObserver;
 
   initConsoleLogging(): void {
     const { session } = this.props;
@@ -670,7 +682,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  handleScrollPaneScroll(): void {
+  handleScrollPaneScroll(event: UIEvent<HTMLDivElement>): void {
+    log.debug('handleScrollPaneScroll', event);
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
     this.setState({
@@ -679,6 +692,18 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         scrollPane.scrollHeight > scrollPane.clientHeight,
       isStuckToBottom: this.isAtBottom(),
     });
+  }
+
+  handleVisibilityChange(entries: IntersectionObserverEntry[]): void {
+    log.debug('handleVisibilityChange', entries);
+
+    const entry = entries[0];
+    if (entry.isIntersecting) {
+      const { isStuckToBottom } = this.state;
+      if (isStuckToBottom && !this.isAtBottom()) {
+        this.scrollConsoleHistoryToBottom();
+      }
+    }
   }
 
   handleToggleAutoLaunchPanels(): void {
