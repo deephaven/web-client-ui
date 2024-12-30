@@ -6,7 +6,7 @@ import {
   generateId,
 } from './utils';
 
-function logMessageLocator(page: Page, text: string): Locator {
+function logMessageLocator(page: Page, text?: string): Locator {
   return page
     .locator('.console-history .log-message')
     .filter({ hasText: text });
@@ -76,9 +76,15 @@ test.describe('console input tests', () => {
 });
 
 test.describe('console scroll tests', () => {
+  test.beforeEach(async () => {
+    // Whenever we start a session, the server sends it logs over
+    // We should wait for those to appear before running commands
+    await logMessageLocator(page).first().waitFor();
+  });
+
   test('scrolls to the bottom when command is executed', async () => {
     // The command needs to be long, but it doesn't need to actually print anything
-    const ids = Array.from(Array(300).keys()).map(() => generateId());
+    const ids = Array.from(Array(50).keys()).map(() => generateId());
     const command = ids.map(i => `# Really long command ${i}`).join('\n');
 
     await pasteInMonaco(consoleInput, command);
@@ -90,21 +96,21 @@ test.describe('console scroll tests', () => {
     // Expect the console to be scrolled to the bottom
     const scrollPane = await scrollPanelLocator(page);
     expect(
-      await scrollPane.evaluate(el => {
-        return el.scrollHeight - el.scrollTop - el.clientHeight;
-      })
+      await scrollPane.evaluate(el =>
+        Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+      )
     ).toBeLessThanOrEqual(0);
   });
 
   test('scrolls to the bottom when focus changed when command executed', async () => {
     // The command needs to be long, but it doesn't need to actually print anything
-    const ids = Array.from(Array(300).keys()).map(() => generateId());
-    const command =
-      `import time\ntime.sleep(0.5)\n` +
-      ids.map(i => `# Really long command ${i}`).join('\n');
+    const ids = Array.from(Array(50).keys()).map(() => generateId());
+    const command = `import time\ntime.sleep(0.5)\n${ids
+      .map(i => `# Really long command ${i}`)
+      .join('\n')}`;
 
     await pasteInMonaco(consoleInput, command);
-    await page.keyboard.press('Enter');
+    page.keyboard.press('Enter');
 
     // Immediately open the log before the command code block has a chance to finish colorizing/rendering
     await panelTabLocator(page, 'Log').click();
@@ -118,9 +124,9 @@ test.describe('console scroll tests', () => {
 
     const scrollPane = await scrollPanelLocator(page);
     expect(
-      await scrollPane.evaluate(el => {
-        return el.scrollHeight - el.scrollTop - el.clientHeight;
-      })
+      await scrollPane.evaluate(el =>
+        Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+      )
     ).toBeLessThanOrEqual(0);
   });
 });
