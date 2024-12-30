@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.101.0](https://github.com/deephaven/web-client-ui/compare/v0.100.0...v0.101.0) (2024-12-30)
+
+### Bug Fixes
+
+- Console history did not stick to bottom on visibility changes ([#2320](https://github.com/deephaven/web-client-ui/issues/2320)) ([648e8c0](https://github.com/deephaven/web-client-ui/commit/648e8c030bb3f03ca00fc0503874b4947f3f8d54))
+
+### Reverts
+
+- Revert "fix: Console history did not stick to bottom on visibility changes ([#2320](https://github.com/deephaven/web-client-ui/issues/2320))" ([#2323](https://github.com/deephaven/web-client-ui/issues/2323)) ([9d6719a](https://github.com/deephaven/web-client-ui/commit/9d6719a87e65619c523c9bec50765d768d978580))
+
 ## [0.100.0](https://github.com/deephaven/web-client-ui/compare/v0.99.1...v0.100.0) (2024-12-18)
 
 **Note:** Version bump only for package @deephaven/console
