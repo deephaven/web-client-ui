@@ -5,8 +5,12 @@ export {
   // the Spectrum props type for upstream consumers that need to compose prop types.
   type SpectrumComboBoxProps,
   // ListBox - we aren't planning to support this component
+  Menu,
+  type SpectrumMenuProps as MenuProps,
   MenuTrigger,
   type SpectrumMenuTriggerProps as MenuTriggerProps,
+  SubmenuTrigger,
+  type SpectrumSubmenuTriggerProps as SubmenuTriggerProps,
   // TableView - we aren't planning to support this component
   // Picker is exported from Picker.tsx as a custom DH component. Re-exporting
   // the Spectrum props type for upstream consumers that need to compose prop types.
