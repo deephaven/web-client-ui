@@ -11,6 +11,8 @@ export {
   type SpectrumMenuTriggerProps as MenuTriggerProps,
   SubmenuTrigger,
   type SpectrumSubmenuTriggerProps as SubmenuTriggerProps,
+  ContextualHelpTrigger,
+  type SpectrumMenuDialogTriggerProps as ContextualHelpTriggerProps,
   // TableView - we aren't planning to support this component
   // Picker is exported from Picker.tsx as a custom DH component. Re-exporting
   // the Spectrum props type for upstream consumers that need to compose prop types.
