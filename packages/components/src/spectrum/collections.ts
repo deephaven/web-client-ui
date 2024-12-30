@@ -5,8 +5,8 @@ export {
   // the Spectrum props type for upstream consumers that need to compose prop types.
   type SpectrumComboBoxProps,
   // ListBox - we aren't planning to support this component
-  Menu,
-  type SpectrumMenuProps as MenuProps,
+  Menu as SpectrumMenu,
+  type SpectrumMenuProps,
   MenuTrigger,
   type SpectrumMenuTriggerProps as MenuTriggerProps,
   SubmenuTrigger,
