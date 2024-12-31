@@ -100,9 +100,6 @@ test.describe('console scroll tests', () => {
       state: 'attached',
     });
 
-    // Wait for the scroll to complete, since it starts on the next available animation frame
-    await page.waitForTimeout(500);
-
     // Expect the console to be scrolled to the bottom
     const scrollPane = await scrollPanelLocator(page);
     expect(
@@ -129,9 +126,6 @@ test.describe('console scroll tests', () => {
     await historyContentLocator(page, ids[ids.length - 1]).waitFor({
       state: 'attached',
     });
-
-    // Wait for the scroll to complete, since it starts on the next available animation frame
-    await page.waitForTimeout(500);
 
     // Switch back to the console, and expect it to be scrolled to the bottom
     await panelTabLocator(page, 'Console').click();
