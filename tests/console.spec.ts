@@ -12,6 +12,12 @@ function logMessageLocator(page: Page, text?: string): Locator {
     .filter({ hasText: text });
 }
 
+function historyContentLocator(page: Page, text?: string): Locator {
+  return page
+    .locator('.console-history .console-history-content')
+    .filter({ hasText: text });
+}
+
 function panelTabLocator(page: Page, text: string): Locator {
   return page.locator('.lm_tab .lm_title').filter({ hasText: text });
 }
@@ -90,8 +96,9 @@ test.describe('console scroll tests', () => {
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
 
-    // Allow time for the text to colorize/render
-    await page.waitForTimeout(100);
+    await historyContentLocator(page, ids[ids.length - 1]).waitFor({
+      state: 'attached',
+    });
 
     // Expect the console to be scrolled to the bottom
     const scrollPane = await scrollPanelLocator(page);
@@ -116,8 +123,9 @@ test.describe('console scroll tests', () => {
     await panelTabLocator(page, 'Log').click();
 
     // wait for a bit for the code block to render
-    // Since it's in the background, we can't use the waitForSelector method. It should render in less than 1s.
-    await page.waitForTimeout(1000);
+    await historyContentLocator(page, ids[ids.length - 1]).waitFor({
+      state: 'attached',
+    });
 
     // Switch back to the console, and expect it to be scrolled to the bottom
     await panelTabLocator(page, 'Console').click();
