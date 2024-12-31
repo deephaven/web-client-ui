@@ -1,6 +1,10 @@
 export {
   Checkbox as SpectrumCheckbox,
   type SpectrumCheckboxProps,
+  ColorEditor,
+  type SpectrumColorEditorProps as ColorEditorProps,
+  ColorPicker,
+  type SpectrumColorPickerProps as ColorPickerProps,
   Form,
   type SpectrumFormProps as FormProps,
   NumberField,
