@@ -50,6 +50,12 @@ Object.defineProperty(window, 'ResizeObserver', {
   },
 });
 
+Object.defineProperty(window, 'IntersectionObserver', {
+  value: function () {
+    return TestUtils.createMockProxy<IntersectionObserver>();
+  },
+});
+
 Object.defineProperty(window, 'DOMRect', {
   value: function (x: number = 0, y: number = 0, width = 0, height = 0) {
     return TestUtils.createMockProxy<DOMRect>({

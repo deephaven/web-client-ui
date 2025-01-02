@@ -7,6 +7,7 @@ import React, {
   type ReactElement,
   type ReactNode,
   type RefObject,
+  type UIEvent,
 } from 'react';
 import {
   ContextActions,
@@ -190,6 +191,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleOverflowActions = this.handleOverflowActions.bind(this);
     this.handleScrollPaneScroll = this.handleScrollPaneScroll.bind(this);
+    this.handleHistoryResize = this.handleHistoryResize.bind(this);
     this.handleToggleAutoLaunchPanels =
       this.handleToggleAutoLaunchPanels.bind(this);
     this.handleToggleClosePanelsOnDisconnect =
@@ -211,8 +213,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.consolePane = React.createRef();
     this.consoleInput = React.createRef();
     this.consoleHistoryScrollPane = React.createRef();
+    this.consoleHistoryContent = React.createRef();
     this.pending = new Pending();
     this.queuedLogMessages = [];
+    this.resizeObserver = new window.ResizeObserver(this.handleHistoryResize);
 
     const { objectMap, settings } = this.props;
 
@@ -253,6 +257,14 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
 
     this.updateDimensions();
+
+    if (
+      this.consoleHistoryScrollPane.current &&
+      this.consoleHistoryContent.current
+    ) {
+      this.resizeObserver.observe(this.consoleHistoryScrollPane.current);
+      this.resizeObserver.observe(this.consoleHistoryContent.current);
+    }
   }
 
   componentDidUpdate(prevProps: ConsoleProps, prevState: ConsoleState): void {
@@ -280,6 +292,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.processLogMessageQueue.cancel();
 
     this.deinitConsoleLogging();
+    this.resizeObserver.disconnect();
   }
 
   cancelListener?: () => void;
@@ -290,9 +303,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   consoleHistoryScrollPane: RefObject<HTMLDivElement>;
 
+  consoleHistoryContent: RefObject<HTMLDivElement>;
+
   pending: Pending;
 
   queuedLogMessages: ConsoleHistoryActionItem[];
+
+  resizeObserver: ResizeObserver;
 
   initConsoleLogging(): void {
     const { session } = this.props;
@@ -666,11 +683,12 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
 
     window.requestAnimationFrame(() => {
-      pane.scrollTo({ top: pane.scrollHeight });
+      pane.scrollTo({ top: pane.scrollHeight, behavior: 'instant' });
     });
   }
 
-  handleScrollPaneScroll(): void {
+  handleScrollPaneScroll(event: UIEvent<HTMLDivElement>): void {
+    log.debug('handleScrollPaneScroll', event);
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
     this.setState({
@@ -679,6 +697,17 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         scrollPane.scrollHeight > scrollPane.clientHeight,
       isStuckToBottom: this.isAtBottom(),
     });
+  }
+
+  handleHistoryResize(entries: ResizeObserverEntry[]): void {
+    log.debug('handleHistoryResize', entries);
+    const entry = entries[0];
+    if (entry.contentRect.height > 0 && entry.contentRect.width > 0) {
+      const { isStuckToBottom } = this.state;
+      if (isStuckToBottom && !this.isAtBottom()) {
+        this.scrollConsoleHistoryToBottom();
+      }
+    }
   }
 
   handleToggleAutoLaunchPanels(): void {
@@ -1067,6 +1096,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 disabled={disabled}
                 supportsType={supportsType}
                 iconForType={iconForType}
+                ref={this.consoleHistoryContent}
               />
               {historyChildren}
             </div>
