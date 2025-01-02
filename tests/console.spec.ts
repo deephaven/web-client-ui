@@ -1,6 +1,11 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 import shortid from 'shortid';
-import { generateVarName, pasteInMonaco, makeTableCommand } from './utils';
+import {
+  generateId,
+  generateVarName,
+  pasteInMonaco,
+  makeTableCommand,
+} from './utils';
 
 function logMessageLocator(page: Page, text?: string): Locator {
   return page
