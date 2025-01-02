@@ -19,37 +19,32 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
     ...pickerProps
   } = usePickerProps<ComboBoxProps>(props);
 
-  const menuTriggerActionRef = useRef<MenuTriggerAction>();
+  const isOpenRef = useRef(false);
+  const inputValueRef = useRef('');
 
   const onInputChange = useCallback(
     (value: string) => {
+      inputValueRef.current = value;
+
       onInputChangeInternal?.(value);
 
-      onSearchTextChange(value);
-
-      // const searchText = menuTriggerActionRef.current === 'input' ? value : '';
-
-      console.log('[TESTING]', menuTriggerActionRef.current, value);
-
-      // We want the ComboBox to show all items whenever it is initially opened,
-      // so keep search text set to empty string while it is closed. This is
-      // mostly to handle the intial state, since `onInputChange` gets called
-      // before the user has interacted.
-      // onSearchTextChange(isOpenRef.current ? value : '');
+      // Clear search text when ComboBox is closed
+      onSearchTextChange(isOpenRef.current ? value : '');
     },
     [onInputChangeInternal, onSearchTextChange]
   );
 
   const onOpenChange = useCallback(
     (isOpen: boolean, menuTrigger?: MenuTriggerAction) => {
-      console.log('[TESTING] onOpenChange', isOpen, menuTrigger);
-      menuTriggerActionRef.current = isOpen ? menuTrigger : undefined;
+      isOpenRef.current = isOpen;
 
       pickerProps.onOpenChange?.(isOpen);
 
-      // Clear filtering on close so that all items show on next open
-      if (!isOpen) {
-        onSearchTextChange('');
+      // Restore search text when ComboBox is being opened if menu trigger was
+      // from user input. Otherwise we don't want to show all items on initial
+      // open.
+      if (isOpen && menuTrigger === 'input') {
+        onSearchTextChange(inputValueRef.current);
       }
     },
     [onSearchTextChange, pickerProps]
