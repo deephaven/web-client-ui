@@ -1,7 +1,7 @@
 /**
  * Console display for use in the Iris environment.
  */
-import { type ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
@@ -23,7 +23,13 @@ function itemKey(i: number, item: ConsoleHistoryActionItem): string {
   }`;
 }
 
-function ConsoleHistory(props: ConsoleHistoryProps): ReactElement {
+/**
+ * Display the console history.
+ */
+const ConsoleHistory = React.forwardRef(function ConsoleHistory(
+  props: ConsoleHistoryProps,
+  ref: React.Ref<HTMLDivElement>
+): ReactElement {
   const {
     disabled = false,
     items,
@@ -50,8 +56,10 @@ function ConsoleHistory(props: ConsoleHistoryProps): ReactElement {
   }
 
   return (
-    <div className="container-fluid console-history">{historyElements}</div>
+    <div ref={ref} className="container-fluid console-history">
+      {historyElements}
+    </div>
   );
-}
+});
 
 export default ConsoleHistory;
