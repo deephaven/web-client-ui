@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import esbuild, { type BuildOptions } from 'esbuild-wasm';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
@@ -8,17 +7,18 @@ import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
 
 type NonEmptyArray<T> = [T, ...T[]];
 
+/** Transform downloaded content */
+export type PostDownloadTransform = (
+  serverPath: string,
+  content: string
+) => string;
+
 export type LoadModuleOptions = {
   serverUrl: URL;
   serverPaths: NonEmptyArray<string>;
-  download: boolean;
+  download: boolean | PostDownloadTransform;
   storageDir: string;
-  sourceModuleType: 'esm' | 'cjs';
-  targetModuleType?: 'esm' | 'cjs';
-  esbuildOptions?: Omit<
-    BuildOptions,
-    'entryPoints' | 'format' | 'outdir' | 'platform'
-  >;
+  targetModuleType: 'esm' | 'cjs';
 };
 
 /**
@@ -27,12 +27,12 @@ export type LoadModuleOptions = {
  * @param serverPaths The paths of the modules on the server.
  * @param download Whether to download the modules from the server. If set to false,
  * it's assumed that the modules have already been downloaded and still exist in
- * the storage directory.
+ * the storage directory. If set to `true` or a `PostDownloadTransform` function,
+ * the modules will be downloaded and stored. If set to a `PostDownloadTransform`
+ * function, the downloaded content will be passed to the function and the result
+ * saved to disk.
  * @param storageDir The directory to store the downloaded modules.
- * @param sourceModuleType module format from the server.
- * @param targetModuleType (optional) module format to be exported. Defaults to
- * sourceModuleType.
- * @param esbuildOptions (optional) Additional options to pass to esbuild.
+ * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>({
@@ -40,60 +40,41 @@ export async function loadModules<TMainModule>({
   serverPaths,
   download,
   storageDir,
-  sourceModuleType,
-  targetModuleType = sourceModuleType,
-  esbuildOptions,
+  targetModuleType,
 }: LoadModuleOptions): Promise<TMainModule> {
   polyfillWs();
 
   const serverStorageDir = path.join(storageDir, urlToDirectoryName(serverUrl));
-  const targetDir = path.join(serverStorageDir, 'target');
 
-  if (download) {
-    const needsTranspile = sourceModuleType !== targetModuleType;
-    const sourceDir = path.join(serverStorageDir, 'source');
-
-    ensureDirectoriesExist(
-      needsTranspile ? [sourceDir, targetDir] : [targetDir]
-    );
+  if (download !== false) {
+    ensureDirectoriesExist([serverStorageDir]);
 
     // Download from server
     const serverUrls = serverPaths.map(
       serverPath => new URL(serverPath, serverUrl)
     );
-    const contents = await Promise.all(
+    let contents = await Promise.all(
       serverUrls.map(url => downloadFromURL(url))
     );
 
+    // Post-download transform
+    if (typeof download === 'function') {
+      contents = contents.map((content, i) =>
+        download(serverPaths[i], content)
+      );
+    }
+
     // Write to disk
-    const downloadPaths = getDownloadPaths(
-      needsTranspile ? sourceDir : targetDir,
-      serverPaths
-    );
+    const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
     downloadPaths.forEach((downloadPath, i) => {
       fs.writeFileSync(downloadPath, contents[i]);
     });
-
-    // Transpile if source and target module types differ
-    if (needsTranspile) {
-      await esbuild.build({
-        // These can be overridden by esbuildOptions
-        bundle: false,
-        logLevel: 'error',
-        ...esbuildOptions,
-        // These cannot be overridden
-        entryPoints: downloadPaths,
-        format: targetModuleType,
-        outdir: targetDir,
-        platform: 'node',
-      });
-    }
   }
 
   // We assume the first module is the main module
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const firstFileName = serverPaths[0].split('/').pop()!;
-  const mainModulePath = path.join(targetDir, firstFileName);
+  const mainModulePath = path.join(serverStorageDir, firstFileName);
 
   if (targetModuleType === 'esm') {
     return import(mainModulePath);
