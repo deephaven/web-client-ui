@@ -14,7 +14,7 @@ export interface UsePickerScrollOnOpenOptions {
 
 export interface UsePickerScrollOnOpenResult<THtml extends HTMLElement> {
   ref: DOMRef<THtml>;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (isOpen: boolean, menuTrigger?: MenuTriggerAction) => void;
 }
 
 /**
