@@ -41,8 +41,7 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
       pickerProps.onOpenChange?.(isOpen);
 
       // Restore search text when ComboBox is being opened if menu trigger was
-      // from user input. Otherwise we don't want to show all items on initial
-      // open.
+      // from user input.
       if (isOpen && menuTrigger === 'input') {
         onSearchTextChange(inputValueRef.current);
       }
