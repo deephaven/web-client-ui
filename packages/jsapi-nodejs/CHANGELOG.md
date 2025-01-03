@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.102.0](https://github.com/deephaven/web-client-ui/compare/v0.101.0...v0.102.0) (2025-01-03)
+
+### Features
+
+- Removed esbuild runtime dependency ([#2327](https://github.com/deephaven/web-client-ui/issues/2327)) ([f33ab5a](https://github.com/deephaven/web-client-ui/commit/f33ab5a680ffaeba9e3c776b1117149d16d505b9))
+
 ## [0.101.0](https://github.com/deephaven/web-client-ui/compare/v0.100.0...v0.101.0) (2024-12-30)
 
 **Note:** Version bump only for package @deephaven/jsapi-nodejs

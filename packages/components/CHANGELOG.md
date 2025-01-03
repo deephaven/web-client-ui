@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.102.0](https://github.com/deephaven/web-client-ui/compare/v0.101.0...v0.102.0) (2025-01-03)
+
+### Bug Fixes
+
+- accordion, disclosure, color picker, color editor export ([#2325](https://github.com/deephaven/web-client-ui/issues/2325)) ([b6e4eb2](https://github.com/deephaven/web-client-ui/commit/b6e4eb2428cff547f962cfe16957b2c4bda23527))
+
 ## [0.101.0](https://github.com/deephaven/web-client-ui/compare/v0.100.0...v0.101.0) (2024-12-30)
 
 ### Features

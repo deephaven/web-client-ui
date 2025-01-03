@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.102.0](https://github.com/deephaven/web-client-ui/compare/v0.101.0...v0.102.0) (2025-01-03)
+
+### Features
+
+- Removed esbuild runtime dependency ([#2327](https://github.com/deephaven/web-client-ui/issues/2327)) ([f33ab5a](https://github.com/deephaven/web-client-ui/commit/f33ab5a680ffaeba9e3c776b1117149d16d505b9))
+
+### Bug Fixes
+
+- accordion, disclosure, color picker, color editor export ([#2325](https://github.com/deephaven/web-client-ui/issues/2325)) ([b6e4eb2](https://github.com/deephaven/web-client-ui/commit/b6e4eb2428cff547f962cfe16957b2c4bda23527))
+- Console history did not stick to bottom on visibility changes ([#2324](https://github.com/deephaven/web-client-ui/issues/2324)) ([ca5f6cd](https://github.com/deephaven/web-client-ui/commit/ca5f6cd7b7f6af11d34be8ba532723d834a7be12))
+
 ## [0.101.0](https://github.com/deephaven/web-client-ui/compare/v0.100.0...v0.101.0) (2024-12-30)
 
 ### Features
