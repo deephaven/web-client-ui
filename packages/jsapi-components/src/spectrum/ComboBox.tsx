@@ -29,15 +29,16 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
       // Only apply search text if ComboBox is open.
       if (isOpenRef.current) {
         onSearchTextChange(value);
-      } else {
-        // If the ComboBox is closed, reset the search text. This is needed for
-        // cases where the input change is not the result of user search input.
+      }
+      // When the ComboBox is closed, `onInputChange` may have been called as a
+      // result of user search input, ComboBox selection, or by selected key
+      // prop changes. We can't determine the source here, so we clear the search
+      // text and store the search value so that the list is unfiltered the next
+      // time the ComboBox is opened. We also store the search value so we can
+      // re-apply it in `onOpenChange` if the ComboBox is opened by user search
+      // input.
+      else {
         onSearchTextChange('');
-
-        // Store the input value so that it can be restored when the ComboBox is
-        // opened as the result of user search input. Unfortunately, we can't
-        // determine this here but have to wait to check the `menuTrigger` arg
-        // passed to `onOpenChange`.
         inputValueRef.current = value;
       }
     },
