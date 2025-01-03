@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.7](https://github.com/deephaven/web-client-ui/compare/v0.78.6...v0.78.7) (2025-01-03)
+
+### Bug Fixes
+
+- Console history did not stick to bottom on visibility changes ([#2326](https://github.com/deephaven/web-client-ui/issues/2326)) ([259e065](https://github.com/deephaven/web-client-ui/commit/259e0653b99352acd5b4642d630b560fe2c0bd4c))
+- Console scroll bar following dynamic output ([#2076](https://github.com/deephaven/web-client-ui/issues/2076)) ([#2321](https://github.com/deephaven/web-client-ui/issues/2321)) ([f184802](https://github.com/deephaven/web-client-ui/commit/f18480237606919a215710e31abe4a4e41be556c))
+
 ## [0.78.6](https://github.com/deephaven/web-client-ui/compare/v0.78.5...v0.78.6) (2024-12-26)
 
 ### Bug Fixes
