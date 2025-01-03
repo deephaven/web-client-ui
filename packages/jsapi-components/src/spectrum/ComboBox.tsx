@@ -26,15 +26,18 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
     (value: string) => {
       onInputChangeInternal?.(value);
 
-      // Only apply search text if ComboBox is open. Note that `onInputChange`
-      // fires before `onOpenChange`, so we have to check `isOpenRef` to see the
-      // last value set by `onOpenChange`.
+      // Only apply search text if ComboBox is open.
       if (isOpenRef.current) {
         onSearchTextChange(value);
       } else {
-        // If the ComboBox is closed, reset the search text but store the value
-        // so it can be re-applied if the ComboBox is opened by user input.
+        // If the ComboBox is closed, reset the search text. This is needed for
+        // cases where the input change is not the result of user search input.
         onSearchTextChange('');
+
+        // Store the input value so that it can be restored when the ComboBox is
+        // opened as the result of user search input. Unfortunately, we can't
+        // determine this here but have to wait to check the `menuTrigger` arg
+        // passed to `onOpenChange`.
         inputValueRef.current = value;
       }
     },
@@ -45,8 +48,12 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
     (isOpen: boolean, menuTrigger?: MenuTriggerAction) => {
       pickerProps.onOpenChange?.(isOpen);
 
+      // Reset the search text when the ComboBox is closed.
+      if (!isOpen) {
+        onSearchTextChange('');
+      }
       // Restore search text when ComboBox has been opened by user input.
-      if (isOpen && menuTrigger === 'input') {
+      else if (menuTrigger === 'input') {
         onSearchTextChange(inputValueRef.current);
       }
 
