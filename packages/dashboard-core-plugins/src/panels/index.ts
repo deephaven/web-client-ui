@@ -17,7 +17,9 @@ export { default as MarkdownPanel } from './MarkdownPanel';
 export { default as NotebookPanel } from './NotebookPanel';
 export { default as PandasPanel } from './PandasPanel';
 export * from './PandasPanel';
-export { default as Panel } from './Panel';
+export { default as CorePanel } from './CorePanel';
+// Deprecated - use CorePanel instead
+export { default as Panel } from './CorePanel';
 export * from './WidgetPanelTypes';
 export { default as WidgetPanel, type WidgetPanelProps } from './WidgetPanel';
 export { default as WidgetPanelTooltip } from './WidgetPanelTooltip';
