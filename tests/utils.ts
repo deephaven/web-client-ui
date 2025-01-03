@@ -126,6 +126,19 @@ export async function openPlot(
 }
 
 /**
+ * Generate a unique Id
+ * @param length Length to give id
+ * @returns A unique valid id
+ */
+export function generateId(length = 21): string {
+  let id = '';
+  for (let i = 0; i < length; i += 1) {
+    id += Math.random().toString(36).substr(2, 1);
+  }
+  return id;
+}
+
+/**
  * Generate a unique python variable name
  * @param prefix Prefix to give the variable name
  * @returns A unique string that is a valid python variable name
