@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.9](https://github.com/deephaven/web-client-ui/compare/v0.85.8...v0.85.9) (2025-01-03)
+
+### Bug Fixes
+
+- Add createXComponent stub for support in Grizzly ([#2319](https://github.com/deephaven/web-client-ui/issues/2319)) ([c5c8630](https://github.com/deephaven/web-client-ui/commit/c5c86304bb1455b76f609d5aa82c0613befc556a))
+
 ## [0.85.4](https://github.com/deephaven/web-client-ui/compare/v0.85.3...v0.85.4) (2024-08-20)
 
 ### Bug Fixes

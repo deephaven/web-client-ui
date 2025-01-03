@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.9](https://github.com/deephaven/web-client-ui/compare/v0.85.8...v0.85.9) (2025-01-03)
+
+### Bug Fixes
+
+- Console history did not stick to bottom on visibility changes ([#2324](https://github.com/deephaven/web-client-ui/issues/2324)) ([3a3265c](https://github.com/deephaven/web-client-ui/commit/3a3265cbea1d061e02a54cb7a9b33bbe0fa0ec47))
+- console scrolls on 1st code block run ([#2275](https://github.com/deephaven/web-client-ui/issues/2275)) ([afa0269](https://github.com/deephaven/web-client-ui/commit/afa026999a417027e8220bd94df9247aabd2bb91)), closes [#2207](https://github.com/deephaven/web-client-ui/issues/2207)
+
 ## [0.85.8](https://github.com/deephaven/web-client-ui/compare/v0.85.7...v0.85.8) (2024-12-17)
 
 **Note:** Version bump only for package @deephaven/console
