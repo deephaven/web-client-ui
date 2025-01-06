@@ -51,7 +51,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     const { model } = props;
 
     const { canvasContext: context } = grid;
-    const theme = grid.getTheme();
+    const theme = this.irisGrid.getTheme();
     const rendererState = {
       context,
       mouseX: x,

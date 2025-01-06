@@ -4,6 +4,8 @@ import { MonacoThemeProvider } from '@deephaven/console';
 import { ThemeProvider } from '@deephaven/components';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
+import { getSettings } from '@deephaven/redux';
+import { useAppSelector } from '@deephaven/dashboard';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;
@@ -21,11 +23,15 @@ export function ThemeBootstrap({ children }: ThemeBootstrapProps): JSX.Element {
     [pluginModules]
   );
 
+  const settings = useAppSelector(getSettings);
+
   return (
     <ThemeProvider themes={themes}>
       <ChartThemeProvider>
         <MonacoThemeProvider>
-          <IrisGridThemeProvider>{children}</IrisGridThemeProvider>
+          <IrisGridThemeProvider density={settings.gridDensity}>
+            {children}
+          </IrisGridThemeProvider>
         </MonacoThemeProvider>
       </ChartThemeProvider>
     </ThemeProvider>

@@ -5,15 +5,14 @@ import {
   DEFAULT_FONT_WIDTH,
   getOrThrow,
   GridMetrics,
-  GridThemeType,
   GridUtils,
   TextCellRenderer,
   VisibleIndex,
 } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { IrisGridRenderState } from './IrisGridRenderer';
-import { ICON_SIZE } from './IrisGridIcons';
 import IrisGridCellRendererUtils from './IrisGridCellRendererUtils';
+import type { IrisGridThemeType } from './IrisGridTheme';
 
 class IrisGridTextCellRenderer extends TextCellRenderer {
   drawCellContent(
@@ -85,7 +84,7 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
     mouseX: Coordinate | null,
     mouseY: Coordinate | null,
     metrics: GridMetrics | undefined,
-    theme: GridThemeType
+    theme: IrisGridThemeType
   ): {
     left: Coordinate | null;
     top: Coordinate | null;
@@ -107,9 +106,9 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
     }
 
     const { width: gridWidth, verticalBarWidth } = metrics;
-    const { cellHorizontalPadding } = theme;
+    const { cellHorizontalPadding, iconSize } = theme;
 
-    const width = ICON_SIZE + 2 * cellHorizontalPadding;
+    const width = iconSize + 2 * cellHorizontalPadding;
     const height = rowHeight;
     // Right edge of column or of visible grid, whichever is smaller
     const right = Math.min(

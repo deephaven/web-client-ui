@@ -13,12 +13,15 @@ class IrisGridCellRendererUtils {
     isExpanded: boolean
   ): void {
     context.save();
-    const { x1, y1 } = treeBox;
+    const { theme } = state;
+    const { iconSize } = theme;
+    const { x1, x2, y1, y2 } = treeBox;
     const markerIcon = isExpanded
-      ? getIcon('caretDown')
-      : getIcon('caretRight');
-    const iconX = columnX + x1 - 2;
-    const iconY = rowY + y1 + 2.5;
+      ? getIcon('caretDown', iconSize)
+      : getIcon('caretRight', iconSize);
+
+    const iconX = columnX + (x1 + x2) / 2 - iconSize / 2; // Midpoint of the tree box minus half the icon width
+    const iconY = rowY + (y2 - y1 - iconSize) / 2; // y2 - y1 is effectively rowHeight
 
     context.fillStyle = color;
     context.textAlign = 'center';

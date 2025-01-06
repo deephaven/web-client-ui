@@ -12,6 +12,7 @@ import IrisGridThemeRaw from './IrisGridTheme.module.scss';
 const log = Log.module('IrisGridTheme');
 
 export type IrisGridThemeType = GridThemeType & {
+  filterBarFont: string;
   filterBarCollapsedHeight: number;
   filterBarHeight: number;
   reverseHeaderBarHeight: number;
@@ -46,17 +47,22 @@ export type IrisGridThemeType = GridThemeType & {
   overflowButtonColor: GridColor;
   overflowButtonHoverColor: GridColor;
   floatingGridRowColor: NullableGridColor;
+  iconSize: number;
+  density: {
+    compact: Partial<Omit<IrisGridThemeType, 'density'>>;
+    spacious: Partial<Omit<IrisGridThemeType, 'density'>>;
+  };
 };
 
 /**
  * Derive default Iris grid theme from IrisGridThemeRaw. Note that CSS variables
  * contained in IrisGridThemeRaw are resolved to their actual values. This means
- * that the returned theme is statically defined and does not change when CSS
- * variables change.
+ * that the returned theme is statically defined based on the CSS variable values
+ * at the time this function is called. They will not automatically update if the
+ * CSS variables change.
  */
 export function createDefaultIrisGridTheme(): IrisGridThemeType {
   const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
-
   // row-background-colors is a space-separated list of colors, so we need to
   // normalize each color expression in the list individually
   IrisGridTheme['row-background-colors'] = getExpressionRanges(
@@ -78,6 +84,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     white: IrisGridTheme.white,
     black: IrisGridTheme.black,
     font: IrisGridTheme.font,
+    filterBarFont: IrisGridTheme.font,
     headerBackgroundColor: IrisGridTheme['header-bg'],
     headerColor: IrisGridTheme['header-color'],
     headerSeparatorColor: IrisGridTheme['header-separator-color'],
@@ -149,6 +156,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     sortHeaderBarHeight: 2,
     reverseHeaderBarHeight: 4,
     filterBarHorizontalPadding: 4,
+    iconSize: 16,
 
     activeCellSelectionBorderWidth:
       parseInt(IrisGridTheme['active-cell-selection-border-width'], 10) || 2,
@@ -182,5 +190,22 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     positiveBarColor: IrisGridTheme['positive-bar-color'],
     negativeBarColor: IrisGridTheme['negative-bar-color'],
     markerBarColor: IrisGridTheme['marker-bar-color'],
-  });
+
+    density: {
+      compact: {
+        cellHorizontalPadding: 5, // Same as regular set in GridTheme
+        headerHorizontalPadding: 10,
+        minColumnWidth: 10,
+        rowHeight: 16,
+        font: '11px Fira Sans, sans-serif',
+        iconSize: 14,
+        columnHeaderHeight: 26,
+      },
+      spacious: {
+        cellHorizontalPadding: 7,
+        headerHorizontalPadding: 15,
+        rowHeight: 28,
+      },
+    },
+  } satisfies IrisGridThemeType);
 }
