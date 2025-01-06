@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-components",
-  "version": "0.85.9",
+  "version": "0.85.10",
   "description": "Deephaven JSAPI Components",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

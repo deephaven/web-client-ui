@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.10](https://github.com/deephaven/web-client-ui/compare/v0.85.9...v0.85.10) (2025-01-06)
+
+### Bug Fixes
+
+- missing search field import ([#2329](https://github.com/deephaven/web-client-ui/issues/2329)) ([86439b3](https://github.com/deephaven/web-client-ui/commit/86439b3d91d7f9a682fd0493aca905279fc5f3fd))
+
 ## [0.85.9](https://github.com/deephaven/web-client-ui/compare/v0.85.8...v0.85.9) (2025-01-03)
 
 ### Bug Fixes

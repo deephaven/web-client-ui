@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.10](https://github.com/deephaven/web-client-ui/compare/v0.85.9...v0.85.10) (2025-01-06)
+
+### Features
+
+- Adjustable grid density and icon size ([#2331](https://github.com/deephaven/web-client-ui/issues/2331)) ([d8d04fc](https://github.com/deephaven/web-client-ui/commit/d8d04fc929664fea9ee4613bc678f5915c723b18)), closes [#2123](https://github.com/deephaven/web-client-ui/issues/2123) [#2151](https://github.com/deephaven/web-client-ui/issues/2151) [#2187](https://github.com/deephaven/web-client-ui/issues/2187)
+
+### Bug Fixes
+
+- missing search field import ([#2329](https://github.com/deephaven/web-client-ui/issues/2329)) ([86439b3](https://github.com/deephaven/web-client-ui/commit/86439b3d91d7f9a682fd0493aca905279fc5f3fd))
+
 ## [0.85.9](https://github.com/deephaven/web-client-ui/compare/v0.85.8...v0.85.9) (2025-01-03)
 
 ### Bug Fixes
