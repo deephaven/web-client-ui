@@ -58,6 +58,13 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.I],
     isEditable: true,
   }),
+  EXPORT_LOGS: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.EXPORT_LOGS',
+    name: 'Export Logs',
+    shortcut: [MODIFIER.CTRL, MODIFIER.ALT, MODIFIER.SHIFT, KEY.L],
+    macShortcut: [MODIFIER.CMD, MODIFIER.OPTION, MODIFIER.SHIFT, KEY.L],
+    isEditable: true,
+  }),
   NEXT: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.NEXT',
     name: 'Next',
