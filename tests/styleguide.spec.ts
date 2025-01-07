@@ -47,6 +47,7 @@ const sampleSectionIds: string[] = [
   'sample-section-spectrum-overlays',
   'sample-section-spectrum-well',
   'sample-section-error-views',
+  'sample-section-checkbox-groups',
 ];
 const buttonSectionIds: string[] = [
   'sample-section-buttons-regular',

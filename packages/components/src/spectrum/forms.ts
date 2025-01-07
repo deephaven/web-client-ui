@@ -1,8 +1,6 @@
 export {
   Checkbox as SpectrumCheckbox,
   type SpectrumCheckboxProps,
-  CheckboxGroup,
-  type SpectrumCheckboxGroupProps as CheckboxGroupProps,
   Form,
   type SpectrumFormProps as FormProps,
   NumberField,
