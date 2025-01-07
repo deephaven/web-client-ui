@@ -501,6 +501,19 @@ class ChartUtils {
   }
 
   /**
+   * Converts a decimal to a period. e.g 9.5 to '09:30'
+   *
+   * @param decimal the decimal value to
+   */
+  static decimalToPeriod(decimal: number): string {
+    const hours = Math.floor(decimal);
+    const minutes = Math.round((decimal - hours) * 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}`;
+  }
+
+  /**
    * Groups an array and returns a map
    * @param array The object to group
    * @param property The property name to group by
@@ -550,6 +563,65 @@ class ChartUtils {
     } = settings;
 
     return title;
+  }
+
+  static getTimeZoneDiff(
+    calendarTimeZone: DhType.i18n.TimeZone,
+    formatterTimeZone?: DhType.i18n.TimeZone
+  ): number {
+    return formatterTimeZone
+      ? (calendarTimeZone.standardOffset - formatterTimeZone.standardOffset) /
+          60
+      : 0;
+  }
+
+  /**
+   * Creates closed periods for a partial holiday.
+   *
+   * @param holidayPeriods the business periods for the holiday
+   * @param calendarPeriods the business periods for the calendar
+   * @returns an array of closed ranges for the partial holiday. Should be the ranges during the regular business hours that are _not_ specified by the holiday periods.
+   */
+  static createClosedRangesForPartialHoliday(
+    holidayPeriods: DhType.calendar.BusinessPeriod[],
+    calendarPeriods: DhType.calendar.BusinessPeriod[]
+  ): Range[] {
+    // First restrict the periods to only those that are actual business periods.
+    const calendarRanges: Range[] = calendarPeriods.map(period => [
+      ChartUtils.periodToDecimal(period.open),
+      ChartUtils.periodToDecimal(period.close),
+    ]);
+    calendarRanges.sort((a, b) => a[0] - b[0]);
+    if (calendarRanges.length === 0) {
+      calendarRanges.push([0, 24]);
+    }
+    const holidayRanges: Range[] = holidayPeriods.map(period => [
+      ChartUtils.periodToDecimal(period.open),
+      ChartUtils.periodToDecimal(period.close),
+    ]);
+    holidayRanges.sort((a, b) => a[0] - b[0]);
+
+    const closedRanges: Range[] = [];
+
+    // Separate index cursor for the holiday ranges
+    for (let c = 0; c < calendarRanges.length; c += 1) {
+      const calendarRange = calendarRanges[c];
+      let lastClose = calendarRange[0];
+      for (let h = 0; h < holidayRanges.length; h += 1) {
+        const holidayRange = holidayRanges[h];
+        if (holidayRange[1] > lastClose && holidayRange[0] < calendarRange[1]) {
+          if (holidayRange[0] > lastClose) {
+            closedRanges.push([lastClose, holidayRange[0]]);
+          }
+          // eslint-disable-next-line prefer-destructuring
+          lastClose = holidayRange[1];
+        }
+      }
+      if (lastClose < calendarRange[1]) {
+        closedRanges.push([lastClose, calendarRange[1]]);
+      }
+    }
+    return closedRanges;
   }
 
   private dh: typeof DhType;
@@ -613,55 +685,11 @@ class ChartUtils {
 
                 const { businessCalendar } = axis;
                 if (businessCalendar != null) {
-                  const rangebreaks: Rangebreaks[] = [];
-                  const {
-                    businessPeriods,
-                    businessDays,
-                    holidays,
-                    timeZone: calendarTimeZone,
-                  } = businessCalendar;
-                  const typeFormatter =
-                    formatter?.getColumnTypeFormatter(BUSINESS_COLUMN_TYPE);
-                  let formatterTimeZone;
-                  if (isDateTimeColumnFormatter(typeFormatter)) {
-                    formatterTimeZone = typeFormatter.dhTimeZone;
-                  }
-                  const timeZoneDiff = formatterTimeZone
-                    ? (calendarTimeZone.standardOffset -
-                        formatterTimeZone.standardOffset) /
-                      60
-                    : 0;
-                  if (holidays.length > 0) {
-                    rangebreaks.push(
-                      ...this.createRangeBreakValuesFromHolidays(
-                        holidays,
-                        calendarTimeZone,
-                        formatterTimeZone
-                      )
-                    );
-                  }
-                  businessPeriods.forEach(period =>
-                    rangebreaks.push({
-                      pattern: 'hour',
-                      bounds: [
-                        ChartUtils.periodToDecimal(period.close) + timeZoneDiff,
-                        ChartUtils.periodToDecimal(period.open) + timeZoneDiff,
-                      ],
-                    })
-                  );
-                  // If there are seven business days, then there is no weekend
-                  if (businessDays.length < this.daysOfWeek.length) {
-                    this.createBoundsFromDays(businessDays).forEach(
-                      weekendBounds =>
-                        rangebreaks.push({
-                          pattern: 'day of week',
-                          bounds: weekendBounds,
-                        })
-                    );
-                  }
-
                   (axisFormat as RangebreakAxisFormat).rangebreaks =
-                    rangebreaks;
+                    this.createRangeBreaksFromBusinessCalendar(
+                      businessCalendar,
+                      formatter
+                    );
                 }
 
                 if (axisFormats.size === chart.axes.length) {
@@ -1513,6 +1541,55 @@ class ChartUtils {
   }
 
   /**
+   * Creates the bounds for the periods specified.
+   * For example, if you pass in [['09:00', '17:00']], it will return [17, 9] (closing at 5pm, opening at 9am the next day)
+   * If you pass [['09:00', '12:00'], ['13:00', '17:00']], it will return [12, 13] (closing at noon, opening at 1pm) and [17, 9] (closing at 5pm, opening at 9am the next day)
+   * @param periods Periods to map
+   * @param timeZoneDiff Time zone difference in hours
+   * @returns Bounds for the periods in plotly format
+   */
+  // eslint-disable-next-line class-methods-use-this
+  createBoundsFromPeriods(
+    periods: DhType.calendar.BusinessPeriod[],
+    timeZoneDiff = 0
+  ): Range[] {
+    if (periods.length === 0) {
+      return [];
+    }
+    const numberPeriods = periods
+      .map(period => [
+        (ChartUtils.periodToDecimal(period.open) + timeZoneDiff) % 24,
+        (ChartUtils.periodToDecimal(period.close) + timeZoneDiff) % 24,
+      ])
+      .sort((a, b) => a[0] - b[0]);
+
+    const bounds: Range[] = [];
+    for (let i = 0; i < numberPeriods.length; i += 1) {
+      const period = numberPeriods[i];
+      const nextPeriod = numberPeriods[(i + 1) % numberPeriods.length];
+      bounds.push([period[1], nextPeriod[0]]);
+    }
+    return bounds;
+  }
+
+  /**
+   * Creates range breaks for plotly from business periods.
+   * @param periods Business periods to create the breaks for
+   * @param timeZoneDiff Time zone difference in hours
+   * @returns Plotly range breaks for the business periods
+   */
+  createBreaksFromPeriods(
+    periods: DhType.calendar.BusinessPeriod[],
+    timeZoneDiff = 0
+  ): Rangebreaks[] {
+    const bounds = this.createBoundsFromPeriods(periods, timeZoneDiff);
+    return bounds.map(bound => ({
+      pattern: 'hour',
+      bounds: bound,
+    }));
+  }
+
+  /**
    * Creates range break bounds for plotly from business days.
    * For example a standard business week of ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']
    * will result in [[6,1]] meaning close on Saturday and open on Monday.
@@ -1521,36 +1598,101 @@ class ChartUtils {
    * @param businessDays the days to display on the x-axis
    */
   createBoundsFromDays(businessDays: string[]): Range[] {
+    const weekLength = this.daysOfWeek.length;
+    // No breaks if all days are business days
+    if (businessDays.length === weekLength) {
+      return [];
+    }
     const businessDaysInt = businessDays.map(day =>
       this.daysOfWeek.indexOf(day)
     );
-    const nonBusinessDaysInt = this.daysOfWeek
-      .filter(day => !businessDays.includes(day))
-      .map(day => this.daysOfWeek.indexOf(day));
-    // These are the days when business reopens (e.g. Monday after a weekend)
-    const reopenDays = new Set<number>();
-    nonBusinessDaysInt.forEach(closed => {
-      for (let i = closed + 1; i < closed + this.daysOfWeek.length; i += 1) {
-        const adjustedDay = i % this.daysOfWeek.length;
-        if (businessDaysInt.includes(adjustedDay)) {
-          reopenDays.add(adjustedDay);
-          break;
-        }
+    const businessDaysSet = new Set(businessDaysInt);
+
+    // These are the days when business is closed (e.g. Saturday to start the weekend)
+    const closedDays = new Set<number>();
+    for (let i = 0; i < weekLength; i += 1) {
+      if (
+        !businessDaysSet.has(i) &&
+        businessDaysSet.has((i - 1 + weekLength) % weekLength)
+      ) {
+        closedDays.add(i);
       }
-    });
+    }
+
     const boundsArray: Range[] = [];
-    // For each reopen day, find the furthest previous closed day
-    reopenDays.forEach(open => {
-      for (let i = open - 1; i > open - this.daysOfWeek.length; i -= 1) {
-        const adjustedDay = i < 0 ? i + this.daysOfWeek.length : i;
-        if (businessDaysInt.includes(adjustedDay)) {
-          const closedDay = (adjustedDay + 1) % 7;
-          boundsArray.push([closedDay, open]);
-          break;
+    // For each close day, find the next open day
+    closedDays.forEach(closedDay => {
+      for (let i = 0; i < weekLength; i += 1) {
+        const adjustedDay = (closedDay + i) % weekLength;
+        if (businessDaysSet.has(adjustedDay)) {
+          boundsArray.push([closedDay, adjustedDay]);
+          return;
         }
       }
+      throw new Error(
+        `Unable to find open day for closed day ${closedDay}, businessDays: ${businessDays}`
+      );
     });
     return boundsArray;
+  }
+
+  /**
+   * Breaks in plotly for business days
+   * @param businessDays Business days to create the breaks for
+   * @returns Plotly range breaks for the business days
+   */
+  createBreaksFromDays(businessDays: string[]): Rangebreaks[] {
+    const bounds = this.createBoundsFromDays(businessDays);
+    return bounds.map(bound => ({
+      pattern: 'day of week',
+      bounds: bound,
+    }));
+  }
+
+  /**
+   * Creates range breaks for plotly from a business calendar.
+   * @param businessCalendar Calendar to create the breaks from
+   * @param formatter Formatter to use for time zones
+   * @returns Plotly Rangebreaks for the business calendar
+   */
+  createRangeBreaksFromBusinessCalendar(
+    businessCalendar: DhType.calendar.BusinessCalendar,
+    formatter: Formatter
+  ): Rangebreaks[] {
+    const rangebreaks: Rangebreaks[] = [];
+    const {
+      businessPeriods,
+      businessDays,
+      holidays,
+      timeZone: calendarTimeZone,
+    } = businessCalendar;
+    const typeFormatter =
+      formatter?.getColumnTypeFormatter(BUSINESS_COLUMN_TYPE);
+    let formatterTimeZone;
+    if (isDateTimeColumnFormatter(typeFormatter)) {
+      formatterTimeZone = typeFormatter.dhTimeZone;
+    }
+    const timeZoneDiff = ChartUtils.getTimeZoneDiff(
+      calendarTimeZone,
+      formatterTimeZone
+    );
+    if (holidays.length > 0) {
+      rangebreaks.push(
+        ...this.createRangeBreakValuesFromHolidays(
+          holidays,
+          calendarTimeZone,
+          formatterTimeZone,
+          businessCalendar
+        )
+      );
+    }
+
+    rangebreaks.push(
+      ...this.createBreaksFromPeriods(businessPeriods, timeZoneDiff)
+    );
+    rangebreaks.push(...this.createBreaksFromDays(businessDays));
+
+    return rangebreaks;
   }
 
   /**
@@ -1559,11 +1701,13 @@ class ChartUtils {
    * @param holidays an array of holidays
    * @param calendarTimeZone the time zone for the business calendar
    * @param formatterTimeZone the time zone for the formatter
+   * @param calendar the calendar the holidays are from
    */
   createRangeBreakValuesFromHolidays(
     holidays: DhType.calendar.Holiday[],
     calendarTimeZone: DhType.i18n.TimeZone,
-    formatterTimeZone?: DhType.i18n.TimeZone
+    formatterTimeZone?: DhType.i18n.TimeZone,
+    calendar?: DhType.calendar.BusinessCalendar
   ): Rangebreaks[] {
     const fullHolidays: string[] = [];
     const partialHolidays: {
@@ -1576,7 +1720,8 @@ class ChartUtils {
           ...this.createPartialHoliday(
             holiday,
             calendarTimeZone,
-            formatterTimeZone
+            formatterTimeZone,
+            calendar
           )
         );
       } else {
@@ -1614,46 +1759,54 @@ class ChartUtils {
    * @param holiday the partial holiday
    * @param calendarTimeZone the time zone for the business calendar
    * @param formatterTimeZone the time zone for the formatter
+   * @param calendar the calendar the holiday is from. Used to check against the default business periods to ensure this holiday needs to be specified
+   *
+   * @returns an array of range breaks for the partial holiday
    */
   createPartialHoliday(
     holiday: DhType.calendar.Holiday,
     calendarTimeZone: DhType.i18n.TimeZone,
-    formatterTimeZone?: DhType.i18n.TimeZone
+    formatterTimeZone?: DhType.i18n.TimeZone,
+    calendar?: DhType.calendar.BusinessCalendar
   ): {
     values: string[];
     dvalue: number;
   }[] {
-    // If a holiday has business periods {open1, close1} and {open2, close2}
-    // This will generate range breaks for:
-    // closed from 00:00 to open1
-    // closed from close1 to open2
-    // closed from close2 to 23:59:59.999999
+    if (holiday.businessPeriods.length === 0) {
+      return [];
+    }
+
     const dateString = holiday.date.toString();
-    const closedPeriods = ['00:00'];
-    holiday.businessPeriods.forEach(period => {
-      closedPeriods.push(period.open);
-      closedPeriods.push(period.close);
-    });
-    // To go up to 23:59:59.999999, we calculate the dvalue using 24 - close
-    closedPeriods.push('24:00');
+
+    // First check that the holiday is on a business day. If it's not, we can ignore it
+    if (calendar) {
+      const dayOfWeek = new Date(dateString).getDay();
+      const isBusinessDay = calendar.businessDays.includes(
+        this.daysOfWeek[dayOfWeek]
+      );
+      if (!isBusinessDay) {
+        return [];
+      }
+    }
+
+    const closedPeriods = ChartUtils.createClosedRangesForPartialHoliday(
+      holiday.businessPeriods,
+      calendar?.businessPeriods ?? []
+    );
 
     const rangeBreaks = [];
-    for (let i = 0; i < closedPeriods.length; i += 2) {
-      const startClose = closedPeriods[i];
-      const endClose = closedPeriods[i + 1];
+    for (let i = 0; i < closedPeriods.length; i += 1) {
+      const [closeStart, closeEnd] = closedPeriods[i];
       // Skip over any periods where start and close are the same (zero hours)
-      if (startClose !== endClose) {
+      if (closeStart !== closeEnd) {
         const values = [
           this.adjustDateForTimeZone(
-            `${dateString} ${startClose}:00.000000`,
+            `${dateString} ${ChartUtils.decimalToPeriod(closeStart)}:00.000000`,
             calendarTimeZone,
             formatterTimeZone
           ),
         ];
-        const dvalue =
-          MILLIS_PER_HOUR *
-          (ChartUtils.periodToDecimal(endClose) -
-            ChartUtils.periodToDecimal(startClose));
+        const dvalue = MILLIS_PER_HOUR * (closeEnd - closeStart);
         rangeBreaks.push({ values, dvalue });
       }
     }

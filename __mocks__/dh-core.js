@@ -1892,7 +1892,7 @@ class TimeZone {
       // We at least know that '' and undefined, so throw an error.
       throw new Error('Unsupported time zone');
     }
-    return { id };
+    return { id, standardOffset: 0 };
   }
 }
 
