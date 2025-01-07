@@ -56,7 +56,7 @@ import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type SessionConfig } from '@deephaven/jsapi-utils';
-import Log from '@deephaven/log';
+import Log, { exportLogs, logHistory } from '@deephaven/log';
 import {
   getActiveTool,
   getWorkspace,
@@ -70,6 +70,7 @@ import {
   type ServerConfigValues,
   type CustomizableWorkspace,
   type DashboardData,
+  store,
 } from '@deephaven/redux';
 import {
   bindAllMethods,
@@ -92,7 +93,10 @@ import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { type WindowMouseEvent } from './WidgetList';
-import { getFormattedVersionInfo } from '../settings/SettingsUtils';
+import {
+  getFormattedPluginInfo,
+  getFormattedVersionInfo,
+} from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 
 const log = Log.module('AppMainContainer');
@@ -194,6 +198,25 @@ export class AppMainContainer extends Component<
 
     this.state = {
       contextActions: [
+        {
+          action: () => {
+            // Exports logs with same details as using the button in settings
+            const { serverConfigValues, plugins } = this.props;
+            const pluginInfo = getFormattedPluginInfo(plugins);
+            exportLogs(
+              logHistory,
+              {
+                uiVersion: import.meta.env.npm_package_version,
+                userAgent: navigator.userAgent,
+                ...Object.fromEntries(serverConfigValues),
+                pluginInfo,
+              },
+              store.getState()
+            );
+          },
+          shortcut: GLOBAL_SHORTCUTS.EXPORT_LOGS,
+          // Not global to prevent conflict with action with same shortcut in AppBootstrap.tsx
+        },
         {
           action: () => {
             // Copies the version info to the clipboard for easy pasting into a ticket

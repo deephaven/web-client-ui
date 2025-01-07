@@ -5,6 +5,12 @@ import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import { type Plugin } from '@deephaven/plugin';
+import { exportLogs, logHistory } from '@deephaven/log';
+import {
+  ContextActions,
+  ContextMenuRoot,
+  GLOBAL_SHORTCUTS,
+} from '@deephaven/components';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
@@ -56,6 +62,25 @@ export function AppBootstrap({
     });
   }, []);
   useBroadcastLoginListener(onLogin, onLogout);
+
+  const contextActions = [
+    {
+      // Exporting logs in a general context
+      action: () => {
+        exportLogs(
+          logHistory,
+          {
+            // uiVersion: todo
+            userAgent: navigator.userAgent,
+          },
+          store.getState()
+        );
+      },
+      shortcut: GLOBAL_SHORTCUTS.EXPORT_LOGS,
+      isGlobal: true,
+    },
+  ];
+
   return (
     <Provider store={store}>
       <FontBootstrap fontClassNames={fontClassNames}>
@@ -78,10 +103,12 @@ export function AppBootstrap({
                   </UserBootstrap>
                 </ServerConfigBootstrap>
               </AuthBootstrap>
+              <ContextActions actions={contextActions} />
             </ClientBootstrap>
           </ThemeBootstrap>
         </PluginsBootstrap>
       </FontBootstrap>
+      <ContextMenuRoot />
     </Provider>
   );
 }
