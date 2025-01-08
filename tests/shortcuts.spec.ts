@@ -12,8 +12,7 @@ test('shortcut downloads logs', async ({ page }) => {
 });
 
 test('shortcut downloads logs in full screen error', async ({ page }) => {
-  // Go to embed-widget page without url parameter to trigger a full screen error
-  await gotoPage(page, 'localhost:4010');
+  await gotoPage(page, 'localhost:4010/iframe/widget');
 
   const downloadPromise = page.waitForEvent('download');
   await page.keyboard.press('ControlOrMeta+Alt+Shift+KeyL');

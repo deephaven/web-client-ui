@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
 
   let port = Number.parseInt(env.PORT, 10);
   if (Number.isNaN(port) || port <= 0) {
-    port = 4030;
+    port = 4010;
   }
 
   const baseURL = new URL(env.BASE_URL, `http://localhost:${port}/`);

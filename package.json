@@ -34,6 +34,7 @@
     "lint:packages": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
     "preview": "lerna run --scope=@deephaven/{code-studio,embed-widget} preview --stream",
     "preview:app": "lerna run --scope=@deephaven/code-studio preview --stream",
+    "preview:embed-widget": "lerna run --scope=@deephaven/embed-widget preview --stream",
     "prestart": "npm run build:necessary",
     "start": "run-p watch:types start:*",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
