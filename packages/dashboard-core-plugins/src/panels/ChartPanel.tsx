@@ -123,8 +123,11 @@ interface OwnProps extends DashboardPanelProps {
   makeModel: () => Promise<ChartModel>;
   localDashboardId: string;
   Plotly?: typeof PlotlyType;
-  /** The plot container div */
-  containerRef?: RefObject<HTMLDivElement>;
+  /**
+   * The plot container div.
+   * The ref will be undefined on initial render if the chart needs to be loaded.
+   */
+  containerRef?: React.Ref<HTMLDivElement>;
 
   panelState?: GLChartPanelState;
 }
