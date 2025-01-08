@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
+
+### Bug Fixes
+
+- Re-export Spectrum components for v0.85 ([#2332](https://github.com/deephaven/web-client-ui/issues/2332)) ([900babd](https://github.com/deephaven/web-client-ui/commit/900babd49b66ff4b11c224540b0404d78d1b0b20)), closes [#2212](https://github.com/deephaven/web-client-ui/issues/2212) [#2170](https://github.com/deephaven/web-client-ui/issues/2170)
+
 ## [0.85.10](https://github.com/deephaven/web-client-ui/compare/v0.85.9...v0.85.10) (2025-01-06)
 
 ### Features

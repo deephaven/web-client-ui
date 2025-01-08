@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
+
+### Bug Fixes
+
+- Partial holidays range breaks ([#2297](https://github.com/deephaven/web-client-ui/issues/2297)) ([#2334](https://github.com/deephaven/web-client-ui/issues/2334)) ([6480e1a](https://github.com/deephaven/web-client-ui/commit/6480e1a84f6eb892fcf2368fd22d773937bde175))
+- Re-export Spectrum components for v0.85 ([#2332](https://github.com/deephaven/web-client-ui/issues/2332)) ([900babd](https://github.com/deephaven/web-client-ui/commit/900babd49b66ff4b11c224540b0404d78d1b0b20)), closes [#2212](https://github.com/deephaven/web-client-ui/issues/2212) [#2170](https://github.com/deephaven/web-client-ui/issues/2170)
+- Support deephaven-plugin-plotly-express 0.12.0 in v0.85 ([#2335](https://github.com/deephaven/web-client-ui/issues/2335)) ([ce9d684](https://github.com/deephaven/web-client-ui/commit/ce9d684d00ec2a717bf5424a7903fdc1c4833bfe)), closes [#2174](https://github.com/deephaven/web-client-ui/issues/2174)
+
 ## [0.85.10](https://github.com/deephaven/web-client-ui/compare/v0.85.9...v0.85.10) (2025-01-06)
 
 ### Features

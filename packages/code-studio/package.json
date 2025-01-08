@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.85.10",
+  "version": "0.85.11",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

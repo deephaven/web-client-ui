@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
+
+### Bug Fixes
+
+- Support deephaven-plugin-plotly-express 0.12.0 in v0.85 ([#2335](https://github.com/deephaven/web-client-ui/issues/2335)) ([ce9d684](https://github.com/deephaven/web-client-ui/commit/ce9d684d00ec2a717bf5424a7903fdc1c4833bfe)), closes [#2174](https://github.com/deephaven/web-client-ui/issues/2174)
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/react-hooks

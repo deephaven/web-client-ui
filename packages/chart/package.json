@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.85.10",
+  "version": "0.85.11",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

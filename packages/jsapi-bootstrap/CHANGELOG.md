@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
+
+**Note:** Version bump only for package @deephaven/jsapi-bootstrap
+
 ## [0.85.10](https://github.com/deephaven/web-client-ui/compare/v0.85.9...v0.85.10) (2025-01-06)
 
 **Note:** Version bump only for package @deephaven/jsapi-bootstrap
