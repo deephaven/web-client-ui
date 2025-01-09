@@ -38,6 +38,10 @@ class DecimalFormatContextMenu {
         group: DecimalFormatContextMenu.presetGroup,
       },
       {
+        format: DecimalColumnFormatter.FORMAT_THOUSANDS,
+        group: DecimalFormatContextMenu.presetGroup,
+      },
+      {
         format: DecimalColumnFormatter.FORMAT_MILLIONS,
         group: DecimalFormatContextMenu.presetGroup,
       },
