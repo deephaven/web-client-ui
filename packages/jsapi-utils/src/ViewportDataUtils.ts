@@ -6,7 +6,7 @@ import { type KeyedItem, type ValueOf } from '@deephaven/utils';
 
 export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 
-export type OnTableUpdatedEvent = CustomEvent<{
+export type OnTableUpdatedEvent = dh.Event<{
   offset: number;
   columns: dh.Column[];
   rows: dh.Row[];

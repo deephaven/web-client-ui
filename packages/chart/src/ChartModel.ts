@@ -6,7 +6,16 @@ import { type Formatter } from '@deephaven/jsapi-utils';
 import type { Layout, Data } from 'plotly.js';
 import { type FilterColumnMap, type FilterMap } from './ChartUtils';
 
-export type ChartEvent = CustomEvent;
+export type ChartEvent = DhType.Event<unknown>;
+
+export interface FigureUpdateEventData {
+  series: DhType.plot.Series[];
+  getArray: (
+    series: DhType.plot.Series,
+    sourceType: number,
+    mappingFunc: (value: unknown) => unknown
+  ) => unknown[];
+}
 
 export type RenderOptions = {
   /** Allow WebGL as an option. Defaults to `true`, explicitly set to `false` to disable. */

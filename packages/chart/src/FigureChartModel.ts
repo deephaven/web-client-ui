@@ -17,7 +17,11 @@ import type {
   DateTimeColumnFormatter,
   Formatter,
 } from '@deephaven/jsapi-utils';
-import ChartModel, { type ChartEvent, type RenderOptions } from './ChartModel';
+import ChartModel, {
+  type ChartEvent,
+  type FigureUpdateEventData,
+  type RenderOptions,
+} from './ChartModel';
 import ChartUtils, {
   type AxisTypeMap,
   type ChartModelSettings,
@@ -472,7 +476,7 @@ class FigureChartModel extends ChartModel {
     this.fireDownsampleNeeded(event.detail);
   }
 
-  handleFigureUpdated(event: ChartEvent): void {
+  handleFigureUpdated(event: DhType.Event<FigureUpdateEventData>): void {
     const { detail: figureUpdateEvent } = event;
     const { series: seriesArray } = figureUpdateEvent;
 
@@ -549,7 +553,7 @@ class FigureChartModel extends ChartModel {
     this.resubscribe();
   }
 
-  handleFigureDisconnected(event: CustomEvent): void {
+  handleFigureDisconnected(event: DhType.Event<unknown>): void {
     log.debug('Figure disconnected', event);
 
     this.isConnected = false;
@@ -561,7 +565,7 @@ class FigureChartModel extends ChartModel {
     this.fireDisconnect();
   }
 
-  handleFigureReconnected(event: CustomEvent): void {
+  handleFigureReconnected(event: DhType.Event<unknown>): void {
     log.debug('Figure reconnected', event);
 
     this.isConnected = true;
