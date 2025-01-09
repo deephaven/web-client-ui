@@ -4,16 +4,17 @@ import {
   findSpectrumPickerScrollArea,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
+import type { MenuTriggerAction } from '../comboBox';
 
 export interface UsePickerScrollOnOpenOptions {
   getInitialScrollPosition?: () => Promise<number | null | undefined>;
   onScroll: (event: Event) => void;
-  onOpenChange?: (isOpen: boolean) => void;
+  onOpenChange?: (isOpen: boolean, menuTrigger?: MenuTriggerAction) => void;
 }
 
 export interface UsePickerScrollOnOpenResult<THtml extends HTMLElement> {
   ref: DOMRef<THtml>;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (isOpen: boolean, menuTrigger?: MenuTriggerAction) => void;
 }
 
 /**
@@ -37,11 +38,11 @@ export function usePickerScrollOnOpen<THtml extends HTMLElement = HTMLElement>({
   );
 
   const onOpenChangeInternal = useCallback(
-    (isOpen: boolean): void => {
+    (isOpen: boolean, menuTrigger?: MenuTriggerAction): void => {
       // Attach scroll event handling
       popoverOnOpenChange(isOpen);
 
-      onOpenChange?.(isOpen);
+      onOpenChange?.(isOpen, menuTrigger);
     },
     [onOpenChange, popoverOnOpenChange]
   );
