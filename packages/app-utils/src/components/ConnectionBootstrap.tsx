@@ -85,7 +85,7 @@ export function ConnectionBootstrap({
       if (connection == null || isShutdown) return;
 
       // handles the disconnect event
-      function handleDisconnect(event: CustomEvent): void {
+      function handleDisconnect(event: dh.Event<unknown>): void {
         const { detail } = event;
         log.info('Disconnect', `${JSON.stringify(detail)}`);
         setConnectionState('reconnecting');
@@ -105,7 +105,7 @@ export function ConnectionBootstrap({
       if (connection == null || isShutdown) return;
 
       // handles the reconnect event
-      function handleReconnect(event: CustomEvent): void {
+      function handleReconnect(event: dh.Event<unknown>): void {
         const { detail } = event;
         log.info('Reconnect', `${JSON.stringify(detail)}`);
         setConnectionState('connected');
@@ -125,7 +125,7 @@ export function ConnectionBootstrap({
       if (connection == null) return;
 
       // handles the shutdown event
-      function handleShutdown(event: CustomEvent): void {
+      function handleShutdown(event: dh.Event<unknown>): void {
         const { detail } = event;
         log.info('Shutdown', `${JSON.stringify(detail)}`);
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
@@ -146,7 +146,7 @@ export function ConnectionBootstrap({
       if (connection == null || isShutdown) return;
 
       // handles the auth failed event
-      function handleAuthFailed(event: CustomEvent): void {
+      function handleAuthFailed(event: dh.Event<unknown>): void {
         const { detail } = event;
         log.warn(
           'Reconnect authentication failed',

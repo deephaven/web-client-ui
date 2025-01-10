@@ -35,18 +35,21 @@ function ConsoleStatusBar({
 }: ConsoleStatusBarProps): ReactElement {
   const [pendingCommandCount, setPendingCommandCount] = useState(0);
 
-  const handleCommandStarted = useCallback(async (event: CustomEvent) => {
-    setPendingCommandCount(count => count + 1);
+  const handleCommandStarted = useCallback(
+    async (event: DhType.Event<{ result: Promise<unknown> }>) => {
+      setPendingCommandCount(count => count + 1);
 
-    try {
-      const { result } = event.detail;
-      await result;
-    } catch (error) {
-      // No-op, fall through
-    }
+      try {
+        const { result } = event.detail;
+        await result;
+      } catch (error) {
+        // No-op, fall through
+      }
 
-    setPendingCommandCount(count => count - 1);
-  }, []);
+      setPendingCommandCount(count => count - 1);
+    },
+    []
+  );
 
   useEffect(
     function startListening() {

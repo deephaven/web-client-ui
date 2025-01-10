@@ -49,9 +49,14 @@ describe('usePickerScrollOnOpen', () => {
     expect(result.current.ref).toBe(mockUsePopoverOnScrollRefResult.ref);
   });
 
-  it.each([true, false])(
-    'should return a callback that calls popoverOnOpenChange and onOpenChange: %s',
-    isOpen => {
+  it.each([
+    [true, undefined],
+    [false, undefined],
+    [true, 'input'],
+    [false, 'input'],
+  ] as const)(
+    'should return a callback that calls popoverOnOpenChange and onOpenChange: %s, %s',
+    (isOpen, menuTrigger) => {
       const { result } = renderHook(() =>
         usePickerScrollOnOpen({
           getInitialScrollPosition,
@@ -60,12 +65,12 @@ describe('usePickerScrollOnOpen', () => {
         })
       );
 
-      result.current.onOpenChange(isOpen);
+      result.current.onOpenChange(isOpen, menuTrigger);
 
       expect(mockUsePopoverOnScrollRefResult.onOpenChange).toHaveBeenCalledWith(
         isOpen
       );
-      expect(onOpenChange).toHaveBeenCalledWith(isOpen);
+      expect(onOpenChange).toHaveBeenCalledWith(isOpen, menuTrigger);
     }
   );
 });

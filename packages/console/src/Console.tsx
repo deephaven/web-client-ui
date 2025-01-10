@@ -339,10 +339,20 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.consoleInput.current?.clear();
   }
 
-  handleCommandStarted(event: CustomEvent): void {
+  handleCommandStarted(
+    event: DhType.Event<{
+      code: string;
+      result: {
+        message: string;
+        error?: string;
+        changes: DhType.ide.VariableChanges;
+        cancel: () => unknown;
+      };
+    }>
+  ): void {
     const { code, result } = event.detail;
     const wrappedResult = this.pending.add(result);
-    const historyItem = {
+    const historyItem: ConsoleHistoryActionItem = {
       command: code,
       disabledObjects: [],
       startTime: Date.now(),
