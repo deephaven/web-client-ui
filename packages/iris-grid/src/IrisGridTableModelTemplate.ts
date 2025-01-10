@@ -803,7 +803,7 @@ class IrisGridTableModelTemplate<
           frontIndex += 1;
         });
 
-        let backIndex = this.columnMap.size - 1;
+        let backIndex = this.columns.length - 1;
         backColumns?.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
@@ -901,18 +901,6 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedInitialColumnHeaderGroups(
       this.layoutHints ?? undefined
     );
-  }
-
-  getMemoizedColumnMap = memoize(
-    (tableColumns: DhType.Column[]): Map<string, DhType.Column> => {
-      const columnMap = new Map();
-      tableColumns.forEach(col => columnMap.set(col.name, col));
-      return columnMap;
-    }
-  );
-
-  get columnMap(): Map<ColumnName, DhType.Column> {
-    return this.getMemoizedColumnMap(this.table.columns);
   }
 
   get columnHeaderMaxDepth(): number {
@@ -1173,13 +1161,12 @@ class IrisGridTableModelTemplate<
   }
 
   extractViewportRow(row: DhType.Row, columns: DhType.Column[]): R {
-    const data = new Map<ModelIndex, CellData>();
+    const data = new Map<ModelIndex | ColumnName, CellData>();
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
 
       const index = this.getColumnIndexByName(column.name);
-      assertNotNull(index);
-      data.set(index, {
+      data.set(index ?? column.name, {
         value: row.get(column),
         format: row.getFormat(column),
       });
@@ -2048,8 +2035,11 @@ class IrisGridTableModelTemplate<
       this.pendingNewDataMap.forEach(row => {
         const newRow: Record<ColumnName, unknown> = {};
         row.data.forEach(({ value }, columnIndex) => {
-          const column = this.columns[columnIndex];
-          newRow[column.name] = value;
+          const columnName =
+            typeof columnIndex === 'string'
+              ? columnIndex
+              : this.columns[columnIndex].name;
+          newRow[columnName] = value;
         });
         newRows.push(newRow);
       });
