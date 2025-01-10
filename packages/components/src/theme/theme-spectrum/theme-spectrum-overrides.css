@@ -9,6 +9,16 @@ label[class*='spectrum-'] {
   margin-bottom: 0;
 }
 
+/*
+* This workaround can be removed when this fix is pulled in
+* https://github.com/adobe/react-spectrum/issues/7571
+*/
+[class*='spectrum-Menu-itemGrid'] svg,
+svg[class*='spectrum-Textfield-validationIcon'] {
+  /* set as border-box by reboot, but spectrum expects this to be content-box */
+  box-sizing: content-box;
+}
+
 svg[class*='spectrum-Textfield-validationIcon'] {
   /* set as border-box by reboot, but spectrum expects this to be content-box */
   box-sizing: content-box;
