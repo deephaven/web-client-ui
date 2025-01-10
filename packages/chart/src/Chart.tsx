@@ -19,6 +19,7 @@ import {
   type DateTimeFormatSettings,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   type Config as PlotlyConfig,
   type Layout,
@@ -440,7 +441,7 @@ class Chart extends Component<ChartProps, ChartState> {
     this.setState({ downsamplingError: null });
   }
 
-  handleModelEvent(event: CustomEvent): void {
+  handleModelEvent(event: DhType.Event<unknown>): void {
     const { type, detail } = event;
     log.debug2('Received data update', type, detail);
 
@@ -453,7 +454,7 @@ class Chart extends Component<ChartProps, ChartState> {
             layout.datarevision += 1;
           }
           return {
-            data: detail,
+            data: detail as Partial<Data>[] | null,
             layout,
             revision: revision + 1,
           };
@@ -497,7 +498,8 @@ class Chart extends Component<ChartProps, ChartState> {
       }
       case ChartModel.EVENT_DOWNSAMPLENEEDED:
       case ChartModel.EVENT_DOWNSAMPLEFAILED: {
-        const downsamplingError = detail.message ?? detail;
+        const downsamplingError =
+          (detail as { message?: string }).message ?? detail;
         this.setState({
           isDownsampleFinished: false,
           isDownsampleInProgress: false,
@@ -506,7 +508,11 @@ class Chart extends Component<ChartProps, ChartState> {
         });
 
         const { onError } = this.props;
-        onError(new DownsamplingError(downsamplingError));
+        onError(
+          new DownsamplingError(
+            downsamplingError == null ? undefined : `${downsamplingError}`
+          )
+        );
         break;
       }
       case ChartModel.EVENT_ERROR: {

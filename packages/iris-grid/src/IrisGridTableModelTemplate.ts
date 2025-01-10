@@ -337,19 +337,19 @@ class IrisGridTableModelTemplate<
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.RECONNECT));
   }
 
-  handleTableUpdate(event: CustomEvent): void {
+  handleTableUpdate(event: DhType.Event<DhType.ViewportData>): void {
     this.copyViewportData(event.detail);
 
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
-  handleTotalsUpdate(event: CustomEvent): void {
+  handleTotalsUpdate(event: DhType.Event<DhType.ViewportData>): void {
     this.copyTotalsData(event.detail);
 
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
-  handleRequestFailed(event: CustomEvent): void {
+  handleRequestFailed(event: DhType.Event<unknown>): void {
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-bootstrap",
-  "version": "0.102.0",
+  "version": "0.102.1",
   "description": "Deephaven JSAPI Bootstrap",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.37.2",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils"

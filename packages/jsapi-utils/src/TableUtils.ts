@@ -628,8 +628,8 @@ export class TableUtils {
     table: DhType.Table | DhType.TreeTable,
     eventName: string,
     timeout = 0,
-    matcher: ((event: CustomEvent) => boolean) | null = null
-  ): CancelablePromise<CustomEvent> {
+    matcher: ((event: DhType.Event<unknown>) => boolean) | null = null
+  ): CancelablePromise<DhType.Event<unknown>> {
     let eventCleanup: () => void;
     let timeoutId: ReturnType<typeof setTimeout>;
     let isPending = true;
@@ -650,7 +650,7 @@ export class TableUtils {
         isPending = false;
         resolve(event);
       });
-    }) as CancelablePromise<CustomEvent>;
+    }) as CancelablePromise<DhType.Event<unknown>>;
     wrappedPromise.cancel = () => {
       if (isPending) {
         log.debug2('Pending promise cleanup.');

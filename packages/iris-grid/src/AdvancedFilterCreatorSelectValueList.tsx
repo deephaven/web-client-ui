@@ -167,7 +167,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     this.updateItemSelection();
   }
 
-  handleTableUpdate(event: CustomEvent): void {
+  handleTableUpdate(event: DhType.Event<DhType.ViewportData>): void {
     const { table, formatter } = this.props;
     if (!table) return;
 
