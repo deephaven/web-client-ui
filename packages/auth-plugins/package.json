@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/auth-plugins",
-  "version": "0.85.12",
+  "version": "0.85.13",
   "description": "Deephaven Auth Plugins",
   "keywords": [
     "Deephaven",

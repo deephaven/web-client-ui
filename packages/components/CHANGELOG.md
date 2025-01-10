@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.13](https://github.com/deephaven/web-client-ui/compare/v0.85.12...v0.85.13) (2025-01-10)
+
+### Features
+
+- Deephaven UI table databar support ([#2190](https://github.com/deephaven/web-client-ui/issues/2190)) ([#2340](https://github.com/deephaven/web-client-ui/issues/2340)) ([d8f667a](https://github.com/deephaven/web-client-ui/commit/d8f667ae69fada44456230a40be137ac8200104a))
+
 ## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
 
 ### Bug Fixes
