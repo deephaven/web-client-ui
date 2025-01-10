@@ -7,7 +7,7 @@ const log = Log.module('useTableListener');
 export const useTableListener = <T = unknown>(
   eventEmitter: dh.HasEventHandling | undefined | null,
   eventName: string,
-  callback: (event: CustomEvent<T>) => void
+  callback: (event: dh.Event<T>) => void
 ): void =>
   useEffect(
     function initEventEmitter() {
