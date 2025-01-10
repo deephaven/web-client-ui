@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.12](https://github.com/deephaven/web-client-ui/compare/v0.85.11...v0.85.12) (2025-01-10)
+
+### Features
+
+- add thousands format for numbers ([#2337](https://github.com/deephaven/web-client-ui/issues/2337)) ([8cebb63](https://github.com/deephaven/web-client-ui/commit/8cebb63d2ea114fc8e244f649fae872a484bd9b7)), closes [#2261](https://github.com/deephaven/web-client-ui/issues/2261)
+
 ## [0.85.11](https://github.com/deephaven/web-client-ui/compare/v0.85.10...v0.85.11) (2025-01-08)
 
 ### Bug Fixes

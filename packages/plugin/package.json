@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/plugin",
-  "version": "0.85.11",
+  "version": "0.85.12",
   "description": "Deephaven JS Plugin Core",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
