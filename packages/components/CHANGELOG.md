@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.102.1](https://github.com/deephaven/web-client-ui/compare/v0.102.0...v0.102.1) (2025-01-10)
+
+### Bug Fixes
+
+- ComboBox show all items on open ([#2328](https://github.com/deephaven/web-client-ui/issues/2328)) ([c08bb7b](https://github.com/deephaven/web-client-ui/commit/c08bb7bacd579bd868ad2c2874cf9db0c5404e66))
+
 ## [0.102.0](https://github.com/deephaven/web-client-ui/compare/v0.101.0...v0.102.0) (2025-01-03)
 
 ### Bug Fixes
