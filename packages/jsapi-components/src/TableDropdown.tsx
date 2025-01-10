@@ -80,7 +80,7 @@ export function TableDropdown({
 
     subscription.addEventListener(
       dh.Table.EVENT_UPDATED,
-      (event: CustomEvent<DhType.ViewportData>) => {
+      (event: DhType.Event<DhType.ViewportData>) => {
         const { detail } = event;
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
