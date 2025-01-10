@@ -45,6 +45,7 @@ import {
   assertNotNaN,
   assertNotNull,
   copyToClipboard,
+  readFromClipboard,
 } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
@@ -476,6 +477,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         },
       });
     }
+
+    actions.push({
+      title: 'Paste',
+      group: IrisGridContextMenuHandler.GROUP_COPY,
+      order: 50,
+      action: async () => {
+        const text = await readFromClipboard();
+        if (text !== null) {
+          const items = text.split('\n').map(row => row.split('\t'));
+          await grid.pasteValue(items);
+        } else {
+          // todo: Bring up a popup
+          console.error('no permissions');
+        }
+      },
+    });
 
     actions.push({
       title: 'View Cell Contents',
