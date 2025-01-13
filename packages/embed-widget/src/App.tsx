@@ -12,7 +12,6 @@ import {
 import type GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfig } from '@deephaven/golden-layout';
 import {
-  ContextMenuRoot,
   ErrorBoundary,
   LoadingOverlay,
   Shortcut,
@@ -241,7 +240,6 @@ function App(): JSX.Element {
           errorMessage={error ?? null}
         />
       )}
-      <ContextMenuRoot />
       <ToastContainer />
     </div>
   );
