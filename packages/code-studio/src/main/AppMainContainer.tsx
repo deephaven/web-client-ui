@@ -86,6 +86,7 @@ import {
   AppDashboards,
   type LayoutStorage,
   UserLayoutUtils,
+  createExportLogsContextAction,
 } from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -190,7 +191,7 @@ export class AppMainContainer extends Component<
 
     this.importElement = React.createRef();
 
-    const { allDashboardData } = this.props;
+    const { allDashboardData, serverConfigValues, plugins } = this.props;
 
     this.dashboardLayouts = new Map();
     this.createDashboardListenerRemovers = new Map();
@@ -198,29 +199,18 @@ export class AppMainContainer extends Component<
 
     this.state = {
       contextActions: [
-        {
-          action: () => {
-            // Exports logs with same details as using the button in settings
-            const { serverConfigValues, plugins } = this.props;
-            const pluginInfo = getFormattedPluginInfo(plugins);
-            exportLogs(
-              logHistory,
-              {
-                uiVersion: import.meta.env.npm_package_version,
-                userAgent: navigator.userAgent,
-                ...Object.fromEntries(serverConfigValues),
-                pluginInfo,
-              },
-              store.getState()
-            );
+        createExportLogsContextAction(
+          {
+            uiVersion: import.meta.env.npm_package_version,
+            userAgent: navigator.userAgent,
+            ...Object.fromEntries(serverConfigValues),
+            pluginInfo: getFormattedPluginInfo(plugins),
           },
-          shortcut: GLOBAL_SHORTCUTS.EXPORT_LOGS,
-          // Not global to prevent conflict with action with same shortcut in AppBootstrap.tsx
-        },
+          false // Not global to prevent conflict with export logs action with same shortcut in AppBootstrap.tsx
+        ),
         {
           action: () => {
             // Copies the version info to the clipboard for easy pasting into a ticket
-            const { serverConfigValues } = this.props;
             const versionInfo = getFormattedVersionInfo(serverConfigValues);
             const versionInfoText = Object.entries(versionInfo)
               .map(([key, value]) => `${key}: ${value}`)

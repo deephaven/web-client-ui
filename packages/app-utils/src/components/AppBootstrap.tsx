@@ -5,17 +5,12 @@ import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import { type Plugin } from '@deephaven/plugin';
-import { exportLogs, logHistory } from '@deephaven/log';
-import {
-  ContextActions,
-  ContextMenuRoot,
-  GLOBAL_SHORTCUTS,
-} from '@deephaven/components';
+import { ContextActions, ContextMenuRoot } from '@deephaven/components';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
 import ConnectionBootstrap from './ConnectionBootstrap';
-import { getConnectOptions } from '../utils';
+import { getConnectOptions, createExportLogsContextAction } from '../utils';
 import FontsLoaded from './FontsLoaded';
 import UserBootstrap from './UserBootstrap';
 import ServerConfigBootstrap from './ServerConfigBootstrap';
@@ -67,23 +62,10 @@ export function AppBootstrap({
   }, []);
   useBroadcastLoginListener(onLogin, onLogout);
 
-  const contextActions = [
-    {
-      // Exporting logs in a general context
-      action: () => {
-        exportLogs(
-          logHistory,
-          {
-            uiVersion,
-            userAgent: navigator.userAgent,
-          },
-          store.getState()
-        );
-      },
-      shortcut: GLOBAL_SHORTCUTS.EXPORT_LOGS,
-      isGlobal: true,
-    },
-  ];
+  const contextActions = useMemo(
+    () => [createExportLogsContextAction(logMetadata, true)],
+    [logMetadata]
+  );
 
   return (
     <Provider store={store}>
