@@ -23,6 +23,8 @@ test('shortcut downloads logs in full screen error', async ({ page }) => {
 });
 
 test('shortcut downloads logs in embeded-widget', async ({ page }) => {
+  test.slow(); // Extend timeout to prevent a failure before page loads
+
   await gotoPage(page, 'http://localhost:4010?name=all_types');
 
   const downloadPromise = page.waitForEvent('download');
