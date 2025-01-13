@@ -25,8 +25,8 @@ export type AppBootstrapProps = {
   /** URL of the server. */
   serverUrl: string;
 
-  /** Version of front-end. */
-  uiVersion: string;
+  /** Properties included in support logs. */
+  logMetadata?: Record<string, unknown>;
 
   /** URL of the plugins to load. */
   pluginsUrl: string;
@@ -52,7 +52,7 @@ export function AppBootstrap({
   pluginsUrl,
   getCorePlugins,
   serverUrl,
-  uiVersion,
+  logMetadata,
   children,
 }: AppBootstrapProps): JSX.Element {
   const clientOptions = useMemo(() => getConnectOptions(), []);

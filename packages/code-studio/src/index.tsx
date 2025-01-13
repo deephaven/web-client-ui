@@ -34,7 +34,9 @@ const pluginsURL = new URL(
   document.baseURI
 );
 
-const uiVersion = import.meta.env.npm_package_version;
+const logMetadata: Record<string, unknown> = {
+  uiVersion: import.meta.env.npm_package_version,
+};
 
 // Lazy load the configs because it breaks initial page loads otherwise
 async function getCorePlugins() {
@@ -71,7 +73,7 @@ ReactDOM.render(
           getCorePlugins={getCorePlugins}
           serverUrl={apiURL.origin}
           pluginsUrl={pluginsURL.href}
-          uiVersion={uiVersion}
+          logMetadata={logMetadata}
         >
           <AppRoot />
         </AppBootstrap>
