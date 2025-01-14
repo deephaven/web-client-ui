@@ -23,7 +23,7 @@ test('shortcut downloads logs in full screen error', async ({ page }) => {
 });
 
 test('shortcut downloads logs in embeded-widget', async ({ page }) => {
-  test.slow(); // Extend timeout to prevent a failure before page loads
+  test.slow(true, "Extend timeout to prevent a failure before page loads");
 
   // The embed-widgets page and the table itself have separate loading spinners,
   // causing a strict mode violation intermittently when using the goToPage helper
