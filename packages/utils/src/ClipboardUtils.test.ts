@@ -1,6 +1,11 @@
-import { copyToClipboard } from './ClipboardUtils';
+import { copyToClipboard, readFromClipboard } from './ClipboardUtils';
+import { checkPermission } from './PermissionUtils';
 
 document.execCommand = jest.fn();
+
+jest.mock('./PermissionUtils', () => ({
+  checkPermission: jest.fn(),
+}));
 
 describe('Clipboard', () => {
   describe('writeText', () => {
@@ -53,6 +58,107 @@ describe('Clipboard', () => {
 
       await expect(copyToClipboard('test')).resolves.toBeUndefined();
       await expect(document.execCommand).toHaveBeenCalledWith('copy');
+    });
+  });
+
+  describe('readFromClipboard', () => {
+    beforeEach(() => jest.resetAllMocks());
+
+    it('should return null if clipboard is undefined', async () => {
+      Object.assign(navigator, {
+        clipboard: undefined,
+      });
+
+      await expect(readFromClipboard()).resolves.toBeNull();
+    });
+
+    it('should return null if PermissionState is null', async () => {
+      (checkPermission as jest.Mock).mockResolvedValue(null);
+
+      await expect(readFromClipboard()).resolves.toBeNull();
+    });
+
+    it('should return text if permission is granted', async () => {
+      Object.assign(navigator, {
+        clipboard: {
+          readText: jest.fn().mockResolvedValueOnce('text from clipboard'),
+        },
+      });
+
+      (checkPermission as jest.Mock).mockResolvedValueOnce('granted');
+
+      await expect(readFromClipboard()).resolves.toBe('text from clipboard');
+    });
+
+    it('should return null if permission is denied', async () => {
+      Object.assign(navigator, {
+        clipboard: {
+          readText: jest.fn(),
+        },
+      });
+
+      (checkPermission as jest.Mock).mockResolvedValue('denied');
+
+      await expect(readFromClipboard()).resolves.toBeNull();
+    });
+
+    it('should return text if permission prompt accepted', async () => {
+      const mockClipboard = {
+        readText: jest
+          .fn()
+          .mockRejectedValueOnce(new Error('Missing permission'))
+          .mockResolvedValueOnce('text from clipboard'),
+      };
+
+      Object.assign(navigator, {
+        clipboard: mockClipboard,
+      });
+
+      (checkPermission as jest.Mock)
+        .mockResolvedValueOnce('prompt')
+        .mockResolvedValue('granted');
+
+      await expect(readFromClipboard()).resolves.toBe('text from clipboard');
+      expect(checkPermission).toHaveBeenCalledTimes(2);
+      expect(mockClipboard.readText).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return null if permission prompt denied', async () => {
+      const mockClipboard = {
+        readText: jest
+          .fn()
+          .mockRejectedValueOnce(new Error('Missing permission')),
+      };
+
+      Object.assign(navigator, {
+        clipboard: mockClipboard,
+      });
+
+      (checkPermission as jest.Mock)
+        .mockResolvedValueOnce('prompt')
+        .mockResolvedValue('denied');
+
+      await expect(readFromClipboard()).resolves.toBeNull();
+      expect(checkPermission).toHaveBeenCalledTimes(2);
+      expect(mockClipboard.readText).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return null if permission prompt closed', async () => {
+      const mockClipboard = {
+        readText: jest
+          .fn()
+          .mockRejectedValueOnce(new Error('Missing permission')),
+      };
+
+      Object.assign(navigator, {
+        clipboard: mockClipboard,
+      });
+
+      (checkPermission as jest.Mock).mockResolvedValue('prompt');
+
+      await expect(readFromClipboard()).resolves.toBeNull();
+      expect(checkPermission).toHaveBeenCalledTimes(2);
+      expect(mockClipboard.readText).toHaveBeenCalledTimes(1);
     });
   });
 });
