@@ -488,8 +488,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           const items = text.split('\n').map(row => row.split('\t'));
           await grid.pasteValue(items);
         } else {
-          // todo: Bring up a popup
-          console.error('no permissions');
+          irisGrid.handleOpenNoPastePermissionModal();
         }
       },
     });

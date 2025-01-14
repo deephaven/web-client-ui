@@ -194,6 +194,7 @@ import {
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
+import { NoPastePermissionModal } from './NoPastePermissionModal';
 
 const log = Log.module('IrisGrid');
 
@@ -442,6 +443,7 @@ export interface IrisGridState {
   toastMessage: JSX.Element | null;
   frozenColumns: readonly ColumnName[];
   showOverflowModal: boolean;
+  showNoPastePermissionModal: boolean;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
   expandCellTooltipProps: CSSProperties | null;
@@ -624,6 +626,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
     this.handleRollupChange = this.handleRollupChange.bind(this);
     this.handleOverflowClose = this.handleOverflowClose.bind(this);
+    this.handleCloseNoPastePermissionModal =
+      this.handleCloseNoPastePermissionModal.bind(this);
     this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
     this.handleGotoRowSelectedRowNumberChanged =
       this.handleGotoRowSelectedRowNumberChanged.bind(this);
@@ -870,6 +874,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       toastMessage: null,
       frozenColumns,
       showOverflowModal: false,
+      showNoPastePermissionModal: false,
       overflowText: '',
       overflowButtonTooltipProps: null,
       expandCellTooltipProps: null,
@@ -3853,6 +3858,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  handleOpenNoPastePermissionModal(): void {
+    this.setState({
+      showNoPastePermissionModal: true,
+    });
+  }
+
+  handleCloseNoPastePermissionModal(): void {
+    this.setState({
+      showNoPastePermissionModal: false,
+    });
+  }
+
   getColumnBoundingRect(): DOMRect {
     const { metrics, shownColumnTooltip } = this.state;
     assertNotNull(metrics);
@@ -4273,6 +4290,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       frozenColumns,
       columnHeaderGroups,
       showOverflowModal,
+      showNoPastePermissionModal,
       overflowText,
       overflowButtonTooltipProps,
       expandCellTooltipProps,
@@ -4998,6 +5016,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </div>
         </SlideTransition>
         <ContextActions actions={this.contextActions} />
+        <NoPastePermissionModal
+          isOpen={showNoPastePermissionModal}
+          handleClose={this.handleCloseNoPastePermissionModal}
+        />
       </div>
     );
   }
