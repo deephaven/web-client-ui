@@ -80,6 +80,12 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
   private request: http2.ClientHttp2Stream | null = null;
 
+  /**
+   * Create an http2 client stream that can send requests to the server and pass
+   * responses to callbacks defined on the transport options.
+   * @param headers Request headers
+   * @returns The created http2 client stream
+   */
   createRequest = (
     headers: Record<string, string> | null
   ): http2.ClientHttp2Stream => {
@@ -159,7 +165,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    */
   finishSend(): void {
     logger.debug('finishSend');
-    assertNotNull(this.request, '_request');
+    assertNotNull(this.request, 'request is required');
     this.request.end();
   }
 
@@ -169,7 +175,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    */
   cancel(): void {
     logger.debug('cancel');
-    assertNotNull(this.request, '_request');
+    assertNotNull(this.request, 'request is required');
     this.request.close();
   }
 
