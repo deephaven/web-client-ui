@@ -64,7 +64,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
   /**
    * Private constructor to limit instantiation to the static factory method.
    * @param options Transport options.
-   * @param session node:http2 session.
+   * @param session node:http2 session to use for data transport.
    */
   private constructor(
     options: GrpcTransportOptions,
