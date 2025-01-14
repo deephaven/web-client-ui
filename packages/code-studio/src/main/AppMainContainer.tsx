@@ -56,7 +56,7 @@ import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type SessionConfig } from '@deephaven/jsapi-utils';
-import Log, { exportLogs, logHistory } from '@deephaven/log';
+import Log from '@deephaven/log';
 import {
   getActiveTool,
   getWorkspace,
@@ -70,7 +70,6 @@ import {
   type ServerConfigValues,
   type CustomizableWorkspace,
   type DashboardData,
-  store,
 } from '@deephaven/redux';
 import {
   bindAllMethods,
