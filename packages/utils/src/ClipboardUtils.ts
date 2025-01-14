@@ -51,15 +51,9 @@ export async function readFromClipboard(): Promise<string | null> {
 
   let permissionState = await checkPermission('clipboard-read');
 
-  if (permissionState === 'granted' || permissionState === null) {
-    // Some browsers that don't support permissions seems to have a workaround where
-    // calling readText() shows the native context menu and allows user to hit paste there
-    try {
-      const text = await clipboard.readText();
-      return text;
-    } catch {
-      return null;
-    }
+  if (permissionState === 'granted') {
+    const text = await clipboard.readText();
+    return text;
   }
 
   if (permissionState === 'prompt') {
