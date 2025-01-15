@@ -30,7 +30,7 @@ export function NoPastePermissionModal({
       </ModalBody>
       <ModalFooter>
         <Button kind="primary" onClick={handleClose}>
-          Okay
+          Dismiss
         </Button>
       </ModalFooter>
     </Modal>
