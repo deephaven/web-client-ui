@@ -57,7 +57,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
      *         false otherwise indicating that Open/Next gRPC calls should be used
      */
     get supportsClientStreaming(): boolean {
-      return false;
+      return true;
     },
   };
 
@@ -177,6 +177,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     logger.debug('cancel');
     assertNotNull(this.request, 'request is required');
     this.request.close();
+    this.request = null;
   }
 
   /**
