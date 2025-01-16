@@ -624,12 +624,12 @@ export class TableUtils {
    * @param matcher Optional function to determine if the promise can be resolved or stays pending
    * @returns Resolves with the event data
    */
-  static makeCancelableTableEventPromise(
+  static makeCancelableTableEventPromise<TEventDetails = unknown>(
     table: DhType.Table | DhType.TreeTable,
     eventName: string,
     timeout = 0,
-    matcher: ((event: DhType.Event<unknown>) => boolean) | null = null
-  ): CancelablePromise<DhType.Event<unknown>> {
+    matcher: ((event: DhType.Event<TEventDetails>) => boolean) | null = null
+  ): CancelablePromise<DhType.Event<TEventDetails>> {
     let eventCleanup: () => void;
     let timeoutId: ReturnType<typeof setTimeout>;
     let isPending = true;
@@ -639,7 +639,7 @@ export class TableUtils {
         isPending = false;
         reject(new TimeoutError(`Event "${eventName}" timed out.`));
       }, timeout);
-      eventCleanup = table.addEventListener(eventName, event => {
+      eventCleanup = table.addEventListener<TEventDetails>(eventName, event => {
         if (matcher != null && !matcher(event)) {
           log.debug2('Event triggered, but matcher returned false.');
           return;
@@ -650,7 +650,7 @@ export class TableUtils {
         isPending = false;
         resolve(event);
       });
-    }) as CancelablePromise<DhType.Event<unknown>>;
+    }) as CancelablePromise<DhType.Event<TEventDetails>>;
     wrappedPromise.cancel = () => {
       if (isPending) {
         log.debug2('Pending promise cleanup.');
