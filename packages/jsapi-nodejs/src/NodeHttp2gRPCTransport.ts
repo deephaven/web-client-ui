@@ -177,7 +177,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     logger.debug('cancel');
     assertNotNull(this.request, 'request is required');
     this.request.close();
-    this.request = null;
   }
 
   /**
