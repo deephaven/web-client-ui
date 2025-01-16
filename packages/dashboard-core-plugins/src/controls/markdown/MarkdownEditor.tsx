@@ -13,7 +13,16 @@ interface MarkdownEditorProps {
 }
 
 const renderMarkdown: CodeComponent = props => {
-  const { children, className } = props;
+  const { children, inline, className } = props;
+  if (inline === true) {
+    return (
+      <code>
+        {React.Children.map(children, child =>
+          typeof child === 'string' ? child.trim() : child
+        )}
+      </code>
+    );
+  }
   const language =
     className !== undefined && className?.startsWith('language-')
       ? className.substring(9)
