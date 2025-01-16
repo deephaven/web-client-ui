@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
+
+### Features
+
+- DH-18086: gRPC transport implementation for nodejs backed by http2 ([#2339](https://github.com/deephaven/web-client-ui/issues/2339)) ([3b5c7d3](https://github.com/deephaven/web-client-ui/commit/3b5c7d383797967bc34be643870dcb9236acf786))
+
 ## [0.102.0](https://github.com/deephaven/web-client-ui/compare/v0.101.0...v0.102.0) (2025-01-03)
 
 ### Features

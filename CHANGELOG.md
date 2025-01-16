@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
+
+### Features
+
+- DH-18086: gRPC transport implementation for nodejs backed by http2 ([#2339](https://github.com/deephaven/web-client-ui/issues/2339)) ([3b5c7d3](https://github.com/deephaven/web-client-ui/commit/3b5c7d383797967bc34be643870dcb9236acf786))
+- Made event details generic ([#2343](https://github.com/deephaven/web-client-ui/issues/2343)) ([b3260f0](https://github.com/deephaven/web-client-ui/commit/b3260f05bbd76be0dd804524b4fd52168fb44527))
+
+### Bug Fixes
+
+- Markdown incorrectly rendering inline code blocks ([#2342](https://github.com/deephaven/web-client-ui/issues/2342)) ([f85c76f](https://github.com/deephaven/web-client-ui/commit/f85c76f97fffda5c94a3b3a6f8acc39c4d5bce20)), closes [#2312](https://github.com/deephaven/web-client-ui/issues/2312)
+- Update Spectrum Theme for Missing ContextualHelpTrigger Icon ([#2330](https://github.com/deephaven/web-client-ui/issues/2330)) ([5f6c8d6](https://github.com/deephaven/web-client-ui/commit/5f6c8d6a30099ac33fc6e35536b2ddfa9df528ca))
+
 ## [0.102.1](https://github.com/deephaven/web-client-ui/compare/v0.102.0...v0.102.1) (2025-01-10)
 
 ### Bug Fixes

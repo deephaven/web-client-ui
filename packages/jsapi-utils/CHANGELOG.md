@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
+
+### Features
+
+- Made event details generic ([#2343](https://github.com/deephaven/web-client-ui/issues/2343)) ([b3260f0](https://github.com/deephaven/web-client-ui/commit/b3260f05bbd76be0dd804524b4fd52168fb44527))
+
 ## [0.102.1](https://github.com/deephaven/web-client-ui/compare/v0.102.0...v0.102.1) (2025-01-10)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils

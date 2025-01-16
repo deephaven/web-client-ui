@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
+
+### Bug Fixes
+
+- Update Spectrum Theme for Missing ContextualHelpTrigger Icon ([#2330](https://github.com/deephaven/web-client-ui/issues/2330)) ([5f6c8d6](https://github.com/deephaven/web-client-ui/commit/5f6c8d6a30099ac33fc6e35536b2ddfa9df528ca))
+
 ## [0.102.1](https://github.com/deephaven/web-client-ui/compare/v0.102.0...v0.102.1) (2025-01-10)
 
 ### Bug Fixes
