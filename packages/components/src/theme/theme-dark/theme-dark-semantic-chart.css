@@ -47,4 +47,9 @@
   --dh-color-chart-geo-ocean: var(--dh-color-gray-300);
   --dh-color-chart-geo-lake: var(--dh-color-blue-200);
   --dh-color-chart-geo-river: var(--dh-color-blue-200);
+
+  /* Indicator */
+  --dh-color-chart-indicator-increase: var(--dh-color-visual-green);
+  --dh-color-chart-indicator-decrease: var(--dh-color-visual-red);
+  --dh-color-chart-indicator-gauge: var(--dh-color-green-1000);
 }
