@@ -39,10 +39,9 @@ export function parseValueFromNodes(nodes: NodeListOf<ChildNode>): string[][] {
     if (text.length > 0) {
       // When Chrome pastes a table from text, it preserves the tab characters
       // In Firefox, it breaks it into a combination of non-breaking spaces and spaces
-      result.push(text.split(/\t|\u00a0\u00a0 \u00a0/));
+      result.push(text.split(/\t|\u00a0\u00a0\u00a0 /));
     }
   });
-
   return result;
 }
 
@@ -62,7 +61,7 @@ export function parseValueFromElement(
     // If there's only one row and it doesn't contain a tab, then just treat it as a regular value
     const { childNodes } = element;
     const hasTabChar = text.includes('\t');
-    const hasFirefoxTab = text.includes('\u00a0\u00a0 \u00a0');
+    const hasFirefoxTab = text.includes('\u00a0\u00a0\u00a0 ');
     if (
       hasTabChar &&
       childNodes.length !== 0 &&

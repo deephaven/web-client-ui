@@ -1552,6 +1552,10 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       const edits: EditOperation[] = [];
       ranges.forEach(range => {
+        if ((range.startColumn ?? 0) + tableWidth > columnCount) {
+          throw new PasteError('Pasted content would overflow columns.');
+        }
+
         for (let x = 0; x < tableWidth; x += 1) {
           for (let y = 0; y < tableHeight; y += 1) {
             edits.push({

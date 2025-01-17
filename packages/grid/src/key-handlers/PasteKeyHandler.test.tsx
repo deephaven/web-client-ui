@@ -66,13 +66,13 @@ describe('table parsing', () => {
 
   const TEXT_TABLE_FIREFOX = (
     <>
-      A&nbsp;&nbsp; &nbsp;B&nbsp;&nbsp; &nbsp;C
+      A&nbsp;&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp; C
       <br />
-      1&nbsp;&nbsp; &nbsp;2&nbsp;&nbsp; &nbsp;3
+      1&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; 3
     </>
   );
 
-  const SINGLE_ROW_FIREFOX = <>A&nbsp;&nbsp; &nbsp;B&nbsp;&nbsp; &nbsp;C</>;
+  const SINGLE_ROW_FIREFOX = <>A&nbsp;&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp; C</>;
 
   function testTable(jsx: JSX.Element, expectedValue: string[][]) {
     const element = makeElementFromJsx(jsx);
