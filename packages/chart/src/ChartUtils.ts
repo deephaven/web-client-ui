@@ -2038,6 +2038,9 @@ class ChartUtils {
       ohlc_increasing,
       ohlc_decreasing,
       title_color,
+      indicator_increasing,
+      indicator_decreasing,
+      indicator_gauge,
     } = theme;
 
     return {
@@ -2073,6 +2076,16 @@ class ChartUtils {
             outsidetextfont: {
               color: title_color,
             },
+          },
+        ],
+        indicator: [
+          {
+            title: { font: { color: title_color } },
+            delta: {
+              decreasing: { color: indicator_decreasing, symbol: '▼' },
+              increasing: { color: indicator_increasing, symbol: '▲' },
+            },
+            gauge: { bar: { color: indicator_gauge } },
           },
         ],
       },
