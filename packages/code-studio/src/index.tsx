@@ -34,6 +34,10 @@ const pluginsURL = new URL(
   document.baseURI
 );
 
+const logMetadata: Record<string, unknown> = {
+  uiVersion: import.meta.env.npm_package_version,
+};
+
 // Lazy load the configs because it breaks initial page loads otherwise
 async function getCorePlugins() {
   const dashboardCorePlugins = await import(
@@ -69,6 +73,7 @@ ReactDOM.render(
           getCorePlugins={getCorePlugins}
           serverUrl={apiURL.origin}
           pluginsUrl={pluginsURL.href}
+          logMetadata={logMetadata}
         >
           <AppRoot />
         </AppBootstrap>

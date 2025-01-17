@@ -69,7 +69,7 @@ function renderAppMainContainer({
   setActiveTool = jest.fn(),
   setDashboardIsolatedLinkerPanelId = jest.fn(),
   client = new (dh as any).Client({}),
-  serverConfigValues = {},
+  serverConfigValues = new Map<string, string>(),
   dashboardOpenedPanelMaps = {},
   connection = makeConnection(),
   session = makeSession(),

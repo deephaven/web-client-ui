@@ -85,6 +85,7 @@ import {
   AppDashboards,
   type LayoutStorage,
   UserLayoutUtils,
+  createExportLogsContextAction,
 } from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -92,7 +93,10 @@ import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { type WindowMouseEvent } from './WidgetList';
-import { getFormattedVersionInfo } from '../settings/SettingsUtils';
+import {
+  getFormattedPluginInfo,
+  getFormattedVersionInfo,
+} from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 
 const log = Log.module('AppMainContainer');
@@ -186,7 +190,7 @@ export class AppMainContainer extends Component<
 
     this.importElement = React.createRef();
 
-    const { allDashboardData } = this.props;
+    const { allDashboardData, serverConfigValues, plugins } = this.props;
 
     this.dashboardLayouts = new Map();
     this.createDashboardListenerRemovers = new Map();
@@ -194,10 +198,18 @@ export class AppMainContainer extends Component<
 
     this.state = {
       contextActions: [
+        createExportLogsContextAction(
+          {
+            uiVersion: import.meta.env.npm_package_version,
+            userAgent: navigator.userAgent,
+            ...Object.fromEntries(serverConfigValues),
+            pluginInfo: getFormattedPluginInfo(plugins),
+          },
+          false // Not global to prevent conflict with export logs action with same shortcut in AppBootstrap.tsx
+        ),
         {
           action: () => {
             // Copies the version info to the clipboard for easy pasting into a ticket
-            const { serverConfigValues } = this.props;
             const versionInfo = getFormattedVersionInfo(serverConfigValues);
             const versionInfoText = Object.entries(versionInfo)
               .map(([key, value]) => `${key}: ${value}`)
