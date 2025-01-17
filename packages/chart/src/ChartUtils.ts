@@ -17,6 +17,7 @@ import type {
   AxisType as PlotlyAxisType,
   MarkerSymbol,
   Template,
+  Delta,
 } from 'plotly.js';
 import { assertNotNull, bindAllMethods, type Range } from '@deephaven/utils';
 import { type ChartTheme } from './ChartTheme';
@@ -2082,8 +2083,12 @@ class ChartUtils {
           {
             title: { font: { color: title_color } },
             delta: {
-              decreasing: { color: indicator_decreasing, symbol: '▼' },
-              increasing: { color: indicator_increasing, symbol: '▲' },
+              decreasing: {
+                color: indicator_decreasing,
+              } as Delta['increasing'],
+              increasing: {
+                color: indicator_increasing,
+              } as Delta['decreasing'],
             },
             gauge: { bar: { color: indicator_gauge } },
           },
