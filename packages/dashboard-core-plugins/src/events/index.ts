@@ -5,4 +5,6 @@ export { default as IrisGridEvent } from './IrisGridEvent';
 export { default as MarkdownEvent } from './MarkdownEvent';
 export { default as NotebookEvent } from './NotebookEvent';
 export { default as PandasEvent } from './PandasEvent';
-export { default as TabEvent } from './TabEvent';
+
+// Deprecated - use TabEvent from @deephaven/dashboard
+export { type TabEvent } from '@deephaven/dashboard';
