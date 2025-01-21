@@ -1,3 +1,7 @@
+import {
+  ClipboardPermissionsDeniedError,
+  ClipboardUnavailableError,
+} from './errors';
 import { checkPermission } from './PermissionUtils';
 
 /**
@@ -43,11 +47,11 @@ export function copyToClipboardExecCommand(text: string): void {
 
 /**
  * Reads text from the clipboard.
- * @returns Promise that resolves to text from clipboard as string, or null if permissions are not supported/granted.
+ * @returns Promise that resolves to text from clipboard as string, or rejects if permissions are not supported/granted.
  */
-export async function readFromClipboard(): Promise<string | null> {
+export async function readFromClipboard(): Promise<string> {
   const { clipboard } = navigator;
-  if (clipboard === undefined) return null;
+  if (clipboard === undefined) throw new ClipboardUnavailableError();
 
   let permissionState = await checkPermission('clipboard-read');
 
@@ -72,10 +76,14 @@ export async function readFromClipboard(): Promise<string | null> {
     }
 
     if (permissionState === 'prompt' || permissionState === 'denied') {
-      // Prompt means user closed out of the previous permission prompt, treat it as a denial
-      return null;
+      // Prompt means user closed out of the previous permission prompt, also treat it as a denial
+      throw new ClipboardPermissionsDeniedError();
     }
   }
 
-  return null;
+  if (permissionState === 'denied') {
+    throw new ClipboardPermissionsDeniedError();
+  }
+
+  throw new ClipboardUnavailableError();
 }
