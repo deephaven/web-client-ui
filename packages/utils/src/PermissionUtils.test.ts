@@ -1,3 +1,4 @@
+import UnsupportedPermissionError from './errors/UnsupportedPermissionError';
 import { checkPermission } from './PermissionUtils';
 
 describe('checkPermission', () => {
@@ -12,21 +13,21 @@ describe('checkPermission', () => {
         },
       });
 
-      const result = await checkPermission('');
-      expect(result).toEqual(state);
+      await expect(checkPermission('')).resolves.toEqual(state);
     }
   );
 
-  it('should return null if permission is unsupported by the browser', async () => {
+  it('should throw error if permission is unsupported by the browser', async () => {
     Object.assign(navigator, {
       permissions: {
         query: jest
           .fn()
-          .mockRejectedValue(new Error('Permission not supported')),
+          .mockRejectedValue(new TypeError('Permission not supported')),
       },
     });
 
-    const result = await checkPermission('');
-    expect(result).toBeNull();
+    await expect(checkPermission('')).rejects.toThrow(
+      UnsupportedPermissionError
+    );
   });
 });
