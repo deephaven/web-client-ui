@@ -40,3 +40,9 @@ it('should render the fallback if there is an error', () => {
   expect(getByText('Fallback')).toBeInTheDocument();
   expect(onError).toHaveBeenCalledWith(error, expect.anything());
 });
+
+it('should not throw if children are undefined', () => {
+  expect(() =>
+    render(<ErrorBoundary>{undefined}</ErrorBoundary>)
+  ).not.toThrow();
+});
