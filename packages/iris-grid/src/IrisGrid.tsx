@@ -444,6 +444,7 @@ export interface IrisGridState {
   frozenColumns: readonly ColumnName[];
   showOverflowModal: boolean;
   showNoPastePermissionModal: boolean;
+  noPastePermissionError: string;
   overflowText: string;
   overflowButtonTooltipProps: CSSProperties | null;
   expandCellTooltipProps: CSSProperties | null;
@@ -875,6 +876,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       frozenColumns,
       showOverflowModal: false,
       showNoPastePermissionModal: false,
+      noPastePermissionError: '',
       overflowText: '',
       overflowButtonTooltipProps: null,
       expandCellTooltipProps: null,
@@ -3858,9 +3860,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  handleOpenNoPastePermissionModal(): void {
+  handleOpenNoPastePermissionModal(errorMessage: string): void {
     this.setState({
       showNoPastePermissionModal: true,
+      noPastePermissionError: errorMessage,
     });
   }
 
@@ -4291,6 +4294,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnHeaderGroups,
       showOverflowModal,
       showNoPastePermissionModal,
+      noPastePermissionError,
       overflowText,
       overflowButtonTooltipProps,
       expandCellTooltipProps,
@@ -5018,7 +5022,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         <ContextActions actions={this.contextActions} />
         <NoPastePermissionModal
           isOpen={showNoPastePermissionModal}
-          handleClose={this.handleCloseNoPastePermissionModal}
+          onClose={this.handleCloseNoPastePermissionModal}
+          errorMessage={noPastePermissionError}
         />
       </div>
     );

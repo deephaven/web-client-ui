@@ -9,27 +9,25 @@ import {
 
 export type NoPastePermissionModalProps = {
   isOpen: boolean;
-  handleClose: () => void;
+  onClose: () => void;
+  errorMessage: string;
 };
 
 export function NoPastePermissionModal({
   isOpen,
-  handleClose,
+  onClose,
+  errorMessage,
 }: NoPastePermissionModalProps): JSX.Element {
   const pasteShortcutText = GLOBAL_SHORTCUTS.PASTE.getDisplayText();
   return (
-    <Modal isOpen={isOpen} toggle={handleClose} centered>
+    <Modal isOpen={isOpen} toggle={onClose} centered>
       <ModalHeader closeButton={false}>No Paste Permission</ModalHeader>
       <ModalBody>
-        <p>
-          For security reasons your browser does not allow access to your
-          clipboard on click, or requested clipboard permissions have been
-          denied.
-        </p>
+        <p>{errorMessage}</p>
         <p>You can still use {pasteShortcutText} to paste.</p>
       </ModalBody>
       <ModalFooter>
-        <Button kind="primary" onClick={handleClose}>
+        <Button kind="primary" onClick={onClose}>
           Dismiss
         </Button>
       </ModalFooter>
