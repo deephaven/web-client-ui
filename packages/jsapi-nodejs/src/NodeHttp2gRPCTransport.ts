@@ -85,7 +85,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * @param handleLogMessage function to handle log messages
    * @returns function to unregister the handler
    */
-  static onError = (
+  static onLogMessage = (
     handleLogMessage: (logLevel: LogLevel, ...args: unknown[]) => void
   ): (() => void) => {
     NodeHttp2gRPCTransport.logMessageHandlers.add(handleLogMessage);
