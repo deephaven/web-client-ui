@@ -5,6 +5,13 @@
     // override default scroll container shadow to match our global shadows
     --vscode-scrollbar-shadow: var(--dh-color-dropshadow);
 
+    // monaco editor sets an inline width in pixels which are rounded up to the nearest pixel.
+    // when zoomed, actual width can be a fractional width, and that rounding up can cause overflow
+    width: 100% !important; // override inline width
+    .overflow-guard {
+      width: 100% !important; // override inline width
+    }
+
     // set font for menus
     font-family: var(--font-family-sans-serif);
     .shadow-root-host {
@@ -20,7 +27,7 @@
 // The classes come from Monaco itself, not core or web-client-ui
 .rendered-markdown.markdown-docs {
   min-width: 12rem;
-  
+
   hr {
     background-color: $text-muted;
     height: 1px;
