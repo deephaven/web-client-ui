@@ -93,7 +93,7 @@ const NavTab = memo(
               }}
             >
               {iconElem}
-              {title}
+              <span className="btn-nav-tab-title">{title}</span>
               {isClosable && (
                 <Button
                   kind="ghost"
