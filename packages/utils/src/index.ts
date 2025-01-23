@@ -25,3 +25,4 @@ export * from './TypeUtils';
 export { default as InvalidMetadataError } from './InvalidMetadataError';
 export { default as ValidationError } from './ValidationError';
 export * from './UIConstants';
+export * from './errors';
