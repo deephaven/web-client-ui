@@ -76,14 +76,10 @@ export async function readFromClipboard(): Promise<string> {
         const text = await clipboard.readText();
         return text;
       }
-
-      if (permissionState === 'prompt' || permissionState === 'denied') {
-        // Prompt means user closed out of the previous permission prompt, also treat it as a denial
-        throw new ClipboardPermissionsDeniedError();
-      }
     }
 
-    if (permissionState === 'denied') {
+    if (permissionState === 'prompt' || permissionState === 'denied') {
+      // Prompt means user closed out of the previous permission prompt, also treat it as a denial
       throw new ClipboardPermissionsDeniedError();
     }
   } catch (err: unknown) {
