@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/babel-preset",
-  "version": "0.103.0",
+  "version": "0.104.0",
   "description": "Deephaven Babel preset",
   "repository": {
     "type": "git",
