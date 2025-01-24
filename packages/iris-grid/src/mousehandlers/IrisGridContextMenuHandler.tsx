@@ -88,6 +88,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_VIEW_CONTENTS = ContextActions.groups.high + 175;
 
+  static GROUP_RESIZE = ContextActions.groups.high + 200;
+
   static COLUMN_SORT_DIRECTION = {
     ascending: 'ASC',
     descending: 'DESC',
@@ -191,8 +193,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const { metrics, reverse, quickFilters, advancedFilters, searchFilter } =
-      irisGrid.state;
+    const {
+      metrics,
+      reverse,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+      autoResizeColumns,
+    } = irisGrid.state;
     const theme = irisGrid.getTheme();
     assertNotNull(metrics);
     const {
@@ -341,6 +349,31 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         copyToClipboard(model.textForColumnHeader(modelIndex) ?? '').catch(e =>
           log.error('Unable to copy header', e)
         );
+      },
+    });
+    actions.push({
+      title: 'Auto Resize',
+      icon: autoResizeColumns ? vsCheck : undefined,
+      group: IrisGridContextMenuHandler.GROUP_RESIZE,
+      order: 10,
+      action: () => {
+        this.irisGrid.handleAutoResize();
+      },
+    });
+    actions.push({
+      title: 'Resize Column',
+      group: IrisGridContextMenuHandler.GROUP_RESIZE,
+      order: 20,
+      action: () => {
+        this.irisGrid.handleResizeColumn(modelIndex);
+      },
+    });
+    actions.push({
+      title: 'Resize All Columns',
+      group: IrisGridContextMenuHandler.GROUP_RESIZE,
+      order: 30,
+      action: () => {
+        this.irisGrid.handleResizeAllColumns();
       },
     });
 
