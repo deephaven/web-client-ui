@@ -42,8 +42,7 @@
     "memoizee": "^0.4.15",
     "plotly.js": "^2.29.1",
     "prop-types": "^15.7.2",
-    "react-plotly.js": "^2.6.0",
-    "virtual-webgl": "^1.0.6"
+    "react-plotly.js": "^2.6.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"
