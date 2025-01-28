@@ -10,7 +10,7 @@ import type { NormalizedItem } from '../utils';
 import { type PickerPropsT, usePickerProps } from '../picker';
 
 export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
-export { type MenuTriggerAction } from '@react-types/combobox';
+export type { MenuTriggerAction } from '@react-types/combobox';
 export { SpectrumComboBox };
 
 export const ComboBox = React.forwardRef(function ComboBox(
