@@ -531,22 +531,6 @@ class Chart extends Component<ChartProps, ChartState> {
         this.setState({ shownBlocker: null });
         break;
       }
-      case ChartModel.EVENT_TITLE_CHANGE: {
-        const titleText = `${detail}`;
-        const oldTitle = this.state.layout.title;
-        const newTitle = oldTitle ?? {};
-        if (typeof newTitle === 'object') {
-          newTitle.text = titleText;
-        }
-
-        this.setState(({ layout }) => ({
-          layout: {
-            ...layout,
-            title: newTitle,
-          },
-        }));
-        break;
-      }
       default:
         log.debug('Unknown event type', type, event);
     }
