@@ -1,6 +1,6 @@
 import React, { PureComponent, type ReactElement } from 'react';
 import { createXComponent } from '@deephaven/components';
-import { type BasePanelProps, Panel } from '@deephaven/dashboard';
+import { type BasePanelProps, BasePanel } from '@deephaven/dashboard';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent } from '../events';
 
@@ -71,7 +71,7 @@ class CorePanel extends PureComponent<CorePanelProps> {
     const { children, ...otherProps } = this.props;
 
     // eslint-disable-next-line react/jsx-props-no-spreading
-    return <Panel {...otherProps}>{children}</Panel>;
+    return <BasePanel {...otherProps}>{children}</BasePanel>;
   }
 }
 

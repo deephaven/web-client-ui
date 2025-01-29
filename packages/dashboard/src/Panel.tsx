@@ -72,7 +72,7 @@ interface PanelState {
 /**
  * Generic panel component that emits mount/unmount/focus events.
  * Also wires up some triggers for common events:
- * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
+ * Focus, Resize, Show
  */
 class Panel extends PureComponent<BasePanelProps, PanelState> {
   constructor(props: BasePanelProps) {
