@@ -50,7 +50,7 @@ class ChartModel {
 
   static EVENT_BLOCKER_CLEAR = 'ChartModel.EVENT_BLOCKER_CLEAR';
 
-  static EVENT_TITLE_CHANGE = 'ChartModel.EVENT_TITLE';
+  static EVENT_LAYOUT_UPDATED = 'ChartModel.EVENT_LAYOUT_UPDATED';
 
   constructor(dh: typeof DhType) {
     this.dh = dh;
@@ -208,8 +208,10 @@ class ChartModel {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_BLOCKER_CLEAR));
   }
 
-  fireTitleChange(detail: string): void {
-    this.fireEvent(new CustomEvent(ChartModel.EVENT_TITLE_CHANGE, { detail }));
+  fireLayoutUpdated(detail: Partial<Layout>): void {
+    this.fireEvent(
+      new CustomEvent(ChartModel.EVENT_LAYOUT_UPDATED, { detail })
+    );
   }
 }
 
