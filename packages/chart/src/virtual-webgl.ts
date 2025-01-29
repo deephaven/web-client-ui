@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 // Copied from https://github.com/greggman/virtual-webgl
 // Used to show many WebGL plots on the same page
 // https://github.com/plotly/plotly.js/?tab=readme-ov-file#need-to-have-several-webgl-graphs-on-a-page
@@ -34,7 +35,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function () {
+export function initializeVirtualWebGL() {
   const settings = {
     disableWebGL2: false,
     compositorCreator() {},
@@ -1147,4 +1148,4 @@
   window.virtualWebGL = {
     setup,
   };
-})();
+}
