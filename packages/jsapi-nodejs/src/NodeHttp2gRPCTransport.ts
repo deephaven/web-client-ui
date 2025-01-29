@@ -5,6 +5,7 @@ import { assertNotNull } from '@deephaven/utils';
 
 const logger = Log.module('@deephaven/jsapi-nodejs.NodeHttp2gRPCTransport');
 
+type LogLevel = 'debug' | 'error';
 type GrpcTransport = DhcType.grpc.GrpcTransport;
 type GrpcTransportFactory = DhcType.grpc.GrpcTransportFactory;
 type GrpcTransportOptions = DhcType.grpc.GrpcTransportOptions;
@@ -21,6 +22,24 @@ type GrpcTransportOptions = DhcType.grpc.GrpcTransportOptions;
  * })
  */
 export class NodeHttp2gRPCTransport implements GrpcTransport {
+  private static readonly logMessageHandlers = new Set<
+    (logLevel: LogLevel, ...args: unknown[]) => void
+  >();
+
+  /**
+   * Log a message to the logger + any registered log message handlers.
+   * @param logLevel The log level
+   * @param args Additional args to log
+   */
+  static logMessage = (logLevel: LogLevel, ...args: unknown[]): void => {
+    logger[logLevel](...args);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const handler of NodeHttp2gRPCTransport.logMessageHandlers) {
+      handler(logLevel, ...args);
+    }
+  };
+
   private static sessionMap: Map<string, http2.ClientHttp2Session> = new Map();
 
   /**
@@ -38,7 +57,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       if (!NodeHttp2gRPCTransport.sessionMap.has(origin)) {
         const session = http2.connect(origin);
         session.on('error', err => {
-          logger.error('Session error', err);
+          NodeHttp2gRPCTransport.logMessage('error', 'Session error', err);
         });
         NodeHttp2gRPCTransport.sessionMap.set(origin, session);
       }
@@ -59,6 +78,20 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     get supportsClientStreaming(): boolean {
       return true;
     },
+  };
+
+  /**
+   * Register a log message handler.
+   * @param handleLogMessage function to handle log messages
+   * @returns function to unregister the handler
+   */
+  static onLogMessage = (
+    handleLogMessage: (logLevel: LogLevel, ...args: unknown[]) => void
+  ): (() => void) => {
+    NodeHttp2gRPCTransport.logMessageHandlers.add(handleLogMessage);
+    return () => {
+      NodeHttp2gRPCTransport.logMessageHandlers.delete(handleLogMessage);
+    };
   };
 
   /**
@@ -91,7 +124,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
   ): http2.ClientHttp2Stream => {
     const url = new URL(this.options.url);
 
-    logger.debug('createRequest', url.pathname);
+    NodeHttp2gRPCTransport.logMessage('debug', 'createRequest', url.pathname);
 
     const req = this.session.request({
       ...headers,
@@ -134,7 +167,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * @param metadata - the headers to send the server when opening the connection
    */
   start(metadata: { [key: string]: string | Array<string> }): void {
-    logger.debug('start', metadata.headersMap);
+    NodeHttp2gRPCTransport.logMessage('debug', 'start', metadata);
 
     if (this.request != null) {
       throw new Error('start called more than once');
@@ -153,7 +186,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * @param msgBytes - bytes to send to the server
    */
   sendMessage(msgBytes: Uint8Array): void {
-    logger.debug('sendMessage', msgBytes);
+    NodeHttp2gRPCTransport.logMessage('debug', 'sendMessage', msgBytes);
     assertNotNull(this.request, 'request is required');
 
     this.request.write(msgBytes);
@@ -164,7 +197,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * be sent, but that the client is still open to receiving messages.
    */
   finishSend(): void {
-    logger.debug('finishSend');
+    NodeHttp2gRPCTransport.logMessage('debug', 'finishSend');
     assertNotNull(this.request, 'request is required');
     this.request.end();
   }
@@ -174,7 +207,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * sent nor received, and preventing the client from receiving any more events.
    */
   cancel(): void {
-    logger.debug('cancel');
+    NodeHttp2gRPCTransport.logMessage('debug', 'cancel');
     assertNotNull(this.request, 'request is required');
     this.request.close();
   }
@@ -187,6 +220,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     for (const session of NodeHttp2gRPCTransport.sessionMap.values()) {
       session.close();
     }
+    NodeHttp2gRPCTransport.logMessageHandlers.clear();
     NodeHttp2gRPCTransport.sessionMap.clear();
   }
 }

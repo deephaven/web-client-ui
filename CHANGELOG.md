@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
+
+### Features
+
+- Add global shortcut to export logs ([#2336](https://github.com/deephaven/web-client-ui/issues/2336)) ([6e813fd](https://github.com/deephaven/web-client-ui/commit/6e813fdc6837de9e85c0e139aaf0de9e02e452c2)), closes [#1963](https://github.com/deephaven/web-client-ui/issues/1963)
+- Support for log message handlers ([#2347](https://github.com/deephaven/web-client-ui/issues/2347)) ([cbab7a2](https://github.com/deephaven/web-client-ui/commit/cbab7a246ef2dc3c31abcc916c20d4442e9db45a))
+
+### Bug Fixes
+
+- Ensure ErrorBoundary and PanelErrorBoundary do not throw ([#2345](https://github.com/deephaven/web-client-ui/issues/2345)) ([675b110](https://github.com/deephaven/web-client-ui/commit/675b1106cb9b67d898857dd427fb437d2cb9d1ad))
+- monaco editor overflowing at certain zoom levels ([#2346](https://github.com/deephaven/web-client-ui/issues/2346)) ([bbba404](https://github.com/deephaven/web-client-ui/commit/bbba404cb0f5cc207d4787543d5b3db3fb67bd56))
+
 ## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
 
 ### Features

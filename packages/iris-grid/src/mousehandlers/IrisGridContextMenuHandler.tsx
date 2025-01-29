@@ -40,11 +40,14 @@ import {
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
 import {
+  ClipboardPermissionsDeniedError,
+  ClipboardUnavailableError,
   TextUtils,
   assertNotEmpty,
   assertNotNaN,
   assertNotNull,
   copyToClipboard,
+  readFromClipboard,
 } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
@@ -476,6 +479,31 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         },
       });
     }
+
+    actions.push({
+      title: 'Paste',
+      group: IrisGridContextMenuHandler.GROUP_COPY,
+      order: 50,
+      action: async () => {
+        try {
+          const text = await readFromClipboard();
+          const items = text.split('\n').map(row => row.split('\t'));
+          await grid.pasteValue(items);
+        } catch (err) {
+          if (err instanceof ClipboardUnavailableError) {
+            irisGrid.handleOpenNoPastePermissionModal(
+              'For security reasons your browser does not allow access to your clipboard on click.'
+            );
+          } else if (err instanceof ClipboardPermissionsDeniedError) {
+            irisGrid.handleOpenNoPastePermissionModal(
+              'Requested clipboard permissions have not been granted, please grant them and try again.'
+            );
+          } else {
+            throw err;
+          }
+        }
+      },
+    });
 
     actions.push({
       title: 'View Cell Contents',

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
+
+### Features
+
+- Support for log message handlers ([#2347](https://github.com/deephaven/web-client-ui/issues/2347)) ([cbab7a2](https://github.com/deephaven/web-client-ui/commit/cbab7a246ef2dc3c31abcc916c20d4442e9db45a))
+
 ## [0.103.0](https://github.com/deephaven/web-client-ui/compare/v0.102.1...v0.103.0) (2025-01-16)
 
 ### Features
