@@ -2,7 +2,6 @@
 import {
   type BoundedAxisRange,
   type Coordinate,
-  DEFAULT_FONT_WIDTH,
   type GridMetrics,
   type GridRangeIndex,
   GridRenderer,
@@ -465,7 +464,6 @@ export class IrisGridRenderer extends GridRenderer {
       allColumnXs,
       gridX,
       columnHeaderHeight,
-      fontWidths,
     } = metrics;
 
     const { headerHorizontalPadding, iconSize: themeIconSize } = theme;
@@ -500,9 +498,7 @@ export class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
-    assertNotNull(fontWidth);
-    const textWidth = text.length * fontWidth;
+    const textWidth = context.measureText(text).width;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
     let { maxX } = bounds;
     maxX -= headerHorizontalPadding; // Right visible edge of the headers
@@ -656,7 +652,7 @@ export class IrisGridRenderer extends GridRenderer {
       }
 
       if (text != null) {
-        const { fontWidths } = metrics;
+        const { fontWidthsLower: fontWidths } = metrics;
         let fontWidth = fontWidths.get(context.font);
         if (fontWidth == null || fontWidth === 0) {
           fontWidth = context.measureText('8').width;

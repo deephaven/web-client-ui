@@ -87,7 +87,8 @@ class DataBarCellRenderer extends CellRenderer {
       allRowHeights,
       allRowYs,
       firstColumn,
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
     } = metrics;
 
     const isFirstColumn = column === firstColumn;
@@ -103,13 +104,17 @@ class DataBarCellRenderer extends CellRenderer {
       width: textWidth,
     } = GridUtils.getTextRenderMetrics(state, column, row);
 
-    const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthLower =
+      fontWidthsLower.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthUpper =
+      fontWidthsUpper.get(context.font) ?? DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,
       text,
       textWidth,
-      fontWidth,
+      fontWidthLower,
+      fontWidthUpper,
       truncationChar
     );
 

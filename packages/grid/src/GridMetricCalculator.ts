@@ -137,7 +137,9 @@ export class GridMetricCalculator {
   protected calculatedRowHeights: ModelSizeMap;
 
   /** Cache of fonts to estimated width of one char */
-  protected fontWidths: Map<string, number>;
+  protected fontWidthsLower: Map<string, number>;
+
+  protected fontWidthsUpper: Map<string, number>;
 
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
   protected modelRows: VisibleToModelMap;
@@ -156,7 +158,8 @@ export class GridMetricCalculator {
     userRowHeights = new Map(),
     calculatedColumnWidths = new Map(),
     calculatedRowHeights = new Map(),
-    fontWidths = new Map(),
+    fontWidthsLower = new Map(),
+    fontWidthsUpper = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
     movedRows = [] as readonly MoveOperation[],
@@ -168,7 +171,8 @@ export class GridMetricCalculator {
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights = calculatedRowHeights;
     this.calculatedColumnWidths = calculatedColumnWidths;
-    this.fontWidths = fontWidths;
+    this.fontWidthsLower = fontWidthsLower;
+    this.fontWidthsUpper = fontWidthsUpper;
 
     // Need to track the last moved rows/columns array so we know if we need to reset our models cache
     this.modelRows = modelRows;
@@ -502,7 +506,8 @@ export class GridMetricCalculator {
         : right;
 
     const {
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
       userColumnWidths,
       userRowHeights,
       calculatedRowHeights,
@@ -634,7 +639,8 @@ export class GridMetricCalculator {
       movedColumns,
 
       // Map of the width of the fonts
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
 
       // Map of user set column/row width/height
       userColumnWidths,
@@ -1699,16 +1705,37 @@ export class GridMetricCalculator {
     modelColumn: ModelIndex,
     state: GridMetricState
   ): number {
-    const { model, theme } = state;
-    const { headerFont, headerHorizontalPadding } = theme;
+    const { width, model, theme, context } = state;
+    const {
+      headerFont,
+      headerHorizontalPadding,
+      rowHeaderWidth,
+      scrollBarSize,
+      rowFooterWidth,
+    } = theme;
+
+    const maxWidth =
+      (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
+      GridMetricCalculator.MAX_COLUMN_WIDTH;
+    const totalPadding = headerHorizontalPadding * 2;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
-      const headerFontWidth = this.getWidthForFont(headerFont, state);
-      return headerText.length * headerFontWidth + headerHorizontalPadding * 2;
+      const fontWidthLower = this.getLowerWidthForFont(headerFont, state);
+      this.getUpperWidthForFont(headerFont, state);
+
+      const minTextWidth = fontWidthLower * headerText.length;
+
+      // Todo: fix calculating only when necessary
+      // if (minTextWidth < maxWidth) {
+      // return context.measureText(headerText).width + totalPadding;
+      return context.measureText(headerText).width + totalPadding;
+      // }
+
+      return maxWidth;
     }
 
-    return headerHorizontalPadding * 2;
+    return totalPadding;
   }
 
   /**
@@ -1721,7 +1748,7 @@ export class GridMetricCalculator {
     modelColumn: ModelIndex,
     state: GridMetricState
   ): number {
-    const { top, height, width, model, theme } = state;
+    const { top, height, width, model, theme, context } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
     const {
       font,
@@ -1735,7 +1762,6 @@ export class GridMetricCalculator {
 
     let columnWidth = 0;
 
-    const fontWidth = this.getWidthForFont(font, state);
     const rowsPerPage = height / rowHeight;
     const bottom = Math.ceil(top + rowsPerPage);
     GridUtils.iterateAllItems(
@@ -1751,8 +1777,22 @@ export class GridMetricCalculator {
 
         let cellWidth = 0;
         if (text) {
-          const cellPadding = cellHorizontalPadding * 2;
-          cellWidth = text.length * fontWidth + cellPadding;
+          const estimatedFontWidthLower = this.getLowerWidthForFont(
+            font,
+            state
+          );
+          this.getUpperWidthForFont(font, state);
+
+          const maxWidth =
+            (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
+            GridMetricCalculator.MAX_COLUMN_WIDTH;
+
+          if (estimatedFontWidthLower * text.length <= maxWidth) {
+            cellWidth =
+              context.measureText(text).width + cellHorizontalPadding * 2;
+          } else {
+            cellWidth = maxWidth;
+          }
         }
 
         if (cellRenderType === 'dataBar') {
@@ -1806,19 +1846,37 @@ export class GridMetricCalculator {
    * @param state The grid metric state
    * @returns Width of the char `8` for the specified font
    */
-  getWidthForFont(font: GridFont, state: GridMetricState): number {
-    if (this.fontWidths.has(font)) {
-      return getOrThrow(this.fontWidths, font);
+  getLowerWidthForFont(font: GridFont, state: GridMetricState): number {
+    if (this.fontWidthsLower.has(font)) {
+      return getOrThrow(this.fontWidthsLower, font);
     }
     const { context } = state;
     context.font = font;
-    const textMetrics = context.measureText('8');
+    const textMetrics = context.measureText('.');
     const { width } = textMetrics;
 
     // context.font changes the string a little bit, e.g. '10px Arial, sans serif' => '10px Arial, "sans serif"'
     // Rather than require checking with the correct font def (theme, or context font), just key it to both
-    this.fontWidths.set(font, width);
-    this.fontWidths.set(context.font, width);
+    this.fontWidthsLower.set(font, width);
+    this.fontWidthsLower.set(context.font, width);
+
+    return width;
+  }
+
+  getUpperWidthForFont(font: GridFont, state: GridMetricState): number {
+    if (this.fontWidthsUpper.has(font)) {
+      return getOrThrow(this.fontWidthsUpper, font);
+    }
+    const { context } = state;
+    context.font = font;
+    //
+    const textMetrics = context.measureText('m');
+    const { width } = textMetrics;
+
+    // context.font changes the string a little bit, e.g. '10px Arial, sans serif' => '10px Arial, "sans serif"'
+    // Rather than require checking with the correct font def (theme, or context font), just key it to both
+    this.fontWidthsUpper.set(font, width);
+    this.fontWidthsUpper.set(context.font, width);
 
     return width;
   }
