@@ -22,7 +22,7 @@ import {
   getTableMapForDashboard,
   setDashboardFilterSets as setDashboardFilterSetsAction,
 } from '../redux';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import FilterSetManager, {
   type ChangeHandlerArgs,
   type FilterSet,

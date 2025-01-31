@@ -8,7 +8,7 @@ import { type DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { type RootState } from '@deephaven/redux';
 import './LogPanel.scss';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
