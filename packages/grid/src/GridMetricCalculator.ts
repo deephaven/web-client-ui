@@ -141,6 +141,9 @@ export class GridMetricCalculator {
 
   protected fontWidthsUpper: Map<string, number>;
 
+  /** Cache of fonts to width of all chars */
+  protected allCharWidths: Map<string, Map<string, number>>;
+
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
   protected modelRows: VisibleToModelMap;
 
@@ -160,6 +163,7 @@ export class GridMetricCalculator {
     calculatedRowHeights = new Map(),
     fontWidthsLower = new Map(),
     fontWidthsUpper = new Map(),
+    allCharWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
     movedRows = [] as readonly MoveOperation[],
@@ -171,6 +175,7 @@ export class GridMetricCalculator {
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights = calculatedRowHeights;
     this.calculatedColumnWidths = calculatedColumnWidths;
+    this.allCharWidths = allCharWidths;
     this.fontWidthsLower = fontWidthsLower;
     this.fontWidthsUpper = fontWidthsUpper;
 
@@ -1705,34 +1710,17 @@ export class GridMetricCalculator {
     modelColumn: ModelIndex,
     state: GridMetricState
   ): number {
-    const { width, model, theme, context } = state;
-    const {
-      headerFont,
-      headerHorizontalPadding,
-      rowHeaderWidth,
-      scrollBarSize,
-      rowFooterWidth,
-    } = theme;
+    const { model, theme, context } = state;
+    const { headerFont, headerHorizontalPadding } = theme;
 
-    const maxWidth =
-      (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
-      GridMetricCalculator.MAX_COLUMN_WIDTH;
     const totalPadding = headerHorizontalPadding * 2;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
-      const fontWidthLower = this.getLowerWidthForFont(headerFont, state);
+      this.getLowerWidthForFont(headerFont, state);
       this.getUpperWidthForFont(headerFont, state);
 
-      const minTextWidth = fontWidthLower * headerText.length;
-
-      // Todo: fix calculating only when necessary
-      // if (minTextWidth < maxWidth) {
-      // return context.measureText(headerText).width + totalPadding;
-      return context.measureText(headerText).width + totalPadding;
-      // }
-
-      return maxWidth;
+      return this.getWidth(context, headerText) + totalPadding;
     }
 
     return totalPadding;
@@ -1777,22 +1765,11 @@ export class GridMetricCalculator {
 
         let cellWidth = 0;
         if (text) {
-          const estimatedFontWidthLower = this.getLowerWidthForFont(
-            font,
-            state
-          );
+          this.getLowerWidthForFont(font, state);
           this.getUpperWidthForFont(font, state);
 
-          const maxWidth =
-            (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
-            GridMetricCalculator.MAX_COLUMN_WIDTH;
-
-          if (estimatedFontWidthLower * text.length <= maxWidth) {
-            cellWidth =
-              context.measureText(text).width + cellHorizontalPadding * 2;
-          } else {
-            cellWidth = maxWidth;
-          }
+          columnWidth =
+            this.getWidth(context, text) + cellHorizontalPadding * 2;
         }
 
         if (cellRenderType === 'dataBar') {
@@ -1813,6 +1790,29 @@ export class GridMetricCalculator {
     );
 
     return columnWidth;
+  }
+
+  getWidth(context: CanvasRenderingContext2D, text: string): number {
+    if (!this.allCharWidths.has(context.font)) {
+      this.allCharWidths.set(context.font, new Map());
+    }
+
+    const charWidths = getOrThrow(this.allCharWidths, context.font);
+
+    let width = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      const char = text[i];
+
+      if (charWidths.has(char)) {
+        width += getOrThrow(charWidths, char);
+      } else {
+        const textMetrics = context.measureText(char);
+        const { width: charWidth } = textMetrics;
+        charWidths.set(char, charWidth);
+        width += charWidth;
+      }
+    }
+    return width;
   }
 
   /**
