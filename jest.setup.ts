@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
 import { performance } from 'perf_hooks';
-import 'jest-canvas-mock';
+import 'jest-webgl-canvas-mock';
 import './__mocks__/dh-core';
 import Log from '@deephaven/log';
 import { TestUtils } from '@deephaven/utils';
