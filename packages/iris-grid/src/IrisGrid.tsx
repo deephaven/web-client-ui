@@ -426,7 +426,6 @@ export interface IrisGridState {
   searchValue: string;
   selectedSearchColumns: readonly ColumnName[];
   invertSearchColumns: boolean;
-  autoResizeColumns: boolean;
 
   rollupConfig?: UIRollupConfig;
   rollupSelectedColumns: readonly ColumnName[];
@@ -859,7 +858,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchValue,
       selectedSearchColumns: searchColumns,
       invertSearchColumns,
-      autoResizeColumns: true,
 
       rollupConfig,
       rollupSelectedColumns: [],
@@ -3443,39 +3441,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       pendingSaveError: null,
     });
     this.grid?.forceUpdate();
-  }
-
-  handleAutoResize(): void {
-    const { metricCalculator, autoResizeColumns } = this.state;
-    const userColumnWidths = metricCalculator.getUserColumnWidths();
-
-    if (!autoResizeColumns) {
-      const entries = [...userColumnWidths.entries()];
-      for (let i = 0; i < entries.length; i += 1) {
-        const [modelIndex, columnWidth] = entries[i];
-
-        // Don't expand hidden columns
-        if (columnWidth !== 0) {
-          metricCalculator.resetColumnWidth(modelIndex);
-        }
-      }
-    } else {
-      const calculatedColumnWidths =
-        metricCalculator.getCalculatedColumnWidths();
-      const entries = [...calculatedColumnWidths.entries()];
-
-      for (let i = 0; i < entries.length; i += 1) {
-        const [modelIndex, calculatedColumnWidth] = entries[i];
-        const userColumnWidth = userColumnWidths.get(modelIndex);
-
-        // Don't resize columns that have user set widths
-        if (userColumnWidth === undefined) {
-          metricCalculator.setColumnWidth(modelIndex, calculatedColumnWidth);
-        }
-      }
-    }
-
-    this.setState({ autoResizeColumns: !autoResizeColumns });
   }
 
   handleResizeColumn(modelIndex: number): void {

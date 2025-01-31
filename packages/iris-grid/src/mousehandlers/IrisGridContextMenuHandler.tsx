@@ -193,14 +193,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions = [] as ContextAction[];
 
-    const {
-      metrics,
-      reverse,
-      quickFilters,
-      advancedFilters,
-      searchFilter,
-      autoResizeColumns,
-    } = irisGrid.state;
+    const { metrics, reverse, quickFilters, advancedFilters, searchFilter } =
+      irisGrid.state;
     const theme = irisGrid.getTheme();
     assertNotNull(metrics);
     const {
@@ -349,15 +343,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         copyToClipboard(model.textForColumnHeader(modelIndex) ?? '').catch(e =>
           log.error('Unable to copy header', e)
         );
-      },
-    });
-    actions.push({
-      title: 'Auto Resize',
-      icon: autoResizeColumns ? vsCheck : undefined,
-      group: IrisGridContextMenuHandler.GROUP_RESIZE,
-      order: 10,
-      action: () => {
-        this.irisGrid.handleAutoResize();
       },
     });
     actions.push({
