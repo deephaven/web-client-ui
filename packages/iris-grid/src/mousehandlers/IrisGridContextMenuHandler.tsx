@@ -88,8 +88,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_VIEW_CONTENTS = ContextActions.groups.high + 175;
 
-  static GROUP_RESIZE = ContextActions.groups.high + 200;
-
   static COLUMN_SORT_DIRECTION = {
     ascending: 'ASC',
     descending: 'DESC',
@@ -233,7 +231,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           this.irisGrid.freezeColumnByColumnName(column.name);
         }
       },
-      order: 10,
+      order: 30,
     });
     actions.push({
       title: 'Show All Columns',
@@ -242,6 +240,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.showAllColumns();
       },
       disabled: !isColumnHidden,
+    });
+    actions.push({
+      title: 'Resize Column',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.handleResizeColumn(modelIndex);
+      },
+      order: 10,
+    });
+    actions.push({
+      title: 'Resize All Columns',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.handleResizeAllColumns();
+      },
+      order: 20,
     });
     actions.push({
       title: 'Quick Filters',
@@ -343,22 +357,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         copyToClipboard(model.textForColumnHeader(modelIndex) ?? '').catch(e =>
           log.error('Unable to copy header', e)
         );
-      },
-    });
-    actions.push({
-      title: 'Resize Column',
-      group: IrisGridContextMenuHandler.GROUP_RESIZE,
-      order: 20,
-      action: () => {
-        this.irisGrid.handleResizeColumn(modelIndex);
-      },
-    });
-    actions.push({
-      title: 'Resize All Columns',
-      group: IrisGridContextMenuHandler.GROUP_RESIZE,
-      order: 30,
-      action: () => {
-        this.irisGrid.handleResizeAllColumns();
       },
     });
 
