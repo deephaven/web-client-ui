@@ -145,7 +145,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     gridRowColor: null,
     groupedColumnDividerColor: IrisGridTheme['grouped-column-divider-color'],
     columnHoverBackgroundColor: null,
-    headerHorizontalPadding: 12,
+    headerHorizontalPadding: 14,
     scrollBarSize: 13,
     scrollBarHoverSize: 16, // system default scrollbar width is 17
     minScrollHandleSize: 24,
@@ -197,7 +197,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     density: {
       compact: {
         cellHorizontalPadding: 5, // Same as regular set in GridTheme
-        headerHorizontalPadding: 10,
+        headerHorizontalPadding: 12,
         minColumnWidth: 10,
         rowHeight: 16,
         font: '11px Fira Sans, sans-serif',
@@ -206,7 +206,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
       },
       spacious: {
         cellHorizontalPadding: 7,
-        headerHorizontalPadding: 15,
+        headerHorizontalPadding: 17,
         rowHeight: 28,
       },
     },
