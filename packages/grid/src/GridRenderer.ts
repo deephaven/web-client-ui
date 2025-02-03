@@ -1634,7 +1634,7 @@ export class GridRenderer {
     const visibleRight = clamp(columnRight, minX, maxX);
     const visibleWidth = visibleRight - visibleLeft;
 
-    const textWidth = context.measureText(columnText).width;
+    const textWidth = context.measureText(renderText).width;
     const isBeyondLeft = x - textWidth * 0.5 < minX;
     const isBeyondRight = x + textWidth * 0.5 > maxX;
 
