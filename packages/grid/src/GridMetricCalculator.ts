@@ -204,6 +204,7 @@ export class GridMetricCalculator {
       height,
       theme,
       model,
+      context,
       movedRows,
       movedColumns,
       draggingColumn,
@@ -216,6 +217,8 @@ export class GridMetricCalculator {
       columnHeaderHeight,
       minScrollHandleSize,
       scrollBarSize,
+      font,
+      headerFont,
     } = theme;
 
     if (movedRows !== this.movedRows) {
@@ -510,6 +513,11 @@ export class GridMetricCalculator {
             gridX
           )
         : right;
+
+    this.calculateLowerFontWidth(font, context);
+    this.calculateUpperFontWidth(font, context);
+    this.calculateLowerFontWidth(headerFont, context);
+    this.calculateUpperFontWidth(headerFont, context);
 
     const {
       fontWidthsLower,
@@ -1712,15 +1720,12 @@ export class GridMetricCalculator {
     state: GridMetricState
   ): number {
     const { model, theme, context } = state;
-    const { headerFont, headerHorizontalPadding } = theme;
+    const { headerHorizontalPadding } = theme;
 
     const totalPadding = headerHorizontalPadding * 2;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
-      this.getLowerWidthForFont(headerFont, state);
-      this.getUpperWidthForFont(headerFont, state);
-
       return this.getTextWidth(context, headerText) + totalPadding;
     }
 
@@ -1740,7 +1745,6 @@ export class GridMetricCalculator {
     const { top, height, width, model, theme, context } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
     const {
-      font,
       cellHorizontalPadding,
       rowHeight,
       rowHeaderWidth,
@@ -1766,9 +1770,6 @@ export class GridMetricCalculator {
 
         let cellWidth = 0;
         if (text) {
-          this.getLowerWidthForFont(font, state);
-          this.getUpperWidthForFont(font, state);
-
           cellWidth =
             this.getTextWidth(context, text) + cellHorizontalPadding * 2;
         }
@@ -1841,17 +1842,20 @@ export class GridMetricCalculator {
   }
 
   /**
-   * Get the lower bound width of the provided font.
+   * Calculates the lower bound width of a character of the provided font.
    * @param font The font to get the width for
    * @param state The grid metric state
-   * @returns Width of the char `.` for the specified font
    */
-  getLowerWidthForFont(font: GridFont, state: GridMetricState): number {
+  calculateLowerFontWidth(
+    font: GridFont,
+    context: CanvasRenderingContext2D
+  ): void {
     if (this.fontWidthsLower.has(font)) {
-      return getOrThrow(this.fontWidthsLower, font);
+      return;
     }
-    const { context } = state;
+
     context.font = font;
+    // Assume char `.` is the smallest character
     const textMetrics = context.measureText('.');
     const { width } = textMetrics;
 
@@ -1859,23 +1863,23 @@ export class GridMetricCalculator {
     // Rather than require checking with the correct font def (theme, or context font), just key it to both
     this.fontWidthsLower.set(font, width);
     this.fontWidthsLower.set(context.font, width);
-
-    return width;
   }
 
   /**
-   * Get the upper bound width of the provided font.
+   * Calculates the upper bound width of a character of the provided font.
    * @param font The font to get the width for
    * @param state The grid metric state
-   * @returns Width of the char `m` for the specified font
    */
-  getUpperWidthForFont(font: GridFont, state: GridMetricState): number {
+  calculateUpperFontWidth(
+    font: GridFont,
+    context: CanvasRenderingContext2D
+  ): void {
     if (this.fontWidthsUpper.has(font)) {
-      return getOrThrow(this.fontWidthsUpper, font);
+      return;
     }
-    const { context } = state;
+
     context.font = font;
-    //
+    // Assume char `m` is the largest character
     const textMetrics = context.measureText('m');
     const { width } = textMetrics;
 
@@ -1883,8 +1887,6 @@ export class GridMetricCalculator {
     // Rather than require checking with the correct font def (theme, or context font), just key it to both
     this.fontWidthsUpper.set(font, width);
     this.fontWidthsUpper.set(context.font, width);
-
-    return width;
   }
 
   /**
