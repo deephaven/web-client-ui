@@ -652,22 +652,18 @@ export class IrisGridRenderer extends GridRenderer {
       }
 
       if (text != null) {
-        const { fontWidthsLower: fontWidths } = metrics;
-        let fontWidth = fontWidths.get(context.font);
-        if (fontWidth == null || fontWidth === 0) {
-          fontWidth = context.measureText('8').width;
-          if (!fontWidth) {
-            fontWidth = 10;
-          }
-        }
+        const { fontWidthsLower, fontWidthsUpper } = metrics;
+        const fontWidthLower = fontWidthsLower.get(context.font);
+        const fontWidthUpper = fontWidthsUpper.get(context.font);
 
-        const maxLength =
-          (columnWidth - filterBarHorizontalPadding * 2) / fontWidth;
-        if (maxLength <= 0) {
-          text = '';
-        } else if (text.length > maxLength) {
-          text = `${text.substring(0, maxLength - 1)}…`;
-        }
+        const maxLength = columnWidth - filterBarHorizontalPadding * 2;
+        text = GridRenderer.truncateToWidth(
+          context,
+          text,
+          maxLength,
+          fontWidthLower,
+          fontWidthUpper
+        );
       }
     }
 
