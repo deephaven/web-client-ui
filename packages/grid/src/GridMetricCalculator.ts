@@ -136,9 +136,10 @@ export class GridMetricCalculator {
   /** Calculated row heights based on cell contents */
   protected calculatedRowHeights: ModelSizeMap;
 
-  /** Cache of fonts to estimated width of one char */
+  /** Cache of fonts to estimated width of the smallest char */
   protected fontWidthsLower: Map<string, number>;
 
+  /** Cache of fonts to estimated width of the largest char */
   protected fontWidthsUpper: Map<string, number>;
 
   /** Cache of fonts to width of all chars */
@@ -1720,7 +1721,7 @@ export class GridMetricCalculator {
       this.getLowerWidthForFont(headerFont, state);
       this.getUpperWidthForFont(headerFont, state);
 
-      return this.getWidth(context, headerText) + totalPadding;
+      return this.getTextWidth(context, headerText) + totalPadding;
     }
 
     return totalPadding;
@@ -1768,8 +1769,8 @@ export class GridMetricCalculator {
           this.getLowerWidthForFont(font, state);
           this.getUpperWidthForFont(font, state);
 
-          columnWidth =
-            this.getWidth(context, text) + cellHorizontalPadding * 2;
+          cellWidth =
+            this.getTextWidth(context, text) + cellHorizontalPadding * 2;
         }
 
         if (cellRenderType === 'dataBar') {
@@ -1792,7 +1793,7 @@ export class GridMetricCalculator {
     return columnWidth;
   }
 
-  getWidth(context: CanvasRenderingContext2D, text: string): number {
+  getTextWidth(context: CanvasRenderingContext2D, text: string): number {
     if (!this.allCharWidths.has(context.font)) {
       this.allCharWidths.set(context.font, new Map());
     }
@@ -1840,11 +1841,10 @@ export class GridMetricCalculator {
   }
 
   /**
-   * Get the width of the provided font. Exploits the fact that we're
-   * using tabular figures so every character is same width
+   * Get the lower bound width of the provided font.
    * @param font The font to get the width for
    * @param state The grid metric state
-   * @returns Width of the char `8` for the specified font
+   * @returns Width of the char `.` for the specified font
    */
   getLowerWidthForFont(font: GridFont, state: GridMetricState): number {
     if (this.fontWidthsLower.has(font)) {
@@ -1863,6 +1863,12 @@ export class GridMetricCalculator {
     return width;
   }
 
+  /**
+   * Get the upper bound width of the provided font.
+   * @param font The font to get the width for
+   * @param state The grid metric state
+   * @returns Width of the char `m` for the specified font
+   */
   getUpperWidthForFont(font: GridFont, state: GridMetricState): number {
     if (this.fontWidthsUpper.has(font)) {
       return getOrThrow(this.fontWidthsUpper, font);
