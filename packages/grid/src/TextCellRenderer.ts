@@ -3,7 +3,7 @@ import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { type VisibleIndex } from './GridMetrics';
-import { DEFAULT_FONT_WIDTH, type GridRenderState } from './GridRendererTypes';
+import { type GridRenderState } from './GridRendererTypes';
 import GridUtils, { type TokenBox, type Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
 import type TokenBoxCellRenderer from './TokenBoxCellRenderer';
@@ -48,10 +48,8 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
         y: textY,
       } = GridUtils.getTextRenderMetrics(state, column, row);
 
-      const fontWidthLower =
-        fontWidthsLower.get(context.font) ?? DEFAULT_FONT_WIDTH;
-      const fontWidthUpper =
-        fontWidthsUpper.get(context.font) ?? DEFAULT_FONT_WIDTH;
+      const fontWidthLower = fontWidthsLower.get(context.font);
+      const fontWidthUpper = fontWidthsUpper.get(context.font);
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
@@ -151,10 +149,8 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     context.save();
     this.configureContext(context, state);
 
-    const fontWidthLower =
-      fontWidthsLower.get(context.font) ?? DEFAULT_FONT_WIDTH;
-    const fontWidthUpper =
-      fontWidthsUpper.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthLower = fontWidthsLower.get(context.font);
+    const fontWidthUpper = fontWidthsUpper.get(context.font);
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,

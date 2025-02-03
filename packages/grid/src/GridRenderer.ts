@@ -1554,10 +1554,6 @@ export class GridRenderer {
       white,
     } = theme;
     const { fontWidthsLower, fontWidthsUpper, width } = metrics;
-    const fontWidthLower =
-      fontWidthsLower.get(context.font) ?? DEFAULT_FONT_WIDTH;
-    const fontWidthUpper =
-      fontWidthsUpper.get(context.font) ?? DEFAULT_FONT_WIDTH;
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
 
@@ -1617,6 +1613,8 @@ export class GridRenderer {
     context.clip();
     context.fillStyle = textColor;
 
+    const fontWidthLower = fontWidthsLower.get(context.font);
+    const fontWidthUpper = fontWidthsUpper.get(context.font);
     const renderText = this.textCellRenderer.getCachedTruncatedString(
       context,
       columnText,

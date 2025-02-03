@@ -2,7 +2,6 @@
 import {
   type BoxCoordinates,
   type Coordinate,
-  DEFAULT_FONT_WIDTH,
   getOrThrow,
   type GridMetrics,
   GridUtils,
@@ -149,10 +148,8 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
       column,
       row
     );
-    const fontWidthLower =
-      metrics.fontWidthsLower.get(theme.font) ?? DEFAULT_FONT_WIDTH;
-    const fontWidthUpper =
-      metrics.fontWidthsUpper.get(theme.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthLower = metrics.fontWidthsLower.get(theme.font);
+    const fontWidthUpper = metrics.fontWidthsUpper.get(theme.font);
 
     context.save();
     context.font = theme.font;
