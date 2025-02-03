@@ -204,7 +204,6 @@ export class GridMetricCalculator {
       height,
       theme,
       model,
-      context,
       movedRows,
       movedColumns,
       draggingColumn,
@@ -217,8 +216,6 @@ export class GridMetricCalculator {
       columnHeaderHeight,
       minScrollHandleSize,
       scrollBarSize,
-      font,
-      headerFont,
     } = theme;
 
     if (movedRows !== this.movedRows) {
@@ -513,11 +510,6 @@ export class GridMetricCalculator {
             gridX
           )
         : right;
-
-    this.calculateLowerFontWidth(font, context);
-    this.calculateUpperFontWidth(font, context);
-    this.calculateLowerFontWidth(headerFont, context);
-    this.calculateUpperFontWidth(headerFont, context);
 
     const {
       fontWidthsLower,
@@ -1720,8 +1712,9 @@ export class GridMetricCalculator {
     state: GridMetricState
   ): number {
     const { model, theme, context } = state;
-    const { headerHorizontalPadding } = theme;
-
+    const { headerHorizontalPadding, headerFont } = theme;
+    this.calculateLowerFontWidth(headerFont, context);
+    this.calculateUpperFontWidth(headerFont, context);
     const totalPadding = headerHorizontalPadding * 2;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
@@ -1745,6 +1738,7 @@ export class GridMetricCalculator {
     const { top, height, width, model, theme, context } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
     const {
+      font,
       cellHorizontalPadding,
       rowHeight,
       rowHeaderWidth,
@@ -1752,6 +1746,8 @@ export class GridMetricCalculator {
       scrollBarSize,
       dataBarHorizontalPadding,
     } = theme;
+    this.calculateLowerFontWidth(font, context);
+    this.calculateUpperFontWidth(font, context);
 
     let columnWidth = 0;
 
