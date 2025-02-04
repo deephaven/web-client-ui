@@ -7,7 +7,6 @@ import {
   webkit,
 } from '@playwright/test';
 import os from 'node:os';
-import path from 'node:path';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 
@@ -399,23 +398,6 @@ export async function openTableOption(
   await expect(page.getByText('Table Options')).toHaveCount(0);
 }
 
-export async function importLayout(page: Page, layout: string): Promise<void> {
-  // We need to upload the layout file to import it, so listen for the File Choose to be selected
-  // https://playwright.dev/docs/api/class-filechooser
-  const fileChooserPromise = page.waitForEvent('filechooser');
-
-  // open the tables/plot button
-  const dropdownButton = page.getByRole('button', { name: 'Panels' });
-  await dropdownButton.click();
-
-  // Click the "Import Layout" button
-  await page.getByRole('button', { name: 'Import Layout' }).click();
-
-  // Wait for the file chooser to appear and select the file
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(path.join(__dirname, 'layouts', layout));
-}
-
 export default {
   gotoPage,
   generateVarName,
@@ -427,5 +409,4 @@ export default {
   expectContextMenus,
   dragComponent,
   openTableOption,
-  importLayout,
 };
