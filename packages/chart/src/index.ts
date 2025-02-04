@@ -1,16 +1,3 @@
-import Log from '@deephaven/log';
-import { initializeVirtualWebGL } from './virtual-webgl';
-
-const log = Log.module('@deephaven/chart index');
-
-try {
-  // Used to show many WebGL plots on the same page
-  // https://github.com/plotly/plotly.js/?tab=readme-ov-file#need-to-have-several-webgl-graphs-on-a-page
-  initializeVirtualWebGL();
-} catch (e) {
-  log.warn('Failed to initialize virtual WebGL', e);
-}
-
 export { default as Chart } from './LazyChart';
 export { default as ChartModelFactory } from './ChartModelFactory';
 export { default as ChartModel } from './ChartModel';
