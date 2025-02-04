@@ -172,6 +172,10 @@ export type GridMetrics = {
   calculatedRowHeights: ModelSizeMap;
   calculatedColumnWidths: ModelSizeMap;
 
+  // Map of calculated row/column height/width without caching largest value
+  contentColumnWidths: ModelSizeMap;
+  contentRowHeights: ModelSizeMap;
+
   // Max depth of column headers. Depth of 1 for a table without column groups
   columnHeaderMaxDepth: number;
 };

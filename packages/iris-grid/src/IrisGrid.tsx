@@ -3444,26 +3444,40 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleResizeColumn(modelIndex: number): void {
-    const { metricCalculator } = this.state;
-    const calculatedColumnWidths = metricCalculator.getCalculatedColumnWidths();
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
 
-    const calculatedColumnWidth = calculatedColumnWidths.get(modelIndex);
-    if (calculatedColumnWidth !== undefined) {
-      metricCalculator.setColumnWidth(modelIndex, calculatedColumnWidth);
+    const contentWidth = getOrThrow(metrics.contentColumnWidths, modelIndex);
+
+    const userWidths = metricCalculator.getUserColumnWidths();
+    if (userWidths.has(modelIndex)) {
+      metricCalculator.resetColumnWidth(modelIndex);
+      metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+    } else {
+      metricCalculator.setColumnWidth(modelIndex, contentWidth);
     }
   }
 
   handleResizeAllColumns(): void {
-    const { metricCalculator } = this.state;
-    const calculatedColumnWidths = metricCalculator.getCalculatedColumnWidths();
-    const entries = [...calculatedColumnWidths.entries()];
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
 
-    for (let i = 0; i < entries.length; i += 1) {
-      const [modelIndex, columnWidth] = entries[i];
+    const allColumns = [...metrics.allColumnWidths.entries()];
+    const contentWidths = metrics.contentColumnWidths;
+    const userWidths = metricCalculator.getUserColumnWidths();
+
+    for (let i = 0; i < allColumns.length; i += 1) {
+      const [modelIndex, width] = allColumns[i];
+      const contentWidth = getOrThrow(contentWidths, modelIndex);
 
       // Don't expand hidden columns
-      if (columnWidth !== 0) {
-        metricCalculator.setColumnWidth(modelIndex, columnWidth);
+      if (width !== 0) {
+        if (userWidths.has(modelIndex)) {
+          metricCalculator.resetColumnWidth(modelIndex);
+          metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+        } else {
+          metricCalculator.setColumnWidth(modelIndex, contentWidth);
+        }
       }
     }
   }
