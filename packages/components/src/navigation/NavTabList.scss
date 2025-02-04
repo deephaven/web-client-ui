@@ -42,12 +42,16 @@ $tab-control-btn-offset: -8px;
       overflow: hidden;
       padding: 0 $tab-link-side-padding;
       position: relative;
-      text-overflow: ellipsis;
       user-select: none;
-      white-space: nowrap;
       flex-shrink: 0;
       background: none;
       background-clip: padding-box;
+
+      .btn-nav-tab-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
       .btn-nav-tab-close {
         position: absolute;
