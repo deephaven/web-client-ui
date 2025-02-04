@@ -525,6 +525,14 @@ class Chart extends Component<ChartProps, ChartState> {
         this.setState({ shownBlocker: null });
         break;
       }
+      case ChartModel.EVENT_LAYOUT_UPDATED: {
+        const newLayout = detail as Partial<Layout>;
+        this.setState(({ layout, revision }) => ({
+          layout: { ...layout, ...newLayout },
+          revision: revision + 1,
+        }));
+        break;
+      }
       default:
         log.debug('Unknown event type', type, event);
     }
