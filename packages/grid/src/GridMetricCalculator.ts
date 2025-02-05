@@ -1831,14 +1831,15 @@ export class GridMetricCalculator {
 
       if (charWidths.has(char)) {
         width += getOrThrow(charWidths, char);
-        if (maxWidth !== undefined && width > maxWidth) {
-          return maxWidth;
-        }
       } else {
         const textMetrics = context.measureText(char);
         const { width: charWidth } = textMetrics;
         charWidths.set(char, charWidth);
         width += charWidth;
+      }
+
+      if (maxWidth !== undefined && width > maxWidth) {
+        return maxWidth;
       }
     }
     return width;
