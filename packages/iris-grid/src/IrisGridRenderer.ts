@@ -657,7 +657,7 @@ export class IrisGridRenderer extends GridRenderer {
         const fontWidthUpper = fontWidthsUpper.get(context.font);
 
         const maxLength = columnWidth - filterBarHorizontalPadding * 2;
-        text = GridRenderer.truncateToWidth(
+        text = this.textCellRenderer.getCachedTruncatedString(
           context,
           text,
           maxLength,
