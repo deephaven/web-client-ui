@@ -66,6 +66,8 @@ const makeMockGridMetrics = (): GridMetrics =>
       [1, 10],
       [2, 10],
     ]),
+    fontWidthsLower: new Map(),
+    fontWidthsUpper: new Map(),
   }) as GridMetrics;
 
 const makeMockGridRenderState = ({
@@ -125,7 +127,8 @@ describe('getTokenBoxesForVisibleCell', () => {
         context: CanvasRenderingContext2D,
         text: string,
         width: number,
-        fontWidth: number,
+        fontWidthLower?: number,
+        fontWidthUpper?: number,
         truncationChar?: string
       ) => text
     );
