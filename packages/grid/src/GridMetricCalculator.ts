@@ -1729,8 +1729,12 @@ export class GridMetricCalculator {
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
       return (
-        this.getTextWidth(context, headerText, maxColumnWidth - totalPadding) +
-        totalPadding
+        this.getTextWidth(
+          context,
+          headerFont,
+          headerText,
+          maxColumnWidth - totalPadding
+        ) + totalPadding
       );
     }
 
@@ -1781,8 +1785,12 @@ export class GridMetricCalculator {
         let cellWidth = 0;
         if (text) {
           cellWidth =
-            this.getTextWidth(context, text, maxColumnWidth - cellPadding) +
-            cellPadding;
+            this.getTextWidth(
+              context,
+              font,
+              text,
+              maxColumnWidth - cellPadding
+            ) + cellPadding;
         }
 
         if (cellRenderType === 'dataBar') {
@@ -1807,14 +1815,15 @@ export class GridMetricCalculator {
 
   getTextWidth(
     context: CanvasRenderingContext2D,
+    font: string,
     text: string,
     maxWidth?: number
   ): number {
-    if (!this.allCharWidths.has(context.font)) {
-      this.allCharWidths.set(context.font, new Map());
+    if (!this.allCharWidths.has(font)) {
+      this.allCharWidths.set(font, new Map());
     }
 
-    const charWidths = getOrThrow(this.allCharWidths, context.font);
+    const charWidths = getOrThrow(this.allCharWidths, font);
 
     let width = 0;
     for (let i = 0; i < text.length; i += 1) {
