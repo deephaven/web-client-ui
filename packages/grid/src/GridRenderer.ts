@@ -1634,7 +1634,7 @@ export class GridRenderer {
     const visibleRight = clamp(columnRight, minX, maxX);
     const visibleWidth = visibleRight - visibleLeft;
 
-    const textWidth = context.measureText(renderText).width;
+    const textWidth = this.getCachedHeaderWidth(context, renderText);
     const isBeyondLeft = x - textWidth * 0.5 < minX;
     const isBeyondRight = x + textWidth * 0.5 > maxX;
 
@@ -2779,6 +2779,12 @@ export class GridRenderer {
 
     context.translate(-barLeft, -barTop);
   }
+
+  getCachedHeaderWidth = memoizeClear(
+    (context: CanvasRenderingContext2D, text: string): number =>
+      context.measureText(text).width,
+    { max: 1000 }
+  );
 }
 
 export default GridRenderer;

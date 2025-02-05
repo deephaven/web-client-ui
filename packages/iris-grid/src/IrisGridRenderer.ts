@@ -498,7 +498,7 @@ export class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const textWidth = context.measureText(text).width;
+    const textWidth = this.getCachedHeaderWidth(context, text);
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
     let { maxX } = bounds;
     maxX -= headerHorizontalPadding; // Right visible edge of the headers
