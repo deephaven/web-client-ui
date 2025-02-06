@@ -221,3 +221,156 @@ describe('getTokenBoxesForVisibleCell', () => {
     expect(tokens).toHaveLength(0);
   });
 });
+
+describe('binaryTruncateToWidth', () => {
+  let context;
+
+  beforeEach(() => {
+    context = {
+      measureText: jest.fn(),
+    };
+  });
+
+  it('should return the full string if it fits within the width', () => {
+    const input = 'Hello, World!';
+    const width = 100;
+
+    context.measureText.mockReturnValue({ width: 90 });
+    const result = GridRenderer.binaryTruncateToWidth(context, input, width);
+
+    expect(context.measureText).toHaveBeenCalledWith(input);
+    expect(result).toBe(input);
+  });
+
+  it('should return truncation char repeated if it is provided and string does not fit', () => {
+    const input = 'Hello, World!';
+    const width = 50;
+    const truncationChar = '#';
+
+    context.measureText.mockImplementation(text => ({
+      width: text.length * 10,
+    }));
+
+    const result = GridRenderer.binaryTruncateToWidth(
+      context,
+      input,
+      width,
+      0,
+      input.length,
+      truncationChar
+    );
+
+    expect(context.measureText).toHaveBeenCalledWith(truncationChar);
+    expect(result).toBe('#####');
+  });
+
+  it('should use the lo and hi parameters to truncate correctly', () => {
+    const input = 'HelloWorld';
+    const width = 60;
+    const lo = 5;
+    const hi = 10;
+
+    context.measureText.mockImplementation(text => ({
+      width: text.length * 10,
+    }));
+
+    const result = GridRenderer.binaryTruncateToWidth(
+      context,
+      input,
+      width,
+      lo,
+      hi
+    );
+
+    // 1: measure entire string to see if it fits in width
+    // 2: mid = 7, HelloWo… is 80 wide, so we need to truncate more
+    // 3: mid = 6, HelloW… is 70 wide, so we need to truncate more
+    // 4: mid = 5, Hello… is 60 wide, so it fits and we are done
+    expect(context.measureText).toHaveBeenNthCalledWith(1, input);
+    expect(context.measureText).toHaveBeenNthCalledWith(2, 'HelloWo…');
+    expect(context.measureText).toHaveBeenNthCalledWith(3, 'HelloW…');
+    expect(context.measureText).toHaveBeenNthCalledWith(4, 'Hello…');
+    expect(result).toBe('Hello…');
+  });
+
+  it('should return full string if valid truncation not found in given range', () => {
+    const input = 'Hello World';
+    const width = 50;
+    const lo = 11;
+    const hi = 12;
+
+    context.measureText.mockImplementation(text => ({
+      width: text.length * 10,
+    }));
+
+    const result = GridRenderer.binaryTruncateToWidth(
+      context,
+      input,
+      width,
+      lo,
+      hi
+    );
+
+    expect(result).toBe('Hello World');
+  });
+});
+
+describe('truncateToWidth', () => {
+  let context;
+
+  beforeEach(() => {
+    context = {
+      measureText: jest.fn(),
+    };
+  });
+
+  it('should return an empty string if width is less than or equal to 0', () => {
+    const input = 'Hello, World!';
+    const width = 0;
+
+    const result = GridRenderer.truncateToWidth(context, input, width);
+
+    expect(result).toBe('');
+    expect(context.measureText).not.toHaveBeenCalled();
+  });
+
+  it('should return an empty string if the input string is empty', () => {
+    const input = '';
+    const width = 100;
+
+    const result = GridRenderer.truncateToWidth(context, input, width);
+
+    expect(result).toBe('');
+    expect(context.measureText).not.toHaveBeenCalled();
+  });
+
+  it('should calculate the correct lo hi based on fontWidthUpper and fontWidthLower', () => {
+    const input = 'HelloWorld'; // only used for input length, as hi is clamped to input length
+    const width = 60;
+    const fontWidthLower = 10;
+    const fontWidthUpper = 15;
+
+    jest.spyOn(GridRenderer, 'binaryTruncateToWidth');
+    context.measureText.mockReturnValue({ width: 0 });
+
+    GridRenderer.truncateToWidth(
+      context,
+      input,
+      width,
+      fontWidthLower,
+      fontWidthUpper
+    );
+
+    const expectedLo = 0; // 60/15-5 = -1 clamped to 0
+    const expectedHi = 6; // 60/10 = 6
+
+    expect(GridRenderer.binaryTruncateToWidth).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expectedLo,
+      expectedHi,
+      undefined
+    );
+  });
+});
