@@ -482,12 +482,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     }
 
     if (isEditableGridModel(model) && model.isEditable) {
-      // selectedRanges is updated by GridSelectionMouseHandler in the same cycle so can't access it here
+      // selectedRanges is updated by GridSelectionMouseHandler in the same cycle so can't access the updated value here
       // so need to handle cases where a cell is right clicked without highlighting it first
       const canPasteInOriginalRange = selectedRanges.every(range =>
         model.isEditableRange(range)
       );
 
+      // To account for how when a cell outside of a selection is right clicked, that selection gets cleared
       const isCellInOriginalRange = GridRange.containsCell(
         selectedRanges,
         columnIndex,
