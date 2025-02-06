@@ -78,8 +78,8 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
             token?.end ?? nextToken?.start ?? truncatedText.length;
           const value = truncatedText.substring(textStart, textEnd);
           const { width } = context.measureText(value);
-          const widthOfUnderline = value.endsWith(truncationChar ?? '…')
-            ? width - context.measureText(truncationChar ?? '…').width
+          const widthOfUnderline = value.endsWith('…')
+            ? width - context.measureText('…').width
             : width;
 
           // Set the styling based on the token, then draw the text
