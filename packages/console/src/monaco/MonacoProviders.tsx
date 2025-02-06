@@ -251,15 +251,17 @@ class MonacoProviders extends PureComponent<
       };
     }
 
-    const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
-      const diagnosticRange = new monaco.Range(
-        d.location.row,
-        d.location.column,
-        d.end_location.row,
-        d.end_location.column
-      );
-      return diagnosticRange.intersectRanges(range);
-    });
+    const diagnostics = MonacoProviders.getDiagnostics(model)
+      .filter(d => d.code != null) // Syntax errors have no code and can't be fixed/disabled
+      .filter(d => {
+        const diagnosticRange = new monaco.Range(
+          d.location.row,
+          d.location.column,
+          d.end_location.row,
+          d.end_location.column
+        );
+        return diagnosticRange.intersectRanges(range);
+      });
 
     const fixActions: monaco.languages.CodeAction[] = diagnostics
       .filter(({ fix }) => fix != null)
@@ -296,8 +298,23 @@ class MonacoProviders extends PureComponent<
         };
       });
 
-    const disableActions: monaco.languages.CodeAction[] = diagnostics
+    const seenCodes = new Set<string>();
+    const duplicateCodes = new Set<string>();
+    diagnostics.forEach(d => {
+      if (d.code == null) {
+        return;
+      }
+      if (seenCodes.has(d.code)) {
+        duplicateCodes.add(d.code);
+      }
+      seenCodes.add(d.code);
+    });
+
+    const disableLineActions: monaco.languages.CodeAction[] = diagnostics
       .map(d => {
+        if (d.code == null) {
+          return [];
+        }
         const line = model.getLineContent(d.location.row);
         const lastToken = monaco.editor
           .tokenize(line, model.getLanguageId())[0]
@@ -327,7 +344,11 @@ class MonacoProviders extends PureComponent<
         }
         return [
           {
-            title: `Disable ${d.code} for this line`,
+            title: `Disable ${d.code} for ${
+              duplicateCodes.has(d.code)
+                ? `line ${d.location.row}`
+                : 'this line'
+            }`,
             kind: 'quickfix',
             edit: {
               edits: [
@@ -339,33 +360,36 @@ class MonacoProviders extends PureComponent<
               ],
             },
           },
-          {
-            title: `Disable ${d.code} for this file`,
-            kind: 'quickfix',
-            edit: {
-              edits: [
-                {
-                  resource: model.uri,
-                  versionId: model.getVersionId(),
-                  textEdit: {
-                    range: {
-                      startLineNumber: 1,
-                      startColumn: 1,
-                      endLineNumber: 1,
-                      endColumn: 1,
-                    },
-                    text: `# ruff: noqa: ${d.code}\n`,
-                  },
-                },
-              ],
-            },
-          },
         ];
       })
       .flat();
 
+    const disableGlobalActions: monaco.languages.CodeAction[] = [
+      ...seenCodes,
+    ].map(code => ({
+      title: `Disable ${code} for this file`,
+      kind: 'quickfix',
+      edit: {
+        edits: [
+          {
+            resource: model.uri,
+            versionId: model.getVersionId(),
+            textEdit: {
+              range: {
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: 1,
+                endColumn: 1,
+              },
+              text: `# ruff: noqa: ${code}\n`,
+            },
+          },
+        ],
+      },
+    }));
+
     return {
-      actions: [...fixActions, ...disableActions],
+      actions: [...fixActions, ...disableLineActions, ...disableGlobalActions],
       dispose: () => {
         /* no-op */
       },
