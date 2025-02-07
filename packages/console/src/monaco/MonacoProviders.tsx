@@ -274,6 +274,7 @@ class MonacoProviders extends PureComponent<
             title = `Fix ${d.code}`;
           }
         }
+        const b = 4;
         return {
           title,
           id: `fix-${d.code}`,
@@ -362,7 +363,11 @@ class MonacoProviders extends PureComponent<
           },
         ];
       })
-      .flat();
+      .flat()
+      .filter(
+        // Remove actions with duplicate titles as you can't disable the same rule on a line twice
+        (action, i, arr) => arr.find(a => a.title === action.title) === action
+      );
 
     const disableGlobalActions: monaco.languages.CodeAction[] = [
       ...seenCodes,
@@ -389,14 +394,7 @@ class MonacoProviders extends PureComponent<
     }));
 
     return {
-      actions: [
-        ...fixActions,
-        ...disableLineActions,
-        ...disableGlobalActions,
-      ].filter(
-        // Remove actions with duplicate titles as they are a diagnostic duplicated for this selection. List should be small
-        (action, i, arr) => arr.find(a => a.title === action.title) === action
-      ),
+      actions: [...fixActions, ...disableLineActions, ...disableGlobalActions],
       dispose: () => {
         /* no-op */
       },
