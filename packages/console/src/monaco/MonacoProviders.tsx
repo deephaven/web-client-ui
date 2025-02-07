@@ -389,7 +389,14 @@ class MonacoProviders extends PureComponent<
     }));
 
     return {
-      actions: [...fixActions, ...disableLineActions, ...disableGlobalActions],
+      actions: [
+        ...fixActions,
+        ...disableLineActions,
+        ...disableGlobalActions,
+      ].filter(
+        // Remove actions with duplicate titles as they are a diagnostic duplicated for this selection. List should be small
+        (action, i, arr) => arr.find(a => a.title === action.title) === action
+      ),
       dispose: () => {
         /* no-op */
       },
