@@ -251,17 +251,18 @@ class MonacoProviders extends PureComponent<
       };
     }
 
-    const diagnostics = MonacoProviders.getDiagnostics(model)
-      .filter(d => d.code != null) // Syntax errors have no code and can't be fixed/disabled
-      .filter(d => {
-        const diagnosticRange = new monaco.Range(
-          d.location.row,
-          d.location.column,
-          d.end_location.row,
-          d.end_location.column
-        );
-        return diagnosticRange.intersectRanges(range);
-      });
+    const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
+      const diagnosticRange = new monaco.Range(
+        d.location.row,
+        d.location.column,
+        d.end_location.row,
+        d.end_location.column
+      );
+      return (
+        d.code != null && // Syntax errors have no code and can't be fixed/disabled
+        diagnosticRange.intersectRanges(range)
+      );
+    });
 
     const fixActions: monaco.languages.CodeAction[] = diagnostics
       .filter(({ fix }) => fix != null)
@@ -274,7 +275,6 @@ class MonacoProviders extends PureComponent<
             title = `Fix ${d.code}`;
           }
         }
-        const b = 4;
         return {
           title,
           id: `fix-${d.code}`,
@@ -314,6 +314,7 @@ class MonacoProviders extends PureComponent<
     const disableLineActions: monaco.languages.CodeAction[] = diagnostics
       .map(d => {
         if (d.code == null) {
+          // The nulls are already filtered out, but TS doesn't know that
           return [];
         }
         const line = model.getLineContent(d.location.row);
