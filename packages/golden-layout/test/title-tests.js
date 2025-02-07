@@ -71,7 +71,6 @@ describe('content items are abled to to emit events that bubble up the tree', fu
     expect(stack.header.tabs[0].element.find('.lm_title').text()).toBe(
       'title <b>with</b> html'
     );
-    // expect( stack.header.tabs[ 0 ].element.attr( 'title' ) ).toBe( 'title with html' );
   });
 
   it('destroys the layout', function () {
