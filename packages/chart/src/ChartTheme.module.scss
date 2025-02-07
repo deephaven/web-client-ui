@@ -21,4 +21,9 @@
   ocean-color: var(--dh-color-chart-geo-ocean);
   lake-color: var(--dh-color-chart-geo-lake);
   river-color: var(--dh-color-chart-geo-river);
+
+  /* Indicator */
+  indicator-increasing: var(--dh-color-chart-indicator-increase);
+  indicator-decreasing: var(--dh-color-chart-indicator-decrease);
+  indicator-gauge: var(--dh-color-chart-indicator-gauge);
 }
