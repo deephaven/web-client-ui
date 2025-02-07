@@ -222,3 +222,140 @@ it('should set gotoValueSelectedColumnName to empty string if no columns are giv
 
   expect(component.state.gotoValueSelectedColumnName).toEqual('');
 });
+
+describe('handleResizeColumn', () => {
+  let irisGrid;
+  let metricCalculator;
+
+  beforeAll(() => {
+    irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(
+        irisGridTestUtils.makeTable({
+          columns: irisGridTestUtils.makeColumns(1),
+        })
+      )
+    );
+    metricCalculator = irisGrid.state.metricCalculator;
+  });
+
+  it('should set column width to content width if undefined user width', async () => {
+    const modelIndex = 0;
+    const mockMetricCalculator = {
+      ...metricCalculator,
+      userColumnWidths: new Map(),
+      setColumnWidth: jest.fn((column, size) => {
+        mockMetricCalculator.userColumnWidths.set(column, size);
+      }),
+    };
+    Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
+    const contentWidth =
+      irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
+    expect(contentWidth).toBeDefined();
+
+    irisGrid.handleResizeColumn(modelIndex);
+
+    expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
+      contentWidth
+    );
+  });
+
+  it('should reset user width & set calculated width to content width if column has defined user width', () => {
+    const modelIndex = 0;
+    const mockMetricCalculator = {
+      ...metricCalculator,
+      userColumnWidths: new Map([[modelIndex, 100]]),
+      setCalculatedColumnWidth: jest.fn((column, size) => {
+        mockMetricCalculator.calculatedColumnWidths.set(column, size);
+      }),
+      resetColumnWidth: jest.fn(() => {
+        mockMetricCalculator.userColumnWidths.delete(modelIndex);
+      }),
+    };
+    Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
+    const contentWidth =
+      irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
+    expect(contentWidth).toBeDefined();
+
+    irisGrid.handleResizeColumn(modelIndex);
+
+    expect(
+      mockMetricCalculator.userColumnWidths.get(modelIndex)
+    ).toBeUndefined();
+    expect(mockMetricCalculator.calculatedColumnWidths.get(modelIndex)).toEqual(
+      contentWidth
+    );
+  });
+});
+
+// auto resize -> reset user width and set calculated width to content width
+// manual resize -> set user width to content width
+describe('handleResizeAllColumns', () => {
+  let irisGrid;
+  let metricCalculator;
+
+  beforeAll(() => {
+    irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(
+        irisGridTestUtils.makeTable({
+          columns: irisGridTestUtils.makeColumns(3),
+        })
+      )
+    );
+    metricCalculator = irisGrid.state.metricCalculator;
+  });
+
+  it('should auto resize all columns if all were manually sized', () => {
+    const mockMetricCalculator = {
+      ...metricCalculator,
+      userColumnWidths: new Map([
+        [0, 100],
+        [1, 100],
+        [2, 100],
+      ]),
+      setCalculatedColumnWidth: jest.fn((column, size) => {
+        mockMetricCalculator.calculatedColumnWidths.set(column, size);
+      }),
+      resetColumnWidth: jest.fn(column => {
+        mockMetricCalculator.userColumnWidths.delete(column);
+      }),
+    };
+    Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
+    const contentWidths = irisGrid.state.metrics.contentColumnWidths;
+
+    irisGrid.handleResizeAllColumns();
+
+    expect(mockMetricCalculator.userColumnWidths.size).toEqual(0);
+
+    contentWidths.forEach((contentWidth, modelIndex) => {
+      expect(
+        mockMetricCalculator.calculatedColumnWidths.get(modelIndex)
+      ).toEqual(contentWidth);
+    });
+  });
+
+  it('should manual resize all columns if not all were manually sized', () => {
+    const mockMetricCalculator = {
+      ...metricCalculator,
+      userColumnWidths: new Map([
+        [0, 100],
+        [1, 100],
+      ]),
+      setColumnWidth: jest.fn((column, size) => {
+        mockMetricCalculator.userColumnWidths.set(column, size);
+      }),
+      resetColumnWidth: jest.fn(column => {
+        mockMetricCalculator.userColumnWidths.delete(column);
+      }),
+    };
+    Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
+    const contentWidths = irisGrid.state.metrics.contentColumnWidths;
+
+    irisGrid.handleResizeAllColumns();
+
+    contentWidths.forEach((contentWidth, modelIndex) => {
+      expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
+        contentWidth
+      );
+    });
+  });
+});
