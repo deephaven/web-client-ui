@@ -1696,6 +1696,7 @@ export class GridMetricCalculator {
     columnWidth = Math.max(minColumnWidth, columnWidth);
     columnWidth = Math.min(maxColumnWidth, columnWidth);
     this.contentColumnWidths.set(modelColumn, columnWidth);
+    trimMap(this.contentColumnWidths);
 
     if (cachedValue != null && cachedValue > columnWidth) {
       columnWidth = cachedValue;
