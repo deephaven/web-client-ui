@@ -66,10 +66,10 @@ describe('content items are abled to to emit events that bubble up the tree', fu
   it('supports html in title', function () {
     itemWithTitle.container.setTitle('title <b>with</b> html');
     expect(stack.header.tabs[0].element.find('.lm_title').html()).toBe(
-      'title <b>with</b> html'
+      'title &lt;b&gt;with&lt;/b&gt; html'
     );
     expect(stack.header.tabs[0].element.find('.lm_title').text()).toBe(
-      'title with html'
+      'title <b>with</b> html'
     );
     // expect( stack.header.tabs[ 0 ].element.attr( 'title' ) ).toBe( 'title with html' );
   });
