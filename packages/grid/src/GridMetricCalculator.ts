@@ -1759,7 +1759,9 @@ export class GridMetricCalculator {
     let columnWidth = 0;
 
     const fontWidth = this.getWidthForFont(font, state);
-    const rowsPerPage = height / rowHeight;
+
+    const gridY = this.getGridY(state);
+    const rowsPerPage = Math.floor((height - gridY) / rowHeight);
     const bottom = Math.ceil(top + rowsPerPage);
     GridUtils.iterateAllItems(
       top,
