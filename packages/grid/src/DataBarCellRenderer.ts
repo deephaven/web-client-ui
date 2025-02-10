@@ -11,7 +11,7 @@ import {
 import GridColorUtils from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
-import { DEFAULT_FONT_WIDTH, type GridRenderState } from './GridRendererTypes';
+import { type GridRenderState } from './GridRendererTypes';
 import type GridModel from './GridModel';
 
 interface DataBarRenderMetrics {
@@ -87,7 +87,8 @@ class DataBarCellRenderer extends CellRenderer {
       allRowHeights,
       allRowYs,
       firstColumn,
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
     } = metrics;
 
     const isFirstColumn = column === firstColumn;
@@ -103,13 +104,15 @@ class DataBarCellRenderer extends CellRenderer {
       width: textWidth,
     } = GridUtils.getTextRenderMetrics(state, column, row);
 
-    const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthLower = fontWidthsLower.get(context.font);
+    const fontWidthUpper = fontWidthsUpper.get(context.font);
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,
       text,
       textWidth,
-      fontWidth,
+      fontWidthLower,
+      fontWidthUpper,
       truncationChar
     );
 
