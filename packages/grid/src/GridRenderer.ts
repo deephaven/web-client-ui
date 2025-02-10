@@ -119,7 +119,9 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     str: string,
     width: number,
-    fontWidth = DEFAULT_FONT_WIDTH,
+    // Estimate the width of each character by taking half the default font width as the low and double it as the high
+    fontWidthLower = DEFAULT_FONT_WIDTH / 2,
+    fontWidthUpper = DEFAULT_FONT_WIDTH * 2,
     truncationChar?: string
   ): string {
     if (width <= 0 || str.length <= 0) {
@@ -127,13 +129,13 @@ export class GridRenderer {
     }
 
     // Estimate the possible low and high boundaries for truncating the text
-    // Use the width of the space divided by the estimated width of each character,
-    // and take half that as the low (minus 5 just to be extra safe), and double that as the high.
+    // Use the width of the space divided by the upper and lower bounds of the width of a character
+    // (minus 5 on the lower bound just to be extra safe)
     const lo = Math.min(
-      Math.max(0, Math.floor(width / fontWidth / 2) - 5),
+      Math.max(0, Math.floor(width / fontWidthUpper) - 5),
       str.length
     );
-    const hi = Math.min(Math.ceil((width / fontWidth) * 2), str.length);
+    const hi = Math.min(Math.ceil(width / fontWidthLower), str.length);
 
     return GridRenderer.binaryTruncateToWidth(
       context,
@@ -1546,11 +1548,9 @@ export class GridRenderer {
       black,
       white,
     } = theme;
-    const { fontWidths, width } = metrics;
-    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const { fontWidthsLower, fontWidthsUpper, width } = metrics;
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
-    const maxLength = maxWidth / fontWidth;
 
     const {
       backgroundColor = headerBackgroundColor,
@@ -1608,15 +1608,16 @@ export class GridRenderer {
     context.clip();
     context.fillStyle = textColor;
 
-    let renderText = columnText;
+    const fontWidthLower = fontWidthsLower.get(context.font);
+    const fontWidthUpper = fontWidthsUpper.get(context.font);
+    const renderText = this.textCellRenderer.getCachedTruncatedString(
+      context,
+      columnText,
+      maxWidth,
+      fontWidthLower,
+      fontWidthUpper
+    );
 
-    if (maxLength <= 0) {
-      renderText = '';
-    } else if (renderText.length > maxLength) {
-      renderText = `${renderText.substring(0, maxLength - 1)}…`;
-    }
-
-    const textWidth = renderText.length * fontWidth;
     let x = columnX + columnWidth * 0.5;
     const y = columnHeaderHeight * 0.5;
     minX += headerHorizontalPadding;
@@ -1628,6 +1629,7 @@ export class GridRenderer {
     const visibleRight = clamp(columnRight, minX, maxX);
     const visibleWidth = visibleRight - visibleLeft;
 
+    const textWidth = this.getCachedHeaderWidth(context, renderText);
     const isBeyondLeft = x - textWidth * 0.5 < minX;
     const isBeyondRight = x + textWidth * 0.5 > maxX;
 
@@ -2772,6 +2774,12 @@ export class GridRenderer {
 
     context.translate(-barLeft, -barTop);
   }
+
+  getCachedHeaderWidth = memoizeClear(
+    (context: CanvasRenderingContext2D, text: string): number =>
+      context.measureText(text).width,
+    { max: 1000 }
+  );
 }
 
 export default GridRenderer;
