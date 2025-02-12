@@ -7,6 +7,7 @@ import type { NavTabItem } from './NavTabList';
 import Button from '../Button';
 import ContextActions from '../context-actions/ContextActions';
 import { type ResolvableContextAction } from '../context-actions';
+import { Tooltip } from '../popper';
 
 interface NavTabProps {
   tab: NavTabItem;
@@ -93,7 +94,10 @@ const NavTab = memo(
               }}
             >
               {iconElem}
-              {title}
+              <span className="btn-nav-tab-title">
+                {title}
+                <Tooltip>{title}</Tooltip>
+              </span>
               {isClosable && (
                 <Button
                   kind="ghost"

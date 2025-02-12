@@ -390,6 +390,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const sourceCell = model.sourceForCell(modelColumn, modelRow);
     const { column: sourceColumn, row: sourceRow } = sourceCell;
     const value = model.valueForCell(sourceColumn, sourceRow);
+    const { selectedRanges } = irisGrid.state;
 
     const column = columns[sourceColumn];
 
@@ -496,30 +497,54 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
     }
 
-    actions.push({
-      title: 'Paste',
-      group: IrisGridContextMenuHandler.GROUP_COPY,
-      order: 50,
-      action: async () => {
-        try {
-          const text = await readFromClipboard();
-          const items = text.split('\n').map(row => row.split('\t'));
-          await grid.pasteValue(items);
-        } catch (err) {
-          if (err instanceof ClipboardUnavailableError) {
-            irisGrid.handleOpenNoPastePermissionModal(
-              'For security reasons your browser does not allow access to your clipboard on click.'
-            );
-          } else if (err instanceof ClipboardPermissionsDeniedError) {
-            irisGrid.handleOpenNoPastePermissionModal(
-              'Requested clipboard permissions have not been granted, please grant them and try again.'
-            );
-          } else {
-            throw err;
-          }
-        }
-      },
-    });
+    if (isEditableGridModel(model) && model.isEditable) {
+      // selectedRanges is updated by GridSelectionMouseHandler in the same cycle so can't access the updated value here
+      // so need to handle cases where a cell is right clicked without highlighting it first
+      const canPasteInOriginalRange = selectedRanges.every(range =>
+        model.isEditableRange(range)
+      );
+
+      // To account for how when a cell outside of a selection is right clicked, that selection gets cleared
+      const isCellInOriginalRange = GridRange.containsCell(
+        selectedRanges,
+        columnIndex,
+        rowIndex
+      );
+
+      const canPasteInCell = model.isEditableRange(
+        GridRange.makeCell(columnIndex, rowIndex)
+      );
+
+      if (
+        (canPasteInOriginalRange || !isCellInOriginalRange) &&
+        canPasteInCell
+      ) {
+        actions.push({
+          title: 'Paste',
+          group: IrisGridContextMenuHandler.GROUP_COPY,
+          order: 50,
+          action: async () => {
+            try {
+              const text = await readFromClipboard();
+              const items = text.split('\n').map(row => row.split('\t'));
+              await grid.pasteValue(items);
+            } catch (err) {
+              if (err instanceof ClipboardUnavailableError) {
+                irisGrid.handleOpenNoPastePermissionModal(
+                  'For security reasons your browser does not allow access to your clipboard on click.'
+                );
+              } else if (err instanceof ClipboardPermissionsDeniedError) {
+                irisGrid.handleOpenNoPastePermissionModal(
+                  'Requested clipboard permissions have not been granted, please grant them and try again.'
+                );
+              } else {
+                throw err;
+              }
+            }
+          },
+        });
+      }
+    }
 
     actions.push({
       title: 'View Cell Contents',
