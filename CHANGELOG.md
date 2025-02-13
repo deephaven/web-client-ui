@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.14](https://github.com/deephaven/web-client-ui/compare/v0.85.13...v0.85.14) (2025-02-13)
+
+### Bug Fixes
+
+- Don't use HTML in panel titles, treat as text ([#2365](https://github.com/deephaven/web-client-ui/issues/2365)) ([#2366](https://github.com/deephaven/web-client-ui/issues/2366)) ([8e511a0](https://github.com/deephaven/web-client-ui/commit/8e511a0e190decfb80b9e8eb786b00db25ccde22))
+
 ## [0.85.13](https://github.com/deephaven/web-client-ui/compare/v0.85.12...v0.85.13) (2025-01-10)
 
 ### Features
