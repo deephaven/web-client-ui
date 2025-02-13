@@ -231,7 +231,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           this.irisGrid.freezeColumnByColumnName(column.name);
         }
       },
-      order: 10,
+      order: 30,
     });
     actions.push({
       title: 'Show All Columns',
@@ -240,6 +240,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.showAllColumns();
       },
       disabled: !isColumnHidden,
+    });
+    actions.push({
+      title: 'Resize Column',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.handleResizeColumn(modelIndex);
+      },
+      order: 10,
+    });
+    actions.push({
+      title: 'Resize All Columns',
+      group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+      action: () => {
+        this.irisGrid.handleResizeAllColumns();
+      },
+      order: 20,
     });
     actions.push({
       title: 'Quick Filters',

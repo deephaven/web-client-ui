@@ -53,6 +53,10 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   getUserColumnWidths(): ModelSizeMap {
     return this.userColumnWidths;
   }
+
+  getCalculatedColumnWidths(): ModelSizeMap {
+    return this.calculatedColumnWidths;
+  }
 }
 
 export default IrisGridMetricCalculator;

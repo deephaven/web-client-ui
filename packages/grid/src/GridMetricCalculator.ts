@@ -130,11 +130,17 @@ export class GridMetricCalculator {
   /** User set row heights */
   protected userRowHeights: ModelSizeMap;
 
-  /** Calculated column widths based on cell contents */
+  /** Calculated column widths based on cell contents and caching largest value */
   protected calculatedColumnWidths: ModelSizeMap;
 
-  /** Calculated row heights based on cell contents */
+  /** Calculated row heights based on cell contents and caching largest value */
   protected calculatedRowHeights: ModelSizeMap;
+
+  /** Calculated column widths based on cell contents */
+  protected contentColumnWidths: ModelSizeMap;
+
+  /** Calculated row heights based on cell contents */
+  protected contentRowHeights: ModelSizeMap;
 
   /** Cache of fonts to estimated width of the smallest char */
   protected fontWidthsLower: Map<string, number>;
@@ -162,6 +168,8 @@ export class GridMetricCalculator {
     userRowHeights = new Map(),
     calculatedColumnWidths = new Map(),
     calculatedRowHeights = new Map(),
+    contentColumnWidths = new Map(),
+    contentRowHeights = new Map(),
     fontWidthsLower = new Map(),
     fontWidthsUpper = new Map(),
     allCharWidths = new Map(),
@@ -178,6 +186,8 @@ export class GridMetricCalculator {
     this.calculatedColumnWidths = calculatedColumnWidths;
     this.allCharWidths = allCharWidths;
     this.fontWidthsLower = fontWidthsLower;
+    this.contentColumnWidths = contentColumnWidths;
+    this.contentRowHeights = contentRowHeights;
     this.fontWidthsUpper = fontWidthsUpper;
 
     // Need to track the last moved rows/columns array so we know if we need to reset our models cache
@@ -518,6 +528,8 @@ export class GridMetricCalculator {
       userRowHeights,
       calculatedRowHeights,
       calculatedColumnWidths,
+      contentColumnWidths,
+      contentRowHeights,
     } = this;
 
     return {
@@ -607,6 +619,10 @@ export class GridMetricCalculator {
       // Map of the height/width of visible rows/columns
       visibleRowHeights,
       visibleColumnWidths,
+
+      // Map of the height/width of visible rows/columns without caching largest value
+      contentColumnWidths,
+      contentRowHeights,
 
       // Array of floating rows/columns, by grid index
       floatingRows,
@@ -1647,8 +1663,12 @@ export class GridMetricCalculator {
       return rowHeight;
     }
 
+    // Not sure how to accurately get the height of text. For now just return the theme height.
+    this.contentRowHeights.set(modelRow, Math.ceil(rowHeight));
+    trimMap(this.contentRowHeights);
+
     const cachedValue = this.calculatedRowHeights.get(modelRow);
-    if (cachedValue != null) {
+    if (cachedValue != null && cachedValue > rowHeight) {
       return cachedValue;
     }
 
@@ -1695,6 +1715,9 @@ export class GridMetricCalculator {
     let columnWidth = Math.ceil(Math.max(headerWidth, dataWidth));
     columnWidth = Math.max(minColumnWidth, columnWidth);
     columnWidth = Math.min(maxColumnWidth, columnWidth);
+    this.contentColumnWidths.set(modelColumn, columnWidth);
+    trimMap(this.contentColumnWidths);
+
     if (cachedValue != null && cachedValue > columnWidth) {
       columnWidth = cachedValue;
     } else {
@@ -1768,7 +1791,8 @@ export class GridMetricCalculator {
 
     let columnWidth = 0;
 
-    const rowsPerPage = height / rowHeight;
+    const gridY = this.getGridY(state);
+    const rowsPerPage = Math.floor((height - gridY) / rowHeight);
     const bottom = Math.ceil(top + rowsPerPage);
     const cellPadding = cellHorizontalPadding * 2;
     GridUtils.iterateAllItems(
@@ -1942,6 +1966,19 @@ export class GridMetricCalculator {
   }
 
   /**
+   * Sets the calculated width for the specified column
+   * @param column The column model index to set
+   * @param size The size to set it to
+   */
+  setCalculatedColumnWidth(column: ModelIndex, size: number): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
+    const calculatedColumnWidths = new Map(this.calculatedColumnWidths);
+    calculatedColumnWidths.set(column, Math.ceil(size));
+    trimMap(calculatedColumnWidths);
+    this.calculatedColumnWidths = calculatedColumnWidths;
+  }
+
+  /**
    * Resets all the calculated column widths
    * Useful if the theme minimum column width changes
    */
@@ -1972,6 +2009,19 @@ export class GridMetricCalculator {
     userRowHeights.delete(row);
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights.delete(row);
+  }
+
+  /**
+   * Sets the calculated height for the specified row
+   * @param row The column model index to set
+   * @param size The size to set it to
+   */
+  setCalculatedRowHeight(row: ModelIndex, size: number): void {
+    // Always use a new instance of the map so any consumer of the metrics knows there has been a change
+    const calculatedRowHeights = new Map(this.calculatedRowHeights);
+    calculatedRowHeights.set(row, Math.ceil(size));
+    trimMap(calculatedRowHeights);
+    this.calculatedColumnWidths = calculatedRowHeights;
   }
 
   /**
