@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([77c620f](https://github.com/deephaven/web-client-ui/commit/77c620f3afba57fdea632f774ea43f2be6790b0e)), closes [#2288](https://github.com/deephaven/web-client-ui/issues/2288)
+- No context menu item for paste in an input table ([#2341](https://github.com/deephaven/web-client-ui/issues/2341)) ([680f015](https://github.com/deephaven/web-client-ui/commit/680f0158df67c00c8330e79d916e716c7f4ead04))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 **Note:** Version bump only for package @deephaven/grid

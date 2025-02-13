@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Features
+
+- Add chart event for title change ([#2352](https://github.com/deephaven/web-client-ui/issues/2352)) ([25563dc](https://github.com/deephaven/web-client-ui/commit/25563dc86d323b78d50c96fb17eae9db02b0d041))
+- Add indicator theme variables ([#2344](https://github.com/deephaven/web-client-ui/issues/2344)) ([e1a6a22](https://github.com/deephaven/web-client-ui/commit/e1a6a221291ae8fa01a748fa093929054ee565e7))
+
+### Bug Fixes
+
+- fix format options ([#2353](https://github.com/deephaven/web-client-ui/issues/2353)) ([3869b50](https://github.com/deephaven/web-client-ui/commit/3869b505faab513577b4720832c00a1b403234b9))
+- Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349)) ([6a20d69](https://github.com/deephaven/web-client-ui/commit/6a20d6977d354d89704e05ca687df619b8eeb113))
+
+### Reverts
+
+- "fix: Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349))" ([#2356](https://github.com/deephaven/web-client-ui/issues/2356)) ([9d49873](https://github.com/deephaven/web-client-ui/commit/9d498733b1ce57aaf77009d1b3dff3a1da95125e))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 **Note:** Version bump only for package @deephaven/chart

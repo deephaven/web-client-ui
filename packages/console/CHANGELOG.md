@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Bug Fixes
+
+- DH-18542: Remove duplicate and invalid ruff quick fixes ([#2360](https://github.com/deephaven/web-client-ui/issues/2360)) ([f8c0e18](https://github.com/deephaven/web-client-ui/commit/f8c0e1829a11ffdae4438978932de5ddc95f35a6))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 ### Bug Fixes

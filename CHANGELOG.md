@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Features
+
+- Add chart event for title change ([#2352](https://github.com/deephaven/web-client-ui/issues/2352)) ([25563dc](https://github.com/deephaven/web-client-ui/commit/25563dc86d323b78d50c96fb17eae9db02b0d041))
+- Add indicator theme variables ([#2344](https://github.com/deephaven/web-client-ui/issues/2344)) ([e1a6a22](https://github.com/deephaven/web-client-ui/commit/e1a6a221291ae8fa01a748fa093929054ee565e7))
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([77c620f](https://github.com/deephaven/web-client-ui/commit/77c620f3afba57fdea632f774ea43f2be6790b0e)), closes [#2288](https://github.com/deephaven/web-client-ui/issues/2288)
+- Combobox exported type error ([#2351](https://github.com/deephaven/web-client-ui/issues/2351)) ([40dfcb7](https://github.com/deephaven/web-client-ui/commit/40dfcb7dde5f983f63f43f4d4a68956cc71625f8))
+- DH-18542: Remove duplicate and invalid ruff quick fixes ([#2360](https://github.com/deephaven/web-client-ui/issues/2360)) ([f8c0e18](https://github.com/deephaven/web-client-ui/commit/f8c0e1829a11ffdae4438978932de5ddc95f35a6))
+- Don't use HTML in panel titles, treat as text ([#2365](https://github.com/deephaven/web-client-ui/issues/2365)) ([e28a741](https://github.com/deephaven/web-client-ui/commit/e28a74159debfa089ad3cc91a4777abdb0b65bf2))
+- fix format options ([#2353](https://github.com/deephaven/web-client-ui/issues/2353)) ([3869b50](https://github.com/deephaven/web-client-ui/commit/3869b505faab513577b4720832c00a1b403234b9))
+- Long dashboard titles overflow the navbar tab ([#2348](https://github.com/deephaven/web-client-ui/issues/2348)) ([d1e345a](https://github.com/deephaven/web-client-ui/commit/d1e345a7464bd083ef5b0ea76a25d159fceec760))
+- No context menu item for paste in an input table ([#2341](https://github.com/deephaven/web-client-ui/issues/2341)) ([680f015](https://github.com/deephaven/web-client-ui/commit/680f0158df67c00c8330e79d916e716c7f4ead04))
+- Paste option shows when it shouldn't ([#2364](https://github.com/deephaven/web-client-ui/issues/2364)) ([0305522](https://github.com/deephaven/web-client-ui/commit/03055229affccc35ee4f7bcca7217945943fc216))
+- Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349)) ([6a20d69](https://github.com/deephaven/web-client-ui/commit/6a20d6977d354d89704e05ca687df619b8eeb113))
+
+### Reverts
+
+- "fix: Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349))" ([#2356](https://github.com/deephaven/web-client-ui/issues/2356)) ([9d49873](https://github.com/deephaven/web-client-ui/commit/9d498733b1ce57aaf77009d1b3dff3a1da95125e))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 ### Features
