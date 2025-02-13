@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.8](https://github.com/deephaven/web-client-ui/compare/v0.78.7...v0.78.8) (2025-02-13)
+
+### Bug Fixes
+
+- Don't use HTML in panel titles, treat as text ([#2365](https://github.com/deephaven/web-client-ui/issues/2365)) ([#2367](https://github.com/deephaven/web-client-ui/issues/2367)) ([e3355a3](https://github.com/deephaven/web-client-ui/commit/e3355a3c030c4b7c53a8445bca2eb624f161145c))
+- Partial holidays range breaks ([#2297](https://github.com/deephaven/web-client-ui/issues/2297)) ([#2333](https://github.com/deephaven/web-client-ui/issues/2333)) ([06a121c](https://github.com/deephaven/web-client-ui/commit/06a121cc161d5bcaf1a691c42bc635b44c1853fc))
+
 ## [0.78.7](https://github.com/deephaven/web-client-ui/compare/v0.78.6...v0.78.7) (2025-01-03)
 
 ### Bug Fixes

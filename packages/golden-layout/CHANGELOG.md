@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.8](https://github.com/deephaven/web-client-ui/compare/v0.78.7...v0.78.8) (2025-02-13)
+
+### Bug Fixes
+
+- Don't use HTML in panel titles, treat as text ([#2365](https://github.com/deephaven/web-client-ui/issues/2365)) ([#2367](https://github.com/deephaven/web-client-ui/issues/2367)) ([e3355a3](https://github.com/deephaven/web-client-ui/commit/e3355a3c030c4b7c53a8445bca2eb624f161145c))
+
 ## [0.78.4](https://github.com/deephaven/web-client-ui/compare/v0.78.3...v0.78.4) (2024-07-15)
 
 **Note:** Version bump only for package @deephaven/golden-layout
