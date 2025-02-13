@@ -5,9 +5,12 @@ import { Provider } from 'react-redux';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import { store } from '@deephaven/redux';
-import logInit from './log/LogInit';
+import { logInit } from '@deephaven/log';
 
-logInit();
+logInit(
+  parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10),
+  import.meta.env.VITE_ENABLE_LOG_PROXY === 'true'
+);
 
 preloadTheme();
 
