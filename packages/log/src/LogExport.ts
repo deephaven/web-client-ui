@@ -1,10 +1,5 @@
-/* eslint-disable import/prefer-default-export */
 import JSZip from 'jszip';
-import dh from '@deephaven/jsapi-shim';
-import { store } from '@deephaven/redux';
-import { logHistory } from './LogInit';
-
-const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
+import type LogHistory from './LogHistory';
 
 // List of objects to blacklist
 // '' represents the root object
@@ -41,6 +36,10 @@ function stringifyReplacer(blacklist: string[][]) {
       }
     }
 
+    if (value instanceof Map) {
+      return Array.from(value.entries());
+    }
+
     // not in blacklist, return value
     return value;
   };
@@ -66,7 +65,7 @@ function makeSafeToStringify(
   blacklist: string[][],
   path = 'root',
   potentiallyCircularValues: Map<Record<string, unknown>, string> = new Map([
-    [obj, ''],
+    [obj, 'root'],
   ])
 ): Record<string, unknown> {
   const output: Record<string, unknown> = {};
@@ -104,8 +103,10 @@ function makeSafeToStringify(
   return output;
 }
 
-function getReduxDataString(blacklist: string[][]): string {
-  const reduxData = store.getState();
+export function getReduxDataString(
+  reduxData: Record<string, unknown>,
+  blacklist: string[][] = []
+): string {
   return JSON.stringify(
     makeSafeToStringify(reduxData, blacklist),
     stringifyReplacer(blacklist),
@@ -113,39 +114,50 @@ function getReduxDataString(blacklist: string[][]): string {
   );
 }
 
-function getMetadata(
-  blacklist: string[][],
-  meta?: Record<string, unknown>
-): string {
-  const metadata = {
-    uiVersion: import.meta.env.npm_package_version,
-    userAgent: navigator.userAgent,
-    ...meta,
-  };
+function getFormattedMetadata(metadata?: Record<string, unknown>): string {
+  return JSON.stringify(metadata, null, 2);
+}
 
-  return JSON.stringify(metadata, stringifyReplacer(blacklist), 2);
+/** Format a date to a string that can be used as a file name
+ * @param date Date to format
+ * @returns A string formatted as YYYY-MM-DD-HHMMSS
+ */
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day}-${h}${m}${s}`;
 }
 
 /**
  * Export support logs with the given name.
- * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param logHistory Log history to include in the console.txt file
  * @param metadata Additional metadata to include in the metadata.json file
- * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @param reduxData Redux data to include in the redux.json file
+ * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
-  fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
-    FILENAME_DATE_FORMAT,
-    new Date()
-  )}_support_logs`,
+  logHistory: LogHistory,
   metadata?: Record<string, unknown>,
-  blacklist: string[][] = DEFAULT_PATH_BLACKLIST
+  reduxData?: Record<string, unknown>,
+  blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
+  fileNamePrefix = `${formatDate(new Date())}_support_logs`
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
-  folder.file('redux.json', getReduxDataString(blacklist));
-  folder.file('metadata.json', getMetadata(blacklist, metadata));
+  if (metadata != null) {
+    folder.file('metadata.json', getFormattedMetadata(metadata));
+  }
+  if (reduxData != null) {
+    folder.file('redux.json', getReduxDataString(reduxData, blacklist));
+  }
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
