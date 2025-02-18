@@ -3443,6 +3443,59 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.forceUpdate();
   }
 
+  handleResizeColumn(modelIndex: number): void {
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
+
+    const contentWidth = getOrThrow(metrics.contentColumnWidths, modelIndex);
+
+    const userWidths = metricCalculator.getUserColumnWidths();
+    if (userWidths.has(modelIndex)) {
+      metricCalculator.resetColumnWidth(modelIndex);
+      metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+    } else {
+      metricCalculator.setColumnWidth(modelIndex, contentWidth);
+    }
+
+    this.grid?.forceUpdate();
+  }
+
+  handleResizeAllColumns(): void {
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
+
+    const allColumns = [...metrics.allColumnWidths.entries()];
+    const visibleColumns = allColumns
+      .filter(([_, width]) => width !== 0)
+      .map(([modelIndex]) => modelIndex);
+
+    const contentWidths = metrics.contentColumnWidths;
+    const userWidths = metricCalculator.getUserColumnWidths();
+
+    const manualColumns = visibleColumns.filter(modelIndex =>
+      userWidths.has(modelIndex)
+    );
+
+    if (visibleColumns.length === manualColumns.length) {
+      // All columns are manually sized, flip all to auto resize
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const modelIndex = visibleColumns[i];
+        const contentWidth = getOrThrow(contentWidths, modelIndex);
+        metricCalculator.resetColumnWidth(modelIndex);
+        metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+      }
+    } else {
+      // Flip all to manual sized
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const modelIndex = visibleColumns[i];
+        const contentWidth = getOrThrow(contentWidths, modelIndex);
+        metricCalculator.setColumnWidth(modelIndex, contentWidth);
+      }
+    }
+
+    this.grid?.forceUpdate();
+  }
+
   /**
    * User added, removed, or changed the order of aggregations, or position
    * @param aggregationSettings The new aggregation settings

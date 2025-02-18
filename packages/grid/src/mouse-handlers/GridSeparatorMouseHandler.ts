@@ -277,16 +277,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       const modelIndexes = metrics[this.modelIndexesProperty];
       const modelIndex = getOrThrow(modelIndexes, separator.index);
 
-      const calculatedSize =
-        metrics[this.calculatedSizesProperty].get(modelIndex);
-      const defaultSize =
-        metricCalculator[this.initialSizesProperty].get(modelIndex);
-
-      if (calculatedSize === defaultSize || calculatedSize == null) {
-        this.resetSize(metricCalculator, modelIndex);
-      } else {
-        this.setSize(metricCalculator, modelIndex, calculatedSize);
-      }
+      this.resetSize(metricCalculator, modelIndex);
 
       grid.forceUpdate();
 
