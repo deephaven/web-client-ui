@@ -762,17 +762,13 @@ export class GridMetricCalculator {
     visibleWidth: number = this.getVisibleWidth(state)
   ): VisibleIndex {
     const { model } = state;
-    const { columnCount } = model;
+    const { columnCount, floatingRightColumnCount } = model;
 
-<<<<<<< HEAD
-    let lastLeft = columnCount - 1;
-=======
     if (columnCount === 0) {
       return 0;
     }
 
     let lastLeft = Math.max(0, columnCount - floatingRightColumnCount - 1);
->>>>>>> 1bbcc73dda (fix: Editing issues when key columns are not first columns (#2053))
     if (right != null) {
       lastLeft = right;
     }
@@ -971,11 +967,8 @@ export class GridMetricCalculator {
     treePaddingX: number = this.calculateTreePaddingX(state)
   ): SizeMap {
     const { model } = state;
-    const {
-      columnCount,
-      floatingLeftColumnCount,
-      floatingRightColumnCount,
-    } = model;
+    const { columnCount, floatingLeftColumnCount, floatingRightColumnCount } =
+      model;
 
     const columnWidths = new Map();
     for (let i = 0; i < floatingLeftColumnCount && i < columnCount; i += 1) {
@@ -1044,11 +1037,8 @@ export class GridMetricCalculator {
     maxX: Coordinate
   ): CoordinateMap {
     const { model } = state;
-    const {
-      columnCount,
-      floatingLeftColumnCount,
-      floatingRightColumnCount,
-    } = model;
+    const { columnCount, floatingLeftColumnCount, floatingRightColumnCount } =
+      model;
 
     return getFloatingCoordinates(
       floatingLeftColumnCount,

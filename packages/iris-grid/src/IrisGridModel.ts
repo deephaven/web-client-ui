@@ -23,19 +23,18 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 
 type RowIndex = ModelIndex;
+type ColumnName = string;
 
-type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
+type IrisGridModelEventNames =
+  (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
 };
 
-<<<<<<< HEAD
-=======
 const EMPTY_ARRAY: never[] = [];
 const EMPTY_SET: Set<never> = new Set();
 
->>>>>>> 1bbcc73dda (fix: Editing issues when key columns are not first columns (#2053))
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
  * For use from IrisGrid.
@@ -48,7 +47,7 @@ abstract class IrisGridModel<
     string,
     Event<string>
   >,
-  TMode extends 'standard' | 'strict' = 'standard'
+  TMode extends 'standard' | 'strict' = 'standard',
 > extends GridModel<TEventMap & IrisGridModelEventMap, TMode> {
   static EVENT = Object.freeze({
     UPDATED: 'UPDATED',
@@ -140,12 +139,12 @@ abstract class IrisGridModel<
 
   /** List of column movements defined by the model. Used as initial movements for IrisGrid */
   get movedColumns(): MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
   get movedRows(): MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
@@ -268,14 +267,14 @@ abstract class IrisGridModel<
    * @returns Names of columns which should be locked to the front, but not floating
    */
   get frontColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
    * @returns Names of columns which should be locked to the back, but not floating
    */
   get backColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
@@ -289,7 +288,7 @@ abstract class IrisGridModel<
    * @returns Names of columns which should be frozen to the front and floating
    */
   get frozenColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
