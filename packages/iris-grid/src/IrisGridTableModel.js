@@ -38,8 +38,9 @@ class IrisGridTableModel extends IrisGridModel {
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-    this.handleCustomColumnsChanged =
-      this.handleCustomColumnsChanged.bind(this);
+    this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
+      this
+    );
     this.setViewport = throttle(
       this.setViewport.bind(this),
       SET_VIEWPORT_THROTTLE
@@ -734,8 +735,10 @@ class IrisGridTableModel extends IrisGridModel {
     const operationMap = this.totals?.operationMap;
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
-      const [name, operation = operationMap?.[name]?.[0] ?? defaultOperation] =
-        column.name.split('__');
+      const [
+        name,
+        operation = operationMap?.[name]?.[0] ?? defaultOperation,
+      ] = column.name.split('__');
       if (!dataMap.has(operation)) {
         dataMap.set(operation, { data: new Map() });
       }
