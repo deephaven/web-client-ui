@@ -15,6 +15,7 @@ const log = Log.module('IrisGridTableModel');
 
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
+const EMPTY_ARRAY = Object.freeze([]);
 
 /**
  * Model for a grid showing an iris data table
@@ -544,8 +545,16 @@ class IrisGridTableModel extends IrisGridModel {
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
+  getMemoizedKeyColumnSet = memoize(
+    inputTableKeys => new Set(inputTableKeys ?? EMPTY_ARRAY)
+  );
+
+  get keyColumnSet() {
+    return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
+  }
+
   getMemoizedFrontColumns = memoize(
-    layoutHintsFrontColumns => layoutHintsFrontColumns ?? []
+    layoutHintsFrontColumns => layoutHintsFrontColumns ?? EMPTY_ARRAY
   );
 
   get frontColumns() {
@@ -553,7 +562,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   getMemoizedBackColumns = memoize(
-    layoutHintsBackColumns => layoutHintsBackColumns ?? []
+    layoutHintsBackColumns => layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
   get backColumns() {
@@ -562,7 +571,7 @@ class IrisGridTableModel extends IrisGridModel {
 
   getMemoizedFrozenColumns = memoize(
     (layoutHintsFrozenColumns, userFrozenColumns) =>
-      userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
   get frozenColumns() {
@@ -581,7 +590,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get groupedColumns() {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get description() {
@@ -654,7 +663,7 @@ class IrisGridTableModel extends IrisGridModel {
    */
   pendingRow(y) {
     const pendingRow = y - this.floatingTopRowCount - this.table.size;
-    if (pendingRow >= 0 && pendingRow < this.pendingNewRowCount) {
+    if (pendingRow >= 0) {
       return pendingRow;
     }
 
@@ -1252,7 +1261,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   isKeyColumn(x) {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable() {
@@ -1260,18 +1269,40 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   isEditableRange(range) {
-    return (
-      this.inputTable != null &&
-      GridRange.isBounded(range) &&
-      ((this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow)) ||
-        (range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)) &&
-      range.startRow >= this.floatingTopRowCount &&
-      range.startRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
-      range.endRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount
-    );
+    // Make sure we have an input table and a valid range
+    if (
+      this.inputTable == null ||
+      range.startRow == null ||
+      range.endRow == null
+    ) {
+      return false;
+    }
+
+    // Check that the edit is in the editable range
+    // If an input table has keyed columns, the non-key columns are always editable
+    // If an input table does not have key columns, it is append only and existing rows cannot be editable
+    // Pending rows are always editable
+    const isPendingRange =
+      this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+
+    let isKeyColumnInRange = false;
+
+    // Check if any of the columns in grid range are key columns
+    const bound = range.endColumn ?? this.table.size;
+    for (let column = range.startColumn; column <= bound; column += 1) {
+      if (this.isKeyColumn(column)) {
+        isKeyColumnInRange = true;
+        break;
+      }
+    }
+
+    if (
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   isDeletableRange(range) {

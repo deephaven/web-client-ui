@@ -23,12 +23,16 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 
 type RowIndex = ModelIndex;
+type ColumnName = string;
 
 type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
 };
+
+const EMPTY_ARRAY: never[] = [];
+const EMPTY_SET: Set<never> = new Set();
 
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
@@ -134,12 +138,12 @@ abstract class IrisGridModel<
 
   /** List of column movements defined by the model. Used as initial movements for IrisGrid */
   get movedColumns(): MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
   get movedRows(): MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
@@ -262,21 +266,28 @@ abstract class IrisGridModel<
    * @returns Names of columns which should be locked to the front, but not floating
    */
   get frontColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**
    * @returns Names of columns which should be locked to the back, but not floating
    */
   get backColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
+  }
+
+  /**
+   * @returns Names of key columns
+   */
+  get keyColumnSet(): Set<ColumnName> {
+    return EMPTY_SET;
   }
 
   /**
    * @returns Names of columns which should be frozen to the front and floating
    */
   get frozenColumns(): string[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   /**

@@ -762,9 +762,13 @@ export class GridMetricCalculator {
     visibleWidth: number = this.getVisibleWidth(state)
   ): VisibleIndex {
     const { model } = state;
-    const { columnCount } = model;
+    const { columnCount, floatingRightColumnCount } = model;
 
-    let lastLeft = columnCount - 1;
+    if (columnCount === 0) {
+      return 0;
+    }
+
+    let lastLeft = Math.max(0, columnCount - floatingRightColumnCount - 1);
     if (right != null) {
       lastLeft = right;
     }
