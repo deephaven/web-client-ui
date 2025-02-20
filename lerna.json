@@ -1,6 +1,8 @@
 {
-  "packages": ["packages/*"],
-  "version": "0.13.13",
+  "packages": [
+    "packages/*"
+  ],
+  "version": "0.13.14",
   "command": {
     "publish": {
       "distTag": "release-v0.13"

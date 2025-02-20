@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/prettier-config",
-  "version": "0.13.13",
+  "version": "0.13.14",
   "description": "Deephaven Prettier configuration",
   "repository": {
     "type": "git",

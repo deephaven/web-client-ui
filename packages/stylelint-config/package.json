@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/stylelint-config",
-  "version": "0.13.13",
+  "version": "0.13.14",
   "description": "Deephaven Stylelint configuration",
   "repository": {
     "type": "git",
