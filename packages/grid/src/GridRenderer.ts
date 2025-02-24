@@ -71,12 +71,7 @@ export class GridRenderer {
     end = str.length,
     truncationChar?: string
   ): string {
-    if (
-      end >= str.length &&
-      // The passed in width is an estimated column width and can differ slightly from the str width measured here
-      // So it is rounded down to prevent cases where text is truncated when it shouldn't be
-      Math.floor(context.measureText(str).width) <= width
-    ) {
+    if (end >= str.length && context.measureText(str).width <= width) {
       // IDS-6069 If the whole string can fit, don't bother checking for truncation
       // The ellipses are actually slightly wider than other chars, and it's possible
       // that the "truncation" ends up being slightly longer, which messes up the search
