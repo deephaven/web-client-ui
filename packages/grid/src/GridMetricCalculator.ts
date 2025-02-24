@@ -1856,6 +1856,7 @@ export class GridMetricCalculator {
       if (charWidths.has(char)) {
         width += getOrThrow(charWidths, char);
       } else {
+        context.font = font;
         const textMetrics = context.measureText(char);
         const { width: charWidth } = textMetrics;
         charWidths.set(char, charWidth);
