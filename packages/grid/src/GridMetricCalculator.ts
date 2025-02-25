@@ -1876,9 +1876,9 @@ export class GridMetricCalculator {
         const pair = char + nextChar;
         const isFirstPair = i === 0;
 
-        let add = 0;
+        let nextCharWidth = 0;
         if (charWidths.has(pair)) {
-          add = isFirstPair
+          nextCharWidth = isFirstPair
             ? getOrThrow(charWidths, pair)
             : getOrThrow(charWidths, pair) - getOrThrow(charWidths, char);
         } else {
@@ -1886,9 +1886,11 @@ export class GridMetricCalculator {
           const textMetrics = context.measureText(pair);
           const { width } = textMetrics;
           charWidths.set(pair, width);
-          add = isFirstPair ? width : width - getOrThrow(charWidths, char);
+          nextCharWidth = isFirstPair
+            ? width
+            : width - getOrThrow(charWidths, char);
         }
-        result += add;
+        result += nextCharWidth;
         if (maxWidth !== undefined && result > maxWidth) {
           return maxWidth;
         }
