@@ -17,6 +17,7 @@ import {
   type PartitionConfig,
   type PartitionedGridModel,
   isPartitionedGridModelProvider,
+  isPartitionedGridModel,
 } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridProxyModel');
@@ -300,6 +301,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       !isPartitionedGridModelProvider(this.originalModel) ||
       !this.originalModel.isPartitionRequired
     ) {
+      if (!isPartitionedGridModel(this.originalModel)) {
+        // @ts-expect-error If the original model has an undefined partitionConfig return undefined to make the proxy model also return false in isPartitionedGridModel
+        return undefined;
+      }
       return null;
     }
     return this.partition;
@@ -431,9 +436,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get isPartitionRequired(): boolean {
+    // @ts-expect-error If the original model is not a partitioned model return undefined to make the proxy model also return false in isPartitionedGridModelProvider
     return isPartitionedGridModelProvider(this.originalModel)
       ? this.originalModel.isPartitionRequired
-      : false;
+      : undefined;
   }
 
   get formatter(): Formatter {
