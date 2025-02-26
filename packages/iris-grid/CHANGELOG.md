@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+### Features
+
+- Resize columns option in web UI ([#2358](https://github.com/deephaven/web-client-ui/issues/2358)) ([35fc599](https://github.com/deephaven/web-client-ui/commit/35fc599c1442574599dc0ecb4a3c22e0885d5a9b)), closes [#1486](https://github.com/deephaven/web-client-ui/issues/1486)
+
+### Bug Fixes
+
+- Proxy model appears partition even if original model is not ([#2373](https://github.com/deephaven/web-client-ui/issues/2373)) ([8cc36a5](https://github.com/deephaven/web-client-ui/commit/8cc36a533b52aa5bae9bd3b60616a7fc73f4e688))
+
 ## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
 
 ### Bug Fixes
