@@ -21,7 +21,7 @@ import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import { type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
 import './MarkdownPanel.scss';
