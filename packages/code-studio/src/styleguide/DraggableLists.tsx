@@ -162,8 +162,9 @@ class DraggableLists extends Component<
     });
   }
 
-  getSelectionChangeHandler = memoize((listIndex: number) =>
-    this.handleSelectionChange.bind(this, listIndex)
+  getSelectionChangeHandler = memoize(
+    (listIndex: number) => this.handleSelectionChange.bind(this, listIndex),
+    { max: 1000 }
   );
 
   getDraggableList = memoize(
@@ -187,7 +188,8 @@ class DraggableLists extends Component<
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...DRAG_LIST_PROPS[listIndex]}
       />
-    )
+    ),
+    { max: 1000 }
   );
 
   render(): React.ReactElement {

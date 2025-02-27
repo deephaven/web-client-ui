@@ -405,14 +405,16 @@ class FigureChartModel extends ChartModel {
         }
       }
       return undefined;
-    }
+    },
+    { max: 100 }
   );
 
   getValueTranslator = memoize(
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) => this.chartUtils.unwrapValue(value, timeZone);
-    }
+    },
+    { max: 100 }
   );
 
   /** Gets the parser for a value with the provided column type */
@@ -421,7 +423,8 @@ class FigureChartModel extends ChartModel {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) =>
         this.chartUtils.wrapValue(value, columnType, timeZone);
-    }
+    },
+    { max: 100 }
   );
 
   /**
@@ -434,7 +437,8 @@ class FigureChartModel extends ChartModel {
       rangeStart = valueParser(rangeStart);
       rangeEnd = valueParser(rangeEnd);
       return [rangeStart, rangeEnd];
-    }
+    },
+    { max: 100 }
   );
 
   /**
@@ -449,7 +453,8 @@ class FigureChartModel extends ChartModel {
         }
 
         return (range: [unknown, unknown]) => range;
-      }
+      },
+    { max: 100 }
   );
 
   handleDownsampleStart(event: ChartEvent): void {

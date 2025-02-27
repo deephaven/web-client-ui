@@ -147,7 +147,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
     return lastFormatRuleIndex;
   }
 
-  getCachedColumnTypeOptions = memoize(() => <ColumnTypeOptions />);
+  getCachedColumnTypeOptions = memoize(() => <ColumnTypeOptions />, {
+    max: 100,
+  });
 
   getCachedDateTimeFormatOptions = memoize(
     (
@@ -168,7 +170,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
           legacyGlobalFormat={legacyGlobalFormat}
         />
       );
-    }
+    },
+    { max: 100 }
   );
 
   handleFormatRuleChange(
