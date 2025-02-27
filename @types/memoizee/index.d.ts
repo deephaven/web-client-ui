@@ -22,7 +22,7 @@ declare namespace memoizee {
 // eslint-disable-next-line @typescript-eslint/ban-types
 declare function memoizee<F extends Function>(
   f: F,
-  options?: memoizee.Options<F>
+  options: memoizee.Options<F> & { max: number }
 ): F & memoizee.Memoized<F>;
 
 export = memoizee;
