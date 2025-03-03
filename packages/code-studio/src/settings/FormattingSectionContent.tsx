@@ -183,7 +183,8 @@ export class FormattingSectionContent extends PureComponent<
           legacyGlobalFormat={legacyGlobalFormat}
         />
       );
-    }
+    },
+    { max: 100 }
   );
 
   queueUpdate(updates: Partial<WorkspaceSettings>): void {

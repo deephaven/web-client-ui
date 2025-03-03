@@ -1004,7 +1004,8 @@ class VisibilityOrderingBuilder extends PureComponent<
           handleProps={handleProps}
         />
       );
-    }
+    },
+    { max: 1000 }
   );
 
   getMemoizedFirstMovableIndex = memoize(
@@ -1022,7 +1023,8 @@ class VisibilityOrderingBuilder extends PureComponent<
       }
 
       return null;
-    }
+    },
+    { max: 10 }
   );
 
   /**
@@ -1052,7 +1054,8 @@ class VisibilityOrderingBuilder extends PureComponent<
       }
 
       return null;
-    }
+    },
+    { max: 10 }
   );
 
   /**
@@ -1073,7 +1076,8 @@ class VisibilityOrderingBuilder extends PureComponent<
     ): readonly IrisGridTreeItem[] =>
       getTreeItems(columns, movedColumns, columnHeaderGroups, hiddenColumns, [
         ...selectedColumns.values(),
-      ])
+      ]),
+    { max: 1000 }
   );
 
   /**
@@ -1204,7 +1208,8 @@ class VisibilityOrderingBuilder extends PureComponent<
       }
 
       return elements;
-    }
+    },
+    { max: 10 }
   );
 
   renderImmovableItem = memoize(
@@ -1214,7 +1219,8 @@ class VisibilityOrderingBuilder extends PureComponent<
           <span className="column-name">{columnName}</span>
         </div>
       </div>
-    )
+    ),
+    { max: 1000 }
   );
 
   render(): ReactElement {

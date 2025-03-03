@@ -310,7 +310,8 @@ export class DropdownFilterPanel extends Component<
           ? formatter.getFormattedString(value, type, name)
           : null
       );
-    }
+    },
+    { max: 1000 }
   );
 
   getCoordinateForColumn(): [number, number] | null {
@@ -348,21 +349,25 @@ export class DropdownFilterPanel extends Component<
       const panelId = LayoutUtils.getIdFromPanel(panel);
       log.debug('getCachedPanelLinks', dashboardLinks, panelId);
       return dashboardLinks.filter(link => link.end?.panelId === panelId);
-    }
+    },
+    { max: 1000 }
   );
 
-  getCachedSource = memoize((links: Link[]) => {
-    log.debug('getCachedSource', links);
-    let source: LinkPoint | undefined;
-    if (links.length > 0) {
-      const [link] = links;
-      source = link.start;
-      if (links.length > 1) {
-        log.error('Filter has more that one link', links);
+  getCachedSource = memoize(
+    (links: Link[]) => {
+      log.debug('getCachedSource', links);
+      let source: LinkPoint | undefined;
+      if (links.length > 0) {
+        const [link] = links;
+        source = link.start;
+        if (links.length > 1) {
+          log.error('Filter has more that one link', links);
+        }
       }
-    }
-    return source;
-  });
+      return source;
+    },
+    { max: 1000 }
+  );
 
   getCachedSourceTable = memoize(
     (
@@ -375,7 +380,8 @@ export class DropdownFilterPanel extends Component<
       }
       const { panelId } = source;
       return panelTableMap.get(panelId) ?? null;
-    }
+    },
+    { max: 1000 }
   );
 
   getCachedSourceColumn = memoize(
@@ -390,7 +396,8 @@ export class DropdownFilterPanel extends Component<
             name === source.columnName && type === source.columnType
         ) ?? null
       );
-    }
+    },
+    { max: 1000 }
   );
 
   getSource(links: Link[]): LinkPoint | undefined {

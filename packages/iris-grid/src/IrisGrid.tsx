@@ -1251,7 +1251,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
       });
       return aggregationMap;
-    }
+    },
+    { max: 1 }
   );
 
   getOperationMap = memoize(
@@ -1276,7 +1277,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           });
         });
       return operationMap;
-    }
+    },
+    { max: 1 }
   );
 
   getOperationOrder = memoize(
@@ -1285,7 +1287,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         .map((a: Aggregation) => a.operation)
         .filter(
           (o: AggregationOperation) => !AggregationUtils.isRollupOperation(o)
-        )
+        ),
+    { max: 1 }
   );
 
   getCachedFormatColumns = memoize(
@@ -1293,7 +1296,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       dh: typeof DhType,
       columns: readonly DhType.Column[],
       rules: readonly SidebarFormattingRule[]
-    ) => getFormatColumns(dh, columns, rules)
+    ) => getFormatColumns(dh, columns, rules),
+    { max: 1000 }
   );
 
   /**
@@ -1325,7 +1329,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
 
       return this.getCachedFormatColumns(dh, columns, rulesParam);
-    }
+    },
+    { max: 1 }
   );
 
   getModelRollupConfig = memoize(
@@ -1338,7 +1343,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         originalColumns,
         config,
         aggregationSettings
-      )
+      ),
+    { max: 1 }
   );
 
   getModelTotalsConfig = memoize(
@@ -1370,7 +1376,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         showOnTop: aggregationSettings.showOnTop,
         defaultOperation: AggregationOperation.SKIP,
       } as UITotalsTableConfig;
-    }
+    },
+    { max: 1 }
   );
 
   getCachedStateOverride = memoize(
@@ -1457,8 +1464,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 1 }
   );
 
-  getCachedKeyHandlers = memoize((keyHandlers: readonly KeyHandler[]) =>
-    [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order)
+  getCachedKeyHandlers = memoize(
+    (keyHandlers: readonly KeyHandler[]) =>
+      [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order),
+    { max: 1 }
   );
 
   getKeyHandlers(): readonly KeyHandler[] {
@@ -1469,7 +1478,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedMouseHandlers = memoize(
     (
       mouseHandlers: readonly GridMouseHandler[]
-    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers]
+    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers],
+    { max: 1 }
   );
 
   getCachedRenderer = memoize(
@@ -1975,7 +1985,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
 
       return Object.freeze([...columnSet]);
-    }
+    },
+    { max: 1 }
   );
 
   updateFormatter(
@@ -4002,7 +4013,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </Tooltip>
         </div>
       );
-    }
+    },
+    { max: 1 }
   );
 
   getExpandCellTooltip = memoize(
@@ -4046,34 +4058,38 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </Tooltip>
         </div>
       );
-    }
+    },
+    { max: 1 }
   );
 
-  getHoverTooltip = memoize((hoverTooltipProps: CSSProperties): ReactNode => {
-    if (hoverTooltipProps == null) {
-      return null;
-    }
+  getHoverTooltip = memoize(
+    (hoverTooltipProps: CSSProperties): ReactNode => {
+      if (hoverTooltipProps == null) {
+        return null;
+      }
 
-    const { hoverDisplayValue } = this.state;
+      const { hoverDisplayValue } = this.state;
 
-    const wrapperStyle: CSSProperties = {
-      position: 'absolute',
-      ...hoverTooltipProps,
-      pointerEvents: 'none',
-    };
+      const wrapperStyle: CSSProperties = {
+        position: 'absolute',
+        ...hoverTooltipProps,
+        pointerEvents: 'none',
+      };
 
-    const popperOptions: PopperOptions = {
-      placement: 'bottom',
-    };
+      const popperOptions: PopperOptions = {
+        placement: 'bottom',
+      };
 
-    return (
-      <div style={wrapperStyle}>
-        <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
-          <div className="link-hover-tooltip">{hoverDisplayValue}</div>
-        </Tooltip>
-      </div>
-    );
-  });
+      return (
+        <div style={wrapperStyle}>
+          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
+            <div className="link-hover-tooltip">{hoverDisplayValue}</div>
+          </Tooltip>
+        </div>
+      );
+    },
+    { max: 1 }
+  );
 
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;

@@ -169,7 +169,8 @@ class AutoCompleteInput extends Component<
       options.filter(
         // supports partial match
         option => option.title.toLowerCase().indexOf(input.toLowerCase()) >= 0
-      )
+      ),
+    { max: 1000 }
   );
 
   // validation needs to be an exact case-sensitve match on value

@@ -412,7 +412,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
         column =>
           RollupRows.isGroupable(column) &&
           groupedColumns.find(name => name === column.name) == null
-      )
+      ),
+    { max: 100 }
   );
 
   getCachedSortedColumns = memoize(
@@ -422,7 +423,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     ): readonly dh.Column[] =>
       sort == null
         ? [...columns]
-        : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
+        : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING),
+    { max: 100 }
   );
 
   getUngroupedColumns(): readonly dh.Column[] {
