@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.106.1](https://github.com/deephaven/web-client-ui/compare/v0.106.0...v0.106.1) (2025-03-03)
+
+### Bug Fixes
+
+- DH-18798 - token cache growing unbounded ([#2374](https://github.com/deephaven/web-client-ui/issues/2374)) ([3f74d44](https://github.com/deephaven/web-client-ui/commit/3f74d4403f332fa65877bc33e418faea3fc974c6))
+
 ## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
 
 ### Features
