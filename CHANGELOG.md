@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.10](https://github.com/deephaven/web-client-ui/compare/v0.78.9...v0.78.10) (2025-03-03)
+
+### Bug Fixes
+
+- Don't use innerHTML to populate drag item (DH-18645) ([#2378](https://github.com/deephaven/web-client-ui/issues/2378)) ([#2380](https://github.com/deephaven/web-client-ui/issues/2380)) ([6402c9b](https://github.com/deephaven/web-client-ui/commit/6402c9b15e25e7a1b1b3d847f221d43bdcb4b161))
+
 ## [0.78.9](https://github.com/deephaven/web-client-ui/compare/v0.78.8...v0.78.9) (2025-02-27)
 
 ### Bug Fixes
