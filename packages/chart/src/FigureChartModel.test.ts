@@ -140,6 +140,21 @@ it('handles colors on bar charts properly', () => {
   ]);
 });
 
+it('updates the title correctly', () => {
+  const figure = chartTestUtils.makeFigure();
+  const model = new FigureChartModel(dh, figure);
+  const mockSubscribe = jest.fn();
+  model.subscribe(mockSubscribe);
+
+  model.setTitle('New Title');
+  expect(mockSubscribe).toHaveBeenCalledTimes(1);
+  expect(mockSubscribe).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: FigureChartModel.EVENT_LAYOUT_UPDATED,
+    })
+  );
+});
+
 describe('axis transform tests', () => {
   it('handles log x-axis properly', () => {
     const xAxis = chartTestUtils.makeAxis({
