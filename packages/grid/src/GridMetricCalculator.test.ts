@@ -132,14 +132,11 @@ describe('calculateTextWidth', () => {
     expect(textWidth).toEqual(50);
   });
 
+  // This test checks that the calculation logic is equivalent to the native canvas one.
+  // It doesn’t verify that it addresses font kerning properly, since it doesn’t actually render the text and context.measureText() just returns the text length
   it.each([
     [''],
     ['a'],
-    ['AV'],
-    ['AVAVAV'],
-    ['f?'],
-    ['f?f?AVAV'],
-    ['AVEAVEAVEAVEAVEAVEAVEAVE'],
     ['a                                                                 b'],
     [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
