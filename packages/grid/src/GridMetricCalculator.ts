@@ -1851,6 +1851,7 @@ export class GridMetricCalculator {
     maxWidth?: number
   ): number {
     if (text.length === 0) return 0;
+    context.font = font;
 
     if (!this.allCharWidths.has(font)) {
       this.allCharWidths.set(font, new Map());
@@ -1863,13 +1864,11 @@ export class GridMetricCalculator {
       const nextChar = i < text.length - 1 ? text[i + 1] : undefined;
 
       if (!charWidths.has(char)) {
-        context.font = font;
         charWidths.set(char, context.measureText(char).width);
       }
 
       if (nextChar !== undefined) {
         if (!charWidths.has(nextChar)) {
-          context.font = font;
           charWidths.set(nextChar, context.measureText(nextChar).width);
         }
 
@@ -1882,7 +1881,6 @@ export class GridMetricCalculator {
             ? getOrThrow(charWidths, pair)
             : getOrThrow(charWidths, pair) - getOrThrow(charWidths, char);
         } else {
-          context.font = font;
           const textMetrics = context.measureText(pair);
           const { width } = textMetrics;
           charWidths.set(pair, width);
