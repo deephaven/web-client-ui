@@ -139,6 +139,17 @@ describe('calculateTextWidth', () => {
     ['AVAVAV'],
     ['f?'],
     ['f?f?AVAV'],
+    ['AVEAVEAVEAVEAVEAVEAVEAVE'],
+    ['a                                                                 b'],
+    [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    ],
+    [
+      'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+    ],
+    [
+      'mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm',
+    ],
     [
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ],
@@ -153,7 +164,7 @@ describe('calculateTextWidth', () => {
         throw new Error('Could not get canvas context');
       }
 
-      context.font = '20px Arial';
+      context.font = font;
       const a = gridMetricCalculator.calculateTextWidth(context, font, text);
       const b = context.measureText(text).width;
 
