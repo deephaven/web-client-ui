@@ -1861,7 +1861,7 @@ export class GridMetricCalculator {
     let result = 0;
     for (let i = 0; i < text.length; i += 1) {
       const char = text[i];
-      const nextChar = i < text.length - 1 ? text[i + 1] : undefined;
+      const nextChar = text[i + 1];
 
       if (!charWidths.has(char)) {
         charWidths.set(char, context.measureText(char).width);
@@ -1873,28 +1873,22 @@ export class GridMetricCalculator {
         }
 
         const pair = char + nextChar;
-        const isFirstPair = i === 0;
-
-        let nextCharWidth = 0;
-        if (charWidths.has(pair)) {
-          nextCharWidth = isFirstPair
-            ? getOrThrow(charWidths, pair)
-            : getOrThrow(charWidths, pair) - getOrThrow(charWidths, char);
-        } else {
-          const textMetrics = context.measureText(pair);
-          const { width } = textMetrics;
-          charWidths.set(pair, width);
-          nextCharWidth = isFirstPair
-            ? width
-            : width - getOrThrow(charWidths, char);
+        if (!charWidths.has(pair)) {
+          charWidths.set(pair, context.measureText(pair).width);
         }
-        result += nextCharWidth;
+
+        result += getOrThrow(charWidths, pair);
+        if (i > 0) {
+          // Need to remove the current character that was already counted in the previous pair
+          result -= getOrThrow(charWidths, char);
+        }
+
         if (maxWidth !== undefined && result > maxWidth) {
           return maxWidth;
         }
       } else if (result === 0) {
         // On last char and no pair found before that => Only one char in string
-        result += getOrThrow(charWidths, char);
+        result = getOrThrow(charWidths, char);
       }
     }
 
