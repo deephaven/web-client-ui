@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+### Bug Fixes
+
+- avoid exceeding call stack when exporting logs with large number of queries ([#2382](https://github.com/deephaven/web-client-ui/issues/2382)) ([3c2c8cf](https://github.com/deephaven/web-client-ui/commit/3c2c8cfbda9e2ca22c2977daa57fb33fbcd3d619))
+- Don't use innerHTML to populate drag item (DH-18645) ([#2378](https://github.com/deephaven/web-client-ui/issues/2378)) ([d44370b](https://github.com/deephaven/web-client-ui/commit/d44370b18b16f153403eaf95094e29755d673d4e))
+
 ## [0.106.1](https://github.com/deephaven/web-client-ui/compare/v0.106.0...v0.106.1) (2025-03-03)
 
 ### Bug Fixes
