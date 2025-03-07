@@ -26,14 +26,8 @@ function stringifyReplacer(blacklist: string[][]) {
     currPath.shift();
 
     // check blacklists
-    for (let i = 0; i < blacklist.length; i += 1) {
-      if (
-        currPath.length === blacklist[i].length &&
-        currPath.every((v, index) => v === blacklist[i][index])
-      ) {
-        // blacklist match
-        return undefined;
-      }
+    if (isOnBlackList(currPath, blacklist)) {
+      return undefined;
     }
 
     if (value instanceof Map) {
@@ -43,6 +37,19 @@ function stringifyReplacer(blacklist: string[][]) {
     // not in blacklist, return value
     return value;
   };
+}
+
+function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
+  for (let i = 0; i < blacklist.length; i += 1) {
+    if (
+      currPath.length === blacklist[i].length &&
+      currPath.every((v, index) => v === blacklist[i][index])
+    ) {
+      // blacklist match
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -90,12 +97,17 @@ function makeSafeToStringify(
         // The ref could point to this object or just to another child
         const curPath = `${path}.${key}`;
         potentiallyCircularValues.set(valRecord, curPath);
-        output[key] = makeSafeToStringify(
-          val as Record<string, unknown>,
-          blacklist,
-          curPath,
-          potentiallyCircularValues
-        );
+        // Convert the path to an array and remove the root
+        const curPathArray = curPath.split('.').slice(1);
+        // If the path is on the blacklist, it will eventually be replaced by undefined, so avoid the recursive call
+        if (!isOnBlackList(curPathArray, blacklist)) {
+          output[key] = makeSafeToStringify(
+            val as Record<string, unknown>,
+            blacklist,
+            curPath,
+            potentiallyCircularValues
+          );
+        }
       }
     }
   });
