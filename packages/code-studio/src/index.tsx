@@ -51,6 +51,7 @@ async function getCorePlugins() {
     FilterPluginConfig,
     MarkdownPluginConfig,
     LinkerPluginConfig,
+    SimplePivotPluginConfig,
     WidgetLoaderPluginConfig,
   } = dashboardCorePlugins;
   return [
@@ -61,6 +62,7 @@ async function getCorePlugins() {
     FilterPluginConfig,
     MarkdownPluginConfig,
     LinkerPluginConfig,
+    SimplePivotPluginConfig,
     WidgetLoaderPluginConfig,
   ];
 }
