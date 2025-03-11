@@ -1752,7 +1752,7 @@ export class GridMetricCalculator {
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
       return (
-        this.getTextWidth(
+        this.calculateTextWidth(
           context,
           headerFont,
           headerText,
@@ -1809,7 +1809,7 @@ export class GridMetricCalculator {
         let cellWidth = 0;
         if (text) {
           cellWidth =
-            this.getTextWidth(
+            this.calculateTextWidth(
               context,
               font,
               text,
@@ -1837,36 +1837,62 @@ export class GridMetricCalculator {
     return columnWidth;
   }
 
-  getTextWidth(
+  /**
+   * Calculates the width of a string using widths of individual and pairs of characters to take into account font kerning
+   * @param context The canvas rendering context
+   * @param font The font to get the width for
+   * @param text The text to calculate the width for
+   * @param maxWidth The maximum width to calculate to
+   */
+  calculateTextWidth(
     context: CanvasRenderingContext2D,
     font: string,
     text: string,
     maxWidth?: number
   ): number {
+    if (text.length === 0) return 0;
+    context.font = font;
+
     if (!this.allCharWidths.has(font)) {
       this.allCharWidths.set(font, new Map());
     }
-
     const charWidths = getOrThrow(this.allCharWidths, font);
 
-    let width = 0;
+    let result = 0;
     for (let i = 0; i < text.length; i += 1) {
       const char = text[i];
+      const nextChar = text[i + 1];
 
-      if (charWidths.has(char)) {
-        width += getOrThrow(charWidths, char);
-      } else {
-        const textMetrics = context.measureText(char);
-        const { width: charWidth } = textMetrics;
-        charWidths.set(char, charWidth);
-        width += charWidth;
+      if (!charWidths.has(char)) {
+        charWidths.set(char, context.measureText(char).width);
       }
 
-      if (maxWidth !== undefined && width > maxWidth) {
-        return maxWidth;
+      if (nextChar !== undefined) {
+        if (!charWidths.has(nextChar)) {
+          charWidths.set(nextChar, context.measureText(nextChar).width);
+        }
+
+        const pair = char + nextChar;
+        if (!charWidths.has(pair)) {
+          charWidths.set(pair, context.measureText(pair).width);
+        }
+
+        result += getOrThrow(charWidths, pair);
+        if (i > 0) {
+          // Need to remove the current character that was already counted in the previous pair
+          result -= getOrThrow(charWidths, char);
+        }
+
+        if (maxWidth !== undefined && result > maxWidth) {
+          return maxWidth;
+        }
+      } else if (result === 0) {
+        // On last char and no pair found before that => Only one char in string
+        result = getOrThrow(charWidths, char);
       }
     }
-    return width;
+
+    return result;
   }
 
   /**
@@ -1896,7 +1922,7 @@ export class GridMetricCalculator {
   /**
    * Calculates the lower bound width of a character of the provided font.
    * @param font The font to get the width for
-   * @param state The grid metric state
+   * @param context The canvas rendering context
    */
   calculateLowerFontWidth(
     font: GridFont,
@@ -1920,7 +1946,7 @@ export class GridMetricCalculator {
   /**
    * Calculates the upper bound width of a character of the provided font.
    * @param font The font to get the width for
-   * @param state The grid metric state
+   * @param context The canvas rendering context
    */
   calculateUpperFontWidth(
     font: GridFont,
