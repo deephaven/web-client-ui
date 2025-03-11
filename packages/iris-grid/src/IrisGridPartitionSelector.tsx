@@ -284,11 +284,13 @@ class IrisGridPartitionSelector extends Component<
 
   getCachedChangeCallback = memoizee(
     (index: number) => (value: unknown) =>
-      this.handlePartitionSelect(index, value)
+      this.handlePartitionSelect(index, value),
+    { max: 100 }
   );
 
   getCachedFormatValueCallback = memoizee(
-    (index: number) => (value: unknown) => this.getDisplayValue(index, value)
+    (index: number) => (value: unknown) => this.getDisplayValue(index, value),
+    { max: 100 }
   );
 
   render(): JSX.Element {

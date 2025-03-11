@@ -282,34 +282,40 @@ export class ItemList<T> extends PureComponent<
     { max: ItemList.CACHE_SIZE }
   );
 
-  getOuterElement = memoize((onKeyDown: React.KeyboardEventHandler) => {
-    const component = React.forwardRef<HTMLDivElement>((props, ref) => (
-      // We need to add the tabIndex to make sure it is focusable, otherwise we can't get key events
-      <div
-        ref={ref}
-        tabIndex={-1}
-        onKeyDown={onKeyDown}
-        role="presentation"
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...props}
-      />
-    ));
-    component.displayName = 'ItemListOuterElement';
-    return component;
-  });
+  getOuterElement = memoize(
+    (onKeyDown: React.KeyboardEventHandler) => {
+      const component = React.forwardRef<HTMLDivElement>((props, ref) => (
+        // We need to add the tabIndex to make sure it is focusable, otherwise we can't get key events
+        <div
+          ref={ref}
+          tabIndex={-1}
+          onKeyDown={onKeyDown}
+          role="presentation"
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+        />
+      ));
+      component.displayName = 'ItemListOuterElement';
+      return component;
+    },
+    { max: 1000 }
+  );
 
-  getInnerElement = memoize(() => {
-    const component = React.forwardRef<HTMLDivElement>((props, ref) => (
-      <div
-        className="item-list-inner-element"
-        ref={ref}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...props}
-      />
-    ));
-    component.displayName = 'ItemListInnerElement';
-    return component;
-  });
+  getInnerElement = memoize(
+    () => {
+      const component = React.forwardRef<HTMLDivElement>((props, ref) => (
+        <div
+          className="item-list-inner-element"
+          ref={ref}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+        />
+      ));
+      component.displayName = 'ItemListInnerElement';
+      return component;
+    },
+    { max: 1000 }
+  );
 
   getItemData = memoize(
     (
@@ -320,7 +326,8 @@ export class ItemList<T> extends PureComponent<
       items,
       selectedRanges,
       renderItem,
-    })
+    }),
+    { max: 1000 }
   );
 
   focus(): void {

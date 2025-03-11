@@ -161,7 +161,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       }
 
       return { key, offsetRow };
-    }
+    },
+    { max: 10000 }
   );
 
   getCachedTextForRowHeader = memoizeClear(
@@ -176,7 +177,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       }
 
       return `${offsetRow}`;
-    }
+    },
+    { max: 10000 }
   );
 
   getCachedTextForCell = memoizeClear(
@@ -195,7 +197,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       }
 
       return `${column},${offsetRow}`;
-    }
+    },
+    { max: 10000 }
   );
 
   getCachedIsRowExpandable = memoizeClear(
@@ -203,7 +206,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       const depth = this.getCachedDepthForRow(children, row);
 
       return depth < maxDepth;
-    }
+    },
+    { max: 10000 }
   );
 
   getCachedIsRowExpanded = memoizeClear(
@@ -218,7 +222,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       }
 
       return children.has(offsetRow);
-    }
+    },
+    { max: 10000 }
   );
 
   getCachedDepthForRow = memoizeClear(
@@ -233,7 +238,8 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
       }
 
       return 0;
-    }
+    },
+    { max: 10000 }
   );
 }
 
