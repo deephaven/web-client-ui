@@ -12,19 +12,7 @@
 * {
   -webkit-font-smoothing: none !important;
   font-variant-ligatures: none !important;
+  font-feature-settings: 'liga' 0 !important;
   font-kerning: none !important;
   text-rendering: optimizespeed !important;
-
-  body {
-    font-feature-settings: 'liga' 0 !important;
-
-    table,
-    .table,
-    .grid-wrapper {
-      /* tnum for grids and tables only */
-      font-feature-settings:
-        'liga' 0,
-        'tnum' !important;
-    }
-  }
 }
