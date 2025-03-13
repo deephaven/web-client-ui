@@ -86,6 +86,7 @@ export const getOperationColumnNames = (
     .filter(name => (selected.includes(name) ? !invert : invert));
 
 export default {
+  isValidOperation,
   isRollupOperation,
   filterValidColumns,
   getOperationColumnNames,
