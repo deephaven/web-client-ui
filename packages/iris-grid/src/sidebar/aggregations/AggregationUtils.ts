@@ -9,6 +9,7 @@ export const SELECTABLE_OPTIONS = [
   AggregationOperation.MAX,
   AggregationOperation.VAR,
   AggregationOperation.AVG,
+  AggregationOperation.MEDIAN,
   AggregationOperation.STD,
   AggregationOperation.FIRST,
   AggregationOperation.LAST,
@@ -48,6 +49,7 @@ export const isValidOperation = (
     case AggregationOperation.DISTINCT:
     case AggregationOperation.UNIQUE:
       return true;
+    case AggregationOperation.MEDIAN:
     case AggregationOperation.MIN:
     case AggregationOperation.MAX:
       return (
