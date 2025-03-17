@@ -20,6 +20,7 @@ export function SimplePivotWidgetPlugin({
   const loadKeys = useCallback(
     (keyTable: DhType.Table): Promise<(readonly [string, string])[]> =>
       new Promise((resolve, reject) => {
+        // TODO: use a util method to get the map
         const pivotIdColumn = keyTable.findColumn('__PIVOT_COLUMN');
         const columns = keyTable.columns.filter(
           c => c.name !== '__PIVOT_COLUMN'
@@ -44,9 +45,9 @@ export function SimplePivotWidgetPlugin({
             ]);
           }
           log.debug('Column map', columnMap);
+          subscription.close();
           // TODO: set column map in the model
           resolve(columnMap);
-          subscription.close();
         });
       }),
     [dh]
