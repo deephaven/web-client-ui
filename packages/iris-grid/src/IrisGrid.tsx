@@ -3513,12 +3513,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   handleAggregationsChange(aggregationSettings: AggregationSettings): void {
     log.debug('handleAggregationsChange', aggregationSettings);
-
-    this.startLoading(
-      `Aggregating ${aggregationSettings.aggregations
-        .map(a => a.operation)
-        .join(', ')}...`
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and all aggregations are prohibited for rollups
+    const shouldStartLoading = !(
+      isRollup &&
+      aggregationSettings.aggregations.every(aggregation =>
+        AggregationUtils.isRollupProhibited(aggregation.operation)
+      )
     );
+
+    if (shouldStartLoading) {
+      this.startLoading(
+        `Aggregating ${aggregationSettings.aggregations
+          .map(a => a.operation)
+          .join(', ')}...`
+      );
+    }
     this.setState({ aggregationSettings });
   }
 
@@ -3528,8 +3539,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   handleAggregationChange(aggregation: Aggregation): void {
     log.debug('handleAggregationChange', aggregation);
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and the aggregation is prohibited for rollups
+    const shouldStartLoading = !(
+      isRollup && AggregationUtils.isRollupProhibited(aggregation.operation)
+    );
 
-    this.startLoading(`Aggregating ${aggregation.operation}...`);
+    if (shouldStartLoading) {
+      this.startLoading(`Aggregating ${aggregation.operation}...`);
+    }
 
     this.setState(({ aggregationSettings }) => ({
       selectedAggregation: aggregation,
