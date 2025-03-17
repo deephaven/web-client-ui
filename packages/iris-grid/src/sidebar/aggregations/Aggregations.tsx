@@ -191,6 +191,9 @@ function Aggregations({
       const isRollupOperation = AggregationUtils.isRollupOperation(
         item.operation
       );
+      const isRollupProhibited = AggregationUtils.isRollupProhibited(
+        item.operation
+      );
       const isEditable = !isClone && !isRollupOperation;
       return (
         <>
@@ -206,6 +209,12 @@ function Aggregations({
               {!isRollup && isRollupOperation && (
                 <span className="small text-warning">
                   <FontAwesomeIcon icon={dhWarningFilled} /> Requires rollup
+                </span>
+              )}
+              {isRollup && isRollupProhibited && (
+                <span className="small text-warning">
+                  <FontAwesomeIcon icon={dhWarningFilled} /> Not available on
+                  rollups
                 </span>
               )}
             </span>
