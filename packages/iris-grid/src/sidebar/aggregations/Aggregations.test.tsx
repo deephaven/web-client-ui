@@ -37,6 +37,7 @@ it('shows all operations in select when no aggregations selected yet', () => {
   expect(screen.getByText('Min')).toBeInTheDocument();
   expect(screen.getByText('Max')).toBeInTheDocument();
   expect(screen.getByText('Avg')).toBeInTheDocument();
+  expect(screen.getByText('Median')).toBeInTheDocument();
   expect(screen.getByText('Std')).toBeInTheDocument();
   expect(screen.getByText('First')).toBeInTheDocument();
   expect(screen.getByText('Last')).toBeInTheDocument();
@@ -61,7 +62,9 @@ it('adds an aggregation when clicking the add button', async () => {
       aggregations: expect.arrayContaining([
         expect.objectContaining({ operation: SELECTABLE_OPTIONS[0] }),
       ]),
-    })
+    }),
+    expect.arrayContaining([SELECTABLE_OPTIONS[0]]),
+    expect.arrayContaining([])
   );
 });
 
@@ -80,7 +83,9 @@ it('deletes an aggregation when clicking the trash can', async () => {
   await user.click(buttons[buttons.length - 1]);
 
   expect(onChange).toHaveBeenCalledWith(
-    expect.objectContaining({ aggregations: [], showOnTop: false })
+    expect.objectContaining({ aggregations: [], showOnTop: false }),
+    expect.arrayContaining([]),
+    expect.arrayContaining([AggregationOperation.SUM])
   );
 });
 
