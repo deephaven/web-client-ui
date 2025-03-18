@@ -40,7 +40,11 @@ export type AggregationSettings = {
 export type AggregationsProps = {
   isRollup: boolean;
   settings: AggregationSettings;
-  onChange: (settings: AggregationSettings) => void;
+  onChange: (
+    settings: AggregationSettings,
+    added: AggregationOperation[],
+    removed: AggregationOperation[]
+  ) => void;
   onEdit: (aggregation: Aggregation) => void;
 };
 
@@ -62,14 +66,14 @@ function Aggregations({
   const [selectedOperation, setSelectedOperation] = useState(options[0]);
   const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);
   const changeSettings = useCallback(
-    changedSettings => {
-      onChange({ ...settings, ...changedSettings });
+    (changedSettings, added = [], removed = []) => {
+      onChange({ ...settings, ...changedSettings }, added, removed);
     },
     [onChange, settings]
   );
   const changeAggregations = useCallback(
-    newAggregations => {
-      changeSettings({ aggregations: newAggregations });
+    (newAggregations, added = [], removed = []) => {
+      changeSettings({ aggregations: newAggregations }, added, removed);
     },
     [changeSettings]
   );
@@ -130,17 +134,29 @@ function Aggregations({
   );
 
   const handleAdd = useCallback(() => {
-    changeAggregations([
-      ...aggregations,
-      { operation: selectedOperation, selected: [], invert: true },
-    ]);
+    changeAggregations(
+      [
+        ...aggregations,
+        { operation: selectedOperation, selected: [], invert: true },
+      ],
+      [selectedOperation]
+    );
   }, [aggregations, selectedOperation, changeAggregations]);
 
   const handleDeleteClicked = useCallback(
     (itemIndex: ModelIndex) => {
-      changeAggregations(
-        aggregations.filter((aggregation, index) => index !== itemIndex)
+      const [keep, remove] = aggregations.reduce(
+        ([keepSoFar, removeSoFar], aggregation, index) => {
+          if (index === itemIndex) {
+            removeSoFar.push(aggregation.operation);
+          } else {
+            keepSoFar.push(aggregation);
+          }
+          return [keepSoFar, removeSoFar];
+        },
+        [[], []] as [Aggregation[], AggregationOperation[]]
       );
+      changeAggregations(keep, [], remove);
     },
     [aggregations, changeAggregations]
   );

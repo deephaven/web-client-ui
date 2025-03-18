@@ -3510,17 +3510,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   /**
    * User added, removed, or changed the order of aggregations, or position
    * @param aggregationSettings The new aggregation settings
+   * @param added The aggregations that were added
+   * @param removed The aggregations that were removed
    */
-  handleAggregationsChange(aggregationSettings: AggregationSettings): void {
-    log.debug('handleAggregationsChange', aggregationSettings);
+  handleAggregationsChange(
+    aggregationSettings: AggregationSettings,
+    added: AggregationOperation[] = [],
+    removed: AggregationOperation[] = []
+  ): void {
+    log.debug('handleAggregationsChange', aggregationSettings, added, removed);
     const { rollupConfig } = this.state;
     const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
-    // Do not start loading if this is rollup and all aggregations are prohibited for rollups
+    // Do not start loading if this is rollup and added / removed aggregations are prohibited for rollups
+    const changes = [...added, ...removed];
     const shouldStartLoading = !(
       isRollup &&
-      aggregationSettings.aggregations.every(aggregation =>
-        AggregationUtils.isRollupProhibited(aggregation.operation)
-      )
+      changes.length > 0 &&
+      changes.every(op => AggregationUtils.isRollupProhibited(op))
     );
 
     if (shouldStartLoading) {
