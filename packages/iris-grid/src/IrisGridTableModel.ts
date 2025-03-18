@@ -427,11 +427,7 @@ class IrisGridTableModel
       for (let c = 0; c < keyColumns.length; c += 1) {
         const column = keyColumns[c];
         const value = row[c];
-        const filterValue = this.tableUtils.makeFilterRawValue(
-          column.type,
-          value
-        );
-        const filter = column.filter().eq(filterValue);
+        const filter = this.tableUtils.makeNullableEqFilter(column, value);
         columnFilters.push(filter);
       }
       return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);
