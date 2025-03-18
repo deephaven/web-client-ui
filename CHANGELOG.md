@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.106.4](https://github.com/deephaven/web-client-ui/compare/v0.106.3...v0.106.4) (2025-03-18)
+
+### Bug Fixes
+
+- Exports needed for ui.table aggregations ([#2385](https://github.com/deephaven/web-client-ui/issues/2385)) ([fdfd238](https://github.com/deephaven/web-client-ui/commit/fdfd238b5dcc77a6caf33e9fc01817ed8275aa70))
+
 ## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
 
 ### Bug Fixes
