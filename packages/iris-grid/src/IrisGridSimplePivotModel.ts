@@ -2,19 +2,22 @@
 import memoize from 'memoize-one';
 import type { dh as DhType, Iterator } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {
+  assertNotNull,
   EventShimCustomEvent,
   PromiseUtils,
   type CancelablePromise,
 } from '@deephaven/utils';
-import { type ModelIndex } from '@deephaven/grid';
+import { GridRange, type ModelIndex } from '@deephaven/grid';
 import { type ColumnName, type UITotalsTableConfig } from './CommonTypes';
 import type { DisplayColumn } from './IrisGridModel';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTableModel from './IrisGridTableModel';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
+import IrisGridUtils from './IrisGridUtils';
+import type { IrisGridThemeType } from './IrisGridTheme';
 
 const log = Log.module('IrisGridSimplePivotModel');
 
@@ -37,8 +40,15 @@ export type KeyColumnArray = (readonly [string, string])[];
 
 export type SimplePivotColumnMap = ReadonlyMap<string, string>;
 
+const GRAND_TOTAL_VALUE = 'Grand Total';
+
 // TODO:
-// - textSnapshot, snapshot for the totals row
+// - totals row formatting [DONE]
+// - totals row: copy cell unformatted
+// - copy selection with headers - fix column mapping, fix case with only totals row selected
+// - totals column move to back
+// - col based operations
+// - flags to hide unsupported table options - go to row, filters, search, organize columns, etc
 
 /**
  * Model which proxies calls to IrisGridModel.
@@ -284,6 +294,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   sourceColumn(x: ModelIndex, _: ModelIndex): DhType.Column {
+    // TODO:
     return this.columns[x]; // - this.schema.rowColNames.length];
   }
 
@@ -297,27 +308,32 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       return undefined;
     }
 
+    if (!isIrisGridTableModelTemplate(this.model)) {
+      throw new Error('Invalid model, textValueForCell not available');
+    }
+
     const column = this.sourceColumn(x, y);
+
     // TODO:
-    // const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
-    //   this.formatter,
-    //   column.name,
-    //   column.type
-    // );
-    // let formatOverride;
-    // if (!hasCustomColumnFormat) {
-    //   const formatForCell = this.formatForCell(x, y);
-    //   if (formatForCell?.formatString != null) {
-    //     formatOverride = formatForCell;
-    //   }
-    // }
-    const text = this.displayString(
+    const hasCustomColumnFormat = this.model.getCachedCustomColumnFormatFlag(
+      this.formatter,
+      column.name,
+      column.type
+    );
+    let formatOverride;
+    if (!hasCustomColumnFormat) {
+      const formatForCell = this.formatForCell(x, y);
+      if (formatForCell?.formatString != null) {
+        formatOverride = formatForCell;
+      }
+    }
+    const text = this.model.displayString(
       value,
       column.type,
-      column.name
-      // formatOverride
+      column.name,
+      formatOverride
     );
-    // this.cacheFormattedValue(x, y, text);
+    this.model.cacheFormattedValue(x, y, text);
     return text;
   }
 
@@ -326,7 +342,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       if (x >= this.schema.rowColNames.length) {
         return this.textValueForCell(x, y) ?? '';
       }
-      return x === 0 ? 'Grand Total' : '';
+      return x === 0 ? GRAND_TOTAL_VALUE : '';
     }
     return this.model.textForCell(x, y);
   }
@@ -628,6 +644,117 @@ class IrisGridSimplePivotModel extends IrisGridModel {
           })
         );
       });
+  }
+
+  async snapshot(
+    ranges: readonly GridRange[],
+    includeHeaders = false,
+    formatValue: (value: unknown, column: DhType.Column) => unknown = value =>
+      value,
+    consolidateRanges = true
+  ): Promise<unknown[][]> {
+    if (!isIrisGridTableModelTemplate(this.model)) {
+      throw new Error('Invalid model, snapshot not available');
+    }
+
+    const consolidated = consolidateRanges
+      ? GridRange.consolidate(ranges)
+      : ranges;
+    if (!IrisGridUtils.isValidSnapshotRanges(consolidated)) {
+      throw new Error(`Invalid snapshot ranges ${ranges}`);
+    }
+
+    let hasTotals = false;
+    const tableRanges: GridRange[] = [];
+
+    const tableSize = this.model.table.size;
+
+    for (let i = 0; i < consolidated.length; i += 1) {
+      const range = consolidated[i];
+      assertNotNull(range.endRow);
+      assertNotNull(range.startRow);
+      // Separate out the range that is part of the actual table
+      if (range.endRow === tableSize) {
+        hasTotals = true;
+        if (range.startRow < tableSize) {
+          tableRanges.push(
+            new GridRange(
+              range.startColumn,
+              range.startRow,
+              range.endColumn,
+              range.endRow - 1
+            )
+          );
+        }
+      } else {
+        tableRanges.push(range);
+      }
+    }
+    const result =
+      tableRanges.length === 0
+        ? []
+        : await this.model.snapshot(
+            tableRanges,
+            includeHeaders,
+            formatValue,
+            consolidateRanges
+          );
+
+    const columns = IrisGridUtils.columnsFromRanges(consolidated, this.columns);
+
+    if (hasTotals) {
+      const rowData = columns.map(column => {
+        const index = this.getColumnIndexByName(column.name);
+        assertNotNull(index);
+        return index === 0
+          ? GRAND_TOTAL_VALUE
+          : formatValue(this.valueForCell(index, tableSize), column);
+      });
+      result.push(rowData);
+    }
+
+    return result;
+  }
+
+  colorForCell(x: ModelIndex, y: ModelIndex, theme: IrisGridThemeType): string {
+    if (!isIrisGridTableModelTemplate(this.model)) {
+      throw new Error('Invalid model, colorForCell not available');
+    }
+
+    if (this.schema.hasTotals && y === this.rowCount - 1) {
+      if (x >= this.schema.rowColNames.length) {
+        const value = this.valueForCell(x, y);
+        if (value == null || value === '') {
+          assertNotNull(theme.nullStringColor);
+          return theme.nullStringColor;
+        }
+
+        // Format based on the value/type of the cell
+        if (value != null) {
+          const column = this.sourceColumn(x, y);
+          if (TableUtils.isDateType(column.type) || column.name === 'Date') {
+            assertNotNull(theme.dateColor);
+            return theme.dateColor;
+          }
+          if (TableUtils.isNumberType(column.type)) {
+            if ((value as number) > 0) {
+              assertNotNull(theme.positiveNumberColor);
+              return theme.positiveNumberColor;
+            }
+            if ((value as number) < 0) {
+              assertNotNull(theme.negativeNumberColor);
+              return theme.negativeNumberColor;
+            }
+            assertNotNull(theme.zeroNumberColor);
+            return theme.zeroNumberColor;
+          }
+        }
+      }
+
+      return theme.textColor;
+    }
+
+    return this.model.colorForCell(x, y, theme);
   }
 
   startListening(): void {
