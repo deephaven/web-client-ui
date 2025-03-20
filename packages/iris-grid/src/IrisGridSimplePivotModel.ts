@@ -44,11 +44,13 @@ const GRAND_TOTAL_VALUE = 'Grand Total';
 
 // TODO:
 // - totals row formatting [DONE]
-// - totals row: copy cell unformatted
-// - copy selection with headers - fix column mapping, fix case with only totals row selected
+// - totals row: copy cell unformatted [DONE]
+// - copy selection with headers - fix column mapping, fix case with only totals row selected [DONE]
+// - ^ unit tests
 // - totals column move to back
-// - col based operations
+// - col based operations - save/restore settings on model change
 // - flags to hide unsupported table options - go to row, filters, search, organize columns, etc
+// - fix sub/unsubscribe on model change
 
 /**
  * Model which proxies calls to IrisGridModel.
@@ -285,66 +287,19 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return this.model.rowCount + (this.schema.hasTotals ? 1 : 0);
   }
 
-  valueForCell(x: ModelIndex, y: ModelIndex): unknown {
-    if (this.schema.hasTotals && y === this.rowCount - 1) {
-      return this.totalsRowMap.get(this.columns[x].name);
-    }
-
-    return this.model.valueForCell(x, y);
-  }
-
   sourceColumn(x: ModelIndex, _: ModelIndex): DhType.Column {
     // TODO:
     return this.columns[x]; // - this.schema.rowColNames.length];
   }
 
-  textValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
-    // Use a separate cache from memoization just for the strings that are currently displayed
-    const value = this.valueForCell(x, y);
-    if (value === null) {
-      return null;
-    }
-    if (value === undefined) {
-      return undefined;
-    }
-
-    if (!isIrisGridTableModelTemplate(this.model)) {
-      throw new Error('Invalid model, textValueForCell not available');
-    }
-
-    const column = this.sourceColumn(x, y);
-
-    // TODO:
-    const hasCustomColumnFormat = this.model.getCachedCustomColumnFormatFlag(
-      this.formatter,
-      column.name,
-      column.type
-    );
-    let formatOverride;
-    if (!hasCustomColumnFormat) {
-      const formatForCell = this.formatForCell(x, y);
-      if (formatForCell?.formatString != null) {
-        formatOverride = formatForCell;
-      }
-    }
-    const text = this.model.displayString(
-      value,
-      column.type,
-      column.name,
-      formatOverride
-    );
-    this.model.cacheFormattedValue(x, y, text);
-    return text;
-  }
-
-  textForCell(x: ModelIndex, y: ModelIndex): string {
+  valueForCell(x: ModelIndex, y: ModelIndex): unknown {
     if (this.schema.hasTotals && y === this.rowCount - 1) {
       if (x >= this.schema.rowColNames.length) {
-        return this.textValueForCell(x, y) ?? '';
+        return this.totalsRowMap.get(this.columns[x].name);
       }
-      return x === 0 ? GRAND_TOTAL_VALUE : '';
+      return x === 0 ? GRAND_TOTAL_VALUE : undefined;
     }
-    return this.model.textForCell(x, y);
+    return this.model.valueForCell(x, y);
   }
 
   setTotalsTable(totalsTable: DhType.Table | null): void {
@@ -695,12 +650,19 @@ class IrisGridSimplePivotModel extends IrisGridModel {
         ? []
         : await this.model.snapshot(
             tableRanges,
-            includeHeaders,
+            false,
             formatValue,
             consolidateRanges
           );
 
     const columns = IrisGridUtils.columnsFromRanges(consolidated, this.columns);
+
+    if (includeHeaders) {
+      const headerRow = columns.map(
+        column => this.columnMap.get(column.name) ?? column.name
+      );
+      result.unshift(headerRow);
+    }
 
     if (hasTotals) {
       const rowData = columns.map(column => {
