@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, type RenderResult, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Aggregations, { type Aggregation } from './Aggregations';
 import AggregationOperation from './AggregationOperation';
 import { SELECTABLE_OPTIONS } from './AggregationUtils';
@@ -12,6 +13,25 @@ function makeAggregation({
 } = {}): Aggregation {
   return { operation, selected, invert };
 }
+
+const MOCK_DH = {
+  AggregationOperation: {
+    SUM: 'SUM',
+    ABS_SUM: 'ABS_SUM',
+    MIN: 'MIN',
+    MAX: 'MAX',
+    VAR: 'VAR',
+    AVG: 'AVG',
+    MEDIAN: 'MEDIAN',
+    STD: 'STD',
+    FIRST: 'FIRST',
+    LAST: 'LAST',
+    COUNT_DISTINCT: 'COUNT_DISTINCT',
+    DISTINCT: 'DISTINCT',
+    COUNT: 'COUNT',
+    UNIQUE: 'UNIQUE',
+  },
+} as unknown as typeof DhType;
 
 function mountAggregations({
   settings = { aggregations: [] as Aggregation[], showOnTop: false },
@@ -25,6 +45,7 @@ function mountAggregations({
       onChange={onChange}
       onEdit={onEdit}
       isRollup={isRollup}
+      dh={MOCK_DH}
     />
   );
 }
