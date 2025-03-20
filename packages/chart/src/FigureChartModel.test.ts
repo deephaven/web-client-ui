@@ -151,6 +151,7 @@ it('updates the title correctly', () => {
   expect(mockSubscribe).toHaveBeenCalledWith(
     expect.objectContaining({
       type: FigureChartModel.EVENT_LAYOUT_UPDATED,
+      detail: { title: { text: 'New Title', pad: { t: 8 } } },
     })
   );
 });
