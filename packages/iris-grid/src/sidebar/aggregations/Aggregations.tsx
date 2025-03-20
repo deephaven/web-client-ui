@@ -20,7 +20,8 @@ import {
 } from '@deephaven/components';
 import type { DraggableRenderItemProps, Range } from '@deephaven/components';
 import { type ModelIndex } from '@deephaven/grid';
-import type AggregationOperation from './AggregationOperation';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import AggregationOperation from './AggregationOperation';
 import AggregationUtils, { SELECTABLE_OPTIONS } from './AggregationUtils';
 import './Aggregations.scss';
 
@@ -46,6 +47,7 @@ export type AggregationsProps = {
     removed: AggregationOperation[]
   ) => void;
   onEdit: (aggregation: Aggregation) => void;
+  dh: typeof DhType;
 };
 
 function Aggregations({
@@ -53,15 +55,22 @@ function Aggregations({
   settings,
   onChange,
   onEdit,
+  dh,
 }: AggregationsProps): JSX.Element {
   const { aggregations, showOnTop } = settings;
   const options = useMemo(
     () =>
       SELECTABLE_OPTIONS.filter(
         option =>
-          !aggregations.some(aggregation => aggregation.operation === option)
+          !aggregations.some(aggregation => aggregation.operation === option) &&
+          !(
+            option === AggregationOperation.MEDIAN &&
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - MEDIAN is not defined in older version of Core
+            dh.AggregationOperation.MEDIAN === undefined
+          )
       ),
-    [aggregations]
+    [aggregations, dh]
   );
   const [selectedOperation, setSelectedOperation] = useState(options[0]);
   const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);

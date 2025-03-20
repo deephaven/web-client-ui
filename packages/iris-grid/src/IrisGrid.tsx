@@ -4808,6 +4808,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isRollup={isRollup}
               onChange={this.handleAggregationsChange}
               onEdit={this.handleAggregationEdit}
+              dh={model.dh}
             />
           );
         case OptionType.AGGREGATION_EDIT:
