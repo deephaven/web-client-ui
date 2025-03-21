@@ -46,11 +46,24 @@ const GRAND_TOTAL_VALUE = 'Grand Total';
 // - totals row formatting [DONE]
 // - totals row: copy cell unformatted [DONE]
 // - copy selection with headers - fix column mapping, fix case with only totals row selected [DONE]
-// - ^ unit tests
-// - totals column move to back
-// - col based operations - save/restore settings on model change
-// - flags to hide unsupported table options - go to row, filters, search, organize columns, etc
+// - fix Grand Total text in non-string columns [DONE]
+// - disable sort on col columns [DONE]
+// - disable filters, advanced filters on col columns [DONE]
+// - disable Search Bar [DONE]
+// - disable Download CSV [DONE]
+
+// - disable Organize columns
+// - disable Go to row
+
 // - fix sub/unsubscribe on model change
+// - totals column move to back
+
+// - DH.UI example with selectable aggregation functions
+
+// - column order, column resize, visibility, etc -- save/restore settings on model change (or disable?)
+// - if the above works, enable sorting, filtering, etc.
+
+// - ^ unit tests
 
 /**
  * Model which proxies calls to IrisGridModel.
@@ -247,12 +260,25 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return false;
   }
 
+  isFilterable(columnIndex: ModelIndex): boolean {
+    return columnIndex < this.schema.rowColNames.length;
+  }
+
+  isColumnSortable(columnIndex: ModelIndex): boolean {
+    return columnIndex < this.schema.rowColNames.length;
+  }
+
   get isTotalsAvailable(): boolean {
     // Hide Aggregate Columns option in Table Settings
     return false;
   }
 
   get isRollupAvailable(): boolean {
+    return false;
+  }
+
+  get isExportAvailable(): boolean {
+    // table.freeze is available, but exporting requires extra logic for column mapping and totals rows
     return false;
   }
 
@@ -300,6 +326,13 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       return x === 0 ? GRAND_TOTAL_VALUE : undefined;
     }
     return this.model.valueForCell(x, y);
+  }
+
+  textForCell(x: ModelIndex, y: ModelIndex): string {
+    return this.schema.hasTotals && y === this.rowCount - 1 && x === 0
+      ? GRAND_TOTAL_VALUE
+      : // Pass the context so model.textForCell calls this.valueForCell instead of model.valueForCell
+        this.model.textForCell.call(this, x, y);
   }
 
   setTotalsTable(totalsTable: DhType.Table | null): void {
@@ -475,6 +508,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       columnGroups: [],
       areSavedLayoutsAllowed: false,
       frontColumns: [],
+      searchDisplayMode: this.dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE,
     };
   }
 
