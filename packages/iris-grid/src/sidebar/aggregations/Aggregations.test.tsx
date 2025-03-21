@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, RenderResult, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Aggregations, { Aggregation } from './Aggregations';
 import AggregationOperation from './AggregationOperation';
 import { SELECTABLE_OPTIONS } from './AggregationUtils';
@@ -12,6 +13,25 @@ function makeAggregation({
 } = {}): Aggregation {
   return { operation, selected, invert };
 }
+
+const MOCK_DH = {
+  AggregationOperation: {
+    SUM: 'SUM',
+    ABS_SUM: 'ABS_SUM',
+    MIN: 'MIN',
+    MAX: 'MAX',
+    VAR: 'VAR',
+    AVG: 'AVG',
+    MEDIAN: 'MEDIAN',
+    STD: 'STD',
+    FIRST: 'FIRST',
+    LAST: 'LAST',
+    COUNT_DISTINCT: 'COUNT_DISTINCT',
+    DISTINCT: 'DISTINCT',
+    COUNT: 'COUNT',
+    UNIQUE: 'UNIQUE',
+  },
+} as unknown as typeof DhType;
 
 function mountAggregations({
   settings = { aggregations: [] as Aggregation[], showOnTop: false },
@@ -25,6 +45,7 @@ function mountAggregations({
       onChange={onChange}
       onEdit={onEdit}
       isRollup={isRollup}
+      dh={MOCK_DH}
     />
   );
 }
@@ -37,6 +58,7 @@ it('shows all operations in select when no aggregations selected yet', () => {
   expect(screen.getByText('Min')).toBeInTheDocument();
   expect(screen.getByText('Max')).toBeInTheDocument();
   expect(screen.getByText('Avg')).toBeInTheDocument();
+  expect(screen.getByText('Median')).toBeInTheDocument();
   expect(screen.getByText('Std')).toBeInTheDocument();
   expect(screen.getByText('First')).toBeInTheDocument();
   expect(screen.getByText('Last')).toBeInTheDocument();
@@ -61,7 +83,9 @@ it('adds an aggregation when clicking the add button', async () => {
       aggregations: expect.arrayContaining([
         expect.objectContaining({ operation: SELECTABLE_OPTIONS[0] }),
       ]),
-    })
+    }),
+    expect.arrayContaining([SELECTABLE_OPTIONS[0]]),
+    expect.arrayContaining([])
   );
 });
 
@@ -80,7 +104,9 @@ it('deletes an aggregation when clicking the trash can', async () => {
   await user.click(buttons[buttons.length - 1]);
 
   expect(onChange).toHaveBeenCalledWith(
-    expect.objectContaining({ aggregations: [], showOnTop: false })
+    expect.objectContaining({ aggregations: [], showOnTop: false }),
+    expect.arrayContaining([]),
+    expect.arrayContaining([AggregationOperation.SUM])
   );
 });
 
