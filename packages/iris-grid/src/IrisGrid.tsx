@@ -1117,6 +1117,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isChartBuilderAvailable: boolean,
       isCustomColumnsAvailable: boolean,
       isFormatColumnsAvailable: boolean,
+      isOrganizeColumnsAvailable: boolean,
       isRollupAvailable: boolean,
       isTotalsAvailable: boolean,
       isSelectDistinctAvailable: boolean,
@@ -1139,11 +1140,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: dhGraphLineUp,
         });
       }
-      optionItems.push({
-        type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Organize Columns',
-        icon: dhEye,
-      });
+      if (isOrganizeColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.VISIBILITY_ORDERING_BUILDER,
+          title: 'Organize Columns',
+          icon: dhEye,
+        });
+      }
       if (isFormatColumnsAvailable) {
         optionItems.push({
           type: OptionType.CONDITIONAL_FORMATTING,
@@ -4690,6 +4693,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
+      model.isOrganizeColumnsAvailable,
       model.isRollupAvailable,
       model.isTotalsAvailable || isRollup,
       model.isSelectDistinctAvailable,

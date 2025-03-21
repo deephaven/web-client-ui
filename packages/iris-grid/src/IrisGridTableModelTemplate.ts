@@ -460,6 +460,10 @@ class IrisGridTableModelTemplate<
     return true;
   }
 
+  get isOrganizeColumnsAvailable(): boolean {
+    return true;
+  }
+
   get isTotalsAvailable(): boolean {
     return this.table.getTotalsTable != null;
   }

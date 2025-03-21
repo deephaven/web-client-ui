@@ -52,8 +52,8 @@ const GRAND_TOTAL_VALUE = 'Grand Total';
 // - disable Search Bar [DONE]
 // - disable Download CSV [DONE]
 
-// - disable Organize columns
-// - disable Go to row
+// - disable Organize columns [DONE]
+// - disable Go to row [DONE]
 
 // - fix sub/unsubscribe on model change
 // - totals column move to back
@@ -249,6 +249,18 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   get isChartBuilderAvailable(): boolean {
+    return false;
+  }
+
+  get isFormatColumnsAvailable(): boolean {
+    return false;
+  }
+
+  get isOrganizeColumnsAvailable(): boolean {
+    return false;
+  }
+
+  get isSeekRowAvailable(): boolean {
     return false;
   }
 
