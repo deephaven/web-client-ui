@@ -18,6 +18,7 @@ export { default as NotebookPanel } from './NotebookPanel';
 export { default as PandasPanel } from './PandasPanel';
 export * from './PandasPanel';
 export { default as Panel } from './Panel';
+export { default as SimplePivotPanel } from './SimplePivotPanel';
 export * from './WidgetPanelTypes';
 export { default as WidgetPanel, type WidgetPanelProps } from './WidgetPanel';
 export { default as WidgetPanelTooltip } from './WidgetPanelTooltip';
