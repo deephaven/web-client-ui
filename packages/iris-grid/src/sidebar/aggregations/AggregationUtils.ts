@@ -9,6 +9,7 @@ export const SELECTABLE_OPTIONS = [
   AggregationOperation.MAX,
   AggregationOperation.VAR,
   AggregationOperation.AVG,
+  AggregationOperation.MEDIAN,
   AggregationOperation.STD,
   AggregationOperation.FIRST,
   AggregationOperation.LAST,
@@ -32,6 +33,20 @@ export const isRollupOperation = (type: AggregationOperation): boolean => {
 };
 
 /**
+ * Check if an operation is not supported for a rollup/table grouping
+ * @param type The operation to check
+ * @returns True if this operation is not supported for a rollup/table grouping
+ */
+export const isRollupProhibited = (type: AggregationOperation): boolean => {
+  switch (type) {
+    case AggregationOperation.MEDIAN:
+      return true;
+    default:
+      return false;
+  }
+};
+
+/**
  * Check if an operation is valid against the given column type
  * @param operationType The operation to check
  * @param columnType The column type to check against
@@ -48,6 +63,7 @@ export const isValidOperation = (
     case AggregationOperation.DISTINCT:
     case AggregationOperation.UNIQUE:
       return true;
+    case AggregationOperation.MEDIAN:
     case AggregationOperation.MIN:
     case AggregationOperation.MAX:
       return (
@@ -87,6 +103,7 @@ export const getOperationColumnNames = (
 
 export default {
   isRollupOperation,
+  isRollupProhibited,
   filterValidColumns,
   getOperationColumnNames,
 };
