@@ -563,9 +563,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     ) {
       throw new Error('Invalid model, setModel not available');
     }
-    log.debug('[3] setModel', oldModel.movedColumns);
-
-    // TODO: set totals table, subscribe to updates
     if (this.listenerCount > 0) {
       this.addListeners(model);
     }
