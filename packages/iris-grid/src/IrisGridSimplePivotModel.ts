@@ -293,12 +293,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   set columnHeaderGroups(columnHeaderGroups: readonly ColumnHeaderGroup[]) {
-    log.debug('set columnHeaderGroups', columnHeaderGroups, this.model.columns);
-    try {
-      this.model.columnHeaderGroups = columnHeaderGroups;
-    } catch (e) {
-      debugger;
-    }
+    this.model.columnHeaderGroups = columnHeaderGroups;
   }
 
   get rowCount(): number {
