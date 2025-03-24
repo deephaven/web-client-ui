@@ -42,29 +42,6 @@ export type SimplePivotColumnMap = ReadonlyMap<string, string>;
 
 const GRAND_TOTAL_VALUE = 'Grand Total';
 
-// TODO:
-// - totals row formatting [DONE]
-// - totals row: copy cell unformatted [DONE]
-// - copy selection with headers - fix column mapping, fix case with only totals row selected [DONE]
-// - fix Grand Total text in non-string columns [DONE]
-// - disable sort on col columns [DONE]
-// - disable filters, advanced filters on col columns [DONE]
-// - disable Search Bar [DONE]
-// - disable Download CSV [DONE]
-
-// - disable Organize columns [DONE]
-// - disable Go to row [DONE]
-
-// - fix sub/unsubscribe on model change
-// - totals column move to back
-
-// - DH.UI example with selectable aggregation functions
-
-// - column order, column resize, visibility, etc -- save/restore settings on model change (or disable?)
-// - if the above works, enable sorting, filtering, etc.
-
-// - ^ unit tests
-
 /**
  * Model which proxies calls to IrisGridModel.
  * This allows updating the underlying Simple Pivot tables on schema changes.
@@ -88,11 +65,13 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   model: IrisGridModel;
 
-  private modelPromise: CancelablePromise<IrisGridModel> | null;
+  private modelPromise: CancelablePromise<[DhType.Table, DhType.Table]> | null;
 
   private nextModel: IrisGridModel | null;
 
   private totalsTable: DhType.Table | null;
+
+  private nextTotalsTable: DhType.Table | null;
 
   private totalsRowMap: Map<string, unknown>;
 
@@ -126,6 +105,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.keyTableSubscription = null;
     this.pivotWidget = pivotWidget;
     this.totalsTable = null;
+    this.nextTotalsTable = null;
     this.totalsRowMap = new Map();
 
     this.columnMap = new Map(
@@ -459,7 +439,8 @@ class IrisGridSimplePivotModel extends IrisGridModel {
         this.nextColumnMap = columnMap;
       } else {
         log.debug('next model not null, all columns match');
-        this.setModel(this.nextModel, columnMap);
+        assertNotNull(this.nextTotalsTable);
+        this.setModel(this.nextModel, columnMap, this.nextTotalsTable);
         this.nextModel = null;
       }
     } else if (
@@ -479,11 +460,8 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     const tables = e.detail.exportedObjects;
     const tablePromise = tables[0].fetch();
     const totalsTablePromise = tables.length === 2 ? tables[1].fetch() : null;
-    totalsTablePromise?.then(totalsTable => this.setTotalsTable(totalsTable));
-    const newModelPromise = tablePromise.then(table =>
-      makeModel(this.dh, table, this.formatter)
-    );
-    this.setNextModel(newModelPromise);
+    const pivotTablesPromise = Promise.all([tablePromise, totalsTablePromise]);
+    this.setNextSchema(pivotTablesPromise);
   }
 
   copyTotalsData(data: DhType.ViewportData): void {
@@ -512,7 +490,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   );
 
   get layoutHints(): DhType.LayoutHints | null | undefined {
-    log.debug('get layoutHints');
+    // log.debug('get layoutHints');
     return {
       backColumns: ['__TOTALS_COLUMN'],
       hiddenColumns: [],
@@ -558,21 +536,34 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.dispatchEvent(new EventShimCustomEvent(type, { detail }));
   }
 
-  setModel(model: IrisGridModel, columnMap: SimplePivotColumnMap): void {
-    log.debug('setModel', model, {
-      prev: JSON.stringify([...columnMap]),
-      columns: JSON.stringify([...model.columns.map(c => c.name)]),
-    });
+  setModel(
+    model: IrisGridModel,
+    columnMap: SimplePivotColumnMap,
+    totalsTable: DhType.Table
+  ): void {
+    log.debug('setModel', model);
 
     const oldModel = this.model;
     oldModel.close();
+    if (this.listenerCount > 0) {
+      this.removeListeners(oldModel);
+    }
 
     this.model = model;
+    this.setTotalsTable(totalsTable);
     this.columnMap = columnMap;
     this.columnHeaderGroups = this.getCachedColumnHeaderGroups(
       this.columnMap,
       this.schema
     );
+
+    if (
+      !isIrisGridTableModelTemplate(model) ||
+      !isIrisGridTableModelTemplate(oldModel)
+    ) {
+      throw new Error('Invalid model, setModel not available');
+    }
+    log.debug('[3] setModel', oldModel.movedColumns);
 
     // TODO: set totals table, subscribe to updates
     if (this.listenerCount > 0) {
@@ -599,40 +590,44 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     );
   }
 
-  setNextModel(modelPromise: Promise<IrisGridModel>): void {
-    log.debug2('setNextModel');
+  setNextSchema(
+    pivotTablesPromise: Promise<[DhType.Table, DhType.Table]>
+  ): void {
+    log.debug2('setNextSchema');
 
     if (this.modelPromise) {
       this.modelPromise.cancel();
     }
 
-    if (this.listenerCount > 0) {
-      this.removeListeners(this.model);
-    }
-
+    // TODO: rename
     this.modelPromise = PromiseUtils.makeCancelable(
-      modelPromise,
-      (model: IrisGridModel) => model.close()
+      pivotTablesPromise,
+      ([table, totalsTable]: [DhType.Table, DhType.Table]) => {
+        table.close();
+        totalsTable.close();
+      }
     );
     this.modelPromise
-      .then(model => {
+      .then(([table, totalsTable]) => {
         this.modelPromise = null;
+        const model = makeModel(this.dh, table, this.formatter);
         if (this.nextColumnMap != null) {
           log.debug(
             'Schema updated, nextColumnMap is not null, setting new model'
           );
-          this.setModel(model, this.nextColumnMap);
+          this.setModel(model, this.nextColumnMap, totalsTable);
           this.nextColumnMap = null;
         } else {
           log.debug(
             'Schema updated, nextColumnMap is null, save new model as nextModel'
           );
           this.nextModel = model;
+          this.nextTotalsTable = totalsTable;
         }
       })
       .catch((err: unknown) => {
         if (PromiseUtils.isCanceled(err)) {
-          log.debug2('setNextModel cancelled');
+          log.debug2('setNextSchema cancelled');
           return;
         }
 
