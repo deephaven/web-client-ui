@@ -100,6 +100,17 @@ export async function loadDhModules({
   LoadModuleOptions,
   'serverUrl' | 'storageDir' | 'targetModuleType'
 >): Promise<typeof DhType> {
+  if (targetModuleType === 'esm') {
+    // These are needed in `esm` output until JSAPI is updated to not rely on
+    // `window` and `self`.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.self = globalThis;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.window = globalThis;
+  }
+
   const coreModule = await loadModules<
     typeof DhType & { default?: typeof DhType }
   >({

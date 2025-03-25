@@ -17,9 +17,10 @@ import path from 'node:path';
 
 import { loadDhModules } from '@deephaven/jsapi-nodejs';
 
-// Polyfills needed if consuming DH as `ESM` module
-globalThis.self = globalThis;
-globalThis.window = globalThis;
+// Needed for esm modules
+if (typeof globalThis.__dirname === 'undefined') {
+  globalThis.__dirname = import.meta.dirname
+}
 
 const tmpDir = path.join(__dirname, 'tmp');
 
@@ -29,4 +30,15 @@ const dhc = await loadDhModules({
   storageDir: tmpDir,
   targetModuleType: 'esm', // set to `cjs` to download as a CommonJS module
 });
+
+const client = new dhc.CoreClient(serverUrl.href, {
+  // Enable http2 transport (this is optional but recommended)
+  transportFactory: NodeHttp2gRPCTransport.factory,
+})
+
+await client.login({
+  type: dhc.CoreClient.LOGIN_TYPE_ANONYMOUS,
+})
+
+const cn = await client.getAsIdeConnection()
 ```
