@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 /**
  * Returns a callback function that calls the given callback with the `target.value` of
- * an input change event element.
+ * an input change event.
  * @param callback the callback to call with the `target.value`
  * @returns a callback function that calls the given callback with the `target.value`
  * @example
