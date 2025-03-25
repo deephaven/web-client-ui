@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.17](https://github.com/deephaven/web-client-ui/compare/v0.85.16...v0.85.17) (2025-03-25)
+
+**Note:** Version bump only for package @deephaven/dashboard
+
 ## [0.85.15](https://github.com/deephaven/web-client-ui/compare/v0.85.14...v0.85.15) (2025-02-27)
 
 **Note:** Version bump only for package @deephaven/dashboard
