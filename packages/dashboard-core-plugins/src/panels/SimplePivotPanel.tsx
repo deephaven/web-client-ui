@@ -50,14 +50,6 @@ class SimplePivotPanel extends Component<
     };
   }
 
-  componentDidMount(): void {
-    log.debug('[0] componentDidMount');
-  }
-
-  componentWillUnmount(): void {
-    log.debug('[0] componentWillUnmount');
-  }
-
   irisGridRef: RefObject<IrisGridPanel>;
 
   handleReload(): void {

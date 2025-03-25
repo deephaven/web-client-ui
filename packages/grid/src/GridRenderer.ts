@@ -1856,7 +1856,6 @@ export class GridRenderer {
       allRowYs,
       width,
     } = metrics;
-
     if (rowFooterWidth <= 0) {
       return;
     }

@@ -316,7 +316,6 @@ export class IrisGridPanel extends PureComponent<
 
   componentDidMount(): void {
     this.initModel();
-    log.debug('[0] componentDidMount');
   }
 
   componentDidUpdate(
@@ -344,8 +343,6 @@ export class IrisGridPanel extends PureComponent<
   componentWillUnmount(): void {
     this.savePanelState.cancel();
 
-    log.debug('[0] componentWillUnmount');
-
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
       this.modelPromise = undefined;
@@ -353,7 +350,6 @@ export class IrisGridPanel extends PureComponent<
 
     const { model } = this.state;
     if (model) {
-      log.debug('[0] componentWillUnmount CLOSE');
       this.stopModelListening(model);
       model.close();
     }
