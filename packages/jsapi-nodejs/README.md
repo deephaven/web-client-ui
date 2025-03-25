@@ -17,6 +17,10 @@ import path from 'node:path';
 
 import { loadDhModules } from '@deephaven/jsapi-nodejs';
 
+// Polyfills needed if consuming DH as `ESM` module
+globalThis.self = globalThis;
+globalThis.window = globalThis;
+
 const tmpDir = path.join(__dirname, 'tmp');
 
 // Download jsapi from a Deephaven server
