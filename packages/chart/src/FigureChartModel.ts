@@ -616,6 +616,8 @@ class FigureChartModel extends ChartModel {
         ChartUtils.DEFAULT_TITLE_PADDING.t +
         subtitleCount * ChartUtils.SUBTITLE_LINE_HEIGHT * 0.5;
     }
+
+    this.fireLayoutUpdated({ title: this.layout.title });
   }
 
   getPlotWidth(): number {
