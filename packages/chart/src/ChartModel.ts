@@ -41,6 +41,8 @@ class ChartModel {
 
   static EVENT_BLOCKER_CLEAR = 'ChartModel.EVENT_BLOCKER_CLEAR';
 
+  static EVENT_LAYOUT_UPDATED = 'ChartModel.EVENT_LAYOUT_UPDATED';
+
   constructor(dh: typeof DhType) {
     this.dh = dh;
     this.listeners = [];
@@ -195,6 +197,12 @@ class ChartModel {
 
   fireBlockerClear(): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_BLOCKER_CLEAR));
+  }
+
+  fireLayoutUpdated(detail: Partial<Layout>): void {
+    this.fireEvent(
+      new CustomEvent(ChartModel.EVENT_LAYOUT_UPDATED, { detail })
+    );
   }
 }
 
