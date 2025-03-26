@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.18](https://github.com/deephaven/web-client-ui/compare/v0.85.17...v0.85.18) (2025-03-26)
+
+### Features
+
+- Add chart event for title change ([#2352](https://github.com/deephaven/web-client-ui/issues/2352)) ([#2394](https://github.com/deephaven/web-client-ui/issues/2394)) ([91eacee](https://github.com/deephaven/web-client-ui/commit/91eacee8349db50e8688a952337a0000e8bc8ba7))
+
+### Bug Fixes
+
+- DH-18279: fix one click titles ([#2381](https://github.com/deephaven/web-client-ui/issues/2381)) ([#2393](https://github.com/deephaven/web-client-ui/issues/2393)) ([f3c3126](https://github.com/deephaven/web-client-ui/commit/f3c3126ac1ba05064bb77dde7bcda9e7ca1477f3))
+
 ## [0.85.17](https://github.com/deephaven/web-client-ui/compare/v0.85.16...v0.85.17) (2025-03-25)
 
 ### Features
