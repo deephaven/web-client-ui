@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { type dh as DhType, type Iterator } from '@deephaven/jsapi-types';
-import IrisGrid from '@deephaven/iris-grid';
-import Log from '@deephaven/log';
+import { type dh as DhType } from '@deephaven/jsapi-types';
+import IrisGrid, {
+  getSimplePivotColumnMap,
+  KEY_TABLE_PIVOT_COLUMN,
+  type KeyColumnArray,
+  type KeyTableSubscriptionData,
+} from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { LoadingOverlay } from '@deephaven/components';
 import { getErrorMessage } from '@deephaven/utils';
@@ -11,44 +15,25 @@ import {
   type SimplePivotFetchResult,
 } from './useIrisGridSimplePivotModel';
 
-const log = Log.module('SimplePivotWidgetPlugin');
-
 export function SimplePivotWidgetPlugin({
   fetch,
 }: WidgetComponentProps<DhType.Widget>): JSX.Element | null {
   const dh = useApi();
   const loadKeys = useCallback(
-    (keyTable: DhType.Table): Promise<(readonly [string, string])[]> =>
+    (keyTable: DhType.Table): Promise<KeyColumnArray> =>
       new Promise((resolve, reject) => {
-        // TODO: use a util method to get the map
-        const pivotIdColumn = keyTable.findColumn('__PIVOT_COLUMN');
+        const pivotIdColumn = keyTable.findColumn(KEY_TABLE_PIVOT_COLUMN);
         const columns = keyTable.columns.filter(
-          c => c.name !== '__PIVOT_COLUMN'
+          c => c.name !== KEY_TABLE_PIVOT_COLUMN
         );
         const subscription = keyTable.subscribe(keyTable.columns);
-        subscription.addEventListener<{
-          fullIndex: { iterator: () => Iterator<DhType.Row> };
-          getData: (rowKey: DhType.Row, column: DhType.Column) => string;
-        }>(dh.Table.EVENT_UPDATED, e => {
-          const columnMap: (readonly [string, string])[] = [];
-          const data = e.detail;
-          const rowIter = data.fullIndex.iterator();
-          while (rowIter.hasNext()) {
-            const rowKey = rowIter.next().value;
-            const value = [];
-            for (let i = 0; i < columns.length; i += 1) {
-              value.push(data.getData(rowKey, columns[i]));
-            }
-            columnMap.push([
-              `PIVOT_C_${data.getData(rowKey, pivotIdColumn)}`,
-              value.join(', '),
-            ]);
+        subscription.addEventListener<KeyTableSubscriptionData>(
+          dh.Table.EVENT_UPDATED,
+          e => {
+            subscription.close();
+            resolve(getSimplePivotColumnMap(e.detail, columns, pivotIdColumn));
           }
-          log.debug('Column map', columnMap);
-          subscription.close();
-          // TODO: set column map in the model
-          resolve(columnMap);
-        });
+        );
       }),
     [dh]
   );

@@ -22,6 +22,7 @@ export * from './IrisGridTableModelTemplate';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { default as IrisGridSimplePivotModel } from './IrisGridSimplePivotModel';
 export * from './IrisGridSimplePivotModel';
+export * from './SimplePivotUtils';
 export { createDefaultIrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
 export * from './IrisGridThemeProvider';

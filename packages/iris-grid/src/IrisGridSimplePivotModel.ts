@@ -1,6 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import type { dh as DhType, Iterator } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {
@@ -18,6 +18,16 @@ import IrisGridTableModel from './IrisGridTableModel';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import IrisGridUtils from './IrisGridUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
+import {
+  getSimplePivotColumnMap,
+  KEY_TABLE_PIVOT_COLUMN,
+  PIVOT_COLUMN_PREFIX,
+  TOTALS_COLUMN,
+  type KeyColumnArray,
+  type KeyTableSubscriptionData,
+  type SimplePivotColumnMap,
+  type SimplePivotSchema,
+} from './SimplePivotUtils';
 
 const log = Log.module('IrisGridSimplePivotModel');
 
@@ -28,17 +38,6 @@ function makeModel(
 ): IrisGridModel {
   return new IrisGridTableModel(dh, table, formatter);
 }
-
-export interface SimplePivotSchema {
-  columnColNames: string[];
-  rowColNames: string[];
-  hasTotals: boolean;
-  pivotDescription: string;
-}
-
-export type KeyColumnArray = (readonly [string, string])[];
-
-export type SimplePivotColumnMap = ReadonlyMap<string, string>;
 
 const GRAND_TOTAL_VALUE = 'Grand Total';
 
@@ -65,7 +64,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   model: IrisGridModel;
 
-  private modelPromise: CancelablePromise<[DhType.Table, DhType.Table]> | null;
+  private schemaPromise: CancelablePromise<[DhType.Table, DhType.Table]> | null;
 
   private nextModel: IrisGridModel | null;
 
@@ -80,7 +79,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     table: DhType.Table,
     keyTable: DhType.Table,
     totalsTable: DhType.Table | null,
-    columnMap: (readonly [string, string])[],
+    columnMap: KeyColumnArray,
     schema: SimplePivotSchema,
     pivotWidget: DhType.Widget,
     formatter = new Formatter(dh)
@@ -98,7 +97,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
 
     this.model = makeModel(dh, table, formatter);
-    this.modelPromise = null;
+    this.schemaPromise = null;
     this.nextModel = null;
 
     this.keyTable = keyTable;
@@ -109,9 +108,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.totalsRowMap = new Map();
 
     this.columnMap = new Map(
-      schema.hasTotals
-        ? [['__TOTALS_COLUMN', 'Totals'], ...columnMap]
-        : columnMap
+      schema.hasTotals ? [[TOTALS_COLUMN, 'Totals'], ...columnMap] : columnMap
     );
     this.nextColumnMap = null;
     this.pivotWidget = pivotWidget;
@@ -120,8 +117,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.startListeningToKeyTable();
 
     this.startListeningToSchema();
-
-    // this.startListeningToTotals();
 
     this.setTotalsTable(totalsTable);
 
@@ -183,7 +178,9 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       get: (target, prop) => {
         if (prop === 'displayName') {
           if (!columnMap.has(column.name)) {
-            return column.name.startsWith('PIVOT_C_') ? '' : column.name;
+            return column.name.startsWith(PIVOT_COLUMN_PREFIX)
+              ? ''
+              : column.name;
           }
           return columnMap.get(column.name);
         }
@@ -300,11 +297,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return this.model.rowCount + (this.schema.hasTotals ? 1 : 0);
   }
 
-  sourceColumn(x: ModelIndex, _: ModelIndex): DhType.Column {
-    // TODO:
-    return this.columns[x]; // - this.schema.rowColNames.length];
-  }
-
   valueForCell(x: ModelIndex, y: ModelIndex): unknown {
     if (this.schema.hasTotals && y === this.rowCount - 1) {
       if (x >= this.schema.rowColNames.length) {
@@ -324,11 +316,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   setTotalsTable(totalsTable: DhType.Table | null): void {
     log.debug('setTotalsTable', totalsTable);
-
-    this.totalsTable?.removeEventListener(
-      this.dh.Table.EVENT_UPDATED,
-      this.handleTotalsUpdate
-    );
+    this.stopListeningToTotals();
 
     if (totalsTable == null) {
       this.totalsTable = null;
@@ -336,37 +324,29 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     }
 
     this.totalsTable = totalsTable;
-
-    this.totalsTable.addEventListener<DhType.ViewportData>(
-      this.dh.Table.EVENT_UPDATED,
-      this.handleTotalsUpdate
-    );
-
+    this.startListeningToTotals();
     this.totalsTable.setViewport(0, 0);
   }
 
   startListeningToKeyTable(): void {
     const { dh, keyTable } = this;
-    log.debug('Start Listening to key table', keyTable);
+    log.debug('Start Listening to key table');
     this.keyTableSubscription = keyTable.subscribe(keyTable.columns);
-    this.keyTableSubscription.addEventListener<{
-      fullIndex: { iterator: () => Iterator<DhType.Row> };
-      getData: (rowKey: DhType.Row, column: DhType.Column) => string;
-    }>(dh.Table.EVENT_UPDATED, this.handleKeyTableUpdate);
+    this.keyTableSubscription.addEventListener<KeyTableSubscriptionData>(
+      dh.Table.EVENT_UPDATED,
+      this.handleKeyTableUpdate
+    );
   }
 
   stopListeningToKeyTable(): void {
-    log.debug(
-      'Stop Listening to key table subscription',
-      this.keyTableSubscription
-    );
+    log.debug('Stop Listening to key table subscription');
     this.keyTableSubscription?.close();
     this.keyTableSubscription = null;
   }
 
   startListeningToSchema(): void {
     const { dh, pivotWidget } = this;
-    log.debug('Start Listening to schema', pivotWidget);
+    log.debug('Start Listening to schema');
     pivotWidget.addEventListener<DhType.Widget>(
       dh.Widget.EVENT_MESSAGE,
       this.handleSchemaUpdate
@@ -375,47 +355,43 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   stopListeningToSchema(): void {
     const { dh, pivotWidget } = this;
-    log.debug('Stop Listening to schema', pivotWidget);
+    log.debug('Stop Listening to schema');
     pivotWidget.removeEventListener(
       dh.Widget.EVENT_MESSAGE,
       this.handleSchemaUpdate
     );
   }
 
-  getKeyColumnMap(detail: {
-    fullIndex: { iterator: () => Iterator<DhType.Row> };
-    getData: (rowKey: DhType.Row, column: DhType.Column) => string;
-  }): SimplePivotColumnMap {
-    const pivotIdColumn = this.keyTable.findColumn('__PIVOT_COLUMN');
-    const columns = this.keyTable.columns.filter(
-      c => c.name !== '__PIVOT_COLUMN'
+  startListeningToTotals(): void {
+    log.debug('Start Listening to totals table');
+    this.totalsTable?.addEventListener(
+      this.dh.Table.EVENT_UPDATED,
+      this.handleTotalsUpdate
     );
-    const keyColumns: KeyColumnArray = [];
-    const rowIter = detail.fullIndex.iterator();
-    while (rowIter.hasNext()) {
-      const rowKey = rowIter.next().value;
-      const value = [];
-      for (let i = 0; i < columns.length; i += 1) {
-        value.push(detail.getData(rowKey, columns[i]));
-      }
-      keyColumns.push([
-        `PIVOT_C_${detail.getData(rowKey, pivotIdColumn)}`,
-        value.join(', '),
-      ]);
-    }
-    if (this.schema.hasTotals) {
-      keyColumns.push(['__TOTALS_COLUMN', 'Totals']);
-    }
-    return new Map(keyColumns);
   }
 
-  handleKeyTableUpdate(e: {
-    detail: {
-      fullIndex: { iterator: () => Iterator<DhType.Row> };
-      getData: (rowKey: DhType.Row, column: DhType.Column) => string;
-    };
-  }): void {
-    const columnMap = this.getKeyColumnMap(e.detail);
+  stopListeningToTotals(): void {
+    log.debug('Stop Listening to totals table');
+    this.totalsTable?.removeEventListener(
+      this.dh.Table.EVENT_UPDATED,
+      this.handleTotalsUpdate
+    );
+  }
+
+  handleKeyTableUpdate(e: { detail: KeyTableSubscriptionData }): void {
+    const pivotIdColumn = this.keyTable.findColumn(KEY_TABLE_PIVOT_COLUMN);
+    const columns = this.keyTable.columns.filter(
+      c => c.name !== KEY_TABLE_PIVOT_COLUMN
+    );
+    const keyColumns = getSimplePivotColumnMap(
+      e.detail,
+      columns,
+      pivotIdColumn
+    );
+    if (this.schema.hasTotals) {
+      keyColumns.push([TOTALS_COLUMN, 'Totals']);
+    }
+    const columnMap = new Map(keyColumns);
     log.debug(
       'Key table updated',
       this.model.columns.map(c => c.name),
@@ -423,14 +399,13 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       Boolean(this.nextModel),
       Boolean(this.nextColumnMap)
     );
-
     if (this.nextModel != null) {
       if (
         this.nextModel.columns.some(
-          c => c.name.startsWith('PIVOT_C_') && !columnMap.has(c.name)
+          c => c.name.startsWith(PIVOT_COLUMN_PREFIX) && !columnMap.has(c.name)
         )
       ) {
-        log.debug('next model not null, but columns dont match');
+        log.debug('next model not null, but columns do not match');
         this.nextColumnMap = columnMap;
       } else {
         log.debug('next model not null, all columns match');
@@ -440,17 +415,19 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       }
     } else if (
       this.model.columns.some(
-        c => c.name.startsWith('PIVOT_C_') && !columnMap.has(c.name)
+        c => c.name.startsWith(PIVOT_COLUMN_PREFIX) && !columnMap.has(c.name)
       )
     ) {
-      log.debug('next model is null, columns dont match - save  nextColumnMap');
+      log.debug(
+        'next model is null, columns do not match - save nextColumnMap'
+      );
       // TODO: check if current model columns match?
       this.nextColumnMap = columnMap;
     }
   }
 
   async handleSchemaUpdate(e: DhType.Event<DhType.Widget>): Promise<void> {
-    log.debug('Schema updated', e.detail, this.schema, this.pivotWidget);
+    log.debug('Schema updated');
     // Get the object, and make sure the keytable is fetched and usable
     const tables = e.detail.exportedObjects;
     const tablePromise = tables[0].fetch();
@@ -460,34 +437,29 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   copyTotalsData(data: DhType.ViewportData): void {
-    log.debug('[0] copyTotalsData', data);
-
     this.totalsRowMap = new Map();
-
     data.columns.forEach(column => {
-      log.debug('Column', column.name, column);
       this.totalsRowMap.set(column.name, data.getData(0, column));
     });
   }
 
   handleTotalsUpdate(event: DhType.Event<DhType.ViewportData>): void {
     log.debug('handleTotalsUpdate', event.detail);
-    this.copyTotalsData(event.detail);
 
+    this.copyTotalsData(event.detail);
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
   getCachedColumns = memoize(
-    (
-      columnMap: ReadonlyMap<string, string>,
-      tableColumns: readonly DhType.Column[]
-    ) => tableColumns.map(c => this.createDisplayColumn(c, columnMap))
+    (columnMap: SimplePivotColumnMap, tableColumns: readonly DhType.Column[]) =>
+      tableColumns.map(c => this.createDisplayColumn(c, columnMap))
   );
 
   get layoutHints(): DhType.LayoutHints | null | undefined {
     // log.debug('get layoutHints');
+    // TODO: memoize
     return {
-      backColumns: ['__TOTALS_COLUMN'],
+      backColumns: [TOTALS_COLUMN],
       hiddenColumns: [],
       frozenColumns: [],
       columnGroups: [],
@@ -495,11 +467,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       frontColumns: [],
       searchDisplayMode: this.dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE,
     };
-  }
-
-  set layoutHints(_layoutHints: DhType.LayoutHints | null | undefined) {
-    // no-op
-    log.debug('set layoutHints, no-op');
   }
 
   /**
@@ -587,21 +554,20 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   ): void {
     log.debug2('setNextSchema');
 
-    if (this.modelPromise) {
-      this.modelPromise.cancel();
+    if (this.schemaPromise) {
+      this.schemaPromise.cancel();
     }
 
-    // TODO: rename
-    this.modelPromise = PromiseUtils.makeCancelable(
+    this.schemaPromise = PromiseUtils.makeCancelable(
       pivotTablesPromise,
       ([table, totalsTable]: [DhType.Table, DhType.Table]) => {
         table.close();
         totalsTable.close();
       }
     );
-    this.modelPromise
+    this.schemaPromise
       .then(([table, totalsTable]) => {
-        this.modelPromise = null;
+        this.schemaPromise = null;
         const model = makeModel(this.dh, table, this.formatter);
         if (this.nextColumnMap != null) {
           log.debug(
@@ -624,7 +590,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
         }
 
         log.error('Unable to set next model', err);
-        this.modelPromise = null;
+        this.schemaPromise = null;
 
         this.dispatchEvent(
           new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
@@ -726,7 +692,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
         // Format based on the value/type of the cell
         if (value != null) {
-          const column = this.sourceColumn(x, y);
+          const column = this.columns[x];
           if (TableUtils.isDateType(column.type) || column.name === 'Date') {
             assertNotNull(theme.dateColor);
             return theme.dateColor;
@@ -784,13 +750,10 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   close(): void {
     log.debug('close');
-    this.totalsTable?.removeEventListener(
-      this.dh.Table.EVENT_UPDATED,
-      this.handleTotalsUpdate
-    );
+    this.stopListeningToTotals();
     this.stopListeningToKeyTable();
     this.stopListeningToSchema();
-    super.close();
+    this.model.close();
   }
 }
 

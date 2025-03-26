@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   type IrisGridModel,
   IrisGridSimplePivotModel,
+  type KeyColumnArray,
   type SimplePivotSchema,
 } from '@deephaven/iris-grid';
 import Log from '@deephaven/log';
@@ -11,7 +12,7 @@ import Log from '@deephaven/log';
 const log = Log.module('useIrisGridSimplePivotModel');
 
 export interface SimplePivotFetchResult {
-  columnMap: (readonly [string, string])[];
+  columnMap: KeyColumnArray;
   schema: SimplePivotSchema;
   table: dh.Table;
   keyTable: dh.Table;
