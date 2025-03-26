@@ -22,6 +22,13 @@ export interface KeyTableSubscriptionData {
   getData: (rowKey: DhType.Row, column: DhType.Column) => string;
 }
 
+/**
+ * Get a column map for a simple pivot table based on the key table data
+ * @param data Data from the key table
+ * @param columns Columns to include in the column map
+ * @param pivotIdColumn Key table column containing display names for the pivot columns
+ * @returns Column map for the simple pivot table
+ */
 export function getSimplePivotColumnMap(
   data: KeyTableSubscriptionData,
   columns: DhType.Column[],
@@ -41,4 +48,19 @@ export function getSimplePivotColumnMap(
     ]);
   }
   return columnMap;
+}
+
+/**
+ * Check if the column map has entries for all pivot columns
+ * @param columnMap Column map to check
+ * @param columns Columns to check against
+ * @returns True if the column map has entries for all pivot columns
+ */
+export function isColumnMapComplete(
+  columnMap: SimplePivotColumnMap,
+  columns: readonly DhType.Column[]
+): boolean {
+  return !columns.some(
+    c => c.name.startsWith(PIVOT_COLUMN_PREFIX) && !columnMap.has(c.name)
+  );
 }

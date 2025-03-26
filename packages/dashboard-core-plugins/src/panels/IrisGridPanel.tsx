@@ -325,7 +325,6 @@ export class IrisGridPanel extends PureComponent<
     const { model } = this.state;
     const { makeModel } = this.props;
     if (model !== prevState.model) {
-      log.debug('[0] componentDidUpdate model changed');
       if (prevState.model != null) {
         this.stopModelListening(prevState.model);
         prevState.model.close();

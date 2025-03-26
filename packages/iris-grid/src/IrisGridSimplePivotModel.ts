@@ -1,4 +1,5 @@
 /* eslint class-methods-use-this: "off" */
+/* eslint no-underscore-dangle: "off" */
 import memoize from 'memoize-one';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -10,7 +11,7 @@ import {
   type CancelablePromise,
 } from '@deephaven/utils';
 import { GridRange, type ModelIndex } from '@deephaven/grid';
-import { type ColumnName, type UITotalsTableConfig } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 import type { DisplayColumn } from './IrisGridModel';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import IrisGridModel from './IrisGridModel';
@@ -20,8 +21,8 @@ import IrisGridUtils from './IrisGridUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
 import {
   getSimplePivotColumnMap,
+  isColumnMapComplete,
   KEY_TABLE_PIVOT_COLUMN,
-  PIVOT_COLUMN_PREFIX,
   TOTALS_COLUMN,
   type KeyColumnArray,
   type KeyTableSubscriptionData,
@@ -74,6 +75,8 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   private totalsRowMap: Map<string, unknown>;
 
+  private _layoutHints: DhType.LayoutHints | null | undefined;
+
   constructor(
     dh: typeof DhType,
     table: DhType.Table,
@@ -113,6 +116,16 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.nextColumnMap = null;
     this.pivotWidget = pivotWidget;
     this.schema = schema;
+
+    this._layoutHints = {
+      backColumns: [TOTALS_COLUMN],
+      hiddenColumns: [],
+      frozenColumns: [],
+      columnGroups: [],
+      areSavedLayoutsAllowed: false,
+      frontColumns: [],
+      searchDisplayMode: this.dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE,
+    };
 
     this.startListeningToKeyTable();
 
@@ -165,7 +178,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   /**
-   * Add displayName property from the column map to the given column
+   * Add displayName property to the given column
    * @param column Column to add displayName to
    * @param columnMap Column name map
    * @returns Column with the displayName
@@ -177,12 +190,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return new Proxy(column, {
       get: (target, prop) => {
         if (prop === 'displayName') {
-          if (!columnMap.has(column.name)) {
-            return column.name.startsWith(PIVOT_COLUMN_PREFIX)
-              ? ''
-              : column.name;
-          }
-          return columnMap.get(column.name);
+          return columnMap.get(column.name) ?? column.name;
         }
         return Reflect.get(target, prop);
       },
@@ -193,27 +201,20 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     (
       columnMap: SimplePivotColumnMap,
       schema: SimplePivotSchema
-    ): readonly ColumnHeaderGroup[] => {
-      log.debug('getPivotColumnHeaderGroups', schema.pivotDescription, {
-        schema,
-        columnMap: JSON.stringify([...columnMap]),
-        modelColumns: JSON.stringify(this.model.columns.map(c => c.name)),
-      });
-      return [
-        new ColumnHeaderGroup({
-          name: schema.pivotDescription,
-          children: schema.rowColNames,
-          depth: 1,
-          childIndexes: schema.rowColNames.map((_, index) => index),
-        }),
-        new ColumnHeaderGroup({
-          name: schema.columnColNames.join(', '),
-          children: [...columnMap.keys()],
-          depth: 1,
-          childIndexes: [...columnMap.keys()].map((_, index) => index),
-        }),
-      ];
-    }
+    ): readonly ColumnHeaderGroup[] => [
+      new ColumnHeaderGroup({
+        name: schema.pivotDescription,
+        children: schema.rowColNames,
+        depth: 1,
+        childIndexes: schema.rowColNames.map((_, index) => index),
+      }),
+      new ColumnHeaderGroup({
+        name: schema.columnColNames.join(', '),
+        children: [...columnMap.keys()],
+        depth: 1,
+        childIndexes: [...columnMap.keys()].map((_, index) => index),
+      }),
+    ]
   );
 
   get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
@@ -273,24 +274,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   get isCustomColumnsAvailable(): boolean {
     return false;
-  }
-
-  set totalsConfig(_: UITotalsTableConfig | null) {
-    // no-op
-  }
-
-  get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {
-    log.debug('get columnHeaderGroupMap');
-    return this.model.columnHeaderGroupMap;
-  }
-
-  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
-    log.debug('get columnHeaderGroups');
-    return this.model.columnHeaderGroups;
-  }
-
-  set columnHeaderGroups(columnHeaderGroups: readonly ColumnHeaderGroup[]) {
-    this.model.columnHeaderGroups = columnHeaderGroups;
   }
 
   get rowCount(): number {
@@ -379,6 +362,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   }
 
   handleKeyTableUpdate(e: { detail: KeyTableSubscriptionData }): void {
+    log.debug('Key table updated');
     const pivotIdColumn = this.keyTable.findColumn(KEY_TABLE_PIVOT_COLUMN);
     const columns = this.keyTable.columns.filter(
       c => c.name !== KEY_TABLE_PIVOT_COLUMN
@@ -392,43 +376,46 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       keyColumns.push([TOTALS_COLUMN, 'Totals']);
     }
     const columnMap = new Map(keyColumns);
-    log.debug(
-      'Key table updated',
-      this.model.columns.map(c => c.name),
-      JSON.stringify([...columnMap]),
-      Boolean(this.nextModel),
-      Boolean(this.nextColumnMap)
-    );
-    if (this.nextModel != null) {
-      if (
-        this.nextModel.columns.some(
-          c => c.name.startsWith(PIVOT_COLUMN_PREFIX) && !columnMap.has(c.name)
-        )
-      ) {
-        log.debug('next model not null, but columns do not match');
-        this.nextColumnMap = columnMap;
+
+    if (this.nextModel == null) {
+      if (isColumnMapComplete(columnMap, this.model.columns)) {
+        log.debug2(
+          'Key table update matches the existing model, update columns'
+        );
+        this.columnMap = columnMap;
+        this.columnHeaderGroups = this.getCachedColumnHeaderGroups(
+          this.columnMap,
+          this.schema
+        );
+        this.dispatchEvent(
+          new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+            detail: this.columns,
+          })
+        );
       } else {
-        log.debug('next model not null, all columns match');
-        assertNotNull(this.nextTotalsTable);
-        this.setModel(this.nextModel, columnMap, this.nextTotalsTable);
-        this.nextModel = null;
+        log.debug2(
+          'Key table update does not match the existing model, save column map for the next schema update'
+        );
+        this.nextColumnMap = columnMap;
       }
-    } else if (
-      this.model.columns.some(
-        c => c.name.startsWith(PIVOT_COLUMN_PREFIX) && !columnMap.has(c.name)
-      )
-    ) {
-      log.debug(
-        'next model is null, columns do not match - save nextColumnMap'
+      return;
+    }
+    if (isColumnMapComplete(columnMap, this.nextModel.columns)) {
+      log.debug2('Key table update matches the saved model, update the model');
+      assertNotNull(this.nextTotalsTable);
+      this.setModel(this.nextModel, columnMap, this.nextTotalsTable);
+      this.nextModel = null;
+      this.nextTotalsTable = null;
+    } else {
+      log.debug2(
+        'Key table update does not match the saved model, save column map for the next schema update'
       );
-      // TODO: check if current model columns match?
       this.nextColumnMap = columnMap;
     }
   }
 
   async handleSchemaUpdate(e: DhType.Event<DhType.Widget>): Promise<void> {
     log.debug('Schema updated');
-    // Get the object, and make sure the keytable is fetched and usable
     const tables = e.detail.exportedObjects;
     const tablePromise = tables[0].fetch();
     const totalsTablePromise = tables.length === 2 ? tables[1].fetch() : null;
@@ -456,17 +443,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   );
 
   get layoutHints(): DhType.LayoutHints | null | undefined {
-    // log.debug('get layoutHints');
-    // TODO: memoize
-    return {
-      backColumns: [TOTALS_COLUMN],
-      hiddenColumns: [],
-      frozenColumns: [],
-      columnGroups: [],
-      areSavedLayoutsAllowed: false,
-      frontColumns: [],
-      searchDisplayMode: this.dh.SearchDisplayMode.SEARCH_DISPLAY_HIDE,
-    };
+    return this._layoutHints;
   }
 
   /**
@@ -544,7 +521,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     }
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: model.columns,
+        detail: this.columns,
       })
     );
   }
@@ -552,8 +529,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
   setNextSchema(
     pivotTablesPromise: Promise<[DhType.Table, DhType.Table]>
   ): void {
-    log.debug2('setNextSchema');
-
     if (this.schemaPromise) {
       this.schemaPromise.cancel();
     }
@@ -567,17 +542,31 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     );
     this.schemaPromise
       .then(([table, totalsTable]) => {
+        log.debug('Schema updated');
         this.schemaPromise = null;
         const model = makeModel(this.dh, table, this.formatter);
         if (this.nextColumnMap != null) {
-          log.debug(
-            'Schema updated, nextColumnMap is not null, setting new model'
-          );
-          this.setModel(model, this.nextColumnMap, totalsTable);
-          this.nextColumnMap = null;
+          if (isColumnMapComplete(this.nextColumnMap, model.columns)) {
+            log.debug2(
+              'Schema updated, set new model with the saved column map'
+            );
+            this.setModel(model, this.nextColumnMap, totalsTable);
+            this.nextColumnMap = null;
+          } else {
+            log.debug2(
+              'Saved column map does not match the new model, save the model for the next key table update'
+            );
+            this.nextModel = model;
+            this.nextTotalsTable = totalsTable;
+          }
+          return;
+        }
+        if (isColumnMapComplete(this.columnMap, model.columns)) {
+          log.debug2('Schema updated, set new model with existing column map');
+          this.setModel(model, this.columnMap, totalsTable);
         } else {
-          log.debug(
-            'Schema updated, nextColumnMap is null, save new model as nextModel'
+          log.debug2(
+            'Existing column map does not match the new model, save the model for the next key table update'
           );
           this.nextModel = model;
           this.nextTotalsTable = totalsTable;
