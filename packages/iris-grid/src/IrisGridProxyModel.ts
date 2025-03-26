@@ -26,7 +26,8 @@ function makeModel(
   dh: typeof DhType,
   table: DhType.Table | DhType.TreeTable | DhType.PartitionedTable,
   formatter?: Formatter,
-  inputTable?: DhType.InputTable | null
+  inputTable?: DhType.InputTable | null,
+  wasUncoalesced?: boolean
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(dh, table, formatter);
@@ -34,7 +35,13 @@ function makeModel(
   if (TableUtils.isPartitionedTable(table)) {
     return new IrisGridPartitionedTableModel(dh, table, formatter);
   }
-  return new IrisGridTableModel(dh, table, formatter, inputTable);
+  return new IrisGridTableModel(
+    dh,
+    table,
+    formatter,
+    inputTable,
+    wasUncoalesced
+  );
 }
 
 /**
@@ -322,18 +329,30 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       partitionConfig != null &&
       isPartitionedGridModelProvider(this.originalModel)
     ) {
+      // Copy the wasUncoalesced flag from the original IrisGridTableModel when creating the new one
+      let wasUncoalesced: boolean | undefined;
+      if (this.originalModel instanceof IrisGridTableModel) {
+        wasUncoalesced = this.originalModel.wasUncoalesced;
+      }
+
       if (partitionConfig.mode === 'keys') {
         modelPromise = this.originalModel
           .partitionBaseTable()
-          .then(table => makeModel(this.dh, table, this.formatter));
+          .then(table =>
+            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
+          );
       } else if (partitionConfig.mode === 'merged') {
         modelPromise = this.originalModel
           .partitionMergedTable()
-          .then(table => makeModel(this.dh, table, this.formatter));
+          .then(table =>
+            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
+          );
       } else {
         modelPromise = this.originalModel
           .partitionTable(partitionConfig.partitions)
-          .then(table => makeModel(this.dh, table, this.formatter));
+          .then(table =>
+            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
+          );
       }
     }
 
