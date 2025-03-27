@@ -3,6 +3,7 @@ import type LogHistory from './LogHistory';
 
 // List of objects to blacklist
 // '' represents the root object
+// * represents a wildcard key
 export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['api'],
   ['client'],
@@ -43,7 +44,9 @@ function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
   for (let i = 0; i < blacklist.length; i += 1) {
     if (
       currPath.length === blacklist[i].length &&
-      currPath.every((v, index) => v === blacklist[i][index])
+      currPath.every(
+        (v, index) => blacklist[i][index] === '*' || v === blacklist[i][index]
+      )
     ) {
       // blacklist match
       return true;
@@ -150,7 +153,7 @@ function formatDate(date: Date): string {
  * @param logHistory Log history to include in the console.txt file
  * @param metadata Additional metadata to include in the metadata.json file
  * @param reduxData Redux data to include in the redux.json file
- * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
