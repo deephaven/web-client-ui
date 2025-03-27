@@ -50,14 +50,13 @@ class IrisGridTableModel
     dh: typeof DhType,
     table: DhType.Table,
     formatter = new Formatter(dh),
-    inputTable: DhType.InputTable | null = null,
-    wasUncoalesced = table.isUncoalesced
+    inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
     this.initialFilters = table.filter;
-    this.wasUncoalesced = wasUncoalesced;
+    this.wasUncoalesced = this.isPartitionRequired;
   }
 
   get isExportAvailable(): boolean {
