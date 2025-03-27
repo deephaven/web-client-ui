@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
@@ -84,4 +85,65 @@ export async function loadModules<TMainModule>({
   return require(mainModulePath);
 }
 
-export default loadModules;
+/**
+ * Load `jsapi/dh-core.js` and `jsapi/dh-internal.js` modules from a Core Server.
+ * @param serverUrl The URL of the server to load from.
+ * @param storageDir The directory to store the downloaded modules.
+ * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
+ * @returns The default export the `jsapi/dh-core.js` module.
+ */
+export async function loadDhModules({
+  serverUrl,
+  storageDir,
+  targetModuleType,
+}: Pick<
+  LoadModuleOptions,
+  'serverUrl' | 'storageDir' | 'targetModuleType'
+>): Promise<typeof DhType> {
+  if (targetModuleType === 'esm') {
+    // These are needed in `esm` output until JSAPI is updated to not rely on
+    // `window` and `self`.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.self = globalThis;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.window = globalThis;
+  }
+
+  const coreModule = await loadModules<
+    typeof DhType & { default?: typeof DhType }
+  >({
+    serverUrl,
+    serverPaths: ['jsapi/dh-core.js', 'jsapi/dh-internal.js'],
+    storageDir,
+    targetModuleType,
+    download:
+      targetModuleType === 'esm'
+        ? // ESM does not need any transformation since the server modules are already ESM.
+          true
+        : // CJS needs a post-download transform to convert the ESM modules to CJS.
+          (serverPath, content) => {
+            if (serverPath === 'jsapi/dh-core.js') {
+              return content
+                .replace(
+                  `import {dhinternal} from './dh-internal.js';`,
+                  `const {dhinternal} = require("./dh-internal.js");`
+                )
+                .replace(`export default dh;`, `module.exports = dh;`);
+            }
+
+            if (serverPath === 'jsapi/dh-internal.js') {
+              return content.replace(
+                `export{__webpack_exports__dhinternal as dhinternal};`,
+                `module.exports={dhinternal:__webpack_exports__dhinternal};`
+              );
+            }
+
+            return content;
+          },
+  });
+
+  // ESM uses `default` export. CJS does not.
+  return coreModule.default ?? coreModule;
+}
