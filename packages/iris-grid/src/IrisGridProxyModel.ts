@@ -443,9 +443,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get isPartitionAwareSourceTable(): boolean {
-    return isPartitionedGridModelProvider(this.originalModel)
-      ? this.originalModel.isPartitionAwareSourceTable
-      : false;
+    return (
+      isPartitionedGridModelProvider(this.originalModel) &&
+      this.originalModel.isPartitionAwareSourceTable
+    );
   }
 
   get formatter(): Formatter {
