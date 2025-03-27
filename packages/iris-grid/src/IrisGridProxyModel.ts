@@ -436,10 +436,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get isPartitionRequired(): boolean {
+    // @ts-expect-error If the original model is not a partitioned model return undefined to make the proxy model also return false in isPartitionedGridModelProvider
     return isPartitionedGridModelProvider(this.originalModel)
       ? this.originalModel.isPartitionRequired
-      : // @ts-expect-error If the original model is not a partitioned model return undefined to make the proxy model also return false in isPartitionedGridModelProvider
-        undefined;
+      : undefined;
   }
 
   get isPartitionAwareSourceTable(): boolean {
