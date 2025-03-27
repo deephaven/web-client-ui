@@ -7,7 +7,7 @@ import type LogHistory from './LogHistory';
 export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['api'],
   ['client'],
-  ['dashboardData', 'default', 'connection'],
+  ['dashboardData', '*', 'connection'],
   ['dashboardData', '*', 'sessionWrapper'],
   ['layoutStorage'],
   ['storage'],
