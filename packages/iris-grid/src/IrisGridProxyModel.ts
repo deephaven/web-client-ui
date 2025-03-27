@@ -26,8 +26,7 @@ function makeModel(
   dh: typeof DhType,
   table: DhType.Table | DhType.TreeTable | DhType.PartitionedTable,
   formatter?: Formatter,
-  inputTable?: DhType.InputTable | null,
-  wasUncoalesced?: boolean
+  inputTable?: DhType.InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(dh, table, formatter);
@@ -35,13 +34,7 @@ function makeModel(
   if (TableUtils.isPartitionedTable(table)) {
     return new IrisGridPartitionedTableModel(dh, table, formatter);
   }
-  return new IrisGridTableModel(
-    dh,
-    table,
-    formatter,
-    inputTable,
-    wasUncoalesced
-  );
+  return new IrisGridTableModel(dh, table, formatter, inputTable);
 }
 
 /**
@@ -329,30 +322,18 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       partitionConfig != null &&
       isPartitionedGridModelProvider(this.originalModel)
     ) {
-      // Copy the wasUncoalesced flag from the original IrisGridTableModel when creating the new one
-      let wasUncoalesced: boolean | undefined;
-      if (this.originalModel instanceof IrisGridTableModel) {
-        wasUncoalesced = this.originalModel.wasUncoalesced;
-      }
-
       if (partitionConfig.mode === 'keys') {
         modelPromise = this.originalModel
           .partitionBaseTable()
-          .then(table =>
-            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
-          );
+          .then(table => makeModel(this.dh, table, this.formatter));
       } else if (partitionConfig.mode === 'merged') {
         modelPromise = this.originalModel
           .partitionMergedTable()
-          .then(table =>
-            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
-          );
+          .then(table => makeModel(this.dh, table, this.formatter));
       } else {
         modelPromise = this.originalModel
           .partitionTable(partitionConfig.partitions)
-          .then(table =>
-            makeModel(this.dh, table, this.formatter, null, wasUncoalesced)
-          );
+          .then(table => makeModel(this.dh, table, this.formatter));
       }
     }
 
@@ -459,6 +440,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       ? this.originalModel.isPartitionRequired
       : // @ts-expect-error If the original model is not a partitioned model return undefined to make the proxy model also return false in isPartitionedGridModelProvider
         undefined;
+  }
+
+  get isPartitionAwareSourceTable(): boolean {
+    return isPartitionedGridModelProvider(this.originalModel)
+      ? this.originalModel.isPartitionAwareSourceTable
+      : false;
   }
 
   get formatter(): Formatter {

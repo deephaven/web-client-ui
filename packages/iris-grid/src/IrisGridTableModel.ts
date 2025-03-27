@@ -37,7 +37,7 @@ class IrisGridTableModel
 
   initialFilters: DhType.FilterCondition[] = [];
 
-  // The initial value for table.isUncoalesced before any transformations (e.g. filter, select)
+  // The initial value for table.isUncoalesced on the source table before any transformations (e.g. filter, select)
   wasUncoalesced: boolean;
 
   /**
