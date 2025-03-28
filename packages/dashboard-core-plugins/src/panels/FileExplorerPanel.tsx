@@ -12,7 +12,7 @@ import FileExplorer, {
 import React, { type ReactNode } from 'react';
 import { connect, type ConnectedProps } from 'react-redux';
 import type { dh } from '@deephaven/jsapi-types';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';
 import { getDashboardSessionWrapper } from '../redux';
