@@ -965,8 +965,6 @@ class IrisGridTableModelTemplate<
     this.columnHeaderParentMap = parentMap;
     this._columnHeaderGroupMap = groupMap;
     this._isColumnHeaderGroupsInitialized = true;
-
-    log.debug('set columnHeaderGroups', this._columnHeaderGroups, groups);
   }
 
   private initializeColumnHeaderGroups(): void {
