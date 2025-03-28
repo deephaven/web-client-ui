@@ -460,6 +460,10 @@ class IrisGridTableModelTemplate<
     return true;
   }
 
+  get isOrganizeColumnsAvailable(): boolean {
+    return true;
+  }
+
   get isTotalsAvailable(): boolean {
     return this.table.getTotalsTable != null;
   }
@@ -961,6 +965,8 @@ class IrisGridTableModelTemplate<
     this.columnHeaderParentMap = parentMap;
     this._columnHeaderGroupMap = groupMap;
     this._isColumnHeaderGroupsInitialized = true;
+
+    log.debug('set columnHeaderGroups', this._columnHeaderGroups, groups);
   }
 
   private initializeColumnHeaderGroups(): void {
