@@ -85,13 +85,13 @@ function tableNameReplacer(input: string): string {
 class DbNameValidator {
   static legalize = (
     name: string,
-    customReplace: (input: string) => string,
+    replace: (input: string) => string,
     prefix: string,
     regex: RegExp,
     checkReserved: boolean,
     i: number
   ): string => {
-    let legalName = customReplace(name.trim());
+    let legalName = replace(name.trim());
 
     // Add prefix to reserved names
     if (
