@@ -3,13 +3,13 @@ import DbNameValidator from './DbNameValidator';
 const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
-const VALID_TABLE_NAME = '$+@abc123_ABC';
-const INVALID_TABLE_NAME = '%^&abc';
-const CLEANED_INVALID_TABLE_NAME = 'abc';
+const VALID_TABLE_NAME = '$+@abc-123_ABC';
+const INVALID_TABLE_NAME = '%^&ab-c';
+const CLEANED_INVALID_TABLE_NAME = 'ab-c';
 
 const VALID_COL_NAME = 'abc123_ABC';
-const INVALID_COL_NAME = '@abc123_ABC123';
-const CLEANED_INVALID_COL_NAME = 'abc123_ABC123';
+const INVALID_COL_NAME = '@abc123_ABC-123';
+const CLEANED_INVALID_COL_NAME = 'abc123_ABC_123';
 
 const START_WITH_NUM = '123abc';
 const RESERVED_JAVA_WORD = 'return';
