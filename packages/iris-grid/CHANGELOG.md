@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- add median agg for totals table ([#2388](https://github.com/deephaven/web-client-ui/issues/2388)) ([5237f3c](https://github.com/deephaven/web-client-ui/commit/5237f3cf1bf03e023d198c10cc1a7448e9599771))
+
+### Bug Fixes
+
+- allow input table to delete row with null key ([#2386](https://github.com/deephaven/web-client-ui/issues/2386)) ([da572d1](https://github.com/deephaven/web-client-ui/commit/da572d13bd5b65b74211e2d6f1125c6a371d61b1))
+- Partition aware source table UI widget swaps from merge to coalesce ([#2397](https://github.com/deephaven/web-client-ui/issues/2397)) ([f6a859d](https://github.com/deephaven/web-client-ui/commit/f6a859d82da626d5287d0dd68a6acd3fde85f003))
+
 ## [0.106.4](https://github.com/deephaven/web-client-ui/compare/v0.106.3...v0.106.4) (2025-03-18)
 
 ### Bug Fixes

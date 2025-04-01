@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- @deephaven/jsapi-nodejs loadDhModules() util ([#2392](https://github.com/deephaven/web-client-ui/issues/2392)) ([ee4eba5](https://github.com/deephaven/web-client-ui/commit/ee4eba5d03286c5e4a23afb8c3bb36e02912c317))
+- add median agg for totals table ([#2388](https://github.com/deephaven/web-client-ui/issues/2388)) ([5237f3c](https://github.com/deephaven/web-client-ui/commit/5237f3cf1bf03e023d198c10cc1a7448e9599771))
+- Allow wildcards for logs blacklist ([#2396](https://github.com/deephaven/web-client-ui/issues/2396)) ([6c406ba](https://github.com/deephaven/web-client-ui/commit/6c406ba00a74b53f4a3d551cb3d9b6241f064dfb))
+- useChangeEventValueCallback hook ([#2391](https://github.com/deephaven/web-client-ui/issues/2391)) ([99dfcab](https://github.com/deephaven/web-client-ui/commit/99dfcab0093b582ee907973a1df43995b148491a))
+
+### Bug Fixes
+
+- allow input table to delete row with null key ([#2386](https://github.com/deephaven/web-client-ui/issues/2386)) ([da572d1](https://github.com/deephaven/web-client-ui/commit/da572d13bd5b65b74211e2d6f1125c6a371d61b1))
+- DH-17599: Fix table name validation - allow hyphens ([#2398](https://github.com/deephaven/web-client-ui/issues/2398)) ([4b1c9dd](https://github.com/deephaven/web-client-ui/commit/4b1c9dde7b0982f71f09829813285519dd96deef))
+- DH-18279: fix one click titles ([#2381](https://github.com/deephaven/web-client-ui/issues/2381)) ([c4ffce7](https://github.com/deephaven/web-client-ui/commit/c4ffce7659da9c5b86d820c4f9c929b3e6596a9c))
+- DH-19010: Delete closed http2 sessions from the cache ([#2400](https://github.com/deephaven/web-client-ui/issues/2400)) ([7a2e07f](https://github.com/deephaven/web-client-ui/commit/7a2e07f8ff5e769fb5724ab3755f099acbe808c4))
+- Partition aware source table UI widget swaps from merge to coalesce ([#2397](https://github.com/deephaven/web-client-ui/issues/2397)) ([f6a859d](https://github.com/deephaven/web-client-ui/commit/f6a859d82da626d5287d0dd68a6acd3fde85f003))
+
 ## [0.106.4](https://github.com/deephaven/web-client-ui/compare/v0.106.3...v0.106.4) (2025-03-18)
 
 ### Bug Fixes

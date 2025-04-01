@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- @deephaven/jsapi-nodejs loadDhModules() util ([#2392](https://github.com/deephaven/web-client-ui/issues/2392)) ([ee4eba5](https://github.com/deephaven/web-client-ui/commit/ee4eba5d03286c5e4a23afb8c3bb36e02912c317))
+
+### Bug Fixes
+
+- DH-19010: Delete closed http2 sessions from the cache ([#2400](https://github.com/deephaven/web-client-ui/issues/2400)) ([7a2e07f](https://github.com/deephaven/web-client-ui/commit/7a2e07f8ff5e769fb5724ab3755f099acbe808c4))
+
 ## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
 
 **Note:** Version bump only for package @deephaven/jsapi-nodejs
