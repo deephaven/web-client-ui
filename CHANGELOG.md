@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.19](https://github.com/deephaven/web-client-ui/compare/v0.85.18...v0.85.19) (2025-04-01)
+
+### Bug Fixes
+
+- DH-17599: Fix table name validation - allow hyphens ([#2398](https://github.com/deephaven/web-client-ui/issues/2398)) ([cc0a563](https://github.com/deephaven/web-client-ui/commit/cc0a563946bf5865520f63de4800f3286acf7cc2))
+
 ## [0.85.18](https://github.com/deephaven/web-client-ui/compare/v0.85.17...v0.85.18) (2025-03-26)
 
 ### Features
