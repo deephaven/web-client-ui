@@ -158,8 +158,7 @@ class DbNameValidator {
     );
 
   static isValidTableName = (name: string): boolean =>
-    name.match(TABLE_NAME_PATTERN) !== null;
-
+    TABLE_NAME_PATTERN.test(name);
   static isValidColumnName = (name: string): boolean =>
     DbNameValidator.legalizeColumnName(name) === name;
 }
