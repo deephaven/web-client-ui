@@ -59,7 +59,7 @@ export function SimplePivotWidgetPlugin({
             const totalsPromise =
               tables.length === 2 ? tables[1].fetch() : Promise.resolve(null);
 
-            // Wait for all three promises to have resolved, then render the table. Note that after
+            // Wait for all four promises to have resolved, then render the table. Note that after
             // the first load, the keytable will remain loaded, we'll only wait for the main table,
             // and optionally the totals table.
             const fetchResult = await Promise.all([
