@@ -4,8 +4,8 @@ const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
 const VALID_TABLE_NAME = '$+@abc-123_ABC';
-const INVALID_TABLE_NAME = '%^&ab-c';
-const CLEANED_INVALID_TABLE_NAME = 'ab-c';
+const INVALID_TABLE_NAMES = ['%^&ab-c', '-abc', '-'];
+const CLEANED_INVALID_TABLE_NAMES = ['ab-c', '-abc', '-'];
 
 const VALID_COL_NAME = 'abc123_ABC';
 const INVALID_COL_NAME = '@abc123_ABC-123';
@@ -20,9 +20,12 @@ describe('Table name validation', () => {
     expect(DbNameValidator.isValidTableName(VALID_TABLE_NAME)).toBe(true);
   });
 
-  it('Returns false on invalid table names', () => {
-    expect(DbNameValidator.isValidTableName(INVALID_TABLE_NAME)).toBe(false);
-  });
+  it.each(INVALID_TABLE_NAMES)(
+    'Returns false on invalid table name %s',
+    name => {
+      expect(DbNameValidator.isValidTableName(name)).toBe(false);
+    }
+  );
 });
 
 describe('Column name validation', () => {
@@ -52,10 +55,10 @@ describe('legalizeTableName', () => {
     );
   });
 
-  it('Legalize an invalid table name', () => {
-    expect(DbNameValidator.legalizeTableName(INVALID_TABLE_NAME)).toBe(
-      CLEANED_INVALID_TABLE_NAME
-    );
+  it.each(
+    INVALID_TABLE_NAMES.map((name, i) => [name, CLEANED_INVALID_TABLE_NAMES[i]])
+  )('Legalize an invalid table name %s > %s', (invalid, cleaned) => {
+    expect(DbNameValidator.legalizeTableName(invalid)).toBe(cleaned);
   });
 
   it('Renames a table name with no valid chars to table_0', () => {

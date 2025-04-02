@@ -68,6 +68,9 @@ const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_COLUMN_AND_QUERY_REGEX
 const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
 
+// From io.deephaven.db.tables.utils.DBNameValidator#TABLE_NAME_PATTERN
+const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/g;
+
 function columnNameReplacer(input: string): string {
   // Replace all dashes and spaces with underscores
   return input.replace(/[ -]/g, '_');
@@ -155,7 +158,7 @@ class DbNameValidator {
     );
 
   static isValidTableName = (name: string): boolean =>
-    DbNameValidator.legalizeTableName(name) === name;
+    TABLE_NAME_PATTERN.test(name);
 
   static isValidColumnName = (name: string): boolean =>
     DbNameValidator.legalizeColumnName(name) === name;
