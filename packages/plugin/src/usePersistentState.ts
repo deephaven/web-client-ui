@@ -9,6 +9,14 @@ import {
 import { nanoid } from 'nanoid';
 import { PersistentStateContext } from './PersistentStateContext';
 
+/**
+ * Functions identically to useState except that a PersistentStateProvider can be used to
+ * track all calls to this hook and persist the value for future page loads.
+ * Primarily used in Deephaven UI so we can persist state of multiple components within a panel.
+ *
+ * @param initialState The initial state if there is no previously persisted state.
+ * @returns [state, setState] tuple just like useState.
+ */
 export default function usePersistentState<S>(
   initialState: S | (() => S)
 ): [S, Dispatch<SetStateAction<S>>] {
