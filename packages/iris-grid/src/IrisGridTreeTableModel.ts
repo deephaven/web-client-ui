@@ -287,6 +287,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return false;
   }
 
+  get isOrganizeColumnsAvailable(): boolean {
+    return true;
+  }
+
   get isSelectDistinctAvailable(): boolean {
     return false;
   }
