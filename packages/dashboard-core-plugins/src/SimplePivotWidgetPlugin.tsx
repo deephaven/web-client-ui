@@ -53,6 +53,13 @@ export function SimplePivotWidgetPlugin({
         const removeEventListener = pivotWidget.addEventListener<DhType.Widget>(
           dh.Widget.EVENT_MESSAGE,
           async e => {
+            removeEventListener();
+            const data = e.detail.getDataAsString();
+            const response = JSON.parse(data === '' ? '{}' : data);
+            if (response.error != null) {
+              reject(new Error(response.error));
+              return;
+            }
             // Get the object, and make sure the keytable is fetched and usable
             const tables = e.detail.exportedObjects;
             const tableToRenderPromise = tables[0].fetch();
@@ -73,9 +80,6 @@ export function SimplePivotWidgetPlugin({
               keyTable,
               columnMap,
             }));
-
-            removeEventListener();
-
             resolve({ ...fetchResult, schema, pivotWidget });
           }
         );
