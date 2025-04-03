@@ -224,43 +224,44 @@ export class ConsoleInput extends PureComponent<
       const position = commandEditor?.getPosition();
       assertNotNull(position);
       const { lineNumber } = position;
-      if (
-        keyEvent.code === 'ArrowUp' &&
-        !this.isSuggestionMenuPopulated() &&
-        lineNumber === 1
-      ) {
-        if (commandHistoryIndex != null) {
-          this.loadCommand(commandHistoryIndex + 1);
-        } else {
-          this.loadCommand(0);
-        }
-
-        this.focusStart();
-        keyEvent.stopPropagation();
-        keyEvent.preventDefault();
-
-        return;
-      }
-
-      if (
-        keyEvent.code === 'ArrowDown' &&
-        !this.isSuggestionMenuPopulated() &&
-        lineNumber === model?.getLineCount()
-      ) {
-        if (commandHistoryIndex != null && commandHistoryIndex > 0) {
-          this.loadCommand(commandHistoryIndex - 1);
-        } else {
-          this.loadCommand(null);
-        }
-
-        this.focusEnd();
-        keyEvent.stopPropagation();
-        keyEvent.preventDefault();
-
-        return;
-      }
 
       if (!keyEvent.altKey && !keyEvent.shiftKey && !keyEvent.metaKey) {
+        if (
+          keyEvent.code === 'ArrowUp' &&
+          !this.isSuggestionMenuPopulated() &&
+          lineNumber === 1
+        ) {
+          if (commandHistoryIndex != null) {
+            this.loadCommand(commandHistoryIndex + 1);
+          } else {
+            this.loadCommand(0);
+          }
+
+          this.focusStart();
+          keyEvent.stopPropagation();
+          keyEvent.preventDefault();
+
+          return;
+        }
+
+        if (
+          keyEvent.code === 'ArrowDown' &&
+          !this.isSuggestionMenuPopulated() &&
+          lineNumber === model?.getLineCount()
+        ) {
+          if (commandHistoryIndex != null && commandHistoryIndex > 0) {
+            this.loadCommand(commandHistoryIndex - 1);
+          } else {
+            this.loadCommand(null);
+          }
+
+          this.focusEnd();
+          keyEvent.stopPropagation();
+          keyEvent.preventDefault();
+
+          return;
+        }
+
         if (
           keyEvent.keyCode === monaco.KeyCode.Enter &&
           !this.isSuggestionMenuPopulated()

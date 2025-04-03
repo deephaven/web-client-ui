@@ -63,10 +63,23 @@ const JAVA_KEYWORDS = new Set([
 ]);
 
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_TABLE_AND_NAMESPACE_REGEX
-const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$+@-]/g;
+const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
 
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_COLUMN_AND_QUERY_REGEX
 const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
+
+// From io.deephaven.db.tables.utils.DBNameValidator#TABLE_NAME_PATTERN
+const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/g;
+
+function columnNameReplacer(input: string): string {
+  // Replace all dashes and spaces with underscores
+  return input.replace(/[ -]/g, '_');
+}
+
+function tableNameReplacer(input: string): string {
+  // Replace spaces with underscores
+  return input.replace(/\s/g, '_');
+}
 
 /**
  * Similar to DBNameValidator.java, this class has utilities for validating and legalizing
@@ -75,13 +88,13 @@ const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
 class DbNameValidator {
   static legalize = (
     name: string,
+    replace: (input: string) => string,
     prefix: string,
     regex: RegExp,
     checkReserved: boolean,
     i: number
   ): string => {
-    // Replace all dashes and spaces with underscores
-    let legalName = name.trim().replace(/[- ]/g, '_');
+    let legalName = replace(name.trim());
 
     // Add prefix to reserved names
     if (
@@ -111,6 +124,7 @@ class DbNameValidator {
   static legalizeTableName = (name: string): string =>
     DbNameValidator.legalize(
       name,
+      tableNameReplacer,
       TABLE_PREFIX,
       STERILE_TABLE_AND_NAMESPACE_REGEX,
       false,
@@ -136,6 +150,7 @@ class DbNameValidator {
     // Replace all dashes and spaces with underscores
     DbNameValidator.legalize(
       header,
+      columnNameReplacer,
       COLUMN_PREFIX,
       STERILE_COLUMN_AND_QUERY_REGEX,
       true,
@@ -143,7 +158,7 @@ class DbNameValidator {
     );
 
   static isValidTableName = (name: string): boolean =>
-    DbNameValidator.legalizeTableName(name) === name;
+    TABLE_NAME_PATTERN.test(name);
 
   static isValidColumnName = (name: string): boolean =>
     DbNameValidator.legalizeColumnName(name) === name;

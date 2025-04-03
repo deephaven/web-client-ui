@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
+
+### Bug Fixes
+
+- Don't change console history if Shift held down ([#2384](https://github.com/deephaven/web-client-ui/issues/2384)) ([141bc13](https://github.com/deephaven/web-client-ui/commit/141bc13f1206e2e502ee67c28a61fdaa843735ae))
+
 ## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
 
 **Note:** Version bump only for package @deephaven/console

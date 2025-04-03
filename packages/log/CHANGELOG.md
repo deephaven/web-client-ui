@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- Allow wildcards for logs blacklist ([#2396](https://github.com/deephaven/web-client-ui/issues/2396)) ([6c406ba](https://github.com/deephaven/web-client-ui/commit/6c406ba00a74b53f4a3d551cb3d9b6241f064dfb))
+
 ## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
 
 ### Bug Fixes

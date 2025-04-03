@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- useChangeEventValueCallback hook ([#2391](https://github.com/deephaven/web-client-ui/issues/2391)) ([99dfcab](https://github.com/deephaven/web-client-ui/commit/99dfcab0093b582ee907973a1df43995b148491a))
+
 ## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
 
 **Note:** Version bump only for package @deephaven/react-hooks

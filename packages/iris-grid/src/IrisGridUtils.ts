@@ -828,7 +828,10 @@ class IrisGridUtils {
       includeDescriptions = true,
     } = config ?? {};
     const { aggregations = [] } = aggregationSettings ?? {};
-    const aggregationColumns = aggregations.map(
+    const filteredAggregations = aggregations.filter(
+      ({ operation }) => !AggregationUtils.isRollupProhibited(operation)
+    );
+    const aggregationColumns = filteredAggregations.map(
       ({ operation, selected, invert }) =>
         AggregationUtils.isRollupOperation(operation)
           ? []
@@ -842,8 +845,8 @@ class IrisGridUtils {
 
     const aggregationMap = {} as Record<AggregationOperation, string[]>;
     // Aggregation columns should show first, add them first
-    for (let i = 0; i < aggregations.length; i += 1) {
-      aggregationMap[aggregations[i].operation] = aggregationColumns[i];
+    for (let i = 0; i < filteredAggregations.length; i += 1) {
+      aggregationMap[filteredAggregations[i].operation] = aggregationColumns[i];
     }
 
     if (showNonAggregatedColumns) {
