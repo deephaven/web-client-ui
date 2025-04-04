@@ -246,7 +246,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     );
 
     // only change the selected range if the selected cell is not in the selected range
-    if (!isInRange && gridPoint.row !== null) {
+    if (!isInRange && gridPoint.row !== null && gridPoint.column !== null) {
       this.startPoint = undefined;
       this.stopTimer();
       grid.clearSelectedRanges();
