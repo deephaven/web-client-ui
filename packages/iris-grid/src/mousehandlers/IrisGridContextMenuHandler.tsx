@@ -152,6 +152,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   /**
    * Returns the latest grid selection based on the current grid selection and where the user clicked
+   * This code is dependent on the behavior of GridSelectionMouseHandler.onContextMenu
    * @param originalSelection The selection from the current grid state which may be stale
    * @param columnIndex The column index where the user clicked
    * @param rowIndex The row index where the user clicked
