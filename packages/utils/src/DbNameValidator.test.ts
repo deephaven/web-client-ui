@@ -4,8 +4,9 @@ const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
 const VALID_TABLE_NAME = '$+@abc-123_ABC';
-const INVALID_TABLE_NAMES = ['%^&ab-c', '-abc', '-'];
-const CLEANED_INVALID_TABLE_NAMES = ['ab-c', '-abc', '-'];
+const CLEANED_VALID_TABLE_NAME = 'abc_123_ABC';
+const INVALID_TABLE_NAMES = ['%^&ab-c', '-a_b c', '-'];
+const CLEANED_INVALID_TABLE_NAMES = ['ab_c', '_a_b_c', '_'];
 
 const VALID_COL_NAME = 'abc123_ABC';
 const INVALID_COL_NAME = '@abc123_ABC-123';
@@ -49,9 +50,9 @@ describe('Column name validation', () => {
 });
 
 describe('legalizeTableName', () => {
-  it('Does not change a valid table name', () => {
+  it('Sanitizes a table name even if it is valid', () => {
     expect(DbNameValidator.legalizeTableName(VALID_TABLE_NAME)).toBe(
-      VALID_TABLE_NAME
+      CLEANED_VALID_TABLE_NAME
     );
   });
 

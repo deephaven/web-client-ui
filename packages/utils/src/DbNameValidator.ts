@@ -71,16 +71,6 @@ const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
 // From io.deephaven.db.tables.utils.DBNameValidator#TABLE_NAME_PATTERN
 const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/g;
 
-function columnNameReplacer(input: string): string {
-  // Replace all dashes and spaces with underscores
-  return input.replace(/[ -]/g, '_');
-}
-
-function tableNameReplacer(input: string): string {
-  // Replace spaces with underscores
-  return input.replace(/\s/g, '_');
-}
-
 /**
  * Similar to DBNameValidator.java, this class has utilities for validating and legalizing
  * Table and Column names.
@@ -88,13 +78,12 @@ function tableNameReplacer(input: string): string {
 class DbNameValidator {
   static legalize = (
     name: string,
-    replace: (input: string) => string,
     prefix: string,
     regex: RegExp,
     checkReserved: boolean,
     i: number
   ): string => {
-    let legalName = replace(name.trim());
+    let legalName = name.trim().replace(/[ -]/g, '_');
 
     // Add prefix to reserved names
     if (
@@ -124,7 +113,6 @@ class DbNameValidator {
   static legalizeTableName = (name: string): string =>
     DbNameValidator.legalize(
       name,
-      tableNameReplacer,
       TABLE_PREFIX,
       STERILE_TABLE_AND_NAMESPACE_REGEX,
       false,
@@ -150,7 +138,6 @@ class DbNameValidator {
     // Replace all dashes and spaces with underscores
     DbNameValidator.legalize(
       header,
-      columnNameReplacer,
       COLUMN_PREFIX,
       STERILE_COLUMN_AND_QUERY_REGEX,
       true,
