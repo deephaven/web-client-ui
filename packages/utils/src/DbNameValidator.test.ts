@@ -3,7 +3,6 @@ import DbNameValidator from './DbNameValidator';
 const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
-// $ is not a valid table name in Deephaven, but this behavior is consistent with the Java class
 const VALID_TABLE_NAMES = ['$+@abc-123_ABC', '$'];
 const VARIABLE_NAMES_FROM_VALID = ['$__abc_123_ABC', '$'];
 

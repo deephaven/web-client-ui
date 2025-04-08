@@ -62,6 +62,10 @@ const JAVA_KEYWORDS = new Set([
   'false',
 ]);
 
+// The '$' character is not valid in Deephaven table and column names,
+// yet it is treated as valid in the DbNameValidator Java class.
+// TODO: Update the regexes once DH-19169 is merged.
+
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_TABLE_AND_NAMESPACE_REGEX
 const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
 
