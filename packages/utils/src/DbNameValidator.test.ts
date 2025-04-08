@@ -66,7 +66,7 @@ describe('Column name validation', () => {
 });
 
 describe('legalizeTableName', () => {
-  it.each(VALID_TABLE_NAMES)('Does not change a valid table name $s', name => {
+  it.each(VALID_TABLE_NAMES)('Does not change a valid table name %s', name => {
     expect(DbNameValidator.legalizeTableName(name)).toBe(name);
   });
 
