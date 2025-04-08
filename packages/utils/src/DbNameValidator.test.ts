@@ -4,7 +4,7 @@ const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
 const VALID_TABLE_NAMES = ['$+@abc-123_ABC', '$'];
-const VARIABLE_NAMES_FROM_VALID = ['$__abc_123_ABC', '$'];
+const VARIABLE_NAMES_FROM_VALID = ['___abc_123_ABC', '_'];
 
 const INVALID_TABLE_NAMES = ['%^&ab-c', '-a_b c', '-', '0', '%', ''];
 const LEGALIZED_INVALID_TABLE_NAMES = [

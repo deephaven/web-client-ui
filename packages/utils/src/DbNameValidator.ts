@@ -64,7 +64,7 @@ const JAVA_KEYWORDS = new Set([
 
 // The '$' character is not valid in Deephaven table and column names,
 // yet it is treated as valid in the DbNameValidator Java class.
-// TODO: Update the regexes once DH-19169 is merged.
+// TODO: Update the regexes once (or if) DH-19169 is merged.
 
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_TABLE_AND_NAMESPACE_REGEX
 const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
@@ -75,7 +75,7 @@ const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
 // From io.deephaven.db.tables.utils.DBNameValidator#TABLE_NAME_PATTERN
 const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/;
 
-const STERILE_VARIABLE_NAME_REGEX = /[^a-zA-Z0-9_$]/g;
+const STERILE_VARIABLE_NAME_REGEX = /[^a-zA-Z0-9_]/g;
 
 function columnNameReplacer(input: string): string {
   // Replace all dashes and spaces with underscores
@@ -147,7 +147,7 @@ class DbNameValidator {
     );
 
   /**
-   * Get a variable name based on the passed in string.
+   * Make a valid variable name based on the passed in string.
    * @param name The name to get the variable name for
    * @returns Variable name
    */
