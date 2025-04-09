@@ -1,5 +1,5 @@
 import { type dh as DhType } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/test-utils';
+import { TestUtils } from '@deephaven/utils';
 import RollupRows from './RollupRows';
 
 it('should allow all column types to be groupable', () => {
