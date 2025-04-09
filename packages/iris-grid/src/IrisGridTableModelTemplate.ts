@@ -1011,13 +1011,13 @@ class IrisGridTableModelTemplate<
       const tableColumn = this.columns[column];
 
       // Find the matching totals table column for the operation
-      // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
-      // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
+      // When there are multiple aggregations for the column, the column name will be the original name of the column with the operation appended afterward
+      // When the the operation is the default operation OR there is only one operation for the column, then the totals column name is just the original column name
       const totalsColumn = this.totalsTable?.columns.find(
         col =>
           col.name === `${tableColumn.name}__${operation}` ||
           ((operation === defaultOperation ||
-            this.totals?.operationOrder.length === 1) &&
+            this.totals?.operationMap[col.name]?.length === 1) &&
             col.name === tableColumn.name)
       );
       if (totalsColumn != null) {
