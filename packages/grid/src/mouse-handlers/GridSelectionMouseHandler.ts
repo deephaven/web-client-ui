@@ -1,12 +1,37 @@
 import { type EventHandlerResult } from '../EventHandlerResult';
 import type Grid from '../Grid';
 import GridMouseHandler, { type GridMouseEvent } from '../GridMouseHandler';
-import GridRange from '../GridRange';
+import GridRange, { type GridRangeIndex } from '../GridRange';
 import GridUtils, { type GridPoint } from '../GridUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
 
 class GridSelectionMouseHandler extends GridMouseHandler {
+  /**
+   * Returns the latest grid selection based on the current grid selection and where the user clicked
+   * This code is dependent on the behavior of onContextMenu
+   * @param originalSelection The selection from the current grid state which may be stale
+   * @param columnIndex The column index where the user clicked
+   * @param rowIndex The row index where the user clicked
+   */
+  static getLatestSelection(
+    originalSelection: readonly GridRange[],
+    columnIndex: GridRangeIndex,
+    rowIndex: GridRangeIndex
+  ): readonly GridRange[] {
+    const clickedInOriginalSelection = GridRange.containsCell(
+      originalSelection,
+      columnIndex,
+      rowIndex
+    );
+
+    // If the user clicked in a valid cell outside of the original selection,
+    // the selection will be changed to just that cell.
+    return clickedInOriginalSelection || columnIndex == null || rowIndex == null
+      ? originalSelection
+      : [GridRange.makeCell(columnIndex, rowIndex)];
+  }
+
   private startPoint?: GridPoint;
 
   private hasExtendedFloating = false;
