@@ -22,6 +22,7 @@ import {
   GridMouseHandler,
   GridPoint,
   GridRange,
+  type GridRangeIndex,
   GridRenderer,
   isDeletableGridModel,
   isEditableGridModel,
@@ -143,6 +144,31 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       cellValue,
       len - command.length - 3
     )}"`;
+  }
+
+  /**
+   * Returns the latest grid selection based on the current grid selection and where the user clicked
+   * This code is dependent on the behavior of GridSelectionMouseHandler.onContextMenu
+   * @param originalSelection The selection from the current grid state which may be stale
+   * @param columnIndex The column index where the user clicked
+   * @param rowIndex The row index where the user clicked
+   */
+  static getLatestSelection(
+    originalSelection: readonly GridRange[],
+    columnIndex: GridRangeIndex,
+    rowIndex: GridRangeIndex
+  ): readonly GridRange[] {
+    const clickedInOriginalSelection = GridRange.containsCell(
+      originalSelection,
+      columnIndex,
+      rowIndex
+    );
+
+    // If the user clicked in a valid cell outside of the original selection,
+    // the selection will be changed to just that cell.
+    return clickedInOriginalSelection || columnIndex == null || rowIndex == null
+      ? originalSelection
+      : [GridRange.makeCell(columnIndex, rowIndex)];
   }
 
   irisGrid: IrisGrid;
@@ -818,8 +844,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       isFilterBarShown,
       quickFilters,
       advancedFilters,
-      selectedRanges,
+      selectedRanges: stateSelectedRanges,
     } = irisGrid.state;
+
+    const selectedRanges = IrisGridContextMenuHandler.getLatestSelection(
+      stateSelectedRanges,
+      columnIndex,
+      rowIndex
+    );
 
     assertNotNull(metrics);
 
