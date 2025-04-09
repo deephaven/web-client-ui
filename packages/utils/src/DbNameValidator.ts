@@ -62,6 +62,10 @@ const JAVA_KEYWORDS = new Set([
   'false',
 ]);
 
+// The '$' character is not valid in Deephaven table and column names,
+// yet it is treated as valid in the DbNameValidator Java class.
+// TODO: Update the regexes once (or if) DH-19169 is merged.
+
 // From io.deephaven.db.tables.utils.DBNameValidator#STERILE_TABLE_AND_NAMESPACE_REGEX
 const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
 
@@ -69,7 +73,9 @@ const STERILE_TABLE_AND_NAMESPACE_REGEX = /[^a-zA-Z0-9_$\-+@]/g;
 const STERILE_COLUMN_AND_QUERY_REGEX = /[^A-Za-z0-9_$]/g;
 
 // From io.deephaven.db.tables.utils.DBNameValidator#TABLE_NAME_PATTERN
-const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/g;
+const TABLE_NAME_PATTERN = /^[a-zA-Z_$][a-zA-Z0-9_$\-+@]*$/;
+
+const STERILE_VARIABLE_NAME_REGEX = /[^a-zA-Z0-9_]/g;
 
 function columnNameReplacer(input: string): string {
   // Replace all dashes and spaces with underscores
@@ -108,19 +114,28 @@ class DbNameValidator {
     // Remove illegal characters
     legalName = legalName.replace(regex, '');
 
-    // Check if the name ended up blank
+    // Check if the name ended up blank and append the prefix.
+    // Note, io.deephaven.db.tables.utils.DBNameValidator throws an exception in this case.
     if (!legalName) {
-      legalName = prefix + i;
+      return prefix + i;
     }
 
-    // If name starts with a number, append prefix to the front
-    if (!Number.isNaN(Number(legalName.charAt(0)))) {
+    // If name starts with a number or a dash, append the prefix.
+    // Note, io.deephaven.db.tables.utils.DBNameValidator throws an exception for names starting with a dash.
+    if (/^[0-9-]/.test(legalName)) {
       legalName = prefix + legalName;
     }
 
     return legalName;
   };
 
+  /**
+   * Get a legal table name based on the passed in string.
+   * Follows the same rules as DBNameValidator.java except that here
+   * we prepend a prefix in cases where the Java class throws an exception.
+   * @param name The name to legalize
+   * @returns Legalized table name
+   */
   static legalizeTableName = (name: string): string =>
     DbNameValidator.legalize(
       name,
@@ -129,6 +144,17 @@ class DbNameValidator {
       STERILE_TABLE_AND_NAMESPACE_REGEX,
       false,
       0
+    );
+
+  /**
+   * Make a valid variable name based on the passed in string.
+   * @param name The name to get the variable name for
+   * @returns Variable name
+   */
+  static makeVariableName = (name: string): string =>
+    DbNameValidator.legalizeTableName(name).replace(
+      STERILE_VARIABLE_NAME_REGEX,
+      '_'
     );
 
   static legalizeColumnNames = (headers: string[]): string[] => {
