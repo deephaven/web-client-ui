@@ -3,9 +3,26 @@ import DbNameValidator from './DbNameValidator';
 const TABLE_PREFIX = 'table_';
 const COLUMN_PREFIX = 'column_';
 
-const VALID_TABLE_NAME = '$+@abc-123_ABC';
-const INVALID_TABLE_NAMES = ['%^&ab-c', '-abc', '-'];
-const CLEANED_INVALID_TABLE_NAMES = ['ab-c', '-abc', '-'];
+const VALID_TABLE_NAMES = ['$+@abc-123_ABC', '$'];
+const VARIABLE_NAMES_FROM_VALID = ['___abc_123_ABC', '_'];
+
+const INVALID_TABLE_NAMES = ['%^&ab-c', '-a_b c', '-', '0', '%', ''];
+const LEGALIZED_INVALID_TABLE_NAMES = [
+  'ab-c',
+  'table_-a_b_c',
+  'table_-',
+  'table_0',
+  'table_0',
+  'table_0',
+];
+const VARIABLE_NAMES_FROM_INVALID = [
+  'ab_c',
+  'table__a_b_c',
+  'table__',
+  'table_0',
+  'table_0',
+  'table_0',
+];
 
 const VALID_COL_NAME = 'abc123_ABC';
 const INVALID_COL_NAME = '@abc123_ABC-123';
@@ -16,8 +33,8 @@ const RESERVED_JAVA_WORD = 'return';
 const RESERVED_DEEPHAVEN_WORD = 'not';
 
 describe('Table name validation', () => {
-  it('Returns true on valid table names', () => {
-    expect(DbNameValidator.isValidTableName(VALID_TABLE_NAME)).toBe(true);
+  it.each(VALID_TABLE_NAMES)('Returns true on valid table name %s', name => {
+    expect(DbNameValidator.isValidTableName(name)).toBe(true);
   });
 
   it.each(INVALID_TABLE_NAMES)(
@@ -49,14 +66,15 @@ describe('Column name validation', () => {
 });
 
 describe('legalizeTableName', () => {
-  it('Does not change a valid table name', () => {
-    expect(DbNameValidator.legalizeTableName(VALID_TABLE_NAME)).toBe(
-      VALID_TABLE_NAME
-    );
+  it.each(VALID_TABLE_NAMES)('Does not change a valid table name %s', name => {
+    expect(DbNameValidator.legalizeTableName(name)).toBe(name);
   });
 
   it.each(
-    INVALID_TABLE_NAMES.map((name, i) => [name, CLEANED_INVALID_TABLE_NAMES[i]])
+    INVALID_TABLE_NAMES.map((name, i) => [
+      name,
+      LEGALIZED_INVALID_TABLE_NAMES[i],
+    ])
   )('Legalize an invalid table name %s > %s', (invalid, cleaned) => {
     expect(DbNameValidator.legalizeTableName(invalid)).toBe(cleaned);
   });
@@ -70,6 +88,25 @@ describe('legalizeTableName', () => {
       TABLE_PREFIX + START_WITH_NUM
     );
   });
+});
+
+describe('makeVariableName', () => {
+  it.each(
+    VALID_TABLE_NAMES.map((name, i) => [name, VARIABLE_NAMES_FROM_VALID[i]])
+  )(
+    'Makes a variable name for a valid table name %s > %s',
+    (invalid, variableName) => {
+      expect(DbNameValidator.makeVariableName(invalid)).toBe(variableName);
+    }
+  );
+  it.each(
+    INVALID_TABLE_NAMES.map((name, i) => [name, VARIABLE_NAMES_FROM_INVALID[i]])
+  )(
+    'Makes a variable name for an invalid table name %s > %s',
+    (invalid, variableName) => {
+      expect(DbNameValidator.makeVariableName(invalid)).toBe(variableName);
+    }
+  );
 });
 
 describe('legalizeColumnName', () => {

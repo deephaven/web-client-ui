@@ -89,7 +89,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     // Set the table name from a file
     if (!tableNameSet && file != null && !tableName) {
       const dotIndex = file.name.lastIndexOf('.');
-      const fileTableName = DbNameValidator.legalizeTableName(
+      const fileTableName = DbNameValidator.makeVariableName(
         file.name.substring(0, dotIndex)
       );
       this.setState({
