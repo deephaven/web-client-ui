@@ -1,10 +1,10 @@
-import { GridRange } from '@deephaven/grid';
-import IrisGridContextMenuHandler from './IrisGridContextMenuHandler';
+import { GridRange } from '../GridRange';
+import GridSelectionMouseHandler from './GridSelectionMouseHandler';
 
 describe('getLatestSelection', () => {
   it('should return the original selection if the clicked cell is within the original selection', () => {
     const originalSelection = [new GridRange(1, 1, 2, 2)];
-    const result = IrisGridContextMenuHandler.getLatestSelection(
+    const result = GridSelectionMouseHandler.getLatestSelection(
       originalSelection,
       1,
       1
@@ -18,7 +18,7 @@ describe('getLatestSelection', () => {
     const columnIndex = 3;
     const rowIndex = 3;
 
-    const result = IrisGridContextMenuHandler.getLatestSelection(
+    const result = GridSelectionMouseHandler.getLatestSelection(
       originalSelection,
       columnIndex,
       rowIndex
@@ -30,7 +30,7 @@ describe('getLatestSelection', () => {
   it('should return the original selection if columnIndex is null', () => {
     const originalSelection = [new GridRange(1, 1, 2, 2)];
 
-    const result = IrisGridContextMenuHandler.getLatestSelection(
+    const result = GridSelectionMouseHandler.getLatestSelection(
       originalSelection,
       null,
       1
@@ -42,7 +42,7 @@ describe('getLatestSelection', () => {
   it('should return the original selection if rowIndex is null', () => {
     const originalSelection = [new GridRange(1, 1, 2, 2)];
 
-    const result = IrisGridContextMenuHandler.getLatestSelection(
+    const result = GridSelectionMouseHandler.getLatestSelection(
       originalSelection,
       null,
       1
