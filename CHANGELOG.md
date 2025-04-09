@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.20](https://github.com/deephaven/web-client-ui/compare/v0.85.19...v0.85.20) (2025-04-09)
+
+### Bug Fixes
+
+- Allow double and float types to be rollupable ([#2311](https://github.com/deephaven/web-client-ui/issues/2311)) ([#2408](https://github.com/deephaven/web-client-ui/issues/2408)) ([d7dec90](https://github.com/deephaven/web-client-ui/commit/d7dec90c149464015a5c63e8a048c861c95bf24b))
+- Cherry-pick DH-17599: Change illegal characters to underscores in variable names ([#2410](https://github.com/deephaven/web-client-ui/issues/2410)) ([bde03c8](https://github.com/deephaven/web-client-ui/commit/bde03c805db7ed622cc4f913d8b7dbd90777c492)), closes [#2409](https://github.com/deephaven/web-client-ui/issues/2409)
+- Cherry-pick DH-17599: Fix table name validation ([#2403](https://github.com/deephaven/web-client-ui/issues/2403)) ([#2404](https://github.com/deephaven/web-client-ui/issues/2404)) ([2055bc9](https://github.com/deephaven/web-client-ui/commit/2055bc958fdb7281565c88890bee805719edbe78)), closes [#2398](https://github.com/deephaven/web-client-ui/issues/2398)
+
 ## [0.85.19](https://github.com/deephaven/web-client-ui/compare/v0.85.18...v0.85.19) (2025-04-01)
 
 ### Bug Fixes

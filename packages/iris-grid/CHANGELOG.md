@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.20](https://github.com/deephaven/web-client-ui/compare/v0.85.19...v0.85.20) (2025-04-09)
+
+### Bug Fixes
+
+- Allow double and float types to be rollupable ([#2311](https://github.com/deephaven/web-client-ui/issues/2311)) ([#2408](https://github.com/deephaven/web-client-ui/issues/2408)) ([d7dec90](https://github.com/deephaven/web-client-ui/commit/d7dec90c149464015a5c63e8a048c861c95bf24b))
+
 ## [0.85.19](https://github.com/deephaven/web-client-ui/compare/v0.85.18...v0.85.19) (2025-04-01)
 
 **Note:** Version bump only for package @deephaven/iris-grid
