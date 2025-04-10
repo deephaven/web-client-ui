@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.21](https://github.com/deephaven/web-client-ui/compare/v0.85.20...v0.85.21) (2025-04-10)
+
+### Bug Fixes
+
+- Context menu using stale selection ([#2414](https://github.com/deephaven/web-client-ui/issues/2414)) ([5644dad](https://github.com/deephaven/web-client-ui/commit/5644dad25fdb02f51c77a1a134c91d0aa5ac84c8))
+- DH-19138: Determine Totals Column Name by Num Aggs Per Column ([#2411](https://github.com/deephaven/web-client-ui/issues/2411)) ([#2413](https://github.com/deephaven/web-client-ui/issues/2413)) ([d5bbbb6](https://github.com/deephaven/web-client-ui/commit/d5bbbb68f8ea16bf24becaf7516b3e51d8397f74))
+
 ## [0.85.20](https://github.com/deephaven/web-client-ui/compare/v0.85.19...v0.85.20) (2025-04-09)
 
 ### Bug Fixes
