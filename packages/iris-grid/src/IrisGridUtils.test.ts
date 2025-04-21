@@ -1,13 +1,20 @@
 import deepEqual from 'deep-equal';
-import { GridUtils, GridRange, type MoveOperation } from '@deephaven/grid';
+import {
+  GridUtils,
+  GridRange,
+  type MoveOperation,
+  type GridMetrics,
+} from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
-import type { Column, Table, Sort } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { type FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
+  HydratedGridState,
+  HydratedIrisGridState,
   type DehydratedSort,
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
@@ -15,7 +22,7 @@ import IrisGridUtils, {
 const irisGridUtils = new IrisGridUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeColumn(index: number): Column {
+function makeColumn(index: number): DhType.Column {
   return irisGridTestUtils.makeColumn(
     `${index}`,
     IrisGridTestUtils.DEFAULT_TYPE,
@@ -25,8 +32,8 @@ function makeColumn(index: number): Column {
 
 function makeTable({
   columns = irisGridTestUtils.makeColumns(10, 'name_'),
-  sort = [] as Sort[],
-} = {}): Table {
+  sort = [] as DhType.Sort[],
+} = {}): DhType.Table {
   return irisGridTestUtils.makeTable({
     columns,
     sort,
@@ -639,25 +646,16 @@ describe('convert other column types to text', () => {
 });
 
 describe('dehydration methods', () => {
-  it.each([
-    [
-      'dehydrateIrisGridPanelState',
-      IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
+  test('dehydrateIrisGridPanelState should be serializable', () => {
+    const result = IrisGridUtils.dehydrateIrisGridPanelState(
+      irisGridTestUtils.makeModel(),
+      {
         isSelectingPartition: false,
         partitions: [],
         advancedSettings: new Map(),
-      }),
-    ],
-    [
-      'dehydrateIrisGridState',
-      IrisGridUtils.dehydrateGridState(irisGridTestUtils.makeModel(), {
-        isStuckToBottom: false,
-        isStuckToRight: false,
-        movedRows: [],
-        movedColumns: [],
-      }),
-    ],
-  ])('%s should be serializable', (_label, result) => {
+      }
+    );
+
     expect(
       // This makes sure the result doesn't contain undefined
       // so it can be serialized and de-serialized without changes
@@ -665,6 +663,116 @@ describe('dehydration methods', () => {
       // e.g. { foo: undefined } when stringified will be '{}', we want to catch that case
       deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
     ).toBe(true);
+  });
+
+  test('dehydrateGridState should be serializable and memoized', () => {
+    const model = irisGridTestUtils.makeModel();
+    const gridState = {
+      isStuckToBottom: false,
+      isStuckToRight: false,
+      movedRows: [],
+      movedColumns: [],
+    } satisfies HydratedGridState;
+
+    const result = IrisGridUtils.dehydrateGridState(model, gridState);
+
+    const sameStateDifferentStateObject = IrisGridUtils.dehydrateGridState(
+      model,
+      {
+        ...gridState,
+      }
+    );
+
+    const sameStateDifferentModel = IrisGridUtils.dehydrateGridState(
+      irisGridTestUtils.makeModel(),
+      gridState
+    );
+
+    const sameModelDifferentState = IrisGridUtils.dehydrateGridState(model, {
+      ...gridState,
+      isStuckToBottom: true,
+    });
+
+    expect(
+      deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
+    ).toBe(true);
+
+    expect(result).toBe(sameStateDifferentStateObject);
+    expect(result).not.toBe(sameStateDifferentModel);
+    expect(result).not.toBe(sameModelDifferentState);
+  });
+
+  test('dehydrateIrisGridState should be serializable and memoized', () => {
+    const model = irisGridTestUtils.makeModel();
+    const irisGridState = {
+      advancedFilters: new Map(),
+      partitionConfig: {
+        partitions: [],
+        mode: 'merged',
+      },
+      aggregationSettings: {
+        aggregations: [],
+        showOnTop: false,
+      },
+      customColumnFormatMap: new Map(),
+      isFilterBarShown: false,
+      quickFilters: new Map(),
+      customColumns: [],
+      reverse: false,
+      rollupConfig: {
+        columns: [],
+        showConstituents: false,
+        showNonAggregatedColumns: false,
+        includeDescriptions: true,
+      },
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      sorts: [],
+      invertSearchColumns: false,
+      pendingDataMap: new Map(),
+      frozenColumns: [],
+      conditionalFormats: [],
+      columnHeaderGroups: [],
+      metrics: {
+        userColumnWidths: new Map(),
+        userRowHeights: new Map(),
+      } as GridMetrics,
+    } satisfies HydratedIrisGridState;
+
+    const testIrisGridUtils = new IrisGridUtils(dh);
+
+    const result = testIrisGridUtils.dehydrateIrisGridState(
+      model,
+      irisGridState
+    );
+
+    const sameStateDifferentStateObject =
+      testIrisGridUtils.dehydrateIrisGridState(model, {
+        ...irisGridState,
+      });
+
+    const sameStateDifferentModel = testIrisGridUtils.dehydrateIrisGridState(
+      irisGridTestUtils.makeModel(),
+      irisGridState
+    );
+
+    const sameModelDifferentState = testIrisGridUtils.dehydrateIrisGridState(
+      model,
+      {
+        ...irisGridState,
+        isFilterBarShown: true,
+      }
+    );
+
+    expect(
+      deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
+    ).toBe(true);
+
+    expect(result).toBe(sameStateDifferentStateObject);
+    expect(result).not.toBe(sameStateDifferentModel);
+    expect(result).not.toBe(sameModelDifferentState);
   });
 });
 
