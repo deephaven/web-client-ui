@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+### Bug Fixes
+
+- missing specturm accordian icon due to styling ([#2406](https://github.com/deephaven/web-client-ui/issues/2406)) ([181d29e](https://github.com/deephaven/web-client-ui/commit/181d29efc5173dff87d7b8c3d144d1bd47854766))
+
 ## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
 
 **Note:** Version bump only for package @deephaven/components
