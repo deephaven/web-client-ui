@@ -13,8 +13,8 @@ import type { AdvancedFilter } from './CommonTypes';
 import { type FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
-  HydratedGridState,
-  HydratedIrisGridState,
+  type HydratedGridState,
+  type HydratedIrisGridState,
   type DehydratedSort,
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
