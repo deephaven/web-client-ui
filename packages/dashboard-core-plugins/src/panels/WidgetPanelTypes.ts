@@ -24,3 +24,5 @@ export type WidgetPanelTooltipProps = {
   /** Children to render within this tooltip */
   children?: ReactNode;
 };
+
+export type WidgetId = string;

@@ -6,6 +6,7 @@ import {
   type DashboardPluginComponentProps,
   LayoutUtils,
   PanelEvent,
+  type PanelId,
   updateDashboardData,
   useListener,
 } from '@deephaven/dashboard';
@@ -16,6 +17,7 @@ import {
   DropdownFilterPanel,
   FilterSetManagerPanel,
   InputFilterPanel,
+  type WidgetId,
 } from './panels';
 
 const log = Log.module('FilterPlugin');
@@ -24,6 +26,9 @@ type Column = {
   name: string;
   type: string;
 };
+
+// A panel or widget can have columns for filters
+export type FilterColumnSourceId = PanelId | WidgetId;
 
 export type FilterChangeEvent = Column & {
   value: string;
@@ -41,7 +46,9 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id: localDashboardId, layout, registerComponent } = props;
   const dispatch = useDispatch();
-  const [panelColumns] = useState(() => new Map<Component, Column[]>());
+  const [panelColumns] = useState(
+    () => new Map<FilterColumnSourceId, Column[]>()
+  );
   const [panelFilters] = useState(
     () => new Map<Component, FilterChangeEvent[]>()
   );
@@ -92,13 +99,13 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
 
   /**
    * Handler for the COLUMNS_CHANGED event.
-   * @param panel The component that's emitting the filter change
+   * @param sourceId The id of the component that's emitting the filter change
    * @param columns The columns in this panel
    */
   const handleColumnsChanged = useCallback(
-    (panel: Component, columns: Column | Column[]) => {
-      log.debug2('handleColumnsChanged', panel, columns);
-      panelColumns.set(panel, ([] as Column[]).concat(columns));
+    (sourceId: FilterColumnSourceId, columns: Column | Column[]) => {
+      log.debug2('handleColumnsChanged', sourceId, columns);
+      panelColumns.set(sourceId, ([] as Column[]).concat(columns));
       sendUpdate();
     },
     [panelColumns, sendUpdate]
@@ -130,9 +137,10 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   const handlePanelUnmount = useCallback(
     panel => {
       log.debug2('handlePanelUnmount', panel);
-      panelColumns.delete(panel);
+      const panelId = LayoutUtils.getIdFromPanel(panel);
+      panelColumns.delete(panelId);
       panelFilters.delete(panel);
-      panelTables.delete(LayoutUtils.getIdFromPanel(panel));
+      panelTables.delete(panelId);
       sendUpdate();
     },
     [panelColumns, panelFilters, panelTables, sendUpdate]

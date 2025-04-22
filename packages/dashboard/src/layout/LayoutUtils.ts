@@ -29,6 +29,8 @@ const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
 
+export type PanelId = string | string[] | null | undefined;
+
 export type LayoutPanel = {
   props: GLPanelProps;
 };
@@ -818,9 +820,7 @@ class LayoutUtils {
    * @param glContainer The container to get the panel ID for
    * @returns Panel ID
    */
-  static getIdFromContainer(
-    glContainer: Container
-  ): string | string[] | null | undefined {
+  static getIdFromContainer(glContainer: Container): PanelId {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config) {
       return config.id;
@@ -833,9 +833,7 @@ class LayoutUtils {
    * @param panel The panel to get the ID for
    * @returns Panel ID
    */
-  static getIdFromPanel(
-    panel: LayoutPanel
-  ): string | string[] | null | undefined {
+  static getIdFromPanel(panel: LayoutPanel): PanelId {
     const { glContainer } = panel.props;
     return LayoutUtils.getIdFromContainer(glContainer);
   }
