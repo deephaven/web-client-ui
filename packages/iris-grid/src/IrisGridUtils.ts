@@ -200,6 +200,7 @@ export type DehydratedGridState = {
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object.
+   * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the Grid state for
    * @param gridState The state of the Grid to export
    * @returns An object that can be stringified and imported with {{@link hydrateGridState}}
@@ -1152,7 +1153,7 @@ class IrisGridUtils {
 
   /**
    * Exports the state from IrisGrid to a JSON stringifiable object.
-   * Memoized to only change if the values in irisGridState that get dehydrated change.
+   * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the state for
    * @param irisGridState The current state of the IrisGrid
    */

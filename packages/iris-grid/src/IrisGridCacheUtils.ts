@@ -9,6 +9,13 @@ import IrisGridUtils, {
   type HydratedIrisGridState,
 } from './IrisGridUtils';
 
+/**
+ * Checks if 2 grid states are equivalent.
+ * Checks values and does not require referential equality of the entire state, just the values we care about.
+ * @param gridStateA First grid state
+ * @param gridStateB Second grid state
+ * @returns True if the states are equivalent
+ */
 function areGridStatesEqual(
   gridStateA: HydratedGridState,
   gridStateB: HydratedGridState
@@ -25,6 +32,13 @@ function areGridStatesEqual(
   );
 }
 
+/**
+ * Checks if 2 iris grid states are equivalent.
+ * Checks values and does not require referential equality of the entire state, just the values we care about.
+ * @param irisGridStateA First iris grid state
+ * @param irisGridStateB Second iris grid state
+ * @returns True if the states are equivalent
+ */
 function areIrisGridStatesEqual(
   irisGridStateA: HydratedIrisGridState,
   irisGridStateB: HydratedIrisGridState
@@ -66,6 +80,11 @@ function areIrisGridStatesEqual(
   );
 }
 
+/**
+ * Creates a dehydrator function for grid state that is memoized on the last call.
+ * Only tracks 1 state at a time. If the model and input states are equal, returns the same dehydrated state object reference.
+ * @returns A dehydrator function memoized on the last call
+ */
 function makeMemoizedGridStateDehydrator(): (
   model: IrisGridModel,
   gridState: HydratedGridState
@@ -78,6 +97,11 @@ function makeMemoizedGridStateDehydrator(): (
   );
 }
 
+/**
+ * Creates a dehydrator function for iris grid state that is memoized on the last call.
+ * Only tracks 1 state at a time. If the model and input states are equal, returns the same dehydrated state object reference.
+ * @returns A dehydrator function memoized on the last call
+ */
 function makeMemoizedIrisGridStateDehydrator(): (
   model: IrisGridModel,
   irisGridState: HydratedIrisGridState
@@ -93,6 +117,12 @@ function makeMemoizedIrisGridStateDehydrator(): (
   );
 }
 
+/**
+ * Creates a dehydrator function for grid and iris grid state that is memoized on the last call.
+ * Only tracks 1 state at a time. If the model and input states are equal, returns the same dehydrated state object reference.
+ * Combines the dehydrated grid and iris grid states into a single object.
+ * @returns A dehydrator function memoized on the last call
+ */
 function makeMemoizedCombinedGridStateDehydrator(): (
   model: IrisGridModel,
   irisGridState: HydratedIrisGridState,
