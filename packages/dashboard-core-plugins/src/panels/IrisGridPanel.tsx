@@ -21,6 +21,7 @@ import {
   IrisGrid,
   type IrisGridType,
   IrisGridModel,
+  IrisGridCacheUtils,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
   ColumnName,
@@ -101,11 +102,11 @@ export interface PanelState {
   gridState: {
     isStuckToBottom: boolean;
     isStuckToRight: boolean;
-    movedColumns: {
+    movedColumns: readonly {
       from: string | ModelIndex | [string, string] | [ModelIndex, ModelIndex];
       to: string | ModelIndex;
     }[];
-    movedRows: MoveOperation[];
+    movedRows: readonly MoveOperation[];
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: DehydratedIrisGridPanelState;
@@ -366,6 +367,12 @@ export class IrisGridPanel extends PureComponent<
 
   private irisGridUtils: IrisGridUtils | null;
 
+  private gridStateDehydrator =
+    IrisGridCacheUtils.makeMemoizedGridStateDehydrator();
+
+  private irisGridStateDehydrator =
+    IrisGridCacheUtils.makeMemoizedIrisGridStateDehydrator();
+
   getTableName(): string {
     const { metadata } = this.props;
     return getTableNameFromMetadata(metadata);
@@ -454,76 +461,6 @@ export class IrisGridPanel extends PureComponent<
         isSelectingPartition,
         partitions,
         advancedSettings,
-      })
-  );
-
-  getDehydratedIrisGridState = memoize(
-    (
-      model: IrisGridModel,
-      sorts: readonly dh.Sort[],
-      advancedFilters: ReadonlyAdvancedFilterMap,
-      customColumnFormatMap: Map<ColumnName, FormattingRule>,
-      isFilterBarShown: boolean,
-      quickFilters: ReadonlyQuickFilterMap,
-      customColumns: readonly ColumnName[],
-      reverse: boolean,
-      rollupConfig: UIRollupConfig | undefined,
-      showSearchBar: boolean,
-      searchValue: string,
-      selectDistinctColumns: readonly ColumnName[],
-      selectedSearchColumns: readonly ColumnName[],
-      invertSearchColumns: boolean,
-      userColumnWidths: ModelSizeMap,
-      userRowHeights: ModelSizeMap,
-      aggregationSettings: AggregationSettings,
-      pendingDataMap: PendingDataMap<UIRow>,
-      frozenColumns: readonly ColumnName[],
-      conditionalFormats: readonly SidebarFormattingRule[],
-      columnHeaderGroups: readonly ColumnHeaderGroup[],
-      partitionConfig: PartitionConfig | undefined
-    ) => {
-      assertNotNull(this.irisGridUtils);
-      return this.irisGridUtils.dehydrateIrisGridState(model, {
-        advancedFilters,
-        aggregationSettings,
-        customColumnFormatMap,
-        isFilterBarShown,
-        metrics: {
-          userColumnWidths,
-          userRowHeights,
-        },
-        quickFilters,
-        customColumns,
-        reverse,
-        rollupConfig,
-        showSearchBar,
-        searchValue,
-        selectDistinctColumns,
-        selectedSearchColumns,
-        sorts,
-        invertSearchColumns,
-        pendingDataMap,
-        frozenColumns,
-        conditionalFormats,
-        columnHeaderGroups,
-        partitionConfig,
-      });
-    }
-  );
-
-  getDehydratedGridState = memoize(
-    (
-      model: IrisGridModel,
-      movedColumns: readonly MoveOperation[],
-      movedRows: readonly MoveOperation[],
-      isStuckToBottom: boolean,
-      isStuckToRight: boolean
-    ) =>
-      IrisGridUtils.dehydrateGridState(model, {
-        isStuckToBottom,
-        isStuckToRight,
-        movedColumns,
-        movedRows,
       })
   );
 
@@ -1098,34 +1035,9 @@ export class IrisGridPanel extends PureComponent<
       partitions,
       advancedSettings,
     } = this.state;
-    const {
-      advancedFilters,
-      aggregationSettings,
-      customColumnFormatMap,
-      isFilterBarShown,
-      quickFilters,
-      customColumns,
-      reverse,
-      rollupConfig,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns,
-      selectedSearchColumns,
-      sorts,
-      invertSearchColumns,
-      metrics,
-      pendingDataMap,
-      frozenColumns,
-      conditionalFormats,
-      columnHeaderGroups,
-      partitionConfig,
-    } = irisGridState;
+    assertNotNull(this.irisGridUtils);
     assertNotNull(model);
-    assertNotNull(metrics);
-    const { userColumnWidths, userRowHeights } = metrics;
     assertNotNull(gridState);
-    const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
-      gridState;
 
     const panelState = this.getCachedPanelState(
       this.getDehydratedIrisGridPanelState(
@@ -1134,37 +1046,8 @@ export class IrisGridPanel extends PureComponent<
         partitions,
         advancedSettings
       ),
-      this.getDehydratedIrisGridState(
-        model,
-        sorts,
-        advancedFilters,
-        customColumnFormatMap,
-        isFilterBarShown,
-        quickFilters,
-        customColumns,
-        reverse,
-        rollupConfig,
-        showSearchBar,
-        searchValue,
-        selectDistinctColumns,
-        selectedSearchColumns,
-        invertSearchColumns,
-        userColumnWidths,
-        userRowHeights,
-        aggregationSettings,
-        pendingDataMap,
-        frozenColumns,
-        conditionalFormats,
-        columnHeaderGroups,
-        partitionConfig
-      ),
-      this.getDehydratedGridState(
-        model,
-        movedColumns,
-        movedRows,
-        isStuckToBottom,
-        isStuckToRight
-      ),
+      this.irisGridStateDehydrator(model, irisGridState),
+      this.gridStateDehydrator(model, gridState),
       pluginState
     );
 
