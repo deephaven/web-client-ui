@@ -1,7 +1,12 @@
 import deepEqual from 'deep-equal';
-import { GridUtils, GridRange, type MoveOperation } from '@deephaven/grid';
+import {
+  GridUtils,
+  GridRange,
+  type MoveOperation,
+  type GridMetrics,
+} from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
-import type { Column, Table, Sort } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
@@ -15,7 +20,7 @@ import IrisGridUtils, {
 const irisGridUtils = new IrisGridUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeColumn(index: number): Column {
+function makeColumn(index: number): DhType.Column {
   return irisGridTestUtils.makeColumn(
     `${index}`,
     IrisGridTestUtils.DEFAULT_TYPE,
@@ -25,8 +30,8 @@ function makeColumn(index: number): Column {
 
 function makeTable({
   columns = irisGridTestUtils.makeColumns(10, 'name_'),
-  sort = [] as Sort[],
-} = {}): Table {
+  sort = [] as DhType.Sort[],
+} = {}): DhType.Table {
   return irisGridTestUtils.makeTable({
     columns,
     sort,
@@ -649,12 +654,51 @@ describe('dehydration methods', () => {
       }),
     ],
     [
-      'dehydrateIrisGridState',
+      'dehydrateGridState',
       IrisGridUtils.dehydrateGridState(irisGridTestUtils.makeModel(), {
         isStuckToBottom: false,
         isStuckToRight: false,
         movedRows: [],
         movedColumns: [],
+      }),
+    ],
+    [
+      'dehydrateIrisGridState',
+      irisGridUtils.dehydrateIrisGridState(irisGridTestUtils.makeModel(), {
+        advancedFilters: new Map(),
+        partitionConfig: {
+          partitions: [],
+          mode: 'merged',
+        },
+        aggregationSettings: {
+          aggregations: [],
+          showOnTop: false,
+        },
+        customColumnFormatMap: new Map(),
+        isFilterBarShown: false,
+        quickFilters: new Map(),
+        customColumns: [],
+        reverse: false,
+        rollupConfig: {
+          columns: [],
+          showConstituents: false,
+          showNonAggregatedColumns: false,
+          includeDescriptions: true,
+        },
+        showSearchBar: false,
+        searchValue: '',
+        selectDistinctColumns: [],
+        selectedSearchColumns: [],
+        sorts: [],
+        invertSearchColumns: false,
+        pendingDataMap: new Map(),
+        frozenColumns: [],
+        conditionalFormats: [],
+        columnHeaderGroups: [],
+        metrics: {
+          userColumnWidths: new Map(),
+          userRowHeights: new Map(),
+        } as GridMetrics,
       }),
     ],
   ])('%s should be serializable', (_label, result) => {
