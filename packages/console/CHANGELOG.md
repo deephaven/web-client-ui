@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- DH-17599: Change illegal characters to underscores in variable names ([#2409](https://github.com/deephaven/web-client-ui/issues/2409)) ([15c8cfe](https://github.com/deephaven/web-client-ui/commit/15c8cfecb3f4274c433ff900a036569a690c760a))
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+**Note:** Version bump only for package @deephaven/console
+
 ## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
 
 ### Bug Fixes

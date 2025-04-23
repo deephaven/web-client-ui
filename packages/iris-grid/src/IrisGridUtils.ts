@@ -1,6 +1,6 @@
 import {
-  type GridMetrics,
   type GridRange,
+  type GridState,
   GridUtils,
   type ModelIndex,
   type ModelSizeMap,
@@ -16,19 +16,10 @@ import {
   type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import {
-  assertNotNull,
-  bindAllMethods,
-  EMPTY_ARRAY,
-  EMPTY_MAP,
-} from '@deephaven/utils';
+import { assertNotNull, bindAllMethods, EMPTY_MAP } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import {
-  type FilterData,
-  type IrisGridProps,
-  type IrisGridState,
-} from './IrisGrid';
+import { type FilterData, type IrisGridState } from './IrisGrid';
 import {
   type ColumnName,
   type ReadonlyAdvancedFilterMap,
@@ -53,7 +44,7 @@ import {
 
 const log = Log.module('IrisGridUtils');
 
-type HydratedIrisGridState = Pick<
+export type HydratedIrisGridState = Pick<
   IrisGridState,
   | 'advancedFilters'
   | 'aggregationSettings'
@@ -74,9 +65,8 @@ type HydratedIrisGridState = Pick<
   | 'conditionalFormats'
   | 'columnHeaderGroups'
   | 'partitionConfig'
-> & {
-  metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
-};
+  | 'metrics'
+>;
 
 export type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
 
@@ -192,25 +182,33 @@ function isDateWrapper(value: unknown): value is DhType.DateWrapper {
   return (value as DhType.DateWrapper)?.asDate != null;
 }
 
+export type HydratedGridState = Pick<
+  GridState,
+  'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
+>;
+
+export type DehydratedGridState = {
+  isStuckToBottom: boolean;
+  isStuckToRight: boolean;
+  movedColumns: readonly {
+    from: string | [string, string] | ModelIndex | [ModelIndex, ModelIndex];
+    to: string | ModelIndex;
+  }[];
+  movedRows: readonly MoveOperation[];
+};
+
 class IrisGridUtils {
   /**
-   * Exports the state from Grid component to a JSON stringifiable object
+   * Exports the state from Grid component to a JSON stringifiable object.
+   * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the Grid state for
    * @param gridState The state of the Grid to export
    * @returns An object that can be stringified and imported with {{@link hydrateGridState}}
    */
   static dehydrateGridState(
     model: IrisGridModel,
-    gridState: Pick<
-      IrisGridProps,
-      'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
-    >
-  ): {
-    isStuckToBottom: boolean;
-    isStuckToRight: boolean;
-    movedColumns: { from: string | [string, string]; to: string }[];
-    movedRows: MoveOperation[];
-  } {
+    gridState: HydratedGridState
+  ): DehydratedGridState {
     const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
       gridState;
 
@@ -246,20 +244,9 @@ class IrisGridUtils {
    */
   static hydrateGridState(
     model: IrisGridModel,
-    gridState: {
-      isStuckToBottom: boolean;
-      isStuckToRight: boolean;
-      movedColumns: readonly {
-        from: string | [string, string] | ModelIndex | [ModelIndex, ModelIndex];
-        to: string | ModelIndex;
-      }[];
-      movedRows: readonly MoveOperation[];
-    },
+    gridState: DehydratedGridState,
     customColumns: readonly string[] = []
-  ): Pick<
-    IrisGridProps,
-    'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
-  > {
+  ): HydratedGridState {
     const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
       gridState;
 
@@ -828,7 +815,10 @@ class IrisGridUtils {
       includeDescriptions = true,
     } = config ?? {};
     const { aggregations = [] } = aggregationSettings ?? {};
-    const aggregationColumns = aggregations.map(
+    const filteredAggregations = aggregations.filter(
+      ({ operation }) => !AggregationUtils.isRollupProhibited(operation)
+    );
+    const aggregationColumns = filteredAggregations.map(
       ({ operation, selected, invert }) =>
         AggregationUtils.isRollupOperation(operation)
           ? []
@@ -842,8 +832,8 @@ class IrisGridUtils {
 
     const aggregationMap = {} as Record<AggregationOperation, string[]>;
     // Aggregation columns should show first, add them first
-    for (let i = 0; i < aggregations.length; i += 1) {
-      aggregationMap[aggregations[i].operation] = aggregationColumns[i];
+    for (let i = 0; i < filteredAggregations.length; i += 1) {
+      aggregationMap[filteredAggregations[i].operation] = aggregationColumns[i];
     }
 
     if (showNonAggregatedColumns) {
@@ -1162,7 +1152,8 @@ class IrisGridUtils {
   }
 
   /**
-   * Exports the state from IrisGrid to a JSON stringifiable object
+   * Exports the state from IrisGrid to a JSON stringifiable object.
+   * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the state for
    * @param irisGridState The current state of the IrisGrid
    */
@@ -1171,29 +1162,30 @@ class IrisGridUtils {
     irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
     const {
-      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
+      aggregationSettings,
       advancedFilters,
       customColumnFormatMap,
       isFilterBarShown,
-      metrics,
+      metrics: { userColumnWidths, userRowHeights } = {
+        userColumnWidths: EMPTY_MAP,
+        userRowHeights: EMPTY_MAP,
+      },
       quickFilters,
       customColumns,
-      conditionalFormats = EMPTY_ARRAY,
+      conditionalFormats,
       reverse,
-      rollupConfig = undefined,
+      rollupConfig,
       showSearchBar,
       searchValue,
-      selectDistinctColumns = EMPTY_ARRAY,
+      selectDistinctColumns,
       selectedSearchColumns,
       sorts,
       invertSearchColumns,
-      pendingDataMap = EMPTY_MAP,
+      pendingDataMap,
       frozenColumns,
       columnHeaderGroups,
-      partitionConfig = undefined,
+      partitionConfig,
     } = irisGridState;
-    assertNotNull(metrics);
-    const { userColumnWidths, userRowHeights } = metrics;
     const { columns } = model;
     const partitionColumns = isPartitionedGridModelProvider(model)
       ? model.partitionColumns

@@ -1117,6 +1117,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isChartBuilderAvailable: boolean,
       isCustomColumnsAvailable: boolean,
       isFormatColumnsAvailable: boolean,
+      isOrganizeColumnsAvailable: boolean,
       isRollupAvailable: boolean,
       isTotalsAvailable: boolean,
       isSelectDistinctAvailable: boolean,
@@ -1139,11 +1140,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: dhGraphLineUp,
         });
       }
-      optionItems.push({
-        type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Organize Columns',
-        icon: dhEye,
-      });
+      if (isOrganizeColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.VISIBILITY_ORDERING_BUILDER,
+          title: 'Organize Columns',
+          icon: dhEye,
+        });
+      }
       if (isFormatColumnsAvailable) {
         optionItems.push({
           type: OptionType.CONDITIONAL_FORMATTING,
@@ -3510,15 +3513,32 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   /**
    * User added, removed, or changed the order of aggregations, or position
    * @param aggregationSettings The new aggregation settings
+   * @param added The aggregations that were added
+   * @param removed The aggregations that were removed
    */
-  handleAggregationsChange(aggregationSettings: AggregationSettings): void {
-    log.debug('handleAggregationsChange', aggregationSettings);
-
-    this.startLoading(
-      `Aggregating ${aggregationSettings.aggregations
-        .map(a => a.operation)
-        .join(', ')}...`
+  handleAggregationsChange(
+    aggregationSettings: AggregationSettings,
+    added: AggregationOperation[] = [],
+    removed: AggregationOperation[] = []
+  ): void {
+    log.debug('handleAggregationsChange', aggregationSettings, added, removed);
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and added / removed aggregations are prohibited for rollups
+    const changes = [...added, ...removed];
+    const shouldStartLoading = !(
+      isRollup &&
+      changes.length > 0 &&
+      changes.every(op => AggregationUtils.isRollupProhibited(op))
     );
+
+    if (shouldStartLoading) {
+      this.startLoading(
+        `Aggregating ${aggregationSettings.aggregations
+          .map(a => a.operation)
+          .join(', ')}...`
+      );
+    }
     this.setState({ aggregationSettings });
   }
 
@@ -3528,8 +3548,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   handleAggregationChange(aggregation: Aggregation): void {
     log.debug('handleAggregationChange', aggregation);
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and the aggregation is prohibited for rollups
+    const shouldStartLoading = !(
+      isRollup && AggregationUtils.isRollupProhibited(aggregation.operation)
+    );
 
-    this.startLoading(`Aggregating ${aggregation.operation}...`);
+    if (shouldStartLoading) {
+      this.startLoading(`Aggregating ${aggregation.operation}...`);
+    }
 
     this.setState(({ aggregationSettings }) => ({
       selectedAggregation: aggregation,
@@ -4690,6 +4718,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
+      model.isOrganizeColumnsAvailable,
       model.isRollupAvailable,
       model.isTotalsAvailable || isRollup,
       model.isSelectDistinctAvailable,
@@ -4783,6 +4812,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isRollup={isRollup}
               onChange={this.handleAggregationsChange}
               onEdit={this.handleAggregationEdit}
+              dh={model.dh}
             />
           );
         case OptionType.AGGREGATION_EDIT:

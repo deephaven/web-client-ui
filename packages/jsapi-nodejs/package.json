@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-nodejs",
-  "version": "0.106.2",
+  "version": "0.107.1",
   "description": "Deephaven utils for consuming Jsapi from a server",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -21,6 +21,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
+    "@deephaven/jsapi-types": "^1.0.0-dev0.37.2",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "ws": "^8.18.0"

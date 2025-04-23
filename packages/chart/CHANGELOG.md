@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+**Note:** Version bump only for package @deephaven/chart
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+**Note:** Version bump only for package @deephaven/chart
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Bug Fixes
+
+- DH-18279: fix one click titles ([#2381](https://github.com/deephaven/web-client-ui/issues/2381)) ([c4ffce7](https://github.com/deephaven/web-client-ui/commit/c4ffce7659da9c5b86d820c4f9c929b3e6596a9c))
+
 ## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
 
 **Note:** Version bump only for package @deephaven/chart
