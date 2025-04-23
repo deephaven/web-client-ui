@@ -21,6 +21,7 @@ import {
   IrisGrid,
   type IrisGridType,
   IrisGridModel,
+  IrisGridCacheUtils,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
   type ColumnName,
@@ -367,6 +368,12 @@ export class IrisGridPanel extends PureComponent<
   pluginState: unknown;
 
   private irisGridUtils: IrisGridUtils | null;
+
+  private gridStateDehydrator =
+    IrisGridCacheUtils.makeMemoizedGridStateDehydrator();
+
+  private irisGridStateDehydrator =
+    IrisGridCacheUtils.makeMemoizedIrisGridStateDehydrator();
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -1065,8 +1072,8 @@ export class IrisGridPanel extends PureComponent<
         partitions,
         advancedSettings
       ),
-      this.irisGridUtils.dehydrateIrisGridState(model, irisGridState),
-      IrisGridUtils.dehydrateGridState(model, gridState),
+      this.irisGridStateDehydrator(model, irisGridState),
+      this.gridStateDehydrator(model, gridState),
       pluginState
     );
 

@@ -646,16 +646,64 @@ describe('convert other column types to text', () => {
 });
 
 describe('dehydration methods', () => {
-  test('dehydrateIrisGridPanelState should be serializable', () => {
-    const result = IrisGridUtils.dehydrateIrisGridPanelState(
-      irisGridTestUtils.makeModel(),
-      {
+  it.each([
+    [
+      'dehydrateIrisGridPanelState',
+      IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
         isSelectingPartition: false,
         partitions: [],
         advancedSettings: new Map(),
-      }
-    );
-
+      }),
+    ],
+    [
+      'dehydrateGridState',
+      IrisGridUtils.dehydrateGridState(irisGridTestUtils.makeModel(), {
+        isStuckToBottom: false,
+        isStuckToRight: false,
+        movedRows: [],
+        movedColumns: [],
+      }),
+    ],
+    [
+      'dehydrateIrisGridState',
+      irisGridUtils.dehydrateIrisGridState(irisGridTestUtils.makeModel(), {
+        advancedFilters: new Map(),
+        partitionConfig: {
+          partitions: [],
+          mode: 'merged',
+        },
+        aggregationSettings: {
+          aggregations: [],
+          showOnTop: false,
+        },
+        customColumnFormatMap: new Map(),
+        isFilterBarShown: false,
+        quickFilters: new Map(),
+        customColumns: [],
+        reverse: false,
+        rollupConfig: {
+          columns: [],
+          showConstituents: false,
+          showNonAggregatedColumns: false,
+          includeDescriptions: true,
+        },
+        showSearchBar: false,
+        searchValue: '',
+        selectDistinctColumns: [],
+        selectedSearchColumns: [],
+        sorts: [],
+        invertSearchColumns: false,
+        pendingDataMap: new Map(),
+        frozenColumns: [],
+        conditionalFormats: [],
+        columnHeaderGroups: [],
+        metrics: {
+          userColumnWidths: new Map(),
+          userRowHeights: new Map(),
+        } as GridMetrics,
+      }),
+    ],
+  ])('%s should be serializable', (_label, result) => {
     expect(
       // This makes sure the result doesn't contain undefined
       // so it can be serialized and de-serialized without changes
@@ -663,116 +711,6 @@ describe('dehydration methods', () => {
       // e.g. { foo: undefined } when stringified will be '{}', we want to catch that case
       deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
     ).toBe(true);
-  });
-
-  test('dehydrateGridState should be serializable and memoized', () => {
-    const model = irisGridTestUtils.makeModel();
-    const gridState = {
-      isStuckToBottom: false,
-      isStuckToRight: false,
-      movedRows: [],
-      movedColumns: [],
-    } satisfies HydratedGridState;
-
-    const result = IrisGridUtils.dehydrateGridState(model, gridState);
-
-    const sameStateDifferentStateObject = IrisGridUtils.dehydrateGridState(
-      model,
-      {
-        ...gridState,
-      }
-    );
-
-    const sameStateDifferentModel = IrisGridUtils.dehydrateGridState(
-      irisGridTestUtils.makeModel(),
-      gridState
-    );
-
-    const sameModelDifferentState = IrisGridUtils.dehydrateGridState(model, {
-      ...gridState,
-      isStuckToBottom: true,
-    });
-
-    expect(
-      deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
-    ).toBe(true);
-
-    expect(result).toBe(sameStateDifferentStateObject);
-    expect(result).not.toBe(sameStateDifferentModel);
-    expect(result).not.toBe(sameModelDifferentState);
-  });
-
-  test('dehydrateIrisGridState should be serializable and memoized', () => {
-    const model = irisGridTestUtils.makeModel();
-    const irisGridState = {
-      advancedFilters: new Map(),
-      partitionConfig: {
-        partitions: [],
-        mode: 'merged',
-      },
-      aggregationSettings: {
-        aggregations: [],
-        showOnTop: false,
-      },
-      customColumnFormatMap: new Map(),
-      isFilterBarShown: false,
-      quickFilters: new Map(),
-      customColumns: [],
-      reverse: false,
-      rollupConfig: {
-        columns: [],
-        showConstituents: false,
-        showNonAggregatedColumns: false,
-        includeDescriptions: true,
-      },
-      showSearchBar: false,
-      searchValue: '',
-      selectDistinctColumns: [],
-      selectedSearchColumns: [],
-      sorts: [],
-      invertSearchColumns: false,
-      pendingDataMap: new Map(),
-      frozenColumns: [],
-      conditionalFormats: [],
-      columnHeaderGroups: [],
-      metrics: {
-        userColumnWidths: new Map(),
-        userRowHeights: new Map(),
-      } as GridMetrics,
-    } satisfies HydratedIrisGridState;
-
-    const testIrisGridUtils = new IrisGridUtils(dh);
-
-    const result = testIrisGridUtils.dehydrateIrisGridState(
-      model,
-      irisGridState
-    );
-
-    const sameStateDifferentStateObject =
-      testIrisGridUtils.dehydrateIrisGridState(model, {
-        ...irisGridState,
-      });
-
-    const sameStateDifferentModel = testIrisGridUtils.dehydrateIrisGridState(
-      irisGridTestUtils.makeModel(),
-      irisGridState
-    );
-
-    const sameModelDifferentState = testIrisGridUtils.dehydrateIrisGridState(
-      model,
-      {
-        ...irisGridState,
-        isFilterBarShown: true,
-      }
-    );
-
-    expect(
-      deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
-    ).toBe(true);
-
-    expect(result).toBe(sameStateDifferentStateObject);
-    expect(result).not.toBe(sameStateDifferentModel);
-    expect(result).not.toBe(sameModelDifferentState);
   });
 });
 

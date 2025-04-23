@@ -17,7 +17,6 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { assertNotNull, bindAllMethods, EMPTY_MAP } from '@deephaven/utils';
-import memoizeOne from 'memoize-one';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type FilterData, type IrisGridState } from './IrisGrid';
@@ -199,18 +198,8 @@ export type DehydratedGridState = {
 };
 
 class IrisGridUtils {
-  // Memoized function to dehydrate the grid state
-  // Uses a WeakMap so there is a weakref to the model (key)
-  // If the model gets garbage collected, the memoized function will be garbage collected too
-  // This should result in an eventually auto-cleaning cache
-  private static dehydratedGridStateMemoizedFns = new WeakMap<
-    IrisGridModel,
-    (gridState: HydratedGridState) => DehydratedGridState
-  >();
-
   /**
    * Exports the state from Grid component to a JSON stringifiable object.
-   * Memoized so if the model and gridState keys that are dehydrated are the same, this function returns the same object.
    * @param model The table model to export the Grid state for
    * @param gridState The state of the Grid to export
    * @returns An object that can be stringified and imported with {{@link hydrateGridState}}
@@ -219,54 +208,31 @@ class IrisGridUtils {
     model: IrisGridModel,
     gridState: HydratedGridState
   ): DehydratedGridState {
-    let memoizedFn = IrisGridUtils.dehydratedGridStateMemoizedFns.get(model);
-    if (memoizedFn) {
-      return memoizedFn(gridState);
-    }
+    const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
+      gridState;
 
-    memoizedFn = memoizeOne(
-      (newGridState: typeof gridState): DehydratedGridState => {
-        const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
-          newGridState;
+    const { columns } = model;
 
-        const { columns } = model;
-
-        return {
-          isStuckToBottom,
-          isStuckToRight,
-          movedColumns: [...movedColumns]
-            .filter(
-              ({ to, from }) =>
-                isValidIndex(to, columns) &&
-                ((typeof from === 'number' && isValidIndex(from, columns)) ||
-                  (Array.isArray(from) &&
-                    isValidIndex(from[0], columns) &&
-                    isValidIndex(from[1], columns)))
-            )
-            .map(({ to, from }) => ({
-              to: columns[to].name,
-              from: Array.isArray(from)
-                ? [columns[from[0]].name, columns[from[1]].name]
-                : columns[from].name,
-            })),
-          movedRows: [...movedRows],
-        };
-      },
-      // Check if the values are equivalent to compare if we need to create a new value
-      ([a], [b]) => {
-        const compareKeys = [
-          'isStuckToBottom',
-          'isStuckToRight',
-          'movedColumns',
-          'movedRows',
-        ] satisfies Array<keyof GridState>;
-        return compareKeys.every(key => a[key] === b[key]);
-      }
-    );
-
-    IrisGridUtils.dehydratedGridStateMemoizedFns.set(model, memoizedFn);
-
-    return memoizedFn(gridState);
+    return {
+      isStuckToBottom,
+      isStuckToRight,
+      movedColumns: [...movedColumns]
+        .filter(
+          ({ to, from }) =>
+            isValidIndex(to, columns) &&
+            ((typeof from === 'number' && isValidIndex(from, columns)) ||
+              (Array.isArray(from) &&
+                isValidIndex(from[0], columns) &&
+                isValidIndex(from[1], columns)))
+        )
+        .map(({ to, from }) => ({
+          to: columns[to].name,
+          from: Array.isArray(from)
+            ? [columns[from[0]].name, columns[from[1]].name]
+            : columns[from].name,
+        })),
+      movedRows: [...movedRows],
+    };
   }
 
   /**
@@ -1190,120 +1156,79 @@ class IrisGridUtils {
    * @param model The table model to export the state for
    * @param irisGridState The current state of the IrisGrid
    */
-  dehydrateIrisGridState = memoizeOne(
-    (
-      model: IrisGridModel,
-      irisGridState: HydratedIrisGridState
-    ): DehydratedIrisGridState => {
-      const {
-        aggregationSettings,
-        advancedFilters,
-        customColumnFormatMap,
-        isFilterBarShown,
-        metrics: { userColumnWidths, userRowHeights } = {
-          userColumnWidths: EMPTY_MAP,
-          userRowHeights: EMPTY_MAP,
-        },
-        quickFilters,
-        customColumns,
-        conditionalFormats,
-        reverse,
-        rollupConfig,
-        showSearchBar,
-        searchValue,
-        selectDistinctColumns,
-        selectedSearchColumns,
-        sorts,
-        invertSearchColumns,
-        pendingDataMap,
-        frozenColumns,
-        columnHeaderGroups,
-        partitionConfig,
-      } = irisGridState;
-      const { columns } = model;
-      const partitionColumns = isPartitionedGridModelProvider(model)
-        ? model.partitionColumns
-        : [];
+  dehydrateIrisGridState(
+    model: IrisGridModel,
+    irisGridState: HydratedIrisGridState
+  ): DehydratedIrisGridState {
+    const {
+      aggregationSettings,
+      advancedFilters,
+      customColumnFormatMap,
+      isFilterBarShown,
+      metrics: { userColumnWidths, userRowHeights } = {
+        userColumnWidths: EMPTY_MAP,
+        userRowHeights: EMPTY_MAP,
+      },
+      quickFilters,
+      customColumns,
+      conditionalFormats,
+      reverse,
+      rollupConfig,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns,
+      selectedSearchColumns,
+      sorts,
+      invertSearchColumns,
+      pendingDataMap,
+      frozenColumns,
+      columnHeaderGroups,
+      partitionConfig,
+    } = irisGridState;
+    const { columns } = model;
+    const partitionColumns = isPartitionedGridModelProvider(model)
+      ? model.partitionColumns
+      : [];
 
-      // Return value will be serialized, should not contain undefined
-      // NOTE: Any return values added here should be added to the equality function as well
-      return {
-        advancedFilters: this.dehydrateAdvancedFilters(
-          columns,
-          advancedFilters
-        ),
-        aggregationSettings,
-        customColumnFormatMap: [...customColumnFormatMap],
-        isFilterBarShown,
-        quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
-        sorts: IrisGridUtils.dehydrateSort(sorts),
-        userColumnWidths: [...userColumnWidths]
-          .filter(
-            ([columnIndex]) =>
-              columnIndex != null &&
-              columnIndex >= 0 &&
-              columnIndex < columns.length
-          )
-          .map(([columnIndex, width]) => [columns[columnIndex].name, width]),
-        userRowHeights: [...userRowHeights],
-        customColumns: [...customColumns],
-        conditionalFormats: [...conditionalFormats],
-        reverse,
-        rollupConfig,
-        showSearchBar,
-        searchValue,
-        selectDistinctColumns: [...selectDistinctColumns],
-        selectedSearchColumns,
-        invertSearchColumns,
-        pendingDataMap: this.dehydratePendingDataMap(columns, pendingDataMap),
-        frozenColumns,
-        columnHeaderGroups: columnHeaderGroups?.map(item => ({
-          name: item.name,
-          children: item.children,
-          color: item.color ?? null,
-        })),
-        partitionConfig: this.dehydratePartitionConfig(
-          partitionColumns,
-          partitionConfig
-        ),
-      };
-    },
-    // Equality function to check if the state has changed
-    // This way we can just pass in the entire state instead of memoizing on 20 different parameters in order
-    (a, b) => {
-      // Top level keys we want to check for referential equality
-      const compareStateKeys = [
-        'advancedFilters',
-        'aggregationSettings',
-        'customColumnFormatMap',
-        'isFilterBarShown',
-        'quickFilters',
-        'customColumns',
-        'reverse',
-        'rollupConfig',
-        'showSearchBar',
-        'searchValue',
-        'selectDistinctColumns',
-        'selectedSearchColumns',
-        'sorts',
-        'invertSearchColumns',
-        'pendingDataMap',
-        'frozenColumns',
-        'conditionalFormats',
-        'columnHeaderGroups',
-        'partitionConfig',
-      ] satisfies Array<keyof HydratedIrisGridState>;
-
-      return (
-        a[0] === b[0] &&
-        a[1].metrics != null &&
-        b[1].metrics != null &&
-        a[1].metrics.userColumnWidths === b[1].metrics.userColumnWidths &&
-        a[1].metrics.userRowHeights === b[1].metrics.userRowHeights &&
-        compareStateKeys.every(key => a[1][key] === b[1][key])
-      );
-    }
-  );
+    // Return value will be serialized, should not contain undefined
+    return {
+      advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
+      aggregationSettings,
+      customColumnFormatMap: [...customColumnFormatMap],
+      isFilterBarShown,
+      quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
+      sorts: IrisGridUtils.dehydrateSort(sorts),
+      userColumnWidths: [...userColumnWidths]
+        .filter(
+          ([columnIndex]) =>
+            columnIndex != null &&
+            columnIndex >= 0 &&
+            columnIndex < columns.length
+        )
+        .map(([columnIndex, width]) => [columns[columnIndex].name, width]),
+      userRowHeights: [...userRowHeights],
+      customColumns: [...customColumns],
+      conditionalFormats: [...conditionalFormats],
+      reverse,
+      rollupConfig,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns: [...selectDistinctColumns],
+      selectedSearchColumns,
+      invertSearchColumns,
+      pendingDataMap: this.dehydratePendingDataMap(columns, pendingDataMap),
+      frozenColumns,
+      columnHeaderGroups: columnHeaderGroups?.map(item => ({
+        name: item.name,
+        children: item.children,
+        color: item.color ?? null,
+      })),
+      partitionConfig: this.dehydratePartitionConfig(
+        partitionColumns,
+        partitionConfig
+      ),
+    };
+  }
 
   /**
    * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
