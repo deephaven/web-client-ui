@@ -22,13 +22,15 @@ import type {
   Tab,
   CloseOptions,
 } from '@deephaven/golden-layout';
-import { assertNotNull } from '@deephaven/utils';
-import { DashboardLayoutConfig } from '../DashboardLayout';
-import { PanelConfig } from '../DashboardPlugin';
+import { assertNotNull, type Brand } from '@deephaven/utils';
+import { type DashboardLayoutConfig } from '../DashboardLayout';
+import { type PanelConfig } from '../DashboardPlugin';
 
 const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
+
+export type PanelId = Brand<'PanelId', string | string[] | undefined>;
 
 export type LayoutPanel = {
   props: GLPanelProps;
@@ -807,12 +809,10 @@ class LayoutUtils {
    * @param glContainer The container to get the panel ID for
    * @returns Panel ID
    */
-  static getIdFromContainer(
-    glContainer: Container
-  ): string | string[] | null | undefined {
+  static getIdFromContainer(glContainer: Container): PanelId | null {
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config) {
-      return config.id;
+      return config.id as PanelId;
     }
     return null;
   }
@@ -822,9 +822,7 @@ class LayoutUtils {
    * @param panel The panel to get the ID for
    * @returns Panel ID
    */
-  static getIdFromPanel(
-    panel: LayoutPanel
-  ): string | string[] | null | undefined {
+  static getIdFromPanel(panel: LayoutPanel): PanelId | null {
     const { glContainer } = panel.props;
     return LayoutUtils.getIdFromContainer(glContainer);
   }
