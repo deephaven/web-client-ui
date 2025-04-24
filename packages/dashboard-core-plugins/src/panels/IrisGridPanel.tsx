@@ -787,7 +787,11 @@ export class IrisGridPanel extends PureComponent<
   sendColumnsChange(columns: readonly dh.Column[]): void {
     log.debug2('sendColumnsChange', columns);
     const { glEventHub } = this.props;
-    glEventHub.emit(InputFilterEvent.COLUMNS_CHANGED, this, columns);
+    glEventHub.emit(
+      InputFilterEvent.COLUMNS_CHANGED,
+      LayoutUtils.getIdFromPanel(this),
+      columns
+    );
   }
 
   startModelListening(model: IrisGridModel): void {
