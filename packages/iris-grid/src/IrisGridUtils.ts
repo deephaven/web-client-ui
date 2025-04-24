@@ -16,7 +16,12 @@ import {
   type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { assertNotNull, bindAllMethods, EMPTY_MAP } from '@deephaven/utils';
+import {
+  assertNotNull,
+  bindAllMethods,
+  EMPTY_ARRAY,
+  EMPTY_MAP,
+} from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type FilterData, type IrisGridState } from './IrisGrid';
@@ -1162,7 +1167,7 @@ class IrisGridUtils {
     irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
     const {
-      aggregationSettings,
+      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
       isFilterBarShown,
@@ -1172,16 +1177,16 @@ class IrisGridUtils {
       },
       quickFilters,
       customColumns,
-      conditionalFormats,
+      conditionalFormats = EMPTY_ARRAY,
       reverse,
       rollupConfig,
       showSearchBar,
       searchValue,
-      selectDistinctColumns,
+      selectDistinctColumns = EMPTY_ARRAY,
       selectedSearchColumns,
       sorts,
       invertSearchColumns,
-      pendingDataMap,
+      pendingDataMap = EMPTY_MAP,
       frozenColumns,
       columnHeaderGroups,
       partitionConfig,
