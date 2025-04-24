@@ -110,6 +110,8 @@ export function isDashboardPlugin(
 
 export interface WidgetComponentProps<T = unknown> {
   fetch: () => Promise<T>;
+  persistState?: (state: unknown) => void;
+  getInitialState?: () => unknown;
 }
 
 export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
