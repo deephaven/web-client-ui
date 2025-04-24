@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { type Brand } from '@deephaven/utils';
 
 export type WidgetPanelDescriptor = {
   /** Type of the widget. */
@@ -25,4 +26,4 @@ export type WidgetPanelTooltipProps = {
   children?: ReactNode;
 };
 
-export type WidgetId = string;
+export type WidgetId = Brand<'WidgetId'>;

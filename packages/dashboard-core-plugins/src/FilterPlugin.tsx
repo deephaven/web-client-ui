@@ -138,7 +138,9 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
     panel => {
       log.debug2('handlePanelUnmount', panel);
       const panelId = LayoutUtils.getIdFromPanel(panel);
-      panelColumns.delete(panelId);
+      if (panelId != null) {
+        panelColumns.delete(panelId);
+      }
       panelFilters.delete(panel);
       panelTables.delete(panelId);
       sendUpdate();
