@@ -9,20 +9,25 @@ import usePersistentState, {
 
 function BasicTestComponent({
   label,
+  useInitializerFunction = false,
   type = 'test',
   version = 1,
   migrations,
 }: {
   label: string;
+  useInitializerFunction?: boolean;
   type?: string;
   version?: number;
   migrations?: PersistentStateMigration[];
 }) {
-  const [state, setState] = usePersistentState(`default-${label}`, {
-    type,
-    version,
-    migrations,
-  });
+  const [state, setState] = usePersistentState(
+    useInitializerFunction ? () => `default-${label}` : `default-${label}`,
+    {
+      type,
+      version,
+      migrations,
+    }
+  );
   return (
     <div>
       <span>{`${state}`}</span>
@@ -67,6 +72,30 @@ describe('usePersistentState', () => {
     render(FooBarBaz, {
       wrapper: createWrapper({ onChange: mockOnChange }),
     });
+
+    expect(screen.getByText('default-foo')).toBeInTheDocument();
+    expect(screen.getByText('default-bar')).toBeInTheDocument();
+    expect(screen.getByText('default-baz')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'default-foo' }),
+      expect.objectContaining({ state: 'default-bar' }),
+      expect.objectContaining({ state: 'default-baz' }),
+    ]);
+  });
+
+  it('should support function state initializer if no previous initialState', () => {
+    const mockOnChange = jest.fn();
+
+    render(
+      <>
+        <BasicTestComponent label="foo" useInitializerFunction />
+        <BasicTestComponent label="bar" useInitializerFunction />
+        <BasicTestComponent label="baz" />
+      </>,
+      {
+        wrapper: createWrapper({ onChange: mockOnChange }),
+      }
+    );
 
     expect(screen.getByText('default-foo')).toBeInTheDocument();
     expect(screen.getByText('default-bar')).toBeInTheDocument();
@@ -422,7 +451,27 @@ describe('usePersistentState migrations', () => {
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
-  test('should throw if the from version is greater than to', () => {
+  test('should throw if the persisted version is greater than the hook', () => {
+    TestUtils.disableConsoleOutput('error');
+    const mockOnChange = jest.fn();
+    const initialState = [
+      {
+        type: 'test',
+        version: 2,
+        state: 'v2',
+      },
+    ];
+
+    expect(() =>
+      render(<BasicTestComponent label="foo" version={1} />, {
+        wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+      })
+    ).toThrowError(/newer version/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
+  });
+
+  test('should throw if the migration from version is greater than to', () => {
     TestUtils.disableConsoleOutput('error');
     const mockOnChange = jest.fn();
     const initialState = [
