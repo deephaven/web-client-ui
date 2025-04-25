@@ -38,7 +38,7 @@ export type PersistentStateContextType = {
 };
 
 /**
- * Context that holds the ID of the panel that we are currently in.
+ * Context that holds methods to track the state of all calls to usePersistentState below this provider.
  */
 export const PersistentStateContext =
   createContext<PersistentStateContextType | null>(null);
