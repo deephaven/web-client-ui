@@ -33,8 +33,8 @@ export function GridWidgetPlugin({
   const [state, setState] = usePersistentState<
     (DehydratedIrisGridState & DehydratedGridState) | undefined
   >(undefined, {
-    version: 2,
-    type: 'GridWidgetPluginss',
+    version: 1,
+    type: 'GridWidgetPlugin',
   });
   const initialState = useRef(state);
   const hydratedState = useMemo(() => {

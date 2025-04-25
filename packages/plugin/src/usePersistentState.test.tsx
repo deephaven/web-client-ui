@@ -1,11 +1,28 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { TestUtils } from '@deephaven/test-utils';
 import { PersistentStateProvider } from './PersistentStateContext';
-import usePersistentState from './usePersistentState';
+import usePersistentState, {
+  type PersistentStateMigration,
+} from './usePersistentState';
 
-function BasicTestComponent({ label }: { label: string }) {
-  const [state, setState] = usePersistentState(`default-${label}`);
+function BasicTestComponent({
+  label,
+  type = 'test',
+  version = 1,
+  migrations,
+}: {
+  label: string;
+  type?: string;
+  version?: number;
+  migrations?: PersistentStateMigration[];
+}) {
+  const [state, setState] = usePersistentState(`default-${label}`, {
+    type,
+    version,
+    migrations,
+  });
   return (
     <div>
       <span>{`${state}`}</span>
@@ -55,9 +72,9 @@ describe('usePersistentState', () => {
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      'default-foo',
-      'default-bar',
-      'default-baz',
+      expect.objectContaining({ state: 'default-foo' }),
+      expect.objectContaining({ state: 'default-bar' }),
+      expect.objectContaining({ state: 'default-baz' }),
     ]);
   });
 
@@ -72,16 +89,19 @@ describe('usePersistentState', () => {
 
     expect(screen.getByText('updated-bar')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      'default-foo',
-      'updated-bar',
-      'default-baz',
+      expect.objectContaining({ state: 'default-foo' }),
+      expect.objectContaining({ state: 'updated-bar' }),
+      expect.objectContaining({ state: 'default-baz' }),
     ]);
   });
 
   it('should use persisted state if available', () => {
     render(FooBarBaz, {
       wrapper: createWrapper({
-        initialState: ['persisted-foo', 'persisted-bar'],
+        initialState: [
+          { type: 'test', version: 1, state: 'persisted-foo' },
+          { type: 'test', version: 1, state: 'persisted-bar' },
+        ],
       }),
     });
 
@@ -93,7 +113,10 @@ describe('usePersistentState', () => {
   it('should persist explicit undefined', () => {
     render(FooBarBaz, {
       wrapper: createWrapper({
-        initialState: [undefined, 'persisted-bar'],
+        initialState: [
+          { type: 'test', version: 1, state: undefined },
+          { type: 'test', version: 1, state: 'persisted-bar' },
+        ],
       }),
     });
 
@@ -120,7 +143,10 @@ describe('usePersistentState', () => {
       </>
     );
 
-    expect(mockOnChange).toHaveBeenCalledWith(['updated-foo', 'default-baz']);
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'updated-foo' }),
+      expect.objectContaining({ state: 'default-baz' }),
+    ]);
   });
 
   it('should collect all state even if a component is memoized', async () => {
@@ -145,9 +171,9 @@ describe('usePersistentState', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
 
     expect(mockOnChange).toHaveBeenCalledWith([
-      'default-foo',
-      'updated-bar',
-      'default-baz',
+      expect.objectContaining({ state: 'default-foo' }),
+      expect.objectContaining({ state: 'updated-bar' }),
+      expect.objectContaining({ state: 'default-baz' }),
     ]);
   });
 
@@ -164,7 +190,10 @@ describe('usePersistentState', () => {
 
   it('should handle a component that conditionally calls setState in its render function', () => {
     function ConditionalSetStateComponent() {
-      const [state, setState] = usePersistentState('default');
+      const [state, setState] = usePersistentState('default', {
+        type: 'test',
+        version: 1,
+      });
       if (state === 'default') {
         setState('updated');
       }
@@ -177,7 +206,250 @@ describe('usePersistentState', () => {
     });
 
     expect(screen.getByText('updated')).toBeInTheDocument();
-    expect(mockOnChange).toHaveBeenCalledWith(['updated']);
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'updated' }),
+    ]);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw if the types do not match', () => {
+    TestUtils.disableConsoleOutput('error');
+
+    const mockOnChange = jest.fn();
+
+    expect(() =>
+      render(<BasicTestComponent label="foo" type="test2" />, {
+        wrapper: createWrapper({
+          initialState: [{ type: 'test', version: 1, state: 'persisted-foo' }],
+          onChange: mockOnChange,
+        }),
+      })
+    ).toThrowError(/type mismatch/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('usePersistentState migrations', () => {
+  test('should migrate state when version changes', () => {
+    const mockOnChange = jest.fn();
+
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 2,
+        migrate: () => 'v2',
+      },
+    ];
+
+    render(
+      <BasicTestComponent label="foo" version={2} migrations={migrations} />,
+      {
+        wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+      }
+    );
+
+    expect(screen.getByText('v2')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'v2' }),
+    ]);
+    expect(mockOnChange).toHaveBeenCalledTimes(1);
+  });
+
+  test('should migrate state when version changes multiple versions', () => {
+    const mockOnChange = jest.fn();
+
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 2,
+        migrate: () => 'v2',
+      },
+      {
+        from: 2,
+        to: 3,
+        migrate: () => 'v3',
+      },
+    ];
+
+    const { unmount } = render(
+      <BasicTestComponent label="foo" version={3} migrations={migrations} />,
+      {
+        wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+      }
+    );
+
+    expect(screen.getByText('v3')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'v3' }),
+    ]);
+    expect(mockOnChange).toHaveBeenCalledTimes(1);
+    unmount();
+
+    mockOnChange.mockClear();
+
+    render(
+      <BasicTestComponent
+        label="foo"
+        version={3}
+        migrations={[{ from: 1, to: 3, migrate: () => 'v1-v3' }]}
+      />,
+      {
+        wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+      }
+    );
+
+    expect(screen.getByText('v1-v3')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenCalledWith([
+      expect.objectContaining({ state: 'v1-v3' }),
+    ]);
+    expect(mockOnChange).toHaveBeenCalledTimes(1);
+  });
+
+  test('should throw an error if migration is not found', () => {
+    TestUtils.disableConsoleOutput('error');
+    const mockOnChange = jest.fn();
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 2,
+        migrate: () => 'v2',
+      },
+    ];
+
+    expect(() =>
+      render(
+        <BasicTestComponent label="foo" version={3} migrations={migrations} />,
+        {
+          wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+        }
+      )
+    ).toThrowError(/No migration found/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
+  });
+
+  test('should throw an error if multiple migrations from one version are found', () => {
+    TestUtils.disableConsoleOutput('error');
+    const mockOnChange = jest.fn();
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 2,
+        migrate: () => 'v2',
+      },
+      {
+        from: 1,
+        to: 3,
+        migrate: () => 'v3',
+      },
+    ];
+
+    expect(() =>
+      render(
+        <BasicTestComponent label="foo" version={3} migrations={migrations} />,
+        {
+          wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+        }
+      )
+    ).toThrowError(/Multiple migrations/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
+  });
+
+  test('should throw an error if the migration function throws', () => {
+    TestUtils.disableConsoleOutput('error');
+    const mockOnChange = jest.fn();
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 2,
+        migrate: () => {
+          throw new Error('Migration error');
+        },
+      },
+    ];
+
+    expect(() =>
+      render(
+        <BasicTestComponent label="foo" version={2} migrations={migrations} />,
+        {
+          wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+        }
+      )
+    ).toThrowError(/Error migrating persisted state/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
+  });
+
+  test('should throw if the from version is greater than to', () => {
+    TestUtils.disableConsoleOutput('error');
+    const mockOnChange = jest.fn();
+    const initialState = [
+      {
+        type: 'test',
+        version: 1,
+        state: 'v1',
+      },
+    ];
+
+    const migrations = [
+      {
+        from: 1,
+        to: 0,
+        migrate: () => 'v0',
+      },
+    ];
+
+    expect(() =>
+      render(
+        <BasicTestComponent label="foo" version={2} migrations={migrations} />,
+        {
+          wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+        }
+      )
+    ).toThrowError(/invalid version change/);
+
+    expect(mockOnChange).not.toHaveBeenCalled();
   });
 });
