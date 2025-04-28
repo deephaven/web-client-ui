@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
+
+### Features
+
+- Add IrisGridCacheUtils for memoizing iris grid state ([#2416](https://github.com/deephaven/web-client-ui/issues/2416)) ([d6826ce](https://github.com/deephaven/web-client-ui/commit/d6826ce22ce74aa2a164440098d22fa2dcb7feca))
+
+### Bug Fixes
+
+- Add back some defaults to dehydrateIrisGridState ([#2419](https://github.com/deephaven/web-client-ui/issues/2419)) ([816dd85](https://github.com/deephaven/web-client-ui/commit/816dd8586a30690efb58d7a2492d13e10fc8fd10)), closes [#2416](https://github.com/deephaven/web-client-ui/issues/2416)
+- DH-13244: remove trailing whitespace from console log messages ([#2418](https://github.com/deephaven/web-client-ui/issues/2418)) ([2827f51](https://github.com/deephaven/web-client-ui/commit/2827f51c73c6337ffd09b9b019b3182357b9bca1))
+
 ## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
 
 ### Bug Fixes

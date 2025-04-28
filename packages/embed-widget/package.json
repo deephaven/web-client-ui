@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-widget",
-  "version": "0.107.2",
+  "version": "0.108.0",
   "description": "Deephaven Embedded Widget",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

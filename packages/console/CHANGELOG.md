@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
+
+### Bug Fixes
+
+- DH-13244: remove trailing whitespace from console log messages ([#2418](https://github.com/deephaven/web-client-ui/issues/2418)) ([2827f51](https://github.com/deephaven/web-client-ui/commit/2827f51c73c6337ffd09b9b019b3182357b9bca1))
+
 ## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
 
 **Note:** Version bump only for package @deephaven/console

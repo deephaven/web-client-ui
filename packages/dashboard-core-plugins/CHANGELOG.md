@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
+
+### Features
+
+- Add IrisGridCacheUtils for memoizing iris grid state ([#2416](https://github.com/deephaven/web-client-ui/issues/2416)) ([d6826ce](https://github.com/deephaven/web-client-ui/commit/d6826ce22ce74aa2a164440098d22fa2dcb7feca))
+
 ## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
