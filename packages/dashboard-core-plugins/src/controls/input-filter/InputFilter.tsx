@@ -109,19 +109,22 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
 
   inputRef: RefObject<HTMLInputElement>;
 
-  getItemLabel = memoizee((columns: InputFilterColumn[], index: number) => {
-    const { name, type } = columns[index];
+  getItemLabel = memoizee(
+    (columns: InputFilterColumn[], index: number) => {
+      const { name, type } = columns[index];
 
-    if (
-      (index > 0 && columns[index - 1].name === name) ||
-      (index < columns.length - 1 && columns[index + 1].name === name)
-    ) {
-      const shortType = type.substring(type.lastIndexOf('.') + 1);
-      return `${name} (${shortType})`;
-    }
+      if (
+        (index > 0 && columns[index - 1].name === name) ||
+        (index < columns.length - 1 && columns[index + 1].name === name)
+      ) {
+        const shortType = type.substring(type.lastIndexOf('.') + 1);
+        return `${name} (${shortType})`;
+      }
 
-    return name;
-  });
+      return name;
+    },
+    { max: 1000 }
+  );
 
   handleColumnChange(eventTargetValue: string): void {
     const { columns } = this.props;

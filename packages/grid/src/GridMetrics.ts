@@ -162,7 +162,8 @@ export type GridMetrics = {
   movedColumns: readonly MoveOperation[];
 
   // Map of the width of the fonts
-  fontWidths: Map<string, number>;
+  fontWidthsLower: Map<string, number>;
+  fontWidthsUpper: Map<string, number>;
 
   // Map of user set column/row width/height
   userColumnWidths: ModelSizeMap;
@@ -171,6 +172,10 @@ export type GridMetrics = {
   // Map of calculated row/column height/width
   calculatedRowHeights: ModelSizeMap;
   calculatedColumnWidths: ModelSizeMap;
+
+  // Map of calculated row/column height/width without caching largest value
+  contentColumnWidths: ModelSizeMap;
+  contentRowHeights: ModelSizeMap;
 
   // Max depth of column headers. Depth of 1 for a table without column groups
   columnHeaderMaxDepth: number;

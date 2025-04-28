@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- DH-17599: Change illegal characters to underscores in variable names ([#2409](https://github.com/deephaven/web-client-ui/issues/2409)) ([15c8cfe](https://github.com/deephaven/web-client-ui/commit/15c8cfecb3f4274c433ff900a036569a690c760a))
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
+
+### Bug Fixes
+
+- Don't change console history if Shift held down ([#2384](https://github.com/deephaven/web-client-ui/issues/2384)) ([141bc13](https://github.com/deephaven/web-client-ui/commit/141bc13f1206e2e502ee67c28a61fdaa843735ae))
+
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Bug Fixes
+
+- DH-18542: Remove duplicate and invalid ruff quick fixes ([#2360](https://github.com/deephaven/web-client-ui/issues/2360)) ([f8c0e18](https://github.com/deephaven/web-client-ui/commit/f8c0e1829a11ffdae4438978932de5ddc95f35a6))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 ### Bug Fixes

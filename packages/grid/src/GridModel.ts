@@ -229,7 +229,8 @@ abstract class GridModel<
       const contentToCheckForLinks = text.substring(0, lengthOfContent);
 
       return GridUtils.findTokensWithProtocolInText(contentToCheckForLinks);
-    }
+    },
+    { max: 10000 }
   );
 
   renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {

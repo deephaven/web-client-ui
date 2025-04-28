@@ -3,6 +3,98 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+### Bug Fixes
+
+- DH-13095 Ignore right click while dragging table column ([#2415](https://github.com/deephaven/web-client-ui/issues/2415)) ([79f8a33](https://github.com/deephaven/web-client-ui/commit/79f8a3317e74682078cd534d582a853186bbef39))
+- missing specturm accordian icon due to styling ([#2406](https://github.com/deephaven/web-client-ui/issues/2406)) ([181d29e](https://github.com/deephaven/web-client-ui/commit/181d29efc5173dff87d7b8c3d144d1bd47854766))
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- Context menu using stale selection ([#2407](https://github.com/deephaven/web-client-ui/issues/2407)) ([c43f306](https://github.com/deephaven/web-client-ui/commit/c43f306453e775414812750e8fa479e539c3392f))
+- DH-17599: Change illegal characters to underscores in variable names ([#2409](https://github.com/deephaven/web-client-ui/issues/2409)) ([15c8cfe](https://github.com/deephaven/web-client-ui/commit/15c8cfecb3f4274c433ff900a036569a690c760a))
+- DH-17599: Fix table name validation ([#2403](https://github.com/deephaven/web-client-ui/issues/2403)) ([90ebb08](https://github.com/deephaven/web-client-ui/commit/90ebb08489e4de4bf78590bcf0fcba285d0cbfd4)), closes [#2398](https://github.com/deephaven/web-client-ui/issues/2398)
+- DH-19138: Determine Totals Column Name by Num Aggs Per Column ([#2411](https://github.com/deephaven/web-client-ui/issues/2411)) ([1909fac](https://github.com/deephaven/web-client-ui/commit/1909fac0323ccb3d42edbf3d8c82c038e68684de))
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- @deephaven/jsapi-nodejs loadDhModules() util ([#2392](https://github.com/deephaven/web-client-ui/issues/2392)) ([ee4eba5](https://github.com/deephaven/web-client-ui/commit/ee4eba5d03286c5e4a23afb8c3bb36e02912c317))
+- add median agg for totals table ([#2388](https://github.com/deephaven/web-client-ui/issues/2388)) ([5237f3c](https://github.com/deephaven/web-client-ui/commit/5237f3cf1bf03e023d198c10cc1a7448e9599771))
+- Allow wildcards for logs blacklist ([#2396](https://github.com/deephaven/web-client-ui/issues/2396)) ([6c406ba](https://github.com/deephaven/web-client-ui/commit/6c406ba00a74b53f4a3d551cb3d9b6241f064dfb))
+- useChangeEventValueCallback hook ([#2391](https://github.com/deephaven/web-client-ui/issues/2391)) ([99dfcab](https://github.com/deephaven/web-client-ui/commit/99dfcab0093b582ee907973a1df43995b148491a))
+
+### Bug Fixes
+
+- allow input table to delete row with null key ([#2386](https://github.com/deephaven/web-client-ui/issues/2386)) ([da572d1](https://github.com/deephaven/web-client-ui/commit/da572d13bd5b65b74211e2d6f1125c6a371d61b1))
+- DH-17599: Fix table name validation - allow hyphens ([#2398](https://github.com/deephaven/web-client-ui/issues/2398)) ([4b1c9dd](https://github.com/deephaven/web-client-ui/commit/4b1c9dde7b0982f71f09829813285519dd96deef))
+- DH-18279: fix one click titles ([#2381](https://github.com/deephaven/web-client-ui/issues/2381)) ([c4ffce7](https://github.com/deephaven/web-client-ui/commit/c4ffce7659da9c5b86d820c4f9c929b3e6596a9c))
+- DH-19010: Delete closed http2 sessions from the cache ([#2400](https://github.com/deephaven/web-client-ui/issues/2400)) ([7a2e07f](https://github.com/deephaven/web-client-ui/commit/7a2e07f8ff5e769fb5724ab3755f099acbe808c4))
+- Partition aware source table UI widget swaps from merge to coalesce ([#2397](https://github.com/deephaven/web-client-ui/issues/2397)) ([f6a859d](https://github.com/deephaven/web-client-ui/commit/f6a859d82da626d5287d0dd68a6acd3fde85f003))
+
+## [0.106.4](https://github.com/deephaven/web-client-ui/compare/v0.106.3...v0.106.4) (2025-03-18)
+
+### Bug Fixes
+
+- Exports needed for ui.table aggregations ([#2385](https://github.com/deephaven/web-client-ui/issues/2385)) ([fdfd238](https://github.com/deephaven/web-client-ui/commit/fdfd238b5dcc77a6caf33e9fc01817ed8275aa70))
+
+## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
+
+### Bug Fixes
+
+- Don't change console history if Shift held down ([#2384](https://github.com/deephaven/web-client-ui/issues/2384)) ([141bc13](https://github.com/deephaven/web-client-ui/commit/141bc13f1206e2e502ee67c28a61fdaa843735ae))
+- Fix column width calculation logic in grid ([#2370](https://github.com/deephaven/web-client-ui/issues/2370)) ([c88fc82](https://github.com/deephaven/web-client-ui/commit/c88fc82efa96baa02c86c7df8afa2c36ad4d2713))
+
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+### Bug Fixes
+
+- avoid exceeding call stack when exporting logs with large number of queries ([#2382](https://github.com/deephaven/web-client-ui/issues/2382)) ([3c2c8cf](https://github.com/deephaven/web-client-ui/commit/3c2c8cfbda9e2ca22c2977daa57fb33fbcd3d619))
+- Don't use innerHTML to populate drag item (DH-18645) ([#2378](https://github.com/deephaven/web-client-ui/issues/2378)) ([d44370b](https://github.com/deephaven/web-client-ui/commit/d44370b18b16f153403eaf95094e29755d673d4e))
+
+## [0.106.1](https://github.com/deephaven/web-client-ui/compare/v0.106.0...v0.106.1) (2025-03-03)
+
+### Bug Fixes
+
+- DH-18798 - token cache growing unbounded ([#2374](https://github.com/deephaven/web-client-ui/issues/2374)) ([3f74d44](https://github.com/deephaven/web-client-ui/commit/3f74d4403f332fa65877bc33e418faea3fc974c6))
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+### Features
+
+- Resize columns option in web UI ([#2358](https://github.com/deephaven/web-client-ui/issues/2358)) ([35fc599](https://github.com/deephaven/web-client-ui/commit/35fc599c1442574599dc0ecb4a3c22e0885d5a9b)), closes [#1486](https://github.com/deephaven/web-client-ui/issues/1486)
+
+### Bug Fixes
+
+- Proxy model appears partition even if original model is not ([#2373](https://github.com/deephaven/web-client-ui/issues/2373)) ([8cc36a5](https://github.com/deephaven/web-client-ui/commit/8cc36a533b52aa5bae9bd3b60616a7fc73f4e688))
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Features
+
+- Add chart event for title change ([#2352](https://github.com/deephaven/web-client-ui/issues/2352)) ([25563dc](https://github.com/deephaven/web-client-ui/commit/25563dc86d323b78d50c96fb17eae9db02b0d041))
+- Add indicator theme variables ([#2344](https://github.com/deephaven/web-client-ui/issues/2344)) ([e1a6a22](https://github.com/deephaven/web-client-ui/commit/e1a6a221291ae8fa01a748fa093929054ee565e7))
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([77c620f](https://github.com/deephaven/web-client-ui/commit/77c620f3afba57fdea632f774ea43f2be6790b0e)), closes [#2288](https://github.com/deephaven/web-client-ui/issues/2288)
+- Combobox exported type error ([#2351](https://github.com/deephaven/web-client-ui/issues/2351)) ([40dfcb7](https://github.com/deephaven/web-client-ui/commit/40dfcb7dde5f983f63f43f4d4a68956cc71625f8))
+- DH-18542: Remove duplicate and invalid ruff quick fixes ([#2360](https://github.com/deephaven/web-client-ui/issues/2360)) ([f8c0e18](https://github.com/deephaven/web-client-ui/commit/f8c0e1829a11ffdae4438978932de5ddc95f35a6))
+- Don't use HTML in panel titles, treat as text ([#2365](https://github.com/deephaven/web-client-ui/issues/2365)) ([e28a741](https://github.com/deephaven/web-client-ui/commit/e28a74159debfa089ad3cc91a4777abdb0b65bf2))
+- fix format options ([#2353](https://github.com/deephaven/web-client-ui/issues/2353)) ([3869b50](https://github.com/deephaven/web-client-ui/commit/3869b505faab513577b4720832c00a1b403234b9))
+- Long dashboard titles overflow the navbar tab ([#2348](https://github.com/deephaven/web-client-ui/issues/2348)) ([d1e345a](https://github.com/deephaven/web-client-ui/commit/d1e345a7464bd083ef5b0ea76a25d159fceec760))
+- No context menu item for paste in an input table ([#2341](https://github.com/deephaven/web-client-ui/issues/2341)) ([680f015](https://github.com/deephaven/web-client-ui/commit/680f0158df67c00c8330e79d916e716c7f4ead04))
+- Paste option shows when it shouldn't ([#2364](https://github.com/deephaven/web-client-ui/issues/2364)) ([0305522](https://github.com/deephaven/web-client-ui/commit/03055229affccc35ee4f7bcca7217945943fc216))
+- Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349)) ([6a20d69](https://github.com/deephaven/web-client-ui/commit/6a20d6977d354d89704e05ca687df619b8eeb113))
+
+### Reverts
+
+- "fix: Use virtual-webgl to circumvent browser limits on WebGL contexts ([#2349](https://github.com/deephaven/web-client-ui/issues/2349))" ([#2356](https://github.com/deephaven/web-client-ui/issues/2356)) ([9d49873](https://github.com/deephaven/web-client-ui/commit/9d498733b1ce57aaf77009d1b3dff3a1da95125e))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 ### Features

@@ -3,6 +3,64 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- Context menu using stale selection ([#2407](https://github.com/deephaven/web-client-ui/issues/2407)) ([c43f306](https://github.com/deephaven/web-client-ui/commit/c43f306453e775414812750e8fa479e539c3392f))
+- DH-19138: Determine Totals Column Name by Num Aggs Per Column ([#2411](https://github.com/deephaven/web-client-ui/issues/2411)) ([1909fac](https://github.com/deephaven/web-client-ui/commit/1909fac0323ccb3d42edbf3d8c82c038e68684de))
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- add median agg for totals table ([#2388](https://github.com/deephaven/web-client-ui/issues/2388)) ([5237f3c](https://github.com/deephaven/web-client-ui/commit/5237f3cf1bf03e023d198c10cc1a7448e9599771))
+
+### Bug Fixes
+
+- allow input table to delete row with null key ([#2386](https://github.com/deephaven/web-client-ui/issues/2386)) ([da572d1](https://github.com/deephaven/web-client-ui/commit/da572d13bd5b65b74211e2d6f1125c6a371d61b1))
+- Partition aware source table UI widget swaps from merge to coalesce ([#2397](https://github.com/deephaven/web-client-ui/issues/2397)) ([f6a859d](https://github.com/deephaven/web-client-ui/commit/f6a859d82da626d5287d0dd68a6acd3fde85f003))
+
+## [0.106.4](https://github.com/deephaven/web-client-ui/compare/v0.106.3...v0.106.4) (2025-03-18)
+
+### Bug Fixes
+
+- Exports needed for ui.table aggregations ([#2385](https://github.com/deephaven/web-client-ui/issues/2385)) ([fdfd238](https://github.com/deephaven/web-client-ui/commit/fdfd238b5dcc77a6caf33e9fc01817ed8275aa70))
+
+## [0.106.3](https://github.com/deephaven/web-client-ui/compare/v0.106.2...v0.106.3) (2025-03-12)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.106.1](https://github.com/deephaven/web-client-ui/compare/v0.106.0...v0.106.1) (2025-03-03)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+### Features
+
+- Resize columns option in web UI ([#2358](https://github.com/deephaven/web-client-ui/issues/2358)) ([35fc599](https://github.com/deephaven/web-client-ui/commit/35fc599c1442574599dc0ecb4a3c22e0885d5a9b)), closes [#1486](https://github.com/deephaven/web-client-ui/issues/1486)
+
+### Bug Fixes
+
+- Proxy model appears partition even if original model is not ([#2373](https://github.com/deephaven/web-client-ui/issues/2373)) ([8cc36a5](https://github.com/deephaven/web-client-ui/commit/8cc36a533b52aa5bae9bd3b60616a7fc73f4e688))
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([77c620f](https://github.com/deephaven/web-client-ui/commit/77c620f3afba57fdea632f774ea43f2be6790b0e)), closes [#2288](https://github.com/deephaven/web-client-ui/issues/2288)
+- No context menu item for paste in an input table ([#2341](https://github.com/deephaven/web-client-ui/issues/2341)) ([680f015](https://github.com/deephaven/web-client-ui/commit/680f0158df67c00c8330e79d916e716c7f4ead04))
+- Paste option shows when it shouldn't ([#2364](https://github.com/deephaven/web-client-ui/issues/2364)) ([0305522](https://github.com/deephaven/web-client-ui/commit/03055229affccc35ee4f7bcca7217945943fc216))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 **Note:** Version bump only for package @deephaven/iris-grid

@@ -6,6 +6,7 @@ enum AggregationOperation {
   ABS_SUM = 'AbsSum',
   VAR = 'Var',
   AVG = 'Avg',
+  MEDIAN = 'Median',
   STD = 'Std',
   FIRST = 'First',
   LAST = 'Last',

@@ -202,7 +202,10 @@ export function FileList(props: FileListProps): JSX.Element {
       itemList.current?.resetMouseState();
 
       const newDragPlaceholder = document.createElement('div');
-      newDragPlaceholder.innerHTML = `<div class="dnd-placeholder-content">${getDragPlaceholderText()}</div>`;
+      const dndPlaceholderContent = document.createElement('div');
+      dndPlaceholderContent.className = 'dnd-placeholder-content';
+      dndPlaceholderContent.innerText = getDragPlaceholderText() ?? '';
+      newDragPlaceholder.appendChild(dndPlaceholderContent);
       newDragPlaceholder.className = 'file-list-dnd-placeholder';
       document.body.appendChild(newDragPlaceholder);
       e.dataTransfer.setDragImage(newDragPlaceholder, 0, 0);

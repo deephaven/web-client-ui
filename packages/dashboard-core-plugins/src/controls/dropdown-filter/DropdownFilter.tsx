@@ -232,7 +232,8 @@ export class DropdownFilter extends Component<
       }
 
       return name;
-    }
+    },
+    { max: 1000 }
   );
 
   handleColumnChange(eventTargetValue: string): void {

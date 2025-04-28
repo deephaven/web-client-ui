@@ -1117,6 +1117,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isChartBuilderAvailable: boolean,
       isCustomColumnsAvailable: boolean,
       isFormatColumnsAvailable: boolean,
+      isOrganizeColumnsAvailable: boolean,
       isRollupAvailable: boolean,
       isTotalsAvailable: boolean,
       isSelectDistinctAvailable: boolean,
@@ -1139,11 +1140,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: dhGraphLineUp,
         });
       }
-      optionItems.push({
-        type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Organize Columns',
-        icon: dhEye,
-      });
+      if (isOrganizeColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.VISIBILITY_ORDERING_BUILDER,
+          title: 'Organize Columns',
+          icon: dhEye,
+        });
+      }
       if (isFormatColumnsAvailable) {
         optionItems.push({
           type: OptionType.CONDITIONAL_FORMATTING,
@@ -1251,7 +1254,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
       });
       return aggregationMap;
-    }
+    },
+    { max: 1 }
   );
 
   getOperationMap = memoize(
@@ -1276,7 +1280,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           });
         });
       return operationMap;
-    }
+    },
+    { max: 1 }
   );
 
   getOperationOrder = memoize(
@@ -1285,7 +1290,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         .map((a: Aggregation) => a.operation)
         .filter(
           (o: AggregationOperation) => !AggregationUtils.isRollupOperation(o)
-        )
+        ),
+    { max: 1 }
   );
 
   getCachedFormatColumns = memoize(
@@ -1293,7 +1299,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       dh: typeof DhType,
       columns: readonly DhType.Column[],
       rules: readonly SidebarFormattingRule[]
-    ) => getFormatColumns(dh, columns, rules)
+    ) => getFormatColumns(dh, columns, rules),
+    { max: 1000 }
   );
 
   /**
@@ -1325,7 +1332,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
 
       return this.getCachedFormatColumns(dh, columns, rulesParam);
-    }
+    },
+    { max: 1 }
   );
 
   getModelRollupConfig = memoize(
@@ -1338,7 +1346,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         originalColumns,
         config,
         aggregationSettings
-      )
+      ),
+    { max: 1 }
   );
 
   getModelTotalsConfig = memoize(
@@ -1370,7 +1379,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         showOnTop: aggregationSettings.showOnTop,
         defaultOperation: AggregationOperation.SKIP,
       } as UITotalsTableConfig;
-    }
+    },
+    { max: 1 }
   );
 
   getCachedStateOverride = memoize(
@@ -1457,8 +1467,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 1 }
   );
 
-  getCachedKeyHandlers = memoize((keyHandlers: readonly KeyHandler[]) =>
-    [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order)
+  getCachedKeyHandlers = memoize(
+    (keyHandlers: readonly KeyHandler[]) =>
+      [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order),
+    { max: 1 }
   );
 
   getKeyHandlers(): readonly KeyHandler[] {
@@ -1469,7 +1481,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedMouseHandlers = memoize(
     (
       mouseHandlers: readonly GridMouseHandler[]
-    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers]
+    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers],
+    { max: 1 }
   );
 
   getCachedRenderer = memoize(
@@ -1975,7 +1988,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
 
       return Object.freeze([...columnSet]);
-    }
+    },
+    { max: 1 }
   );
 
   updateFormatter(
@@ -3443,18 +3457,88 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.forceUpdate();
   }
 
+  handleResizeColumn(modelIndex: number): void {
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
+
+    const contentWidth = getOrThrow(metrics.contentColumnWidths, modelIndex);
+
+    const userWidths = metricCalculator.getUserColumnWidths();
+    if (userWidths.has(modelIndex)) {
+      metricCalculator.resetColumnWidth(modelIndex);
+      metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+    } else {
+      metricCalculator.setColumnWidth(modelIndex, contentWidth);
+    }
+
+    this.grid?.forceUpdate();
+  }
+
+  handleResizeAllColumns(): void {
+    const { metrics, metricCalculator } = this.state;
+    if (!metrics) throw new Error('Metrics not set');
+
+    const allColumns = [...metrics.allColumnWidths.entries()];
+    const visibleColumns = allColumns
+      .filter(([_, width]) => width !== 0)
+      .map(([modelIndex]) => modelIndex);
+
+    const contentWidths = metrics.contentColumnWidths;
+    const userWidths = metricCalculator.getUserColumnWidths();
+
+    const manualColumns = visibleColumns.filter(modelIndex =>
+      userWidths.has(modelIndex)
+    );
+
+    if (visibleColumns.length === manualColumns.length) {
+      // All columns are manually sized, flip all to auto resize
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const modelIndex = visibleColumns[i];
+        const contentWidth = getOrThrow(contentWidths, modelIndex);
+        metricCalculator.resetColumnWidth(modelIndex);
+        metricCalculator.setCalculatedColumnWidth(modelIndex, contentWidth);
+      }
+    } else {
+      // Flip all to manual sized
+      for (let i = 0; i < visibleColumns.length; i += 1) {
+        const modelIndex = visibleColumns[i];
+        const contentWidth = getOrThrow(contentWidths, modelIndex);
+        metricCalculator.setColumnWidth(modelIndex, contentWidth);
+      }
+    }
+
+    this.grid?.forceUpdate();
+  }
+
   /**
    * User added, removed, or changed the order of aggregations, or position
    * @param aggregationSettings The new aggregation settings
+   * @param added The aggregations that were added
+   * @param removed The aggregations that were removed
    */
-  handleAggregationsChange(aggregationSettings: AggregationSettings): void {
-    log.debug('handleAggregationsChange', aggregationSettings);
-
-    this.startLoading(
-      `Aggregating ${aggregationSettings.aggregations
-        .map(a => a.operation)
-        .join(', ')}...`
+  handleAggregationsChange(
+    aggregationSettings: AggregationSettings,
+    added: AggregationOperation[] = [],
+    removed: AggregationOperation[] = []
+  ): void {
+    log.debug('handleAggregationsChange', aggregationSettings, added, removed);
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and added / removed aggregations are prohibited for rollups
+    const changes = [...added, ...removed];
+    const shouldStartLoading = !(
+      isRollup &&
+      changes.length > 0 &&
+      changes.every(op => AggregationUtils.isRollupProhibited(op))
     );
+
+    if (shouldStartLoading) {
+      this.startLoading(
+        `Aggregating ${aggregationSettings.aggregations
+          .map(a => a.operation)
+          .join(', ')}...`
+      );
+    }
     this.setState({ aggregationSettings });
   }
 
@@ -3464,8 +3548,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   handleAggregationChange(aggregation: Aggregation): void {
     log.debug('handleAggregationChange', aggregation);
+    const { rollupConfig } = this.state;
+    const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
+    // Do not start loading if this is rollup and the aggregation is prohibited for rollups
+    const shouldStartLoading = !(
+      isRollup && AggregationUtils.isRollupProhibited(aggregation.operation)
+    );
 
-    this.startLoading(`Aggregating ${aggregation.operation}...`);
+    if (shouldStartLoading) {
+      this.startLoading(`Aggregating ${aggregation.operation}...`);
+    }
 
     this.setState(({ aggregationSettings }) => ({
       selectedAggregation: aggregation,
@@ -3949,7 +4041,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </Tooltip>
         </div>
       );
-    }
+    },
+    { max: 1 }
   );
 
   getExpandCellTooltip = memoize(
@@ -3993,34 +4086,38 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           </Tooltip>
         </div>
       );
-    }
+    },
+    { max: 1 }
   );
 
-  getHoverTooltip = memoize((hoverTooltipProps: CSSProperties): ReactNode => {
-    if (hoverTooltipProps == null) {
-      return null;
-    }
+  getHoverTooltip = memoize(
+    (hoverTooltipProps: CSSProperties): ReactNode => {
+      if (hoverTooltipProps == null) {
+        return null;
+      }
 
-    const { hoverDisplayValue } = this.state;
+      const { hoverDisplayValue } = this.state;
 
-    const wrapperStyle: CSSProperties = {
-      position: 'absolute',
-      ...hoverTooltipProps,
-      pointerEvents: 'none',
-    };
+      const wrapperStyle: CSSProperties = {
+        position: 'absolute',
+        ...hoverTooltipProps,
+        pointerEvents: 'none',
+      };
 
-    const popperOptions: PopperOptions = {
-      placement: 'bottom',
-    };
+      const popperOptions: PopperOptions = {
+        placement: 'bottom',
+      };
 
-    return (
-      <div style={wrapperStyle}>
-        <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
-          <div className="link-hover-tooltip">{hoverDisplayValue}</div>
-        </Tooltip>
-      </div>
-    );
-  });
+      return (
+        <div style={wrapperStyle}>
+          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
+            <div className="link-hover-tooltip">{hoverDisplayValue}</div>
+          </Tooltip>
+        </div>
+      );
+    },
+    { max: 1 }
+  );
 
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;
@@ -4621,6 +4718,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
+      model.isOrganizeColumnsAvailable,
       model.isRollupAvailable,
       model.isTotalsAvailable || isRollup,
       model.isSelectDistinctAvailable,
@@ -4714,6 +4812,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isRollup={isRollup}
               onChange={this.handleAggregationsChange}
               onEdit={this.handleAggregationEdit}
+              dh={model.dh}
             />
           );
         case OptionType.AGGREGATION_EDIT:

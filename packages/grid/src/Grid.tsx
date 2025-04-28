@@ -1868,6 +1868,12 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   handleMouseUp(event: MouseEvent): void {
+    // Ignore right click while dragging
+    const { isDragging } = this.state;
+    if (isDragging && event.button === 2) {
+      return;
+    }
+
     window.removeEventListener('mousemove', this.handleMouseDrag, true);
     window.removeEventListener('mouseup', this.handleMouseUp, true);
 

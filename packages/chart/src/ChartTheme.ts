@@ -28,6 +28,11 @@ export interface ChartTheme {
   ocean_color: string;
   lake_color: string;
   river_color: string;
+
+  // Indicator
+  indicator_increasing: string;
+  indicator_decreasing: string;
+  indicator_gauge: string;
 }
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
@@ -65,6 +70,10 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     ocean_color: chartTheme['ocean-color'],
     lake_color: chartTheme['lake-color'],
     river_color: chartTheme['river-color'],
+    // Indicator
+    indicator_increasing: chartTheme['indicator-increasing'],
+    indicator_decreasing: chartTheme['indicator-decreasing'],
+    indicator_gauge: chartTheme['indicator-gauge'],
   });
 }
 

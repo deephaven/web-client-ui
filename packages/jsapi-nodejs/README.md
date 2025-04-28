@@ -1,8 +1,7 @@
 # @deephaven/jsapi-nodejs
 
-Deephaven utils for consuming Jsapi from a server from a nodejs app. It can 
-optionally convert the server module format from `ESM` -> `CJS` or `CJS` -> `ESM` 
-if the server and consumer don't use the same module format.
+Deephaven utils for consuming Jsapi from a server from a nodejs app. The jsapi
+can be downloaded as an `ESM` or `CJS` module.
 
 ## Install
 
@@ -16,17 +15,30 @@ npm install --save @deephaven/jsapi-nodejs
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { loadModules } from '@deephaven/jsapi-nodejs';
+import { loadDhModules } from '@deephaven/jsapi-nodejs';
+
+// Needed for esm modules
+if (typeof globalThis.__dirname === 'undefined') {
+  globalThis.__dirname = import.meta.dirname
+}
 
 const tmpDir = path.join(__dirname, 'tmp');
 
-// Download jsapi `ESM` files from DH Community server and export as `CJS` module.
-const dhc = await loadModules({
+// Download jsapi from a Deephaven server
+const dhc = await loadDhModules({
   serverUrl: new URL('http://localhost:10000'),
-  serverPaths: ['jsapi/dh-core.js', 'jsapi/dh-internal.js'],
-  download: true,
   storageDir: tmpDir,
-  sourceModuleType: 'esm',
-  targetModuleType: 'cjs',
+  targetModuleType: 'esm', // set to `cjs` to download as a CommonJS module
 });
+
+const client = new dhc.CoreClient(serverUrl.href, {
+  // Enable http2 transport (this is optional but recommended)
+  transportFactory: NodeHttp2gRPCTransport.factory,
+})
+
+await client.login({
+  type: dhc.CoreClient.LOGIN_TYPE_ANONYMOUS,
+})
+
+const cn = await client.getAsIdeConnection()
 ```

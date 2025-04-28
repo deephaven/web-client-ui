@@ -56,9 +56,16 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
       if (!NodeHttp2gRPCTransport.sessionMap.has(origin)) {
         const session = http2.connect(origin);
+
         session.on('error', err => {
           NodeHttp2gRPCTransport.logMessage('error', 'Session error', err);
         });
+
+        session.on('close', () => {
+          NodeHttp2gRPCTransport.logMessage('debug', 'Session closed');
+          NodeHttp2gRPCTransport.sessionMap.delete(origin);
+        });
+
         NodeHttp2gRPCTransport.sessionMap.set(origin, session);
       }
 

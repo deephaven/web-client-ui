@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Features
+
+- Allow wildcards for logs blacklist ([#2396](https://github.com/deephaven/web-client-ui/issues/2396)) ([6c406ba](https://github.com/deephaven/web-client-ui/commit/6c406ba00a74b53f4a3d551cb3d9b6241f064dfb))
+
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+### Bug Fixes
+
+- avoid exceeding call stack when exporting logs with large number of queries ([#2382](https://github.com/deephaven/web-client-ui/issues/2382)) ([3c2c8cf](https://github.com/deephaven/web-client-ui/commit/3c2c8cfbda9e2ca22c2977daa57fb33fbcd3d619))
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+**Note:** Version bump only for package @deephaven/log
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+**Note:** Version bump only for package @deephaven/log
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 **Note:** Version bump only for package @deephaven/log

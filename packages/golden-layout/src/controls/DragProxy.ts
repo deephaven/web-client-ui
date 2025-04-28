@@ -90,7 +90,7 @@ export default class DragProxy extends EventEmitter {
       'title',
       stripTags(this._contentItem.config.title ?? '')
     );
-    this.element.find('.lm_title').html(this._contentItem.config.title ?? '');
+    this.element.find('.lm_title').text(this._contentItem.config.title ?? '');
     this.childElementContainer = this.element.find('.lm_content');
     this.childElementContainer.append(contentItem.element);
 

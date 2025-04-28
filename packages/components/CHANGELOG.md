@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+### Bug Fixes
+
+- missing specturm accordian icon due to styling ([#2406](https://github.com/deephaven/web-client-ui/issues/2406)) ([181d29e](https://github.com/deephaven/web-client-ui/commit/181d29efc5173dff87d7b8c3d144d1bd47854766))
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [0.106.2](https://github.com/deephaven/web-client-ui/compare/v0.106.1...v0.106.2) (2025-03-07)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Features
+
+- Add indicator theme variables ([#2344](https://github.com/deephaven/web-client-ui/issues/2344)) ([e1a6a22](https://github.com/deephaven/web-client-ui/commit/e1a6a221291ae8fa01a748fa093929054ee565e7))
+
+### Bug Fixes
+
+- Combobox exported type error ([#2351](https://github.com/deephaven/web-client-ui/issues/2351)) ([40dfcb7](https://github.com/deephaven/web-client-ui/commit/40dfcb7dde5f983f63f43f4d4a68956cc71625f8))
+- Long dashboard titles overflow the navbar tab ([#2348](https://github.com/deephaven/web-client-ui/issues/2348)) ([d1e345a](https://github.com/deephaven/web-client-ui/commit/d1e345a7464bd083ef5b0ea76a25d159fceec760))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 ### Features

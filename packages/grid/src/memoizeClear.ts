@@ -10,7 +10,11 @@ import memoizee from 'memoizee';
  * @param fn The function to memoize
  * @param options The options to set for memoization
  */
-export const memoizeClear: typeof memoizee = (fn, options) => {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function memoizeClear<F extends Function>(
+  fn: F,
+  options: memoizee.Options<F> & { max: number }
+): F & memoizee.Memoized<F> {
   let isClearingCache = false;
   const memoizedFn = memoizee(fn, {
     ...options,
@@ -25,6 +29,6 @@ export const memoizeClear: typeof memoizee = (fn, options) => {
   });
 
   return memoizedFn;
-};
+}
 
 export default memoizeClear;

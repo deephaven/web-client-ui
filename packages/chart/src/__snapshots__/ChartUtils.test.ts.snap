@@ -12,6 +12,28 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
         },
       },
     ],
+    "indicator": [
+      {
+        "delta": {
+          "decreasing": {
+            "color": "ChartTheme['indicator_decreasing']",
+          },
+          "increasing": {
+            "color": "ChartTheme['indicator_increasing']",
+          },
+        },
+        "gauge": {
+          "bar": {
+            "color": "ChartTheme['indicator_gauge']",
+          },
+        },
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+      },
+    ],
     "ohlc": [
       {
         "decreasing": {

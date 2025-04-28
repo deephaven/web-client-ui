@@ -87,4 +87,94 @@ describe('getReduxDataString', () => {
     );
     expect(result).toBe(expected);
   });
+
+  it('should handle wildcards in blacklist paths', () => {
+    const reduxData = {
+      key1: 'not blacklisted',
+      key2: {
+        keyA: {
+          key1: 'blacklisted',
+        },
+        keyB: {
+          key1: 'blacklisted',
+        },
+        keyC: {
+          key1: 'blacklisted',
+        },
+      },
+    };
+    const result = getReduxDataString(reduxData, [['key2', '*', 'key1']]);
+    const expected = JSON.stringify(
+      {
+        key1: 'not blacklisted',
+        key2: {
+          keyA: {},
+          keyB: {},
+          keyC: {},
+        },
+      },
+      null,
+      2
+    );
+    expect(result).toBe(expected);
+  });
+
+  it('should handle nested wildcards in blacklist paths', () => {
+    const reduxData = {
+      key1: 'not blacklisted',
+      key2: {
+        keyA: {
+          key1: 'blacklisted',
+          key2: {
+            key3: 'blacklisted',
+          },
+        },
+        keyB: {
+          key1: 'blacklisted',
+          key2: {
+            key3: 'blacklisted',
+            key4: 'blacklisted',
+          },
+        },
+      },
+    };
+    const result = getReduxDataString(reduxData, [['key2', '*', '*']]);
+    const expected = JSON.stringify(
+      {
+        key1: 'not blacklisted',
+        key2: {
+          keyA: {},
+          keyB: {},
+        },
+      },
+      null,
+      2
+    );
+    expect(result).toBe(expected);
+  });
+
+  it('should handle wildcard blacklist paths with no matches', () => {
+    const reduxData = {
+      key1: 'not blacklisted',
+      key2: {
+        keyA: {
+          key1: 'not blacklisted',
+          key2: {
+            key3: 'not blacklisted',
+          },
+        },
+      },
+    };
+    const result = getReduxDataString(reduxData, [['*', '*', '*', '*', '*']]); // Matching more than the depth of the object
+    const expected = JSON.stringify(reduxData, null, 2);
+    expect(result).toBe(expected);
+  });
+
+  it('root wildcard should blacklist all', () => {
+    const reduxData = {
+      key1: 'should not be blacklisted',
+    };
+    const result = getReduxDataString(reduxData, [['*']]);
+    expect(result).toBe('{}');
+  });
 });

@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- DH-17599: Change illegal characters to underscores in variable names ([#2409](https://github.com/deephaven/web-client-ui/issues/2409)) ([15c8cfe](https://github.com/deephaven/web-client-ui/commit/15c8cfecb3f4274c433ff900a036569a690c760a))
+- DH-17599: Fix table name validation ([#2403](https://github.com/deephaven/web-client-ui/issues/2403)) ([90ebb08](https://github.com/deephaven/web-client-ui/commit/90ebb08489e4de4bf78590bcf0fcba285d0cbfd4)), closes [#2398](https://github.com/deephaven/web-client-ui/issues/2398)
+
+## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
+
+### Bug Fixes
+
+- DH-17599: Fix table name validation - allow hyphens ([#2398](https://github.com/deephaven/web-client-ui/issues/2398)) ([4b1c9dd](https://github.com/deephaven/web-client-ui/commit/4b1c9dde7b0982f71f09829813285519dd96deef))
+
+## [0.106.0](https://github.com/deephaven/web-client-ui/compare/v0.105.0...v0.106.0) (2025-02-26)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.105.0](https://github.com/deephaven/web-client-ui/compare/v0.104.0...v0.105.0) (2025-02-13)
+
+### Bug Fixes
+
+- No context menu item for paste in an input table ([#2341](https://github.com/deephaven/web-client-ui/issues/2341)) ([680f015](https://github.com/deephaven/web-client-ui/commit/680f0158df67c00c8330e79d916e716c7f4ead04))
+
 ## [0.104.0](https://github.com/deephaven/web-client-ui/compare/v0.103.0...v0.104.0) (2025-01-23)
 
 **Note:** Version bump only for package @deephaven/utils

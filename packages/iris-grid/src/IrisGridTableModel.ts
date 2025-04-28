@@ -37,6 +37,9 @@ class IrisGridTableModel
 
   initialFilters: DhType.FilterCondition[] = [];
 
+  // The initial value for table.isUncoalesced on the source table before any transformations (e.g. filter, select)
+  wasUncoalesced: boolean;
+
   /**
    * @param dh JSAPI instance
    * @param table Iris data table to be used in the model
@@ -53,6 +56,7 @@ class IrisGridTableModel
     this.customColumnList = [];
     this.formatColumnList = [];
     this.initialFilters = table.filter;
+    this.wasUncoalesced = this.isPartitionRequired;
   }
 
   get isExportAvailable(): boolean {
@@ -301,7 +305,7 @@ class IrisGridTableModel
   }
 
   get isPartitionAwareSourceTable(): boolean {
-    return this.isPartitionRequired;
+    return this.wasUncoalesced;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {
@@ -427,11 +431,7 @@ class IrisGridTableModel
       for (let c = 0; c < keyColumns.length; c += 1) {
         const column = keyColumns[c];
         const value = row[c];
-        const filterValue = this.tableUtils.makeFilterRawValue(
-          column.type,
-          value
-        );
-        const filter = column.filter().eq(filterValue);
+        const filter = this.tableUtils.makeNullableEqFilter(column, value);
         columnFilters.push(filter);
       }
       return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);

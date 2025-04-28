@@ -121,13 +121,15 @@ class ConsoleHistoryResultErrorMessage extends PureComponent<
     const { isExpanded, isTriggerHovered } = this.state;
     const { message: messageProp } = this.props;
     assertNotNull(messageProp);
-    const lineBreakIndex = messageProp.indexOf('\n');
+    // Trim trailing whitespace to avoid unnecessary empty lines
+    const message = messageProp.trimEnd();
+    const lineBreakIndex = message.indexOf('\n');
     const isMultiline = lineBreakIndex > -1;
-    let topLineOfMessage = messageProp;
+    let topLineOfMessage = message;
     if (isMultiline) {
-      topLineOfMessage = messageProp.slice(0, lineBreakIndex);
+      topLineOfMessage = message.slice(0, lineBreakIndex);
     }
-    const remainderOfMessage = messageProp.slice(lineBreakIndex);
+    const remainderOfMessage = message.slice(lineBreakIndex);
     const arrowBtnClasses = isTriggerHovered
       ? 'error-btn-link error-btn-link--active'
       : 'error-btn-link';
