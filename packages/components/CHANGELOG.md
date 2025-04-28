@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.23](https://github.com/deephaven/web-client-ui/compare/v0.85.22...v0.85.23) (2025-04-28)
+
+### Bug Fixes
+
+- accordion, disclosure, color picker, color editor export ([#2325](https://github.com/deephaven/web-client-ui/issues/2325)) ([#2423](https://github.com/deephaven/web-client-ui/issues/2423)) ([3785a35](https://github.com/deephaven/web-client-ui/commit/3785a353532d9bb3b5464c9bcfa42542472ea074))
+- Update react-spectrum packages ([#2303](https://github.com/deephaven/web-client-ui/issues/2303)) ([#2422](https://github.com/deephaven/web-client-ui/issues/2422)) ([3c4b88a](https://github.com/deephaven/web-client-ui/commit/3c4b88af441ef26a1113abaa9d4ffe5d03a77112))
+
 ## [0.85.20](https://github.com/deephaven/web-client-ui/compare/v0.85.19...v0.85.20) (2025-04-09)
 
 **Note:** Version bump only for package @deephaven/components

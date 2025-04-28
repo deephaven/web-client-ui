@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.23](https://github.com/deephaven/web-client-ui/compare/v0.85.22...v0.85.23) (2025-04-28)
+
+### Bug Fixes
+
+- Update react-spectrum packages ([#2303](https://github.com/deephaven/web-client-ui/issues/2303)) ([#2422](https://github.com/deephaven/web-client-ui/issues/2422)) ([3c4b88a](https://github.com/deephaven/web-client-ui/commit/3c4b88af441ef26a1113abaa9d4ffe5d03a77112))
+
 ## [0.85.22](https://github.com/deephaven/web-client-ui/compare/v0.85.21...v0.85.22) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/app-utils
