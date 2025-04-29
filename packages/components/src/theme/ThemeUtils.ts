@@ -6,6 +6,7 @@ import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
+  type BaseThemeKey,
   type ThemeData,
   type ThemePreloadData,
   type CssVariableStyleContent,
@@ -21,9 +22,12 @@ import {
 const log = Log.module('ThemeUtils');
 
 export const CSS_VAR_EXPRESSION_PREFIX = 'var(--';
+export const DH_VAR_PREFIX = '--dh-color-';
 export const TMP_CSS_PROP_PREFIX = 'dh-tmp';
 export const NON_WHITESPACE_REGEX = /\S/;
 export const WHITESPACE_REGEX = /\s/;
+
+export const DH_CSS_VAR_NAME_REGEXP = /^--dh-color-[a-z0-9_-]+$/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
 
@@ -279,6 +283,15 @@ export function getExpressionRanges(value: string): [number, number][] {
   }
 
   return ranges;
+}
+
+/**
+ * Check if the given theme key is one of the base themes.
+ * @param themeKey The theme key to check
+ * @returns True if the theme key is a base theme key, false otherwise
+ */
+export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
+  return [DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY].includes(themeKey);
 }
 
 /**
