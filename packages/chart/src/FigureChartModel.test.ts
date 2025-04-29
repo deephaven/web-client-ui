@@ -533,3 +533,77 @@ describe('legend visibility', () => {
     ]);
   });
 });
+
+it('handles axes min and max properly', () => {
+  const xaxis = chartTestUtils.makeAxis({
+    label: 'x1',
+    type: dh.plot.AxisType.X,
+    position: dh.plot.AxisPosition.BOTTOM,
+    minRange: 0,
+    maxRange: 100,
+  });
+
+  const xaxis2 = chartTestUtils.makeAxis({
+    label: 'x1',
+    type: dh.plot.AxisType.X,
+    position: dh.plot.AxisPosition.BOTTOM,
+    log: true,
+    minRange: 100,
+    maxRange: 1000,
+  });
+
+  const yaxis1 = chartTestUtils.makeAxis({
+    label: 'y1',
+    type: dh.plot.AxisType.Y,
+    position: dh.plot.AxisPosition.LEFT,
+    maxRange: 200,
+  });
+
+  const yaxis2 = chartTestUtils.makeAxis({
+    label: 'y2',
+    type: dh.plot.AxisType.Y,
+    position: dh.plot.AxisPosition.RIGHT,
+    minRange: -10,
+  });
+
+  const axes = [xaxis, xaxis2, yaxis1, yaxis2];
+
+  const chart = chartTestUtils.makeChart({ axes });
+  const figure = chartTestUtils.makeFigure({ charts: [chart] });
+  const model = new FigureChartModel(dh, figure);
+
+  const layout = model.getLayout();
+
+  expect((layout.xaxis as any).autorangeoptions.minallowed).toEqual(
+    0
+  );
+  
+  expect((layout.xaxis as any).autorangeoptions.maxallowed).toEqual(
+    100
+  );
+
+  expect((layout.xaxis2 as any).autorangeoptions.minallowed).toEqual(
+    2
+  );
+  
+  expect((layout.xaxis2 as any).autorangeoptions.maxallowed).toEqual(
+    3
+  );
+
+  expect((layout.yaxis as any).autorangeoptions.minallowed).toEqual(
+    undefined
+  );
+
+  expect((layout.yaxis as any).autorangeoptions.maxallowed).toEqual(
+    200
+  );
+
+  expect((layout.yaxis2 as any).autorangeoptions.minallowed).toEqual(
+    -10
+  );
+  
+  expect((layout.yaxis2 as any).autorangeoptions.maxallowed).toEqual(
+    undefined
+  );
+
+});

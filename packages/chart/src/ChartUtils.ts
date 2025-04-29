@@ -1539,6 +1539,22 @@ class ChartUtils {
       );
       layoutAxis.domain = [bottom, top];
     }
+
+    // autorangeoptions exists in plotly.js but not in the types
+    // axis.range only applies to the initial axis range, can't handle specifying min or max independently,
+    // and cannot be returned to if the user changes the range via interaction
+    // minallowed and maxallowed can be set independently and can be returned to if the user changes
+    // the range via interaction
+    const { minRange, maxRange, log } = axis;
+    if (!Number.isNaN(minRange) || !Number.isNaN(maxRange)) {
+      (layoutAxis as any).autorangeoptions = {};
+      if (!Number.isNaN(minRange)) {
+        (layoutAxis as any).autorangeoptions.minallowed = log ? Math.log10(minRange) : minRange;
+      }
+      if (!Number.isNaN(maxRange)) {
+        (layoutAxis as any).autorangeoptions.maxallowed = log ? Math.log10(maxRange) : maxRange;;
+      }
+    }
   }
 
   /**
