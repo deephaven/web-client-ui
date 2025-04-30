@@ -274,7 +274,6 @@ describe('usePersistentState migrations', () => {
     const migrations = [
       {
         from: 1,
-        to: 2,
         migrate: () => 'v2',
       },
     ];
@@ -307,17 +306,15 @@ describe('usePersistentState migrations', () => {
     const migrations = [
       {
         from: 1,
-        to: 2,
         migrate: () => 'v2',
       },
       {
         from: 2,
-        to: 3,
         migrate: () => 'v3',
       },
     ];
 
-    const { unmount } = render(
+    render(
       <BasicTestComponent label="foo" version={3} migrations={migrations} />,
       {
         wrapper: createWrapper({ initialState, onChange: mockOnChange }),
@@ -327,26 +324,6 @@ describe('usePersistentState migrations', () => {
     expect(screen.getByText('v3')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
       expect.objectContaining({ state: 'v3' }),
-    ]);
-    expect(mockOnChange).toHaveBeenCalledTimes(1);
-    unmount();
-
-    mockOnChange.mockClear();
-
-    render(
-      <BasicTestComponent
-        label="foo"
-        version={3}
-        migrations={[{ from: 1, to: 3, migrate: () => 'v1-v3' }]}
-      />,
-      {
-        wrapper: createWrapper({ initialState, onChange: mockOnChange }),
-      }
-    );
-
-    expect(screen.getByText('v1-v3')).toBeInTheDocument();
-    expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'v1-v3' }),
     ]);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
   });
@@ -365,7 +342,6 @@ describe('usePersistentState migrations', () => {
     const migrations = [
       {
         from: 1,
-        to: 2,
         migrate: () => 'v2',
       },
     ];
@@ -396,19 +372,17 @@ describe('usePersistentState migrations', () => {
     const migrations = [
       {
         from: 1,
-        to: 2,
         migrate: () => 'v2',
       },
       {
         from: 1,
-        to: 3,
         migrate: () => 'v3',
       },
     ];
 
     expect(() =>
       render(
-        <BasicTestComponent label="foo" version={3} migrations={migrations} />,
+        <BasicTestComponent label="foo" version={2} migrations={migrations} />,
         {
           wrapper: createWrapper({ initialState, onChange: mockOnChange }),
         }
@@ -432,7 +406,6 @@ describe('usePersistentState migrations', () => {
     const migrations = [
       {
         from: 1,
-        to: 2,
         migrate: () => {
           throw new Error('Migration error');
         },
@@ -467,37 +440,6 @@ describe('usePersistentState migrations', () => {
         wrapper: createWrapper({ initialState, onChange: mockOnChange }),
       })
     ).toThrowError(/newer version/);
-
-    expect(mockOnChange).not.toHaveBeenCalled();
-  });
-
-  test('should throw if the migration from version is greater than to', () => {
-    TestUtils.disableConsoleOutput('error');
-    const mockOnChange = jest.fn();
-    const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
-
-    const migrations = [
-      {
-        from: 1,
-        to: 0,
-        migrate: () => 'v0',
-      },
-    ];
-
-    expect(() =>
-      render(
-        <BasicTestComponent label="foo" version={2} migrations={migrations} />,
-        {
-          wrapper: createWrapper({ initialState, onChange: mockOnChange }),
-        }
-      )
-    ).toThrowError(/invalid version change/);
 
     expect(mockOnChange).not.toHaveBeenCalled();
   });

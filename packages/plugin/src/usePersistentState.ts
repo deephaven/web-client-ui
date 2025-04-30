@@ -11,7 +11,6 @@ import { PersistentStateContext } from './PersistentStateContext';
 
 export type PersistentStateMigration = {
   from: number;
-  to: number;
   migrate: (state: unknown) => unknown;
 };
 
@@ -47,18 +46,13 @@ function migrateState(
 
     const migration = possibleMigration[0];
 
-    if (migration.from >= migration.to) {
-      throw new Error(
-        `Migration for persisted state ${type} has an invalid version change. From ${migration.from} to ${migration.to}`
-      );
-    }
-
     try {
       migratedState = migration.migrate(migratedState);
-      currentVersion = migration.to;
+      currentVersion += 1;
     } catch (e) {
       throw new Error(
-        `Error migrating persisted state ${type} from version ${migration.from} to ${migration.to}: ${e}`
+        `Error migrating persisted state ${type} from version ${migration.from}: ${e}`,
+        { cause: e }
       );
     }
   }
@@ -71,11 +65,10 @@ function migrateState(
  * Primarily used in Deephaven UI so we can persist state of multiple components within a panel.
  *
  * @param initialState The initial state if there is no previously persisted state.
- * @param config.type The type of the state. This identifier is used to validate the state being rehydrated.
- * @param config.version The version of the state. This is used to determine if the state needs to be migrated.
- * @param config.migrations An array of migrations to apply to the state if the version of the persisted state is below the current version.
- * @param config.migrations.from The version to migrate from.
- * @param config.migrations.to The version to migrate to.
+ * @param config.type The type of the state. This identifier is used to validate the state being rehydrated. Should be unique to your component.
+ * @param config.version The version of the state. This should be an integer, and is used to determine if the state needs to be migrated. Value should be incremented when data structure changes for this type.
+ * @param config.migrations An array of migrations to apply to the state if the version of the persisted state is below the current version. Each migration increments the version by 1.
+ * @param config.migrations.from The starting version of the migration. The migration will increment the version by 1.
  * @param config.migrations.migrate The function to call to migrate the state.
  * @returns [state, setState] tuple just like useState.
  */
