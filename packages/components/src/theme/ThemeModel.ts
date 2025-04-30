@@ -43,7 +43,7 @@ export type ThemeIconsRequiringManualColorChanges =
 
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
-export const PARENT_THEME_KEY = 'parentTheme' as const;
+export const PARENT_THEME_KEY = 'parent-theme' as const;
 export const THEME_KEY_OVERRIDE_QUERY_PARAM = 'theme' as const;
 
 // Hex versions of some of the default dark theme color palette needed for

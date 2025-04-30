@@ -20,7 +20,8 @@ export function ThemeBootstrap({
   // directly to avoid the exception.
   const pluginModules = useContext(PluginsContext);
 
-  const { isPending: isPendingParentTheme, themeData } = useParentWindowTheme();
+  const { isPending: isPendingParentTheme, themeData: parentThemeData } =
+    useParentWindowTheme();
 
   const themes = useMemo(() => {
     if (isPendingParentTheme || pluginModules == null) {
@@ -29,14 +30,12 @@ export function ThemeBootstrap({
 
     const pluginThemes = getThemeDataFromPlugins(pluginModules);
 
-    if (themeData != null) {
-      pluginThemes.push(themeData);
+    if (parentThemeData != null) {
+      pluginThemes.push(parentThemeData);
     }
 
     return pluginThemes;
-  }, [isPendingParentTheme, pluginModules, themeData]);
-
-  console.log('[TESTING] isPendingParentTheme:', isPendingParentTheme, themes);
+  }, [isPendingParentTheme, parentThemeData, pluginModules]);
 
   const settings = useAppSelector(getSettings);
 

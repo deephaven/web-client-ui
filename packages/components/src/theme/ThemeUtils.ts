@@ -17,6 +17,7 @@ import {
   type ThemeCssVariableName,
   type ThemeIconsRequiringManualColorChanges,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
+  PARENT_THEME_KEY,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -283,6 +284,15 @@ export function getExpressionRanges(value: string): [number, number][] {
   }
 
   return ranges;
+}
+
+/**
+ * Check if the current URL specifies a parent theme key override.
+ * @returns True if the parent theme key override is set, false otherwise
+ */
+export function hasParentThemeKey(): boolean {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY;
 }
 
 /**

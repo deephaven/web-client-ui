@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  hasParentThemeKey,
   PARENT_THEME_KEY,
-  THEME_KEY_OVERRIDE_QUERY_PARAM,
   type ThemeData,
 } from '@deephaven/components';
 
@@ -10,14 +10,14 @@ export interface UseParentWindowThemeResult {
   themeData?: ThemeData;
 }
 
+/**
+ * If parent theme is configured via `theme=PARENT_THEME_KEY` query param, handle
+ * `postMessage` communication to retrieve the theme data from the parent window.
+ */
 export function useParentWindowTheme(): UseParentWindowThemeResult {
-  const [result, setResult] = useState<UseParentWindowThemeResult>(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    return {
-      isPending:
-        searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY,
-    };
-  });
+  const [result, setResult] = useState<UseParentWindowThemeResult>(() => ({
+    isPending: hasParentThemeKey(),
+  }));
 
   const isEnabledRef = useRef(result.isPending);
 
