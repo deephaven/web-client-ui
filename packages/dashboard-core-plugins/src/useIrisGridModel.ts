@@ -1,7 +1,7 @@
 import { type dh } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export type IrisGridModelFetch = () => Promise<dh.Table>;
 
@@ -106,18 +106,14 @@ export function useIrisGridModel(
     [model]
   );
 
-  const result: IrisGridModelFetchResult = useMemo(() => {
-    if (isLoading) {
-      return { reload, status: 'loading' };
-    }
-    if (error != null) {
-      return { error, reload, status: 'error' };
-    }
-    if (model != null) {
-      return { model, reload, status: 'success' };
-    }
-    throw new Error('Invalid state');
-  }, [error, isLoading, model, reload]);
-
-  return result;
+  if (isLoading) {
+    return { reload, status: 'loading' };
+  }
+  if (error != null) {
+    return { error, reload, status: 'error' };
+  }
+  if (model != null) {
+    return { model, reload, status: 'success' };
+  }
+  throw new Error('Invalid state');
 }
