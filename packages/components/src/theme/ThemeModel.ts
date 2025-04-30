@@ -2,6 +2,7 @@ export type BaseThemeType = 'dark' | 'light';
 export type BaseThemeKey = `default-${BaseThemeType}`;
 export type CssVariableStyleContent = `:root{${string}`;
 export type ThemeCssVariableName = `--dh-${string}`;
+export type ThemeCssColorVariableName = `--dh-color-${string}`;
 
 // DHC should only need to preload variables that are required by the empty page
 // with loading spinner that shows while plugins are loading. The rest of the
@@ -148,5 +149,5 @@ export interface ThemeRegistrationData {
 export interface ParentThemeData {
   baseThemeKey?: BaseThemeKey;
   name: string;
-  cssVars: Record<ThemeCssVariableName, string>;
+  cssVars: Record<ThemeCssColorVariableName, string>;
 }

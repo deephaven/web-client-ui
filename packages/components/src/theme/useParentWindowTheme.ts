@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { requestParentResponse } from '@deephaven/utils';
+import Log from '@deephaven/log';
+import { type ThemeData } from './ThemeModel';
 import {
-  PARENT_THEME_KEY,
-  PARENT_THEME_REQUEST,
-  type ThemeData,
-} from './ThemeModel';
-import { hasParentThemeKey } from './ThemeUtils';
+  hasParentThemeKey,
+  parseParentThemeData,
+  requestParentThemeData,
+} from './ThemeUtils';
 
+const logger = Log.module('useParentWindowTheme');
 export interface UseParentWindowThemeResult {
   isPending: boolean;
   themeData?: ThemeData;
@@ -28,21 +29,18 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
       return;
     }
 
-    requestParentResponse(PARENT_THEME_REQUEST);
-
-    setTimeout(() => {
-      // TODO: convert theme vars to ThemeData and validate
-
-      setResult({
-        isPending: false,
-        themeData: {
-          baseThemeKey: 'default-dark',
-          themeKey: PARENT_THEME_KEY,
-          name: 'Parent Theme',
-          styleContent: ':root{--dh-color-bg:red;}',
-        },
+    requestParentThemeData()
+      .then(parseParentThemeData)
+      .then(themeData =>
+        setResult({
+          isPending: false,
+          themeData,
+        })
+      )
+      .catch(err => {
+        logger.error(err);
+        setResult({ isPending: false });
       });
-    }, 1000);
   }, []);
 
   return result;

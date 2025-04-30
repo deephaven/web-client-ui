@@ -1,5 +1,9 @@
 import Log from '@deephaven/log';
-import { assertNotNull, ColorUtils } from '@deephaven/utils';
+import {
+  assertNotNull,
+  ColorUtils,
+  requestParentResponse,
+} from '@deephaven/utils';
 import { themeDark } from './theme-dark';
 import { themeLight } from './theme-light';
 import {
@@ -19,6 +23,8 @@ import {
   THEME_KEY_OVERRIDE_QUERY_PARAM,
   PARENT_THEME_KEY,
   type ParentThemeData,
+  PARENT_THEME_REQUEST,
+  type ThemeCssColorVariableName,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -288,6 +294,54 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
+ * Request parent theme data from the parent window.
+ * @returns A promise that resolves to the parent theme data
+ * @throws Error if the response is not a valid `ParentThemeData`
+ */
+export async function requestParentThemeData(): Promise<ParentThemeData> {
+  const result = await requestParentResponse(PARENT_THEME_REQUEST);
+
+  if (!isParentThemeData(result)) {
+    throw new Error(
+      `Unexpected parent theme data response: ${JSON.stringify(result)}`
+    );
+  }
+
+  return result;
+}
+
+export function isValidColorVar(
+  name: string,
+  value: string
+): name is ThemeCssColorVariableName {
+  return DH_CSS_VAR_NAME_REGEXP.test(name) && CSS.supports('color', value);
+}
+
+export function parseParentThemeData({
+  baseThemeKey = DEFAULT_DARK_THEME_KEY,
+  name,
+  cssVars,
+}: ParentThemeData): ThemeData {
+  const toExpression = ([varName, varValue]: [string, string]) =>
+    isValidColorVar(varName, varValue) ? `${varName}:${varValue}` : null;
+
+  const sanitized = Object.entries(cssVars)
+    .map(toExpression)
+    .filter((str): str is string => str != null);
+
+  const styleContent = `:root{${
+    sanitized.length === 0 ? '' : sanitized.join(';')
+  };}`;
+
+  return {
+    baseThemeKey,
+    themeKey: PARENT_THEME_KEY,
+    name,
+    styleContent,
+  };
+}
+
+/**
  * Check if the current URL specifies a parent theme key override.
  * @returns True if the parent theme key override is set, false otherwise
  */
@@ -311,13 +365,17 @@ export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
  * @returns True if the object is a `ParentThemeData`, false otherwise
  */
 export function isParentThemeData(
-  maybeParentThemeData?: Partial<ParentThemeData> | null
+  maybeParentThemeData: unknown
 ): maybeParentThemeData is ParentThemeData {
-  if (maybeParentThemeData == null) {
+  if (
+    typeof maybeParentThemeData !== 'object' ||
+    maybeParentThemeData == null
+  ) {
     return false;
   }
 
   return (
+    'name' in maybeParentThemeData &&
     typeof maybeParentThemeData.name === 'string' &&
     'cssVars' in maybeParentThemeData &&
     maybeParentThemeData.cssVars != null
@@ -487,6 +545,20 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(
   defaultPreloadValues: Record<string, string> = DEFAULT_PRELOAD_DATA_VARIABLES
 ): void {
+  // If theme=PARENT_THEME_KEY preload colors as transparent so that parent
+  // container will show until the `postMessage` handshake is complete.
+  if (hasParentThemeKey()) {
+    createPreloadStyleElement(
+      'theme-preload-parent',
+      calculatePreloadStyleContent({
+        '--dh-color-bg': 'transparent',
+        '--dh-color-loading-spinner-primary': 'transparent',
+        '--dh-color-loading-spinner-secondary': 'transparent',
+      })
+    );
+    return;
+  }
+
   const previousPreloadStyleContent =
     getThemePreloadData()?.preloadStyleContent;
 

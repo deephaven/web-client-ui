@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { ThemeProvider, useParentWindowTheme } from '@deephaven/components';
+import { ThemeProvider } from '@deephaven/components';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 import { getSettings } from '@deephaven/redux';
@@ -19,26 +19,15 @@ export function ThemeBootstrap({
   // directly to avoid the exception.
   const pluginModules = useContext(PluginsContext);
 
-  const { isPending: isPendingParentTheme, themeData: parentThemeData } =
-    useParentWindowTheme();
-
-  const themes = useMemo(() => {
-    if (isPendingParentTheme || pluginModules == null) {
-      return null;
-    }
-
-    const pluginThemes = getThemeDataFromPlugins(pluginModules);
-
-    if (parentThemeData != null) {
-      pluginThemes.push(parentThemeData);
-    }
-
-    return pluginThemes;
-  }, [isPendingParentTheme, parentThemeData, pluginModules]);
+  const themes = useMemo(
+    () =>
+      pluginModules == null ? null : getThemeDataFromPlugins(pluginModules),
+    [pluginModules]
+  );
 
   const settings = useAppSelector(getSettings);
 
-  return isPendingParentTheme ? null : (
+  return (
     <ThemeProvider themes={themes}>
       <ChartThemeProvider>
         <MonacoThemeProvider>

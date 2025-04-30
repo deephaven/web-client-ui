@@ -17,6 +17,7 @@ import {
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 import './theme-svg.scss';
+import useParentWindowTheme from './useParentWindowTheme';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -47,6 +48,9 @@ export function ThemeProvider({
 }: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
 
+  const { isPending: isPendingParentTheme, themeData: parentThemeData } =
+    useParentWindowTheme();
+
   const [value, setValue] = useState<ThemeContextValue | null>(null);
 
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
@@ -54,16 +58,28 @@ export function ThemeProvider({
   );
 
   // Calculate active themes once a non-null themes array is provided.
-  const activeThemes = useMemo(
-    () =>
-      customThemes == null
-        ? null
-        : getActiveThemes(selectedThemeKey, {
-            base: baseThemes,
-            custom: customThemes ?? [],
-          }),
-    [baseThemes, selectedThemeKey, customThemes]
-  );
+  const activeThemes = useMemo(() => {
+    if (customThemes == null || isPendingParentTheme) {
+      return null;
+    }
+
+    const custom = [...customThemes];
+
+    if (parentThemeData != null) {
+      custom.push(parentThemeData);
+    }
+
+    return getActiveThemes(selectedThemeKey, {
+      base: baseThemes,
+      custom,
+    });
+  }, [
+    customThemes,
+    isPendingParentTheme,
+    parentThemeData,
+    selectedThemeKey,
+    baseThemes,
+  ]);
 
   const themes = useMemo(
     () => [...baseThemes, ...(customThemes ?? [])],
