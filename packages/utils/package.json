@@ -28,6 +28,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@deephaven/log": "file:../log",
+    "nanoid": "^5.0.7"
+  },
   "devDependencies": {
     "@deephaven/test-utils": "file:../test-utils"
   }
