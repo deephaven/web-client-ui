@@ -7,4 +7,5 @@ export * from './ThemeUtils';
 export * from './useTheme';
 export * from './Logo';
 export * from './colorUtils';
+export * from './useParentWindowTheme';
 export * from './useSpectrumThemeProvider';

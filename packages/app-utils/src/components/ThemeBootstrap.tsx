@@ -1,12 +1,11 @@
 import { useContext, useMemo } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { ThemeProvider } from '@deephaven/components';
+import { ThemeProvider, useParentWindowTheme } from '@deephaven/components';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 import { getSettings } from '@deephaven/redux';
 import { useAppSelector } from '@deephaven/dashboard';
-import { useParentWindowTheme } from '@deephaven/jsapi-components';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;

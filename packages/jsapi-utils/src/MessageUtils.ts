@@ -6,8 +6,6 @@ export const LOGIN_OPTIONS_REQUEST =
 export const SESSION_DETAILS_REQUEST =
   'io.deephaven.message.SessionDetails.request';
 
-export const PARENT_THEME_REQUEST = 'io.deephaven.message.ParentTheme.request';
-
 /**
  * Use a BroadcastChannel for sending messages between tabs, such as when the user logs out.
  */

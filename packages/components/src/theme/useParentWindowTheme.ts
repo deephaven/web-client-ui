@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { requestParentResponse } from '@deephaven/utils';
 import {
-  hasParentThemeKey,
   PARENT_THEME_KEY,
-  type ThemeData,
-} from '@deephaven/components';
-import {
   PARENT_THEME_REQUEST,
-  requestParentResponse,
-} from '@deephaven/jsapi-utils';
+  type ThemeData,
+} from './ThemeModel';
+import { hasParentThemeKey } from './ThemeUtils';
 
 export interface UseParentWindowThemeResult {
   isPending: boolean;

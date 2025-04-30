@@ -15,7 +15,6 @@ export * from './useGetItemPosition';
 export { default as useInitializeViewportData } from './useInitializeViewportData';
 export * from './useSearchableViewportData';
 export * from './useNotNullOrEmptyFilter';
-export * from './useParentWindowTheme';
 export * from './usePickerWithSelectedValues';
 export { default as useSelectDistinctTable } from './useSelectDistinctTable';
 export { default as useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
