@@ -578,7 +578,7 @@ it('handles axes min and max properly', () => {
 
   expect(layout.xaxis?.autorangeoptions?.maxallowed).toEqual(100);
 
-  expect(layout.xaxis?.autorangeoptions?.minallowed).toEqual(2);
+  expect(layout.xaxis2?.autorangeoptions?.minallowed).toEqual(2);
 
   expect(layout.xaxis2?.autorangeoptions?.maxallowed).toEqual(3);
 
