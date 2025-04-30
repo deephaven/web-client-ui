@@ -26,6 +26,7 @@ import {
   PARENT_THEME_REQUEST,
   type ThemeCssColorVariableName,
   TRANSPARENT_PRELOAD_DATA_VARIABLES,
+  PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -346,9 +347,19 @@ export function parseParentThemeData({
  * Check if the current URL specifies a parent theme key override.
  * @returns True if the parent theme key override is set, false otherwise
  */
-export function hasParentThemeKey(): boolean {
+export function isParentThemeEnabled(): boolean {
   const searchParams = new URLSearchParams(window.location.search);
   return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY;
+}
+
+/**
+ * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set.
+ * @returns True if the preload transparent theme query parameter is set, false
+ * otherwise
+ */
+export function isPreloadTransparentTheme(): boolean {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.has(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM);
 }
 
 /**
@@ -546,9 +557,7 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(
   defaultPreloadValues: Record<string, string> = DEFAULT_PRELOAD_DATA_VARIABLES
 ): void {
-  // If theme=PARENT_THEME_KEY preload colors as transparent so that parent
-  // container will show until the `postMessage` handshake is complete.
-  if (hasParentThemeKey()) {
+  if (isPreloadTransparentTheme()) {
     createPreloadStyleElement(
       'theme-preload-transparent',
       calculatePreloadStyleContent(TRANSPARENT_PRELOAD_DATA_VARIABLES)

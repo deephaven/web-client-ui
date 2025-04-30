@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Log from '@deephaven/log';
 import { type ThemeData } from './ThemeModel';
 import {
-  hasParentThemeKey,
+  isParentThemeEnabled,
   parseParentThemeData,
   requestParentThemeData,
 } from './ThemeUtils';
@@ -19,13 +19,13 @@ export interface UseParentWindowThemeResult {
  */
 export function useParentWindowTheme(): UseParentWindowThemeResult {
   const [result, setResult] = useState<UseParentWindowThemeResult>(() => ({
-    isPending: hasParentThemeKey(),
+    isPending: isParentThemeEnabled(),
   }));
 
-  const isEnabledRef = useRef(result.isPending);
+  const isParentThemeEnabledRef = useRef(result.isPending);
 
   useEffect(() => {
-    if (!isEnabledRef.current) {
+    if (!isParentThemeEnabledRef.current) {
       return;
     }
 
