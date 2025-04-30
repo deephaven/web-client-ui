@@ -1789,6 +1789,8 @@ class Axis {
     formatPattern = null,
     log = false,
     businessCalendar = null,
+    minRange = undefined,
+    maxRange = undefined,
   } = {}) {
     this.label = label;
     this.type = type;
@@ -1797,6 +1799,8 @@ class Axis {
     this.formatPattern = formatPattern;
     this.log = log;
     this.businessCalendar = businessCalendar;
+    this.minRange = minRange;
+    this.maxRange = maxRange;
   }
 
   range() {}

@@ -24,6 +24,8 @@ class ChartTestUtils {
     formatType = undefined,
     formatPattern = '###,###0.00',
     log = false,
+    minRange = undefined,
+    maxRange = undefined,
   }: {
     label?: string;
     type?: DhType.plot.AxisType;
@@ -31,6 +33,8 @@ class ChartTestUtils {
     formatType?: DhType.plot.AxisFormatType;
     formatPattern?: string;
     log?: boolean;
+    minRange?: number;
+    maxRange?: number;
   } = {}): DhType.plot.Axis {
     const { dh } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +45,8 @@ class ChartTestUtils {
       formatType: formatType ?? dh.plot.AxisFormatType.NUMBER,
       formatPattern,
       log,
+      minRange,
+      maxRange,
     });
   }
 
