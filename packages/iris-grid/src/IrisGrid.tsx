@@ -984,11 +984,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    // if (prevProps.reverse !== this.props.reverse) {
-    //   console.log('changing reverse');
-    //   this.setState({ reverse: this.props.reverse });
-    // }
-
     this.sendStateChange();
   }
 
