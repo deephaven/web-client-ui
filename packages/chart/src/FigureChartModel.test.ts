@@ -574,27 +574,19 @@ it('handles axes min and max properly', () => {
 
   const layout = model.getLayout();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.xaxis as any).autorangeoptions.minallowed).toEqual(0);
+  expect(layout.xaxis?.autorangeoptions?.minallowed).toEqual(0);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.xaxis as any).autorangeoptions.maxallowed).toEqual(100);
+  expect(layout.xaxis?.autorangeoptions?.maxallowed).toEqual(100);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.xaxis2 as any).autorangeoptions.minallowed).toEqual(2);
+  expect(layout.xaxis?.autorangeoptions?.minallowed).toEqual(2);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.xaxis2 as any).autorangeoptions.maxallowed).toEqual(3);
+  expect(layout.xaxis2?.autorangeoptions?.maxallowed).toEqual(3);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.yaxis as any).autorangeoptions.minallowed).toEqual(undefined);
+  expect(layout.yaxis?.autorangeoptions?.minallowed).toEqual(undefined);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.yaxis as any).autorangeoptions.maxallowed).toEqual(200);
+  expect(layout.yaxis?.autorangeoptions?.maxallowed).toEqual(200);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.yaxis2 as any).autorangeoptions.minallowed).toEqual(-10);
+  expect(layout.yaxis2?.autorangeoptions?.minallowed).toEqual(-10);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expect((layout.yaxis2 as any).autorangeoptions.maxallowed).toEqual(undefined);
+  expect(layout.yaxis2?.autorangeoptions?.maxallowed).toEqual(undefined);
 });

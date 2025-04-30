@@ -1547,17 +1547,14 @@ class ChartUtils {
     // the range via interaction
     const { minRange, maxRange, log: logAxis } = axis;
     if (!Number.isNaN(minRange) || !Number.isNaN(maxRange)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (layoutAxis as any).autorangeoptions = {};
+      layoutAxis.autorangeoptions = {};
       if (!Number.isNaN(minRange)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (layoutAxis as any).autorangeoptions.minallowed = logAxis
+        layoutAxis.autorangeoptions.minallowed = logAxis
           ? Math.log10(minRange)
           : minRange;
       }
       if (!Number.isNaN(maxRange)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (layoutAxis as any).autorangeoptions.maxallowed = logAxis
+        layoutAxis.autorangeoptions.maxallowed = logAxis
           ? Math.log10(maxRange)
           : maxRange;
       }
