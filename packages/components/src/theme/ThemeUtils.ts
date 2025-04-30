@@ -353,13 +353,13 @@ export function isParentThemeEnabled(): boolean {
 }
 
 /**
- * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set.
+ * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set to true.
  * @returns True if the preload transparent theme query parameter is set, false
  * otherwise
  */
 export function isPreloadTransparentTheme(): boolean {
   const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.has(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM);
+  return searchParams.get(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM) === 'true';
 }
 
 /**
