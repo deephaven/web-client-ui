@@ -134,3 +134,16 @@ it('should reload the model on reload', async () => {
     (result.current as IrisGridModelFetchSuccessResult).model
   ).toBeDefined();
 });
+
+it('should return a memoized object for repeated calls', async () => {
+  const table = TestUtils.createMockProxy<dh.Table>();
+  const fetch = jest.fn(() => Promise.resolve(table));
+  const { rerender, result, waitForNextUpdate } = renderHook(() =>
+    useIrisGridModel(fetch)
+  );
+  await waitForNextUpdate();
+  const fetchResult = result.current;
+  expect(fetchResult.status).toBe('success');
+  rerender(fetch);
+  expect(result.current).toBe(fetchResult);
+});
