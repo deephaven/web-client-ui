@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import Log from '@deephaven/log';
 import TimeoutError from './TimeoutError';
+import { assertNotNull } from './Asserts';
 
 const log = Log.module('MessageUtils');
 
@@ -106,4 +107,21 @@ export async function requestParentResponse(
     }, timeout);
     parent.postMessage(makeMessage(request, id), '*');
   });
+}
+
+/**
+ * Send a message to the parent window.
+ * @param message The message string to send.
+ * @param id Optional unique message id. If not provided, a random id will be
+ * generated.
+ * @param payload Optional payload to send with the message.
+ */
+export function sendMessageToParent<TPayload>(
+  message: string,
+  id?: string,
+  payload?: TPayload
+): void {
+  const parent = getWindowParent();
+  assertNotNull(parent, 'Parent window is null');
+  parent.postMessage(makeMessage(message, id, payload), '*');
 }

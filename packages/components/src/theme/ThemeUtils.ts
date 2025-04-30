@@ -25,6 +25,7 @@ import {
   type ParentThemeData,
   PARENT_THEME_REQUEST,
   type ThemeCssColorVariableName,
+  TRANSPARENT_PRELOAD_DATA_VARIABLES,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -549,12 +550,8 @@ export function preloadTheme(
   // container will show until the `postMessage` handshake is complete.
   if (hasParentThemeKey()) {
     createPreloadStyleElement(
-      'theme-preload-parent',
-      calculatePreloadStyleContent({
-        '--dh-color-bg': 'transparent',
-        '--dh-color-loading-spinner-primary': 'transparent',
-        '--dh-color-loading-spinner-secondary': 'transparent',
-      })
+      'theme-preload-transparent',
+      calculatePreloadStyleContent(TRANSPARENT_PRELOAD_DATA_VARIABLES)
     );
     return;
   }

@@ -112,6 +112,14 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
     DEFAULT_DARK_THEME_PALETTE.gray[300],
 };
 
+export const TRANSPARENT_PRELOAD_DATA_VARIABLES: Partial<
+  Record<ThemePreloadColorVariable, string>
+> = {
+  '--dh-color-bg': 'transparent',
+  '--dh-color-loading-spinner-primary': 'transparent',
+  '--dh-color-loading-spinner-secondary': 'transparent',
+};
+
 /**
  * Some inline SVGs require manually updating their fill color via
  * `updateSVGFillColors`. This object maps these variables to their respective
