@@ -1545,14 +1545,21 @@ class ChartUtils {
     // and cannot be returned to if the user changes the range via interaction
     // minallowed and maxallowed can be set independently and can be returned to if the user changes
     // the range via interaction
-    const { minRange, maxRange, log } = axis;
+    const { minRange, maxRange, log: logAxis } = axis;
     if (!Number.isNaN(minRange) || !Number.isNaN(maxRange)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (layoutAxis as any).autorangeoptions = {};
       if (!Number.isNaN(minRange)) {
-        (layoutAxis as any).autorangeoptions.minallowed = log ? Math.log10(minRange) : minRange;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (layoutAxis as any).autorangeoptions.minallowed = logAxis
+          ? Math.log10(minRange)
+          : minRange;
       }
       if (!Number.isNaN(maxRange)) {
-        (layoutAxis as any).autorangeoptions.maxallowed = log ? Math.log10(maxRange) : maxRange;;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (layoutAxis as any).autorangeoptions.maxallowed = logAxis
+          ? Math.log10(maxRange)
+          : maxRange;
       }
     }
   }
