@@ -18,6 +18,7 @@ import {
   type ThemeIconsRequiringManualColorChanges,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
   PARENT_THEME_KEY,
+  type ParentThemeData,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -302,6 +303,25 @@ export function hasParentThemeKey(): boolean {
  */
 export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
   return [DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY].includes(themeKey);
+}
+
+/**
+ * Determine if a given object is a `ParentThemeData` object.
+ * @param maybeParentThemeData An object that may or may not be a `ParentThemeData`
+ * @returns True if the object is a `ParentThemeData`, false otherwise
+ */
+export function isParentThemeData(
+  maybeParentThemeData?: Partial<ParentThemeData> | null
+): maybeParentThemeData is ParentThemeData {
+  if (maybeParentThemeData == null) {
+    return false;
+  }
+
+  return (
+    typeof maybeParentThemeData.name === 'string' &&
+    'cssVars' in maybeParentThemeData &&
+    maybeParentThemeData.cssVars != null
+  );
 }
 
 /**

@@ -143,3 +143,9 @@ export interface ThemeRegistrationData {
   base: ThemeData[];
   custom: ThemeData[];
 }
+
+export interface ParentThemeData {
+  baseThemeKey?: BaseThemeKey;
+  name: string;
+  cssVars: Record<ThemeCssVariableName, string>;
+}

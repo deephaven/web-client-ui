@@ -4,6 +4,10 @@ import {
   PARENT_THEME_KEY,
   type ThemeData,
 } from '@deephaven/components';
+import {
+  PARENT_THEME_REQUEST,
+  requestParentResponse,
+} from '@deephaven/jsapi-utils';
 
 export interface UseParentWindowThemeResult {
   isPending: boolean;
@@ -25,6 +29,8 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
     if (!isEnabledRef.current) {
       return;
     }
+
+    requestParentResponse(PARENT_THEME_REQUEST);
 
     setTimeout(() => {
       // TODO: convert theme vars to ThemeData and validate
