@@ -23,7 +23,7 @@ import {
   THEME_KEY_OVERRIDE_QUERY_PARAM,
   PARENT_THEME_KEY,
   type ParentThemeData,
-  PARENT_THEME_REQUEST,
+  MSG_REQUEST_GET_THEME,
   type ThemeCssColorVariableName,
   TRANSPARENT_PRELOAD_DATA_VARIABLES,
   PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
@@ -301,7 +301,7 @@ export function getExpressionRanges(value: string): [number, number][] {
  * @throws Error if the response is not a valid `ParentThemeData`
  */
 export async function requestParentThemeData(): Promise<ParentThemeData> {
-  const result = await requestParentResponse(PARENT_THEME_REQUEST);
+  const result = await requestParentResponse(MSG_REQUEST_GET_THEME);
 
   if (!isParentThemeData(result)) {
     throw new Error(

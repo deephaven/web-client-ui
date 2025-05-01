@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import Log from '@deephaven/log';
-import { type ThemeData } from './ThemeModel';
+import { getWindowParent, type PostMessage } from '@deephaven/utils';
 import {
+  MSG_REQUEST_SET_THEME,
+  type ParentThemeData,
+  type ThemeData,
+} from './ThemeModel';
+import {
+  isParentThemeData,
   isParentThemeEnabled,
   parseParentThemeData,
   requestParentThemeData,
@@ -34,19 +40,44 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
 
     logger.debug('Requesting parent theme data');
 
+    /** Parse parent theme data and update the result */
+    function handleParentThemeData(parentThemeData: ParentThemeData) {
+      const themeData = parseParentThemeData(parentThemeData);
+
+      setResult({
+        isEnabled: true,
+        isPending: false,
+        themeData,
+      });
+    }
+
+    /** Parent window can explicitly set the theme */
+    function onMessage(event: MessageEvent<PostMessage<unknown>>): void {
+      const parent = getWindowParent();
+      if (parent == null || event.source !== parent) {
+        return;
+      }
+
+      if (event.data.message === MSG_REQUEST_SET_THEME) {
+        if (isParentThemeData(event.data.payload)) {
+          handleParentThemeData(event.data.payload);
+        }
+      }
+    }
+
+    window.addEventListener('message', onMessage);
+
+    /** Request initial theme data from parent window */
     requestParentThemeData()
-      .then(parseParentThemeData)
-      .then(themeData =>
-        setResult({
-          isEnabled: true,
-          isPending: false,
-          themeData,
-        })
-      )
+      .then(handleParentThemeData)
       .catch(err => {
         logger.error(err);
         setResult({ isEnabled: true, isPending: false });
       });
+
+    return () => {
+      window.removeEventListener('message', onMessage);
+    };
   }, [result.isEnabled]);
 
   return result;

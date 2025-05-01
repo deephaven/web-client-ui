@@ -45,7 +45,10 @@ export type ThemeIconsRequiringManualColorChanges =
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
 export const PARENT_THEME_KEY = 'parent-theme' as const;
-export const PARENT_THEME_REQUEST = 'io.deephaven.message.ParentTheme.request';
+export const MSG_REQUEST_GET_THEME =
+  'io.deephaven.message.ThemeModel.requestParentTheme';
+export const MSG_REQUEST_SET_THEME =
+  'io.deephaven.message.ThemeModel.requestSetTheme';
 export const PRELOAD_TRANSPARENT_THEME_QUERY_PARAM =
   'preloadTransparentTheme' as const;
 export const THEME_KEY_OVERRIDE_QUERY_PARAM = 'theme' as const;
