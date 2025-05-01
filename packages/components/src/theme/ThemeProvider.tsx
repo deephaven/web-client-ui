@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import Log from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
 import { DEFAULT_PRELOAD_DATA_VARIABLES, type ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -42,14 +43,17 @@ export interface ThemeProviderProps {
 }
 
 export function ThemeProvider({
-  themes: customThemes,
+  themes: propThemes,
   defaultPreloadValues = DEFAULT_PRELOAD_DATA_VARIABLES,
   children,
 }: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
 
-  const { isPending: isPendingParentTheme, themeData: parentThemeData } =
-    useParentWindowTheme();
+  const {
+    isEnabled: isParentThemeEnabled,
+    isPending: isParentThemePending,
+    themeData: parentThemeData,
+  } = useParentWindowTheme();
 
   const [value, setValue] = useState<ThemeContextValue | null>(null);
 
@@ -57,16 +61,46 @@ export function ThemeProvider({
     getDefaultSelectedThemeKey
   );
 
-  // Calculate active themes once a non-null themes array is provided.
+  /**
+   * Custom themes can be provided via props or by a `postMessage` from the
+   * parent window. In either case, the themes may get loaded asynchronously.
+   * A `null` value indicates that the themes are still being loaded. e.g.
+   * plugins that provide themes after login may provide custom themes via props,
+   * while `postMessage` apis are by nature asynchronous.
+   * Note prop themes are ignored when parent themes are enabled.
+   */
+  const customThemes = useMemo(() => {
+    // Custom theme provided by `postMessage` from the parent window.
+    if (isParentThemeEnabled && !isParentThemePending) {
+      return parentThemeData ? [parentThemeData] : [];
+    }
+
+    // Custom themes provided by props.
+    if (!isParentThemeEnabled) {
+      return propThemes;
+    }
+
+    return null;
+  }, [isParentThemeEnabled, isParentThemePending, parentThemeData, propThemes]);
+
+  // Calculate active themes once custom themes are loaded
   const activeThemes = useMemo(() => {
-    if (customThemes == null || isPendingParentTheme) {
+    if (isParentThemeEnabled && isParentThemePending) {
       return null;
     }
 
-    const custom = [...customThemes];
+    // Give plugins a chance to provide custom themes.
+    if (!isParentThemeEnabled && customThemes == null) {
+      return null;
+    }
 
-    if (parentThemeData != null) {
-      custom.push(parentThemeData);
+    let custom: ThemeData[];
+
+    if (isParentThemeEnabled) {
+      custom = parentThemeData ? [parentThemeData] : [];
+    } else {
+      assertNotNull(customThemes);
+      custom = customThemes;
     }
 
     return getActiveThemes(selectedThemeKey, {
@@ -74,11 +108,12 @@ export function ThemeProvider({
       custom,
     });
   }, [
+    isParentThemeEnabled,
+    isParentThemePending,
     customThemes,
-    isPendingParentTheme,
-    parentThemeData,
     selectedThemeKey,
     baseThemes,
+    parentThemeData,
   ]);
 
   const themes = useMemo(
