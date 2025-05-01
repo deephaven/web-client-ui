@@ -557,6 +557,12 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(
   defaultPreloadValues: Record<string, string> = DEFAULT_PRELOAD_DATA_VARIABLES
 ): void {
+  // In certain cases we may want to preload a transparent theme to allow the
+  // parent container to show through. For example, when a parent Window is
+  // providing a theme via `postMessage` apis, we may not have enough information
+  // to properly preload the theme, so we can just preload a transparent
+  // theme and let the parent container show through until `postMessage`
+  // communication is complete.
   if (isPreloadTransparentTheme()) {
     createPreloadStyleElement(
       'theme-preload-transparent',
