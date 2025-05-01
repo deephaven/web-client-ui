@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { ThemeProvider } from '@deephaven/components';
+import { ThemeProvider, useParentWindowTheme } from '@deephaven/components';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 import { getSettings } from '@deephaven/redux';
@@ -14,16 +14,37 @@ export interface ThemeBootstrapProps {
 export function ThemeBootstrap({
   children,
 }: ThemeBootstrapProps): JSX.Element | null {
+  const {
+    isEnabled: isParentThemeEnabled,
+    isPending: isParentThemePending,
+    themeData: parentThemeData,
+  } = useParentWindowTheme();
+
   // The `usePlugins` hook throws if the context value is null. Since this is
   // the state while plugins load asynchronously, we are using `useContext`
   // directly to avoid the exception.
   const pluginModules = useContext(PluginsContext);
 
-  const themes = useMemo(
-    () =>
-      pluginModules == null ? null : getThemeDataFromPlugins(pluginModules),
-    [pluginModules]
-  );
+  const themes = useMemo(() => {
+    // Get theme from parent window via `postMessage` apis
+    if (isParentThemeEnabled) {
+      if (isParentThemePending) {
+        return null;
+      }
+
+      return parentThemeData ? [parentThemeData] : [];
+    }
+
+    // Get themes from plugins
+    return pluginModules == null
+      ? null
+      : getThemeDataFromPlugins(pluginModules);
+  }, [
+    isParentThemeEnabled,
+    isParentThemePending,
+    parentThemeData,
+    pluginModules,
+  ]);
 
   const settings = useAppSelector(getSettings);
 
