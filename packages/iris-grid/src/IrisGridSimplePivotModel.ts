@@ -199,27 +199,35 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   private getCachedColumnHeaderGroups = memoize(
     (
-      columnMap: SimplePivotColumnMap,
+      columns: readonly DisplayColumn[],
       schema: SimplePivotSchema
-    ): readonly ColumnHeaderGroup[] => [
-      new ColumnHeaderGroup({
-        name: schema.pivotDescription,
-        children: schema.rowColNames,
-        depth: 1,
-        childIndexes: schema.rowColNames.map((_, index) => index),
-      }),
-      new ColumnHeaderGroup({
-        name: schema.columnColNames.join(', '),
-        children: [...columnMap.keys()],
-        depth: 1,
-        childIndexes: [...columnMap.keys()].map((_, index) => index),
-      }),
-    ]
+    ): readonly ColumnHeaderGroup[] => {
+      const { rowColNames, columnColNames } = schema;
+      const columnNamesGroup = columns.filter(
+        c => !rowColNames.includes(c.name)
+      );
+      return [
+        new ColumnHeaderGroup({
+          name: schema.pivotDescription,
+          children: rowColNames,
+          depth: 1,
+          childIndexes: rowColNames.map((_, index) => index),
+        }),
+        new ColumnHeaderGroup({
+          name: columnColNames.join(', '),
+          children: columnNamesGroup.map(c => c.name),
+          depth: 1,
+          childIndexes: columnNamesGroup.map(
+            (_, index) => rowColNames.length + index
+          ),
+        }),
+      ];
+    }
   );
 
   get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
     log.debug('get initialColumnHeaderGroups');
-    return this.getCachedColumnHeaderGroups(this.columnMap, this.schema);
+    return this.getCachedColumnHeaderGroups(this.model.columns, this.schema);
   }
 
   get columns(): DhType.Column[] {
@@ -384,7 +392,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
         );
         this.columnMap = columnMap;
         this.columnHeaderGroups = this.getCachedColumnHeaderGroups(
-          this.columnMap,
+          this.model.columns,
           this.schema
         );
         this.dispatchEvent(
@@ -446,6 +454,10 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return this._layoutHints;
   }
 
+  set columnHeaderGroups(columnHeaderGroups: readonly ColumnHeaderGroup[]) {
+    this.model.columnHeaderGroups = columnHeaderGroups;
+  }
+
   /**
    * Use this as the canonical column index since things like layoutHints could have
    * changed the column order.
@@ -492,7 +504,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.setTotalsTable(totalsTable);
     this.columnMap = columnMap;
     this.columnHeaderGroups = this.getCachedColumnHeaderGroups(
-      this.columnMap,
+      this.model.columns,
       this.schema
     );
 
@@ -505,7 +517,7 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     if (this.listenerCount > 0) {
       this.addListeners(model);
     }
-    // TODO: which events need to be dispatched on model change and in what order?
+
     // Dispatch model updated event
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED, {
