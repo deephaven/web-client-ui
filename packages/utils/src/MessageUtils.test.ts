@@ -3,8 +3,16 @@ import {
   makeMessage,
   makeResponse,
   requestParentResponse,
+  sendMessageToParent,
   type PostMessage,
 } from './MessageUtils';
+
+let afterEachCallback: (() => void) | null = null;
+
+afterEach(() => {
+  afterEachCallback?.();
+  afterEachCallback = null;
+});
 
 it('Throws an exception if called on a window without parent', async () => {
   await expect(requestParentResponse('request')).rejects.toThrow(
@@ -46,7 +54,6 @@ function setupWindowParentMock(
 describe.each([['parent'], ['opener']])(
   `requestParentResponse with %s`,
   type => {
-    let parentCleanup: () => void;
     let addListenerSpy: jest.SpyInstance;
     let removeListenerSpy: jest.SpyInstance;
     let listenerCallback;
@@ -61,13 +68,12 @@ describe.each([['parent'], ['opener']])(
           listenerCallback = cb;
         });
       removeListenerSpy = jest.spyOn(window, 'removeEventListener');
-      parentCleanup = setupWindowParentMock(type, mockPostMessage);
+      afterEachCallback = setupWindowParentMock(type, mockPostMessage);
     });
     afterEach(() => {
       addListenerSpy.mockRestore();
       removeListenerSpy.mockRestore();
       mockPostMessage.mockClear();
-      parentCleanup();
       messageId = undefined;
     });
 
@@ -118,3 +124,27 @@ describe.each([['parent'], ['opener']])(
     });
   }
 );
+
+describe('sendMessageToParent', () => {
+  it('should throw an error if no parent window is available', () => {
+    expect(() => {
+      sendMessageToParent('test');
+    }).toThrow('Parent window is null');
+  });
+
+  it('should send a message to the parent window', () => {
+    const postMessage = jest.fn().mockName('postMessage');
+    afterEachCallback = setupWindowParentMock('parent', postMessage);
+
+    const message = 'mock.message';
+    const id = 'mock-id';
+    const payload = { key: 'mock.payload' };
+
+    sendMessageToParent(message, id, payload);
+
+    expect(postMessage).toHaveBeenCalledWith(
+      makeMessage(message, id, payload),
+      '*'
+    );
+  });
+});
