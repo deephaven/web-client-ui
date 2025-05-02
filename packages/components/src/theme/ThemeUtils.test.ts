@@ -17,6 +17,7 @@ import {
   type BaseThemeKey,
   PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
   DEFAULT_LIGHT_THEME_KEY,
+  TRANSPARENT_PRELOAD_DATA_VARIABLES,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -670,38 +671,54 @@ describe('overrideSVGFillColors', () => {
 
 describe('preloadTheme', () => {
   it.each([
-    null,
-    {
-      themeKey: 'mock.themeKey',
-      preloadStyleContent: ':root{mock.preloadStyleContent}',
-    },
-  ] as const)('should set the style content: %s', preloadData => {
-    if (preloadData != null) {
-      localStorage.setItem(
-        THEME_CACHE_LOCAL_STORAGE_KEY,
-        JSON.stringify(preloadData)
+    [null, true],
+    [null, false],
+    [
+      {
+        themeKey: 'mock.themeKey',
+        preloadStyleContent: ':root{mock.preloadStyleContent}',
+      },
+      false,
+    ],
+  ] as const)(
+    'should set the style content: %s',
+    (preloadData, preloadTransparent) => {
+      if (preloadData != null) {
+        localStorage.setItem(
+          THEME_CACHE_LOCAL_STORAGE_KEY,
+          JSON.stringify(preloadData)
+        );
+      }
+
+      if (preloadTransparent) {
+        window.location.search = `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=true`;
+      }
+
+      preloadTheme();
+
+      const [styleElDefaults, styleElPrevious] =
+        document.querySelectorAll('style');
+
+      expect(styleElDefaults).not.toBeNull();
+
+      expect(styleElDefaults?.innerHTML).toEqual(
+        calculatePreloadStyleContent(
+          preloadTransparent
+            ? TRANSPARENT_PRELOAD_DATA_VARIABLES
+            : DEFAULT_PRELOAD_DATA_VARIABLES
+        )
       );
+
+      if (preloadData?.preloadStyleContent == null) {
+        expect(styleElPrevious).toBeUndefined();
+      } else {
+        expect(styleElPrevious).toBeDefined();
+        expect(styleElPrevious?.innerHTML).toEqual(
+          preloadData?.preloadStyleContent
+        );
+      }
     }
-
-    preloadTheme();
-
-    const [styleElDefaults, styleElPrevious] =
-      document.querySelectorAll('style');
-
-    expect(styleElDefaults).not.toBeNull();
-    expect(styleElDefaults?.innerHTML).toEqual(
-      calculatePreloadStyleContent(DEFAULT_PRELOAD_DATA_VARIABLES)
-    );
-
-    if (preloadData?.preloadStyleContent == null) {
-      expect(styleElPrevious).toBeUndefined();
-    } else {
-      expect(styleElPrevious).toBeDefined();
-      expect(styleElPrevious?.innerHTML).toEqual(
-        preloadData?.preloadStyleContent
-      );
-    }
-  });
+  );
 });
 
 describe('replaceSVGFillColor', () => {
