@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ColorUtils } from '@deephaven/utils';
+import { ColorUtils, requestParentResponse } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   DEFAULT_DARK_THEME_KEY,
@@ -12,6 +12,9 @@ import {
   type ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
+  type ParentThemeData,
+  PARENT_THEME_KEY,
+  type BaseThemeKey,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -23,18 +26,37 @@ import {
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
+  isValidColorVar,
   overrideSVGFillColors,
+  parseParentThemeData,
   preloadTheme,
   replaceSVGFillColor,
+  requestParentThemeData,
   resolveCssVariablesInRecord,
   resolveCssVariablesInString,
   setThemePreloadData,
   TMP_CSS_PROP_PREFIX,
 } from './ThemeUtils';
 
+jest.mock('@deephaven/utils', () => ({
+  ...jest.requireActual('@deephaven/utils'),
+  requestParentResponse: jest.fn(),
+}));
 jest.mock('nanoid');
 
 const { asMock, createMockProxy } = TestUtils;
+
+const VALID_COLOR1 = 'mock.validColor1';
+const VALID_COLOR2 = 'mock.validColor2';
+const INVALID_COLOR = 'mock.invalidColor';
+const MOCK_VALID_COLOR_VALUE = new Set([VALID_COLOR1, VALID_COLOR2]);
+
+/** Mock CSS.supports implementation including overload signatures. */
+function mockCssSupports(property: string, value: string): boolean;
+function mockCssSupports(conditionText: string): boolean;
+function mockCssSupports(arg1: string, arg2?: string): boolean {
+  return arg1 === 'color' && arg2 != null && MOCK_VALID_COLOR_VALUE.has(arg2);
+}
 
 beforeEach(() => {
   document.body.removeAttribute('style');
@@ -86,6 +108,93 @@ describe('calculatePreloadStyleContent', () => {
         '--dh-color-bg': 'orange',
       })
     );
+  });
+});
+
+describe('isValidColorVar', () => {
+  it.each([
+    ['--dh-color-bg', VALID_COLOR1, true],
+    ['--dh-colorxx-bg', VALID_COLOR1, false],
+    ['--dh-color-bg', INVALID_COLOR, false],
+  ])(
+    'should return true if name and value are valid: name:%s, value:%s',
+    (name, value, expected) => {
+      jest.spyOn(window.CSS, 'supports').mockImplementation(mockCssSupports);
+      expect(isValidColorVar(name, value)).toBe(expected);
+    }
+  );
+});
+
+describe('parseParentThemeData', () => {
+  it.each([
+    [
+      {
+        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
+        name: 'Mock parent theme',
+        cssVars: {},
+      },
+      '',
+    ],
+    [
+      {
+        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
+        name: 'Mock parent theme',
+        cssVars: {
+          '--dh-color-fg': INVALID_COLOR,
+        },
+      },
+      '',
+    ],
+    [
+      {
+        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
+        name: 'Mock parent theme',
+        cssVars: {
+          '--dh-color-bg': VALID_COLOR1,
+          '--dh-color-fg': INVALID_COLOR,
+          '--dh-colorxx-bg': VALID_COLOR1,
+        } as ParentThemeData['cssVars'],
+      },
+      ':root{--dh-color-bg:mock.validColor1;}',
+    ],
+  ])(
+    'should sanitize css vars: %s',
+    (parentThemeData, expectedStyleContent) => {
+      jest.spyOn(window.CSS, 'supports').mockImplementation(mockCssSupports);
+
+      const actual = parseParentThemeData(parentThemeData);
+
+      expect(actual).toEqual({
+        name: parentThemeData.name,
+        baseThemeKey: parentThemeData.baseThemeKey,
+        themeKey: PARENT_THEME_KEY,
+        styleContent: expectedStyleContent,
+      });
+    }
+  );
+});
+
+describe('requestParentThemeData', () => {
+  const mockParentThemeData: ParentThemeData = {
+    name: 'Mock parent theme',
+    cssVars: {
+      '--dh-color-bg': 'blue',
+    },
+  };
+
+  it('should throw if non-theme data is returned', () => {
+    asMock(requestParentResponse).mockResolvedValue({
+      label: 'not-theme-data',
+    });
+
+    expect(requestParentThemeData()).rejects.toThrowError(
+      'Unexpected parent theme data response: {"label":"not-theme-data"}'
+    );
+  });
+
+  it('should return theme data from parent', async () => {
+    asMock(requestParentResponse).mockResolvedValue(mockParentThemeData);
+    expect(await requestParentThemeData()).toEqual(mockParentThemeData);
   });
 });
 

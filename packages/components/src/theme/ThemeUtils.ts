@@ -339,15 +339,14 @@ export function parseParentThemeData({
   cssVars,
 }: ParentThemeData): ThemeData {
   const toExpression = ([varName, varValue]: [string, string]) =>
-    isValidColorVar(varName, varValue) ? `${varName}:${varValue}` : null;
+    isValidColorVar(varName, varValue) ? `${varName}:${varValue};` : null;
 
   const sanitized = Object.entries(cssVars)
     .map(toExpression)
     .filter((str): str is string => str != null);
 
-  const styleContent = `:root{${
-    sanitized.length === 0 ? '' : sanitized.join(';')
-  };}`;
+  const styleContent =
+    sanitized.length === 0 ? '' : `:root{${sanitized.join('')}}`;
 
   return {
     baseThemeKey,
