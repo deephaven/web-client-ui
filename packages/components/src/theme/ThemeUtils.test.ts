@@ -15,6 +15,8 @@ import {
   type ParentThemeData,
   PARENT_THEME_KEY,
   type BaseThemeKey,
+  PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
+  DEFAULT_LIGHT_THEME_KEY,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -26,6 +28,10 @@ import {
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
+  isBaseThemeKey,
+  isParentThemeData,
+  isParentThemeEnabled,
+  isPreloadTransparentTheme,
   isValidColorVar,
   overrideSVGFillColors,
   parseParentThemeData,
@@ -58,13 +64,26 @@ function mockCssSupports(arg1: string, arg2?: string): boolean {
   return arg1 === 'color' && arg2 != null && MOCK_VALID_COLOR_VALUE.has(arg2);
 }
 
+const origLocation = window.location;
+
 beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  delete window.location;
+  window.location = {
+    search: '',
+  } as unknown as Location;
+
   document.body.removeAttribute('style');
   document.head.innerHTML = '';
   localStorage.clear();
   jest.clearAllMocks();
   jest.restoreAllMocks();
   expect.hasAssertions();
+});
+
+afterEach(() => {
+  window.location = origLocation;
 });
 
 describe('DEFAULT_PRELOAD_DATA_VARIABLES', () => {
@@ -108,6 +127,64 @@ describe('calculatePreloadStyleContent', () => {
         '--dh-color-bg': 'orange',
       })
     );
+  });
+});
+
+describe('isBaseThemeKey', () => {
+  it.each([
+    [DEFAULT_DARK_THEME_KEY, true],
+    [DEFAULT_LIGHT_THEME_KEY, true],
+    ['some-theme', false],
+    ['', false],
+  ])(
+    `should return true only for base theme keys: '%s'`,
+    (themeKey, expected) => {
+      expect(isBaseThemeKey(themeKey)).toBe(expected);
+    }
+  );
+});
+
+describe('isParentThemeData', () => {
+  it.each([
+    [{ name: 'Mock parent theme', cssVars: {} }, true],
+    [null, false],
+    [undefined, false],
+    [{}, false],
+    ['not-theme-data', false],
+    [{ name: 'Mock parent theme', cssVars: 'cssVars' }, false],
+    [{ name: 999, cssVars: {} }, false],
+  ])(
+    'should return true if parent theme data: %s',
+    (maybeParentThemeData, expected) => {
+      expect(isParentThemeData(maybeParentThemeData)).toBe(expected);
+    }
+  );
+});
+
+describe('isParentThemeEnabled', () => {
+  it.each([
+    [PARENT_THEME_KEY, true],
+    [null, false],
+    ['some-theme', false],
+  ])(
+    'should return true if parent theme is enabled: %s',
+    (themeKey, expected) => {
+      window.location.search =
+        themeKey == null ? '' : `${THEME_KEY_OVERRIDE_QUERY_PARAM}=${themeKey}`;
+      expect(isParentThemeEnabled()).toBe(expected);
+    }
+  );
+});
+
+describe('isPreloadTransparentTheme: %s', () => {
+  it.each([
+    ['true', true],
+    ['false', false],
+    [null, false],
+  ])('should', (value, expected) => {
+    window.location.search =
+      value == null ? '' : `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=${value}`;
+    expect(isPreloadTransparentTheme()).toBe(expected);
   });
 });
 
@@ -352,21 +429,6 @@ describe('getActiveThemes', () => {
 });
 
 describe('getDefaultSelectedThemeKey', () => {
-  const origLocation = window.location;
-
-  beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    delete window.location;
-    window.location = {
-      search: '',
-    } as unknown as Location;
-  });
-
-  afterEach(() => {
-    window.location = origLocation;
-  });
-
   it.each([
     ['overrideKey', 'preloadKey', 'overrideKey'],
     [undefined, 'preloadKey', 'preloadKey'],

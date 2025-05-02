@@ -340,6 +340,7 @@ export function isParentThemeData(
     'name' in maybeParentThemeData &&
     typeof maybeParentThemeData.name === 'string' &&
     'cssVars' in maybeParentThemeData &&
+    typeof maybeParentThemeData.cssVars === 'object' &&
     maybeParentThemeData.cssVars != null
   );
 }
