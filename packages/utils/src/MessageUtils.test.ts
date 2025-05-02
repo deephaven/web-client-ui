@@ -2,8 +2,8 @@ import { TestUtils } from '@deephaven/test-utils';
 import {
   makeMessage,
   makeResponse,
-  type Message,
   requestParentResponse,
+  type PostMessage,
 } from './MessageUtils';
 
 it('Throws an exception if called on a window without parent', async () => {
@@ -51,7 +51,7 @@ describe.each([['parent'], ['opener']])(
     let removeListenerSpy: jest.SpyInstance;
     let listenerCallback;
     let messageId;
-    const mockPostMessage = jest.fn((data: Message<unknown>) => {
+    const mockPostMessage = jest.fn((data: PostMessage<unknown>) => {
       messageId = data.id;
     });
     beforeEach(() => {
