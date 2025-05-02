@@ -43,7 +43,7 @@ it.each([
   [false, false, mockParentThemeData, mockPlugins, [mockPluginThemeData]],
   [false, false, mockParentThemeData, null, null],
 ])(
-  'should return parent theme if enabled and ready, otherwise plugin themes: isParentThemeEnabled=%s, isPending=%s, parentThemeData=%s, plugins=%s, expectedResult=%s',
+  'should return parent theme if enabled and ready, otherwise plugin themes: isParentThemeEnabled=%s, isParentThemePending=%s, parentThemeData=%s, plugins=%s, expectedResult=%s',
   (
     isParentThemeEnabled,
     isParentThemePending,
