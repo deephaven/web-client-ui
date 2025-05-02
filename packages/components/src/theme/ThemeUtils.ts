@@ -209,6 +209,15 @@ export function getDefaultSelectedThemeKey(): string {
 }
 
 /**
+ * Derive unique theme key from plugin root path and theme name.
+ * @param pluginName The root path of the plugin
+ * @param themeName The name of the theme
+ */
+export function getThemeKey(pluginName: string, themeName: string): string {
+  return `${pluginName}_${themeName}`;
+}
+
+/**
  * A theme key override can be set via a query parameter to force a specific
  * theme selection. Useful for embedded widget scenarios that don't expose the
  * theme selector.
@@ -293,23 +302,6 @@ export function getExpressionRanges(value: string): [number, number][] {
   }
 
   return ranges;
-}
-
-/**
- * Request theme data from the parent window.
- * @returns A promise that resolves to the parent theme data
- * @throws Error if the response is not a valid `ParentThemeData`
- */
-export async function requestParentThemeData(): Promise<ParentThemeData> {
-  const result = await requestParentResponse(MSG_REQUEST_GET_THEME);
-
-  if (!isParentThemeData(result)) {
-    throw new Error(
-      `Unexpected parent theme data response: ${JSON.stringify(result)}`
-    );
-  }
-
-  return result;
 }
 
 /**
@@ -422,6 +414,23 @@ export function replaceSVGFillColor(
     /fill='.*?'/,
     `fill='${encodeURIComponent(fillColor)}'`
   );
+}
+
+/**
+ * Request theme data from the parent window.
+ * @returns A promise that resolves to the parent theme data
+ * @throws Error if the response is not a valid `ParentThemeData`
+ */
+export async function requestParentThemeData(): Promise<ParentThemeData> {
+  const result = await requestParentResponse(MSG_REQUEST_GET_THEME);
+
+  if (!isParentThemeData(result)) {
+    throw new Error(
+      `Unexpected parent theme data response: ${JSON.stringify(result)}`
+    );
+  }
+
+  return result;
 }
 
 /**
@@ -553,15 +562,6 @@ export function setThemePreloadData(preloadData: ThemePreloadData): void {
     THEME_CACHE_LOCAL_STORAGE_KEY,
     JSON.stringify(preloadData)
   );
-}
-
-/**
- * Derive unique theme key from plugin root path and theme name.
- * @param pluginName The root path of the plugin
- * @param themeName The name of the theme
- */
-export function getThemeKey(pluginName: string, themeName: string): string {
-  return `${pluginName}_${themeName}`;
 }
 
 /**
