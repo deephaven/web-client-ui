@@ -149,12 +149,16 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
  *
  * @returns True if Web GL is supported, false otherwise
  */
-function isWebGLSupported(): boolean {
-  // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/By_example/Detect_WebGL
-  const canvas = document.createElement('canvas');
-  const gl =
-    canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  return gl != null && gl instanceof WebGLRenderingContext;
+export function isWebGLSupported(): boolean {
+  try {
+    // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/By_example/Detect_WebGL
+    const canvas = document.createElement('canvas');
+    const gl =
+      canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return gl != null && gl instanceof WebGLRenderingContext;
+  } catch (e) {
+    return false;
+  }
 }
 
 const IS_WEBGL_SUPPORTED = isWebGLSupported();
