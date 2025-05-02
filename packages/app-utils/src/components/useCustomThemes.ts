@@ -1,6 +1,6 @@
+import { useContext, useMemo } from 'react';
 import { useParentWindowTheme, type ThemeData } from '@deephaven/components';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
-import { useContext, useMemo } from 'react';
 
 /**
  * Use custom themes from the parent window or plugins.
