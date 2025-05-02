@@ -17,6 +17,7 @@ import {
   LoadingOverlay,
   Shortcut,
   ShortcutRegistry,
+  ToastContainer,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import type { dh } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
@@ -256,6 +257,7 @@ function App(): JSX.Element {
         />
       )}
       <ContextMenuRoot />
+      <ToastContainer />
     </div>
   );
 }

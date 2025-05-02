@@ -7,6 +7,7 @@ import {
   ThemePicker,
   useTheme,
   Flex,
+  ToastContainer,
 } from '@deephaven/components';
 
 import Buttons from './Buttons';
@@ -24,6 +25,7 @@ import Modals from './Modals';
 import Progress from './Progress';
 import TimeSliderInputs from './TimeSliderInputs';
 import Tooltips from './Tooltips';
+import Toast from './Toast';
 import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
@@ -124,6 +126,7 @@ function StyleGuide(): React.ReactElement {
         <ContextMenus />
         <DropdownMenus />
         <Navigations />
+        <Toast />
         <Tooltips />
         <Icons />
         <Editors />
@@ -131,13 +134,14 @@ function StyleGuide(): React.ReactElement {
         <Charts />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
+        <ErrorViews />
 
         <SampleMenuCategory data-menu-category="Spectrum Components" />
         <SpectrumComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
-        <ErrorViews />
+        <ToastContainer />
       </div>
     </div>
   );
