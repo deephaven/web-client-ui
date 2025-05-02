@@ -6,11 +6,16 @@ import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
+  EMPTY_ARRAY,
   EventShimCustomEvent,
   PromiseUtils,
   type CancelablePromise,
 } from '@deephaven/utils';
-import { GridRange, type ModelIndex } from '@deephaven/grid';
+import {
+  GridRange,
+  type ModelIndex,
+  type MoveOperation,
+} from '@deephaven/grid';
 import { type ColumnName } from './CommonTypes';
 import type { DisplayColumn } from './IrisGridModel';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -230,6 +235,14 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     return this.getCachedColumnHeaderGroups(this.model.columns, this.schema);
   }
 
+  get initialMovedColumns(): readonly MoveOperation[] {
+    log.debug('get initialMovedColumns');
+    return this.getCachedMovedColumns(
+      this.model.columns,
+      this.schema.hasTotals
+    );
+  }
+
   get columns(): DhType.Column[] {
     return this.getCachedColumns(this.columnMap, this.model.columns);
   }
@@ -445,6 +458,33 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
+  getCachedMovedColumns = memoize(
+    (
+      columns: readonly DhType.Column[],
+      hasTotals: boolean
+    ): readonly MoveOperation[] => {
+      if (!hasTotals) {
+        return EMPTY_ARRAY;
+      }
+
+      const totalsColumnIndex = columns.findIndex(
+        c => c.name === TOTALS_COLUMN
+      );
+      if (totalsColumnIndex === -1) {
+        log.warn('Totals column not found in getCachedMovedColumns');
+        return EMPTY_ARRAY;
+      }
+      const movedColumns: MoveOperation[] = [];
+      if (totalsColumnIndex < columns.length - 1) {
+        movedColumns.push({
+          from: totalsColumnIndex,
+          to: columns.length - 1,
+        });
+      }
+      return movedColumns;
+    }
+  );
+
   getCachedColumns = memoize(
     (columnMap: SimplePivotColumnMap, tableColumns: readonly DhType.Column[]) =>
       tableColumns.map(c => this.createDisplayColumn(c, columnMap))
@@ -456,6 +496,10 @@ class IrisGridSimplePivotModel extends IrisGridModel {
 
   set columnHeaderGroups(columnHeaderGroups: readonly ColumnHeaderGroup[]) {
     this.model.columnHeaderGroups = columnHeaderGroups;
+  }
+
+  isColumnMovable(): boolean {
+    return false;
   }
 
   /**
@@ -518,12 +562,6 @@ class IrisGridSimplePivotModel extends IrisGridModel {
       this.addListeners(model);
     }
 
-    // Dispatch model updated event
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED, {
-        detail: this,
-      })
-    );
     if (isIrisGridTableModelTemplate(model)) {
       this.dispatchEvent(
         new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
@@ -534,6 +572,11 @@ class IrisGridSimplePivotModel extends IrisGridModel {
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,
+      })
+    );
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED, {
+        detail: this,
       })
     );
   }
