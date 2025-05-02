@@ -313,6 +313,57 @@ export async function requestParentThemeData(): Promise<ParentThemeData> {
 }
 
 /**
+ * Check if the given theme key is one of the base themes.
+ * @param themeKey The theme key to check
+ * @returns True if the theme key is a base theme key, false otherwise
+ */
+export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
+  return [DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY].includes(themeKey);
+}
+
+/**
+ * Determine if a given object is a `ParentThemeData` object.
+ * @param maybeParentThemeData An object that may or may not be a `ParentThemeData`
+ * @returns True if the object is a `ParentThemeData`, false otherwise
+ */
+export function isParentThemeData(
+  maybeParentThemeData: unknown
+): maybeParentThemeData is ParentThemeData {
+  if (
+    typeof maybeParentThemeData !== 'object' ||
+    maybeParentThemeData == null
+  ) {
+    return false;
+  }
+
+  return (
+    'name' in maybeParentThemeData &&
+    typeof maybeParentThemeData.name === 'string' &&
+    'cssVars' in maybeParentThemeData &&
+    maybeParentThemeData.cssVars != null
+  );
+}
+
+/**
+ * Check if the current URL specifies a parent theme key override.
+ * @returns True if the parent theme key override is set, false otherwise
+ */
+export function isParentThemeEnabled(): boolean {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY;
+}
+
+/**
+ * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set to true.
+ * @returns True if the preload transparent theme query parameter is set, false
+ * otherwise
+ */
+export function isPreloadTransparentTheme(): boolean {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM) === 'true';
+}
+
+/**
  * Validate that a given CSS variable name / value pair is a valid Deephaven
  * color variable.
  * @param name The name of the CSS variable to validate, e.g. '--dh-color-primary'
@@ -354,57 +405,6 @@ export function parseParentThemeData({
     name,
     styleContent,
   };
-}
-
-/**
- * Check if the current URL specifies a parent theme key override.
- * @returns True if the parent theme key override is set, false otherwise
- */
-export function isParentThemeEnabled(): boolean {
-  const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY;
-}
-
-/**
- * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set to true.
- * @returns True if the preload transparent theme query parameter is set, false
- * otherwise
- */
-export function isPreloadTransparentTheme(): boolean {
-  const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM) === 'true';
-}
-
-/**
- * Check if the given theme key is one of the base themes.
- * @param themeKey The theme key to check
- * @returns True if the theme key is a base theme key, false otherwise
- */
-export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
-  return [DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY].includes(themeKey);
-}
-
-/**
- * Determine if a given object is a `ParentThemeData` object.
- * @param maybeParentThemeData An object that may or may not be a `ParentThemeData`
- * @returns True if the object is a `ParentThemeData`, false otherwise
- */
-export function isParentThemeData(
-  maybeParentThemeData: unknown
-): maybeParentThemeData is ParentThemeData {
-  if (
-    typeof maybeParentThemeData !== 'object' ||
-    maybeParentThemeData == null
-  ) {
-    return false;
-  }
-
-  return (
-    'name' in maybeParentThemeData &&
-    typeof maybeParentThemeData.name === 'string' &&
-    'cssVars' in maybeParentThemeData &&
-    maybeParentThemeData.cssVars != null
-  );
 }
 
 /**
