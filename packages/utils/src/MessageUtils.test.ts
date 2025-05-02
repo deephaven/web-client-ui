@@ -1,5 +1,9 @@
+import { nanoid } from 'nanoid';
 import { TestUtils } from '@deephaven/test-utils';
 import {
+  getWindowParent,
+  isMessage,
+  isResponse,
   makeMessage,
   makeResponse,
   requestParentResponse,
@@ -7,17 +11,28 @@ import {
   type PostMessage,
 } from './MessageUtils';
 
+jest.mock('nanoid');
+const { asMock } = TestUtils;
+
+let nanoIdCount = 0;
+function mockNanoId(i: number): string {
+  return `mock.nanoid.${i}`;
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+
+  asMock(nanoid).mockImplementation(() => {
+    nanoIdCount += 1;
+    return mockNanoId(nanoIdCount);
+  });
+});
+
 let afterEachCallback: (() => void) | null = null;
 
 afterEach(() => {
   afterEachCallback?.();
   afterEachCallback = null;
-});
-
-it('Throws an exception if called on a window without parent', async () => {
-  await expect(requestParentResponse('request')).rejects.toThrow(
-    'window parent is null, unable to send request.'
-  );
 });
 
 /**
@@ -27,17 +42,20 @@ it('Throws an exception if called on a window without parent', async () => {
  * @returns Cleanup function
  */
 function setupWindowParentMock(
-  type: string,
-  mockPostMessage: jest.Mock
+  type: 'parent' | 'opener',
+  mockPostMessage: jest.Mock = jest.fn(),
+  mockWindow?: Window
 ): () => void {
   if (type !== 'parent' && type !== 'opener') {
     throw new Error(`Invalid type ${type}`);
   }
+
   if (type === 'parent') {
     const windowParentSpy = jest.spyOn(window, 'parent', 'get').mockReturnValue(
-      TestUtils.createMockProxy<Window>({
-        postMessage: mockPostMessage,
-      })
+      mockWindow ??
+        TestUtils.createMockProxy<Window>({
+          postMessage: mockPostMessage,
+        })
     );
     return () => {
       windowParentSpy.mockRestore();
@@ -45,13 +63,101 @@ function setupWindowParentMock(
   }
 
   const originalWindowOpener = window.opener;
-  window.opener = { postMessage: mockPostMessage };
+  window.opener = mockWindow ?? { postMessage: mockPostMessage };
   return () => {
     window.opener = originalWindowOpener;
   };
 }
 
-describe.each([['parent'], ['opener']])(
+describe('getWindowParent', () => {
+  it('should return window.opener if available', () => {
+    afterEachCallback = setupWindowParentMock('opener');
+    expect(getWindowParent()).toBe(window.opener);
+  });
+
+  describe('no opener', () => {
+    it('should return window.parent if available', () => {
+      afterEachCallback = setupWindowParentMock('parent');
+      expect(getWindowParent()).toBe(window.parent);
+    });
+
+    it('should return null if neither opener nor parent is available', () => {
+      expect(getWindowParent()).toBeNull();
+    });
+
+    it('should return null if window.parent === window', () => {
+      afterEachCallback = setupWindowParentMock('parent', undefined, window);
+      expect(getWindowParent()).toBeNull();
+    });
+  });
+});
+
+describe('isMessage', () => {
+  it.each([
+    [{ id: 'mock.id', message: 'mock.message' }, true],
+    [{ id: 999, message: 'mock.message' }, false],
+    [{ id: 'mock.id', message: 999 }, false],
+    [null, false],
+    [{}, false],
+    ['mock.message', false],
+  ])('should return true for valid PostMessage: %s', (obj, expected) => {
+    expect(isMessage(obj)).toBe(expected);
+  });
+});
+
+describe('isResponse', () => {
+  it.each([
+    [{ id: 'mock.id' }, true],
+    [{ id: 999 }, false],
+    [{}, false],
+    ['mock.id', false],
+  ])(
+    'should return true if given an object with a string id: %s',
+    (given, expected) => {
+      expect(isResponse(given)).toBe(expected);
+    }
+  );
+});
+
+describe('makeMessage', () => {
+  it.each([
+    ['mock.message', undefined, undefined],
+    ['mock.message', 'mock.id', undefined],
+    ['mock.message', 'mock.id', 'mock.payload'],
+  ])(
+    'should create a message object: message:%s, id:%s, payload:%s',
+    (message, id, payload) => {
+      asMock(nanoid).mockReturnValue(mockNanoId(1));
+
+      expect(makeMessage(message, id, payload)).toEqual({
+        message,
+        id: id ?? mockNanoId(1),
+        payload,
+      });
+    }
+  );
+});
+
+describe('makeResponse', () => {
+  it('should create a response message', () => {
+    const id = 'mock.message.id';
+    const payload = { key: 'mock.payload' };
+    expect(makeResponse(id, payload)).toEqual({
+      id,
+      payload,
+    });
+  });
+});
+
+describe('requestParentResponse', () => {
+  it('Throws an exception if called on a window without parent', async () => {
+    await expect(requestParentResponse('request')).rejects.toThrow(
+      'window parent is null, unable to send request.'
+    );
+  });
+});
+
+describe.each([['parent'], ['opener']] as const)(
   `requestParentResponse with %s`,
   type => {
     let addListenerSpy: jest.SpyInstance;
@@ -64,7 +170,7 @@ describe.each([['parent'], ['opener']])(
     beforeEach(() => {
       addListenerSpy = jest
         .spyOn(window, 'addEventListener')
-        .mockImplementation((event, cb) => {
+        .mockImplementation((_event, cb) => {
           listenerCallback = cb;
         });
       removeListenerSpy = jest.spyOn(window, 'removeEventListener');
