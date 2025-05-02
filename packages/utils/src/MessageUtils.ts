@@ -29,6 +29,9 @@ export function makeResponse<T>(
   return { id: messageId, payload };
 }
 
+/**
+ * Get the parent window of the current window.
+ */
 export function getWindowParent(): Window | null {
   if (window.opener != null) {
     return window.opener;
@@ -39,6 +42,11 @@ export function getWindowParent(): Window | null {
   return null;
 }
 
+/**
+ * Check if the given object is a valid PostMessage object.
+ * @param obj Object to check
+ * @returns True if the object is a valid PostMessage, false otherwise
+ */
 export function isMessage(obj: unknown): obj is PostMessage {
   const message = obj as PostMessage;
   return (
@@ -48,6 +56,11 @@ export function isMessage(obj: unknown): obj is PostMessage {
   );
 }
 
+/**
+ * Check if the given object is a valid PostMessageResponse object.
+ * @param obj Object to check
+ * @returns True if the object is a valid PostMessageResponse, false otherwise
+ */
 export function isResponse(obj: unknown): obj is PostMessageResponse {
   const response = obj as PostMessageResponse;
   return response != null && typeof response.id === 'string';
