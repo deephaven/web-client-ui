@@ -105,6 +105,17 @@ export class TestUtils {
   };
 
   /**
+   * Find all call args for a given mock function that match a given predicate.
+   * @param fn jest.Mock function to search calls on
+   * @param predicate Predicate function to match calls against
+   * @returns An array of arguments for each call that matches the predicate
+   */
+  static findCalls = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult,
+    predicate: (args: TArgs) => boolean
+  ): TArgs[] => TestUtils.asMock(fn).mock.calls.filter(predicate);
+
+  /**
    * Find the last mock function call matching a given predicate.
    * @param fn jest.Mock function
    * @param predicate Predicate function to match calls against
