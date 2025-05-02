@@ -296,7 +296,7 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
- * Request parent theme data from the parent window.
+ * Request theme data from the parent window.
  * @returns A promise that resolves to the parent theme data
  * @throws Error if the response is not a valid `ParentThemeData`
  */
@@ -312,6 +312,14 @@ export async function requestParentThemeData(): Promise<ParentThemeData> {
   return result;
 }
 
+/**
+ * Validate that a given CSS variable name / value pair is a valid Deephaven
+ * color variable.
+ * @param name The name of the CSS variable to validate, e.g. '--dh-color-primary'
+ * @param value The value of the CSS color to validate
+ * @returns True if the name is a valid Deephaven color variable and the value
+ * is a valid CSS color, false otherwise
+ */
 export function isValidColorVar(
   name: string,
   value: string
@@ -319,6 +327,12 @@ export function isValidColorVar(
   return DH_CSS_VAR_NAME_REGEXP.test(name) && CSS.supports('color', value);
 }
 
+/**
+ * Parse parent theme data into a `ThemeData` object. Invalid CSS color variable
+ * pairs are excluded from the resulting `ThemeData` object.
+ * @param parentThemeData The parent theme data to parse
+ * @returns A `ThemeData` object representing the parent theme
+ */
 export function parseParentThemeData({
   baseThemeKey = DEFAULT_DARK_THEME_KEY,
   name,
