@@ -28,51 +28,72 @@ class MonacoProviders extends PureComponent<
 
   static initRuffPromise?: Promise<void>;
 
+  static isRuffInitialized = false;
+
   static isRuffEnabled = true;
 
   static ruffSettings: Record<string, unknown> = RUFF_DEFAULT_SETTINGS;
 
   /**
-   * Loads and initializes Ruff.
+   * Loads and initializes Ruff if it is enabled.
    * Subsequent calls will return the same promise.
    */
   static async initRuff(): Promise<void> {
+    if (!MonacoProviders.isRuffEnabled) {
+      return;
+    }
     if (MonacoProviders.initRuffPromise) {
       return MonacoProviders.initRuffPromise;
     }
 
     MonacoProviders.initRuffPromise = init({}).then(() => {
       log.debug('Initialized Ruff', Workspace.version());
-
-      MonacoProviders.ruffWorkspace = new Workspace(
-        MonacoProviders.ruffSettings
-      );
-      MonacoProviders.lintAllPython();
+      MonacoProviders.isRuffInitialized = true;
+      MonacoProviders.updateRuffWorkspace();
     });
 
     return MonacoProviders.initRuffPromise;
   }
 
   /**
+   * Updates the current ruff workspace with MonacoProviders.ruffSettings.
+   * Re-lints all Python models after updating.
+   */
+  static updateRuffWorkspace(): void {
+    if (!MonacoProviders.isRuffInitialized) {
+      return;
+    }
+
+    /* eslint-disable no-console */
+    const prevLog = console.log;
+    try {
+      console.log = () => undefined; // Suppress not useful ruff-wasm-web logs when it creates the workspace
+      MonacoProviders.ruffWorkspace = new Workspace(
+        MonacoProviders.ruffSettings
+      );
+    } finally {
+      console.log = prevLog; // Restore console.log
+    }
+    /* eslint-enable no-console */
+
+    MonacoProviders.lintAllPython();
+  }
+
+  /**
    * Sets ruff settings
    * @param settings The ruff settings
    */
-  static async setRuffSettings(
+  static setRuffSettings(
     settings: Record<string, unknown> = MonacoProviders.ruffSettings
-  ): Promise<void> {
+  ): void {
     MonacoProviders.ruffSettings = settings;
 
-    // Ruff has not been initialized yet
-    if (
-      MonacoProviders.ruffWorkspace == null &&
-      MonacoProviders.isRuffEnabled
-    ) {
+    if (!MonacoProviders.isRuffInitialized) {
       MonacoProviders.initRuff();
       return;
     }
 
-    MonacoProviders.ruffWorkspace = new Workspace(settings);
-    MonacoProviders.lintAllPython();
+    MonacoProviders.updateRuffWorkspace();
   }
 
   static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
