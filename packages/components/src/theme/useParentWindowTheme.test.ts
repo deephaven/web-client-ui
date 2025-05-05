@@ -25,6 +25,9 @@ const mockParentThemeData: ParentThemeData = {
 beforeEach(() => {
   jest.clearAllMocks();
   afterEachCallback = setupWindowParentMock('parent');
+
+  jest.spyOn(window, 'addEventListener').mockName('addEventListener');
+  jest.spyOn(window, 'removeEventListener').mockName('removeEventListener');
 });
 
 let afterEachCallback: (() => void) | null = null;
@@ -43,9 +46,6 @@ it.each([
   async (_label, isEnabled, source) => {
     asMock(isParentThemeEnabled).mockReturnValue(isEnabled);
     asMock(requestParentThemeData).mockResolvedValue(mockParentThemeData);
-
-    jest.spyOn(window, 'addEventListener').mockName('addEventListener');
-    jest.spyOn(window, 'removeEventListener').mockName('removeEventListener');
 
     const { result, unmount, waitForNextUpdate } = renderHook(() =>
       useParentWindowTheme()
@@ -110,8 +110,6 @@ it.each([
     } else {
       asMock(requestParentThemeData).mockResolvedValue(parentThemeDataOrError);
     }
-
-    jest.spyOn(window, 'addEventListener').mockName('addEventListener');
 
     const { result, waitForNextUpdate } = renderHook(() =>
       useParentWindowTheme()
