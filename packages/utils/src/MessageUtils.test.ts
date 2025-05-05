@@ -12,7 +12,7 @@ import {
 } from './MessageUtils';
 
 jest.mock('nanoid');
-const { asMock } = TestUtils;
+const { asMock, setupWindowParentMock } = TestUtils;
 
 let nanoIdCount = 0;
 function mockNanoId(i: number): string {
@@ -34,40 +34,6 @@ afterEach(() => {
   afterEachCallback?.();
   afterEachCallback = null;
 });
-
-/**
- * Set up the mock for window.parent or window.opener, and return a cleanup function.
- * @param type Whether to mock window.parent or window.opener
- * @param mockPostMessage The mock postMessage function to use
- * @returns Cleanup function
- */
-function setupWindowParentMock(
-  type: 'parent' | 'opener',
-  mockPostMessage: jest.Mock = jest.fn(),
-  mockWindow?: Window
-): () => void {
-  if (type !== 'parent' && type !== 'opener') {
-    throw new Error(`Invalid type ${type}`);
-  }
-
-  if (type === 'parent') {
-    const windowParentSpy = jest.spyOn(window, 'parent', 'get').mockReturnValue(
-      mockWindow ??
-        TestUtils.createMockProxy<Window>({
-          postMessage: mockPostMessage,
-        })
-    );
-    return () => {
-      windowParentSpy.mockRestore();
-    };
-  }
-
-  const originalWindowOpener = window.opener;
-  window.opener = mockWindow ?? { postMessage: mockPostMessage };
-  return () => {
-    window.opener = originalWindowOpener;
-  };
-}
 
 describe('getWindowParent', () => {
   it('should return window.opener if available', () => {
