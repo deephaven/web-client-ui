@@ -1,21 +1,23 @@
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useExternalTheme, type ThemeData } from '@deephaven/components';
-import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
+import {
+  getThemeDataFromPlugins,
+  type PluginModuleMap,
+} from '@deephaven/plugin';
 
 /**
  * Use custom external or plugin themes.
+ * @param pluginModules The plugin modules to get themes from when external
+ * themes are disabled.
  */
-export function useCustomThemes(): ThemeData[] | null {
+export function useCustomThemes(
+  pluginModules?: PluginModuleMap | null
+): ThemeData[] | null {
   const {
     isEnabled: isExternalThemeEnabled,
     isPending: isExternalThemePending,
     themeData: externalThemeData,
   } = useExternalTheme();
-
-  // The `usePlugins` hook throws if the context value is null. Since this is
-  // the state while plugins load asynchronously, we are using `useContext`
-  // directly to avoid the exception.
-  const pluginModules = useContext(PluginsContext);
 
   return useMemo(() => {
     // Get theme from parent window via `postMessage` apis

@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { useExternalTheme, type ThemeData } from '@deephaven/components';
 import {
@@ -10,10 +9,6 @@ import { useCustomThemes } from './useCustomThemes';
 
 jest.mock('@deephaven/components');
 jest.mock('@deephaven/plugin');
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useContext: jest.fn(),
-}));
 
 const { asMock } = TestUtils;
 
@@ -51,14 +46,13 @@ it.each([
     plugins,
     expectedResult
   ) => {
-    asMock(useContext).mockReturnValue(plugins);
     asMock(useExternalTheme).mockReturnValue({
       isEnabled: isExternalThemeEnabled,
       isPending: isexternalThemePending,
       themeData: externalThemeData,
     });
 
-    const { result } = renderHook(() => useCustomThemes());
+    const { result } = renderHook(() => useCustomThemes(plugins));
 
     if (!isExternalThemeEnabled && plugins != null) {
       expect(getThemeDataFromPlugins).toHaveBeenCalledWith(plugins);
