@@ -51,7 +51,7 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
       });
     }
 
-    /** Parent window can explicitly set the theme */
+    /** Parent or current Window can explicitly set the theme */
     function onMessage(event: MessageEvent<PostMessage<unknown>>): void {
       const parent = getWindowParent();
 
