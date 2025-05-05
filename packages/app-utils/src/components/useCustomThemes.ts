@@ -1,5 +1,5 @@
 import { useContext, useMemo } from 'react';
-import { useParentWindowTheme, type ThemeData } from '@deephaven/components';
+import { useExternalTheme, type ThemeData } from '@deephaven/components';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 
 /**
@@ -7,10 +7,10 @@ import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
  */
 export function useCustomThemes(): ThemeData[] | null {
   const {
-    isEnabled: isParentThemeEnabled,
-    isPending: isParentThemePending,
-    themeData: parentThemeData,
-  } = useParentWindowTheme();
+    isEnabled: isExternalThemeEnabled,
+    isPending: isExternalThemePending,
+    themeData: externalThemeData,
+  } = useExternalTheme();
 
   // The `usePlugins` hook throws if the context value is null. Since this is
   // the state while plugins load asynchronously, we are using `useContext`
@@ -19,12 +19,12 @@ export function useCustomThemes(): ThemeData[] | null {
 
   return useMemo(() => {
     // Get theme from parent window via `postMessage` apis
-    if (isParentThemeEnabled) {
-      if (isParentThemePending) {
+    if (isExternalThemeEnabled) {
+      if (isExternalThemePending) {
         return null;
       }
 
-      return parentThemeData ? [parentThemeData] : [];
+      return externalThemeData ? [externalThemeData] : [];
     }
 
     // Get themes from plugins
@@ -32,9 +32,9 @@ export function useCustomThemes(): ThemeData[] | null {
       ? null
       : getThemeDataFromPlugins(pluginModules);
   }, [
-    isParentThemeEnabled,
-    isParentThemePending,
-    parentThemeData,
+    isExternalThemeEnabled,
+    isExternalThemePending,
+    externalThemeData,
     pluginModules,
   ]);
 }

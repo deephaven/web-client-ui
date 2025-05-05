@@ -3,30 +3,32 @@ import Log from '@deephaven/log';
 import { getWindowParent, type PostMessage } from '@deephaven/utils';
 import {
   MSG_REQUEST_SET_THEME,
-  type ParentThemeData,
+  type ExternalThemeData,
   type ThemeData,
 } from './ThemeModel';
 import {
-  isParentThemeData,
-  isParentThemeEnabled,
-  parseParentThemeData,
-  requestParentThemeData,
+  isExternalThemeData,
+  isExternalThemeEnabled,
+  parseExternalThemeData,
+  requestExternalThemeData,
 } from './ThemeUtils';
 
-const logger = Log.module('useParentWindowTheme');
-export interface UseParentWindowThemeResult {
+const logger = Log.module('useExternalTheme');
+export interface UseExternalThemeResult {
   isEnabled: boolean;
   isPending: boolean;
   themeData?: ThemeData;
 }
 
 /**
- * If parent theme is configured via `theme=PARENT_THEME_KEY` query param, handle
- * `postMessage` communication to retrieve the theme data from the parent window.
+ * If external theme is configured via `theme=EXTERNAL_THEME_KEY` query param,
+ * handle `postMessage` communication to retrieve the theme data from the parent
+ * Window. The hook will also listen for `MSG_REQUEST_SET_THEME` messages from
+ * the parent and current Window to allow explicitly setting the theme.
  */
-export function useParentWindowTheme(): UseParentWindowThemeResult {
-  const [result, setResult] = useState<UseParentWindowThemeResult>(() => {
-    const isEnabled = isParentThemeEnabled();
+export function useExternalTheme(): UseExternalThemeResult {
+  const [result, setResult] = useState<UseExternalThemeResult>(() => {
+    const isEnabled = isExternalThemeEnabled();
     return {
       isEnabled,
       isPending: isEnabled,
@@ -38,11 +40,11 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
       return;
     }
 
-    logger.debug('Requesting parent theme data');
+    logger.debug('Requesting external theme data');
 
-    /** Parse parent theme data and update the result */
-    function handleParentThemeData(parentThemeData: ParentThemeData) {
-      const themeData = parseParentThemeData(parentThemeData);
+    /** Parse external theme data and update the result */
+    function handleExternalThemeData(externalThemeData: ExternalThemeData) {
+      const themeData = parseExternalThemeData(externalThemeData);
 
       setResult({
         isEnabled: true,
@@ -61,8 +63,8 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
       }
 
       if (event.data.message === MSG_REQUEST_SET_THEME) {
-        if (isParentThemeData(event.data.payload)) {
-          handleParentThemeData(event.data.payload);
+        if (isExternalThemeData(event.data.payload)) {
+          handleExternalThemeData(event.data.payload);
         }
       }
     }
@@ -70,8 +72,8 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
     window.addEventListener('message', onMessage);
 
     /** Request initial theme data from parent window */
-    requestParentThemeData()
-      .then(handleParentThemeData)
+    requestExternalThemeData()
+      .then(handleExternalThemeData)
       .catch(err => {
         logger.error(err);
         setResult({ isEnabled: true, isPending: false });
@@ -85,4 +87,4 @@ export function useParentWindowTheme(): UseParentWindowThemeResult {
   return result;
 }
 
-export default useParentWindowTheme;
+export default useExternalTheme;

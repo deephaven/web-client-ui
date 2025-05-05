@@ -12,8 +12,8 @@ import {
   type ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
-  type ParentThemeData,
-  PARENT_THEME_KEY,
+  type ExternalThemeData,
+  EXTERNAL_THEME_KEY,
   type BaseThemeKey,
   PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
   DEFAULT_LIGHT_THEME_KEY,
@@ -30,15 +30,15 @@ import {
   getThemeKey,
   getThemePreloadData,
   isBaseThemeKey,
-  isParentThemeData,
-  isParentThemeEnabled,
+  isExternalThemeData,
+  isExternalThemeEnabled,
   isPreloadTransparentTheme,
   isValidColorVar,
   overrideSVGFillColors,
-  parseParentThemeData,
+  parseExternalThemeData,
   preloadTheme,
   replaceSVGFillColor,
-  requestParentThemeData,
+  requestExternalThemeData,
   resolveCssVariablesInRecord,
   resolveCssVariablesInString,
   setThemePreloadData,
@@ -145,34 +145,34 @@ describe('isBaseThemeKey', () => {
   );
 });
 
-describe('isParentThemeData', () => {
+describe('isExternalThemeData', () => {
   it.each([
-    [{ name: 'Mock parent theme', cssVars: {} }, true],
+    [{ name: 'Mock external theme', cssVars: {} }, true],
     [null, false],
     [undefined, false],
     [{}, false],
     ['not-theme-data', false],
-    [{ name: 'Mock parent theme', cssVars: 'cssVars' }, false],
+    [{ name: 'Mock external theme', cssVars: 'cssVars' }, false],
     [{ name: 999, cssVars: {} }, false],
   ])(
-    'should return true if parent theme data: %s',
-    (maybeParentThemeData, expected) => {
-      expect(isParentThemeData(maybeParentThemeData)).toBe(expected);
+    'should return true if external theme data: %s',
+    (maybeExternalThemeData, expected) => {
+      expect(isExternalThemeData(maybeExternalThemeData)).toBe(expected);
     }
   );
 });
 
-describe('isParentThemeEnabled', () => {
+describe('isExternalThemeEnabled', () => {
   it.each([
-    [PARENT_THEME_KEY, true],
+    [EXTERNAL_THEME_KEY, true],
     [null, false],
     ['some-theme', false],
   ])(
-    'should return true if parent theme is enabled: %s',
+    'should return true if external theme is enabled: %s',
     (themeKey, expected) => {
       window.location.search =
         themeKey == null ? '' : `${THEME_KEY_OVERRIDE_QUERY_PARAM}=${themeKey}`;
-      expect(isParentThemeEnabled()).toBe(expected);
+      expect(isExternalThemeEnabled()).toBe(expected);
     }
   );
 });
@@ -203,12 +203,12 @@ describe('isValidColorVar', () => {
   );
 });
 
-describe('parseParentThemeData', () => {
+describe('parseExternalThemeData', () => {
   it.each([
     [
       {
         baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock parent theme',
+        name: 'Mock external theme',
         cssVars: {},
       },
       '',
@@ -216,7 +216,7 @@ describe('parseParentThemeData', () => {
     [
       {
         baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock parent theme',
+        name: 'Mock external theme',
         cssVars: {
           '--dh-color-fg': INVALID_COLOR,
         },
@@ -226,35 +226,35 @@ describe('parseParentThemeData', () => {
     [
       {
         baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock parent theme',
+        name: 'Mock external theme',
         cssVars: {
           '--dh-color-bg': VALID_COLOR1,
           '--dh-color-fg': INVALID_COLOR,
           '--dh-colorxx-bg': VALID_COLOR1,
-        } as ParentThemeData['cssVars'],
+        } as ExternalThemeData['cssVars'],
       },
       ':root{--dh-color-bg:mock.validColor1;}',
     ],
   ])(
     'should sanitize css vars: %s',
-    (parentThemeData, expectedStyleContent) => {
+    (ExternalThemeData, expectedStyleContent) => {
       jest.spyOn(window.CSS, 'supports').mockImplementation(mockCssSupports);
 
-      const actual = parseParentThemeData(parentThemeData);
+      const actual = parseExternalThemeData(ExternalThemeData);
 
       expect(actual).toEqual({
-        name: parentThemeData.name,
-        baseThemeKey: parentThemeData.baseThemeKey,
-        themeKey: PARENT_THEME_KEY,
+        name: ExternalThemeData.name,
+        baseThemeKey: ExternalThemeData.baseThemeKey,
+        themeKey: EXTERNAL_THEME_KEY,
         styleContent: expectedStyleContent,
       });
     }
   );
 });
 
-describe('requestParentThemeData', () => {
-  const mockParentThemeData: ParentThemeData = {
-    name: 'Mock parent theme',
+describe('requestExternalThemeData', () => {
+  const mockExternalThemeData: ExternalThemeData = {
+    name: 'Mock external theme',
     cssVars: {
       '--dh-color-bg': 'blue',
     },
@@ -265,14 +265,14 @@ describe('requestParentThemeData', () => {
       label: 'not-theme-data',
     });
 
-    expect(requestParentThemeData()).rejects.toThrowError(
-      'Unexpected parent theme data response: {"label":"not-theme-data"}'
+    expect(requestExternalThemeData()).rejects.toThrowError(
+      'Unexpected external theme data response: {"label":"not-theme-data"}'
     );
   });
 
   it('should return theme data from parent', async () => {
-    asMock(requestParentResponse).mockResolvedValue(mockParentThemeData);
-    expect(await requestParentThemeData()).toEqual(mockParentThemeData);
+    asMock(requestParentResponse).mockResolvedValue(mockExternalThemeData);
+    expect(await requestExternalThemeData()).toEqual(mockExternalThemeData);
   });
 });
 

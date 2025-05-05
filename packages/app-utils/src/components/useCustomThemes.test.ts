@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { useParentWindowTheme, type ThemeData } from '@deephaven/components';
+import { useExternalTheme, type ThemeData } from '@deephaven/components';
 import {
   getThemeDataFromPlugins,
   type PluginModuleMap,
@@ -17,8 +17,8 @@ jest.mock('react', () => ({
 
 const { asMock } = TestUtils;
 
-const mockParentThemeData: ThemeData = {
-  themeKey: 'mock.parentThemeKey',
+const mockExternalThemeData: ThemeData = {
+  themeKey: 'mock.externalThemeKey',
   name: 'mock.name',
   styleContent: 'mock.styleContent',
 };
@@ -37,30 +37,30 @@ beforeEach(() => {
 });
 
 it.each([
-  [true, false, mockParentThemeData, mockPlugins, [mockParentThemeData]],
+  [true, false, mockExternalThemeData, mockPlugins, [mockExternalThemeData]],
   [true, false, undefined, mockPlugins, []],
-  [true, true, mockParentThemeData, mockPlugins, null],
-  [false, false, mockParentThemeData, mockPlugins, [mockPluginThemeData]],
-  [false, false, mockParentThemeData, null, null],
+  [true, true, mockExternalThemeData, mockPlugins, null],
+  [false, false, mockExternalThemeData, mockPlugins, [mockPluginThemeData]],
+  [false, false, mockExternalThemeData, null, null],
 ])(
-  'should return parent theme if enabled and ready, otherwise plugin themes: isParentThemeEnabled=%s, isParentThemePending=%s, parentThemeData=%s, plugins=%s, expectedResult=%s',
+  'should return external theme if enabled and ready, otherwise plugin themes: isExternalThemeEnabled=%s, isexternalThemePending=%s, externalThemeData=%s, plugins=%s, expectedResult=%s',
   (
-    isParentThemeEnabled,
-    isParentThemePending,
-    parentThemeData,
+    isExternalThemeEnabled,
+    isexternalThemePending,
+    externalThemeData,
     plugins,
     expectedResult
   ) => {
     asMock(useContext).mockReturnValue(plugins);
-    asMock(useParentWindowTheme).mockReturnValue({
-      isEnabled: isParentThemeEnabled,
-      isPending: isParentThemePending,
-      themeData: parentThemeData,
+    asMock(useExternalTheme).mockReturnValue({
+      isEnabled: isExternalThemeEnabled,
+      isPending: isexternalThemePending,
+      themeData: externalThemeData,
     });
 
     const { result } = renderHook(() => useCustomThemes());
 
-    if (!isParentThemeEnabled && plugins != null) {
+    if (!isExternalThemeEnabled && plugins != null) {
       expect(getThemeDataFromPlugins).toHaveBeenCalledWith(plugins);
     }
     expect(result.current).toEqual(expectedResult);

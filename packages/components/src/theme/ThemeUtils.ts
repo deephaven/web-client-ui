@@ -21,8 +21,8 @@ import {
   type ThemeCssVariableName,
   type ThemeIconsRequiringManualColorChanges,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
-  PARENT_THEME_KEY,
-  type ParentThemeData,
+  EXTERNAL_THEME_KEY,
+  type ExternalThemeData,
   MSG_REQUEST_GET_THEME,
   type ThemeCssColorVariableName,
   TRANSPARENT_PRELOAD_DATA_VARIABLES,
@@ -314,36 +314,38 @@ export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
 }
 
 /**
- * Determine if a given object is a `ParentThemeData` object.
- * @param maybeParentThemeData An object that may or may not be a `ParentThemeData`
- * @returns True if the object is a `ParentThemeData`, false otherwise
+ * Determine if a given object is a `ExternalThemeData` object.
+ * @param maybeExternalThemeData An object that may or may not be a `ExternalThemeData`
+ * @returns True if the object is a `ExternalThemeData`, false otherwise
  */
-export function isParentThemeData(
-  maybeParentThemeData: unknown
-): maybeParentThemeData is ParentThemeData {
+export function isExternalThemeData(
+  maybeExternalThemeData: unknown
+): maybeExternalThemeData is ExternalThemeData {
   if (
-    typeof maybeParentThemeData !== 'object' ||
-    maybeParentThemeData == null
+    typeof maybeExternalThemeData !== 'object' ||
+    maybeExternalThemeData == null
   ) {
     return false;
   }
 
   return (
-    'name' in maybeParentThemeData &&
-    typeof maybeParentThemeData.name === 'string' &&
-    'cssVars' in maybeParentThemeData &&
-    typeof maybeParentThemeData.cssVars === 'object' &&
-    maybeParentThemeData.cssVars != null
+    'name' in maybeExternalThemeData &&
+    typeof maybeExternalThemeData.name === 'string' &&
+    'cssVars' in maybeExternalThemeData &&
+    typeof maybeExternalThemeData.cssVars === 'object' &&
+    maybeExternalThemeData.cssVars != null
   );
 }
 
 /**
- * Check if the current URL specifies a parent theme key override.
- * @returns True if the parent theme key override is set, false otherwise
+ * Check if the current URL specifies an external theme key override.
+ * @returns True if the external theme key override is set, false otherwise
  */
-export function isParentThemeEnabled(): boolean {
+export function isExternalThemeEnabled(): boolean {
   const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === PARENT_THEME_KEY;
+  return (
+    searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === EXTERNAL_THEME_KEY
+  );
 }
 
 /**
@@ -372,16 +374,16 @@ export function isValidColorVar(
 }
 
 /**
- * Parse parent theme data into a `ThemeData` object. Invalid CSS color variable
+ * Parse external theme data into a `ThemeData` object. Invalid CSS color variable
  * pairs are excluded from the resulting `ThemeData` object.
- * @param parentThemeData The parent theme data to parse
- * @returns A `ThemeData` object representing the parent theme
+ * @param externalThemeData The external theme data to parse
+ * @returns A `ThemeData` object representing the external theme
  */
-export function parseParentThemeData({
+export function parseExternalThemeData({
   baseThemeKey = DEFAULT_DARK_THEME_KEY,
   name,
   cssVars,
-}: ParentThemeData): ThemeData {
+}: ExternalThemeData): ThemeData {
   const toExpression = ([varName, varValue]: [string, string]) =>
     isValidColorVar(varName, varValue) ? `${varName}:${varValue};` : null;
 
@@ -394,7 +396,7 @@ export function parseParentThemeData({
 
   return {
     baseThemeKey,
-    themeKey: PARENT_THEME_KEY,
+    themeKey: EXTERNAL_THEME_KEY,
     name,
     styleContent,
   };
@@ -418,15 +420,15 @@ export function replaceSVGFillColor(
 
 /**
  * Request theme data from the parent window.
- * @returns A promise that resolves to the parent theme data
- * @throws Error if the response is not a valid `ParentThemeData`
+ * @returns A promise that resolves to the external theme data
+ * @throws Error if the response is not a valid `ExternalThemeData`
  */
-export async function requestParentThemeData(): Promise<ParentThemeData> {
+export async function requestExternalThemeData(): Promise<ExternalThemeData> {
   const result = await requestParentResponse(MSG_REQUEST_GET_THEME);
 
-  if (!isParentThemeData(result)) {
+  if (!isExternalThemeData(result)) {
     throw new Error(
-      `Unexpected parent theme data response: ${JSON.stringify(result)}`
+      `Unexpected external theme data response: ${JSON.stringify(result)}`
     );
   }
 

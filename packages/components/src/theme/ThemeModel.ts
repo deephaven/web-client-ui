@@ -44,9 +44,9 @@ export type ThemeIconsRequiringManualColorChanges =
 
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
-export const PARENT_THEME_KEY = 'parent-theme' as const;
+export const EXTERNAL_THEME_KEY = 'external-theme' as const;
 export const MSG_REQUEST_GET_THEME =
-  'io.deephaven.message.ThemeModel.requestParentTheme';
+  'io.deephaven.message.ThemeModel.requestExternalTheme';
 export const MSG_REQUEST_SET_THEME =
   'io.deephaven.message.ThemeModel.requestSetTheme';
 export const PRELOAD_TRANSPARENT_THEME_QUERY_PARAM =
@@ -159,7 +159,7 @@ export interface ThemeRegistrationData {
   custom: ThemeData[];
 }
 
-export interface ParentThemeData {
+export interface ExternalThemeData {
   baseThemeKey?: BaseThemeKey;
   name: string;
   cssVars: Record<ThemeCssColorVariableName, string>;

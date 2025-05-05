@@ -1,24 +1,24 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { TestUtils } from '@deephaven/test-utils';
 import type { PostMessage } from '@deephaven/utils';
-import { useParentWindowTheme } from './useParentWindowTheme';
+import { useExternalTheme } from './useExternalTheme';
 import {
-  isParentThemeEnabled,
-  parseParentThemeData,
-  requestParentThemeData,
+  isExternalThemeEnabled,
+  parseExternalThemeData,
+  requestExternalThemeData,
 } from './ThemeUtils';
-import { MSG_REQUEST_SET_THEME, type ParentThemeData } from './ThemeModel';
+import { MSG_REQUEST_SET_THEME, type ExternalThemeData } from './ThemeModel';
 
 jest.mock('./ThemeUtils', () => ({
   ...jest.requireActual('./ThemeUtils'),
-  isParentThemeEnabled: jest.fn(),
-  requestParentThemeData: jest.fn(),
+  isExternalThemeEnabled: jest.fn(),
+  requestExternalThemeData: jest.fn(),
 }));
 
 const { asMock, findWindowEventHandlers, setupWindowParentMock } = TestUtils;
 
-const mockParentThemeData: ParentThemeData = {
-  name: 'Mock Parent Theme',
+const mockExternalThemeData: ExternalThemeData = {
+  name: 'Mock External Theme',
   cssVars: {},
 };
 
@@ -44,11 +44,11 @@ it.each([
 ])(
   'should handle theme requests from %s Window if enabled: isEnabled=%s',
   async (_label, isEnabled, source) => {
-    asMock(isParentThemeEnabled).mockReturnValue(isEnabled);
-    asMock(requestParentThemeData).mockResolvedValue(mockParentThemeData);
+    asMock(isExternalThemeEnabled).mockReturnValue(isEnabled);
+    asMock(requestExternalThemeData).mockResolvedValue(mockExternalThemeData);
 
     const { result, unmount, waitForNextUpdate } = renderHook(() =>
-      useParentWindowTheme()
+      useExternalTheme()
     );
 
     expect(result.current.isPending).toEqual(isEnabled);
@@ -76,7 +76,7 @@ it.each([
       messageHandler({
         data: {
           message: MSG_REQUEST_SET_THEME,
-          payload: mockParentThemeData,
+          payload: mockExternalThemeData,
         },
         source,
       } as MessageEvent<PostMessage<unknown>>);
@@ -85,7 +85,7 @@ it.each([
     expect(result.current).toEqual({
       isEnabled: true,
       isPending: false,
-      themeData: parseParentThemeData(mockParentThemeData),
+      themeData: parseExternalThemeData(mockExternalThemeData),
     });
 
     unmount();
@@ -98,36 +98,38 @@ it.each([
 );
 
 it.each([
-  [true, mockParentThemeData],
-  [false, mockParentThemeData],
+  [true, mockExternalThemeData],
+  [false, mockExternalThemeData],
   [true, new Error('Mock Error')],
   [false, new Error('Mock Error')],
 ])(
-  'should request parent theme if enabled: isEnabled=%s, parentThemeDataOrError=%s',
-  async (isEnabled, parentThemeDataOrError) => {
-    asMock(isParentThemeEnabled).mockReturnValue(isEnabled);
+  'should request external theme if enabled: isEnabled=%s, externalThemeDataOrError=%s',
+  async (isEnabled, externalThemeDataOrError) => {
+    asMock(isExternalThemeEnabled).mockReturnValue(isEnabled);
 
-    if (parentThemeDataOrError instanceof Error) {
-      asMock(requestParentThemeData).mockRejectedValue(parentThemeDataOrError);
+    if (externalThemeDataOrError instanceof Error) {
+      asMock(requestExternalThemeData).mockRejectedValue(
+        externalThemeDataOrError
+      );
     } else {
-      asMock(requestParentThemeData).mockResolvedValue(parentThemeDataOrError);
+      asMock(requestExternalThemeData).mockResolvedValue(
+        externalThemeDataOrError
+      );
     }
 
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useParentWindowTheme()
-    );
+    const { result, waitForNextUpdate } = renderHook(() => useExternalTheme());
 
     expect(result.current.isPending).toEqual(isEnabled);
 
     if (!isEnabled) {
-      expect(requestParentThemeData).not.toHaveBeenCalled();
+      expect(requestExternalThemeData).not.toHaveBeenCalled();
       return;
     }
 
     await waitForNextUpdate();
-    expect(requestParentThemeData).toHaveBeenCalled();
+    expect(requestExternalThemeData).toHaveBeenCalled();
 
-    if (parentThemeDataOrError instanceof Error) {
+    if (externalThemeDataOrError instanceof Error) {
       expect(result.current).toEqual({
         isEnabled: true,
         isPending: false,
@@ -136,7 +138,7 @@ it.each([
       expect(result.current).toEqual({
         isEnabled: true,
         isPending: false,
-        themeData: parseParentThemeData(parentThemeDataOrError),
+        themeData: parseExternalThemeData(externalThemeDataOrError),
       });
     }
   }
