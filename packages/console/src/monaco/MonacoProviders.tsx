@@ -66,9 +66,14 @@ class MonacoProviders extends PureComponent<
 
     /* eslint-disable no-console */
     const prevLog = console.log;
-    console.log = () => undefined; // Suppress not useful ruff-wasm-web logs when it creates the workspace
-    MonacoProviders.ruffWorkspace = new Workspace(MonacoProviders.ruffSettings);
-    console.log = prevLog; // Restore console.log
+    try {
+      console.log = () => undefined; // Suppress not useful ruff-wasm-web logs when it creates the workspace
+      MonacoProviders.ruffWorkspace = new Workspace(
+        MonacoProviders.ruffSettings
+      );
+    } finally {
+      console.log = prevLog; // Restore console.log
+    }
     /* eslint-enable no-console */
 
     MonacoProviders.lintAllPython();
@@ -78,9 +83,9 @@ class MonacoProviders extends PureComponent<
    * Sets ruff settings
    * @param settings The ruff settings
    */
-  static async setRuffSettings(
+  static setRuffSettings(
     settings: Record<string, unknown> = MonacoProviders.ruffSettings
-  ): Promise<void> {
+  ): void {
     MonacoProviders.ruffSettings = settings;
 
     if (!MonacoProviders.isRuffInitialized) {
