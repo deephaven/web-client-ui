@@ -3,7 +3,7 @@ import { useExternalTheme, type ThemeData } from '@deephaven/components';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 
 /**
- * Use custom themes from the parent window or plugins.
+ * Use custom external or plugin themes.
  */
 export function useCustomThemes(): ThemeData[] | null {
   const {
