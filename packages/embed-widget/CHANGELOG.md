@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.24](https://github.com/deephaven/web-client-ui/compare/v0.85.23...v0.85.24) (2025-05-05)
+
+### Features
+
+- Export Spectrum Toast from Components Package ([#2294](https://github.com/deephaven/web-client-ui/issues/2294)) ([#2430](https://github.com/deephaven/web-client-ui/issues/2430)) ([0ded0b9](https://github.com/deephaven/web-client-ui/commit/0ded0b9d1688ac3d8b63a8b84f5e8b89b1945201))
+
 ## [0.85.23](https://github.com/deephaven/web-client-ui/compare/v0.85.22...v0.85.23) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/embed-widget
