@@ -71,9 +71,6 @@ class MonacoProviders extends PureComponent<
       MonacoProviders.ruffWorkspace = new Workspace(
         MonacoProviders.ruffSettings
       );
-    } catch (e) {
-      console.log = prevLog; // Restore console.log in case the re-throw isn't caught and finally doesn't run
-      throw e;
     } finally {
       console.log = prevLog; // Restore console.log
     }
