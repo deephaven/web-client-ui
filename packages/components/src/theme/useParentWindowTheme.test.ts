@@ -51,6 +51,8 @@ it.each([
       useParentWindowTheme()
     );
 
+    expect(result.current.isPending).toEqual(isEnabled);
+
     if (!isEnabled) {
       expect(window.addEventListener).not.toHaveBeenCalledWith(
         'message',
@@ -114,6 +116,8 @@ it.each([
     const { result, waitForNextUpdate } = renderHook(() =>
       useParentWindowTheme()
     );
+
+    expect(result.current.isPending).toEqual(isEnabled);
 
     if (!isEnabled) {
       expect(requestParentThemeData).not.toHaveBeenCalled();
