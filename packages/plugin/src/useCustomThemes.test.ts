@@ -1,14 +1,12 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { useExternalTheme, type ThemeData } from '@deephaven/components';
-import {
-  getThemeDataFromPlugins,
-  type PluginModuleMap,
-} from '@deephaven/plugin';
 import { TestUtils } from '@deephaven/test-utils';
 import { useCustomThemes } from './useCustomThemes';
+import type { PluginModuleMap } from './PluginTypes';
+import { getThemeDataFromPlugins } from './PluginUtils';
 
 jest.mock('@deephaven/components');
-jest.mock('@deephaven/plugin');
+jest.mock('./PluginUtils');
 
 const { asMock } = TestUtils;
 

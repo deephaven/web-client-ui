@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import { useExternalTheme, type ThemeData } from '@deephaven/components';
-import {
-  getThemeDataFromPlugins,
-  type PluginModuleMap,
-} from '@deephaven/plugin';
+import type { PluginModuleMap } from './PluginTypes';
+import { getThemeDataFromPlugins } from './PluginUtils';
 
 /**
  * Use custom external or plugin themes.

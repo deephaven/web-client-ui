@@ -4,9 +4,8 @@ import { MonacoThemeProvider } from '@deephaven/console';
 import { ThemeProvider } from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
-import { PluginsContext } from '@deephaven/plugin';
+import { PluginsContext, useCustomThemes } from '@deephaven/plugin';
 import { getSettings } from '@deephaven/redux';
-import { useCustomThemes } from './useCustomThemes';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;

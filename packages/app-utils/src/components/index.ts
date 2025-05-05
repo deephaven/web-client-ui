@@ -8,6 +8,5 @@ export * from './FontsLoaded';
 export * from './PluginsBootstrap';
 export * from './ThemeBootstrap';
 export * from './useConnection';
-export * from './useCustomThemes';
 export * from './useServerConfig';
 export * from './useUser';
