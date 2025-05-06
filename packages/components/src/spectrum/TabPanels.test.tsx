@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { render, screen } from '@testing-library/react';
+import React, { useEffect, useState } from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
 import {
   defaultTheme,
   Item,
@@ -18,6 +18,22 @@ function Counter({ label }: { label: string }) {
       </button>
     </div>
   );
+}
+
+function OnMountUnmount({
+  onMount,
+  onUnmount,
+}: {
+  onMount: () => void;
+  onUnmount: () => void;
+}) {
+  useEffect(() => {
+    onMount();
+    return () => {
+      onUnmount();
+    };
+  }, [onMount, onUnmount]);
+  return null;
 }
 
 describe('TabPanels', () => {
@@ -151,5 +167,52 @@ describe('TabPanels', () => {
     expect(screen.getByLabelText('panels')).toHaveStyle(
       'background-color: red'
     );
+  });
+
+  it('should still unmount a panel that is not in the tree when using keepMounted', () => {
+    const onMount = jest.fn();
+    const onUnmount = jest.fn();
+    const { rerender } = render(
+      <Provider theme={defaultTheme}>
+        <Tabs aria-label="test">
+          <TabList>
+            <Item key="1">Tab 1</Item>
+            <Item key="2">Tab 2</Item>
+          </TabList>
+          <DHCTabPanels>
+            <Item key="1">
+              <Counter label="foo" />
+            </Item>
+            <Item key="2">
+              <OnMountUnmount onMount={onMount} onUnmount={onUnmount} />
+            </Item>
+          </DHCTabPanels>
+        </Tabs>
+      </Provider>
+    );
+
+    waitFor(() => expect(onMount).toHaveBeenCalledTimes(1));
+    expect(onUnmount).toHaveBeenCalledTimes(0);
+
+    rerender(
+      <Provider theme={defaultTheme}>
+        <Tabs aria-label="test">
+          <TabList>
+            <Item key="1">Tab 1</Item>
+            <Item key="2">Tab 2</Item>
+          </TabList>
+          <DHCTabPanels>
+            <Item key="1">
+              <Counter label="foo" />
+            </Item>
+            <Item key="2">
+              <Counter label="bar" />
+            </Item>
+          </DHCTabPanels>
+        </Tabs>
+      </Provider>
+    );
+
+    waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
   });
 });

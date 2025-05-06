@@ -36,7 +36,9 @@ export function DHCTabPanels<T extends object>(
 
   const portalNodes = useMemo(() => {
     const nodes: JSX.Element[] = [];
+    const nextNodeMap = new Map<Key, HtmlPortalNode>(); // Keep track of the portals we use so we can clean up stale portals
     if (!keepMounted) {
+      portalNodeMap.current = nextNodeMap;
       return nodes;
     }
     React.Children.forEach(children, child => {
@@ -53,14 +55,16 @@ export function DHCTabPanels<T extends object>(
             style: 'display: contents',
           },
         });
-        portalNodeMap.current.set(child.key, portal);
       }
+      nextNodeMap.set(child.key, portal);
       nodes.push(
         <InPortal node={portal} key={child.key}>
           {child.props.children}
         </InPortal>
       );
     });
+
+    portalNodeMap.current = nextNodeMap;
 
     return nodes;
   }, [children, keepMounted]);
