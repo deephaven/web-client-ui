@@ -148,7 +148,7 @@
   );
   --dh-color-overlay-hover-bg: color-mix(
     in srgb,
-    var(--dh-color-black) 8%,
+    var(--dh-color-white) 8%,
     transparent
   );
 
