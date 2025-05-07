@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.25](https://github.com/deephaven/web-client-ui/compare/v0.85.24...v0.85.25) (2025-05-07)
+
+### Bug Fixes
+
+- DH-18832: propagate min and max to plotly figure axis ([#2424](https://github.com/deephaven/web-client-ui/issues/2424)) ([#2435](https://github.com/deephaven/web-client-ui/issues/2435)) ([8e49858](https://github.com/deephaven/web-client-ui/commit/8e49858dcf3b7c37591028f3263c5efb4677c9d9))
+
 ## [0.85.24](https://github.com/deephaven/web-client-ui/compare/v0.85.23...v0.85.24) (2025-05-05)
 
 ### Features
