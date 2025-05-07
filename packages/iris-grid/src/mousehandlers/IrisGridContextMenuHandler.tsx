@@ -23,6 +23,7 @@ import {
   type GridPoint,
   GridRange,
   GridRenderer,
+  GridSelectionMouseHandler,
   isDeletableGridModel,
   isEditableGridModel,
   isExpandableGridModel,
@@ -887,8 +888,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       isFilterBarShown,
       quickFilters,
       advancedFilters,
-      selectedRanges,
+      selectedRanges: stateSelectedRanges,
     } = irisGrid.state;
+
+    const selectedRanges = GridSelectionMouseHandler.getLatestSelection(
+      stateSelectedRanges,
+      columnIndex,
+      rowIndex
+    );
 
     assertNotNull(metrics);
 

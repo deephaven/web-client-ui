@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+### Bug Fixes
+
+- DH-13095 Ignore right click while dragging table column ([#2415](https://github.com/deephaven/web-client-ui/issues/2415)) ([79f8a33](https://github.com/deephaven/web-client-ui/commit/79f8a3317e74682078cd534d582a853186bbef39))
+- missing specturm accordian icon due to styling ([#2406](https://github.com/deephaven/web-client-ui/issues/2406)) ([181d29e](https://github.com/deephaven/web-client-ui/commit/181d29efc5173dff87d7b8c3d144d1bd47854766))
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- Context menu using stale selection ([#2407](https://github.com/deephaven/web-client-ui/issues/2407)) ([c43f306](https://github.com/deephaven/web-client-ui/commit/c43f306453e775414812750e8fa479e539c3392f))
+- DH-17599: Change illegal characters to underscores in variable names ([#2409](https://github.com/deephaven/web-client-ui/issues/2409)) ([15c8cfe](https://github.com/deephaven/web-client-ui/commit/15c8cfecb3f4274c433ff900a036569a690c760a))
+- DH-17599: Fix table name validation ([#2403](https://github.com/deephaven/web-client-ui/issues/2403)) ([90ebb08](https://github.com/deephaven/web-client-ui/commit/90ebb08489e4de4bf78590bcf0fcba285d0cbfd4)), closes [#2398](https://github.com/deephaven/web-client-ui/issues/2398)
+- DH-19138: Determine Totals Column Name by Num Aggs Per Column ([#2411](https://github.com/deephaven/web-client-ui/issues/2411)) ([1909fac](https://github.com/deephaven/web-client-ui/commit/1909fac0323ccb3d42edbf3d8c82c038e68684de))
+
 ## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
 
 ### Features

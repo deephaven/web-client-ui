@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.107.2](https://github.com/deephaven/web-client-ui/compare/v0.107.1...v0.107.2) (2025-04-21)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.107.1](https://github.com/deephaven/web-client-ui/compare/v0.107.0...v0.107.1) (2025-04-10)
+
+### Bug Fixes
+
+- Context menu using stale selection ([#2407](https://github.com/deephaven/web-client-ui/issues/2407)) ([c43f306](https://github.com/deephaven/web-client-ui/commit/c43f306453e775414812750e8fa479e539c3392f))
+- DH-19138: Determine Totals Column Name by Num Aggs Per Column ([#2411](https://github.com/deephaven/web-client-ui/issues/2411)) ([1909fac](https://github.com/deephaven/web-client-ui/commit/1909fac0323ccb3d42edbf3d8c82c038e68684de))
+
 ## [0.107.0](https://github.com/deephaven/web-client-ui/compare/v0.106.4...v0.107.0) (2025-04-01)
 
 ### Features
