@@ -12,6 +12,7 @@ export * from './IrisGrid';
 export type { default as IrisGridType } from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
+export * from './IrisGridModel';
 export { default as IrisGridTableModel } from './IrisGridTableModel';
 export * from './IrisGridTableModel';
 export { default as IrisGridPartitionedTableModel } from './IrisGridPartitionedTableModel';
@@ -20,6 +21,9 @@ export { default as IrisGridTableModelTemplate } from './IrisGridTableModelTempl
 export * from './IrisGridTreeTableModel';
 export * from './IrisGridTableModelTemplate';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
+export { default as IrisGridSimplePivotModel } from './IrisGridSimplePivotModel';
+export * from './IrisGridSimplePivotModel';
+export * from './SimplePivotUtils';
 export { createDefaultIrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
 export * from './IrisGridThemeProvider';
