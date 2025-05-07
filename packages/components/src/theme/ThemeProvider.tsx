@@ -36,12 +36,14 @@ export interface ThemeProviderProps {
    * tell the provider to activate the base themes.
    */
   themes: ThemeData[] | null;
+  waitForActivation?: boolean;
   defaultPreloadValues?: Record<string, string>;
   children: ReactNode;
 }
 
 export function ThemeProvider({
   themes: customThemes,
+  waitForActivation = false,
   defaultPreloadValues = DEFAULT_PRELOAD_DATA_VARIABLES,
   children,
 }: ThemeProviderProps): JSX.Element | null {
@@ -107,6 +109,10 @@ export function ThemeProvider({
       setSelectedThemeKey,
     });
   }, [activeThemes, selectedThemeKey, themes]);
+
+  if (waitForActivation && activeThemes == null) {
+    return null;
+  }
 
   return (
     <>

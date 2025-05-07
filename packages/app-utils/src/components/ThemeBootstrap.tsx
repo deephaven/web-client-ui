@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { ThemeProvider } from '@deephaven/components';
+import { isExternalThemeEnabled, ThemeProvider } from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { PluginsContext, useCustomThemes } from '@deephaven/plugin';
@@ -21,9 +21,10 @@ export function ThemeBootstrap({
   // directly to avoid the exception.
   const pluginModules = useContext(PluginsContext);
   const themes = useCustomThemes(pluginModules);
+  const waitForActivation = isExternalThemeEnabled();
 
   return (
-    <ThemeProvider themes={themes}>
+    <ThemeProvider themes={themes} waitForActivation={waitForActivation}>
       <ChartThemeProvider>
         <MonacoThemeProvider>
           <IrisGridThemeProvider density={settings.gridDensity}>
