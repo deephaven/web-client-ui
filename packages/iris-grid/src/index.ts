@@ -12,6 +12,7 @@ export * from './IrisGrid';
 export type { default as IrisGridType } from './IrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
+export * from './IrisGridModel';
 export { default as IrisGridTableModel } from './IrisGridTableModel';
 export * from './IrisGridTableModel';
 export { default as IrisGridPartitionedTableModel } from './IrisGridPartitionedTableModel';
