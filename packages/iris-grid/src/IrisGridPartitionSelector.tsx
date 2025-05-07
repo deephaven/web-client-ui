@@ -15,18 +15,17 @@ const log = Log.module('IrisGridPartitionSelector');
 
 interface IrisGridPartitionSelectorProps {
   model: PartitionedGridModel;
-  partitionConfig: PartitionConfig;
+  partitionConfig?: PartitionConfig;
   onChange: (partitionConfig: PartitionConfig) => void;
 }
 interface IrisGridPartitionSelectorState {
   isLoading: boolean;
 
+  baseTable: dh.Table | null;
+
   keysTable: dh.Table | null;
 
   partitionTables: dh.Table[] | null;
-
-  /** The filters to apply to each partition table */
-  partitionFilters: dh.FilterCondition[][] | null;
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -35,7 +34,7 @@ class IrisGridPartitionSelector extends Component<
   constructor(props: IrisGridPartitionSelectorProps) {
     super(props);
 
-    this.handleKeyTableClick = this.handleKeyTableClick.bind(this);
+    this.handlePartitionTableClick = this.handlePartitionTableClick.bind(this);
     this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
 
@@ -47,8 +46,8 @@ class IrisGridPartitionSelector extends Component<
       // We start be loading the partition tables, so we should be in a loading state
       isLoading: true,
 
+      baseTable: null,
       keysTable: null,
-      partitionFilters: null,
       partitionTables: null,
     };
   }
@@ -58,32 +57,20 @@ class IrisGridPartitionSelector extends Component<
 
     try {
       const keysTable = await this.pending.add(
-        model.partitionKeysTable().then(keyTable => {
-          const sorts = model.partitionColumns.map(column =>
-            column.sort().desc()
-          );
-          keyTable.applySort(sorts);
-          return keyTable;
-        }),
+        model.partitionKeysTable().then(keyTable => keyTable),
         t => t.close()
       );
 
-      const partitionTables = await Promise.all(
-        model.partitionColumns.map(async (_, i) =>
-          this.pending.add(
-            keysTable.selectDistinct(model.partitionColumns.slice(0, i + 1)),
-            t => t.close()
-          )
-        )
+      const baseTable = await this.pending.add(model.partitionBaseTable(), t =>
+        t.close()
       );
 
-      const partitionFilters = this.getPartitionFilters(partitionTables);
       this.setState({
-        isLoading: false,
         keysTable,
-        partitionFilters,
-        partitionTables,
+        baseTable,
+        isLoading: false,
       });
+      this.updatePartitionOptions();
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
         // Just re-throw the error if it's not a cancel
@@ -98,14 +85,15 @@ class IrisGridPartitionSelector extends Component<
     const { partitionConfig } = this.props;
 
     if (prevConfig !== partitionConfig) {
-      this.updatePartitionFilters();
+      this.updatePartitionOptions();
     }
   }
 
   componentWillUnmount(): void {
     this.pending.cancel();
 
-    const { keysTable, partitionTables } = this.state;
+    const { keysTable, baseTable, partitionTables } = this.state;
+    baseTable?.close();
     keysTable?.close();
     partitionTables?.forEach(table => table.close());
   }
@@ -114,10 +102,12 @@ class IrisGridPartitionSelector extends Component<
 
   tableUtils: TableUtils;
 
-  handleKeyTableClick(): void {
-    log.debug2('handleKeyTableClick');
+  handlePartitionTableClick(): void {
+    log.debug2('handlePartitionTableClick');
 
     const { partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
+
     const newPartitionConfig = { ...partitionConfig };
     // Toggle between Keys and Partition mode
     newPartitionConfig.mode =
@@ -129,6 +119,7 @@ class IrisGridPartitionSelector extends Component<
     log.debug2('handleMergeClick');
 
     const { partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
     const newPartitionConfig = { ...partitionConfig };
     // Toggle between Merged and Partition mode
     newPartitionConfig.mode =
@@ -145,25 +136,23 @@ class IrisGridPartitionSelector extends Component<
     index: number,
     selectedValue: unknown
   ): Promise<void> {
-    const { model, partitionConfig: prevConfig } = this.props;
+    const { partitionConfig: prevConfig } = this.props;
+    assertNotNull(prevConfig);
 
     log.debug('handlePartitionSelect', index, selectedValue, prevConfig);
 
     const newPartitions = [...prevConfig.partitions];
     newPartitions[index] = selectedValue;
 
-    // If it's the last partition changed, we know it's already a valid value, just emit it
-    if (index === model.partitionColumns.length - 1) {
-      this.sendUpdate({ partitions: newPartitions, mode: 'partition' });
-      return;
-    }
-
+    const { baseTable } = this.state;
     const { keysTable } = this.state;
-    // Otherwise, we need to get the value from a filtered key table
+
+    assertNotNull(baseTable);
     assertNotNull(keysTable);
     try {
       this.setState({ isLoading: true });
-      const t = await this.pending.add(keysTable.copy(), tCopy =>
+
+      const t = await this.pending.add(baseTable.copy(), tCopy =>
         tCopy.close()
       );
 
@@ -184,7 +173,7 @@ class IrisGridPartitionSelector extends Component<
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
         // https://github.com/deephaven/deephaven-core/issues/5400
-        partitions: t.columns.map(column => data.rows[0].get(column) ?? null),
+        partitions: keysTable.columns.map(column => data.rows[0].get(column)),
         mode: 'partition',
       };
       t.close();
@@ -228,27 +217,36 @@ class IrisGridPartitionSelector extends Component<
   }
 
   /**
-   * Update the filters on the partition dropdown tables
+   * Update the options on the partition dropdown tables
    */
-  updatePartitionFilters(): void {
-    const { partitionTables } = this.state;
-    assertNotNull(partitionTables);
-
-    const { partitionConfig } = this.props;
-    const { mode } = partitionConfig;
-    log.debug('updatePartitionFilters', partitionConfig);
-    if (mode !== 'partition') {
-      // We only need to update the filters if the mode is `partitions`
-      // In the other modes, we disable the dropdowns anyway
+  async updatePartitionOptions(): Promise<void> {
+    const { model } = this.props;
+    const { partitionConfig: prevConfig } = this.props;
+    if (prevConfig == null) {
       return;
     }
 
-    const partitionFilters = this.getPartitionFilters(partitionTables);
-    this.setState({ partitionFilters });
+    const { keysTable } = this.state;
+    assertNotNull(keysTable);
+
+    const partitionFilters = [...prevConfig.partitions].map((partition, i) => {
+      const partitionColumn = keysTable.columns[i];
+      return this.tableUtils.makeNullableEqFilter(partitionColumn, partition);
+    });
+
+    const partitionTables = await Promise.all(
+      model.partitionColumns.map(async (_, i) => {
+        keysTable.applyFilter(partitionFilters.slice(0, i));
+        return keysTable.selectDistinct(model.partitionColumns.slice(0, i + 1));
+      })
+    );
+
+    this.setState({ partitionTables });
   }
 
   getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
     const { model, partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
     const { partitions } = partitionConfig;
     log.debug('getPartitionFilters', partitionConfig);
 
@@ -292,15 +290,8 @@ class IrisGridPartitionSelector extends Component<
 
   render(): JSX.Element {
     const { model, partitionConfig } = this.props;
-    const { isLoading, partitionFilters, partitionTables } = this.state;
+    const { isLoading, partitionTables } = this.state;
 
-    const { partitions } = partitionConfig;
-
-    if (partitionFilters !== null && partitionTables !== null) {
-      partitionFilters.forEach((filter, index) => {
-        partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
-      });
-    }
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         {partitionTables?.[index] && (
@@ -311,13 +302,15 @@ class IrisGridPartitionSelector extends Component<
             direction="bottom"
             shouldFlip={false}
             keyColumn={partitionTables[index].columns[index].name}
-            placeholder={'Loading...' as string}
+            selectedKey={
+              partitionConfig?.mode === 'partition'
+                ? (partitionConfig.partitions[index] as ItemKey)
+                : null
+            }
+            placeholder="Select a key"
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
-            defaultSelectedKey={partitions[index] as ItemKey}
-            isDisabled={
-              (index > 0 && partitionConfig.mode !== 'partition') || isLoading
-            }
+            isDisabled={isLoading || partitionConfig == null}
           />
         )}
         {model.partitionColumns.length - 1 === index || (
@@ -327,27 +320,30 @@ class IrisGridPartitionSelector extends Component<
     ));
     return (
       <div className="iris-grid-partition-selector">
-        <div className="table-name">Partitioned Table</div>
         <div className="partition-button-group">
           <Button
-            onClick={this.handleKeyTableClick}
+            onClick={this.handlePartitionTableClick}
             kind="inline"
-            tooltip="View keys as table"
+            tooltip={
+              model.isPartitionAwareSourceTable
+                ? 'View keys as table'
+                : 'View underlying partition table'
+            }
             icon={vsKey}
-            active={partitionConfig.mode === 'keys'}
-            disabled={isLoading}
+            active={partitionConfig?.mode === 'keys'}
+            disabled={isLoading || partitionConfig == null}
           >
-            Keys
+            Partitions
           </Button>
           <Button
             onClick={this.handleMergeClick}
             kind="inline"
             tooltip="View all partitions as one merged table"
             icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
-            active={partitionConfig.mode === 'merged'}
-            disabled={isLoading}
+            active={partitionConfig?.mode === 'merged'}
+            disabled={isLoading || partitionConfig == null}
           >
-            Merge
+            {model.isPartitionAwareSourceTable ? 'Coalesce' : 'Merge'}
           </Button>
         </div>
         {partitionSelectors}

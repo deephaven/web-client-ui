@@ -208,6 +208,10 @@ class IrisGridTableModel
     return t;
   }
 
+  async partitionBaseTable(): Promise<DhType.Table> {
+    return this.partitionKeysTable();
+  }
+
   async partitionTable(partitions: unknown[]): Promise<DhType.Table> {
     log.debug('getting partition table for partitions', partitions);
 
@@ -290,6 +294,10 @@ class IrisGridTableModel
       this.isValuesTableAvailable &&
       this.partitionColumns.length > 0
     );
+  }
+
+  get isPartitionAwareSourceTable(): boolean {
+    return this.isPartitionRequired;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {

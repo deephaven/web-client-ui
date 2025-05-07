@@ -17,6 +17,9 @@ function makeModel(
       Promise.resolve(irisGridTestUtils.makeTable())
     ),
     partitionColumns: columns,
+    partitionBaseTable: jest.fn(() =>
+      Promise.resolve(irisGridTestUtils.makeTable())
+    ),
   } as unknown as PartitionedGridModel;
   return model;
 }
