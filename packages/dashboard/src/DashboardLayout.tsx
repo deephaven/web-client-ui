@@ -36,7 +36,7 @@ import {
   type PanelProps,
 } from './DashboardPlugin';
 import DashboardPanelWrapper from './DashboardPanelWrapper';
-import { PanelIdContext } from './usePanelId';
+import { DhIdContext } from './useDhId';
 
 export type DashboardLayoutConfig = ItemConfig[];
 
@@ -142,7 +142,7 @@ export function DashboardLayout({
         const panelId = LayoutUtils.getIdFromContainer(glContainer);
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
-            <PanelIdContext.Provider value={panelId}>
+            <DhIdContext.Provider value={panelId as string | null}>
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <PanelWrapperType {...props}>
                 {hasRef ? (
@@ -153,7 +153,7 @@ export function DashboardLayout({
                   <CType {...props} />
                 )}
               </PanelWrapperType>
-            </PanelIdContext.Provider>
+            </DhIdContext.Provider>
           </PanelErrorBoundary>
         );
       }

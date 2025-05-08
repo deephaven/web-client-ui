@@ -23,6 +23,7 @@ import {
 import './Dashboard.scss';
 import { LayoutManagerContext } from './layout';
 import { DashboardIdContext } from './useDashboardId';
+import { FiberProvider } from './useFiber';
 
 const RESIZE_THROTTLE = 100;
 
@@ -133,19 +134,21 @@ export function Dashboard({
       {isInitialized && layout && (
         <LayoutManagerContext.Provider value={layout}>
           <DashboardIdContext.Provider value={id}>
-            <DashboardLayout
-              emptyDashboard={emptyDashboard}
-              id={id}
-              layout={layout}
-              layoutConfig={layoutConfig}
-              onLayoutChange={onLayoutConfigChange}
-              onLayoutInitialized={onLayoutInitialized}
-              hydrate={hydrate}
-              dehydrate={dehydrate}
-              panelWrapper={panelWrapper}
-            >
-              {children}
-            </DashboardLayout>
+            <FiberProvider>
+              <DashboardLayout
+                emptyDashboard={emptyDashboard}
+                id={id}
+                layout={layout}
+                layoutConfig={layoutConfig}
+                onLayoutChange={onLayoutConfigChange}
+                onLayoutInitialized={onLayoutInitialized}
+                hydrate={hydrate}
+                dehydrate={dehydrate}
+                panelWrapper={panelWrapper}
+              >
+                {children}
+              </DashboardLayout>
+            </FiberProvider>
           </DashboardIdContext.Provider>
         </LayoutManagerContext.Provider>
       )}

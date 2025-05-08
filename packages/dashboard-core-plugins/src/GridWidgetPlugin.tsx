@@ -16,11 +16,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
-import {
-  useLayoutManager,
-  useListener,
-  usePanelId,
-} from '@deephaven/dashboard';
+import { useLayoutManager, useListener } from '@deephaven/dashboard';
 import { EMPTY_ARRAY, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridState } from '@deephaven/grid';
@@ -31,7 +27,6 @@ import { InputFilterEvent } from './events';
 export function GridWidgetPlugin({
   fetch,
 }: WidgetComponentProps<DhType.Table>): JSX.Element | null {
-  const panelId = usePanelId();
   const settings = useSelector(getSettings<RootState>);
   const { eventHub } = useLayoutManager();
 

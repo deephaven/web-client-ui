@@ -5,23 +5,23 @@ import {
   useLayoutManager,
   useDashboardId,
   useAppSelector,
-  usePanelId,
+  useDhId,
 } from '@deephaven/dashboard';
 import { type RootState } from '@deephaven/redux';
 import { getInputFiltersForDashboard } from './redux';
 import { emitFilterColumnsChanged } from './FilterEvents';
+import { type FilterColumnSourceId } from './FilterPlugin';
 
-export function useGlobalFilters(
-  columns: readonly dh.Column[],
-  id?: string
-): InputFilter[] {
+export function useGlobalFilters(columns: readonly dh.Column[]): InputFilter[] {
   const { eventHub } = useLayoutManager();
   const dashboardId = useDashboardId();
-  const dashboardPanelId = usePanelId();
-  const panelId = id ?? dashboardPanelId;
-
+  const panelId = useDhId();
   useEffect(() => {
-    emitFilterColumnsChanged(eventHub, panelId, columns);
+    emitFilterColumnsChanged(
+      eventHub,
+      panelId as FilterColumnSourceId,
+      columns
+    );
   }, [eventHub, panelId, columns]);
 
   const getInputFilters = useCallback(

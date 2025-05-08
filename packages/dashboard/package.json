@@ -42,7 +42,8 @@
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/test-utils": "file:../test-utils",
-    "@types/lodash.ismatch": "^4.4.0"
+    "@types/lodash.ismatch": "^4.4.0",
+    "@types/react-reconciler": "^0.32.0"
   },
   "files": [
     "dist"
