@@ -22,6 +22,9 @@ export function useGlobalFilters(columns: readonly dh.Column[]): InputFilter[] {
       panelId as FilterColumnSourceId,
       columns
     );
+
+    return () =>
+      emitFilterColumnsChanged(eventHub, panelId as FilterColumnSourceId, []);
   }, [eventHub, panelId, columns]);
 
   const getInputFilters = useCallback(
