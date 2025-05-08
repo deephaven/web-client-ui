@@ -1,13 +1,12 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useRef } from 'react';
 import EventEmitter from './EventEmitter';
 
 type AsArray<P> = P extends unknown[] ? P : [P];
 
-export type EventHandlerFunction<P = []> = (...parameters: AsArray<P>) => void;
 export type EventListenerRemover = () => void;
 export type EventListenFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: EventHandlerFunction<TParameters>
+  handler: (...params: AsArray<TParameters>) => void
 ) => EventListenerRemover;
 
 export type EventEmitFunction<TParameters = []> = (
@@ -17,7 +16,7 @@ export type EventEmitFunction<TParameters = []> = (
 
 export type EventListenerHook<TParameters = []> = (
   eventEmitter: EventEmitter | null | undefined,
-  handler: EventHandlerFunction<TParameters>
+  handler: (...params: AsArray<TParameters>) => void
 ) => void;
 
 /**
@@ -30,7 +29,7 @@ export type EventListenerHook<TParameters = []> = (
 export function listenForEvent<TParameters = []>(
   eventEmitter: EventEmitter,
   event: string,
-  handler: EventHandlerFunction<TParameters>
+  handler: (...params: AsArray<TParameters>) => void
 ): EventListenerRemover {
   eventEmitter.on(event, handler);
   return () => {

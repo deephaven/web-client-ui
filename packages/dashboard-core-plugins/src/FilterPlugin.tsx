@@ -19,6 +19,7 @@ import {
   InputFilterPanel,
   type WidgetId,
 } from './panels';
+import { useFilterColumnsChangedListener } from './FilterEvents';
 
 const log = Log.module('FilterPlugin');
 
@@ -38,10 +39,6 @@ export type FilterChangeEvent = Column & {
 
 export type FilterPluginProps = Partial<DashboardPluginComponentProps>;
 
-function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
-  return accumulator.concat(currentValue);
-}
-
 export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id: localDashboardId, layout, registerComponent } = props;
@@ -56,7 +53,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
 
   const sendUpdate = useCallback(() => {
     const columns = Array.from(panelColumns.values())
-      .reduce(flattenArray, [] as Column[])
+      .flat()
       .sort((a, b) => {
         const aName = TextUtils.toLower(a.name);
         const bName = TextUtils.toLower(b.name);
@@ -87,7 +84,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       }, [] as Column[]);
 
     const filters = Array.from(panelFilters.values())
-      .reduce(flattenArray, [] as FilterChangeEvent[])
+      .flat()
       .sort((a, b) => a.timestamp - b.timestamp);
     const tableMap = new Map(panelTables);
 
@@ -103,7 +100,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
    * @param columns The columns in this panel
    */
   const handleColumnsChanged = useCallback(
-    (sourceId: FilterColumnSourceId, columns: Column | Column[]) => {
+    (sourceId: FilterColumnSourceId, columns: readonly Column[]) => {
       log.debug2('handleColumnsChanged', sourceId, columns);
       panelColumns.set(sourceId, ([] as Column[]).concat(columns));
       sendUpdate();
@@ -256,11 +253,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
     [registerComponent]
   );
 
-  useListener(
-    layout.eventHub,
-    InputFilterEvent.COLUMNS_CHANGED,
-    handleColumnsChanged
-  );
+  useFilterColumnsChangedListener(layout.eventHub, handleColumnsChanged);
   useListener(
     layout.eventHub,
     InputFilterEvent.FILTERS_CHANGED,
