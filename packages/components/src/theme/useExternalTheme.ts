@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Log from '@deephaven/log';
 import { getWindowParent, type PostMessage } from '@deephaven/utils';
 import {
@@ -35,15 +35,9 @@ export function useExternalTheme(): UseExternalThemeResult {
     };
   });
 
-  useEffect(() => {
-    if (!result.isEnabled) {
-      return;
-    }
-
-    logger.debug('Requesting external theme data');
-
-    /** Parse external theme data and update the result */
-    function handleExternalThemeData(externalThemeData: ExternalThemeData) {
+  /** Parse external theme data and update the result */
+  const handleExternalThemeData = useCallback(
+    (externalThemeData: ExternalThemeData) => {
       const themeData = parseExternalThemeData(externalThemeData);
 
       setResult({
@@ -51,7 +45,16 @@ export function useExternalTheme(): UseExternalThemeResult {
         isPending: false,
         themeData,
       });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!result.isEnabled) {
+      return;
     }
+
+    logger.debug('Requesting external theme data');
 
     /** Parent or current Window can explicitly set the theme */
     function onMessage(event: MessageEvent<PostMessage<unknown>>): void {
@@ -82,7 +85,7 @@ export function useExternalTheme(): UseExternalThemeResult {
     return () => {
       window.removeEventListener('message', onMessage);
     };
-  }, [result.isEnabled]);
+  }, [handleExternalThemeData, result.isEnabled]);
 
   return result;
 }
