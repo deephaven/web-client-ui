@@ -175,7 +175,7 @@ class LinkerUtils {
    * @returns Column matching the link point, undefined if not found
    */
   static findColumn(
-    columns: LinkColumn[],
+    columns: readonly LinkColumn[],
     { columnName, columnType }: LinkPoint
   ): LinkColumn | undefined {
     return columns.find(
