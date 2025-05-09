@@ -1,5 +1,20 @@
 import { isMessage, type PostMessage } from '@deephaven/utils';
 
+export {
+  /** @deprecated Use `@deephaven/utils` `getWindowParent` instead. */
+  getWindowParent,
+  /** @deprecated Use `@deephaven/utils` `isResponse` instead. */
+  isResponse,
+  /** @deprecated Use `@deephaven/utils` `makeMessage` instead. */
+  makeMessage,
+  /** @deprecated Use `@deephaven/utils` `makeResponse` instead. */
+  makeResponse,
+  /** @deprecated Use `@deephaven/utils` `requestParentResponse` instead. */
+  requestParentResponse,
+  /** @deprecated Use `@deephaven/utils` `PostMessage<T>` instead. */
+  type PostMessage as Message,
+} from '@deephaven/utils';
+
 export const LOGIN_OPTIONS_REQUEST =
   'io.deephaven.message.LoginOptions.request';
 
