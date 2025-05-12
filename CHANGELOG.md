@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.27](https://github.com/deephaven/web-client-ui/compare/v0.85.26...v0.85.27) (2025-05-12)
+
+### Features
+
+- Add keepMounted param to TabPanels for persisting panels when they are not active ([#2434](https://github.com/deephaven/web-client-ui/issues/2434)) ([#2436](https://github.com/deephaven/web-client-ui/issues/2436)) ([8f85fcd](https://github.com/deephaven/web-client-ui/commit/8f85fcdbfc74594f81a0f1bd4f5c98ea47b9947b))
+
 ## [0.85.26](https://github.com/deephaven/web-client-ui/compare/v0.85.25...v0.85.26) (2025-05-12)
 
 ### Features
