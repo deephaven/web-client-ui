@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.26](https://github.com/deephaven/web-client-ui/compare/v0.85.25...v0.85.26) (2025-05-12)
+
+### Features
+
+- Partitioned Table UI Enhancements ([#2110](https://github.com/deephaven/web-client-ui/issues/2110)) ([#2432](https://github.com/deephaven/web-client-ui/issues/2432)) ([a84e944](https://github.com/deephaven/web-client-ui/commit/a84e944ce135ba4141f0c54ed59824cebd4302d2))
+
 ## [0.85.25](https://github.com/deephaven/web-client-ui/compare/v0.85.24...v0.85.25) (2025-05-07)
 
 ### Bug Fixes
