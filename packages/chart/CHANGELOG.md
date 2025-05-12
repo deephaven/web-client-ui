@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
+
+### Bug Fixes
+
+- Catch errors when detecting if WebGL is supported ([#2426](https://github.com/deephaven/web-client-ui/issues/2426)) ([46fc6f5](https://github.com/deephaven/web-client-ui/commit/46fc6f5144f36324cb49490bddb41bb69d024d09))
+- DH-18832: propagate min and max to plotly figure axis ([#2424](https://github.com/deephaven/web-client-ui/issues/2424)) ([657a04c](https://github.com/deephaven/web-client-ui/commit/657a04c4d694d35a93538fb173ed30aaee455977))
+
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/chart
