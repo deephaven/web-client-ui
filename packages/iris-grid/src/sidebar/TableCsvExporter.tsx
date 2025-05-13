@@ -393,6 +393,10 @@ class TableCsvExporter extends Component<
                 value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
                 data-testid="radio-csv-exporter-customized-rows"
                 UNSAFE_className="mr-2 pr-1"
+                // Empty aria-label workaround is needed to satisfy accessibility requirement since the
+                // Radio's label is rendered separately. This prevents accessibility errors that
+                // can trigger race conditions with Service Worker updates.
+                aria-label=" "
               />
               <div
                 className="radio-input-row"
