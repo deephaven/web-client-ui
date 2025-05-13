@@ -388,10 +388,12 @@ class TableCsvExporter extends Component<
                   : null}
               </span>
             </Radio>
-            <Radio
-              value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
-              data-testid="radio-csv-exporter-customized-rows"
-            >
+            <div className="d-flex">
+              <Radio
+                value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
+                data-testid="radio-csv-exporter-customized-rows"
+                UNSAFE_className="mr-2 pr-1"
+              />
               <div
                 className="radio-input-row"
                 role="presentation"
@@ -425,7 +427,7 @@ class TableCsvExporter extends Component<
                 />
                 <div>Rows</div>
               </div>
-            </Radio>
+            </div>
           </RadioGroup>
         </div>
         <div className="form-group">
