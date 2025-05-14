@@ -197,7 +197,7 @@ class IrisGridTableModel
     this.userFrozenColumns = columns;
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: this.table,
+        detail: this.columns,
       })
     );
   }
