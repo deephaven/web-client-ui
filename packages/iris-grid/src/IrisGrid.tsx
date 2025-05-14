@@ -1820,6 +1820,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  clearAllAggregations(): void {
+    log.debug('Clearing all aggregations');
+
+    this.setState({ aggregationSettings: DEFAULT_AGGREGATION_SETTINGS });
+  }
+
   clearCrossColumSearch(): void {
     log.debug('Clearing cross-column search');
 
@@ -3637,6 +3643,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.showAllColumns();
     this.clearAllFilters();
+    this.clearAllAggregations();
 
     this.startLoading(
       `Selecting distinct values in ${
