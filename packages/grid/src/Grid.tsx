@@ -536,12 +536,14 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows: currentStateMovedRows,
     } = this.state;
 
+    const stateUpdates: Partial<GridState> = {};
+
     if (prevPropMovedColumns !== movedColumns) {
-      this.setState({ movedColumns });
+      stateUpdates.movedColumns = movedColumns;
     }
 
     if (prevPropMovedRows !== movedRows) {
-      this.setState({ movedRows });
+      stateUpdates.movedRows = movedRows;
     }
 
     if (prevStateMovedColumns !== currentStateMovedColumns) {
@@ -561,14 +563,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (isStickyBottom !== prevIsStickyBottom) {
-      this.setState({ isStuckToBottom: false });
+      stateUpdates.isStuckToBottom = false;
     }
 
     if (isStickyRight !== prevIsStickyRight) {
-      this.setState({ isStuckToRight: false });
+      stateUpdates.isStuckToRight = false;
     }
 
-    this.updateMetrics();
+    const updatedState = { ...this.state, ...stateUpdates };
+
+    this.updateMetrics(updatedState);
 
     this.requestUpdateCanvas();
 
@@ -577,6 +581,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (this.validateSelection()) {
       this.checkSelectionChange(prevState);
     }
+
+    this.setState(updatedState);
   }
 
   componentWillUnmount(): void {
