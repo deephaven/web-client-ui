@@ -265,6 +265,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         this.irisGrid.handleAdvancedMenuOpened(visibleIndex);
       },
+      disabled: !model.isFilterable(modelIndex),
     });
     actions.push({
       title: 'Clear Table Filters',
