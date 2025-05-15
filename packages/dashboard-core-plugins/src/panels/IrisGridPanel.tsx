@@ -46,10 +46,8 @@ import {
   PartitionConfig,
 } from '@deephaven/iris-grid';
 import {
-  AdvancedFilterOptions,
-  FormattingRule,
-  ReverseType,
-  TableUtils,
+  type AdvancedFilterOptions,
+  type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -176,7 +174,7 @@ interface IrisGridPanelState {
   sorts: readonly dh.Sort[];
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;
-  reverseType: ReverseType;
+  reverse: boolean;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
@@ -286,7 +284,7 @@ export class IrisGridPanel extends PureComponent<
       sorts: [],
       userColumnWidths: new Map(),
       userRowHeights: new Map(),
-      reverseType: TableUtils.REVERSE_TYPE.NONE,
+      reverse: false,
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
@@ -468,7 +466,7 @@ export class IrisGridPanel extends PureComponent<
       isFilterBarShown: boolean,
       quickFilters: ReadonlyQuickFilterMap,
       customColumns: readonly ColumnName[],
-      reverseType: ReverseType,
+      reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       showSearchBar: boolean,
       searchValue: string,
@@ -496,7 +494,7 @@ export class IrisGridPanel extends PureComponent<
         },
         quickFilters,
         customColumns,
-        reverseType,
+        reverse,
         rollupConfig,
         showSearchBar,
         searchValue,
@@ -1028,7 +1026,7 @@ export class IrisGridPanel extends PureComponent<
         customColumnFormatMap,
         isFilterBarShown,
         quickFilters,
-        reverseType,
+        reverse,
         rollupConfig,
         aggregationSettings,
         sorts,
@@ -1066,7 +1064,7 @@ export class IrisGridPanel extends PureComponent<
         movedRows,
         partitions,
         quickFilters,
-        reverseType,
+        reverse,
         rollupConfig,
         aggregationSettings,
         sorts,
@@ -1107,7 +1105,7 @@ export class IrisGridPanel extends PureComponent<
       isFilterBarShown,
       quickFilters,
       customColumns,
-      reverseType,
+      reverse,
       rollupConfig,
       showSearchBar,
       searchValue,
@@ -1144,7 +1142,7 @@ export class IrisGridPanel extends PureComponent<
         isFilterBarShown,
         quickFilters,
         customColumns,
-        reverseType,
+        reverse,
         rollupConfig,
         showSearchBar,
         searchValue,
@@ -1223,7 +1221,7 @@ export class IrisGridPanel extends PureComponent<
       partitions,
       partitionConfig,
       quickFilters,
-      reverseType,
+      reverse,
       rollupConfig,
       sorts,
       userColumnWidths,
@@ -1304,7 +1302,7 @@ export class IrisGridPanel extends PureComponent<
             partitions={partitions}
             partitionConfig={partitionConfig}
             quickFilters={quickFilters}
-            reverseType={reverseType}
+            reverse={reverse}
             rollupConfig={rollupConfig}
             settings={settings}
             sorts={sorts}

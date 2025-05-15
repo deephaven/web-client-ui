@@ -57,7 +57,7 @@ type HydratedIrisGridState = Pick<
   | 'isFilterBarShown'
   | 'quickFilters'
   | 'customColumns'
-  | 'reverseType'
+  | 'reverse'
   | 'rollupConfig'
   | 'showSearchBar'
   | 'searchValue'
@@ -131,7 +131,9 @@ export interface DehydratedIrisGridState {
   userRowHeights: readonly DehydratedUserRowHeight[];
   customColumns: readonly ColumnName[];
   conditionalFormats: readonly SidebarFormattingRule[];
-  reverseType: ReverseType;
+  /** @deprecated use `reverse` instead. Can be removed after DHE sanluis release */
+  reverseType?: ReverseType;
+  reverse: boolean;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -1176,7 +1178,7 @@ class IrisGridUtils {
       quickFilters,
       customColumns,
       conditionalFormats = EMPTY_ARRAY,
-      reverseType,
+      reverse,
       rollupConfig = undefined,
       showSearchBar,
       searchValue,
@@ -1215,7 +1217,7 @@ class IrisGridUtils {
       userRowHeights: [...userRowHeights],
       customColumns: [...customColumns],
       conditionalFormats: [...conditionalFormats],
-      reverseType,
+      reverse,
       rollupConfig,
       showSearchBar,
       searchValue,
@@ -1260,6 +1262,7 @@ class IrisGridUtils {
       userColumnWidths,
       userRowHeights,
       reverseType,
+      reverse,
       rollupConfig = undefined,
       showSearchBar,
       searchValue,
@@ -1314,7 +1317,7 @@ class IrisGridUtils {
       customColumns,
       conditionalFormats,
       userRowHeights: new Map(userRowHeights),
-      reverseType,
+      reverse: reverseType === TableUtils.REVERSE_TYPE.POST_SORT || reverse,
       rollupConfig,
       showSearchBar,
       searchValue,
@@ -1664,7 +1667,7 @@ class IrisGridUtils {
           return null;
         })
         // If we can't find the column any more, it's null, filter it out
-        // If the item is a reverse sort item, filter it out - it will get applied with the `reverseType` property
+        // If the item is a reverse sort item, filter it out - it will get applied with the `reverse` property
         // This should only happen when loading a legacy dashboard
         .filter(
           item =>
