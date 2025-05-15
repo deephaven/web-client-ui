@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { render, waitFor } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { TestUtils } from '@deephaven/test-utils';
+import { TestUtils } from '@deephaven/utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { createMockStore } from '@deephaven/redux';
 import dh from '@deephaven/jsapi-shim';
