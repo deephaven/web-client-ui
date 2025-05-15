@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TestUtils } from '@deephaven/test-utils';
+import { TestUtils } from '@deephaven/utils';
 import { PersistentStateProvider } from './PersistentStateContext';
 import usePersistentState, {
   type PersistentStateMigration,
