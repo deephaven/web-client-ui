@@ -5,3 +5,5 @@ export * from './TablePlugin';
 export * from './useDashboardPlugins';
 export * from './usePlugins';
 export * from './WidgetView';
+export * from './PersistentStateContext';
+export * from './usePersistentState';
