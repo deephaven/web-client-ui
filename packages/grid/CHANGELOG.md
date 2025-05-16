@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.28](https://github.com/deephaven/web-client-ui/compare/v0.85.27...v0.85.28) (2025-05-16)
+
+### Bug Fixes
+
+- Cherry-pick Simple Pivot prerequisites ([#2440](https://github.com/deephaven/web-client-ui/issues/2440)) ([94176fb](https://github.com/deephaven/web-client-ui/commit/94176fb19e5e2750c291bcc93fa405615e8709df)), closes [#2437](https://github.com/deephaven/web-client-ui/issues/2437)
+
 ## [0.85.21](https://github.com/deephaven/web-client-ui/compare/v0.85.20...v0.85.21) (2025-04-10)
 
 ### Bug Fixes

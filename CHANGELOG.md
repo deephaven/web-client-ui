@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.28](https://github.com/deephaven/web-client-ui/compare/v0.85.27...v0.85.28) (2025-05-16)
+
+### Features
+
+- Add IrisGridCacheUtils for memoizing iris grid state ([#2416](https://github.com/deephaven/web-client-ui/issues/2416)) ([#2448](https://github.com/deephaven/web-client-ui/issues/2448)) ([c448f7e](https://github.com/deephaven/web-client-ui/commit/c448f7ec13477108a279dfddbe8cbb929354d22e))
+- Add usePersistentState hook ([#2402](https://github.com/deephaven/web-client-ui/issues/2402)) ([#2445](https://github.com/deephaven/web-client-ui/issues/2445)) ([3842cf0](https://github.com/deephaven/web-client-ui/commit/3842cf02cbd10e37e8e662928dafa89410790b7a))
+- Add usePersistentState implementation to GridWidgetPlugin ([#2427](https://github.com/deephaven/web-client-ui/issues/2427)) ([#2446](https://github.com/deephaven/web-client-ui/issues/2446)) ([711dea9](https://github.com/deephaven/web-client-ui/commit/711dea987eb3169c42569cc70d22a5656b5eb165))
+
+### Bug Fixes
+
+- Cherry-pick Simple Pivot prerequisites ([#2440](https://github.com/deephaven/web-client-ui/issues/2440)) ([94176fb](https://github.com/deephaven/web-client-ui/commit/94176fb19e5e2750c291bcc93fa405615e8709df)), closes [#2437](https://github.com/deephaven/web-client-ui/issues/2437)
+- DH-17292 Handle disconnect from GridWidgetPlugin ([#2086](https://github.com/deephaven/web-client-ui/issues/2086)) ([#2444](https://github.com/deephaven/web-client-ui/issues/2444)) ([e26c462](https://github.com/deephaven/web-client-ui/commit/e26c462e52f8495675989fd4dbed193718953747))
+
 ## [0.85.27](https://github.com/deephaven/web-client-ui/compare/v0.85.26...v0.85.27) (2025-05-12)
 
 ### Features

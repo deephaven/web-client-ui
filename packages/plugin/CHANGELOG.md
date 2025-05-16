@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.28](https://github.com/deephaven/web-client-ui/compare/v0.85.27...v0.85.28) (2025-05-16)
+
+### Features
+
+- Add usePersistentState hook ([#2402](https://github.com/deephaven/web-client-ui/issues/2402)) ([#2445](https://github.com/deephaven/web-client-ui/issues/2445)) ([3842cf0](https://github.com/deephaven/web-client-ui/commit/3842cf02cbd10e37e8e662928dafa89410790b7a))
+
 ## [0.85.27](https://github.com/deephaven/web-client-ui/compare/v0.85.26...v0.85.27) (2025-05-12)
 
 **Note:** Version bump only for package @deephaven/plugin
