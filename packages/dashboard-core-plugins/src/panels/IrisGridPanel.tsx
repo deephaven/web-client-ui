@@ -76,7 +76,7 @@ import type {
   TablePluginComponent,
   TablePluginElement,
 } from '@deephaven/plugin';
-import { InputFilterEvent, IrisGridEvent } from '../events';
+import { IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
   getLinksForDashboard,
