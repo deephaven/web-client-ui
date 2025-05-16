@@ -6,14 +6,14 @@ import type ReactReconciler from 'react-reconciler';
 /**
  * Represents a react-internal Fiber node.
  */
-export type Fiber<T = any> = Omit<ReactReconciler.Fiber, 'stateNode'> & {
+type Fiber<T = any> = Omit<ReactReconciler.Fiber, 'stateNode'> & {
   stateNode: T;
 };
 
 /**
  * Represents a {@link Fiber} node selector for traversal.
  */
-export type FiberSelector<T = any> = (
+type FiberSelector<T = any> = (
   /** The current {@link Fiber} node. */
   node: Fiber<T | null>
 ) => boolean | void;
@@ -21,7 +21,7 @@ export type FiberSelector<T = any> = (
 /**
  * Traverses up or down a {@link Fiber}, return `true` to stop and select a node.
  */
-export function traverseFiber<T = any>(
+function traverseFiber<T = any>(
   /** Input {@link Fiber} to traverse. */
   fiber: Fiber | undefined,
   /** Whether to ascend and walk up the tree. Will walk down if `false`. */
