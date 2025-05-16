@@ -8,7 +8,7 @@ import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink' | 'chartLink';
 
 export type LinkPoint = {
-  panelId: string | string[];
+  panelId: string;
   panelComponent?: string | null;
   columnName: string;
   columnType: string | null;

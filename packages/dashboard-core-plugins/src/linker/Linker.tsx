@@ -261,12 +261,18 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleColumnsChanged(
     sourceId: FilterColumnSourceId,
-    columns: readonly LinkColumn[]
+    columns: readonly LinkColumn[] | null
   ): void {
     log.debug('handleColumnsChanged', sourceId, columns);
     const { links } = this.props;
     if (sourceId == null) {
       log.error('Invalid filter columns source id', sourceId);
+      return;
+    }
+
+    // Columns is null when dh.ui widgets with linker capability are closed
+    if (columns == null) {
+      this.deleteLinksForPanelId(sourceId);
       return;
     }
     // NOTE: links need to be updated to use sourceId instead of panelId. This will be done when we implement linker for dh.ui widgets DH-18840

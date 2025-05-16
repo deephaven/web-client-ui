@@ -21,7 +21,7 @@ import { EMPTY_ARRAY, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridState } from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
-import useGlobalFilters from './useGlobalFilters';
+import useDashboardColumnFilters from './useDashboardColumnFilters';
 import { InputFilterEvent } from './events';
 
 export function GridWidgetPlugin({
@@ -87,7 +87,7 @@ export function GridWidgetPlugin({
     [fetchResult, setState, dehydrateIrisGridState]
   );
 
-  const inputFilters = useGlobalFilters(
+  const inputFilters = useDashboardColumnFilters(
     fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY
   );
 
