@@ -1,3 +1,8 @@
+/**
+ * Adapted from https://www.npmjs.com/package/its-fine to support React 17.
+ * The main change is using `nanoid` instead of `useId` which doesn't exist in React 17.
+ * Also tweaked a bit of the code to match our style and removed the parts we don't use.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { nanoid } from 'nanoid';
 import * as React from 'react';
@@ -29,14 +34,19 @@ function traverseFiber<T = any>(
   /** A {@link Fiber} node selector, returns the first match when `true` is passed. */
   selector: FiberSelector<T>
 ): Fiber<T> | undefined {
-  if (!fiber) return;
-  if (selector(fiber) === true) return fiber;
+  if (!fiber) {
+    return;
+  }
+  if (selector(fiber) === true) {
+    return fiber;
+  }
 
   let child = ascending ? fiber.return : fiber.child;
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   while (child) {
     const match = traverseFiber(child, ascending, selector);
-    if (match) return match;
+    if (match) {
+      return match;
+    }
 
     child = ascending ? null : child.sibling;
   }
@@ -105,23 +115,24 @@ export function useFiber(): Fiber<null> | undefined {
   }
 
   const [id] = React.useState(() => nanoid());
-  const fiber = React.useMemo(() => {
+  const actualFiber = React.useMemo(() => {
     // eslint-disable-next-line no-restricted-syntax
-    for (const maybeFiber of [root, root?.alternate]) {
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, no-continue
-      if (!maybeFiber) continue;
-      // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const maybeFiber of [root, root?.alternate].filter(r => r != null)) {
       const fiber = traverseFiber<null>(maybeFiber, false, node => {
         let state = node.memoizedState;
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        while (state) {
-          if (state.memoizedState === id) return true;
+        while (state != null) {
+          if (state.memoizedState === id) {
+            return true;
+          }
           state = state.next;
         }
       });
-      if (fiber) return fiber;
+
+      if (fiber) {
+        return fiber;
+      }
     }
   }, [root, id]);
 
-  return fiber;
+  return actualFiber;
 }
