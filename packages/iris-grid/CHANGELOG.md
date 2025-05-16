@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.29](https://github.com/deephaven/web-client-ui/compare/v0.85.28...v0.85.29) (2025-05-16)
+
+### Bug Fixes
+
+- Add back some defaults to dehydrateIrisGridState ([#2419](https://github.com/deephaven/web-client-ui/issues/2419)) ([#2449](https://github.com/deephaven/web-client-ui/issues/2449)) ([d843f31](https://github.com/deephaven/web-client-ui/commit/d843f31dee519b740eb700d2bf8fb3455d2811a8)), closes [#2416](https://github.com/deephaven/web-client-ui/issues/2416)
+
 ## [0.85.28](https://github.com/deephaven/web-client-ui/compare/v0.85.27...v0.85.28) (2025-05-16)
 
 ### Features
