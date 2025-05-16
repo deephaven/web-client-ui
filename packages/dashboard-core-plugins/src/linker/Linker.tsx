@@ -47,6 +47,7 @@ import LinkerUtils, {
   isLinkableColumn,
 } from './LinkerUtils';
 import { type FilterColumnSourceId } from '../FilterPlugin';
+import { listenForFilterColumnsChanged } from '../FilterEvents';
 
 const log = Log.module('Linker');
 
@@ -155,6 +156,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.stopListening(layout);
   }
 
+  private removerFns: (() => void)[] = [];
+
   startListening(layout: GoldenLayout): void {
     layout.on('stateChanged', this.handleLayoutStateChanged);
 
@@ -168,7 +171,9 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       InputFilterEvent.COLUMN_SELECTED,
       this.handleFilterColumnSelect
     );
-    eventHub.on(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
+    this.removerFns.push(
+      listenForFilterColumnsChanged(eventHub, this.handleColumnsChanged)
+    );
     eventHub.on(PanelEvent.CLOSE, this.handlePanelClosed);
     eventHub.on(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.on(PanelEvent.DRAGGING, this.handlePanelDragging);
@@ -188,11 +193,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       InputFilterEvent.COLUMN_SELECTED,
       this.handleFilterColumnSelect
     );
-    eventHub.off(InputFilterEvent.COLUMNS_CHANGED, this.handleColumnsChanged);
     eventHub.off(PanelEvent.CLOSE, this.handlePanelClosed);
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.off(PanelEvent.DRAGGING, this.handlePanelDragging);
     eventHub.off(PanelEvent.DROPPED, this.handlePanelDropped);
+    this.removerFns.forEach(remove => remove());
+    this.removerFns = [];
   }
 
   reset(): void {
@@ -255,12 +261,18 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleColumnsChanged(
     sourceId: FilterColumnSourceId,
-    columns: LinkColumn[]
+    columns: readonly LinkColumn[] | null
   ): void {
     log.debug('handleColumnsChanged', sourceId, columns);
     const { links } = this.props;
     if (sourceId == null) {
       log.error('Invalid filter columns source id', sourceId);
+      return;
+    }
+
+    // Columns is null when dh.ui widgets with linker capability are closed
+    if (columns == null) {
+      this.deleteLinksForPanelId(sourceId);
       return;
     }
     // NOTE: links need to be updated to use sourceId instead of panelId. This will be done when we implement linker for dh.ui widgets DH-18840
