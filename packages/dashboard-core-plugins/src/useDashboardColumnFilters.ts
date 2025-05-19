@@ -31,13 +31,17 @@ export function useDashboardColumnFilters(
   const { eventHub } = useLayoutManager();
   const dashboardId = useDashboardId();
   const panelId = useDhId() as FilterColumnSourceId;
-  useEffect(() => {
-    emitFilterColumnsChanged(eventHub, panelId, columns);
 
-    return () => emitFilterColumnsChanged(eventHub, panelId, null);
-  }, [eventHub, panelId, columns]);
+  useEffect(
+    function columnsChanged() {
+      emitFilterColumnsChanged(eventHub, panelId, columns);
 
-  useEffect(() => {
+      return () => emitFilterColumnsChanged(eventHub, panelId, null);
+    },
+    [eventHub, panelId, columns]
+  );
+
+  useEffect(function tableChanged() {
     if (table == null) {
       return;
     }
