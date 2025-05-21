@@ -98,7 +98,7 @@ export function GridWidgetPlugin({
       return;
     }
     irisGridRef.current.clearAllFilters();
-  }, [irisGridRef]);
+  }, []);
 
   useListener(
     eventHub,
