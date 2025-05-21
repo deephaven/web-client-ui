@@ -6,8 +6,8 @@ import { TestUtils } from '@deephaven/test-utils';
 import GoldenLayout, { EventHub, type Config } from '@deephaven/golden-layout';
 import { type dh } from '@deephaven/jsapi-types';
 import { useDashboardColumnFilters } from './useDashboardColumnFilters';
-import { type FilterChangeEvent } from './FilterPlugin';
 import {
+  type FilterChangeEvent,
   listenForFilterColumnsChanged,
   listenForFilterTableChanged,
 } from './FilterEvents';

@@ -1,5 +1,8 @@
 import { createContext, useContext } from 'react';
+import Log from '@deephaven/log';
 import { useFiber } from './useFiber';
+
+const log = Log.module('useDhId');
 
 export const DH_ID_PROP = '__dhId';
 
@@ -32,9 +35,10 @@ export function useDhId(): string {
   }
 
   if (dhId == null) {
-    throw new Error(
-      `useDhId must be used within a DhIdContext provider if there is no ${DH_ID_PROP} prop`
+    log.warn(
+      `useDhId must be used within a DhIdContext provider if there is no ${DH_ID_PROP} prop. Defaulting to empty string.`
     );
+    return '';
   }
 
   return dhId;

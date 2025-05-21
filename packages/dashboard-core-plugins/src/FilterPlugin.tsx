@@ -7,7 +7,6 @@ import {
   LayoutUtils,
   type PanelComponent,
   PanelEvent,
-  type PanelId,
   updateDashboardData,
   useListener,
 } from '@deephaven/dashboard';
@@ -19,29 +18,17 @@ import {
   DropdownFilterPanel,
   FilterSetManagerPanel,
   InputFilterPanel,
-  type WidgetId,
 } from './panels';
 import {
+  type FilterColumn,
+  type FilterChangeEvent,
+  type FilterColumnSourceId,
   useFilterChangedListener,
   useFilterColumnsChangedListener,
   useFilterTableChangedListener,
 } from './FilterEvents';
 
 const log = Log.module('FilterPlugin');
-
-type Column = {
-  name: string;
-  type: string;
-};
-
-// A panel or widget can have columns for filters
-export type FilterColumnSourceId = PanelId | WidgetId;
-
-export type FilterChangeEvent = Column & {
-  value: string;
-  timestamp: number;
-  excludePanelIds?: string[];
-};
 
 export type FilterPluginProps = Partial<DashboardPluginComponentProps>;
 
@@ -50,7 +37,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   const { id: localDashboardId, layout, registerComponent } = props;
   const dispatch = useDispatch();
   const [panelColumns] = useState(
-    () => new Map<FilterColumnSourceId, Column[]>()
+    () => new Map<FilterColumnSourceId, FilterColumn[]>()
   );
   const [panelFilters] = useState(
     () => new Map<FilterColumnSourceId, FilterChangeEvent[]>()
@@ -89,7 +76,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
         }
 
         return array;
-      }, [] as Column[]);
+      }, [] as FilterColumn[]);
 
     const filters = Array.from(panelFilters.values())
       .flat()
@@ -108,12 +95,15 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
    * @param columns The columns in this panel. Null to clear the columns.
    */
   const handleColumnsChanged = useCallback(
-    (sourceId: FilterColumnSourceId, columns: readonly Column[] | null) => {
+    (
+      sourceId: FilterColumnSourceId,
+      columns: readonly FilterColumn[] | null
+    ) => {
       log.debug2('handleColumnsChanged', sourceId, columns);
       if (columns == null) {
         panelColumns.delete(sourceId);
       } else {
-        panelColumns.set(sourceId, ([] as Column[]).concat(columns));
+        panelColumns.set(sourceId, ([] as FilterColumn[]).concat(columns));
       }
       sendUpdate();
     },

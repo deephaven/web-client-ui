@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   type WidgetComponentProps,
   usePersistentState,
@@ -91,14 +91,14 @@ export function GridWidgetPlugin({
     fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY
   );
 
-  const [irisGrid, setIrisGrid] = useState<IrisGridType | null>(null);
+  const irisGridRef = useRef<IrisGridType | null>(null);
 
   const handleClearAllFilters = useCallback(() => {
-    if (irisGrid == null) {
+    if (irisGridRef.current == null) {
       return;
     }
-    irisGrid.clearAllFilters();
-  }, [irisGrid]);
+    irisGridRef.current.clearAllFilters();
+  }, [irisGridRef]);
 
   useListener(
     eventHub,
@@ -122,7 +122,7 @@ export function GridWidgetPlugin({
   const { model } = fetchResult;
   return (
     <IrisGrid
-      ref={ref => setIrisGrid(ref)}
+      ref={irisGridRef}
       model={model}
       settings={settings}
       onStateChange={handleIrisGridChange}

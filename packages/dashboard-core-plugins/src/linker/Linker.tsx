@@ -46,8 +46,10 @@ import LinkerUtils, {
   type LinkType,
   isLinkableColumn,
 } from './LinkerUtils';
-import { type FilterColumnSourceId } from '../FilterPlugin';
-import { listenForFilterColumnsChanged } from '../FilterEvents';
+import {
+  type FilterColumnSourceId,
+  listenForFilterColumnsChanged,
+} from '../FilterEvents';
 
 const log = Log.module('Linker');
 

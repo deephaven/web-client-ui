@@ -61,12 +61,12 @@ describe('useDhId', () => {
     expect(result.current).toBe(mockDhId);
   });
 
-  it('should throw an error if no __dhId prop and no context', () => {
+  it('should return empty string if no __dhId prop and no context', () => {
     const { result } = renderHook(() => useDhId(), {
       wrapper: ({ children }) => <FiberProvider>{children}</FiberProvider>,
     });
 
-    expect(result.error?.message).toMatch(/within a DhIdContext provider/);
+    expect(result.current).toBe('');
   });
 
   it('should throw an error if __dhId is not a string', () => {

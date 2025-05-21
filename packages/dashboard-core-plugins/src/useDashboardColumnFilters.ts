@@ -10,10 +10,10 @@ import {
 import { type RootState } from '@deephaven/redux';
 import { getInputFiltersForDashboard } from './redux';
 import {
+  type FilterColumnSourceId,
   emitFilterColumnsChanged,
   emitFilterTableChanged,
 } from './FilterEvents';
-import { type FilterColumnSourceId } from './FilterPlugin';
 
 /**
  * Subscribes to the dashboard column filters (a.k.a. InputFilter) for the current panel or widget, and
