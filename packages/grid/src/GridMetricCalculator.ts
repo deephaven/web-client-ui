@@ -221,7 +221,6 @@ export class GridMetricCalculator {
     const {
       rowHeight,
       rowHeaderWidth,
-      rowFooterWidth,
       columnWidth,
       columnHeaderHeight,
       minScrollHandleSize,
@@ -323,6 +322,8 @@ export class GridMetricCalculator {
       state,
       allColumnWidths
     );
+
+    const rowFooterWidth = this.calculateRowFooterWidth(state);
 
     const columnWidthValues = Array.from(allColumnWidths.values());
     const rowHeightValues = Array.from(allRowHeights.values());
@@ -2056,6 +2057,39 @@ export class GridMetricCalculator {
    */
   resetCalculatedRowHeights(): void {
     this.calculatedRowHeights = new Map();
+  }
+
+  /**
+   * Calculate the width of row footers based on their text content
+   * @param state The grid metric state
+   * @returns The calculated width for row footers
+   */
+  calculateRowFooterWidth(state: GridMetricState): number {
+    const { model, theme, context } = state;
+    const { cellHorizontalPadding, font } = theme;
+    const totalPadding = cellHorizontalPadding * 2;
+
+    this.calculateLowerFontWidth(font, context);
+    this.calculateUpperFontWidth(font, context);
+
+    let maxWidth = 0;
+
+    const { floatingBottomRowCount, rowCount } = model;
+
+    for (
+      let i = 0;
+      i < floatingBottomRowCount && rowCount - i - 1 >= 0;
+      i += 1
+    ) {
+      const row = rowCount - i - 1;
+      const text = model.textForRowFooter(row);
+      if (text) {
+        const width = this.calculateTextWidth(context, font, text);
+        maxWidth = Math.max(maxWidth, width);
+      }
+    }
+
+    return maxWidth > 0 ? maxWidth + totalPadding : 0;
   }
 }
 
