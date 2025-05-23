@@ -2069,9 +2069,6 @@ export class GridMetricCalculator {
     const { cellHorizontalPadding, font } = theme;
     const totalPadding = cellHorizontalPadding * 2;
 
-    this.calculateLowerFontWidth(font, context);
-    this.calculateUpperFontWidth(font, context);
-
     let maxWidth = 0;
 
     const { floatingBottomRowCount, rowCount } = model;
