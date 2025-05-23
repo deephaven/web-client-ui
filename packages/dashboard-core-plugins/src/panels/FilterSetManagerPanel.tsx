@@ -34,7 +34,7 @@ import InputFilterPanel, {
   type PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
 import './FilterSetManagerPanel.scss';
-import { type FilterChangeEvent } from '../FilterPlugin';
+import { type FilterChangeEvent } from '../FilterEvents';
 
 const log = Log.module('FilterSetManagerPanel');
 interface IrisGridState {

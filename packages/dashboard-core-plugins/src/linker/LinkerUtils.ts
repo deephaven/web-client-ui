@@ -8,7 +8,7 @@ import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink' | 'chartLink';
 
 export type LinkPoint = {
-  panelId: string | string[];
+  panelId: string;
   panelComponent?: string | null;
   columnName: string;
   columnType: string | null;
@@ -175,7 +175,7 @@ class LinkerUtils {
    * @returns Column matching the link point, undefined if not found
    */
   static findColumn(
-    columns: LinkColumn[],
+    columns: readonly LinkColumn[],
     { columnName, columnType }: LinkPoint
   ): LinkColumn | undefined {
     return columns.find(
