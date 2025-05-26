@@ -2066,27 +2066,29 @@ export class GridMetricCalculator {
    */
   calculateRowFooterWidth(state: GridMetricState): number {
     const { model, theme, context } = state;
-    const { cellHorizontalPadding, font } = theme;
-    const totalPadding = cellHorizontalPadding * 2;
+    const { font, cellHorizontalPadding } = theme;
+    const { floatingBottomRowCount, floatingTopRowCount, rowCount } = model;
+
+    this.calculateLowerFontWidth(font, context);
+    this.calculateUpperFontWidth(font, context);
 
     let maxWidth = 0;
+    const totalPadding = cellHorizontalPadding * 2;
 
-    const { floatingBottomRowCount, rowCount } = model;
-
-    for (
-      let i = 0;
-      i < floatingBottomRowCount && rowCount - i - 1 >= 0;
-      i += 1
-    ) {
-      const row = rowCount - i - 1;
-      const text = model.textForRowFooter(row);
-      if (text) {
-        const width = this.calculateTextWidth(context, font, text);
-        maxWidth = Math.max(maxWidth, width);
+    GridUtils.iterateFloating(
+      floatingTopRowCount,
+      floatingBottomRowCount,
+      rowCount,
+      row => {
+        const text = model.textForRowFooter(row);
+        if (text) {
+          const width = this.calculateTextWidth(context, font, text);
+          maxWidth = Math.max(maxWidth, width);
+        }
       }
-    }
+    );
 
-    return maxWidth > 0 ? maxWidth + totalPadding : 0;
+    return maxWidth + totalPadding;
   }
 }
 
