@@ -323,7 +323,7 @@ export class GridMetricCalculator {
       allColumnWidths
     );
 
-    const rowFooterWidth = this.calculateRowFooterWidth(state);
+    const rowFooterWidth = this.calculateFloatingWidth(state);
 
     const columnWidthValues = Array.from(allColumnWidths.values());
     const rowHeightValues = Array.from(allRowHeights.values());
@@ -2060,11 +2060,11 @@ export class GridMetricCalculator {
   }
 
   /**
-   * Calculate the width of row footers based on their text content
+   * Calculate the width of floating row label based on its text content
    * @param state The grid metric state
-   * @returns The calculated width for row footers
+   * @returns The calculated width for floating row label
    */
-  calculateRowFooterWidth(state: GridMetricState): number {
+  calculateFloatingWidth(state: GridMetricState): number {
     const { model, theme, context } = state;
     const { font, cellHorizontalPadding } = theme;
     const { floatingBottomRowCount, floatingTopRowCount, rowCount } = model;
