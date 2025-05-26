@@ -841,7 +841,7 @@ export class IrisGridRenderer extends GridRenderer {
       context.rect(
         x,
         height - gridY - horizontalBarHeight - floatingBottomHeight,
-        rowFooterWidth,
+        rowFooterWidth + cellHorizontalPadding,
         floatingBottomHeight
       );
     }
