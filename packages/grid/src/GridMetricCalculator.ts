@@ -2088,7 +2088,7 @@ export class GridMetricCalculator {
       }
     );
 
-    return maxWidth + totalPadding;
+    return maxWidth > 0 ? maxWidth + totalPadding : 0;
   }
 }
 
