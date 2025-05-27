@@ -2065,30 +2065,40 @@ export class GridMetricCalculator {
    * @returns The calculated width for row footers
    */
   calculateRowFooterWidth(state: GridMetricState): number {
-    const { model, theme, context } = state;
-    const { cellHorizontalPadding, headerFont } = theme;
-    const { floatingBottomRowCount, floatingTopRowCount, rowCount } = model;
+    const { top, height, model, theme, context } = state;
+    const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
+    const { headerFont, cellHorizontalPadding, rowHeight } = theme;
 
     this.calculateLowerFontWidth(headerFont, context);
     this.calculateUpperFontWidth(headerFont, context);
 
-    let maxWidth = 0;
-    const totalPadding = cellHorizontalPadding * 2;
+    const gridY = this.getGridY(state);
+    const rowsPerPage = Math.floor((height - gridY) / rowHeight);
+    const bottom = Math.ceil(top + rowsPerPage);
+    const cellPadding = cellHorizontalPadding * 2;
 
-    GridUtils.iterateFloating(
+    let maxRowWidth = 0;
+
+    GridUtils.iterateAllItems(
+      top,
+      bottom,
       floatingTopRowCount,
       floatingBottomRowCount,
       rowCount,
       row => {
         const text = model.textForRowFooter(row);
-        if (text) {
-          const width = this.calculateTextWidth(context, headerFont, text);
-          maxWidth = Math.max(maxWidth, width);
+        if (
+          text &&
+          (row < floatingTopRowCount ||
+            row >= rowCount - floatingBottomRowCount)
+        ) {
+          const rowWidth = this.calculateTextWidth(context, headerFont, text);
+          maxRowWidth = Math.max(maxRowWidth, rowWidth);
         }
       }
     );
 
-    return maxWidth > 0 ? maxWidth + totalPadding : 0;
+    return maxRowWidth > 0 ? maxRowWidth + cellPadding : 0;
   }
 }
 
