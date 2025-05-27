@@ -10,7 +10,7 @@ export const DhIdContext = createContext<string | null>(null);
 
 /**
  * Gets the Deephaven ID of a component.
- * This is used to identify the component within Deephaven.
+ * This is used to identify the component within a dashboard.
  * Usually this is just a panel ID, but in some contexts such as dh.ui,
  * it may be an ID for a component within a panel.
  *
