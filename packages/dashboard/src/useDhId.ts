@@ -16,9 +16,9 @@ export const DhIdContext = createContext<string | null>(null);
  *
  * Looks for a __dhId prop on the component, and if not found, looks in the DhIdContext.
  * @param props The props of the component using this hook
- * @returns The Deephaven ID of the component
+ * @returns The Deephaven ID of the component or null if not found.
  */
-export function useDhId(): string {
+export function useDhId(): string | null {
   // pendingProps are the props passed to the fiber node
   const props =
     (useFiber()?.pendingProps as Record<string, unknown> | undefined) ?? {};
@@ -36,9 +36,9 @@ export function useDhId(): string {
 
   if (dhId == null) {
     log.warn(
-      `useDhId must be used within a DhIdContext provider if there is no ${DH_ID_PROP} prop. Defaulting to empty string.`
+      `useDhId must be used within a DhIdContext provider if there is no ${DH_ID_PROP} prop. Defaulting to null.`
     );
-    return '';
+    return null;
   }
 
   return dhId;

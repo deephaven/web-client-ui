@@ -3,10 +3,11 @@ import EventEmitter from './EventEmitter';
 
 type AsArray<P> = P extends unknown[] ? P : [P];
 
+export type EventHandlerFunction<P = []> = (...parameters: AsArray<P>) => void;
 export type EventListenerRemover = () => void;
 export type EventListenFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: (...params: AsArray<TParameters>) => void
+  handler: EventHandlerFunction<TParameters>
 ) => EventListenerRemover;
 
 export type EventEmitFunction<TParameters = []> = (
@@ -16,7 +17,7 @@ export type EventEmitFunction<TParameters = []> = (
 
 export type EventListenerHook<TParameters = []> = (
   eventEmitter: EventEmitter | null | undefined,
-  handler: (...params: AsArray<TParameters>) => void
+  handler: EventHandlerFunction<TParameters>
 ) => void;
 
 /**
@@ -29,7 +30,7 @@ export type EventListenerHook<TParameters = []> = (
 export function listenForEvent<TParameters = []>(
   eventEmitter: EventEmitter,
   event: string,
-  handler: (...params: AsArray<TParameters>) => void
+  handler: EventHandlerFunction<TParameters>
 ): EventListenerRemover {
   eventEmitter.on(event, handler);
   return () => {

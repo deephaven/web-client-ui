@@ -30,10 +30,13 @@ export function useDashboardColumnFilters(
 ): InputFilter[] {
   const { eventHub } = useLayoutManager();
   const dashboardId = useDashboardId();
-  const panelId = useDhId() as FilterColumnSourceId;
+  const panelId = useDhId() as FilterColumnSourceId | null;
 
   useEffect(
     function columnsChanged() {
+      if (panelId == null) {
+        return;
+      }
       emitFilterColumnsChanged(eventHub, panelId, columns);
 
       return () => emitFilterColumnsChanged(eventHub, panelId, null);
@@ -42,7 +45,7 @@ export function useDashboardColumnFilters(
   );
 
   useEffect(function tableChanged() {
-    if (table == null) {
+    if (table == null || panelId == null) {
       return;
     }
     emitFilterTableChanged(eventHub, panelId, table);
