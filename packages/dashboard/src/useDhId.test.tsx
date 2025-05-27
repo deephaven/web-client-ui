@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { DhIdContext, useDhId } from './useDhId';
+import { DhIdContext, useDhId, DH_ID_PROP } from './useDhId';
 import { FiberProvider } from './useFiber';
 
 describe('useDhId', () => {
@@ -12,7 +12,7 @@ describe('useDhId', () => {
         <FiberProvider>
           {React.Children.map(children, c => {
             if (React.isValidElement(c)) {
-              return React.cloneElement(c, { __dhId: mockDhId });
+              return React.cloneElement(c, { [DH_ID_PROP]: mockDhId });
             }
             return c;
           })}
@@ -33,7 +33,7 @@ describe('useDhId', () => {
           <DhIdContext.Provider value={mockContextDhId}>
             {React.Children.map(children, c => {
               if (React.isValidElement(c)) {
-                return React.cloneElement(c, { __dhId: mockDhId });
+                return React.cloneElement(c, { [DH_ID_PROP]: mockDhId });
               }
               return c;
             })}
@@ -61,12 +61,12 @@ describe('useDhId', () => {
     expect(result.current).toBe(mockDhId);
   });
 
-  it('should return empty string if no __dhId prop and no context', () => {
+  it('should return null if no __dhId prop and no context', () => {
     const { result } = renderHook(() => useDhId(), {
       wrapper: ({ children }) => <FiberProvider>{children}</FiberProvider>,
     });
 
-    expect(result.current).toBe('');
+    expect(result.current).toBe(null);
   });
 
   it('should throw an error if __dhId is not a string', () => {
@@ -75,7 +75,7 @@ describe('useDhId', () => {
         <FiberProvider>
           {React.Children.map(children, c => {
             if (React.isValidElement(c)) {
-              return React.cloneElement(c, { __dhId: 42 });
+              return React.cloneElement(c, { [DH_ID_PROP]: 42 });
             }
             return c;
           })}
