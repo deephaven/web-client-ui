@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
+
+### Features
+
+- Add keepMounted param to TabPanels for persisting panels when they are not active ([#2434](https://github.com/deephaven/web-client-ui/issues/2434)) ([09077bf](https://github.com/deephaven/web-client-ui/commit/09077bfefd41a24172a6e77f8c9684938c757220))
+- Add usePersistentState hook ([#2402](https://github.com/deephaven/web-client-ui/issues/2402)) ([728ad95](https://github.com/deephaven/web-client-ui/commit/728ad95fe43ea966fb47632015572b5e901228d8))
+- Add usePersistentState implementation to GridWidgetPlugin ([#2427](https://github.com/deephaven/web-client-ui/issues/2427)) ([f006bca](https://github.com/deephaven/web-client-ui/commit/f006bca00150baf5fc7031990801007424303d95))
+- DH-19307: External theme support ([#2425](https://github.com/deephaven/web-client-ui/issues/2425)) ([42a74ec](https://github.com/deephaven/web-client-ui/commit/42a74ec95b44891ef07e3631190d976dc690400b))
+
+### Bug Fixes
+
+- Catch errors when detecting if WebGL is supported ([#2426](https://github.com/deephaven/web-client-ui/issues/2426)) ([46fc6f5](https://github.com/deephaven/web-client-ui/commit/46fc6f5144f36324cb49490bddb41bb69d024d09))
+- DH-18562: Deephaven picker hover blends with non-hovered styling in dark mode ([#2433](https://github.com/deephaven/web-client-ui/issues/2433)) ([e6ed762](https://github.com/deephaven/web-client-ui/commit/e6ed762b4ce3e7a30572af79f3a2c38262cb4ac9))
+- DH-18832: propagate min and max to plotly figure axis ([#2424](https://github.com/deephaven/web-client-ui/issues/2424)) ([657a04c](https://github.com/deephaven/web-client-ui/commit/657a04c4d694d35a93538fb173ed30aaee455977))
+- DH-19350: Ruff tries to lint before initializing when disabled ([#2429](https://github.com/deephaven/web-client-ui/issues/2429)) ([6d65594](https://github.com/deephaven/web-client-ui/commit/6d65594a4bd0fa2ed48c2a5510342e68fb33ad3b))
+
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 ### Features

@@ -587,6 +587,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleTableChanged = this.handleTableChanged.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
@@ -1819,6 +1820,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  clearAllAggregations(): void {
+    log.debug('Clearing all aggregations');
+
+    this.setState({ aggregationSettings: DEFAULT_AGGREGATION_SETTINGS });
+  }
+
   clearCrossColumSearch(): void {
     log.debug('Clearing cross-column search');
 
@@ -2377,6 +2384,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.VIEWPORT_UPDATED,
       this.handleViewportUpdated
     );
+    model.addEventListener(
+      IrisGridModel.EVENT.TABLE_CHANGED,
+      this.handleTableChanged
+    );
   }
 
   stopListening(model: IrisGridModel): void {
@@ -2396,6 +2407,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.removeEventListener(
       IrisGridModel.EVENT.VIEWPORT_UPDATED,
       this.handleViewportUpdated
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.TABLE_CHANGED,
+      this.handleTableChanged
     );
   }
 
@@ -3190,6 +3205,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.stopLoading();
   }
 
+  handleTableChanged(): void {
+    const { model } = this.props;
+    // movedColumns reset triggers metricCalculator update in the Grid component
+    this.setState({ movedColumns: model.initialMovedColumns });
+  }
+
   handleViewChanged(metrics?: GridMetrics): void {
     const { model } = this.props;
     const { selectionEndRow = 0 } = this.grid?.state ?? {};
@@ -3622,6 +3643,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.showAllColumns();
     this.clearAllFilters();
+    this.clearAllAggregations();
 
     this.startLoading(
       `Selecting distinct values in ${
