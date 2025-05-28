@@ -1,7 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { type Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
