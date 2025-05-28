@@ -1,12 +1,9 @@
 import React from 'react';
 import type { dh } from '@deephaven/jsapi-types';
-import {
-  getWindowParent,
-  LOGIN_OPTIONS_REQUEST,
-  requestParentResponse,
-} from '@deephaven/jsapi-utils';
+import { LOGIN_OPTIONS_REQUEST } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import { getWindowParent, requestParentResponse } from '@deephaven/utils';
+import { type AuthPlugin, type AuthPluginProps } from './AuthPlugin';
 import AuthPluginBase from './AuthPluginBase';
 import {
   UserPermissionsOverride,

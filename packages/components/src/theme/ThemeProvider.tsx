@@ -34,12 +34,23 @@ export interface ThemeProviderProps {
    * tell the provider to activate the base themes.
    */
   themes: ThemeData[] | null;
+  // In DHC web, custom themes are typically loaded from plugins. Since these
+  // get loaded after login, we have to be able to render the children containing
+  // the `Login` component before themes are activated. This means that `children`
+  // get loaded before all styles are available. In cases where themes don't require
+  // children to be rendered such as external themes requested from a parent Window,
+  // we can defer the rendering of children until the themes are activated which
+  // is less likely to render initial content with the wrong theme. We can get
+  // rid of this prop if we ever find a way to load themes without depending on
+  // children. See https://deephaven.atlassian.net/browse/DH-19400
+  waitForActivation?: boolean;
   defaultPreloadValues?: Record<string, string>;
   children: ReactNode;
 }
 
 export function ThemeProvider({
   themes: customThemes,
+  waitForActivation = false,
   defaultPreloadValues = DEFAULT_PRELOAD_DATA_VARIABLES,
   children,
 }: ThemeProviderProps): JSX.Element | null {
@@ -105,6 +116,10 @@ export function ThemeProvider({
       setSelectedThemeKey,
     });
   }, [activeThemes, selectedThemeKey, themes]);
+
+  if (waitForActivation && activeThemes == null) {
+    return null;
+  }
 
   return (
     <>

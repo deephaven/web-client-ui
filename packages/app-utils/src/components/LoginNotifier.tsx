@@ -1,5 +1,6 @@
 import { useBroadcastChannel } from '@deephaven/jsapi-components';
-import { BROADCAST_LOGIN_MESSAGE, makeMessage } from '@deephaven/jsapi-utils';
+import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
+import { makeMessage } from '@deephaven/utils';
 import { useEffect } from 'react';
 
 /**

@@ -22,10 +22,10 @@ import { ServerConfigValues, User, store } from '@deephaven/redux';
 import {
   BROADCAST_CHANNEL_NAME,
   BROADCAST_LOGOUT_MESSAGE,
-  makeMessage,
 } from '@deephaven/jsapi-utils';
 import { PluginModuleMap } from '@deephaven/plugin';
 import { exportLogs, logHistory } from '@deephaven/log';
+import { makeMessage } from '@deephaven/utils';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';

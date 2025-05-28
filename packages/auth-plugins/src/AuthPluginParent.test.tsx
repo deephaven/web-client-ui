@@ -11,6 +11,9 @@ let mockParentResponse: Promise<LoginOptions>;
 jest.mock('@deephaven/jsapi-utils', () => ({
   ...jest.requireActual('@deephaven/jsapi-utils'),
   LOGIN_OPTIONS_REQUEST: 'mock-login-options-request',
+}));
+jest.mock('@deephaven/utils', () => ({
+  ...jest.requireActual('@deephaven/utils'),
   requestParentResponse: jest.fn(() => mockParentResponse),
 }));
 
