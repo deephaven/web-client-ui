@@ -1,5 +1,6 @@
 import React from 'react';
-import { Range, TestUtils, ClickOptions } from '@deephaven/utils';
+import { Range } from '@deephaven/utils';
+import { ClickOptions, TestUtils } from '@deephaven/test-utils';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';

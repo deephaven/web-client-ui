@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react-hooks';
 import { dh } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   ITEM_KEY_PREFIX,
   OnTableUpdatedEvent,

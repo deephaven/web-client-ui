@@ -17,6 +17,7 @@
     { "path": "../log" },
     { "path": "../react-hooks" },
     { "path": "../storage" },
+    { "path": "../test-utils" },
     { "path": "../utils" }
   ]
 }

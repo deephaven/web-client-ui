@@ -50,6 +50,7 @@
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/test-utils": "file:../test-utils",
     "@types/plotly.js": "^2.12.11"
   },
   "files": [

@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/test-utils": "file:../test-utils",
     "@types/lodash.ismatch": "^4.4.0"
   },
   "files": [

@@ -6,7 +6,8 @@ import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import { getAllMethodNames, TestUtils } from '@deephaven/utils';
+import { getAllMethodNames } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import TableUtils, { DataType, SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages

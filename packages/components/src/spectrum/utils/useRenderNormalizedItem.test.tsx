@@ -2,7 +2,7 @@ import React, { Key } from 'react';
 import { Item } from '@adobe/react-spectrum';
 import { renderHook } from '@testing-library/react-hooks';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { ItemContent } from '../ItemContent';
 import { useRenderNormalizedItem } from './useRenderNormalizedItem';
 import { getItemKey, NormalizedItem } from './itemUtils';

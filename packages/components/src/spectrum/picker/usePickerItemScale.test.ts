@@ -1,4 +1,4 @@
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import type { ProviderContext } from '@react-types/provider';
 import { renderHook } from '@testing-library/react-hooks';
 import { useSpectrumThemeProvider } from '../../theme';

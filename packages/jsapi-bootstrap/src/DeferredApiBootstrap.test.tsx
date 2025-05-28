@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, render } from '@testing-library/react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import DeferredApiBootstrap from './DeferredApiBootstrap';
 import { DeferredApiContext } from './useDeferredApi';
 

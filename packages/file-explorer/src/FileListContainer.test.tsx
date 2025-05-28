@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MockFileStorage } from '@deephaven/dashboard-core-plugins';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { ContextMenuRoot } from '@deephaven/components';
 import { FileStorageItem, FileStorageTable } from './FileStorage';
 import FileListContainer, { FileListContainerProps } from './FileListContainer';

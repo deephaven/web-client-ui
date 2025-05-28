@@ -11,6 +11,7 @@
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-utils" },
-    { "path": "../log" }
+    { "path": "../log" },
+    { "path": "../test-utils" }
   ]
 }

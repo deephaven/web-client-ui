@@ -7,7 +7,7 @@ import {
 import userEvent from '@testing-library/user-event/';
 import { MockFileStorage } from '@deephaven/dashboard-core-plugins';
 import { ContextMenuRoot } from '@deephaven/components';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import FileStorage, {
   DirectoryStorageItem,
   FileStorageItem,

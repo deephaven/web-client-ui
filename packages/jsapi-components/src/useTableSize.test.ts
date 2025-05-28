@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useTableSize from './useTableSize';
 import useTableListener from './useTableListener';
 import { makeApiContextWrapper } from './HookTestUtils';

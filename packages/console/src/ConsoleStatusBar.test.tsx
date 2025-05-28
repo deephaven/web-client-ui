@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, DropdownAction } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
+import { TestUtils } from '@deephaven/test-utils';
 import userEvent from '@testing-library/user-event';
 import ConsoleStatusBar from './ConsoleStatusBar';
 

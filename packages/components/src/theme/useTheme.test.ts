@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useTheme } from './useTheme';
 
 const { asMock } = TestUtils;

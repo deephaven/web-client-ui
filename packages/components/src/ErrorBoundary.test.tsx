@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import ErrorBoundary, { ErrorBoundaryProps } from './ErrorBoundary';
 
 function ThrowComponent(): JSX.Element {

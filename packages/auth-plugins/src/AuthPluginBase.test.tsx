@@ -2,7 +2,7 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { ClientContext } from '@deephaven/jsapi-bootstrap';
 import type { CoreClient } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import AuthPluginBase from './AuthPluginBase';
 
 const mockChildText = 'Mock Auth Base Child';

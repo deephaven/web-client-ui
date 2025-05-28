@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import Log from '@deephaven/log';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useAsyncInterval from './useAsyncInterval';
 
 jest.mock('@deephaven/log', () => {

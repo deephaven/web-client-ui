@@ -1,17 +1,18 @@
 {
-  "name": "@deephaven/react-hooks",
-  "version": "0.85.23",
-  "description": "Deephaven React hooks library",
+  "name": "@deephaven/test-utils",
+  "version": "0.93.0",
+  "description": "Deephaven Test Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/react-hooks"
+    "directory": "packages/utils"
   },
-  "source": "src/index.ts",
+  "source": "src/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
     "node": ">=16"
@@ -19,20 +20,6 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
-  },
-  "dependencies": {
-    "@adobe/react-spectrum": "3.38.0",
-    "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils",
-    "lodash.debounce": "^4.0.8",
-    "lodash.throttle": "^4.1.1",
-    "nanoid": "^5.0.7"
-  },
-  "devDependencies": {
-    "@deephaven/test-utils": "file:../test-utils"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0"
   },
   "files": [
     "dist"

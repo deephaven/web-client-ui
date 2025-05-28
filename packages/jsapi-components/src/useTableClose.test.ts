@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useTableClose from './useTableClose';
 
 const table = TestUtils.createMockProxy<dh.Table>({});

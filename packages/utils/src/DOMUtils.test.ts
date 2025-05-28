@@ -1,9 +1,9 @@
+import { TestUtils } from '@deephaven/test-utils';
 import {
   getClosestByClassName,
   identityExtractHTMLElement,
   syncAnimationStartTime,
 } from './DOMUtils';
-import TestUtils from './TestUtils';
 
 const { createMockProxy } = TestUtils;
 

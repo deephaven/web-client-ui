@@ -6,7 +6,7 @@ import {
   FilterConditionFactory,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useNotNullOrEmptyFilter from './useNotNullOrEmptyFilter';
 import useTableUtils from './useTableUtils';
 

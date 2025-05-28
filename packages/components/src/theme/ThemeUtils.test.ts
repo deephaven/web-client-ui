@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ColorUtils, TestUtils } from '@deephaven/utils';
+import { ColorUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,

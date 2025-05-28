@@ -9,7 +9,7 @@ import type {
   IdeConnection,
   dh as DhType,
 } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import AppBootstrap from './AppBootstrap';
 
 const { asMock } = TestUtils;

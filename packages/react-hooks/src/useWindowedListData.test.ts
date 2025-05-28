@@ -4,7 +4,7 @@ import {
   renderHook,
   RenderHookResult,
 } from '@testing-library/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useWindowedListData, {
   defaultGetKey,
   WindowedListData,
