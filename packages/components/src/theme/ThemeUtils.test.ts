@@ -25,6 +25,7 @@ import {
   extractDistinctCssVariableExpressions,
   getActiveThemes,
   getDefaultBaseThemes,
+  getDefaultSelectedThemeKey,
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
