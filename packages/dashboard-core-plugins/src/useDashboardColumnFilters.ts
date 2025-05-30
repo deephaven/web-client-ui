@@ -44,14 +44,17 @@ export function useDashboardColumnFilters(
     [eventHub, panelId, columns]
   );
 
-  useEffect(function tableChanged() {
-    if (table == null || panelId == null) {
-      return;
-    }
-    emitFilterTableChanged(eventHub, panelId, table);
+  useEffect(
+    function tableChanged() {
+      if (table == null || panelId == null) {
+        return;
+      }
+      emitFilterTableChanged(eventHub, panelId, table);
 
-    return () => emitFilterTableChanged(eventHub, panelId, null);
-  });
+      return () => emitFilterTableChanged(eventHub, panelId, null);
+    },
+    [eventHub, panelId, table]
+  );
 
   const getInputFilters = useCallback(
     (s: RootState) => getInputFiltersForDashboard(s, dashboardId),
