@@ -1051,9 +1051,11 @@ class IrisGridTableModelTemplate<
    * @returns The row within the pending input rows if it's a pending row, null otherwise
    */
   pendingRow(y: ModelIndex): ModelIndex | null {
-    const pendingRow = y - this.floatingTopRowCount - this.table.size;
-    if (pendingRow >= 0) {
-      return pendingRow;
+    const pendingRowStart = this.floatingTopRowCount + this.table.size;
+    const pendingRowEnd = pendingRowStart + this.pendingNewRowCount;
+
+    if (y >= pendingRowStart && y < pendingRowEnd) {
+      return y - pendingRowStart;
     }
 
     return null;
@@ -1893,17 +1895,59 @@ class IrisGridTableModelTemplate<
 
   async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
-    if (
-      !edits.every(edit =>
-        this.isEditableRange(
-          GridRange.makeCell(edit.column ?? edit.x, edit.row ?? edit.y)
-        )
-      )
-    ) {
+
+    const invalidEdits = edits.filter(edit => {
+      const column = edit.column ?? edit.x;
+      const row = edit.row ?? edit.y;
+      const range = GridRange.makeCell(column, row);
+
+      if (this.isEditableRange(range)) {
+        return false;
+      }
+
+      if (
+        this.inputTable != null &&
+        range.startRow != null &&
+        range.startColumn != null
+      ) {
+        const pendingAreaStart = this.floatingTopRowCount + this.table.size;
+        if (range.startRow >= pendingAreaStart) {
+          const isKeyColumn = this.isKeyColumn(range.startColumn);
+          const hasKeyColumns = this.keyColumnSet.size > 0;
+          return hasKeyColumns && isKeyColumn;
+        }
+      }
+
+      return true;
+    });
+
+    if (invalidEdits.length > 0) {
       throw new Error(`Uneditable ranges ${edits}`);
     }
 
     try {
+      // Expand the pending area to fit all edits
+      if (this.inputTable != null) {
+        const pendingAreaStart = this.floatingTopRowCount + this.table.size;
+
+        const pendingAreaEdits = edits.filter(edit => {
+          const y = edit.row ?? edit.y;
+          return y >= pendingAreaStart;
+        });
+
+        if (pendingAreaEdits.length > 0) {
+          const pendingRowsNeeded = Math.max(
+            ...pendingAreaEdits.map(
+              edit => (edit.row ?? edit.y) - pendingAreaStart
+            )
+          );
+
+          if (pendingRowsNeeded >= this.pendingNewRowCount) {
+            this.pendingNewRowCount = pendingRowsNeeded + 1;
+          }
+        }
+      }
+
       const newDataMap = new Map(this.pendingNewDataMap);
 
       // Cache the display values
