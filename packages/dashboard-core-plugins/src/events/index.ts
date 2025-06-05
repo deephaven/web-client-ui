@@ -1,4 +1,4 @@
-import { type TabEvent as DashboardTabEvent } from '@deephaven/dashboard';
+import { TabEvent as DashboardTabEvent } from '@deephaven/dashboard';
 
 export { default as ChartEvent } from './ChartEvent';
 export { default as ConsoleEvent } from './ConsoleEvent';
@@ -11,4 +11,4 @@ export { default as PandasEvent } from './PandasEvent';
 /**
  * @deprecated Use TabEvent from @deephaven/dashboard
  */
-export type TabEvent = typeof DashboardTabEvent;
+export const TabEvent = DashboardTabEvent;
