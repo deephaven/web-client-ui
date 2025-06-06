@@ -92,6 +92,7 @@ class LinkerUtils {
         LayoutUtils.getComponentName(IrisGridPanel),
         LayoutUtils.getComponentName(ChartPanel),
         LayoutUtils.getComponentName(DropdownFilterPanel),
+        '@deephaven/plotly-express',
       ],
     ],
   ]);
@@ -154,6 +155,7 @@ class LinkerUtils {
     // If all checks pass, link type is determined by the target panel component
     switch (end.panelComponent) {
       case LayoutUtils.getComponentName(ChartPanel):
+      case '@deephaven/plotly-express':
         return 'chartLink';
       case LayoutUtils.getComponentName(IrisGridPanel):
         return 'tableLink';
