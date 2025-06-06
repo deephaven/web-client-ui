@@ -12,6 +12,7 @@ import {
   type IrisGridState,
   type IrisGridType,
   IrisGridUtils,
+  isIrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -88,7 +89,11 @@ export function GridWidgetPlugin({
   );
 
   const inputFilters = useDashboardColumnFilters(
-    fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY
+    fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY,
+    fetchResult.status === 'success' &&
+      isIrisGridTableModelTemplate(fetchResult.model)
+      ? fetchResult.model.table
+      : undefined
   );
 
   const irisGridRef = useRef<IrisGridType | null>(null);

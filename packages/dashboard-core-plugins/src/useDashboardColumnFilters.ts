@@ -38,8 +38,6 @@ export function useDashboardColumnFilters(
         return;
       }
       emitFilterColumnsChanged(eventHub, panelId, columns);
-
-      return () => emitFilterColumnsChanged(eventHub, panelId, null);
     },
     [eventHub, panelId, columns]
   );
@@ -50,10 +48,23 @@ export function useDashboardColumnFilters(
         return;
       }
       emitFilterTableChanged(eventHub, panelId, table);
-
-      return () => emitFilterTableChanged(eventHub, panelId, null);
     },
     [eventHub, panelId, table]
+  );
+
+  // Cleanup separately because filtering the table or other operations can get a new columns array,
+  // and we are using null to indicate unmount, not change
+  useEffect(
+    function cleanupOnUnmount() {
+      if (panelId == null) {
+        return;
+      }
+      return () => {
+        emitFilterColumnsChanged(eventHub, panelId, null);
+        emitFilterTableChanged(eventHub, panelId, null);
+      };
+    },
+    [eventHub, panelId]
   );
 
   const getInputFilters = useCallback(

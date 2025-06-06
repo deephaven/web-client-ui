@@ -171,7 +171,7 @@ describe('useDashboardColumnFilters', () => {
 
     const mockTable = {} as dh.Table;
 
-    const { rerender } = renderHook(
+    const { rerender, unmount } = renderHook(
       ({ columns, table }) => useDashboardColumnFilters(columns, table),
       {
         initialProps: { columns: MOCK_COLUMNS, table: mockTable },
@@ -184,7 +184,7 @@ describe('useDashboardColumnFilters', () => {
     expect(mockColumnsChanged).toHaveBeenCalledWith('testDhId', MOCK_COLUMNS);
     expect(mockTableChanged).toHaveBeenCalledWith('testDhId', mockTable);
 
-    // Change the columns and table to check cleanup and re-emit
+    // Change the columns and table to check re-emit
     mockColumnsChanged.mockClear();
     mockTableChanged.mockClear();
 
@@ -197,17 +197,23 @@ describe('useDashboardColumnFilters', () => {
     ];
 
     rerender({ columns: otherMockColumns, table: otherMockTable });
-    expect(mockColumnsChanged).toHaveBeenCalledTimes(2);
-    expect(mockTableChanged).toHaveBeenCalledTimes(2);
-    expect(mockColumnsChanged).toHaveBeenNthCalledWith(1, 'testDhId', null);
-    expect(mockTableChanged).toHaveBeenNthCalledWith(1, 'testDhId', null);
-    expect(mockColumnsChanged).toHaveBeenLastCalledWith(
+    expect(mockColumnsChanged).toHaveBeenCalledTimes(1);
+    expect(mockTableChanged).toHaveBeenCalledTimes(1);
+    expect(mockColumnsChanged).toHaveBeenCalledWith(
       'testDhId',
       otherMockColumns
     );
-    expect(mockTableChanged).toHaveBeenLastCalledWith(
-      'testDhId',
-      otherMockTable
-    );
+    expect(mockTableChanged).toHaveBeenCalledWith('testDhId', otherMockTable);
+
+    // Check unmount emits with null
+    mockColumnsChanged.mockClear();
+    mockTableChanged.mockClear();
+
+    unmount();
+
+    expect(mockColumnsChanged).toHaveBeenCalledTimes(1);
+    expect(mockTableChanged).toHaveBeenCalledTimes(1);
+    expect(mockColumnsChanged).toHaveBeenCalledWith('testDhId', null);
+    expect(mockTableChanged).toHaveBeenCalledWith('testDhId', null);
   });
 });
