@@ -64,7 +64,8 @@ import {
   isChartPanelFigureMetadata,
   isChartPanelTableMetadata,
 } from './ChartPanelUtils';
-import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { emitFilterColumnsChanged } from '../FilterEvents';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -763,9 +764,11 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       return;
     }
     const { glEventHub } = this.props;
-    glEventHub.emit(
-      InputFilterEvent.COLUMNS_CHANGED,
-      LayoutUtils.getIdFromPanel(this),
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    emitFilterColumnsChanged(
+      glEventHub,
+      panelId,
       Array.from(model.getFilterColumnMap().values())
     );
   }

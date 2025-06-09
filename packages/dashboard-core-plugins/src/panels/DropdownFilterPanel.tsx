@@ -19,7 +19,7 @@ import {
   getSettings,
   RootState,
 } from '@deephaven/redux';
-import { Pending, PromiseUtils } from '@deephaven/utils';
+import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -35,8 +35,9 @@ import './DropdownFilterPanel.scss';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';
-import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
-import { PanelState as InputFilterPanelState } from './InputFilterPanel';
+import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { type PanelState as InputFilterPanelState } from './InputFilterPanel';
+import { emitFilterChanged } from '../FilterEvents';
 
 const log = Log.module('DropdownFilterPanel');
 
@@ -573,7 +574,7 @@ export class DropdownFilterPanel extends Component<
   ): void {
     const { dashboardLinks, glEventHub } = this.props;
     const sourcePanelId = this.getSource(dashboardLinks)?.panelId;
-    const excludePanelIds = sourcePanelId === null ? [] : [sourcePanelId];
+    const excludePanelIds = sourcePanelId == null ? [] : [sourcePanelId];
     log.debug('sendUpdate', {
       name,
       type,
@@ -582,13 +583,22 @@ export class DropdownFilterPanel extends Component<
       excludePanelIds,
     });
 
-    glEventHub.emit(InputFilterEvent.FILTERS_CHANGED, this, {
-      name,
-      type,
-      value: value != null ? value : '=null',
-      timestamp,
-      excludePanelIds,
-    });
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+
+    emitFilterChanged(
+      glEventHub,
+      panelId,
+      name != null && type != null && timestamp != null
+        ? {
+            name,
+            type,
+            value: value != null ? value : '=null',
+            timestamp,
+            excludePanelIds,
+          }
+        : null
+    );
   }
 
   updateValuesTable(): void {
