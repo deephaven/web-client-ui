@@ -1648,6 +1648,23 @@ class IrisGridTableModelTemplate<
     return false;
   }
 
+  isAppendableRange(range: GridRange): boolean {
+    // Make sure we have an input table and a valid range
+    if (
+      this.inputTable == null ||
+      range.startRow == null ||
+      range.endRow == null
+    ) {
+      return false;
+    }
+
+    // Check that the edit is in the appendable area
+    const pendingAreaStart = this.floatingTopRowCount + this.table.size;
+    return (
+      range.startRow >= pendingAreaStart && range.endRow >= pendingAreaStart
+    );
+  }
+
   isEditableRange(range: GridRange): boolean {
     // Make sure we have an input table and a valid range
     if (
@@ -1896,32 +1913,15 @@ class IrisGridTableModelTemplate<
   async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
 
-    const invalidEdits = edits.filter(edit => {
-      const column = edit.column ?? edit.x;
-      const row = edit.row ?? edit.y;
-      const range = GridRange.makeCell(column, row);
-
-      if (this.isEditableRange(range)) {
-        return false;
-      }
-
-      if (
-        this.inputTable != null &&
-        range.startRow != null &&
-        range.startColumn != null
-      ) {
-        const pendingAreaStart = this.floatingTopRowCount + this.table.size;
-        if (range.startRow >= pendingAreaStart) {
-          const isKeyColumn = this.isKeyColumn(range.startColumn);
-          const hasKeyColumns = this.keyColumnSet.size > 0;
-          return hasKeyColumns && isKeyColumn;
-        }
-      }
-
-      return true;
-    });
-
-    if (invalidEdits.length > 0) {
+    if (
+      !edits.every(edit => {
+        const cell = GridRange.makeCell(
+          edit.column ?? edit.x,
+          edit.row ?? edit.y
+        );
+        return this.isEditableRange(cell) || this.isAppendableRange(cell);
+      })
+    ) {
       throw new Error(`Uneditable ranges ${edits}`);
     }
 
