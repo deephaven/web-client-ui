@@ -953,7 +953,7 @@ class IrisGridUtils {
    * @returns The combination of the filters in filterList as text.
    */
   static combineFiltersFromList(
-    columnType: string,
+    columnType: string | null,
     filterList: FilterData[]
   ): string {
     filterList.sort((a, b) => {
