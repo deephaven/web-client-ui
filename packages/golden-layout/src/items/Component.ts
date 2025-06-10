@@ -86,9 +86,9 @@ export default class Component extends AbstractContentItem {
     AbstractContentItem.prototype._$hide.call(this);
   }
 
-  _$show() {
+  _$show(forceFocus?: boolean) {
     this.container.show();
-    if (this.container._config.isFocusOnShow) {
+    if (this.container._config.isFocusOnShow || forceFocus) {
       // focus the shown container element on show
       // preventScroll isn't supported in safari, but also doesn't matter for illumon when 100% window
       this.container._contentElement[0].focus({ preventScroll: true });

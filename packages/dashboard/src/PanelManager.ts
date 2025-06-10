@@ -18,6 +18,11 @@ import {
 
 const log = Log.module('PanelManager');
 
+enum CycleDirection {
+  Next,
+  Previous,
+}
+
 export type PanelHydraterFunction = (
   name: string,
   props: PanelProps
@@ -88,6 +93,11 @@ class PanelManager {
     this.handleUnmount = this.handleUnmount.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
     this.handleReopenLast = this.handleReopenLast.bind(this);
+    this.handleCycleToNextStack = this.handleCycleToNextStack.bind(this);
+    this.handleCycleToPreviousStack =
+      this.handleCycleToPreviousStack.bind(this);
+    this.handleCycleToNextTab = this.handleCycleToNextTab.bind(this);
+    this.handleCycleToPreviousTab = this.handleCycleToPreviousTab.bind(this);
     this.handleDeleted = this.handleDeleted.bind(this);
     this.handleClosed = this.handleClosed.bind(this);
     this.handleControlClose = this.handleControlClose.bind(this);
@@ -112,6 +122,16 @@ class PanelManager {
     eventHub.on(PanelEvent.MOUNT, this.handleMount);
     eventHub.on(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.on(PanelEvent.REOPEN, this.handleReopen);
+    eventHub.on(PanelEvent.CYCLE_TO_NEXT_STACK, this.handleCycleToNextStack);
+    eventHub.on(
+      PanelEvent.CYCLE_TO_PREVIOUS_STACK,
+      this.handleCycleToPreviousStack
+    );
+    eventHub.on(PanelEvent.CYCLE_TO_NEXT_TAB, this.handleCycleToNextTab);
+    eventHub.on(
+      PanelEvent.CYCLE_TO_PREVIOUS_TAB,
+      this.handleCycleToPreviousTab
+    );
     eventHub.on(PanelEvent.REOPEN_LAST, this.handleReopenLast);
     eventHub.on(PanelEvent.DELETE, this.handleDeleted);
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
@@ -125,6 +145,16 @@ class PanelManager {
     eventHub.off(PanelEvent.MOUNT, this.handleMount);
     eventHub.off(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.off(PanelEvent.REOPEN, this.handleReopen);
+    eventHub.off(PanelEvent.CYCLE_TO_NEXT_STACK, this.handleCycleToNextStack);
+    eventHub.off(
+      PanelEvent.CYCLE_TO_PREVIOUS_STACK,
+      this.handleCycleToPreviousStack
+    );
+    eventHub.off(PanelEvent.CYCLE_TO_NEXT_TAB, this.handleCycleToNextTab);
+    eventHub.off(
+      PanelEvent.CYCLE_TO_PREVIOUS_TAB,
+      this.handleCycleToPreviousTab
+    );
     eventHub.off(PanelEvent.REOPEN_LAST, this.handleReopenLast);
     eventHub.off(PanelEvent.DELETE, this.handleDeleted);
     eventHub.off(PanelEvent.CLOSED, this.handleClosed);
@@ -269,6 +299,79 @@ class PanelManager {
     log.debug2('Unmount: ', panel);
     this.removePanel(panel);
     this.sendUpdate();
+  }
+
+  handleCycleStack(direction: CycleDirection): void {
+    const allStacks = LayoutUtils.getAllStackContainers(this.layout);
+    if (allStacks.length <= 1) {
+      return;
+    }
+
+    const focusedIndex = LayoutUtils.getFocusedStackIndex(this.layout);
+
+    // If no stack is focused, activate the first stack's content item
+    if (focusedIndex === -1) {
+      const targetStack = allStacks[0];
+      const activeContentIndex = targetStack.config.activeItemIndex;
+      const activeContentItem =
+        activeContentIndex != null
+          ? targetStack.contentItems[activeContentIndex]
+          : targetStack.contentItems[0];
+
+      targetStack.setActiveContentItem(activeContentItem, true);
+      return;
+    }
+
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (focusedIndex + 1) % allStacks.length
+        : (focusedIndex - 1 + allStacks.length) % allStacks.length;
+    const targetStack = allStacks[targetIndex];
+
+    const activeContentIndex = targetStack.config.activeItemIndex;
+    const activeContentItem =
+      activeContentIndex != null
+        ? targetStack.contentItems[activeContentIndex]
+        : targetStack.contentItems[0];
+
+    targetStack.setActiveContentItem(activeContentItem, true);
+  }
+
+  handleCycleToNextStack(): void {
+    this.handleCycleStack(CycleDirection.Next);
+  }
+
+  handleCycleToPreviousStack(): void {
+    this.handleCycleStack(CycleDirection.Previous);
+  }
+
+  handleCycleTab(direction: CycleDirection): void {
+    const focusedStack = LayoutUtils.getFocusedStack(this.layout);
+    if (focusedStack === undefined) {
+      return;
+    }
+    const { contentItems } = focusedStack;
+
+    if (contentItems.length <= 1) {
+      return;
+    }
+
+    const activeItemIndex = focusedStack.config.activeItemIndex ?? 0;
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (activeItemIndex + 1) % contentItems.length
+        : (activeItemIndex - 1 + contentItems.length) % contentItems.length;
+
+    const targetContentItem = contentItems[targetIndex];
+    focusedStack.setActiveContentItem(targetContentItem, true);
+  }
+
+  handleCycleToNextTab(): void {
+    this.handleCycleTab(CycleDirection.Next);
+  }
+
+  handleCycleToPreviousTab(): void {
+    this.handleCycleTab(CycleDirection.Previous);
   }
 
   /**
