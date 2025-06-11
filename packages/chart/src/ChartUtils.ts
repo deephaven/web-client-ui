@@ -17,6 +17,7 @@ import type {
   AxisType as PlotlyAxisType,
   MarkerSymbol,
   Template,
+  Delta,
 } from 'plotly.js';
 import { assertNotNull, bindAllMethods, Range } from '@deephaven/utils';
 import { ChartTheme } from './ChartTheme';
@@ -2058,6 +2059,9 @@ class ChartUtils {
       ohlc_increasing,
       ohlc_decreasing,
       title_color,
+      indicator_increasing,
+      indicator_decreasing,
+      indicator_gauge,
     } = theme;
 
     return {
@@ -2093,6 +2097,20 @@ class ChartUtils {
             outsidetextfont: {
               color: title_color,
             },
+          },
+        ],
+        indicator: [
+          {
+            title: { font: { color: title_color } },
+            delta: {
+              decreasing: {
+                color: indicator_decreasing,
+              } as Delta['increasing'],
+              increasing: {
+                color: indicator_increasing,
+              } as Delta['decreasing'],
+            },
+            gauge: { bar: { color: indicator_gauge } },
           },
         ],
       },
