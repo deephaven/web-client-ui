@@ -69,6 +69,7 @@ export function getPluginModuleValue(
   // whether there are also named exports. If the default is the only
   // export, it will be the value. If there are also named exports,
   // it will be assigned to the `default` property on the value.
+  console.log('getPluginModuleValue', value);
   if (isPlugin(value)) {
     return value;
   }

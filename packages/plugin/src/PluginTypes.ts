@@ -6,6 +6,7 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
+import exp from 'constants';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
@@ -13,6 +14,7 @@ export const PluginType = Object.freeze({
   WIDGET_PLUGIN: 'WidgetPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
+  ELEMENT_PLUGIN: 'ElementPlugin',
 });
 
 /**
@@ -238,12 +240,23 @@ export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
 
+export interface ElementPlugin extends Plugin {
+  name: string;
+  type: typeof PluginType.ELEMENT_PLUGIN;
+  mapping: Record<string, React.ComponentType<unknown>>;
+}
+
+export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
+  return 'type' in plugin && plugin.type === PluginType.ELEMENT_PLUGIN;
+}
+
 export function isPlugin(plugin: unknown): plugin is Plugin {
   return (
     isDashboardPlugin(plugin as PluginModule) ||
     isAuthPlugin(plugin as PluginModule) ||
     isTablePlugin(plugin as PluginModule) ||
     isThemePlugin(plugin as PluginModule) ||
-    isWidgetPlugin(plugin as PluginModule)
+    isWidgetPlugin(plugin as PluginModule) ||
+    isElementPlugin(plugin as PluginModule)
   );
 }

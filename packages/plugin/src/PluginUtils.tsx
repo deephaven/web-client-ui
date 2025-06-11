@@ -9,6 +9,8 @@ import {
   type PluginModuleMap,
   type ThemePlugin,
   isThemePlugin,
+  isElementPlugin,
+  ElementPlugin,
 } from './PluginTypes';
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
@@ -75,4 +77,24 @@ export function getThemeDataFromPlugins(
       );
     })
     .flat();
+}
+
+export function getElementPluginMapping(
+  pluginMap: PluginModuleMap
+): Map<string, React.ComponentType<unknown>> {
+  const elementPluginEntries = [...pluginMap.entries()].filter(
+    (entry): entry is [string, ElementPlugin] =>
+      isElementPlugin(entry[1]) && entry[1].mapping != null
+  );
+
+  log.debug('Getting element plugin mapping', elementPluginEntries);
+
+  return new Map(
+    elementPluginEntries.flatMap(([pluginName, plugin]) =>
+      Object.entries(plugin.mapping).map(
+        ([elementName, elementComponent]) =>
+          [`${elementName}`, elementComponent] as const
+      )
+    )
+  );
 }
