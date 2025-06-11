@@ -663,8 +663,8 @@ class IrisGridTableModelTemplate<
     return this.formatForCell(x, y)?.backgroundColor ?? null;
   }
 
-  textAlignForCell(x: ModelIndex): CanvasTextAlign {
-    const column = this.columns[x];
+  textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
+    const column = this.sourceColumn(x, y);
     const { type } = column;
 
     if (TableUtils.isNumberType(type)) {
