@@ -14,9 +14,7 @@ export type CorePanelProps = BasePanelProps & {
 };
 
 /**
- * Generic panel component that emits mount/unmount/focus events.
- * Also wires up some triggers for common events:
- * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
+ * Extends the base panel component to handle Session events and input filter events.
  */
 class CorePanel extends PureComponent<CorePanelProps> {
   constructor(props: CorePanelProps) {
