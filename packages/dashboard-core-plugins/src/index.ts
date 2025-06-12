@@ -24,6 +24,7 @@ export type { Link } from './linker/LinkerUtils';
 export { default as ToolType } from './linker/ToolType';
 export * from './useConfigureRuff';
 export * from './useDashboardColumnFilters';
+export * from './useGridLinker';
 export * from './useLoadTablePlugin';
 
 export * from './events';
