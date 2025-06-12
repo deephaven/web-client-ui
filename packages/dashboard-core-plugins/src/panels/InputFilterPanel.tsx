@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { type RootState } from '@deephaven/redux';
+import { LayoutUtils } from '@deephaven/dashboard';
+import { assertNotNull } from '@deephaven/utils';
 import Panel from './CorePanel';
 import InputFilter, {
   type InputFilterColumn,
 } from '../controls/input-filter/InputFilter';
-import { InputFilterEvent } from '../events';
 import { getColumnsForDashboard } from '../redux';
+import { emitFilterChanged } from '../FilterEvents';
 
 const INPUT_FILTER_DEBOUNCE = 250;
 
@@ -31,7 +33,7 @@ interface InputFilterPanelState {
   columns: InputFilterColumn[];
   column?: InputFilterColumn;
   value?: string;
-  timestamp?: number;
+  timestamp: number;
   isValueShown: boolean;
   wasFlipped: boolean;
   skipUpdate: boolean;
@@ -70,7 +72,7 @@ class InputFilterPanel extends Component<
       isValueShown = false,
       name,
       type,
-      timestamp,
+      timestamp = Date.now(),
     } = panelState ?? {};
 
     this.state = {
@@ -120,7 +122,7 @@ class InputFilterPanel extends Component<
       ({ name, type } = column);
     }
     let sendUpdate = true;
-    let timestamp: number | undefined = Date.now();
+    let timestamp = Date.now();
     this.setState(
       ({ panelState, timestamp: prevTimestamp, wasFlipped, skipUpdate }) => {
         // If the user had a value set, and they flip the card over and flip it back without changing any settings, ignore it
@@ -169,12 +171,20 @@ class InputFilterPanel extends Component<
     timestamp?: number
   ): void {
     const { glEventHub } = this.props;
-    glEventHub.emit(InputFilterEvent.FILTERS_CHANGED, this, {
-      name,
-      type,
-      value,
-      timestamp,
-    });
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    emitFilterChanged(
+      glEventHub,
+      panelId,
+      name != null && type != null && value != null && timestamp != null
+        ? {
+            name,
+            type,
+            value,
+            timestamp,
+          }
+        : null
+    );
   }
 
   /**
