@@ -14,10 +14,10 @@ export * from './layout';
 export * from './redux';
 export {
   type BasePanelProps,
-  default as Panel,
-  // Alias for Panel
   default as BasePanel,
-} from './Panel';
+  // Alias for BasePanel
+  default as Panel,
+} from './BasePanel';
 export * from './PanelManager';
 export * from './PanelEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';

@@ -64,7 +64,7 @@ export type BasePanelProps = {
   isRenamable?: boolean;
 };
 
-interface PanelState {
+interface BasePanelState {
   title?: string | null;
   showRenameDialog: boolean;
   isWithinPanel: boolean;
@@ -74,7 +74,7 @@ interface PanelState {
  * Also wires up some triggers for common events:
  * Focus, Resize, Show
  */
-class Panel extends PureComponent<BasePanelProps, PanelState> {
+class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
   constructor(props: BasePanelProps) {
     super(props);
 
@@ -343,6 +343,6 @@ class Panel extends PureComponent<BasePanelProps, PanelState> {
   }
 }
 
-const XPanel = createXComponent(Panel);
+const XBasePanel = createXComponent(BasePanel);
 
-export default XPanel;
+export default XBasePanel;
