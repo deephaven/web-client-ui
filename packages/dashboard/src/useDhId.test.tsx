@@ -1,7 +1,8 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { DhIdContext, useDhId, DH_ID_PROP } from './useDhId';
+import { useDhId, DH_ID_PROP } from './useDhId';
 import { FiberProvider } from './useFiber';
+import { PanelIdContext } from './usePanelId';
 
 describe('useDhId', () => {
   it('should use __dhId prop if no context', () => {
@@ -30,14 +31,14 @@ describe('useDhId', () => {
     const { result } = renderHook(() => useDhId(), {
       wrapper: ({ children }) => (
         <FiberProvider>
-          <DhIdContext.Provider value={mockContextDhId}>
+          <PanelIdContext.Provider value={mockContextDhId}>
             {React.Children.map(children, c => {
               if (React.isValidElement(c)) {
                 return React.cloneElement(c, { [DH_ID_PROP]: mockDhId });
               }
               return c;
             })}
-          </DhIdContext.Provider>
+          </PanelIdContext.Provider>
         </FiberProvider>
       ),
     });
@@ -51,9 +52,9 @@ describe('useDhId', () => {
     const { result } = renderHook(() => useDhId(), {
       wrapper: ({ children }) => (
         <FiberProvider>
-          <DhIdContext.Provider value={mockDhId}>
+          <PanelIdContext.Provider value={mockDhId}>
             {children}
-          </DhIdContext.Provider>
+          </PanelIdContext.Provider>
         </FiberProvider>
       ),
     });
