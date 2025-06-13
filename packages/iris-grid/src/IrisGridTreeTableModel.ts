@@ -186,12 +186,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         return format.color;
       }
 
-      if (this.isPendingRow(y)) {
-        // Data entered in a pending row
-        assertNotNull(theme.pendingTextColor);
-        return theme.pendingTextColor;
-      }
-
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
         const column = this.sourceColumn(x, y);
@@ -229,9 +223,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           return theme.zeroNumberColor;
         }
       }
-    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
-      assertNotNull(theme.errorTextColor);
-      return theme.errorTextColor;
     }
 
     return theme.textColor;
