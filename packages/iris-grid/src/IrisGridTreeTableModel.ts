@@ -9,7 +9,11 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
+import {
+  assertNotNull,
+  EMPTY_ARRAY,
+  EventShimCustomEvent,
+} from '@deephaven/utils';
 import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
@@ -235,6 +239,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
+  get aggregatedColumns(): readonly DhType.Column[] {
+    return this.isAggregatedColumnsAvailable
+      ? // TODO: remove type assertion when the JSAPI types are updated
+        (this.table as DhType.TreeTable & { aggregatedColumns: [] })
+          .aggregatedColumns
+      : EMPTY_ARRAY;
+  }
+
   get groupedColumns(): readonly DhType.Column[] {
     return this.getCachedGroupColumns(
       this.virtualColumns,
@@ -279,6 +291,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return true;
   }
 
+  get isAggregatedColumnsAvailable(): boolean {
+    return (
+      // TODO: Remove type assertion when the JSAPI types are updated
+      (this.table as DhType.TreeTable & { aggregatedColumns: [] })
+        .aggregatedColumns != null
+    );
+  }
+
   get isExpandAllAvailable(): boolean {
     return this.table.expandAll !== undefined;
   }
@@ -302,6 +322,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(
       this.columns,
+      this.isAggregatedColumnsAvailable,
+      this.aggregatedColumns,
       this.groupedColumns,
       this.virtualColumns
     ).has(columnIndex);
@@ -367,14 +389,29 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   getCachedFilterableColumnSet = memoize(
     (
       columns: readonly DhType.Column[],
+      isAggregatedColumnsAvailable: boolean,
+      aggregatedColumns: readonly DhType.Column[],
       groupedColumns: readonly DhType.Column[],
       virtualColumns: readonly DhType.Column[]
-    ) =>
-      new Set(
+    ) => {
+      // TODO: test on regular non-rollup tree table
+      if (isAggregatedColumnsAvailable) {
+        return new Set(
+          // Virtual and aggregated columns are not filterable
+          columns
+            .filter(
+              c => !virtualColumns.includes(c) && !aggregatedColumns.includes(c)
+            )
+            .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
+        );
+      }
+      // Only groupedColumns are filterable if aggregatedColumns API is not available
+      return new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns)
           .filter(c => !virtualColumns.includes(c))
           .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
-      )
+      );
+    }
   );
 
   getCachedGroupedColumnSet = memoize(
