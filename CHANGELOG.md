@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Features
+
+- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([9de971f](https://github.com/deephaven/web-client-ui/commit/9de971f433cd3b8ee9e95719f6641d3428659520))
+- DH-18840: Add dx linker support ([#2456](https://github.com/deephaven/web-client-ui/issues/2456)) ([5b34cd6](https://github.com/deephaven/web-client-ui/commit/5b34cd6f09c5ba4c109d09323bb830a36ae949da))
+
+### Bug Fixes
+
+- DH-18921: increase rowFooterWidth in irisGridTheme ([#2453](https://github.com/deephaven/web-client-ui/issues/2453)) ([01f5930](https://github.com/deephaven/web-client-ui/commit/01f5930672668a779c1f148d0bb315c2a93dc96f))
+- DH-19392: resolve interaction issue caused by nested radio content ([#2441](https://github.com/deephaven/web-client-ui/issues/2441)) ([8e9425e](https://github.com/deephaven/web-client-ui/commit/8e9425ee4bd954ded4146b12490ea37d85bee561))
+- DH-19393: clear aggregations in handleSelectDistinctChanged to prevent stale re… ([#2442](https://github.com/deephaven/web-client-ui/issues/2442)) ([ad4205d](https://github.com/deephaven/web-client-ui/commit/ad4205dad459bd60cc3ebefd6c6aa7ce71a3310a))
+- Download worker and monaco initializing multiple times in dev ([#2452](https://github.com/deephaven/web-client-ui/issues/2452)) ([74fd724](https://github.com/deephaven/web-client-ui/commit/74fd7241ad52342d3ddafa32461add8235ee5f84))
+- prevent keyboard shortcuts from triggering unwanted behaviour when disconnected ([#2450](https://github.com/deephaven/web-client-ui/issues/2450)) ([431c057](https://github.com/deephaven/web-client-ui/commit/431c0577f493313d6cd1b5296bb62c8ea87ed194))
+- Simple Pivot prerequisites ([#2437](https://github.com/deephaven/web-client-ui/issues/2437)) ([75fe9c1](https://github.com/deephaven/web-client-ui/commit/75fe9c11ee23e5fc59a1160750a28ae6c3f047b5))
+
 ## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
 
 ### Features

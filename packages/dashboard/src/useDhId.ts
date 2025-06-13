@@ -12,7 +12,7 @@ export const DH_ID_PROP = '__dhId';
  * Usually this is just a panel ID, but in some contexts such as dh.ui,
  * it may be an ID for a component within a panel.
  *
- * Looks for a __dhId prop on the component, and if not found, looks in the DhIdContext.
+ * Looks for a __dhId prop on the component, and if not found, looks in the PanelIdContext.
  * @param props The props of the component using this hook
  * @returns The Deephaven ID of the component or null if not found.
  */

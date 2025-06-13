@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { useDhId, DH_ID_PROP } from './useDhId';
-import { PanelIdContext } from './usePanelId';
 import { FiberProvider } from './useFiber';
+import { PanelIdContext } from './usePanelId';
 
 describe('useDhId', () => {
   it('should use __dhId prop if no context', () => {

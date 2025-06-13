@@ -8,7 +8,7 @@ import {
 } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import { copyToClipboard, EMPTY_ARRAY } from '@deephaven/utils';
-import Panel, { type CorePanelProps } from './Panel';
+import Panel, { type CorePanelProps } from './CorePanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
 import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
