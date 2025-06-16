@@ -1795,12 +1795,12 @@ class IrisGridUtils {
   }
 
   /**
-   * Get the color for a cell value based on its type and theme
+   * Get the color for a cell value
    * @param theme The IrisGrid theme
    * @param columnType The type of the column
    * @param columnName The name of the column
    * @param value The value of the cell
-   * @returns The color for the cell
+   * @returns The color for the cell value
    */
   static colorForValue(
     theme: IrisGridThemeType,
@@ -1827,6 +1827,12 @@ class IrisGridUtils {
     return theme.textColor;
   }
 
+  /**
+   * Determines the text alignment for a cell value
+   * @param columnType The type of the column
+   * @param columnName The name of the column
+   * @returns The text alignment for the cell value
+   */
   static textAlignForValue(
     columnType: string,
     columnName: string
