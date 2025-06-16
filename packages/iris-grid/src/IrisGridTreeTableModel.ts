@@ -241,7 +241,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   get aggregatedColumns(): readonly DhType.Column[] {
     return this.isAggregatedColumnsAvailable
-      ? // TODO: remove type assertion when the JSAPI types are updated
+      ? // TODO: remove type assertion when deephaven-core #6943 is merged and the JSAPI types are updated
         (this.table as DhType.TreeTable & { aggregatedColumns: [] })
           .aggregatedColumns
       : EMPTY_ARRAY;
@@ -293,9 +293,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   get isAggregatedColumnsAvailable(): boolean {
     return (
-      // TODO: Remove type assertion when the JSAPI types are updated
-      (this.table as DhType.TreeTable & { aggregatedColumns: [] })
-        .aggregatedColumns != null
+      // aggregatedColumns are not available in the Legacy API
+      (this.table as DhType.TreeTable & { aggregatedColumns?: [] })
+        .aggregatedColumns !== undefined
     );
   }
 
@@ -394,7 +394,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       groupedColumns: readonly DhType.Column[],
       virtualColumns: readonly DhType.Column[]
     ) => {
-      // TODO: test on regular non-rollup tree table
       if (isAggregatedColumnsAvailable) {
         return new Set(
           // Virtual and aggregated columns are not filterable
@@ -405,7 +404,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
             .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
         );
       }
-      // Only groupedColumns are filterable if aggregatedColumns API is not available
+      // For compatibility with the Enterprise JSAPI,
+      // only groupedColumns are filterable on rollup tables
+      // if aggregatedColumns API is not available.
       return new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns)
           .filter(c => !virtualColumns.includes(c))
