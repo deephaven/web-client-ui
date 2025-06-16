@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Features
+
+- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([9de971f](https://github.com/deephaven/web-client-ui/commit/9de971f433cd3b8ee9e95719f6641d3428659520))
+
+### Bug Fixes
+
+- DH-18921: increase rowFooterWidth in irisGridTheme ([#2453](https://github.com/deephaven/web-client-ui/issues/2453)) ([01f5930](https://github.com/deephaven/web-client-ui/commit/01f5930672668a779c1f148d0bb315c2a93dc96f))
+- DH-19392: resolve interaction issue caused by nested radio content ([#2441](https://github.com/deephaven/web-client-ui/issues/2441)) ([8e9425e](https://github.com/deephaven/web-client-ui/commit/8e9425ee4bd954ded4146b12490ea37d85bee561))
+- DH-19393: clear aggregations in handleSelectDistinctChanged to prevent stale re… ([#2442](https://github.com/deephaven/web-client-ui/issues/2442)) ([ad4205d](https://github.com/deephaven/web-client-ui/commit/ad4205dad459bd60cc3ebefd6c6aa7ce71a3310a))
+- Simple Pivot prerequisites ([#2437](https://github.com/deephaven/web-client-ui/issues/2437)) ([75fe9c1](https://github.com/deephaven/web-client-ui/commit/75fe9c11ee23e5fc59a1160750a28ae6c3f047b5))
+
+## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 ### Features

@@ -10,20 +10,26 @@ import {
   IrisGrid,
   IrisGridCacheUtils,
   type IrisGridState,
+  type IrisGridType,
   IrisGridUtils,
+  isIrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
-import { getErrorMessage } from '@deephaven/utils';
+import { useLayoutManager, useListener } from '@deephaven/dashboard';
+import { EMPTY_ARRAY, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridState } from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
+import useDashboardColumnFilters from './useDashboardColumnFilters';
+import { InputFilterEvent } from './events';
 
 export function GridWidgetPlugin({
   fetch,
 }: WidgetComponentProps<DhType.Table>): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
+  const { eventHub } = useLayoutManager();
 
   const fetchResult = useIrisGridModel(fetch);
 
@@ -82,6 +88,29 @@ export function GridWidgetPlugin({
     [fetchResult, setState, dehydrateIrisGridState]
   );
 
+  const inputFilters = useDashboardColumnFilters(
+    fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY,
+    fetchResult.status === 'success' &&
+      isIrisGridTableModelTemplate(fetchResult.model)
+      ? fetchResult.model.table
+      : undefined
+  );
+
+  const irisGridRef = useRef<IrisGridType | null>(null);
+
+  const handleClearAllFilters = useCallback(() => {
+    if (irisGridRef.current == null) {
+      return;
+    }
+    irisGridRef.current.clearAllFilters();
+  }, []);
+
+  useListener(
+    eventHub,
+    InputFilterEvent.CLEAR_ALL_FILTERS,
+    handleClearAllFilters
+  );
+
   if (fetchResult.status === 'loading') {
     return <LoadingOverlay isLoading />;
   }
@@ -98,11 +127,13 @@ export function GridWidgetPlugin({
   const { model } = fetchResult;
   return (
     <IrisGrid
+      ref={irisGridRef}
       model={model}
       settings={settings}
       onStateChange={handleIrisGridChange}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...hydratedState}
+      inputFilters={inputFilters}
     />
   );
 }
