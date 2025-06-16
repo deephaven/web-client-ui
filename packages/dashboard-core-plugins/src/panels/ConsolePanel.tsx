@@ -38,7 +38,7 @@ import {
 } from '@deephaven/plugin';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import { getDashboardSessionWrapper } from '../redux';
 import './ConsolePanel.scss';
 

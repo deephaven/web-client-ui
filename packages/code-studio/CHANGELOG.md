@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Bug Fixes
+
+- Download worker and monaco initializing multiple times in dev ([#2452](https://github.com/deephaven/web-client-ui/issues/2452)) ([74fd724](https://github.com/deephaven/web-client-ui/commit/74fd7241ad52342d3ddafa32461add8235ee5f84))
+
+## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
+
+### Features
+
+- DH-19307: External theme support ([#2425](https://github.com/deephaven/web-client-ui/issues/2425)) ([42a74ec](https://github.com/deephaven/web-client-ui/commit/42a74ec95b44891ef07e3631190d976dc690400b))
+
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/code-studio

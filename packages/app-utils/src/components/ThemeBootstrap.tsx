@@ -1,32 +1,30 @@
-import { useContext, useMemo } from 'react';
+import { useContext } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { ThemeProvider } from '@deephaven/components';
-import { IrisGridThemeProvider } from '@deephaven/iris-grid';
-import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
-import { getSettings } from '@deephaven/redux';
+import { isExternalThemeEnabled, ThemeProvider } from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
+import { IrisGridThemeProvider } from '@deephaven/iris-grid';
+import { PluginsContext, useCustomThemes } from '@deephaven/plugin';
+import { getSettings } from '@deephaven/redux';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;
 }
 
-export function ThemeBootstrap({ children }: ThemeBootstrapProps): JSX.Element {
+export function ThemeBootstrap({
+  children,
+}: ThemeBootstrapProps): JSX.Element | null {
+  const settings = useAppSelector(getSettings);
+
   // The `usePlugins` hook throws if the context value is null. Since this is
   // the state while plugins load asynchronously, we are using `useContext`
   // directly to avoid the exception.
   const pluginModules = useContext(PluginsContext);
-
-  const themes = useMemo(
-    () =>
-      pluginModules == null ? null : getThemeDataFromPlugins(pluginModules),
-    [pluginModules]
-  );
-
-  const settings = useAppSelector(getSettings);
+  const themes = useCustomThemes(pluginModules);
+  const waitForActivation = isExternalThemeEnabled();
 
   return (
-    <ThemeProvider themes={themes}>
+    <ThemeProvider themes={themes} waitForActivation={waitForActivation}>
       <ChartThemeProvider>
         <MonacoThemeProvider>
           <IrisGridThemeProvider density={settings.gridDensity}>
