@@ -46,6 +46,7 @@ import {
   isPartitionedGridModelProvider,
   type PartitionConfig,
 } from './PartitionedGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
 
 const log = Log.module('IrisGridUtils');
 
@@ -1791,6 +1792,52 @@ class IrisGridUtils {
         return dh.RangeSet.ofRange(startRow, endRow);
       });
     return dh.RangeSet.ofRanges(rangeSets);
+  }
+
+  /**
+   * Get the color for a cell value based on its type and theme
+   * @param theme The IrisGrid theme
+   * @param columnType The type of the column
+   * @param columnName The name of the column
+   * @param value The value of the cell
+   * @returns The color for the cell
+   */
+  static colorForValue(
+    theme: IrisGridThemeType,
+    columnType: string,
+    columnName: string,
+    value: unknown
+  ): string {
+    if (TableUtils.isDateType(columnType) || columnName === 'Date') {
+      assertNotNull(theme.dateColor);
+      return theme.dateColor;
+    }
+    if (TableUtils.isNumberType(columnType)) {
+      if ((value as number) > 0) {
+        assertNotNull(theme.positiveNumberColor);
+        return theme.positiveNumberColor;
+      }
+      if ((value as number) < 0) {
+        assertNotNull(theme.negativeNumberColor);
+        return theme.negativeNumberColor;
+      }
+      assertNotNull(theme.zeroNumberColor);
+      return theme.zeroNumberColor;
+    }
+    return theme.textColor;
+  }
+
+  static textAlignForValue(
+    columnType: string,
+    columnName: string
+  ): CanvasTextAlign {
+    if (TableUtils.isNumberType(columnType)) {
+      return 'right';
+    }
+    if (TableUtils.isDateType(columnType) || columnName === 'Date') {
+      return 'center';
+    }
+    return 'left';
   }
 }
 

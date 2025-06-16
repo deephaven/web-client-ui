@@ -14,6 +14,7 @@ import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import { type IrisGridThemeType } from './IrisGridTheme';
+import IrisGridUtils from './IrisGridUtils';
 
 const log = Log.module('IrisGridTreeTableModel');
 
@@ -203,25 +204,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           columnTypeForFormatting = column.constituentType;
         }
 
-        if (
-          TableUtils.isDateType(columnTypeForFormatting) ||
-          column.name === 'Date'
-        ) {
-          assertNotNull(theme.dateColor);
-          return theme.dateColor;
-        }
-        if (TableUtils.isNumberType(columnTypeForFormatting)) {
-          if ((value as number) > 0) {
-            assertNotNull(theme.positiveNumberColor);
-            return theme.positiveNumberColor;
-          }
-          if ((value as number) < 0) {
-            assertNotNull(theme.negativeNumberColor);
-            return theme.negativeNumberColor;
-          }
-          assertNotNull(theme.zeroNumberColor);
-          return theme.zeroNumberColor;
-        }
+        return IrisGridUtils.colorForValue(
+          theme,
+          columnTypeForFormatting,
+          column.name,
+          value
+        );
       }
     }
 
@@ -244,13 +232,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       typeForFormatting = column.constituentType;
     }
 
-    if (TableUtils.isNumberType(typeForFormatting)) {
-      return 'right';
-    }
-    if (TableUtils.isDateType(typeForFormatting) || column.name === 'Date') {
-      return 'center';
-    }
-    return 'left';
+    return IrisGridUtils.textAlignForValue(typeForFormatting, column.name);
   }
 
   extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
