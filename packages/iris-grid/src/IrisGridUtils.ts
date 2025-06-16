@@ -1831,12 +1831,14 @@ class IrisGridUtils {
     columnType: string,
     columnName: string
   ): CanvasTextAlign {
-    if (TableUtils.isNumberType(columnType)) {
-      return 'right';
-    }
     if (TableUtils.isDateType(columnType) || columnName === 'Date') {
       return 'center';
     }
+
+    if (TableUtils.isNumberType(columnType)) {
+      return 'right';
+    }
+
     return 'left';
   }
 }
