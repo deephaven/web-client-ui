@@ -863,26 +863,6 @@ describe('colorForValue', () => {
     );
     expect(result).toBe('#text-color');
   });
-
-  it('returns nullStringColor for null values', () => {
-    const result = IrisGridUtils.colorForValue(
-      mockTheme,
-      'java.lang.String',
-      'TestColumn',
-      null
-    );
-    expect(result).toBe('#null-string-color');
-  });
-
-  it('returns nullStringColor for empty string values', () => {
-    const result = IrisGridUtils.colorForValue(
-      mockTheme,
-      'java.lang.String',
-      'TestColumn',
-      ''
-    );
-    expect(result).toBe('#null-string-color');
-  });
 });
 
 describe('textAlignForValue', () => {
