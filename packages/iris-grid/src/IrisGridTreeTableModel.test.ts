@@ -62,7 +62,7 @@ describe('IrisGridTreeTableModel virtual columns', () => {
 describe('IrisGridTreeTableModel layoutHints', () => {
   test('null layout hints by default', () => {
     const columns = irisGridTestUtils.makeColumns();
-    const table = irisGridTestUtils.makeTreeTable(columns, [], columns);
+    const table = irisGridTestUtils.makeTreeTable(columns);
     const model = new IrisGridTreeTableModel(dh, table);
 
     expect(model.layoutHints).toEqual(null);
