@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Bug Fixes
+
+- prevent keyboard shortcuts from triggering unwanted behaviour when disconnected ([#2450](https://github.com/deephaven/web-client-ui/issues/2450)) ([431c057](https://github.com/deephaven/web-client-ui/commit/431c0577f493313d6cd1b5296bb62c8ea87ed194))
+
+## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
+
+### Bug Fixes
+
+- DH-19350: Ruff tries to lint before initializing when disabled ([#2429](https://github.com/deephaven/web-client-ui/issues/2429)) ([6d65594](https://github.com/deephaven/web-client-ui/commit/6d65594a4bd0fa2ed48c2a5510342e68fb33ad3b))
+
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 ### Bug Fixes

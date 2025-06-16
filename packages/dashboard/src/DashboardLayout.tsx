@@ -36,6 +36,7 @@ import {
   type PanelProps,
 } from './DashboardPlugin';
 import DashboardPanelWrapper from './DashboardPanelWrapper';
+import { PanelIdContext } from './usePanelId';
 
 export type DashboardLayoutConfig = ItemConfig[];
 
@@ -138,18 +139,21 @@ export function DashboardLayout({
 
         // Props supplied by GoldenLayout
         const { glContainer, glEventHub } = props;
+        const panelId = LayoutUtils.getIdFromContainer(glContainer);
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <PanelWrapperType {...props}>
-              {hasRef ? (
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                <CType {...props} ref={ref} />
-              ) : (
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                <CType {...props} />
-              )}
-            </PanelWrapperType>
+            <PanelIdContext.Provider value={panelId as string | null}>
+              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+              <PanelWrapperType {...props}>
+                {hasRef ? (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  <CType {...props} ref={ref} />
+                ) : (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  <CType {...props} />
+                )}
+              </PanelWrapperType>
+            </PanelIdContext.Provider>
           </PanelErrorBoundary>
         );
       }

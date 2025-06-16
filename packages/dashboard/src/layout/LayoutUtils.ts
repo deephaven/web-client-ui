@@ -29,7 +29,7 @@ const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
 
-export type PanelId = Brand<'PanelId', string | string[] | undefined>;
+export type PanelId = Brand<'PanelId', string | undefined>;
 
 export type LayoutPanel = {
   props: GLPanelProps;

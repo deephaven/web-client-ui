@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useRef } from 'react';
 import EventEmitter from './EventEmitter';
 
 type AsArray<P> = P extends unknown[] ? P : [P];

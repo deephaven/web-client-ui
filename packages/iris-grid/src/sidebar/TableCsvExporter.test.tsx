@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
+import { ThemeProvider } from '@deephaven/components';
 import TableCsvExporter from './TableCsvExporter';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
@@ -35,21 +36,23 @@ function makeTableCsvExporterWrapper({
   model = irisGridTestUtils.makeModel(TABLE),
 } = {}) {
   return render(
-    <TableCsvExporter
-      dh={dh}
-      name={name}
-      isDownloading={isDownloading}
-      tableDownloadStatus={tableDownloadStatus}
-      tableDownloadProgress={tableDownloadProgress}
-      tableDownloadEstimatedTime={tableDownloadEstimatedTime}
-      onDownloadStart={onDownloadStart}
-      onDownload={onDownload}
-      onCancel={onCancel}
-      selectedRanges={selectedRanges}
-      userColumnWidths={userColumnWidths}
-      movedColumns={movedColumns}
-      model={model}
-    />
+    <ThemeProvider themes={[]}>
+      <TableCsvExporter
+        dh={dh}
+        name={name}
+        isDownloading={isDownloading}
+        tableDownloadStatus={tableDownloadStatus}
+        tableDownloadProgress={tableDownloadProgress}
+        tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+        onDownloadStart={onDownloadStart}
+        onDownload={onDownload}
+        onCancel={onCancel}
+        selectedRanges={selectedRanges}
+        userColumnWidths={userColumnWidths}
+        movedColumns={movedColumns}
+        model={model}
+      />
+    </ThemeProvider>
   );
 }
 

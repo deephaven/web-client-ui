@@ -1540,17 +1540,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return null;
     }
 
-    const { model } = this.props;
-
-    if (
-      columnIndex != null &&
-      modelColumns.get(columnIndex) != null &&
-      model.columns[columnIndex] == null
-    ) {
-      log.debug('getModelColumn', columnIndex, model.columns);
-      // debugger;
-    }
-
     return columnIndex != null ? modelColumns.get(columnIndex) : null;
   }
 
@@ -1829,6 +1818,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchValue: '',
       searchFilter: undefined,
     });
+  }
+
+  clearAllAggregations(): void {
+    log.debug('Clearing all aggregations');
+
+    this.setState({ aggregationSettings: DEFAULT_AGGREGATION_SETTINGS });
   }
 
   clearCrossColumSearch(): void {
@@ -3212,7 +3207,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleTableChanged(): void {
     const { model } = this.props;
-    // movedColumns update triggers metricCalculator update in the Grid component
+    // movedColumns reset triggers metricCalculator update in the Grid component
     this.setState({ movedColumns: model.initialMovedColumns });
   }
 
@@ -3648,6 +3643,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.showAllColumns();
     this.clearAllFilters();
+    this.clearAllAggregations();
 
     this.startLoading(
       `Selecting distinct values in ${
