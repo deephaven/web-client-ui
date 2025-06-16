@@ -8,7 +8,7 @@ import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink' | 'chartLink';
 
 export type LinkPoint = {
-  panelId: string;
+  panelId: string | string[];
   panelComponent?: string | null;
   columnName: string;
   columnType: string | null;
@@ -92,7 +92,6 @@ class LinkerUtils {
         LayoutUtils.getComponentName(IrisGridPanel),
         LayoutUtils.getComponentName(ChartPanel),
         LayoutUtils.getComponentName(DropdownFilterPanel),
-        '@deephaven/plotly-express',
       ],
     ],
   ]);
@@ -155,7 +154,6 @@ class LinkerUtils {
     // If all checks pass, link type is determined by the target panel component
     switch (end.panelComponent) {
       case LayoutUtils.getComponentName(ChartPanel):
-      case '@deephaven/plotly-express':
         return 'chartLink';
       case LayoutUtils.getComponentName(IrisGridPanel):
         return 'tableLink';
@@ -177,7 +175,7 @@ class LinkerUtils {
    * @returns Column matching the link point, undefined if not found
    */
   static findColumn(
-    columns: readonly LinkColumn[],
+    columns: LinkColumn[],
     { columnName, columnType }: LinkPoint
   ): LinkColumn | undefined {
     return columns.find(

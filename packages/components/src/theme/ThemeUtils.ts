@@ -1,16 +1,11 @@
 import Log from '@deephaven/log';
-import {
-  assertNotNull,
-  ColorUtils,
-  requestParentResponse,
-} from '@deephaven/utils';
+import { assertNotNull, ColorUtils } from '@deephaven/utils';
 import { themeDark } from './theme-dark';
 import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
-  type BaseThemeKey,
   type ThemeData,
   type ThemePreloadData,
   type CssVariableStyleContent,
@@ -21,23 +16,14 @@ import {
   type ThemeCssVariableName,
   type ThemeIconsRequiringManualColorChanges,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
-  EXTERNAL_THEME_KEY,
-  type ExternalThemeData,
-  MSG_REQUEST_GET_THEME,
-  type ThemeCssColorVariableName,
-  TRANSPARENT_PRELOAD_DATA_VARIABLES,
-  PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
 
 export const CSS_VAR_EXPRESSION_PREFIX = 'var(--';
-export const DH_VAR_PREFIX = '--dh-color-';
 export const TMP_CSS_PROP_PREFIX = 'dh-tmp';
 export const NON_WHITESPACE_REGEX = /\S/;
 export const WHITESPACE_REGEX = /\s/;
-
-export const DH_CSS_VAR_NAME_REGEXP = /^--dh-color-[a-z0-9_-]+$/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
 
@@ -209,15 +195,6 @@ export function getDefaultSelectedThemeKey(): string {
 }
 
 /**
- * Derive unique theme key from plugin root path and theme name.
- * @param pluginName The root path of the plugin
- * @param themeName The name of the theme
- */
-export function getThemeKey(pluginName: string, themeName: string): string {
-  return `${pluginName}_${themeName}`;
-}
-
-/**
  * A theme key override can be set via a query parameter to force a specific
  * theme selection. Useful for embedded widget scenarios that don't expose the
  * theme selector.
@@ -305,104 +282,6 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
- * Check if the given theme key is one of the base themes.
- * @param themeKey The theme key to check
- * @returns True if the theme key is a base theme key, false otherwise
- */
-export function isBaseThemeKey(themeKey: string): themeKey is BaseThemeKey {
-  return [DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY].includes(themeKey);
-}
-
-/**
- * Determine if a given object is a `ExternalThemeData` object.
- * @param maybeExternalThemeData An object that may or may not be a `ExternalThemeData`
- * @returns True if the object is a `ExternalThemeData`, false otherwise
- */
-export function isExternalThemeData(
-  maybeExternalThemeData: unknown
-): maybeExternalThemeData is ExternalThemeData {
-  if (
-    typeof maybeExternalThemeData !== 'object' ||
-    maybeExternalThemeData == null
-  ) {
-    return false;
-  }
-
-  return (
-    'name' in maybeExternalThemeData &&
-    typeof maybeExternalThemeData.name === 'string' &&
-    'cssVars' in maybeExternalThemeData &&
-    typeof maybeExternalThemeData.cssVars === 'object' &&
-    maybeExternalThemeData.cssVars != null
-  );
-}
-
-/**
- * Check if the current URL specifies an external theme key override.
- * @returns True if the external theme key override is set, false otherwise
- */
-export function isExternalThemeEnabled(): boolean {
-  const searchParams = new URLSearchParams(window.location.search);
-  return (
-    searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM) === EXTERNAL_THEME_KEY
-  );
-}
-
-/**
- * Check if PRELOAD_TRANSPARENT_THEME_QUERY_PARAM query parameter is set to true.
- * @returns True if the preload transparent theme query parameter is set, false
- * otherwise
- */
-export function isPreloadTransparentTheme(): boolean {
-  const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get(PRELOAD_TRANSPARENT_THEME_QUERY_PARAM) === 'true';
-}
-
-/**
- * Validate that a given CSS variable name / value pair is a valid Deephaven
- * color variable.
- * @param name The name of the CSS variable to validate, e.g. '--dh-color-primary'
- * @param value The value of the CSS color to validate
- * @returns True if the name is a valid Deephaven color variable and the value
- * is a valid CSS color, false otherwise
- */
-export function isValidColorVar(
-  name: string,
-  value: string
-): name is ThemeCssColorVariableName {
-  return DH_CSS_VAR_NAME_REGEXP.test(name) && CSS.supports('color', value);
-}
-
-/**
- * Parse external theme data into a `ThemeData` object. Invalid CSS color variable
- * pairs are excluded from the resulting `ThemeData` object.
- * @param externalThemeData The external theme data to parse
- * @returns A `ThemeData` object representing the external theme
- */
-export function parseExternalThemeData({
-  baseThemeKey = DEFAULT_DARK_THEME_KEY,
-  name,
-  cssVars,
-}: ExternalThemeData): ThemeData {
-  const toExpression = ([varName, varValue]: [string, string]) =>
-    isValidColorVar(varName, varValue) ? `${varName}:${varValue};` : null;
-
-  const sanitized = Object.entries(cssVars)
-    .map(toExpression)
-    .filter((str): str is string => str != null);
-
-  const styleContent =
-    sanitized.length === 0 ? '' : `:root{${sanitized.join('')}}`;
-
-  return {
-    baseThemeKey,
-    themeKey: EXTERNAL_THEME_KEY,
-    name,
-    styleContent,
-  };
-}
-
-/**
  * Replace the `fill='...'` attribute in the given SVG content with the given
  * color string.
  * @param svgContent Inline SVG content to replace the fill color in
@@ -416,23 +295,6 @@ export function replaceSVGFillColor(
     /fill='.*?'/,
     `fill='${encodeURIComponent(fillColor)}'`
   );
-}
-
-/**
- * Request theme data from the parent window.
- * @returns A promise that resolves to the external theme data
- * @throws Error if the response is not a valid `ExternalThemeData`
- */
-export async function requestExternalThemeData(): Promise<ExternalThemeData> {
-  const result = await requestParentResponse(MSG_REQUEST_GET_THEME);
-
-  if (!isExternalThemeData(result)) {
-    throw new Error(
-      `Unexpected external theme data response: ${JSON.stringify(result)}`
-    );
-  }
-
-  return result;
 }
 
 /**
@@ -567,26 +429,21 @@ export function setThemePreloadData(preloadData: ThemePreloadData): void {
 }
 
 /**
+ * Derive unique theme key from plugin root path and theme name.
+ * @param pluginName The root path of the plugin
+ * @param themeName The name of the theme
+ */
+export function getThemeKey(pluginName: string, themeName: string): string {
+  return `${pluginName}_${themeName}`;
+}
+
+/**
  * Preload minimal theme variables from the cache.
  * @defaultPreloadValues Optional default values to use if a preload variable is not set.
  */
 export function preloadTheme(
   defaultPreloadValues: Record<string, string> = DEFAULT_PRELOAD_DATA_VARIABLES
 ): void {
-  // In certain cases we may want to preload a transparent theme to allow the
-  // parent container to show through. For example, when a parent Window is
-  // providing a theme via `postMessage` apis, we may not have enough information
-  // to properly preload the theme, so we can just preload a transparent
-  // theme and let the parent container show through until `postMessage`
-  // communication is complete.
-  if (isPreloadTransparentTheme()) {
-    createPreloadStyleElement(
-      'theme-preload-transparent',
-      calculatePreloadStyleContent(TRANSPARENT_PRELOAD_DATA_VARIABLES)
-    );
-    return;
-  }
-
   const previousPreloadStyleContent =
     getThemePreloadData()?.preloadStyleContent;
 

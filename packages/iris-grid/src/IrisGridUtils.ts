@@ -418,7 +418,7 @@ class IrisGridUtils {
   }
 
   static getInputFiltersForColumns(
-    columns: readonly { name: string; type: string }[],
+    columns: readonly DhType.Column[],
     inputFilters: readonly InputFilter[] = []
   ): InputFilter[] {
     return inputFilters.filter(({ name, type }) =>

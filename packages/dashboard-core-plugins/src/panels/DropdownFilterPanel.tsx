@@ -19,12 +19,7 @@ import {
   getSettings,
   type RootState,
 } from '@deephaven/redux';
-import {
-  assertNotNull,
-  EMPTY_ARRAY,
-  Pending,
-  PromiseUtils,
-} from '@deephaven/utils';
+import { EMPTY_ARRAY, Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
   type DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -42,7 +37,6 @@ import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';
 import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 import { type PanelState as InputFilterPanelState } from './InputFilterPanel';
-import { emitFilterChanged } from '../FilterEvents';
 
 const log = Log.module('DropdownFilterPanel');
 
@@ -591,7 +585,7 @@ export class DropdownFilterPanel extends Component<
   ): void {
     const { dashboardLinks, glEventHub } = this.props;
     const sourcePanelId = this.getSource(dashboardLinks)?.panelId;
-    const excludePanelIds = sourcePanelId == null ? [] : [sourcePanelId];
+    const excludePanelIds = sourcePanelId === null ? [] : [sourcePanelId];
     log.debug('sendUpdate', {
       name,
       type,
@@ -600,22 +594,13 @@ export class DropdownFilterPanel extends Component<
       excludePanelIds,
     });
 
-    const panelId = LayoutUtils.getIdFromPanel(this);
-    assertNotNull(panelId);
-
-    emitFilterChanged(
-      glEventHub,
-      panelId,
-      name != null && type != null && timestamp != null
-        ? {
-            name,
-            type,
-            value: value != null ? value : '=null',
-            timestamp,
-            excludePanelIds,
-          }
-        : null
-    );
+    glEventHub.emit(InputFilterEvent.FILTERS_CHANGED, this, {
+      name,
+      type,
+      value: value != null ? value : '=null',
+      timestamp,
+      excludePanelIds,
+    });
   }
 
   updateValuesTable(): void {

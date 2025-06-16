@@ -76,7 +76,7 @@ import type {
   TablePluginComponent,
   TablePluginElement,
 } from '@deephaven/plugin';
-import { IrisGridEvent } from '../events';
+import { InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
   getLinksForDashboard,
@@ -91,10 +91,6 @@ import {
   isLegacyIrisGridPanelMetadata,
 } from './IrisGridPanelTypes';
 import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
-import {
-  emitFilterColumnsChanged,
-  emitFilterTableChanged,
-} from '../FilterEvents';
 
 const log = Log.module('IrisGridPanel');
 
@@ -663,9 +659,7 @@ export class IrisGridPanel extends PureComponent<
     log.debug('handleTableChanged', event);
     const { glEventHub } = this.props;
     const { detail: table } = event as CustomEvent;
-    const panelId = LayoutUtils.getIdFromPanel(this);
-    assertNotNull(panelId);
-    emitFilterTableChanged(glEventHub, panelId, table);
+    glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
   }
 
   /**
@@ -776,9 +770,7 @@ export class IrisGridPanel extends PureComponent<
           this.setState({ Plugin });
         }
       }
-      const panelId = LayoutUtils.getIdFromPanel(this);
-      assertNotNull(panelId);
-      emitFilterTableChanged(glEventHub, panelId, table);
+      glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
     }
 
     this.sendColumnsChange(model.columns);
@@ -795,9 +787,11 @@ export class IrisGridPanel extends PureComponent<
   sendColumnsChange(columns: readonly dh.Column[]): void {
     log.debug2('sendColumnsChange', columns);
     const { glEventHub } = this.props;
-    const panelId = LayoutUtils.getIdFromPanel(this);
-    assertNotNull(panelId);
-    emitFilterColumnsChanged(glEventHub, panelId, columns);
+    glEventHub.emit(
+      InputFilterEvent.COLUMNS_CHANGED,
+      LayoutUtils.getIdFromPanel(this),
+      columns
+    );
   }
 
   startModelListening(model: IrisGridModel): void {

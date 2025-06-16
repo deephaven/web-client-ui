@@ -3,8 +3,8 @@ import {
   type BroadcastLogoutMessage,
   isBroadcastLoginMessage,
   isBroadcastLogoutMessage,
+  type Message,
 } from '@deephaven/jsapi-utils';
-import type { PostMessage } from '@deephaven/utils';
 import { useCallback } from 'react';
 import useBroadcastChannel from './useBroadcastChannel';
 
@@ -13,7 +13,7 @@ export function useBroadcastLoginListener(
   onLogout?: (message: BroadcastLogoutMessage) => void
 ): void {
   const onMessage = useCallback(
-    (event: MessageEvent<PostMessage<unknown>>) => {
+    (event: MessageEvent<Message<unknown>>) => {
       if (isBroadcastLoginMessage(event.data)) {
         onLogin?.(event.data);
       } else if (isBroadcastLogoutMessage(event.data)) {

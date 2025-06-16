@@ -62,9 +62,9 @@ async function filterAndScreenshot(
   });
 
   await test.step('Reset filter', async () => {
-    await page.keyboard.down('ControlOrMeta');
+    await page.keyboard.down('Control');
     await page.keyboard.press('E');
-    await page.keyboard.up('ControlOrMeta');
+    await page.keyboard.up('Control');
     await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
   });
 }
@@ -78,9 +78,7 @@ function runSpecialSelectFilter(
     await gotoPage(page, '');
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
-    if (gridLocation === null) {
-      throw new Error('Grid location is null');
-    }
+    if (gridLocation === null) return;
 
     await page.mouse.click(
       gridLocation.x + 1,
@@ -107,20 +105,14 @@ function runMultiSelectFilter(
     await gotoPage(page, '');
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
-    if (gridLocation === null) {
-      throw new Error('Grid location is null');
-    }
+    if (gridLocation === null) return;
 
     // activate the quick filter to get that text as well
     await test.step('Show quick filter step', async () => {
-      // Click the tab above the grid to focus the panel
-      await page.mouse.click(gridLocation.x + 1, gridLocation.y - 1);
-      await page.keyboard.down('ControlOrMeta');
+      await page.mouse.click(gridLocation.x + 805, gridLocation.y + 1);
+      await page.keyboard.down('Control');
       await page.keyboard.press('F');
-      await page.keyboard.up('ControlOrMeta');
-      await expect(
-        page.locator('.iris-grid-input-autosized-wrapper')
-      ).toHaveCount(1);
+      await page.keyboard.up('Control');
     });
 
     /* eslint-disable no-await-in-loop */
@@ -179,7 +171,7 @@ test('char formatting, non selected right click, preview formatting', async ({
   if (gridLocation === null) return;
 
   // select row 2, 4
-  await page.keyboard.down('ControlOrMeta');
+  await page.keyboard.down('Control');
   await page.mouse.click(
     gridLocation.x + 1,
     gridLocation.y + 1 + columnHeight + rowHeight
@@ -188,7 +180,7 @@ test('char formatting, non selected right click, preview formatting', async ({
     gridLocation.x + 1,
     gridLocation.y + 1 + columnHeight + rowHeight * 3
   );
-  await page.keyboard.up('ControlOrMeta');
+  await page.keyboard.up('Control');
 
   await page.mouse.click(
     gridLocation.x + 1,

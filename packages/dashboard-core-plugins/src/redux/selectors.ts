@@ -2,7 +2,7 @@ import { getDashboardData } from '@deephaven/dashboard';
 import type { dh } from '@deephaven/jsapi-types';
 import { type SessionWrapper } from '@deephaven/jsapi-utils';
 import { type RootState } from '@deephaven/redux';
-import { type FilterChangeEvent } from '../FilterEvents';
+import { type FilterChangeEvent } from '../FilterPlugin';
 import { type Link } from '../linker/LinkerUtils';
 import { type FilterSet } from '../panels';
 import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';

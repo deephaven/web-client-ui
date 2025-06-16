@@ -1,8 +1,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { requestParentResponse } from '@deephaven/utils';
 import { nanoid } from 'nanoid';
-import { SESSION_DETAILS_REQUEST } from './MessageUtils';
+import { requestParentResponse, SESSION_DETAILS_REQUEST } from './MessageUtils';
 import NoConsolesError, { isNoConsolesError } from './NoConsolesError';
 
 const log = Log.module('SessionUtils');

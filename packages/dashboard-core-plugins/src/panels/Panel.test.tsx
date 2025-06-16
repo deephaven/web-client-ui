@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 import { render } from '@testing-library/react';
 import type { Container } from '@deephaven/golden-layout';
-import BasePanel from './BasePanel';
+import Panel from './Panel';
 
 class TestComponentPanel extends Component {}
 
@@ -39,7 +39,7 @@ function renderPanel({
   onTabClicked = jest.fn(),
 } = {}) {
   return render(
-    <BasePanel
+    <Panel
       componentPanel={componentPanel}
       glContainer={glContainer as unknown as Container}
       glEventHub={glEventHub}
@@ -51,7 +51,7 @@ function renderPanel({
       onTabClicked={onTabClicked}
     >
       {children}
-    </BasePanel>
+    </Panel>
   );
 }
 

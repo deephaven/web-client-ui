@@ -86,7 +86,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       (sessionLanguage !== undefined && prevLanguageMatch && !languageMatch)
     ) {
       // Session disconnected or language changed from matching the session language to non-matching
-      log.debug('De-init completion');
+      log.debug('De-init completion and context actions');
+      this.deInitContextActions();
       this.deInitCodeCompletion();
     }
 
@@ -97,7 +98,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       (sessionLanguage !== undefined && !prevLanguageMatch && languageMatch)
     ) {
       // Session connected with a matching language or notebook language changed to matching
-      log.debug('Init completion');
+      log.debug('Init completion and context actions');
+      this.initContextActions();
       this.initCodeCompletion();
     }
   }
@@ -159,11 +161,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     MonacoUtils.setEOL(innerEditor);
     MonacoUtils.registerPasteHandler(innerEditor);
 
-    // Always initialize context actions when the editor is created to ensure that unwanted default
-    // OS shortcuts are overridden by custom shortcuts.
-    this.initContextActions();
-
     if (session != null && settings && sessionLanguage === settings.language) {
+      this.initContextActions();
       this.initCodeCompletion();
     }
 
@@ -186,42 +185,16 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   }
 
   handleRun(): void {
-    const { onRunCommand, session, sessionLanguage, settings } = this.props;
+    const { onRunCommand } = this.props;
     const command = this.getValue();
-
-    const language = settings?.language;
-    const languageMatch = language === sessionLanguage;
-
-    if (session == null || !languageMatch) {
-      log.info(
-        `Run disabled - ${
-          session == null ? 'session disconnected' : 'language mismatch'
-        }`
-      );
-      return;
-    }
-
     if (command != null) {
       onRunCommand(command);
     }
   }
 
   handleRunSelected(): void {
-    const { onRunCommand, session, sessionLanguage, settings } = this.props;
+    const { onRunCommand } = this.props;
     const command = this.getSelectedCommand();
-
-    const language = settings?.language;
-    const languageMatch = language === sessionLanguage;
-
-    if (session == null || !languageMatch) {
-      log.info(
-        `Run selected disabled - ${
-          session == null ? 'session disconnected' : 'language mismatch'
-        }`
-      );
-      return;
-    }
-
     onRunCommand(command);
   }
 

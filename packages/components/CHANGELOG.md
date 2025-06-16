@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
-
-### Features
-
-- Add keepMounted param to TabPanels for persisting panels when they are not active ([#2434](https://github.com/deephaven/web-client-ui/issues/2434)) ([09077bf](https://github.com/deephaven/web-client-ui/commit/09077bfefd41a24172a6e77f8c9684938c757220))
-- DH-19307: External theme support ([#2425](https://github.com/deephaven/web-client-ui/issues/2425)) ([42a74ec](https://github.com/deephaven/web-client-ui/commit/42a74ec95b44891ef07e3631190d976dc690400b))
-
-### Bug Fixes
-
-- DH-18562: Deephaven picker hover blends with non-hovered styling in dark mode ([#2433](https://github.com/deephaven/web-client-ui/issues/2433)) ([e6ed762](https://github.com/deephaven/web-client-ui/commit/e6ed762b4ce3e7a30572af79f3a2c38262cb4ac9))
-
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/components

@@ -23,7 +23,6 @@ export { default as LinkerUtils } from './linker/LinkerUtils';
 export type { Link } from './linker/LinkerUtils';
 export { default as ToolType } from './linker/ToolType';
 export * from './useConfigureRuff';
-export * from './useDashboardColumnFilters';
 export * from './useLoadTablePlugin';
 
 export * from './events';
