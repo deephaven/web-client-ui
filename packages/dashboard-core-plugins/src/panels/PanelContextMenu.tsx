@@ -11,9 +11,11 @@ import {
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
 import { connect } from 'react-redux';
-import { type ClosedPanel } from './PanelManager';
-import { LayoutUtils } from './layout';
-import { PanelEvent } from './PanelEvent';
+import {
+  type ClosedPanel,
+  LayoutUtils,
+  PanelEvent,
+} from '@deephaven/dashboard';
 
 interface PanelContextMenuProps {
   additionalActions: ResolvableContextAction[];

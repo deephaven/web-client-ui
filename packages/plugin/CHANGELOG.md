@@ -3,19 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
-
-### Features
-
-- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([9de971f](https://github.com/deephaven/web-client-ui/commit/9de971f433cd3b8ee9e95719f6641d3428659520))
-
-## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
-
-### Features
-
-- Add usePersistentState hook ([#2402](https://github.com/deephaven/web-client-ui/issues/2402)) ([728ad95](https://github.com/deephaven/web-client-ui/commit/728ad95fe43ea966fb47632015572b5e901228d8))
-- DH-19307: External theme support ([#2425](https://github.com/deephaven/web-client-ui/issues/2425)) ([42a74ec](https://github.com/deephaven/web-client-ui/commit/42a74ec95b44891ef07e3631190d976dc690400b))
-
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 **Note:** Version bump only for package @deephaven/plugin

@@ -1,9 +1,9 @@
 import {
   BROADCAST_LOGIN_MESSAGE,
   BROADCAST_LOGOUT_MESSAGE,
+  makeMessage,
 } from '@deephaven/jsapi-utils';
 import { renderHook } from '@testing-library/react-hooks';
-import { makeMessage } from '@deephaven/utils';
 import useBroadcastChannel from './useBroadcastChannel';
 import useBroadcastLoginListener from './useBroadcastLoginListener';
 

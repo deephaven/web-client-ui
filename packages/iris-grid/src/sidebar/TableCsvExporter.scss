@@ -10,9 +10,6 @@
   .radio-input-row {
     display: flex;
     align-items: center;
-    margin-left: var(--spectrum-global-dimension-size-125);;
-    margin-top: var(--spectrum-global-dimension-size-85);
-    margin-right: $spacer-2;
 
     .form-control {
       min-width: 0;

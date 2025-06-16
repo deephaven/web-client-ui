@@ -11,7 +11,6 @@ export * from './EventTargetShimUtils';
 export * from './hasRequiredString';
 export * from './isNonEmptyString';
 export * from './isNotNullOrUndefined';
-export * from './MessageUtils';
 export { default as Pending } from './Pending';
 export * from './PromiseUtils';
 export * from './Asserts';

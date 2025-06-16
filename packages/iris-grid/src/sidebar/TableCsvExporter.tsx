@@ -7,10 +7,7 @@ import {
   LoadingSpinner,
   RadioGroup,
   Radio,
-  NumberField,
-  Picker,
-  Item,
-  type ItemKey,
+  Select,
 } from '@deephaven/components';
 import {
   GridRange,
@@ -268,14 +265,14 @@ class TableCsvExporter extends Component<
     this.setState({ downloadRowOption: value });
   }
 
-  handleCustomizedDownloadRowOptionChanged(value: ItemKey | null): void {
-    if (value !== null) {
-      this.setState({ customizedDownloadRowOption: String(value) });
-    }
+  handleCustomizedDownloadRowOptionChanged(eventTargetValue: string): void {
+    this.setState({ customizedDownloadRowOption: eventTargetValue });
   }
 
-  handleCustomizedDownloadRowsChanged(value: number): void {
-    this.setState({ customizedDownloadRows: value });
+  handleCustomizedDownloadRowsChanged(
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void {
+    this.setState({ customizedDownloadRows: parseInt(event.target.value, 10) });
   }
 
   handleIncludeColumnHeadersChanged(): void {
@@ -391,13 +388,10 @@ class TableCsvExporter extends Component<
                   : null}
               </span>
             </Radio>
-            <div className="d-flex">
-              <Radio
-                value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
-                data-testid="radio-csv-exporter-customized-rows"
-                margin="0"
-                aria-label="Download a custom number of rows"
-              />
+            <Radio
+              value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
+              data-testid="radio-csv-exporter-customized-rows"
+            >
               <div
                 className="radio-input-row"
                 role="presentation"
@@ -408,34 +402,30 @@ class TableCsvExporter extends Component<
                   });
                 }}
               >
-                <Picker
-                  selectedKey={customizedDownloadRowOption}
+                <Select
+                  value={customizedDownloadRowOption}
                   data-testid="select-csv-exporter-customized-rows"
-                  isDisabled={isDownloading}
+                  className="custom-select"
+                  disabled={isDownloading}
                   onChange={this.handleCustomizedDownloadRowOptionChanged}
-                  aria-label="First or last number of rows"
-                  flex
                 >
-                  <Item key="FIRST">First</Item>
-                  <Item key="LAST">Last</Item>
-                </Picker>
-                <NumberField
+                  <option value="FIRST">First</option>
+                  <option value="LAST">Last</option>
+                </Select>
+                <input
+                  type="number"
+                  className="form-control"
                   id={`customizedRows-${id}`}
                   data-testid="input-csv-exporter-customized-rows"
                   name={`customizedRows-${id}`}
-                  minValue={1}
-                  defaultValue={100}
+                  placeholder="100"
                   value={customizedDownloadRows}
-                  width="100%"
-                  minWidth={0}
-                  isDisabled={isDownloading}
+                  disabled={isDownloading}
                   onChange={this.handleCustomizedDownloadRowsChanged}
-                  aria-label="Number of rows to download"
-                  flex
                 />
                 <div>Rows</div>
               </div>
-            </div>
+            </Radio>
           </RadioGroup>
         </div>
         <div className="form-group">

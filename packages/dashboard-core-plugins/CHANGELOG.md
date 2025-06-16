@@ -3,19 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
-
-### Features
-
-- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([9de971f](https://github.com/deephaven/web-client-ui/commit/9de971f433cd3b8ee9e95719f6641d3428659520))
-- DH-18840: Add dx linker support ([#2456](https://github.com/deephaven/web-client-ui/issues/2456)) ([5b34cd6](https://github.com/deephaven/web-client-ui/commit/5b34cd6f09c5ba4c109d09323bb830a36ae949da))
-
-## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
-
-### Features
-
-- Add usePersistentState implementation to GridWidgetPlugin ([#2427](https://github.com/deephaven/web-client-ui/issues/2427)) ([f006bca](https://github.com/deephaven/web-client-ui/commit/f006bca00150baf5fc7031990801007424303d95))
-
 ## [0.108.0](https://github.com/deephaven/web-client-ui/compare/v0.107.2...v0.108.0) (2025-04-28)
 
 ### Features

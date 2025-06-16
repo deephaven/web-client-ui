@@ -84,26 +84,17 @@ export async function openTable(
   waitForLoadFinished = true
 ): Promise<void> {
   const panelCount = await page.locator('.iris-grid-panel').count();
-  const panelsBefore = await page.locator('.iris-grid-panel').all();
   await openPanel(page, name);
 
   if (waitForLoadFinished) {
     await expect(page.locator('.iris-grid-panel')).toHaveCount(panelCount + 1);
-    const panelsAfter = await page.locator('.iris-grid-panel').all();
-    const newPanel = panelsAfter.find(panel => !panelsBefore.includes(panel));
-    if (newPanel == null) {
-      throw new Error('New panel not found');
-    }
-    await expect(newPanel.locator('canvas')).toHaveCount(1);
-    await expect(newPanel.locator('.loading-spinner')).toHaveCount(0);
-    await expect(
-      newPanel.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    await expect(newPanel.locator('.grid-wrapper')).toHaveCount(panelCount + 1);
-    // Wait for the loading overlay to fade out and be removed from the DOM
-    await expect(newPanel.locator('.iris-panel-message-overlay')).toHaveCount(
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
       0
     );
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+    await expect(page.locator('.grid-wrapper')).toHaveCount(panelCount + 1);
   }
 }
 

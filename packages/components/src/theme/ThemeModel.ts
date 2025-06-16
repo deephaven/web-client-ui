@@ -2,7 +2,6 @@ export type BaseThemeType = 'dark' | 'light';
 export type BaseThemeKey = `default-${BaseThemeType}`;
 export type CssVariableStyleContent = `:root{${string}`;
 export type ThemeCssVariableName = `--dh-${string}`;
-export type ThemeCssColorVariableName = `--dh-color-${string}`;
 
 // DHC should only need to preload variables that are required by the empty page
 // with loading spinner that shows while plugins are loading. The rest of the
@@ -44,14 +43,7 @@ export type ThemeIconsRequiringManualColorChanges =
 
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
-export const EXTERNAL_THEME_KEY = 'external-theme' as const;
-export const MSG_REQUEST_GET_THEME =
-  'io.deephaven.message.ThemeModel.requestExternalTheme';
-export const MSG_REQUEST_SET_THEME =
-  'io.deephaven.message.ThemeModel.requestSetTheme';
-export const PRELOAD_TRANSPARENT_THEME_QUERY_PARAM =
-  'preloadTransparentTheme' as const;
-export const THEME_KEY_OVERRIDE_QUERY_PARAM = 'theme' as const;
+export const THEME_KEY_OVERRIDE_QUERY_PARAM = 'theme';
 
 // Hex versions of some of the default dark theme color palette needed for
 // preload defaults.
@@ -117,14 +109,6 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
     DEFAULT_DARK_THEME_PALETTE.gray[300],
 };
 
-export const TRANSPARENT_PRELOAD_DATA_VARIABLES: Partial<
-  Record<ThemePreloadColorVariable, string>
-> = {
-  '--dh-color-bg': 'transparent',
-  '--dh-color-loading-spinner-primary': 'transparent',
-  '--dh-color-loading-spinner-secondary': 'transparent',
-};
-
 /**
  * Some inline SVGs require manually updating their fill color via
  * `updateSVGFillColors`. This object maps these variables to their respective
@@ -157,10 +141,4 @@ export interface ThemeData {
 export interface ThemeRegistrationData {
   base: ThemeData[];
   custom: ThemeData[];
-}
-
-export interface ExternalThemeData {
-  baseThemeKey?: BaseThemeKey;
-  name: string;
-  cssVars: Record<ThemeCssColorVariableName, string>;
 }

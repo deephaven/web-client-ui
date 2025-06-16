@@ -95,7 +95,7 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "reorderOffset": 2,
   "reverseHeaderBarHeight": 4,
   "rowBackgroundColors": "IrisGridTheme['row-background-colors']",
-  "rowFooterWidth": 90,
+  "rowFooterWidth": 60,
   "rowHeaderWidth": 0,
   "rowHeight": 19,
   "rowHoverBackgroundColor": "IrisGridTheme['row-hover-bg']",

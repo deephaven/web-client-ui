@@ -22,7 +22,7 @@ import {
   getTableMapForDashboard,
   setDashboardFilterSets as setDashboardFilterSetsAction,
 } from '../redux';
-import Panel from './CorePanel';
+import Panel from './Panel';
 import FilterSetManager, {
   type ChangeHandlerArgs,
   type FilterSet,
@@ -34,7 +34,7 @@ import InputFilterPanel, {
   type PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
 import './FilterSetManagerPanel.scss';
-import { type FilterChangeEvent } from '../FilterEvents';
+import { type FilterChangeEvent } from '../FilterPlugin';
 
 const log = Log.module('FilterSetManagerPanel');
 interface IrisGridState {

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ColorUtils, requestParentResponse } from '@deephaven/utils';
+import { ColorUtils } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   DEFAULT_DARK_THEME_KEY,
@@ -12,12 +12,6 @@ import {
   type ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
   THEME_KEY_OVERRIDE_QUERY_PARAM,
-  type ExternalThemeData,
-  EXTERNAL_THEME_KEY,
-  type BaseThemeKey,
-  PRELOAD_TRANSPARENT_THEME_QUERY_PARAM,
-  DEFAULT_LIGHT_THEME_KEY,
-  TRANSPARENT_PRELOAD_DATA_VARIABLES,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -29,62 +23,26 @@ import {
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
-  isBaseThemeKey,
-  isExternalThemeData,
-  isExternalThemeEnabled,
-  isPreloadTransparentTheme,
-  isValidColorVar,
   overrideSVGFillColors,
-  parseExternalThemeData,
   preloadTheme,
   replaceSVGFillColor,
-  requestExternalThemeData,
   resolveCssVariablesInRecord,
   resolveCssVariablesInString,
   setThemePreloadData,
   TMP_CSS_PROP_PREFIX,
 } from './ThemeUtils';
 
-jest.mock('@deephaven/utils', () => ({
-  ...jest.requireActual('@deephaven/utils'),
-  requestParentResponse: jest.fn(),
-}));
 jest.mock('nanoid');
 
 const { asMock, createMockProxy } = TestUtils;
 
-const VALID_COLOR1 = 'mock.validColor1';
-const VALID_COLOR2 = 'mock.validColor2';
-const INVALID_COLOR = 'mock.invalidColor';
-const MOCK_VALID_COLOR_VALUE = new Set([VALID_COLOR1, VALID_COLOR2]);
-
-/** Mock CSS.supports implementation including overload signatures. */
-function mockCssSupports(property: string, value: string): boolean;
-function mockCssSupports(conditionText: string): boolean;
-function mockCssSupports(arg1: string, arg2?: string): boolean {
-  return arg1 === 'color' && arg2 != null && MOCK_VALID_COLOR_VALUE.has(arg2);
-}
-
-const origLocation = window.location;
-
 beforeEach(() => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  delete window.location;
-  window.location = {
-    search: '',
-  } as unknown as Location;
-
   document.body.removeAttribute('style');
   document.head.innerHTML = '';
   localStorage.clear();
   jest.clearAllMocks();
   jest.restoreAllMocks();
   expect.hasAssertions();
-});
-
-afterEach(() => {
-  window.location = origLocation;
 });
 
 describe('DEFAULT_PRELOAD_DATA_VARIABLES', () => {
@@ -128,151 +86,6 @@ describe('calculatePreloadStyleContent', () => {
         '--dh-color-bg': 'orange',
       })
     );
-  });
-});
-
-describe('isBaseThemeKey', () => {
-  it.each([
-    [DEFAULT_DARK_THEME_KEY, true],
-    [DEFAULT_LIGHT_THEME_KEY, true],
-    ['some-theme', false],
-    ['', false],
-  ])(
-    `should return true only for base theme keys: '%s'`,
-    (themeKey, expected) => {
-      expect(isBaseThemeKey(themeKey)).toBe(expected);
-    }
-  );
-});
-
-describe('isExternalThemeData', () => {
-  it.each([
-    [{ name: 'Mock external theme', cssVars: {} }, true],
-    [null, false],
-    [undefined, false],
-    [{}, false],
-    ['not-theme-data', false],
-    [{ name: 'Mock external theme', cssVars: 'cssVars' }, false],
-    [{ name: 999, cssVars: {} }, false],
-  ])(
-    'should return true if external theme data: %s',
-    (maybeExternalThemeData, expected) => {
-      expect(isExternalThemeData(maybeExternalThemeData)).toBe(expected);
-    }
-  );
-});
-
-describe('isExternalThemeEnabled', () => {
-  it.each([
-    [EXTERNAL_THEME_KEY, true],
-    [null, false],
-    ['some-theme', false],
-  ])(
-    'should return true if external theme is enabled: %s',
-    (themeKey, expected) => {
-      window.location.search =
-        themeKey == null ? '' : `${THEME_KEY_OVERRIDE_QUERY_PARAM}=${themeKey}`;
-      expect(isExternalThemeEnabled()).toBe(expected);
-    }
-  );
-});
-
-describe('isPreloadTransparentTheme: %s', () => {
-  it.each([
-    ['true', true],
-    ['false', false],
-    [null, false],
-  ])('should', (value, expected) => {
-    window.location.search =
-      value == null ? '' : `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=${value}`;
-    expect(isPreloadTransparentTheme()).toBe(expected);
-  });
-});
-
-describe('isValidColorVar', () => {
-  it.each([
-    ['--dh-color-bg', VALID_COLOR1, true],
-    ['--dh-colorxx-bg', VALID_COLOR1, false],
-    ['--dh-color-bg', INVALID_COLOR, false],
-  ])(
-    'should return true if name and value are valid: name:%s, value:%s',
-    (name, value, expected) => {
-      jest.spyOn(window.CSS, 'supports').mockImplementation(mockCssSupports);
-      expect(isValidColorVar(name, value)).toBe(expected);
-    }
-  );
-});
-
-describe('parseExternalThemeData', () => {
-  it.each([
-    [
-      {
-        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock external theme',
-        cssVars: {},
-      },
-      '',
-    ],
-    [
-      {
-        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock external theme',
-        cssVars: {
-          '--dh-color-fg': INVALID_COLOR,
-        },
-      },
-      '',
-    ],
-    [
-      {
-        baseThemeKey: 'mock.baseThemeKey' as BaseThemeKey,
-        name: 'Mock external theme',
-        cssVars: {
-          '--dh-color-bg': VALID_COLOR1,
-          '--dh-color-fg': INVALID_COLOR,
-          '--dh-colorxx-bg': VALID_COLOR1,
-        } as ExternalThemeData['cssVars'],
-      },
-      ':root{--dh-color-bg:mock.validColor1;}',
-    ],
-  ])(
-    'should sanitize css vars: %s',
-    (ExternalThemeData, expectedStyleContent) => {
-      jest.spyOn(window.CSS, 'supports').mockImplementation(mockCssSupports);
-
-      const actual = parseExternalThemeData(ExternalThemeData);
-
-      expect(actual).toEqual({
-        name: ExternalThemeData.name,
-        baseThemeKey: ExternalThemeData.baseThemeKey,
-        themeKey: EXTERNAL_THEME_KEY,
-        styleContent: expectedStyleContent,
-      });
-    }
-  );
-});
-
-describe('requestExternalThemeData', () => {
-  const mockExternalThemeData: ExternalThemeData = {
-    name: 'Mock external theme',
-    cssVars: {
-      '--dh-color-bg': 'blue',
-    },
-  };
-
-  it('should throw if non-theme data is returned', () => {
-    asMock(requestParentResponse).mockResolvedValue({
-      label: 'not-theme-data',
-    });
-
-    expect(requestExternalThemeData()).rejects.toThrowError(
-      'Unexpected external theme data response: {"label":"not-theme-data"}'
-    );
-  });
-
-  it('should return theme data from parent', async () => {
-    asMock(requestParentResponse).mockResolvedValue(mockExternalThemeData);
-    expect(await requestExternalThemeData()).toEqual(mockExternalThemeData);
   });
 });
 
@@ -430,6 +243,21 @@ describe('getActiveThemes', () => {
 });
 
 describe('getDefaultSelectedThemeKey', () => {
+  const origLocation = window.location;
+
+  beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    delete window.location;
+    window.location = {
+      search: '',
+    } as unknown as Location;
+  });
+
+  afterEach(() => {
+    window.location = origLocation;
+  });
+
   it.each([
     ['overrideKey', 'preloadKey', 'overrideKey'],
     [undefined, 'preloadKey', 'preloadKey'],
@@ -671,54 +499,38 @@ describe('overrideSVGFillColors', () => {
 
 describe('preloadTheme', () => {
   it.each([
-    [null, true],
-    [null, false],
-    [
-      {
-        themeKey: 'mock.themeKey',
-        preloadStyleContent: ':root{mock.preloadStyleContent}',
-      },
-      false,
-    ],
-  ] as const)(
-    'should set the style content: %s',
-    (preloadData, preloadTransparent) => {
-      if (preloadData != null) {
-        localStorage.setItem(
-          THEME_CACHE_LOCAL_STORAGE_KEY,
-          JSON.stringify(preloadData)
-        );
-      }
-
-      if (preloadTransparent) {
-        window.location.search = `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=true`;
-      }
-
-      preloadTheme();
-
-      const [styleElDefaults, styleElPrevious] =
-        document.querySelectorAll('style');
-
-      expect(styleElDefaults).not.toBeNull();
-
-      expect(styleElDefaults?.innerHTML).toEqual(
-        calculatePreloadStyleContent(
-          preloadTransparent
-            ? TRANSPARENT_PRELOAD_DATA_VARIABLES
-            : DEFAULT_PRELOAD_DATA_VARIABLES
-        )
+    null,
+    {
+      themeKey: 'mock.themeKey',
+      preloadStyleContent: ':root{mock.preloadStyleContent}',
+    },
+  ] as const)('should set the style content: %s', preloadData => {
+    if (preloadData != null) {
+      localStorage.setItem(
+        THEME_CACHE_LOCAL_STORAGE_KEY,
+        JSON.stringify(preloadData)
       );
-
-      if (preloadData?.preloadStyleContent == null) {
-        expect(styleElPrevious).toBeUndefined();
-      } else {
-        expect(styleElPrevious).toBeDefined();
-        expect(styleElPrevious?.innerHTML).toEqual(
-          preloadData?.preloadStyleContent
-        );
-      }
     }
-  );
+
+    preloadTheme();
+
+    const [styleElDefaults, styleElPrevious] =
+      document.querySelectorAll('style');
+
+    expect(styleElDefaults).not.toBeNull();
+    expect(styleElDefaults?.innerHTML).toEqual(
+      calculatePreloadStyleContent(DEFAULT_PRELOAD_DATA_VARIABLES)
+    );
+
+    if (preloadData?.preloadStyleContent == null) {
+      expect(styleElPrevious).toBeUndefined();
+    } else {
+      expect(styleElPrevious).toBeDefined();
+      expect(styleElPrevious?.innerHTML).toEqual(
+        preloadData?.preloadStyleContent
+      );
+    }
+  });
 });
 
 describe('replaceSVGFillColor', () => {

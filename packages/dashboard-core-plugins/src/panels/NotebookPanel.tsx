@@ -58,7 +58,7 @@ import type { Tab, CloseOptions } from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
-import Panel from './CorePanel';
+import Panel from './Panel';
 import './NotebookPanel.scss';
 
 const MarkdownNotebook = lazy(() => import('./MarkdownNotebook'));

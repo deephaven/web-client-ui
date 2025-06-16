@@ -105,17 +105,6 @@ export class TestUtils {
   };
 
   /**
-   * Find all call args for a given mock function that match a given predicate.
-   * @param fn jest.Mock function to search calls on
-   * @param predicate Predicate function to match calls against
-   * @returns An array of arguments for each call that matches the predicate
-   */
-  static findCalls = <TResult, TArgs extends unknown[]>(
-    fn: (...args: TArgs) => TResult,
-    predicate: (args: TArgs) => boolean
-  ): TArgs[] => TestUtils.asMock(fn).mock.calls.filter(predicate);
-
-  /**
    * Find the last mock function call matching a given predicate.
    * @param fn jest.Mock function
    * @param predicate Predicate function to match calls against
@@ -127,19 +116,6 @@ export class TestUtils {
     TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
 
   /**
-   * Find all event handlers registered on the `window` object for an event type.
-   * This will only return handlers registered via a mocked `window.addEventListener`.
-   * @param type
-   * @returns An array of event handlers for the given event type.
-   */
-  static findWindowEventHandlers = <TKey extends keyof WindowEventMap>(
-    type: TKey
-  ): ((event: WindowEventMap[TKey]) => void)[] =>
-    TestUtils.findCalls(window.addEventListener, ([arg0]) => arg0 === type).map(
-      ([, handler]) => handler as (event: WindowEventMap[TKey]) => void
-    );
-
-  /*
    * Generate all possible combinations of boolean values for a given number of
    * variables
    * @param n The number of boolean values to generate combinations for.
@@ -270,42 +246,6 @@ export class TestUtils {
     }
     await user.keyboard('{/Control}');
   }
-
-  /**
-   * Set up the mock for window.parent or window.opener, and return a cleanup function.
-   * @param type Whether to mock window.parent or window.opener
-   * @param mockPostMessage The mock postMessage function to use
-   * @returns Cleanup function
-   */
-  static setupWindowParentMock = (
-    type: 'parent' | 'opener',
-    mockPostMessage: jest.Mock = jest.fn(),
-    mockWindow?: Window
-  ): (() => void) => {
-    if (type !== 'parent' && type !== 'opener') {
-      throw new Error(`Invalid type ${type}`);
-    }
-
-    if (type === 'parent') {
-      const windowParentSpy = jest
-        .spyOn(window, 'parent', 'get')
-        .mockReturnValue(
-          mockWindow ??
-            TestUtils.createMockProxy<Window>({
-              postMessage: mockPostMessage,
-            })
-        );
-      return () => {
-        windowParentSpy.mockRestore();
-      };
-    }
-
-    const originalWindowOpener = window.opener;
-    window.opener = mockWindow ?? { postMessage: mockPostMessage };
-    return () => {
-      window.opener = originalWindowOpener;
-    };
-  };
 
   static async shiftClick(
     user: ReturnType<typeof userEvent.setup>,

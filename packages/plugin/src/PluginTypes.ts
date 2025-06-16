@@ -109,16 +109,9 @@ export function isDashboardPlugin(
 }
 
 export interface WidgetComponentProps<T = unknown> {
-  /**
-   * Function to fetch the widget data.
-   * @returns A promise that resolves to the widget data.
-   */
   fetch: () => Promise<T>;
-  /**
-   * A unique identifier for the widget.
-   * dh.ui uses this to identify widgets within a dashboard or panel.
-   */
-  __dhId?: string;
+  persistState?: (state: unknown) => void;
+  getInitialState?: () => unknown;
 }
 
 export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
