@@ -13,6 +13,8 @@ import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
 import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
+import IrisGridUtils from './IrisGridUtils';
 
 const log = Log.module('IrisGridTreeTableModel');
 
@@ -53,6 +55,24 @@ export interface UITreeRow extends UIRow {
   isExpanded: boolean;
   hasChildren: boolean;
   depth: number;
+}
+
+/**
+ * Check if a row is a UITreeRow
+ * @param row The row to check
+ * @returns True if the row is a UITreeRow and false otherwise
+ */
+export function isUITreeRow(row: unknown): row is UITreeRow {
+  return (
+    row != null &&
+    typeof row === 'object' &&
+    'hasChildren' in row &&
+    'isExpanded' in row &&
+    'depth' in row &&
+    typeof row.hasChildren === 'boolean' &&
+    typeof row.isExpanded === 'boolean' &&
+    typeof row.depth === 'number'
+  );
 }
 
 type LayoutTreeTable = DhType.TreeTable & {
@@ -153,6 +173,66 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     }
 
     return super.textForCell(x, y);
+  }
+
+  colorForCell(x: ModelIndex, y: ModelIndex, theme: IrisGridThemeType): string {
+    const data = this.dataForCell(x, y);
+    if (data) {
+      const { format, value } = data;
+      if (value == null || value === '') {
+        assertNotNull(theme.nullStringColor);
+        return theme.nullStringColor;
+      }
+      if (format?.color != null && format.color !== '') {
+        return format.color;
+      }
+
+      // Fallback to formatting based on the value/type of the cell
+      if (value != null) {
+        const column = this.sourceColumn(x, y);
+        const row = this.row(y);
+        assertNotNull(row);
+
+        let columnTypeForFormatting = column.type;
+
+        // For tree table leaf nodes, use the constituent type for formatting
+        if (
+          isUITreeRow(row) &&
+          row.hasChildren === false &&
+          column.constituentType != null
+        ) {
+          columnTypeForFormatting = column.constituentType;
+        }
+
+        return IrisGridUtils.colorForValue(
+          theme,
+          columnTypeForFormatting,
+          column.name,
+          value
+        );
+      }
+    }
+
+    return theme.textColor;
+  }
+
+  textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
+    const column = this.sourceColumn(x, y);
+    const row = this.row(y);
+    assertNotNull(row);
+
+    let typeForFormatting = column.type;
+
+    // For tree table leaf nodes, use the constituent type for formatting
+    if (
+      isUITreeRow(row) &&
+      row.hasChildren === false &&
+      column.constituentType != null
+    ) {
+      typeForFormatting = column.constituentType;
+    }
+
+    return IrisGridUtils.textAlignForValue(typeForFormatting, column.name);
   }
 
   extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
