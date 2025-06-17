@@ -11,12 +11,11 @@ import LinkerUtils, {
 } from './LinkerUtils';
 
 function makeLinkPoint(
-  panelId: string | string[],
+  panelId: string,
   columnName: string,
-  columnType: string | null,
-  panelComponent?: string | null
+  columnType: string | null
 ): LinkPoint {
-  return { panelId, panelComponent, columnName, columnType };
+  return { panelId, columnName, columnType };
 }
 
 function makeLinkColumn(
@@ -63,97 +62,38 @@ test("isLinkableColumn returns false if column description starts with 'Preview 
   expect(isLinkableColumn(column)).toBe(false);
 });
 
-describe('tests scenarios where an invalid link type should be returned', () => {
-  it('returns invalid if start or end panel components are null', () => {
-    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int', null);
-    const end = makeLinkPoint(
-      'PANEL_ID_B',
-      'COLUMN_B',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
-    expect(LinkerUtils.getLinkType(end, start)).toBe('invalid');
+describe('isLinkValid', () => {
+  it('returns false if start and end panel IDs are the same', () => {
+    const start = makeLinkPoint('PANEL_ID', 'COLUMN_A', 'int');
+    const end = makeLinkPoint('PANEL_ID', 'COLUMN_B', 'int');
+    expect(LinkerUtils.isLinkValid(start, end)).toBe(false);
   });
 
-  it('returns invalid if start and end panel IDs are the same', () => {
-    const start = makeLinkPoint(
-      'PANEL_ID',
-      'COLUMN_A',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    const end = makeLinkPoint(
-      'PANEL_ID',
-      'COLUMN_B',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
-  });
-
-  it('returns invalid if neither start or end panel IDs and isolated panel ID match', () => {
-    const start = makeLinkPoint(
-      'PANEL_ID_A',
-      'COLUMN_A',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    const end = makeLinkPoint(
-      'PANEL_ID_B',
-      'COLUMN_B',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
+  it('returns false if neither start or end panel IDs and isolated panel ID match', () => {
+    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int');
+    const end = makeLinkPoint('PANEL_ID_B', 'COLUMN_B', 'int');
     const isolatedLinkerPanelId = 'PANEL_ID_C';
-    expect(LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId)).toBe(
-      'invalid'
+    expect(LinkerUtils.isLinkValid(start, end, isolatedLinkerPanelId)).toBe(
+      false
     );
   });
 
-  it('returns invalid if start or end panel components are null', () => {
-    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int', null);
+  it('returns false if column types are not compatible', () => {
+    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int');
     const end = makeLinkPoint('PANEL_ID_B', 'COLUMN_B', 'java.lang.String');
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
+    expect(LinkerUtils.isLinkValid(start, end)).toBe(false);
   });
 
-  it('returns invalid if components or column types are not compatible', () => {
-    const start = makeLinkPoint(
-      'PANEL_ID_A',
-      'COLUMN_A',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    const end = makeLinkPoint(
-      'PANEL_ID_B',
-      'COLUMN_B',
-      'java.lang.String',
-      'PANEL_COMPONENT_ID'
-    );
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
-    LinkerUtils.ALLOWED_LINKS = new Map<string, string[]>([
-      ['PANEL_COMPONENT_ID', ['PANEL_COMPONENT_ID']],
-    ]);
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
+  it('returns true if start and end panel IDs are different and column types are the same', () => {
+    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int');
+    const end = makeLinkPoint('PANEL_ID_B', 'COLUMN_B', 'int');
+    expect(LinkerUtils.isLinkValid(start, end)).toBe(true);
   });
 
-  it('returns invalid if target panel component is incompatible', () => {
-    const start = makeLinkPoint(
-      'PANEL_ID_A',
-      'COLUMN_A',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    const end = makeLinkPoint(
-      'PANEL_ID_B',
-      'COLUMN_B',
-      'int',
-      'PANEL_COMPONENT_ID'
-    );
-    LinkerUtils.ALLOWED_LINKS = new Map<string, string[]>([
-      ['PANEL_COMPONENT_ID', ['PANEL_COMPONENT_ID']],
-    ]);
-    expect(LinkerUtils.getLinkType(start, end)).toBe('invalid');
+  it('returns true if start and end panel IDs are different and column types are compatible', () => {
+    const start = makeLinkPoint('PANEL_ID_A', 'COLUMN_A', 'int');
+    const end = makeLinkPoint('PANEL_ID_B', 'COLUMN_B', 'long');
+    expect(LinkerUtils.isLinkValid(start, end)).toBe(true);
   });
 });
 
@@ -164,11 +104,11 @@ it('finds columns correctly', () => {
     columns.push(column);
   }
 
-  let linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_2', 'int', 'PANEL_ID');
+  let linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_2', 'int');
   expect(LinkerUtils.findColumn(columns, linkPoint)).toBe(columns[2]);
-  linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_2', 'BAD_TYPE', 'PANEL_ID');
+  linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_2', 'BAD_TYPE');
   expect(LinkerUtils.findColumn(columns, linkPoint)).toBe(undefined);
-  linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_3', 'boolean', 'PANEL_ID');
+  linkPoint = makeLinkPoint('PANEL_ID', 'COLUMN_3', 'boolean');
   expect(LinkerUtils.findColumn(columns, linkPoint)).toBe(undefined);
 });
 

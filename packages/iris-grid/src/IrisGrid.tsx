@@ -259,7 +259,7 @@ export type FilterData = {
 export type FilterMap = Map<
   ColumnName,
   {
-    columnType: string;
+    columnType: string | null;
     filterList: FilterData[];
   }
 >;
@@ -513,8 +513,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     isStuckToBottom: false,
     isStuckToRight: false,
     columnSelectionValidator: null,
-    columnAllowedCursor: null,
-    columnNotAllowedCursor: null,
+    columnAllowedCursor: 'linker',
+    columnNotAllowedCursor: 'linker-not-allowed',
     copyCursor: 'copy',
     name: 'table',
     onlyFetchVisibleColumns: true,
@@ -641,6 +641,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
     this.handleViewportUpdated = this.handleViewportUpdated.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
+    this.setFilterMap = this.setFilterMap.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
