@@ -160,6 +160,15 @@ it('isRollupAvailable checks if the rollup method is defined', async () => {
   expect(model.isRollupAvailable).toBe(true);
 });
 
+it('isAggregatedColumnsAvailable is not available on regular tables', async () => {
+  const table = irisGridTestUtils.makeTable();
+
+  const model = irisGridTestUtils.makeModel(table);
+
+  expect(model.isAggregatedColumnsAvailable).toBe(false);
+  expect(model.aggregatedColumns.length).toBe(0);
+});
+
 it('closes the table correctly when the model is closed', () => {
   const table = irisGridTestUtils.makeTable();
   table.close = jest.fn();

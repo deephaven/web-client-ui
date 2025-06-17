@@ -98,6 +98,7 @@ class IrisGridTestUtils {
 
   makeTreeTable(
     columns = this.makeColumns(),
+    aggregatedColumns: DhType.Column[] = [],
     groupedColumns: DhType.Column[] = [],
     size = 1000000000,
     sort = [],
@@ -106,6 +107,7 @@ class IrisGridTestUtils {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (this.dh as any).TreeTable({
       columns,
+      aggregatedColumns,
       groupedColumns,
       size,
       sort,
