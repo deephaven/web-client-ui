@@ -166,7 +166,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         );
 
         if (TableUtils.isTextType(this.columns[x]?.type)) {
-          if (text === null) {
+          if (value === null) {
             return this.formatter.showNullStrings ? 'null' : '';
           }
 
