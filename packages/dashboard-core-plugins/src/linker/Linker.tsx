@@ -46,6 +46,7 @@ import LinkerUtils, {
   LinkType,
   isLinkableColumn,
 } from './LinkerUtils';
+import { type FilterColumnSourceId } from '../FilterPlugin';
 
 const log = Log.module('Linker');
 
@@ -252,21 +253,24 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.columnSelected(panel, column, true);
   }
 
-  handleColumnsChanged(panel: PanelComponent, columns: LinkColumn[]): void {
-    log.debug('handleColumnsChanged', panel, columns);
+  handleColumnsChanged(
+    sourceId: FilterColumnSourceId,
+    columns: LinkColumn[]
+  ): void {
+    log.debug('handleColumnsChanged', sourceId, columns);
     const { links } = this.props;
-    const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (panelId == null) {
-      log.error('Invalid panelId', panel);
+    if (sourceId == null) {
+      log.error('Invalid filter columns source id', sourceId);
       return;
     }
+    // NOTE: links need to be updated to use sourceId instead of panelId. This will be done when we implement linker for dh.ui widgets DH-18840
     // Delete links that start or end on non-existent column in the updated panel
     const linksToDelete = links.filter(
       ({ start, end }) =>
-        (start.panelId === panelId &&
+        (start.panelId === sourceId &&
           LinkerUtils.findColumn(columns, start) == null) ||
         (end != null &&
-          end.panelId === panelId &&
+          end.panelId === sourceId &&
           LinkerUtils.findColumn(columns, end) == null)
     );
     this.deleteLinks(linksToDelete);

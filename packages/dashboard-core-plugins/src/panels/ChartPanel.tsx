@@ -765,7 +765,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     const { glEventHub } = this.props;
     glEventHub.emit(
       InputFilterEvent.COLUMNS_CHANGED,
-      this,
+      LayoutUtils.getIdFromPanel(this),
       Array.from(model.getFilterColumnMap().values())
     );
   }
