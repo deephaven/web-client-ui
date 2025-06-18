@@ -17,3 +17,6 @@ export * from './PanelEvent';
 export { default as PanelEvent } from './PanelEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';
 export { default as PanelManager } from './PanelManager';
+export * from './useDashboardId';
+export * from './useDhId';
+export * from './usePanelId';

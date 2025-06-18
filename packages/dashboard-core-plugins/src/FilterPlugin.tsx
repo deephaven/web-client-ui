@@ -1,62 +1,54 @@
-import { Component, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
+  type PanelComponent,
   PanelEvent,
-  type PanelId,
   updateDashboardData,
   useListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { TextUtils } from '@deephaven/utils';
+import { type dh } from '@deephaven/jsapi-types';
 import { InputFilterEvent } from './events';
 import {
   DropdownFilterPanel,
   FilterSetManagerPanel,
   InputFilterPanel,
-  type WidgetId,
 } from './panels';
+import {
+  type FilterColumn,
+  type FilterChangeEvent,
+  type FilterColumnSourceId,
+  useFilterChangedListener,
+  useFilterColumnsChangedListener,
+  useFilterTableChangedListener,
+} from './FilterEvents';
 
 const log = Log.module('FilterPlugin');
 
-type Column = {
-  name: string;
-  type: string;
-};
-
-// A panel or widget can have columns for filters
-export type FilterColumnSourceId = PanelId | WidgetId;
-
-export type FilterChangeEvent = Column & {
-  value: string;
-  timestamp: number;
-  excludePanelIds?: string[];
-};
-
 export type FilterPluginProps = Partial<DashboardPluginComponentProps>;
-
-function flattenArray<T>(accumulator: T[], currentValue: T | T[]): T[] {
-  return accumulator.concat(currentValue);
-}
 
 export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id: localDashboardId, layout, registerComponent } = props;
   const dispatch = useDispatch();
   const [panelColumns] = useState(
-    () => new Map<FilterColumnSourceId, Column[]>()
+    () => new Map<FilterColumnSourceId, FilterColumn[]>()
   );
   const [panelFilters] = useState(
-    () => new Map<Component, FilterChangeEvent[]>()
+    () => new Map<FilterColumnSourceId, FilterChangeEvent[]>()
   );
-  const [panelTables] = useState(() => new Map());
+  const [panelTables] = useState(
+    () => new Map<FilterColumnSourceId, dh.Table>()
+  );
 
   const sendUpdate = useCallback(() => {
     const columns = Array.from(panelColumns.values())
-      .reduce(flattenArray, [] as Column[])
+      .flat()
       .sort((a, b) => {
         const aName = TextUtils.toLower(a.name);
         const bName = TextUtils.toLower(b.name);
@@ -84,10 +76,10 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
         }
 
         return array;
-      }, [] as Column[]);
+      }, [] as FilterColumn[]);
 
     const filters = Array.from(panelFilters.values())
-      .reduce(flattenArray, [] as FilterChangeEvent[])
+      .flat()
       .sort((a, b) => a.timestamp - b.timestamp);
     const tableMap = new Map(panelTables);
 
@@ -100,12 +92,19 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   /**
    * Handler for the COLUMNS_CHANGED event.
    * @param sourceId The id of the component that's emitting the filter change
-   * @param columns The columns in this panel
+   * @param columns The columns in this panel. Null to clear the columns.
    */
   const handleColumnsChanged = useCallback(
-    (sourceId: FilterColumnSourceId, columns: Column | Column[]) => {
+    (
+      sourceId: FilterColumnSourceId,
+      columns: readonly FilterColumn[] | null
+    ) => {
       log.debug2('handleColumnsChanged', sourceId, columns);
-      panelColumns.set(sourceId, ([] as Column[]).concat(columns));
+      if (columns == null) {
+        panelColumns.delete(sourceId);
+      } else {
+        panelColumns.set(sourceId, ([] as FilterColumn[]).concat(columns));
+      }
       sendUpdate();
     },
     [panelColumns, sendUpdate]
@@ -113,36 +112,50 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
 
   /**
    * Handler for the FILTERS_CHANGED event.
-   * @param {Component} panel The component that's emitting the filter change
-   * @param {FilterChangeEvent|Array<FilterChangeEvent>} filters The input filters set by the panel
+   * @param sourceId The id of the component that's emitting the filter change
+   * @param filters The input filters set by the panel
    */
   const handleFiltersChanged = useCallback(
-    (panel, filters) => {
-      log.debug2('handleFiltersChanged', panel, filters);
-      panelFilters.set(panel, [].concat(filters) as FilterChangeEvent[]);
+    (
+      sourceId: FilterColumnSourceId,
+      filters: FilterChangeEvent | FilterChangeEvent[] | null
+    ) => {
+      log.debug2('handleFiltersChanged', sourceId, filters);
+      if (filters == null) {
+        panelFilters.delete(sourceId);
+      } else {
+        panelFilters.set(
+          sourceId,
+          ([] as FilterChangeEvent[]).concat(filters ?? [])
+        );
+      }
       sendUpdate();
     },
     [panelFilters, sendUpdate]
   );
 
   const handleTableChanged = useCallback(
-    (panel, table) => {
-      log.debug2('handleTableChanged', panel, table);
-      panelTables.set(LayoutUtils.getIdFromPanel(panel), table);
+    (sourceId: FilterColumnSourceId, table: dh.Table | null) => {
+      log.debug2('handleTableChanged', sourceId, table);
+      if (table == null) {
+        panelTables.delete(sourceId);
+      } else {
+        panelTables.set(sourceId, table);
+      }
       sendUpdate();
     },
     [panelTables, sendUpdate]
   );
 
   const handlePanelUnmount = useCallback(
-    panel => {
+    (panel: PanelComponent) => {
       log.debug2('handlePanelUnmount', panel);
       const panelId = LayoutUtils.getIdFromPanel(panel);
       if (panelId != null) {
         panelColumns.delete(panelId);
+        panelTables.delete(panelId);
+        panelFilters.delete(panelId);
       }
-      panelFilters.delete(panel);
-      panelTables.delete(panelId);
       sendUpdate();
     },
     [panelColumns, panelFilters, panelTables, sendUpdate]
@@ -256,21 +269,9 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
     [registerComponent]
   );
 
-  useListener(
-    layout.eventHub,
-    InputFilterEvent.COLUMNS_CHANGED,
-    handleColumnsChanged
-  );
-  useListener(
-    layout.eventHub,
-    InputFilterEvent.FILTERS_CHANGED,
-    handleFiltersChanged
-  );
-  useListener(
-    layout.eventHub,
-    InputFilterEvent.TABLE_CHANGED,
-    handleTableChanged
-  );
+  useFilterColumnsChangedListener(layout.eventHub, handleColumnsChanged);
+  useFilterChangedListener(layout.eventHub, handleFiltersChanged);
+  useFilterTableChangedListener(layout.eventHub, handleTableChanged);
   useListener(
     layout.eventHub,
     InputFilterEvent.OPEN_DROPDOWN,

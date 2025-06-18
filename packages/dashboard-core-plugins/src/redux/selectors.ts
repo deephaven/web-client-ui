@@ -1,11 +1,11 @@
 import { getDashboardData } from '@deephaven/dashboard';
 import type { dh } from '@deephaven/jsapi-types';
-import { SessionWrapper } from '@deephaven/jsapi-utils';
-import { RootState } from '@deephaven/redux';
-import { FilterChangeEvent } from '../FilterPlugin';
-import { Link } from '../linker/LinkerUtils';
-import { FilterSet } from '../panels';
-import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { type SessionWrapper } from '@deephaven/jsapi-utils';
+import { type RootState } from '@deephaven/redux';
+import { type FilterChangeEvent } from '../FilterEvents';
+import { type Link } from '../linker/LinkerUtils';
+import { type FilterSet } from '../panels';
+import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const EMPTY_OBJECT = Object.freeze({});
 

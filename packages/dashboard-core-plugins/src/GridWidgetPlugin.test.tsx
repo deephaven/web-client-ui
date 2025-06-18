@@ -8,6 +8,15 @@ import { createMockStore } from '@deephaven/redux';
 import dh from '@deephaven/jsapi-shim';
 import GridWidgetPlugin from './GridWidgetPlugin';
 
+const mockGoldenLayout = { eventHub: TestUtils.createMockProxy() };
+
+jest.mock('@deephaven/dashboard', () => ({
+  ...(jest.requireActual('@deephaven/dashboard') as Record<string, unknown>),
+  useLayoutManager: jest.fn(() => mockGoldenLayout),
+  useDashboardId: jest.fn(() => 'test'),
+  useDhId: jest.fn(() => ({})),
+}));
+
 const MockIrisGrid: React.FC & jest.Mock = jest.fn(() => (
   <div>MockIrisGrid</div>
 ));
@@ -22,7 +31,7 @@ jest.mock('@deephaven/iris-grid', () => {
 });
 
 it('mounts without crashing', async () => {
-  const table = TestUtils.createMockProxy<DhType.Table>();
+  const table = TestUtils.createMockProxy<DhType.Table>({ columns: [] });
   const fetch = jest.fn(() => Promise.resolve(table));
 
   const store = createMockStore();

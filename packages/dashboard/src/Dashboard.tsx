@@ -22,6 +22,8 @@ import {
 } from './DashboardPlugin';
 import './Dashboard.scss';
 import { LayoutManagerContext } from './layout';
+import { DashboardIdContext } from './useDashboardId';
+import { FiberProvider } from './useFiber';
 
 const RESIZE_THROTTLE = 100;
 
@@ -131,19 +133,23 @@ export function Dashboard({
       <div className="w-100 h-100" ref={layoutElement} />
       {isInitialized && layout && (
         <LayoutManagerContext.Provider value={layout}>
-          <DashboardLayout
-            emptyDashboard={emptyDashboard}
-            id={id}
-            layout={layout}
-            layoutConfig={layoutConfig}
-            onLayoutChange={onLayoutConfigChange}
-            onLayoutInitialized={onLayoutInitialized}
-            hydrate={hydrate}
-            dehydrate={dehydrate}
-            panelWrapper={panelWrapper}
-          >
-            {children}
-          </DashboardLayout>
+          <DashboardIdContext.Provider value={id}>
+            <FiberProvider>
+              <DashboardLayout
+                emptyDashboard={emptyDashboard}
+                id={id}
+                layout={layout}
+                layoutConfig={layoutConfig}
+                onLayoutChange={onLayoutConfigChange}
+                onLayoutInitialized={onLayoutInitialized}
+                hydrate={hydrate}
+                dehydrate={dehydrate}
+                panelWrapper={panelWrapper}
+              >
+                {children}
+              </DashboardLayout>
+            </FiberProvider>
+          </DashboardIdContext.Provider>
         </LayoutManagerContext.Provider>
       )}
     </div>
