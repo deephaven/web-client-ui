@@ -176,22 +176,18 @@ class LayoutUtils {
 
   /**
    * Get the index of the stack that is currently focused
-   * @param layout GoldenLayout instance
+   * @param allStacks All the stacks
    * @returns The focused stack's index or -1 if not found
    */
-  static getFocusedStackIndex(layout: GoldenLayout): number {
-    const allStacks = LayoutUtils.getAllStackContainers(layout);
-
+  static getFocusedStackIndex(allStacks: Stack[]): number {
     // NOTE: We target the 'lm_focusin' class because GoldenLayout automatically applies this class
     // to tab elements when they receive focus. Until we enhance focus tracking in GoldenLayout, we
     // will have to rely on this internal CSS class.
-    const foundIndex = allStacks.findIndex(stack =>
+    return allStacks.findIndex(stack =>
       stack.header.tabs.some(tab =>
         tab.element[0].classList.contains('lm_focusin')
       )
     );
-
-    return foundIndex;
   }
 
   /**
@@ -201,17 +197,8 @@ class LayoutUtils {
    */
   static getFocusedStack(layout: GoldenLayout): Stack | undefined {
     const allStacks = LayoutUtils.getAllStackContainers(layout);
-
-    // NOTE: We target the 'lm_focusin' class because GoldenLayout automatically applies this class
-    // to tab elements when they receive focus. Until we enhance focus tracking in GoldenLayout, we
-    // will have to rely on this internal CSS class.
-    const focusedStack = allStacks.find(stack =>
-      stack.header.tabs.some(tab =>
-        tab.element[0].classList.contains('lm_focusin')
-      )
-    );
-
-    return focusedStack;
+    const focusedStackIndex = LayoutUtils.getFocusedStackIndex(allStacks);
+    return allStacks[focusedStackIndex];
   }
 
   /**

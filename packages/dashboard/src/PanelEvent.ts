@@ -70,18 +70,6 @@ export const PanelEvent = Object.freeze({
 
   // Panel is dropped
   DROPPED: 'PanelEvent.DROPPED',
-
-  // Event to change focus to next stack
-  CYCLE_TO_NEXT_STACK: 'PanelEvent.CYCLE_TO_NEXT_STACK',
-
-  // Event to change focus to previous stack
-  CYCLE_TO_PREVIOUS_STACK: 'PanelEvent.CYCLE_TO_PREVIOUS_STACK',
-
-  // Event to change focus to next tab
-  CYCLE_TO_NEXT_TAB: 'PanelEvent.CYCLE_TO_NEXT_TAB',
-
-  // Event to change focus to previous tab
-  CYCLE_TO_PREVIOUS_TAB: 'PanelEvent.CYCLE_TO_PREVIOUS_TAB',
 });
 
 export const {

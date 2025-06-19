@@ -14,5 +14,6 @@ export * from './layout';
 export * from './redux';
 export * from './PanelManager';
 export * from './PanelEvent';
+export * from './NavigationEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';
 export { default as PanelManager } from './PanelManager';

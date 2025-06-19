@@ -40,6 +40,10 @@ import {
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
   updateDashboardData as updateDashboardDataAction,
+  emitCycleToNextStack,
+  emitCycleToPreviousStack,
+  emitCycleToNextTab,
+  emitCycleToPreviousTab,
 } from '@deephaven/dashboard';
 import {
   ConsolePlugin,
@@ -441,19 +445,19 @@ export class AppMainContainer extends Component<
   }
 
   sendCycleStackForward(): void {
-    this.emitLayoutEvent(PanelEvent.CYCLE_TO_NEXT_STACK);
+    emitCycleToNextStack(this.getActiveEventHub());
   }
 
   sendCycleStackBackward(): void {
-    this.emitLayoutEvent(PanelEvent.CYCLE_TO_PREVIOUS_STACK);
+    emitCycleToPreviousStack(this.getActiveEventHub());
   }
 
   sendCycleTabForward(): void {
-    this.emitLayoutEvent(PanelEvent.CYCLE_TO_NEXT_TAB);
+    emitCycleToNextTab(this.getActiveEventHub());
   }
 
   sendCycleTabBackward(): void {
-    this.emitLayoutEvent(PanelEvent.CYCLE_TO_PREVIOUS_TAB);
+    emitCycleToPreviousTab(this.getActiveEventHub());
   }
 
   sendReopenLast(): void {
