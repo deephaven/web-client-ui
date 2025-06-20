@@ -1,4 +1,4 @@
-# JavaScript Data grid
+# JavaScript Data Grid
 
 Deephaven's data grid is an [open-source](https://github.com/deephaven/web-client-ui/blob/main/LICENSE), [React.js](https://reactjs.org/) package that is purpose-built for displaying [massive](/blog/2022/01/24/displaying-a-quadrillion-rows) streaming data sets and is written with TypeScript. Our grid renders viewported data from your own server-side model or a Deephaven worker, using [HTML Canvas](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas). It excels at displaying large data sets for data science, monitoring, analytics, and from streaming data sources. We built it to meet the sophisticated and complex needs of quant traders, but it has some really neat features for data scientists. It was inspired by the now-defunct [hypergrid](https://github.com/fin-hypergrid/core).
 
