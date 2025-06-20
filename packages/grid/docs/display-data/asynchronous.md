@@ -4,7 +4,7 @@ When working with big data, it's more than likely you will not have the data acc
 
 ```jsx live
 /**
- * An example showing data loading asnychronously for a grid.
+ * An example showing data loading asynchronously for a grid.
  */
 function AsyncExample() {
   // Use a Viewport data model that we update asynchronously to display the data
@@ -31,7 +31,7 @@ function AsyncExample() {
   useEffect(() => {
     let isCancelled = false;
 
-    // Simulate fetching data asynchronously by using at timeout
+    // Simulate fetching data asynchronously by using a timeout
     setTimeout(() => {
       if (isCancelled) return;
 

@@ -21,7 +21,7 @@ Bring your own server-side data model:
 - Fast rendering, using an optimized HTML canvas element
 - Support for quadrillions of rows and columns
 - Ticking/streaming data support
-- A flexible data model that can add, remove, or change a tables rows or even columns
+- A flexible data model that can add, remove, or change a table's rows or even columns
 - Excel-like keyboard shortcuts
 - Resizable rows/columns
 - Rearrangeable rows/columns
