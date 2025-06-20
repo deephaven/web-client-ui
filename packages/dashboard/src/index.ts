@@ -20,6 +20,7 @@ export {
 } from './BasePanel';
 export * from './PanelManager';
 export * from './PanelEvent';
+export * from './NavigationEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';
 export { default as PanelManager } from './PanelManager';
 export { default as TabEvent } from './TabEvent';

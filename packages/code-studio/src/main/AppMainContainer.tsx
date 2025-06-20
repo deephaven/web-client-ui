@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
   GLOBAL_SHORTCUTS,
+  NAVIGATION_SHORTCUTS,
   Popper,
   type ContextAction,
   Button,
@@ -39,6 +40,10 @@ import {
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
   updateDashboardData as updateDashboardDataAction,
+  emitCycleToNextStack,
+  emitCycleToPreviousStack,
+  emitCycleToNextTab,
+  emitCycleToPreviousTab,
 } from '@deephaven/dashboard';
 import {
   ConsolePlugin,
@@ -237,6 +242,34 @@ export class AppMainContainer extends Component<
         },
         {
           action: () => {
+            this.sendCycleStackForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_STACK,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleStackBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_STACK,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleTabForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_TAB,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleTabBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_TAB,
+          isGlobal: true,
+        },
+        {
+          action: () => {
             this.sendReopenLast();
           },
           shortcut: GLOBAL_SHORTCUTS.REOPEN_CLOSED_PANEL,
@@ -409,6 +442,22 @@ export class AppMainContainer extends Component<
 
   sendClearFilter(): void {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
+  }
+
+  sendCycleStackForward(): void {
+    emitCycleToNextStack(this.getActiveEventHub());
+  }
+
+  sendCycleStackBackward(): void {
+    emitCycleToPreviousStack(this.getActiveEventHub());
+  }
+
+  sendCycleTabForward(): void {
+    emitCycleToNextTab(this.getActiveEventHub());
+  }
+
+  sendCycleTabBackward(): void {
+    emitCycleToPreviousTab(this.getActiveEventHub());
   }
 
   sendReopenLast(): void {
