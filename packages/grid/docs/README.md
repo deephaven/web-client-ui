@@ -6,14 +6,12 @@ Rather than DOM virtualization, our approach uses a canvas-based grid to draw on
 
 <GridMarketing />
 
-<div className="padding-vert--sm" />
-
 ## Data grid comes in two flavors:
 
 1. [@deephaven/grid](https://www.npmjs.com/package/@deephaven/grid) for standalone use cases, where you bring your own data model and backend.
 2. [@deephaven/iris-grid](https://www.npmjs.com/package/@deephaven/iris-grid) extends the former with additional features for use with the Deephaven [JS API](/core/docs/reference/js-api/concepts), and is expected to run against a Deephaven backend. If you are [building your own frontend](https://github.com/deephaven-examples/deephaven-react-app) and running against a Deephaven table, we suggest you use this version.
 
-<div className="row padding-vert--lg">
+<div className="row">
 <div className="col">
 
 ## Grid features
