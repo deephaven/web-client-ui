@@ -164,7 +164,6 @@ describe('IrisGridTreeTableModel snapshot', () => {
   });
 });
 
-// TODO: break into different descripe blocks
 describe('IrisGridTreeTableModel colorForCell', () => {
   let model: IrisGridTreeTableModel;
 
