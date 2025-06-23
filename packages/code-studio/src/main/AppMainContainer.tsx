@@ -104,6 +104,11 @@ import {
 } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 
+enum CycleDirection {
+  Next,
+  Previous,
+}
+
 const log = Log.module('AppMainContainer');
 
 type InputFileFormat =
@@ -266,6 +271,20 @@ export class AppMainContainer extends Component<
             this.sendCycleTabBackward();
           },
           shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_TAB,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleDashboardForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_DASHBOARD,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleDashboardBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_DASHBOARD,
           isGlobal: true,
         },
         {
@@ -462,6 +481,35 @@ export class AppMainContainer extends Component<
 
   sendReopenLast(): void {
     this.emitLayoutEvent(PanelEvent.REOPEN_LAST);
+  }
+
+  cycleDashboard(direction: CycleDirection): void {
+    const { tabs, activeTabKey } = this.state;
+
+    if (tabs.length <= 1) {
+      return;
+    }
+
+    const currentIndex = tabs.findIndex(tab => tab.key === activeTabKey);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (currentIndex + 1) % tabs.length
+        : (currentIndex - 1 + tabs.length) % tabs.length;
+
+    const targetTab = tabs[targetIndex];
+    this.handleTabSelect(targetTab.key);
+  }
+
+  sendCycleDashboardForward(): void {
+    this.cycleDashboard(CycleDirection.Next);
+  }
+
+  sendCycleDashboardBackward(): void {
+    this.cycleDashboard(CycleDirection.Previous);
   }
 
   getActiveEventHub(): EventHub {
