@@ -275,14 +275,14 @@ export class AppMainContainer extends Component<
         },
         {
           action: () => {
-            this.sendCycleDashboardForward();
+            this.handleCycleDashboardForward();
           },
           shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_DASHBOARD,
           isGlobal: true,
         },
         {
           action: () => {
-            this.sendCycleDashboardBackward();
+            this.handleCycleDashboardBackward();
           },
           shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_DASHBOARD,
           isGlobal: true,
@@ -504,11 +504,11 @@ export class AppMainContainer extends Component<
     this.handleTabSelect(targetTab.key);
   }
 
-  sendCycleDashboardForward(): void {
+  handleCycleDashboardForward(): void {
     this.cycleDashboard(CycleDirection.Next);
   }
 
-  sendCycleDashboardBackward(): void {
+  handleCycleDashboardBackward(): void {
     this.cycleDashboard(CycleDirection.Previous);
   }
 
