@@ -164,7 +164,8 @@ describe('IrisGridTreeTableModel snapshot', () => {
   });
 });
 
-describe('IrisGridTreeTableModel colorForCell and textAlignForCell', () => {
+// TODO: break into different descripe blocks
+describe('IrisGridTreeTableModel colorForCell', () => {
   let model: IrisGridTreeTableModel;
 
   const mockTheme: IrisGridThemeType = {
@@ -284,36 +285,76 @@ describe('IrisGridTreeTableModel colorForCell and textAlignForCell', () => {
       expect(result).toBe(mockTheme.textColor);
     });
   });
+});
 
-  describe('textAlignForCell', () => {
-    it('delegates to IrisGridUtils.textAlignForValue for standard alignment logic', () => {
-      mockCell('ignored', undefined, columns.number);
-      const result = model.textAlignForCell(0, 0);
-      expect(result).toBe('right');
-    });
+describe('IrisGridTreeTableModel textAlignForCell', () => {
+  let model: IrisGridTreeTableModel;
+
+  const rows = {
+    default: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    parent: {
+      data: new Map(),
+      hasChildren: true,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    leaf: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 2,
+    } as UITreeRow,
+  };
+
+  beforeEach(() => {
+    const testColumns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(
+      testColumns,
+      testColumns.slice(0, 1),
+      100,
+      []
+    );
+    model = new IrisGridTreeTableModel(dh, table);
   });
 
-  describe('textAlignForCell constituent type handling', () => {
-    it('uses constituent type for tree table leaf nodes', () => {
-      const constituentColumn = {
-        ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
-        constituentType: 'double',
-      } as DhType.Column;
+  it('delegates to IrisGridUtils.textAlignForValue for standard alignment logic', () => {
+    const numberColumn = irisGridTestUtils.makeColumn('NumCol', 'int', 0);
 
-      mockCell('ignored', undefined, constituentColumn, rows.leaf);
-      const result = model.textAlignForCell(0, 0);
-      expect(result).toBe('right');
-    });
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(numberColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.default);
 
-    it('ignores constituent type for non-leaf nodes', () => {
-      const constituentColumn = {
-        ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
-        constituentType: 'int',
-      } as DhType.Column;
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('right');
+  });
 
-      mockCell('ignored', undefined, constituentColumn, rows.parent);
-      const result = model.textAlignForCell(0, 0);
-      expect(result).toBe('left');
-    });
+  it('uses constituent type for tree table leaf row', () => {
+    const constituentColumn = {
+      ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+      constituentType: 'double',
+    } as DhType.Column;
+
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(constituentColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.leaf);
+
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('right');
+  });
+
+  it('ignores constituent type for non-leaf row', () => {
+    const constituentColumn = {
+      ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+      constituentType: 'int',
+    } as DhType.Column;
+
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(constituentColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.parent);
+
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('left');
   });
 });
