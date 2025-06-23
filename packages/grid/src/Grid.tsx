@@ -1001,7 +1001,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   clearSelectedRanges(): void {
     const { selectedRanges } = this.state;
-    this.setState({ selectedRanges: [], lastSelectedRanges: selectedRanges });
+    this.setState({
+      selectedRanges: EMPTY_ARRAY,
+      lastSelectedRanges: selectedRanges,
+    });
   }
 
   /** Clears all but the last selected range */
@@ -1206,10 +1209,18 @@ class Grid extends PureComponent<GridProps, GridState> {
         newCursorRow = null;
       }
 
+      const selectionChanged =
+        newSelectedRanges.length !== selectedRanges.length ||
+        newSelectedRanges.some(
+          (range, index) => !range.equals(selectedRanges[index])
+        );
+
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
-        selectedRanges: newSelectedRanges,
+        // If the selection ranges are non-overlapping, then selectedRanges already includes everything
+        // and the onSelectionChanged callback has already been called. No need to change to the same ranges in a new array.
+        selectedRanges: selectionChanged ? newSelectedRanges : selectedRanges,
         lastSelectedRanges: selectedRanges,
       };
     });
