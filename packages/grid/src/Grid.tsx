@@ -1218,8 +1218,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
-        // If the selection ranges are non-overlapping, then selectedRanges already includes everything
-        // and the onSelectionChanged callback has already been called. No need to change to the same ranges in a new array.
+        // The onSelectionChanged callback has already been called with the selectedRanges at this point.
+        // If the selection is not changed (e.g., the user is adding via ctrl+click and not removing),
+        // there is no need to change and trigger the callback again.
         selectedRanges: selectionChanged ? newSelectedRanges : selectedRanges,
         lastSelectedRanges: selectedRanges,
       };
