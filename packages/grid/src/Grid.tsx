@@ -970,7 +970,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   clearSelectedRanges(): void {
     const { selectedRanges } = this.state;
-    this.setState({ selectedRanges: [], lastSelectedRanges: selectedRanges });
+    this.setState({
+      selectedRanges: EMPTY_ARRAY,
+      lastSelectedRanges: selectedRanges,
+    });
   }
 
   /** Clears all but the last selected range */
@@ -1175,10 +1178,19 @@ class Grid extends PureComponent<GridProps, GridState> {
         newCursorRow = null;
       }
 
+      const selectionChanged =
+        newSelectedRanges.length !== selectedRanges.length ||
+        newSelectedRanges.some(
+          (range, index) => !range.equals(selectedRanges[index])
+        );
+
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
-        selectedRanges: newSelectedRanges,
+        // The onSelectionChanged callback has already been called with the selectedRanges at this point.
+        // If the selection is not changed (e.g., the user is adding via ctrl+click and not removing),
+        // there is no need to change and trigger the callback again.
+        selectedRanges: selectionChanged ? newSelectedRanges : selectedRanges,
         lastSelectedRanges: selectedRanges,
       };
     });
