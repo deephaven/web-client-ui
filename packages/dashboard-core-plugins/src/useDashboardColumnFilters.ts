@@ -19,13 +19,15 @@ import {
  * Subscribes to the dashboard column filters (a.k.a. InputFilter) for the current panel or widget, and
  * adds the columns provided to the filter options in the dashboard.
  * @param columns The columns this source has available for filtering.
- *                These are used to populate filter options in the UI (InputFilter, DropdownFilter)
+ *                These are used to populate filter options in the UI (InputFilter, DropdownFilter).
+ *                null can be used to indicate the source is not yet ready which is useful
+ *                to preserve
  * @param table The table for this source if applicable.
  *              This is used to enable ChartBuilder from IrisGrid.
  * @returns The dashboard column filters (InputFilter[]) that apply to the columns provided.
  */
 export function useDashboardColumnFilters(
-  columns: readonly { name: string; type: string }[],
+  columns: readonly { name: string; type: string }[] | null,
   table?: dh.Table
 ): InputFilter[] {
   const { eventHub } = useLayoutManager();
@@ -34,7 +36,7 @@ export function useDashboardColumnFilters(
 
   useEffect(
     function columnsChanged() {
-      if (panelId == null) {
+      if (panelId == null || columns == null) {
         return;
       }
       emitFilterColumnsChanged(eventHub, panelId, columns);
@@ -77,7 +79,7 @@ export function useDashboardColumnFilters(
   const inputFilters = useMemo(
     () =>
       IrisGridUtils.getInputFiltersForColumns(
-        columns,
+        columns ?? [],
         // They may have picked a column, but not actually entered a value yet. In that case, don't need to update.
         reduxInputFilters.filter(
           ({ value, excludePanelIds }) =>

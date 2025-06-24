@@ -64,9 +64,21 @@ export type GridMetrics = {
   treePaddingY: number;
 
   // What viewport is currently visible, limited by data size
+  /**
+   * The visible index of the left-most column that is at least partially visible.
+   */
   left: VisibleIndex;
+  /**
+   * The visible index of the top row that is at least partially visible.
+   */
   top: VisibleIndex;
+  /**
+   * The visible index of the bottom row that is at least partially visible.
+   */
   bottom: VisibleIndex;
+  /**
+   * The visible index of the right-most column that is at least partially visible.
+   */
   right: VisibleIndex;
   topOffset: Coordinate;
   leftOffset: Coordinate;

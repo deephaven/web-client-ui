@@ -26,6 +26,7 @@ import {
   setActiveTool as setActiveToolAction,
   RootState,
 } from '@deephaven/redux';
+import { assertNotNull } from '@deephaven/utils';
 import {
   getIsolatedLinkerPanelIdForDashboard,
   getLinksForDashboard,
@@ -36,7 +37,7 @@ import {
   setDashboardColumnSelectionValidator as setDashboardColumnSelectionValidatorAction,
 } from '../redux';
 import ToolType from './ToolType';
-import { ChartEvent, IrisGridEvent, InputFilterEvent } from '../events';
+import { ChartEvent, IrisGridEvent } from '../events';
 import LinkerOverlayContent from './LinkerOverlayContent';
 import LinkerUtils, {
   isLinkablePanel,
@@ -45,11 +46,18 @@ import LinkerUtils, {
   LinkFilterMap,
   LinkType,
   isLinkableColumn,
+  type LinkPointOptions,
 } from './LinkerUtils';
 import {
   type FilterColumnSourceId,
   listenForFilterColumnsChanged,
 } from '../FilterEvents';
+import {
+  type LinkTargetProps,
+  listenForLinkPointSelected,
+  listenForLinkSourceDataSelected,
+  listenForRegisterLinkTarget,
+} from './LinkerEvent';
 
 const log = Log.module('Linker');
 
@@ -93,7 +101,7 @@ export type LinkerProps = OwnProps &
   ConnectedProps<typeof connector>;
 
 export type LinkerState = {
-  linkInProgress?: Link;
+  linkInProgress?: Link & { endType?: LinkType };
   selectedIds: Set<string>;
   isDraggingPanel: boolean;
 };
@@ -105,7 +113,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleCancel = this.handleCancel.bind(this);
     this.handleDone = this.handleDone.bind(this);
     this.handlePanelCloned = this.handlePanelCloned.bind(this);
-    this.handleFilterColumnSelect = this.handleFilterColumnSelect.bind(this);
     this.handleColumnsChanged = this.handleColumnsChanged.bind(this);
     this.handlePanelClosed = this.handlePanelClosed.bind(this);
     this.handleLayoutStateChanged = this.handleLayoutStateChanged.bind(this);
@@ -117,6 +124,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.handleUpdateValues = this.handleUpdateValues.bind(this);
     this.handleStateChange = this.handleStateChange.bind(this);
     this.handleExited = this.handleExited.bind(this);
+    this.handleLinkPointSelected = this.handleLinkPointSelected.bind(this);
+    this.handleTargetRegistered = this.handleTargetRegistered.bind(this);
     this.handleLinkSelected = this.handleLinkSelected.bind(this);
     this.handlePanelDragging = this.handlePanelDragging.bind(this);
     this.handlePanelDropped = this.handlePanelDropped.bind(this);
@@ -158,6 +167,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     this.stopListening(layout);
   }
 
+  private linkTargetPropMap: Map<string, LinkTargetProps> = new Map();
+
   private removerFns: (() => void)[] = [];
 
   startListening(layout: GoldenLayout): void {
@@ -169,13 +180,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.on(IrisGridEvent.STATE_CHANGED, this.handleStateChange);
     eventHub.on(ChartEvent.COLUMN_SELECTED, this.handleChartColumnSelect);
     eventHub.on(PanelEvent.CLONED, this.handlePanelCloned);
-    eventHub.on(
-      InputFilterEvent.COLUMN_SELECTED,
-      this.handleFilterColumnSelect
-    );
-    this.removerFns.push(
-      listenForFilterColumnsChanged(eventHub, this.handleColumnsChanged)
-    );
+    this.removerFns = [
+      listenForFilterColumnsChanged(eventHub, this.handleColumnsChanged),
+      listenForLinkPointSelected(eventHub, this.handleLinkPointSelected),
+      listenForLinkSourceDataSelected(eventHub, this.handleUpdateValues),
+      listenForRegisterLinkTarget(eventHub, this.handleTargetRegistered),
+    ];
     eventHub.on(PanelEvent.CLOSE, this.handlePanelClosed);
     eventHub.on(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.on(PanelEvent.DRAGGING, this.handlePanelDragging);
@@ -191,10 +201,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     eventHub.off(IrisGridEvent.STATE_CHANGED, this.handleStateChange);
     eventHub.off(ChartEvent.COLUMN_SELECTED, this.handleChartColumnSelect);
     eventHub.off(PanelEvent.CLONED, this.handlePanelCloned);
-    eventHub.off(
-      InputFilterEvent.COLUMN_SELECTED,
-      this.handleFilterColumnSelect
-    );
     eventHub.off(PanelEvent.CLOSE, this.handlePanelClosed);
     eventHub.off(PanelEvent.CLOSED, this.handlePanelClosed);
     eventHub.off(PanelEvent.DRAGGING, this.handlePanelDragging);
@@ -225,40 +231,9 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   handleChartColumnSelect(panel: PanelComponent, column: LinkColumn): void {
-    this.columnSelected(panel, column, true);
-  }
-
-  handleFilterColumnSelect(panel: PanelComponent, column: LinkColumn): void {
-    log.debug('handleFilterColumnSelect', this.isOverlayShown());
-    const {
-      links,
-      localDashboardId,
-      setActiveTool,
-      setDashboardIsolatedLinkerPanelId,
-    } = this.props;
-
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    const panelLinks = links.filter(
-      link => link.start?.panelId === panelId || link.end?.panelId === panelId
-    );
-
-    if (!this.isOverlayShown() && panelId != null) {
-      // Initial click on the filter source button with linker inactive
-      // Show linker in isolated mode for panel
-      setActiveTool(ToolType.LINKER);
-      setDashboardIsolatedLinkerPanelId(localDashboardId, panelId);
-
-      if (panelLinks.length === 0) {
-        // Source not linked - start new link in isolated linker mode
-        // Need to pass panelId for overrideIsolatedLinkerPanelId
-        // as redux prop update at this point not yet propagated
-        this.columnSelected(panel, column, true, panelId);
-      }
-      return;
-    }
-
-    // Filter source clicked with linker active
-    this.columnSelected(panel, column, true);
+    assertNotNull(panelId);
+    this.columnSelected(panelId, column, 'chartLink', true);
   }
 
   handleColumnsChanged(
@@ -295,19 +270,63 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       log.debug2('Column is not filterable');
       return;
     }
-    this.columnSelected(panel, column);
+    const panelId = LayoutUtils.getIdFromPanel(panel);
+    assertNotNull(panelId);
+    this.columnSelected(panelId, column, 'tableLink');
+  }
+
+  handleLinkPointSelected(
+    sourceId: string,
+    column: LinkColumn,
+    options: LinkPointOptions
+  ): void {
+    const { type } = options;
+    const isIsolatedLinker = type === 'filterSource';
+    const isAlwaysEnd = type === 'chartLink' || type === 'filterSource';
+
+    // filterSource type should open in isolated linker mode
+    if (!this.isOverlayShown() && sourceId != null && isIsolatedLinker) {
+      const {
+        links,
+        localDashboardId,
+        setActiveTool,
+        setDashboardIsolatedLinkerPanelId,
+      } = this.props;
+
+      const panelLinks = links.filter(
+        link =>
+          link.start?.panelId === sourceId || link.end?.panelId === sourceId
+      );
+
+      // Initial click on the filter source button with linker inactive
+      // Show linker in isolated mode for panel
+      setActiveTool(ToolType.LINKER);
+      setDashboardIsolatedLinkerPanelId(localDashboardId, sourceId);
+
+      if (panelLinks.length === 0) {
+        // Source not linked - start new link in isolated linker mode
+        // Need to pass panelId for overrideIsolatedLinkerPanelId
+        // as redux prop update at this point not yet propagated
+        this.columnSelected(sourceId, column, type, isAlwaysEnd, sourceId);
+      }
+      return;
+    }
+
+    this.columnSelected(sourceId, column, type, isAlwaysEnd);
   }
 
   /**
    * Track a column selection and build the link from it.
-   * @param panel The panel component that is the source for the column selection
+   * @param sourceId The ID of the source for the column selection
    * @param column The column that was selected
+   * @param type The type of the link point
    * @param isAlwaysEndPoint True if the selection is always the end point, even if it's the first column selected. Defaults to false.
    * @param overrideIsolatedLinkerPanelId isolatedLinkerPanelId to use when method is called before prop changes propagate
    */
   columnSelected(
-    panel: PanelComponent,
+    sourceId: string,
     column: LinkColumn,
+    type: LinkType,
     isAlwaysEndPoint = false,
     overrideIsolatedLinkerPanelId?: string | string[]
   ): void {
@@ -316,46 +335,53 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
     const { isolatedLinkerPanelId } = this.props;
     const { linkInProgress } = this.state;
-    const panelId = LayoutUtils.getIdFromPanel(panel);
-    if (panelId == null) {
-      return;
-    }
-    const panelComponent = LayoutUtils.getComponentNameFromPanel(panel);
     const { name: columnName, type: columnType } = column;
     if (linkInProgress == null || linkInProgress.start == null) {
-      const newLink: Link = {
+      const newLink: Link & { endType?: LinkType } = {
         id: nanoid(),
         start: {
-          panelId,
-          panelComponent,
+          panelId: sourceId,
           columnName,
           columnType,
         },
-        // Link starts with type Invalid as linking a source to itself is not allowed
         type: 'invalid',
         isReversed: isAlwaysEndPoint,
       };
+
+      if (isAlwaysEndPoint) {
+        newLink.endType = type;
+      }
 
       log.debug('starting link', newLink);
 
       this.setState({ linkInProgress: newLink });
     } else {
       const { links } = this.props;
-      const { start, id, isReversed } = linkInProgress;
+      const { start, id, isReversed = false } = linkInProgress;
       const end = {
-        panelId,
-        panelComponent,
+        panelId: sourceId,
         columnName,
         columnType,
       };
 
-      const type = LinkerUtils.getLinkType(
-        isReversed !== undefined && isReversed ? end : start,
-        isReversed !== undefined && isReversed ? start : end,
-        overrideIsolatedLinkerPanelId ?? isolatedLinkerPanelId
-      );
+      const isValid =
+        !(isReversed && isAlwaysEndPoint) && // Cannot add a point which is only an end when we already have an end
+        LinkerUtils.isLinkValid(
+          isReversed ? end : start,
+          isReversed ? start : end,
+          overrideIsolatedLinkerPanelId ?? isolatedLinkerPanelId
+        );
 
-      switch (type) {
+      if (!isValid) {
+        log.debug('Ignore invalid link connection', linkInProgress, end);
+        return;
+      }
+
+      // The end point is what determines the type
+      // If the link is reversed, we already set the type on the linkInProgress
+      const finalType = linkInProgress.endType ?? type;
+
+      switch (finalType) {
         case 'invalid':
           log.debug('Ignore invalid link connection', linkInProgress, end);
           return;
@@ -397,10 +423,10 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
       // Create a completed link from link in progress
       const newLink: Link = {
-        start: isReversed !== undefined && isReversed ? end : start,
-        end: isReversed !== undefined && isReversed ? start : end,
+        start: isReversed ? end : start,
+        end: isReversed ? start : end,
         id,
-        type,
+        type: finalType,
         operator: FilterType.eq,
       };
       log.info('creating link', newLink);
@@ -422,10 +448,17 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (link.end) {
       const { end } = link;
       const { panelId, columnName, columnType } = end;
+      const { linkTargetPropMap } = this;
+      const unsetFilterValue = linkTargetPropMap.get(panelId)?.unsetFilterValue;
+      if (unsetFilterValue) {
+        unsetFilterValue(columnName, columnType);
+        return;
+      }
+
       const endPanel = panelManager.getOpenedPanelById(panelId);
       if (!endPanel) {
         log.debug(
-          'endPanel no longer exists, ignoring unsetFilterValue',
+          'endPanel no longer exists or target is not a panel. Ignoring unsetFilterValue',
           panelId
         );
       } else if (isLinkablePanel(endPanel)) {
@@ -444,9 +477,19 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   setPanelFilterMap(panelId: string, filterMap: LinkFilterMap): void {
     log.debug('Set filter data for panel:', panelId, filterMap);
     const { panelManager } = this.props;
+    const { linkTargetPropMap } = this;
+    const setFilterValues = linkTargetPropMap.get(panelId)?.setFilterValues;
+    if (setFilterValues) {
+      setFilterValues(filterMap);
+      return;
+    }
+
     const panel = panelManager.getOpenedPanelById(panelId);
     if (!panel) {
-      log.debug('panel no longer exists, ignoring setFilterMap', panelId);
+      log.debug(
+        'panel no longer exists or target is not a panel. Ignoring setFilterMap',
+        panelId
+      );
     } else if (isLinkablePanel(panel)) {
       panel.setFilterMap(filterMap);
     } else {
@@ -499,25 +542,32 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
-    const panelId = LayoutUtils.getIdFromPanel(panel);
+  handleTargetRegistered(
+    sourceId: string,
+    handlers: LinkTargetProps | null
+  ): void {
+    const { linkTargetPropMap } = this;
+    if (handlers == null) {
+      linkTargetPropMap.delete(sourceId);
+    } else {
+      linkTargetPropMap.set(sourceId, handlers);
+    }
+  }
+
+  handleUpdateValues(sourceId: string, dataMap: RowDataMap): void {
     const { dh, links, timeZone } = this.props;
     // Map of panel ID to filterMap
-    const panelFilterMap = new Map();
+    const panelFilterMap: Map<string, LinkFilterMap> = new Map();
     // Instead of setting filters one by one for each link,
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
       const { start, end, operator } = links[i];
-      if (start.panelId === panelId && end != null) {
+      if (start.panelId === sourceId && end != null && operator != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
-        const filterMap = panelFilterMap.has(endPanelId)
-          ? panelFilterMap.get(endPanelId)
-          : new Map();
-        const filterList =
-          filterMap.has(columnName) === true
-            ? filterMap.get(columnName).filterList
-            : [];
+        const existingFilterMap = panelFilterMap.get(endPanelId);
+        const filterMap: LinkFilterMap = existingFilterMap ?? new Map();
+        const filterList = filterMap.get(columnName)?.filterList ?? [];
         const {
           visibleIndex: startColumnIndex,
           isExpandable,
@@ -539,8 +589,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           // The values are Dates for dateType values, not string like everything else
           text = dateFilterFormatter.format(value as Date);
         }
-        const filter = { operator, text, value, startColumnIndex };
-        filterList.push(filter);
+        filterList.push({ operator, text, value, startColumnIndex });
         filterMap.set(columnName, {
           columnType,
           filterList,
@@ -694,16 +743,25 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 
   isColumnSelectionValid(
-    panel: PanelComponent,
-    tableColumn?: LinkColumn
+    panelOrId: PanelComponent | string,
+    tableColumn: LinkColumn | undefined,
+    options: LinkPointOptions
   ): boolean {
     const { linkInProgress } = this.state;
     const { isolatedLinkerPanelId } = this.props;
+    // This is backwards compatibility for Grizzly Enterprise panels
+    // IrisGridPanel is the only allowed start point for a link
+    // The enterprise panels will not call this method with options
+    // They are also JS and removed in sanluis, so figure this is best for now
+    const isAlwaysEnd =
+      typeof panelOrId === 'string'
+        ? options.type === 'filterSource' || options.type === 'chartLink'
+        : LayoutUtils.getComponentNameFromPanel(panelOrId) !== 'IrisGridPanel';
 
     if (tableColumn == null) {
       if (linkInProgress?.start != null) {
         // Link started, end point is not a valid target
-        this.updateLinkInProgressType();
+        this.updateLinkInProgressType('invalid');
       }
       return false;
     }
@@ -722,27 +780,36 @@ export class Linker extends Component<LinkerProps, LinkerState> {
       return true;
     }
 
-    const { isReversed, start } = linkInProgress;
-    const panelId = LayoutUtils.getIdFromPanel(panel);
+    const { isReversed = false, start } = linkInProgress;
+    const panelId =
+      typeof panelOrId === 'string'
+        ? panelOrId
+        : LayoutUtils.getIdFromPanel(panelOrId);
     if (panelId == null) {
+      return false;
+    }
+
+    // We've already selected an end point, so we can't select another one
+    if (isReversed && isAlwaysEnd) {
+      this.updateLinkInProgressType('invalid');
       return false;
     }
 
     const end = {
       panelId,
-      panelComponent: LayoutUtils.getComponentNameFromPanel(panel),
       columnName: tableColumn.name,
       columnType: tableColumn.type,
     };
 
-    const type =
-      isReversed !== undefined && isReversed
-        ? LinkerUtils.getLinkType(end, start, isolatedLinkerPanelId)
-        : LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId);
+    const isValid = isReversed
+      ? LinkerUtils.isLinkValid(end, start, isolatedLinkerPanelId)
+      : LinkerUtils.isLinkValid(start, end, isolatedLinkerPanelId);
 
-    this.updateLinkInProgressType(type);
+    this.updateLinkInProgressType(
+      isValid ? linkInProgress.endType ?? options.type : 'invalid'
+    );
 
-    return type !== 'invalid';
+    return isValid;
   }
 
   render(): JSX.Element | null {
@@ -779,6 +846,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           onLinksUpdated={this.handleLinksUpdated}
           onDone={this.handleDone}
           onCancel={this.handleCancel}
+          linkTargetPropMap={this.linkTargetPropMap}
         />
       </FadeTransition>
     ) : null;
