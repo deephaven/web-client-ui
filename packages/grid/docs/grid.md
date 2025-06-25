@@ -1,0 +1,22 @@
+## Grid Props
+
+isStickyBottom
+isStickyRight
+isStuckToBottom
+isStuckToRight
+metricCalculator
+keyHandlers
+mouseHandlers
+movedColumns
+movedRows
+onError
+onSelectionChanged
+onMovedColumnsChanged
+onMovedRowsChanged
+onMoveColumnComplete
+onMoveRowComplete
+onViewChanged
+onTokenClicked
+renderer
+stateOverride
+theme
