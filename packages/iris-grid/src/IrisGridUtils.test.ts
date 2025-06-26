@@ -16,6 +16,7 @@ import IrisGridUtils, {
   type DehydratedSort,
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
+import type { IrisGridThemeType } from './IrisGridTheme';
 
 const irisGridUtils = new IrisGridUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
@@ -791,4 +792,114 @@ describe('hydration methods', () => {
       expect(result.partitions).toEqual(expectedPartitions);
     }
   );
+});
+
+describe('colorForValue', () => {
+  const mockTheme: IrisGridThemeType = {
+    textColor: '#text-color',
+    dateColor: '#date-color',
+    positiveNumberColor: '#positive-color',
+    negativeNumberColor: '#negative-color',
+    zeroNumberColor: '#zero-color',
+    nullStringColor: '#null-string-color',
+  } as IrisGridThemeType;
+
+  it('returns dateColor for date type columns', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'io.deephaven.time.DateTime',
+      'TestColumn',
+      new Date()
+    );
+    expect(result).toBe('#date-color');
+  });
+
+  it('returns dateColor for columns named Date', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'java.lang.String',
+      'Date',
+      'Fri Jun 13'
+    );
+    expect(result).toBe('#date-color');
+  });
+
+  it('returns positiveNumberColor for positive numbers', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'int',
+      'TestColumn',
+      42
+    );
+    expect(result).toBe('#positive-color');
+  });
+
+  it('returns negativeNumberColor for negative numbers', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'short',
+      'TestColumn',
+      -5
+    );
+    expect(result).toBe('#negative-color');
+  });
+
+  it('returns zeroNumberColor for zero values', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'long',
+      'TestColumn',
+      0
+    );
+    expect(result).toBe('#zero-color');
+  });
+
+  it('returns textColor as fallback', () => {
+    const result = IrisGridUtils.colorForValue(
+      mockTheme,
+      'java.lang.String',
+      'TestColumn',
+      'Hello world'
+    );
+    expect(result).toBe('#text-color');
+  });
+});
+
+describe('textAlignForValue', () => {
+  it('returns center for date type columns', () => {
+    expect(
+      IrisGridUtils.textAlignForValue(
+        'io.deephaven.time.DateTime',
+        'TestColumn'
+      )
+    ).toBe('center');
+    expect(
+      IrisGridUtils.textAlignForValue('java.time.Instant', 'TestColumn')
+    ).toBe('center');
+  });
+
+  it('returns center for columns named Date', () => {
+    expect(IrisGridUtils.textAlignForValue('java.lang.String', 'Date')).toBe(
+      'center'
+    );
+    expect(IrisGridUtils.textAlignForValue('int', 'Date')).toBe('center');
+  });
+
+  it('returns right for number type columns', () => {
+    expect(IrisGridUtils.textAlignForValue('int', 'TestColumn')).toBe('right');
+    expect(IrisGridUtils.textAlignForValue('double', 'TestColumn')).toBe(
+      'right'
+    );
+    expect(IrisGridUtils.textAlignForValue('long', 'TestColumn')).toBe('right');
+    expect(IrisGridUtils.textAlignForValue('float', 'TestColumn')).toBe(
+      'right'
+    );
+  });
+
+  it('returns left as fallback', () => {
+    expect(
+      IrisGridUtils.textAlignForValue('java.lang.String', 'TestColumn')
+    ).toBe('left');
+    expect(IrisGridUtils.textAlignForValue('char', 'TestColumn')).toBe('left');
+  });
 });

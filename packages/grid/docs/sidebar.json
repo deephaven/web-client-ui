@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/deephaven/salmon-sync/refs/heads/main/sidebar.schema.json",
+  "config": {
+    "name": "Deephaven Grid Docs"
+  },
+  "sidebars": {
+    "main": [
+      {
+        "label": "Introduction",
+        "path": "README.md"
+      },
+      {
+        "label": "Display data",
+        "collapsible": false,
+        "items": [
+          { "label": "Static data", "path": "display-data/static.md" },
+          {
+            "label": "Quadrillions of Rows",
+            "path": "display-data/quadrillion.md"
+          },
+          { "label": "Grouped data", "path": "display-data/grouped.md" },
+          {
+            "label": "Asynchronous data",
+            "path": "display-data/asynchronous.md"
+          }
+        ]
+      },
+      {
+        "label": "Customize",
+        "collapsible": false,
+        "items": [
+          { "label": "Customize theme", "path": "customize/theme.md" },
+          {
+            "label": "Customize interaction",
+            "path": "customize/interaction.md"
+          },
+          {
+            "label": "Select rows or columns",
+            "path": "customize/selection.md"
+          },
+          { "label": "Frozen columns", "path": "customize/frozen.md" }
+        ]
+      }
+    ]
+  }
+}

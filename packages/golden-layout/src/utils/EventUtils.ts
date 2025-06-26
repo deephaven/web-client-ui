@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import EventEmitter from './EventEmitter';
 
 type AsArray<P> = P extends unknown[] ? P : [P];
@@ -70,6 +70,14 @@ export function makeUseListenerFunction<TParameters = []>(
 
     eventEmitterRef.current = eventEmitter;
     handlerRef.current = handler;
+
+    // Cleanup on unmount
+    // Mounting the listener in useEffect causes a race condition with embed-widget
+    // where the event is emitted during render before the useEffect runs after render.
+    useEffect(
+      () => () => eventEmitterRef.current?.off(event, handlerRef.current),
+      []
+    );
   };
 }
 

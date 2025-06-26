@@ -1,6 +1,6 @@
 import React, { type ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
-import Grid from './Grid';
+import Grid, { type GridProps } from './Grid';
 import GridRange from './GridRange';
 import GridRenderer from './GridRenderer';
 import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
@@ -90,10 +90,17 @@ function createNodeMock(element: ReactElement) {
 
 function makeGridComponent(
   model: GridModel = new MockGridModel(),
-  theme: GridThemeType = defaultTheme
+  theme: GridThemeType = defaultTheme,
+  { onSelectionChanged }: Pick<GridProps, 'onSelectionChanged'> = {
+    onSelectionChanged: jest.fn(),
+  }
 ): Grid {
   const testRenderer = TestRenderer.create(
-    <Grid model={model} theme={theme} />,
+    <Grid
+      model={model}
+      theme={theme}
+      onSelectionChanged={onSelectionChanged}
+    />,
     {
       createNodeMock,
     }
@@ -310,6 +317,17 @@ it('handles mouse down in middle of grid to update selection', () => {
   expect(component.state.cursorRow).toBe(5);
   expect(component.state.cursorColumn).toBe(3);
   expect(component.state.selectedRanges[0]).toEqual(new GridRange(3, 5, 3, 5));
+});
+
+it('only calls onSelectionChanged once when clicking a cell', () => {
+  const onSelectionChanged = jest.fn();
+  const component = makeGridComponent(undefined, defaultTheme, {
+    onSelectionChanged,
+  });
+
+  mouseClick(3, 5, component);
+
+  expect(onSelectionChanged).toHaveBeenCalledTimes(1);
 });
 
 it('handles mouse down in the very bottom right of last cell to update selection', () => {

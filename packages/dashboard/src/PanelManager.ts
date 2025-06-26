@@ -8,6 +8,12 @@ import type {
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
+import {
+  listenForCycleToNextStack,
+  listenForCycleToPreviousStack,
+  listenForCycleToNextTab,
+  listenForCycleToPreviousTab,
+} from './NavigationEvent';
 import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
   isWrappedComponent,
@@ -17,6 +23,11 @@ import {
 } from './DashboardPlugin';
 
 const log = Log.module('PanelManager');
+
+enum CycleDirection {
+  Next,
+  Previous,
+}
 
 export type PanelHydraterFunction = (
   name: string,
@@ -64,6 +75,8 @@ class PanelManager {
 
   openedMap: OpenedPanelMap;
 
+  navigationEventListenerRemovers: (() => void)[];
+
   /**
    * @param layout The GoldenLayout object to attach to
    * @param hydrateComponent Function to hydrate a panel from a dehydrated state
@@ -88,6 +101,11 @@ class PanelManager {
     this.handleUnmount = this.handleUnmount.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
     this.handleReopenLast = this.handleReopenLast.bind(this);
+    this.handleCycleToNextStack = this.handleCycleToNextStack.bind(this);
+    this.handleCycleToPreviousStack =
+      this.handleCycleToPreviousStack.bind(this);
+    this.handleCycleToNextTab = this.handleCycleToNextTab.bind(this);
+    this.handleCycleToPreviousTab = this.handleCycleToPreviousTab.bind(this);
     this.handleDeleted = this.handleDeleted.bind(this);
     this.handleClosed = this.handleClosed.bind(this);
     this.handleControlClose = this.handleControlClose.bind(this);
@@ -103,6 +121,9 @@ class PanelManager {
     // Closed panels are stored in their dehydrated state
     this.closed = [...closed];
 
+    // Store the navigation event listener removers
+    this.navigationEventListenerRemovers = [];
+
     this.startListening();
   }
 
@@ -117,6 +138,19 @@ class PanelManager {
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
     eventHub.on(PanelEvent.CLOSE, this.handleControlClose);
     // PanelEvent.OPEN should be listened to by plugins to open a panel
+
+    this.navigationEventListenerRemovers.push(
+      listenForCycleToNextStack(eventHub, this.handleCycleToNextStack)
+    );
+    this.navigationEventListenerRemovers.push(
+      listenForCycleToPreviousStack(eventHub, this.handleCycleToPreviousStack)
+    );
+    this.navigationEventListenerRemovers.push(
+      listenForCycleToNextTab(eventHub, this.handleCycleToNextTab)
+    );
+    this.navigationEventListenerRemovers.push(
+      listenForCycleToPreviousTab(eventHub, this.handleCycleToPreviousTab)
+    );
   }
 
   stopListening(): void {
@@ -129,6 +163,9 @@ class PanelManager {
     eventHub.off(PanelEvent.DELETE, this.handleDeleted);
     eventHub.off(PanelEvent.CLOSED, this.handleClosed);
     eventHub.off(PanelEvent.CLOSE, this.handleControlClose);
+
+    this.navigationEventListenerRemovers.forEach(remover => remover());
+    this.navigationEventListenerRemovers = [];
   }
 
   getClosedPanelConfigsOfType(typeString: string): ClosedPanels {
@@ -269,6 +306,79 @@ class PanelManager {
     log.debug2('Unmount: ', panel);
     this.removePanel(panel);
     this.sendUpdate();
+  }
+
+  cycleStack(direction: CycleDirection): void {
+    const allStacks = LayoutUtils.getAllStackContainers(this.layout);
+    if (allStacks.length <= 1) {
+      return;
+    }
+
+    const focusedIndex = LayoutUtils.getFocusedStackIndex(allStacks);
+
+    // If no stack is focused, activate the first stack's content item
+    if (focusedIndex === -1) {
+      const targetStack = allStacks[0];
+      const activeContentIndex = targetStack.config.activeItemIndex;
+      const activeContentItem =
+        activeContentIndex != null
+          ? targetStack.contentItems[activeContentIndex]
+          : targetStack.contentItems[0];
+
+      targetStack.setActiveContentItem(activeContentItem, true);
+      return;
+    }
+
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (focusedIndex + 1) % allStacks.length
+        : (focusedIndex - 1 + allStacks.length) % allStacks.length;
+    const targetStack = allStacks[targetIndex];
+
+    const activeContentIndex = targetStack.config.activeItemIndex;
+    const activeContentItem =
+      activeContentIndex != null
+        ? targetStack.contentItems[activeContentIndex]
+        : targetStack.contentItems[0];
+
+    targetStack.setActiveContentItem(activeContentItem, true);
+  }
+
+  handleCycleToNextStack(): void {
+    this.cycleStack(CycleDirection.Next);
+  }
+
+  handleCycleToPreviousStack(): void {
+    this.cycleStack(CycleDirection.Previous);
+  }
+
+  cycleTab(direction: CycleDirection): void {
+    const focusedStack = LayoutUtils.getFocusedStack(this.layout);
+    if (focusedStack === undefined) {
+      return;
+    }
+    const { contentItems } = focusedStack;
+
+    if (contentItems.length <= 1) {
+      return;
+    }
+
+    const activeItemIndex = focusedStack.config.activeItemIndex ?? 0;
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (activeItemIndex + 1) % contentItems.length
+        : (activeItemIndex - 1 + contentItems.length) % contentItems.length;
+
+    const targetContentItem = contentItems[targetIndex];
+    focusedStack.setActiveContentItem(targetContentItem, true);
+  }
+
+  handleCycleToNextTab(): void {
+    this.cycleTab(CycleDirection.Next);
+  }
+
+  handleCycleToPreviousTab(): void {
+    this.cycleTab(CycleDirection.Previous);
   }
 
   /**

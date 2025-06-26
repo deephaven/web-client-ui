@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
   GLOBAL_SHORTCUTS,
+  NAVIGATION_SHORTCUTS,
   Popper,
   type ContextAction,
   Button,
@@ -39,6 +40,10 @@ import {
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
   updateDashboardData as updateDashboardDataAction,
+  emitCycleToNextStack,
+  emitCycleToPreviousStack,
+  emitCycleToNextTab,
+  emitCycleToPreviousTab,
 } from '@deephaven/dashboard';
 import {
   ConsolePlugin,
@@ -98,6 +103,11 @@ import {
   getFormattedVersionInfo,
 } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
+
+enum CycleDirection {
+  Next,
+  Previous,
+}
 
 const log = Log.module('AppMainContainer');
 
@@ -233,6 +243,48 @@ export class AppMainContainer extends Component<
             this.sendClearFilter();
           },
           shortcut: IRIS_GRID_SHORTCUTS.TABLE.CLEAR_ALL_FILTERS,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleStackForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_STACK,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleStackBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_STACK,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleTabForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_TAB,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.sendCycleTabBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_TAB,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.handleCycleDashboardForward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_NEXT_DASHBOARD,
+          isGlobal: true,
+        },
+        {
+          action: () => {
+            this.handleCycleDashboardBackward();
+          },
+          shortcut: NAVIGATION_SHORTCUTS.CYCLE_TO_PREVIOUS_DASHBOARD,
           isGlobal: true,
         },
         {
@@ -411,8 +463,53 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
   }
 
+  sendCycleStackForward(): void {
+    emitCycleToNextStack(this.getActiveEventHub());
+  }
+
+  sendCycleStackBackward(): void {
+    emitCycleToPreviousStack(this.getActiveEventHub());
+  }
+
+  sendCycleTabForward(): void {
+    emitCycleToNextTab(this.getActiveEventHub());
+  }
+
+  sendCycleTabBackward(): void {
+    emitCycleToPreviousTab(this.getActiveEventHub());
+  }
+
   sendReopenLast(): void {
     this.emitLayoutEvent(PanelEvent.REOPEN_LAST);
+  }
+
+  cycleDashboard(direction: CycleDirection): void {
+    const { tabs, activeTabKey } = this.state;
+
+    if (tabs.length <= 1) {
+      return;
+    }
+
+    const currentIndex = tabs.findIndex(tab => tab.key === activeTabKey);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const targetIndex =
+      direction === CycleDirection.Next
+        ? (currentIndex + 1) % tabs.length
+        : (currentIndex - 1 + tabs.length) % tabs.length;
+
+    const targetTab = tabs[targetIndex];
+    this.handleTabSelect(targetTab.key);
+  }
+
+  handleCycleDashboardForward(): void {
+    this.cycleDashboard(CycleDirection.Next);
+  }
+
+  handleCycleDashboardBackward(): void {
+    this.cycleDashboard(CycleDirection.Previous);
   }
 
   getActiveEventHub(): EventHub {
