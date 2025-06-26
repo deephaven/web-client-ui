@@ -372,6 +372,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   get isAggregatedColumnsAvailable(): boolean {
     return (
       // aggregatedColumns are not available in the Legacy API
+      // and Core API before v0.39.4
       this.table.aggregatedColumns !== undefined
     );
   }
