@@ -1,7 +1,8 @@
-import { PanelComponent } from '@deephaven/dashboard';
-import { LinkColumn } from './LinkerUtils';
+import { type PanelComponent } from '@deephaven/dashboard';
+import { type LinkPointOptions, type LinkColumn } from './LinkerUtils';
 
 export type ColumnSelectionValidator = (
-  panel: PanelComponent,
-  tableColumn?: LinkColumn
+  panelOrId: PanelComponent | string,
+  tableColumn: LinkColumn | undefined,
+  options: LinkPointOptions
 ) => boolean;

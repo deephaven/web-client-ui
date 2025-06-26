@@ -1,17 +1,23 @@
 import { nanoid } from 'nanoid';
-import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
+import { type PanelComponent } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import Log from '@deephaven/log';
-import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 
 export type LinkType = 'invalid' | 'filterSource' | 'tableLink' | 'chartLink';
 
 export type LinkPoint = {
   panelId: string;
-  panelComponent?: string | null;
   columnName: string;
   columnType: string | null;
+};
+
+export type LinkPointOptions = {
+  /**
+   * The type of link this point is associated with.
+   * If this point is the end point of a link, this will set the type of the link.
+   */
+  type: LinkType;
 };
 
 export type Link = {
@@ -37,7 +43,7 @@ export type LinkDataValue<T = unknown> = {
 };
 
 export type LinkFilterMapValue<T = unknown> = {
-  columnType: string;
+  columnType: string | null;
   filterList: LinkDataValue<T>[];
 };
 
@@ -85,17 +91,6 @@ const log = Log.module('LinkerUtils');
  * Collection of utility functions for use with the Linker
  */
 class LinkerUtils {
-  static ALLOWED_LINKS = new Map([
-    [
-      LayoutUtils.getComponentName(IrisGridPanel),
-      [
-        LayoutUtils.getComponentName(IrisGridPanel),
-        LayoutUtils.getComponentName(ChartPanel),
-        LayoutUtils.getComponentName(DropdownFilterPanel),
-      ],
-    ],
-  ]);
-
   /**
    * Retrieve the type of link given parameters.
    * @param start The link start
@@ -103,38 +98,24 @@ class LinkerUtils {
    * @param isolatedLinkerPanelId Whether there's an isolated linker
    * @returns The type of link, or invalid if there's an error
    */
-  static getLinkType(
-    start?: LinkPoint,
-    end?: LinkPoint,
+  static isLinkValid(
+    start: LinkPoint,
+    end: LinkPoint,
     isolatedLinkerPanelId?: string | string[]
-  ): LinkType {
+  ): boolean {
     // Panel compatibility checks:
     // Link ends should point to different non-null panelIds
     // For isolated linker one of the panels should match isolated panel id
     if (
-      start?.panelId == null ||
-      end?.panelId == null ||
+      start.panelId == null ||
+      end.panelId == null ||
       start.panelId === end.panelId ||
       (isolatedLinkerPanelId != null &&
         isolatedLinkerPanelId !== start.panelId &&
         isolatedLinkerPanelId !== end.panelId)
     ) {
       log.debug2('Incompatible panel ids', start, end, isolatedLinkerPanelId);
-      return 'invalid';
-    }
-
-    if (start.panelComponent == null || end.panelComponent == null) {
-      log.error('PanelComponent should not be null', start, end);
-      return 'invalid';
-    }
-
-    const isCompatibleComponent = LinkerUtils.ALLOWED_LINKS.get(
-      start.panelComponent
-    )?.includes(end.panelComponent);
-
-    if (isCompatibleComponent === undefined || !isCompatibleComponent) {
-      log.debug2('Incompatible panel components', start, end);
-      return 'invalid';
+      return false;
     }
 
     // Check column type compatibility
@@ -148,22 +129,10 @@ class LinkerUtils {
 
     if (!isCompatibleType) {
       log.debug2('Incompatible type', startColumnType, endColumnType);
-      return 'invalid';
+      return false;
     }
 
-    // If all checks pass, link type is determined by the target panel component
-    switch (end.panelComponent) {
-      case LayoutUtils.getComponentName(ChartPanel):
-        return 'chartLink';
-      case LayoutUtils.getComponentName(IrisGridPanel):
-        return 'tableLink';
-      case LayoutUtils.getComponentName(DropdownFilterPanel):
-        return 'filterSource';
-      default:
-    }
-
-    log.debug2('Incompatible target panel component', end.panelComponent);
-    return 'invalid';
+    return true;
   }
 
   /**

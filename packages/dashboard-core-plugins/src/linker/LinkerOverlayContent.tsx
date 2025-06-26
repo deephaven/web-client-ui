@@ -21,6 +21,7 @@ import {
 } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';
+import { type LinkTargetProps } from './LinkerEvent';
 
 const log = Log.module('LinkerOverlayContent');
 
@@ -48,6 +49,7 @@ export type LinkerOverlayContentProps = {
   onCancel: () => void;
   onDone: () => void;
   panelManager: PanelManager;
+  linkTargetPropMap: Map<string, LinkTargetProps>;
 };
 
 type Point = { x: number; y: number };
@@ -119,10 +121,22 @@ export class LinkerOverlayContent extends Component<
 
   /** Gets the on screen points for a link start or end spec */
   getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {
-    const { panelManager } = this.props;
-    const { panelId, columnName } = linkPoint;
+    const { panelManager, linkTargetPropMap } = this.props;
+    const { panelId: linkPointId, columnName } = linkPoint;
+
+    let panelId = linkPointId;
+    const linkTargetHandlers = linkTargetPropMap.get(linkPointId);
+
+    if (linkTargetHandlers != null) {
+      panelId = linkTargetHandlers.panelId;
+      const coordinates = linkTargetHandlers.getCoordinates(columnName);
+      if (coordinates != null) {
+        return coordinates;
+      }
+    }
+
     const panel = panelManager.getOpenedPanelById(panelId);
-    if (panel != null) {
+    if (linkTargetHandlers == null && panel != null) {
       if (!isLinkableFromPanel(panel)) {
         throw new Error(
           `Panel does not have getCoordinateForColumn method: ${panelId}`
