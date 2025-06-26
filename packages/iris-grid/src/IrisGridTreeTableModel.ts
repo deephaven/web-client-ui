@@ -321,9 +321,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   get aggregatedColumns(): readonly DhType.Column[] {
     return this.isAggregatedColumnsAvailable
-      ? // TODO: remove type assertion when deephaven-core #6943 is merged and the JSAPI types are updated
-        (this.table as DhType.TreeTable & { aggregatedColumns: [] })
-          .aggregatedColumns
+      ? this.table.aggregatedColumns
       : EMPTY_ARRAY;
   }
 
@@ -374,8 +372,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   get isAggregatedColumnsAvailable(): boolean {
     return (
       // aggregatedColumns are not available in the Legacy API
-      (this.table as DhType.TreeTable & { aggregatedColumns?: [] })
-        .aggregatedColumns !== undefined
+      this.table.aggregatedColumns !== undefined
     );
   }
 
