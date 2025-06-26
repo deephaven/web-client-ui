@@ -846,7 +846,8 @@ class TreeTable extends Table {
   constructor(props) {
     super(props);
 
-    const { groupedColumns = [] } = props;
+    const { aggregatedColumns = [], groupedColumns = [] } = props;
+    this.aggregatedColumns = aggregatedColumns;
     this.groupedColumns = groupedColumns;
   }
 }
