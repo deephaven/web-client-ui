@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
+import type { dh } from '@deephaven/jsapi-types';
 import useBroadcastLoginListener from './useBroadcastLoginListener';
 import {
   readRefreshToken,
   RefreshTokenContext,
   storeRefreshToken,
+  type RefreshToken,
 } from './RefreshTokenUtils';
 
 export type RefreshTokenBootstrapProps = {
@@ -28,7 +30,7 @@ export function RefreshTokenBootstrap({
     function listenForTokenUpdates() {
       const cleanup = client.addEventListener(
         api.CoreClient.EVENT_REFRESH_TOKEN_UPDATED,
-        (event: CustomEvent) => {
+        (event: dh.Event<RefreshToken | null>) => {
           const { detail: newToken } = event;
           storeRefreshToken(newToken);
           setToken(newToken);
