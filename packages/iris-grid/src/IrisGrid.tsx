@@ -2090,7 +2090,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
     keyTable.addEventListener(
       dh.Table.EVENT_UPDATED,
-      (event: CustomEvent<DhType.ViewportData>) => {
+      (event: DhType.Event<DhType.ViewportData>) => {
         try {
           const { detail: data } = event;
           if (data.rows.length === 0) {

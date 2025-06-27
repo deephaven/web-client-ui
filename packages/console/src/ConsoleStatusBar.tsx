@@ -73,7 +73,9 @@ export class ConsoleStatusBar extends PureComponent<
     this.pending.cancel();
   }
 
-  handleCommandStarted(event: CustomEvent): void {
+  handleCommandStarted(
+    event: DhType.Event<{ result: Promise<unknown> }>
+  ): void {
     const { result } = event.detail;
 
     this.pending
