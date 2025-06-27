@@ -9,11 +9,7 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import {
-  assertNotNull,
-  EMPTY_ARRAY,
-  EventShimCustomEvent,
-} from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import { DisplayColumn } from './IrisGridModel';
