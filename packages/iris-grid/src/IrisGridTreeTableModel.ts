@@ -163,8 +163,25 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     if (row != null && column != null) {
       if (!row.hasChildren && column.constituentType != null) {
         const value = this.valueForCell(x, y);
-        return this.displayString(value, column.constituentType, column.name);
+        const text = this.displayString(
+          value,
+          column.constituentType,
+          column.name
+        );
+
+        if (TableUtils.isTextType(this.columns[x]?.type)) {
+          if (value === null) {
+            return this.formatter.showNullStrings ? 'null' : '';
+          }
+
+          if (text === '') {
+            return this.formatter.showEmptyStrings ? 'empty' : '';
+          }
+        }
+
+        return text;
       }
+
       // Show empty string instead of null in rollup grouping columns (issue #1483)
       if (
         row.hasChildren &&
