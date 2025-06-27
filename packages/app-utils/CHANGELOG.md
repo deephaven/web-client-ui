@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.31](https://github.com/deephaven/web-client-ui/compare/v0.85.30...v0.85.31) (2025-06-27)
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([#2475](https://github.com/deephaven/web-client-ui/issues/2475)) ([085f7ce](https://github.com/deephaven/web-client-ui/commit/085f7ce175735dd1a0588c38222074652998968e))
+
 ## [0.85.30](https://github.com/deephaven/web-client-ui/compare/v0.85.29...v0.85.30) (2025-06-18)
 
 **Note:** Version bump only for package @deephaven/app-utils

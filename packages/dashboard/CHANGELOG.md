@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.31](https://github.com/deephaven/web-client-ui/compare/v0.85.30...v0.85.31) (2025-06-27)
+
+### Features
+
+- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([#2466](https://github.com/deephaven/web-client-ui/issues/2466)) ([3bbb74d](https://github.com/deephaven/web-client-ui/commit/3bbb74d6db5bfc8aa09094a336b53a37e9290b58)), closes [#2462](https://github.com/deephaven/web-client-ui/issues/2462)
+
 ## [0.85.30](https://github.com/deephaven/web-client-ui/compare/v0.85.29...v0.85.30) (2025-06-18)
 
 **Note:** Version bump only for package @deephaven/dashboard

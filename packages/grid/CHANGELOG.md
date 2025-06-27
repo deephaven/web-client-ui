@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.31](https://github.com/deephaven/web-client-ui/compare/v0.85.30...v0.85.31) (2025-06-27)
+
+### Features
+
+- Add linker support to GridWidgetPlugin ([#2459](https://github.com/deephaven/web-client-ui/issues/2459)) ([#2473](https://github.com/deephaven/web-client-ui/issues/2473)) ([d8d621d](https://github.com/deephaven/web-client-ui/commit/d8d621df141e908c44e55ac349b2c9fc4f52475c))
+
+### Bug Fixes
+
+- Grid making unnecessary onSelectionChanged calls ([#2471](https://github.com/deephaven/web-client-ui/issues/2471)) ([#2472](https://github.com/deephaven/web-client-ui/issues/2472)) ([0bd1462](https://github.com/deephaven/web-client-ui/commit/0bd1462300a553baf3c9092b5f864f4b600a02ac))
+
 ## [0.85.28](https://github.com/deephaven/web-client-ui/compare/v0.85.27...v0.85.28) (2025-05-16)
 
 ### Bug Fixes
