@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.32](https://github.com/deephaven/web-client-ui/compare/v0.85.31...v0.85.32) (2025-06-27)
+
+### Features
+
+- Cherry-pick Made event details generic ([#2476](https://github.com/deephaven/web-client-ui/issues/2476)) ([9f99658](https://github.com/deephaven/web-client-ui/commit/9f996585a9e69805bb4a03229271b8eb76ac017d))
+
 ## [0.85.31](https://github.com/deephaven/web-client-ui/compare/v0.85.30...v0.85.31) (2025-06-27)
 
 ### Bug Fixes
