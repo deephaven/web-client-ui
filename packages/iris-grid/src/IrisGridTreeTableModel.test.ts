@@ -428,8 +428,11 @@ describe('IrisGridTreeTableModel textForCell', () => {
     });
   });
 
-  describe('grouping column edge cases', () => {
+  describe('grouping column', () => {
     it('shows empty string for null values in rollup grouping columns', () => {
+      Object.defineProperty(model.table, 'groupedColumns', {
+        value: [],
+      });
       jest
         .spyOn(model, 'getCachedGroupedColumnSet')
         .mockReturnValue(new Set([0]));
