@@ -8,10 +8,12 @@ export type IrisGridModelFetch = () => Promise<dh.Table>;
 export type IrisGridModelFetchErrorResult = {
   error: NonNullable<unknown>;
   status: 'error';
+  model: undefined;
 };
 
 export type IrisGridModelFetchLoadingResult = {
   status: 'loading';
+  model: undefined;
 };
 
 export type IrisGridModelFetchSuccessResult = {
