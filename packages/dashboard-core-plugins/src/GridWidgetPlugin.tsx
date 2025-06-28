@@ -34,6 +34,7 @@ export function GridWidgetPlugin({
   const { eventHub } = useLayoutManager();
 
   const fetchResult = useIrisGridModel(fetch);
+  const { model } = fetchResult;
 
   const dh = useApi();
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
@@ -91,10 +92,9 @@ export function GridWidgetPlugin({
   );
 
   const inputFilters = useDashboardColumnFilters(
-    fetchResult.status === 'success' ? fetchResult.model.columns : null,
-    fetchResult.status === 'success' &&
-      isIrisGridTableModelTemplate(fetchResult.model)
-      ? fetchResult.model.table
+    model?.columns ?? null,
+    model != null && isIrisGridTableModelTemplate(model)
+      ? model.table
       : undefined
   );
 
@@ -118,8 +118,6 @@ export function GridWidgetPlugin({
     InputFilterEvent.CLEAR_ALL_FILTERS,
     handleClearAllFilters
   );
-
-  const { model } = fetchResult;
 
   const [selection, setSelection] = useState<readonly GridRange[]>([]);
 

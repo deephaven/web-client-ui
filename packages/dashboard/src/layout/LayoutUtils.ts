@@ -240,6 +240,11 @@ class LayoutUtils {
     return null;
   }
 
+  /**
+   * Gets a content item by its ID
+   * @param item Golden layout content item to search for the content item
+   * @param searchId the ID
+   */
   static getContentItemById(
     item: ContentItem,
     searchId: string | string[]

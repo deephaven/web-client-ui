@@ -67,7 +67,7 @@ export const TablePluginWrapper = forwardRef(
           onStateChange={onStateChange}
           pluginState={pluginState}
           // Mimic the panel containing `irisGrid.current` for backwards compatibility
-          // since we aren't in IrisGridPanel
+          // since we don't have an IrisGridPanel to use here.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           panel={{
