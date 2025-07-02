@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   type WidgetComponentProps,
   usePersistentState,
@@ -20,11 +20,12 @@ import { LoadingOverlay } from '@deephaven/components';
 import { useLayoutManager, useListener } from '@deephaven/dashboard';
 import { getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { type GridState } from '@deephaven/grid';
+import { type GridRange, type GridState } from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
 import useDashboardColumnFilters from './useDashboardColumnFilters';
 import { InputFilterEvent } from './events';
 import useGridLinker from './useGridLinker';
+import { useTablePlugin } from './useTablePlugin';
 
 export function GridWidgetPlugin({
   fetch,
@@ -33,6 +34,7 @@ export function GridWidgetPlugin({
   const { eventHub } = useLayoutManager();
 
   const fetchResult = useIrisGridModel(fetch);
+  const { model } = fetchResult;
 
   const dh = useApi();
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
@@ -90,19 +92,19 @@ export function GridWidgetPlugin({
   );
 
   const inputFilters = useDashboardColumnFilters(
-    fetchResult.status === 'success' ? fetchResult.model.columns : null,
-    fetchResult.status === 'success' &&
-      isIrisGridTableModelTemplate(fetchResult.model)
-      ? fetchResult.model.table
+    model?.columns ?? null,
+    model != null && isIrisGridTableModelTemplate(model)
+      ? model.table
       : undefined
   );
 
   const irisGridRef = useRef<IrisGridType | null>(null);
 
-  const linkerProps = useGridLinker(
-    fetchResult.status === 'success' ? fetchResult.model : null,
-    irisGridRef.current
-  );
+  const { alwaysFetchColumns: linkerAlwaysFetchColumns, ...linkerProps } =
+    useGridLinker(
+      fetchResult.status === 'success' ? fetchResult.model : null,
+      irisGridRef.current
+    );
 
   const handleClearAllFilters = useCallback(() => {
     if (irisGridRef.current == null) {
@@ -117,11 +119,33 @@ export function GridWidgetPlugin({
     handleClearAllFilters
   );
 
+  const [selection, setSelection] = useState<readonly GridRange[]>([]);
+
+  const {
+    Plugin,
+    customFilters,
+    alwaysFetchColumns: filterFetchColumns,
+    onContextMenu,
+  } = useTablePlugin({
+    model,
+    irisGridRef,
+    irisGridUtils,
+    selectedRanges: selection,
+  });
+
+  const alwaysFetchColumns = useMemo(() => {
+    const columnSet = new Set([
+      ...linkerAlwaysFetchColumns,
+      ...filterFetchColumns,
+    ]);
+    return [...columnSet];
+  }, [linkerAlwaysFetchColumns, filterFetchColumns]);
+
   if (fetchResult.status === 'loading') {
     return <LoadingOverlay isLoading />;
   }
 
-  if (fetchResult.status === 'error') {
+  if (fetchResult.status === 'error' || model == null) {
     return (
       <LoadingOverlay
         errorMessage={getErrorMessage(fetchResult.error)}
@@ -130,20 +154,24 @@ export function GridWidgetPlugin({
     );
   }
 
-  const { model } = fetchResult;
-
   return (
     <IrisGrid
       ref={irisGridRef}
       model={model}
       settings={settings}
       onStateChange={handleIrisGridChange}
+      onSelectionChanged={setSelection}
+      onContextMenu={onContextMenu}
       inputFilters={inputFilters}
+      customFilters={customFilters}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
+      alwaysFetchColumns={alwaysFetchColumns}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...hydratedState}
-    />
+    >
+      {Plugin}
+    </IrisGrid>
   );
 }
 
