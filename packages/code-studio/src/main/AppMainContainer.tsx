@@ -963,7 +963,14 @@ export class AppMainContainer extends Component<
           <Logo className="ml-1" style={{ maxHeight: '20px' }} />
           {/* Only show the Code Studio tab if there is also an open dashboard */}
           {tabs.length > 1 && (
-            <div style={{ flexShrink: 0, flexGrow: 1, display: 'flex' }}>
+            <div
+              style={{
+                flexShrink: 0,
+                flexGrow: 1,
+                flexBasis: 0,
+                minWidth: 0,
+              }}
+            >
               <NavTabList
                 tabs={tabs}
                 activeKey={activeTabKey}
