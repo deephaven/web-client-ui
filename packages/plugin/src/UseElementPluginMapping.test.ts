@@ -5,8 +5,8 @@ import { useElementPluginMapping } from './useElementPluginMapping';
 import { getElementPluginMapping } from './PluginUtils';
 import { usePlugins } from './usePlugins';
 
-jest.mock('@deephaven/components');
 jest.mock('./PluginUtils');
+jest.mock('./usePlugins');
 
 const { asMock } = TestUtils;
 
@@ -24,5 +24,5 @@ it('should return element plugin mapping from plugins context', () => {
   const { result } = renderHook(() => useElementPluginMapping());
 
   expect(getElementPluginMapping).toHaveBeenCalledWith(mockPlugins);
-  expect(result).toEqual(mockElementPluginMapping);
+  expect(result.current).toEqual(mockElementPluginMapping);
 });
