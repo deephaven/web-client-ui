@@ -1,10 +1,4 @@
-import { ComponentType, useMemo } from 'react';
-import {
-  isDashboardPlugin,
-  isLegacyDashboardPlugin,
-  type PluginModuleMap,
-  type DashboardPlugin,
-} from './PluginTypes';
+import { type ComponentType, useMemo } from 'react';
 import { usePlugins } from './usePlugins';
 import { getElementPluginMapping } from './PluginUtils';
 

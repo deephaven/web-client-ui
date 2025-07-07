@@ -4,7 +4,7 @@ import { type ThemeData } from '@deephaven/components';
 import { dhTruck, vsPreview } from '@deephaven/icons';
 import {
   type DashboardPlugin,
-  ElementPlugin,
+  type ElementPlugin,
   type PluginModule,
   PluginType,
   type ThemePlugin,
