@@ -4,6 +4,7 @@ import { type ThemeData } from '@deephaven/components';
 import { dhTruck, vsPreview } from '@deephaven/icons';
 import {
   type DashboardPlugin,
+  ElementPlugin,
   type PluginModule,
   PluginType,
   type ThemePlugin,
@@ -13,6 +14,7 @@ import {
   pluginSupportsType,
   getIconForPlugin,
   getThemeDataFromPlugins,
+  getElementPluginMapping,
 } from './PluginUtils';
 
 function TestWidget() {
@@ -30,6 +32,23 @@ const dashboardPlugin: DashboardPlugin = {
   name: 'test-widget-plugin',
   type: PluginType.DASHBOARD_PLUGIN,
   component: TestWidget,
+};
+
+const ElementPluginOne: ElementPlugin = {
+  name: 'test-element-plugin-one',
+  type: PluginType.ELEMENT_PLUGIN,
+  mapping: {
+    'test-element-one': TestWidget,
+    'test-element-two': TestWidget,
+  },
+};
+
+const ElementPluginTwo: ElementPlugin = {
+  name: 'test-element-plugin-two',
+  type: PluginType.ELEMENT_PLUGIN,
+  mapping: {
+    'test-element-three': TestWidget,
+  },
 };
 
 test('pluginSupportsType', () => {
@@ -168,5 +187,34 @@ describe('getThemeDataFromPlugins', () => {
     ];
 
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('getElementPluginMapping', () => {
+  it('should return a mapping of element plugins', () => {
+    const pluginMap = new Map<string, PluginModule>([
+      [ElementPluginOne.name, ElementPluginOne],
+      [ElementPluginTwo.name, ElementPluginTwo],
+      [dashboardPlugin.name, dashboardPlugin],
+      [widgetPlugin.name, widgetPlugin],
+    ]);
+
+    const elementMapping = getElementPluginMapping(pluginMap);
+
+    expect(elementMapping.size).toBe(3);
+    expect(elementMapping.get('test-element-one')).toBe(TestWidget);
+    expect(elementMapping.get('test-element-two')).toBe(TestWidget);
+    expect(elementMapping.get('test-element-three')).toBe(TestWidget);
+  });
+
+  it('should return an empty map if no element plugins are present', () => {
+    const pluginMap = new Map<string, PluginModule>([
+      [widgetPlugin.name, widgetPlugin],
+      [dashboardPlugin.name, dashboardPlugin],
+    ]);
+
+    const elementMapping = getElementPluginMapping(pluginMap);
+
+    expect(elementMapping.size).toBe(0);
   });
 });
