@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([35046d1](https://github.com/deephaven/web-client-ui/commit/35046d16dca2105a26bba732cf3b2bdf8fcb35a5))
+
 ## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
 
 **Note:** Version bump only for package @deephaven/jsapi-bootstrap

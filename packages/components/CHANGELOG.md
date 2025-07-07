@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Features
+
+- DH-14431: Add shortcuts to cycle dashboards ([#2470](https://github.com/deephaven/web-client-ui/issues/2470)) ([5b572c3](https://github.com/deephaven/web-client-ui/commit/5b572c30ac9098cdca20864bfac59fd626f2d4e0))
+- DH-19632: Add shortcuts to cycle stacks and panels ([#2458](https://github.com/deephaven/web-client-ui/issues/2458)) ([97098f2](https://github.com/deephaven/web-client-ui/commit/97098f257d087c98dc7d734c7462da3197daf43e))
+
 ## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
 
 **Note:** Version bump only for package @deephaven/components

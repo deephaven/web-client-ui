@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Features
+
+- Add linker support to GridWidgetPlugin ([#2459](https://github.com/deephaven/web-client-ui/issues/2459)) ([a0a868d](https://github.com/deephaven/web-client-ui/commit/a0a868d107ef7bf3db3f1b3e554f704943070029))
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([35046d1](https://github.com/deephaven/web-client-ui/commit/35046d16dca2105a26bba732cf3b2bdf8fcb35a5))
+- DH-19614: Add tree table formatting logic to tree model ([#2461](https://github.com/deephaven/web-client-ui/issues/2461)) ([1c9a8ed](https://github.com/deephaven/web-client-ui/commit/1c9a8ed1ebd923ffa07235b453602f9775660a6f))
+- DH-19693: Add null/empty formatting to constituent strings ([#2464](https://github.com/deephaven/web-client-ui/issues/2464)) ([3dfef4e](https://github.com/deephaven/web-client-ui/commit/3dfef4e2358c4c9d240cc1c9bbcd11b18f57c248))
+
 ## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
 
 ### Features

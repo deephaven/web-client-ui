@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Features
+
+- DH-19632: Add shortcuts to cycle stacks and panels ([#2458](https://github.com/deephaven/web-client-ui/issues/2458)) ([97098f2](https://github.com/deephaven/web-client-ui/commit/97098f257d087c98dc7d734c7462da3197daf43e))
+
+### Bug Fixes
+
+- Enable golden-layout jest test and fix broken EventUtils test ([#2467](https://github.com/deephaven/web-client-ui/issues/2467)) ([3e851f5](https://github.com/deephaven/web-client-ui/commit/3e851f5d3fb33a666c6bf5eb0cc7dfd535ab606c))
+
 ## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
 
 ### Features
