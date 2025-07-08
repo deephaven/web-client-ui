@@ -9,10 +9,16 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
+import {
+  assertNotNull,
+  EMPTY_ARRAY,
+  EventShimCustomEvent,
+} from '@deephaven/utils';
 import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
+import IrisGridUtils from './IrisGridUtils';
 
 const log = Log.module('IrisGridTreeTableModel');
 
@@ -53,6 +59,24 @@ export interface UITreeRow extends UIRow {
   isExpanded: boolean;
   hasChildren: boolean;
   depth: number;
+}
+
+/**
+ * Check if a row is a UITreeRow
+ * @param row The row to check
+ * @returns True if the row is a UITreeRow and false otherwise
+ */
+export function isUITreeRow(row: unknown): row is UITreeRow {
+  return (
+    row != null &&
+    typeof row === 'object' &&
+    'hasChildren' in row &&
+    'isExpanded' in row &&
+    'depth' in row &&
+    typeof row.hasChildren === 'boolean' &&
+    typeof row.isExpanded === 'boolean' &&
+    typeof row.depth === 'number'
+  );
 }
 
 type LayoutTreeTable = DhType.TreeTable & {
@@ -139,8 +163,25 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     if (row != null && column != null) {
       if (!row.hasChildren && column.constituentType != null) {
         const value = this.valueForCell(x, y);
-        return this.displayString(value, column.constituentType, column.name);
+        const text = this.displayString(
+          value,
+          column.constituentType,
+          column.name
+        );
+
+        if (TableUtils.isTextType(this.columns[x]?.type)) {
+          if (value === null) {
+            return this.formatter.showNullStrings ? 'null' : '';
+          }
+
+          if (text === '') {
+            return this.formatter.showEmptyStrings ? 'empty' : '';
+          }
+        }
+
+        return text;
       }
+
       // Show empty string instead of null in rollup grouping columns (issue #1483)
       if (
         row.hasChildren &&
@@ -153,6 +194,66 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     }
 
     return super.textForCell(x, y);
+  }
+
+  colorForCell(x: ModelIndex, y: ModelIndex, theme: IrisGridThemeType): string {
+    const data = this.dataForCell(x, y);
+    if (data) {
+      const { format, value } = data;
+      if (value == null || value === '') {
+        assertNotNull(theme.nullStringColor);
+        return theme.nullStringColor;
+      }
+      if (format?.color != null && format.color !== '') {
+        return format.color;
+      }
+
+      // Fallback to formatting based on the value/type of the cell
+      if (value != null) {
+        const column = this.sourceColumn(x, y);
+        const row = this.row(y);
+        assertNotNull(row);
+
+        let columnTypeForFormatting = column.type;
+
+        // For tree table leaf nodes, use the constituent type for formatting
+        if (
+          isUITreeRow(row) &&
+          row.hasChildren === false &&
+          column.constituentType != null
+        ) {
+          columnTypeForFormatting = column.constituentType;
+        }
+
+        return IrisGridUtils.colorForValue(
+          theme,
+          columnTypeForFormatting,
+          column.name,
+          value
+        );
+      }
+    }
+
+    return theme.textColor;
+  }
+
+  textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
+    const column = this.sourceColumn(x, y);
+    const row = this.row(y);
+    assertNotNull(row);
+
+    let typeForFormatting = column.type;
+
+    // For tree table leaf nodes, use the constituent type for formatting
+    if (
+      isUITreeRow(row) &&
+      row.hasChildren === false &&
+      column.constituentType != null
+    ) {
+      typeForFormatting = column.constituentType;
+    }
+
+    return IrisGridUtils.textAlignForValue(typeForFormatting, column.name);
   }
 
   extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
@@ -235,6 +336,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
+  get aggregatedColumns(): readonly DhType.Column[] {
+    return this.isAggregatedColumnsAvailable
+      ? this.table.aggregatedColumns
+      : EMPTY_ARRAY;
+  }
+
   get groupedColumns(): readonly DhType.Column[] {
     return this.getCachedGroupColumns(
       this.virtualColumns,
@@ -279,6 +386,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return true;
   }
 
+  get isAggregatedColumnsAvailable(): boolean {
+    return (
+      // aggregatedColumns are not available in the Legacy API
+      // and Core API before v0.39.4
+      this.table.aggregatedColumns !== undefined
+    );
+  }
+
   get isExpandAllAvailable(): boolean {
     return this.table.expandAll !== undefined;
   }
@@ -302,6 +417,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(
       this.columns,
+      this.isAggregatedColumnsAvailable,
+      this.aggregatedColumns,
       this.groupedColumns,
       this.virtualColumns
     ).has(columnIndex);
@@ -367,14 +484,30 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   getCachedFilterableColumnSet = memoize(
     (
       columns: readonly DhType.Column[],
+      isAggregatedColumnsAvailable: boolean,
+      aggregatedColumns: readonly DhType.Column[],
       groupedColumns: readonly DhType.Column[],
       virtualColumns: readonly DhType.Column[]
-    ) =>
-      new Set(
+    ) => {
+      if (isAggregatedColumnsAvailable) {
+        return new Set(
+          // Virtual and aggregated columns are not filterable
+          columns
+            .filter(
+              c => !virtualColumns.includes(c) && !aggregatedColumns.includes(c)
+            )
+            .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
+        );
+      }
+      // For compatibility with the Enterprise JSAPI,
+      // only groupedColumns are filterable on rollup tables
+      // if aggregatedColumns API is not available.
+      return new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns)
           .filter(c => !virtualColumns.includes(c))
           .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
-      )
+      );
+    }
   );
 
   getCachedGroupedColumnSet = memoize(

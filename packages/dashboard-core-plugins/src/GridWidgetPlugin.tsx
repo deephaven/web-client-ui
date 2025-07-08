@@ -18,12 +18,13 @@ import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { useLayoutManager, useListener } from '@deephaven/dashboard';
-import { EMPTY_ARRAY, getErrorMessage } from '@deephaven/utils';
+import { getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridState } from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
 import useDashboardColumnFilters from './useDashboardColumnFilters';
 import { InputFilterEvent } from './events';
+import useGridLinker from './useGridLinker';
 
 export function GridWidgetPlugin({
   fetch,
@@ -89,7 +90,7 @@ export function GridWidgetPlugin({
   );
 
   const inputFilters = useDashboardColumnFilters(
-    fetchResult.status === 'success' ? fetchResult.model.columns : EMPTY_ARRAY,
+    fetchResult.status === 'success' ? fetchResult.model.columns : null,
     fetchResult.status === 'success' &&
       isIrisGridTableModelTemplate(fetchResult.model)
       ? fetchResult.model.table
@@ -97,6 +98,11 @@ export function GridWidgetPlugin({
   );
 
   const irisGridRef = useRef<IrisGridType | null>(null);
+
+  const linkerProps = useGridLinker(
+    fetchResult.status === 'success' ? fetchResult.model : null,
+    irisGridRef.current
+  );
 
   const handleClearAllFilters = useCallback(() => {
     if (irisGridRef.current == null) {
@@ -125,15 +131,18 @@ export function GridWidgetPlugin({
   }
 
   const { model } = fetchResult;
+
   return (
     <IrisGrid
       ref={irisGridRef}
       model={model}
       settings={settings}
       onStateChange={handleIrisGridChange}
+      inputFilters={inputFilters}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...linkerProps}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...hydratedState}
-      inputFilters={inputFilters}
     />
   );
 }

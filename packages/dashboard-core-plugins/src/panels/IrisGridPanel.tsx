@@ -47,6 +47,7 @@ import {
   type PartitionConfig,
 } from '@deephaven/iris-grid';
 import {
+  type RowDataMap,
   type AdvancedFilterOptions,
   type FormattingRule,
 } from '@deephaven/jsapi-utils';
@@ -76,6 +77,7 @@ import type {
   TablePluginComponent,
   TablePluginElement,
 } from '@deephaven/plugin';
+import clamp from 'lodash.clamp';
 import { IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
@@ -84,7 +86,11 @@ import {
 } from '../redux';
 import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
-import { type Link, type LinkColumn } from '../linker/LinkerUtils';
+import {
+  type Link,
+  type LinkColumn,
+  type LinkPointOptions,
+} from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
 import {
   isIrisGridPanelMetadata,
@@ -95,6 +101,10 @@ import {
   emitFilterColumnsChanged,
   emitFilterTableChanged,
 } from '../FilterEvents';
+import {
+  emitLinkPointSelected,
+  emitLinkSourceDataSelected,
+} from '../linker/LinkerEvent';
 
 const log = Log.module('IrisGridPanel');
 
@@ -151,7 +161,8 @@ interface StateProps {
   links: Link[];
   columnSelectionValidator?: (
     panel: PanelComponent,
-    tableColumn?: LinkColumn
+    tableColumn: LinkColumn,
+    options: LinkPointOptions
   ) => boolean;
   user: User;
   settings: WorkspaceSettings;
@@ -617,7 +628,9 @@ export class IrisGridPanel extends PureComponent<
   isColumnSelectionValid(tableColumn: dh.Column | null): boolean {
     const { columnSelectionValidator } = this.props;
     if (columnSelectionValidator && tableColumn) {
-      return columnSelectionValidator(this, tableColumn);
+      return columnSelectionValidator(this, tableColumn, {
+        type: 'tableLink',
+      });
     }
     return false;
   }
@@ -713,12 +726,16 @@ export class IrisGridPanel extends PureComponent<
 
   handleColumnSelected(column: dh.Column): void {
     const { glEventHub } = this.props;
-    glEventHub.emit(IrisGridEvent.COLUMN_SELECTED, this, column);
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    emitLinkPointSelected(glEventHub, panelId, column, { type: 'tableLink' });
   }
 
-  handleDataSelected(row: ModelIndex, dataMap: Record<string, unknown>): void {
+  handleDataSelected(row: ModelIndex, dataMap: RowDataMap): void {
     const { glEventHub } = this.props;
-    glEventHub.emit(IrisGridEvent.DATA_SELECTED, this, dataMap);
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    emitLinkSourceDataSelected(glEventHub, panelId, dataMap);
   }
 
   handleShow(): void {
@@ -863,14 +880,12 @@ export class IrisGridPanel extends PureComponent<
     const columnX = allColumnXs.get(visibleIndex) ?? 0;
     const columnWidth = allColumnWidths.get(visibleIndex) ?? 0;
 
-    const x = Math.max(
+    const x = clamp(
+      visibleIndex > right
+        ? rect.right
+        : rect.left + columnX + columnWidth * 0.5,
       rect.left,
-      Math.min(
-        visibleIndex > right
-          ? rect.right
-          : rect.left + columnX + columnWidth * 0.5,
-        rect.right
-      )
+      rect.right
     );
     const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth;
 
@@ -949,6 +964,7 @@ export class IrisGridPanel extends PureComponent<
   // eslint-disable-next-line class-methods-use-this
   unsetFilterValue(): void {
     // IrisGridPanel retains the set value after the link is broken
+    // We need to define this so LinkerUtils#isLinkablePanel passes the check
   }
 
   loadPanelState(model: IrisGridModel): void {
@@ -1259,7 +1275,7 @@ export class IrisGridPanel extends PureComponent<
 
 const mapStateToProps = (
   state: RootState,
-  { localDashboardId = DEFAULT_DASHBOARD_ID }: OwnProps
+  { localDashboardId = DEFAULT_DASHBOARD_ID, glContainer }: OwnProps
 ): StateProps => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),

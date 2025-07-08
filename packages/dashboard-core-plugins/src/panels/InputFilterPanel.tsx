@@ -5,7 +5,7 @@ import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { type RootState } from '@deephaven/redux';
 import { LayoutUtils } from '@deephaven/dashboard';
 import { assertNotNull } from '@deephaven/utils';
-import Panel from './Panel';
+import Panel from './CorePanel';
 import InputFilter, {
   type InputFilterColumn,
 } from '../controls/input-filter/InputFilter';

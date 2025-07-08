@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Features
+
+- DH-14431: Add shortcuts to cycle dashboards ([#2470](https://github.com/deephaven/web-client-ui/issues/2470)) ([5b572c3](https://github.com/deephaven/web-client-ui/commit/5b572c30ac9098cdca20864bfac59fd626f2d4e0))
+- DH-19632: Add shortcuts to cycle stacks and panels ([#2458](https://github.com/deephaven/web-client-ui/issues/2458)) ([97098f2](https://github.com/deephaven/web-client-ui/commit/97098f257d087c98dc7d734c7462da3197daf43e))
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([35046d1](https://github.com/deephaven/web-client-ui/commit/35046d16dca2105a26bba732cf3b2bdf8fcb35a5))
+- DH-19731: Dashboard overflow handling ([#2479](https://github.com/deephaven/web-client-ui/issues/2479)) ([5313ba1](https://github.com/deephaven/web-client-ui/commit/5313ba1b243abaaddd7cb611e4b517127cc8da4b))
+
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Bug Fixes
+
+- Download worker and monaco initializing multiple times in dev ([#2452](https://github.com/deephaven/web-client-ui/issues/2452)) ([74fd724](https://github.com/deephaven/web-client-ui/commit/74fd7241ad52342d3ddafa32461add8235ee5f84))
+
 ## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
 
 ### Features

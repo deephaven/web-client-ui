@@ -1,12 +1,10 @@
-import { createContext, useContext } from 'react';
 import Log from '@deephaven/log';
 import { useFiber } from './useFiber';
+import { usePanelId } from './usePanelId';
 
 const log = Log.module('useDhId');
 
 export const DH_ID_PROP = '__dhId';
-
-export const DhIdContext = createContext<string | null>(null);
 
 /**
  * Gets the Deephaven ID of a component.
@@ -14,7 +12,7 @@ export const DhIdContext = createContext<string | null>(null);
  * Usually this is just a panel ID, but in some contexts such as dh.ui,
  * it may be an ID for a component within a panel.
  *
- * Looks for a __dhId prop on the component, and if not found, looks in the DhIdContext.
+ * Looks for a __dhId prop on the component, and if not found, looks in the PanelIdContext.
  * @param props The props of the component using this hook
  * @returns The Deephaven ID of the component or null if not found.
  */
@@ -23,7 +21,7 @@ export function useDhId(): string | null {
   const props =
     (useFiber()?.pendingProps as Record<string, unknown> | undefined) ?? {};
   const dhIdProp = props[DH_ID_PROP];
-  const dhId = useContext(DhIdContext);
+  const panelId = usePanelId();
 
   if (dhIdProp != null) {
     if (typeof dhIdProp !== 'string') {
@@ -34,12 +32,12 @@ export function useDhId(): string | null {
     return dhIdProp;
   }
 
-  if (dhId == null) {
+  if (panelId == null) {
     log.warn(
-      `useDhId must be used within a DhIdContext provider if there is no ${DH_ID_PROP} prop. Defaulting to null.`
+      `useDhId must be used within a PanelIdContext provider if there is no ${DH_ID_PROP} prop. Defaulting to null.`
     );
     return null;
   }
 
-  return dhId;
+  return panelId;
 }
