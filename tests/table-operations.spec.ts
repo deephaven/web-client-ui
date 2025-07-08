@@ -447,8 +447,9 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  await test.step('Toggle constituents', async () => {
-    await page.getByText('Constituents').click();
+  await test.step('Expand constituent with non-aggregated columns visible', async () => {
+    const gridCanvas = page.locator('.iris-grid .grid-wrapper');
+    await gridCanvas.click({ position: { x: 10, y: 80 } });
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -456,6 +457,21 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
 
   await test.step('Toggle non-aggregated columns', async () => {
     await page.getByText('Non-Aggregated Columns').click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Expand constituent with non-aggregated columns hidden', async () => {
+    const gridCanvas = page.locator('.iris-grid .grid-wrapper');
+    await gridCanvas.click({ position: { x: 10, y: 80 } });
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Toggle constituents', async () => {
+    await page.getByText('Constituents').click();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -489,6 +505,14 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
     await page.getByTestId('btn-page-back').click();
     await openTableOption(page, 'Aggregate Columns');
     await page.getByRole('button', { name: 'Add Aggregation' }).click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Expand constituent with aggregations applied', async () => {
+    const gridCanvas = page.locator('.iris-grid .grid-wrapper');
+    await gridCanvas.click({ position: { x: 10, y: 80 } });
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
