@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { useLayoutManager, useListener } from '@deephaven/dashboard';
-import { getErrorMessage } from '@deephaven/utils';
+import { assertNotNull, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridRange, type GridState } from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
@@ -34,7 +34,8 @@ export function GridWidgetPlugin({
   const { eventHub } = useLayoutManager();
 
   const fetchResult = useIrisGridModel(fetch);
-  const { model } = fetchResult;
+  const model =
+    fetchResult.status === 'success' ? fetchResult.model : undefined;
 
   const dh = useApi();
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
@@ -145,7 +146,7 @@ export function GridWidgetPlugin({
     return <LoadingOverlay isLoading />;
   }
 
-  if (fetchResult.status === 'error' || model == null) {
+  if (fetchResult.status === 'error') {
     return (
       <LoadingOverlay
         errorMessage={getErrorMessage(fetchResult.error)}
@@ -153,6 +154,8 @@ export function GridWidgetPlugin({
       />
     );
   }
+
+  assertNotNull(model, 'Model should be defined when fetch is successful');
 
   return (
     <IrisGrid

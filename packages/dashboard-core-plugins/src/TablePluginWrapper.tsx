@@ -54,6 +54,14 @@ export const TablePluginWrapper = forwardRef(
       return panelItem?.config.title ?? 'unknown';
     }, [layoutManager.root, panelId]);
 
+    const panel = useMemo(
+      () => ({
+        irisGrid: irisGridRef,
+        getTableName: () => panelName,
+      }),
+      [irisGridRef, panelName]
+    );
+
     return (
       <div className="iris-grid-plugin">
         <Plugin
@@ -70,10 +78,7 @@ export const TablePluginWrapper = forwardRef(
           // since we don't have an IrisGridPanel to use here.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          panel={{
-            irisGrid: irisGridRef,
-            getTableName: () => panelName,
-          }}
+          panel={panel}
         />
       </div>
     );

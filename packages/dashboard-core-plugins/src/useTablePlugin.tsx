@@ -13,12 +13,35 @@ import { type GridRange } from '@deephaven/grid';
 import { TablePluginWrapper } from './TablePluginWrapper';
 
 interface UseTablePluginProps {
+  /**
+   * The IrisGrid model for this plugin.
+   * Currently only IrisGridTableModelTemplate types are supported.
+   * Other IrisGrid model types will be ignored for now.
+   */
   model: IrisGridModel | undefined;
+  /**
+   * A reference to the IrisGrid component instance.
+   */
   irisGridRef: React.MutableRefObject<IrisGridType | null>;
+  /**
+   * A IrisGridUtils instance.
+   */
   irisGridUtils: IrisGridUtils;
+  /**
+   * The currently selected ranges in the grid.
+   */
   selectedRanges: readonly GridRange[] | undefined;
 }
 
+/**
+ * Hook to get a TablePlugin component and the IrisGrid props derived from the plugin.
+ * The returned props should be passed to the IrisGrid component or merged with other sources
+ * of the same props.
+ * @param props The properties for the table plugin. The props object itself does not need to be memoized,
+ *              but the values inside it should be stable to avoid unnecessary re-renders.
+ * @returns Object containing `Plugin` key which is the Plugin component.
+ *          The remaining object keys are IrisGrid props associated with the plugin.
+ */
 export function useTablePlugin({
   model,
   irisGridRef,

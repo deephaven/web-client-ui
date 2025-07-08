@@ -242,7 +242,7 @@ class LayoutUtils {
 
   /**
    * Gets a content item by its ID
-   * @param item Golden layout content item to search for the content item
+   * @param item Golden layout content item to search for the content item. Typically the root.
    * @param searchId the ID
    */
   static getContentItemById(
