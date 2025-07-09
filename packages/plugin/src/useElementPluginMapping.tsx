@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { usePlugins } from './usePlugins';
 import { getElementPluginMap } from './PluginUtils';
-import { ElementMap } from './PluginTypes';
+import type { ElementMap } from './PluginTypes';
 
 /**
  * Get all ElementPlugin elements from the plugins context

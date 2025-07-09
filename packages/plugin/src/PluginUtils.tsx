@@ -11,7 +11,7 @@ import {
   isThemePlugin,
   isElementPlugin,
   type ElementPlugin,
-  ElementMap,
+  type ElementMap,
 } from './PluginTypes';
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
