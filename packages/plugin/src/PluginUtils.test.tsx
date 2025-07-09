@@ -14,7 +14,7 @@ import {
   pluginSupportsType,
   getIconForPlugin,
   getThemeDataFromPlugins,
-  getElementPluginMapping,
+  getElementPluginMap,
 } from './PluginUtils';
 
 function TestWidget() {
@@ -190,7 +190,7 @@ describe('getThemeDataFromPlugins', () => {
   });
 });
 
-describe('getElementPluginMapping', () => {
+describe('getElementPluginMap', () => {
   it('should return a mapping of element plugins', () => {
     const pluginMap = new Map<string, PluginModule>([
       [ElementPluginOne.name, ElementPluginOne],
@@ -199,7 +199,7 @@ describe('getElementPluginMapping', () => {
       [widgetPlugin.name, widgetPlugin],
     ]);
 
-    const elementMapping = getElementPluginMapping(pluginMap);
+    const elementMapping = getElementPluginMap(pluginMap);
 
     expect(elementMapping.size).toBe(3);
     expect(elementMapping.get('test-element-one')).toBe(TestWidget);
@@ -213,7 +213,7 @@ describe('getElementPluginMapping', () => {
       [dashboardPlugin.name, dashboardPlugin],
     ]);
 
-    const elementMapping = getElementPluginMapping(pluginMap);
+    const elementMapping = getElementPluginMap(pluginMap);
 
     expect(elementMapping.size).toBe(0);
   });

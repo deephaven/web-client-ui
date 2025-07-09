@@ -11,6 +11,7 @@ import {
   isThemePlugin,
   isElementPlugin,
   type ElementPlugin,
+  ElementMap,
 } from './PluginTypes';
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
@@ -84,9 +85,7 @@ export function getThemeDataFromPlugins(
  * @param pluginMap The plugin map to extract element plugins from.
  * @returns A Map of element names to their React components.
  */
-export function getElementPluginMapping(
-  pluginMap: PluginModuleMap
-): Map<string, React.ComponentType<unknown>> {
+export function getElementPluginMap(pluginMap: PluginModuleMap): ElementMap {
   const elementPluginEntries = [...pluginMap.entries()].filter(
     (entry): entry is [string, ElementPlugin] =>
       isElementPlugin(entry[1]) && entry[1].mapping != null
@@ -95,11 +94,6 @@ export function getElementPluginMapping(
   log.debug('Getting element plugin mapping', elementPluginEntries);
 
   return new Map(
-    elementPluginEntries.flatMap(([, plugin]) =>
-      Object.entries(plugin.mapping).map(
-        ([elementName, elementComponent]) =>
-          [`${elementName}`, elementComponent] as const
-      )
-    )
+    elementPluginEntries.flatMap(([, plugin]) => Object.entries(plugin.mapping))
   );
 }

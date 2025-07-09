@@ -6,6 +6,7 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
+import { ComponentType } from 'node_modules/@types/react';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
@@ -239,10 +240,15 @@ export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
 
+export type ElementName = string;
+
+export type ElementPluginMappingDefinition = Record<ElementName, ComponentType>;
+
+export type ElementMap = ReadonlyMap<ElementName, ComponentType>;
+
 export interface ElementPlugin extends Plugin {
-  name: string;
   type: typeof PluginType.ELEMENT_PLUGIN;
-  mapping: Record<string, React.ComponentType<unknown>>;
+  mapping: ElementPluginMappingDefinition;
 }
 
 export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
