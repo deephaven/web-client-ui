@@ -56,7 +56,13 @@ import {
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
-import { vsGear, dhShapes, dhPanels, vsTerminal } from '@deephaven/icons';
+import {
+  vsGear,
+  dhShapes,
+  dhPanels,
+  vsTerminal,
+  vsMultipleWindows,
+} from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -98,6 +104,7 @@ import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { type WindowMouseEvent } from './WidgetList';
+import DashboardTabList from './DashboardTabList';
 import {
   getFormattedPluginInfo,
   getFormattedVersionInfo,
@@ -148,6 +155,7 @@ interface AppMainContainerProps {
 interface AppMainContainerState {
   contextActions: ContextAction[];
   isPanelsMenuShown: boolean;
+  isDashboardTabMenuShown: boolean;
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
@@ -303,6 +311,7 @@ export class AppMainContainer extends Component<
         },
       ],
       isPanelsMenuShown: false,
+      isDashboardTabMenuShown: false,
       isResetLayoutPromptShown: false,
       isSettingsMenuShown: false,
       unsavedNotebookCount: 0,
@@ -700,6 +709,24 @@ export class AppMainContainer extends Component<
     this.setState({ isPanelsMenuShown: false });
   }
 
+  handleDashboardMenuClick(): void {
+    this.setState(({ isDashboardTabMenuShown }) => ({
+      isDashboardTabMenuShown: !isDashboardTabMenuShown,
+    }));
+  }
+
+  handleDashboardMenuSelect(tab: NavTabItem): void {
+    this.setState({ isDashboardTabMenuShown: false });
+
+    log.debug('handleDashboardSelect', tab);
+
+    this.handleTabSelect(tab.key);
+  }
+
+  handleDashboardMenuClose(): void {
+    this.setState({ isDashboardTabMenuShown: false });
+  }
+
   handleAutoFillClick(): void {
     const { widgets } = this.state;
 
@@ -937,6 +964,7 @@ export class AppMainContainer extends Component<
     const {
       contextActions,
       isPanelsMenuShown,
+      isDashboardTabMenuShown,
       isResetLayoutPromptShown,
       isSettingsMenuShown,
       unsavedNotebookCount,
@@ -981,6 +1009,31 @@ export class AppMainContainer extends Component<
             </div>
           )}
           <div className="app-main-right-menu-buttons">
+            <Button
+              kind="ghost"
+              className="btn-dashboard-tab-menu btn-show-dashboard-tab"
+              data-testid="app-main-dashboard-tabs-button"
+              icon={vsMultipleWindows}
+              onClick={this.handleDashboardMenuClick}
+              disabled={tabs.length < 2}
+            >
+              Dashboards
+              <Popper
+                isShown={isDashboardTabMenuShown}
+                className="dashboards-tab-menu-popper"
+                onExited={this.handleDashboardMenuClose}
+                options={{
+                  placement: 'bottom-start',
+                }}
+                closeOnBlur
+                interactive
+              >
+                <DashboardTabList
+                  tabs={tabs}
+                  onSelect={this.handleDashboardMenuSelect}
+                />
+              </Popper>
+            </Button>
             <Button
               kind="ghost"
               className="btn-panels-menu"
