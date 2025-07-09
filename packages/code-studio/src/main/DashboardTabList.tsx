@@ -1,6 +1,7 @@
 import React, {
   type ChangeEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -25,6 +26,13 @@ export function DashboardTabList(props: DashboardTabListProps): JSX.Element {
   const { onSelect, tabs = [] } = props;
   const [searchText, setSearchText] = useState('');
   const searchField = useRef<SearchInput>(null);
+
+  // Focus the search input when the component mounts
+  useEffect(() => {
+    if (searchField.current) {
+      searchField.current.focus();
+    }
+  }, []);
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
