@@ -77,6 +77,9 @@ export function usePickerProps<TProps>({
     [tableSource]
   );
 
+  useEffect(() => () => tableSource?.close(), [tableSource]);
+  useEffect(() => () => tableCopy?.close(), [tableCopy]);
+
   const keyColumn = useMemo(
     () =>
       tableCopy == null ? null : getItemKeyColumn(tableCopy, keyColumnName),
