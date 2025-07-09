@@ -304,6 +304,13 @@ export class AppMainContainer extends Component<
         },
         {
           action: () => {
+            this.handleOpenDashboardSearchMenu();
+          },
+          shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU,
+          isGlobal: true,
+        },
+        {
+          action: () => {
             log.debug('Consume unhandled save shortcut');
           },
           shortcut: GLOBAL_SHORTCUTS.SAVE,
@@ -519,6 +526,17 @@ export class AppMainContainer extends Component<
 
   handleCycleDashboardBackward(): void {
     this.cycleDashboard(CycleDirection.Previous);
+  }
+
+  handleOpenDashboardSearchMenu(): void {
+    const { tabs } = this.state;
+    if (tabs.length < 2) {
+      return;
+    }
+
+    this.setState(({ isDashboardTabMenuShown }) => ({
+      isDashboardTabMenuShown: !isDashboardTabMenuShown,
+    }));
   }
 
   getActiveEventHub(): EventHub {
