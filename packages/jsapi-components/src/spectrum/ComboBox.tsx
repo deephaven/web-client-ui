@@ -7,7 +7,6 @@ import {
 import { useCallback, useEffect, useRef } from 'react';
 import { type PickerWithTableProps } from './PickerProps';
 import { usePickerProps } from './utils';
-import useTableClose from '../useTableClose';
 
 export type ComboBoxProps = PickerWithTableProps<
   SpectrumComboBoxProps<NormalizedItem>
@@ -19,8 +18,6 @@ export function ComboBox(props: ComboBoxProps): JSX.Element {
     onSearchTextChange,
     ...pickerProps
   } = usePickerProps<ComboBoxProps>(props);
-
-  useTableClose(props.table);
 
   const isOpenRef = useRef(false);
   const inputValueRef = useRef('');
