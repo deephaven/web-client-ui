@@ -3,6 +3,8 @@ import { isMessage, type PostMessage } from '@deephaven/utils';
 export {
   /** @deprecated Use `@deephaven/utils` `getWindowParent` instead. */
   getWindowParent,
+  /** @deprecated Use `@deephaven/utils` `isMessage` instead. */
+  isMessage,
   /** @deprecated Use `@deephaven/utils` `isResponse` instead. */
   isResponse,
   /** @deprecated Use `@deephaven/utils` `makeMessage` instead. */
