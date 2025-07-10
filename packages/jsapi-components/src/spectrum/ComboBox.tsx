@@ -4,7 +4,7 @@ import {
   type NormalizedItem,
   type SpectrumComboBoxProps,
 } from '@deephaven/components';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { type PickerWithTableProps } from './PickerProps';
 import { usePickerProps } from './utils';
 
