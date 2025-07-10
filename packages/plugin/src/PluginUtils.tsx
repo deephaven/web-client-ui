@@ -85,7 +85,7 @@ export function getThemeDataFromPlugins(
  * @param pluginMap The plugin map to extract element plugins from.
  * @returns A Map of element names to their React components.
  */
-export function getElementPluginMap(pluginMap: PluginModuleMap): ElementMap {
+export function getPluginsElementMap(pluginMap: PluginModuleMap): ElementMap {
   const elementPluginEntries = [...pluginMap.entries()].filter(
     (entry): entry is [string, ElementPlugin] =>
       isElementPlugin(entry[1]) && entry[1].mapping != null
