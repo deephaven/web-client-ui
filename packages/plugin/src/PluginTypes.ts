@@ -248,6 +248,9 @@ export type ElementPluginMappingDefinition = Record<
 
 export type ElementMap = ReadonlyMap<ElementName, React.ComponentType>;
 
+/** An element plugin is used by deephaven.ui to render custom components
+ * The mapping contains the element names as keys and the React components as values.
+ */
 export interface ElementPlugin extends Plugin {
   type: typeof PluginType.ELEMENT_PLUGIN;
   mapping: ElementPluginMappingDefinition;
