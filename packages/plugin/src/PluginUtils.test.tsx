@@ -14,7 +14,7 @@ import {
   pluginSupportsType,
   getIconForPlugin,
   getThemeDataFromPlugins,
-  getElementPluginMap,
+  getPluginsElementMap,
 } from './PluginUtils';
 
 function TestWidget() {
@@ -199,7 +199,7 @@ describe('getElementPluginMap', () => {
       [widgetPlugin.name, widgetPlugin],
     ]);
 
-    const elementMapping = getElementPluginMap(pluginMap);
+    const elementMapping = getPluginsElementMap(pluginMap);
 
     expect(elementMapping.size).toBe(3);
     expect(elementMapping.get('test-element-one')).toBe(TestWidget);
@@ -213,7 +213,7 @@ describe('getElementPluginMap', () => {
       [dashboardPlugin.name, dashboardPlugin],
     ]);
 
-    const elementMapping = getElementPluginMap(pluginMap);
+    const elementMapping = getPluginsElementMap(pluginMap);
 
     expect(elementMapping.size).toBe(0);
   });
