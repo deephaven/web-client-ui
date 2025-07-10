@@ -241,6 +241,7 @@ export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
 
 export type ElementName = string;
 
+/** A mapping of element names to their React components. */
 export type ElementPluginMappingDefinition = Record<
   ElementName,
   React.ComponentType
