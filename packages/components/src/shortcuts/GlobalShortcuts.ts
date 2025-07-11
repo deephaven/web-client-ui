@@ -65,6 +65,13 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.CMD, MODIFIER.OPTION, MODIFIER.SHIFT, KEY.L],
     isEditable: true,
   }),
+  OPEN_DASHBOARD_SEARCH_MENU: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.OPEN_DASHBOARD_SEARCH_MENU',
+    name: 'Open Dashboard Search Menu',
+    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.F],
+    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.F],
+    isEditable: true,
+  }),
   NEXT: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.NEXT',
     name: 'Next',
