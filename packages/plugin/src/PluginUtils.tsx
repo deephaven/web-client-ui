@@ -9,6 +9,9 @@ import {
   type PluginModuleMap,
   type ThemePlugin,
   isThemePlugin,
+  isElementPlugin,
+  type ElementPlugin,
+  type ElementMap,
 } from './PluginTypes';
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
@@ -75,4 +78,22 @@ export function getThemeDataFromPlugins(
       );
     })
     .flat();
+}
+
+/**
+ * Get a mapping of element names to their React components from the given plugin map.
+ * @param pluginMap The plugin map to extract element plugins from.
+ * @returns A Map of element names to their React components.
+ */
+export function getPluginsElementMap(pluginMap: PluginModuleMap): ElementMap {
+  const elementPluginEntries = [...pluginMap.entries()].filter(
+    (entry): entry is [string, ElementPlugin] =>
+      isElementPlugin(entry[1]) && entry[1].mapping != null
+  );
+
+  log.debug('Getting element plugin mapping', elementPluginEntries);
+
+  return new Map(
+    elementPluginEntries.flatMap(([, plugin]) => Object.entries(plugin.mapping))
+  );
 }

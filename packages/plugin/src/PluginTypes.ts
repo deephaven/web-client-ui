@@ -13,6 +13,7 @@ export const PluginType = Object.freeze({
   WIDGET_PLUGIN: 'WidgetPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
+  ELEMENT_PLUGIN: 'ElementPlugin',
 });
 
 /**
@@ -238,12 +239,35 @@ export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
 
+export type ElementName = string;
+
+/** A mapping of element names to their React components. */
+export type ElementPluginMappingDefinition = Record<
+  ElementName,
+  React.ComponentType
+>;
+
+export type ElementMap = ReadonlyMap<ElementName, React.ComponentType>;
+
+/** An element plugin is used by deephaven.ui to render custom components
+ * The mapping contains the element names as keys and the React components as values.
+ */
+export interface ElementPlugin extends Plugin {
+  type: typeof PluginType.ELEMENT_PLUGIN;
+  mapping: ElementPluginMappingDefinition;
+}
+
+export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
+  return 'type' in plugin && plugin.type === PluginType.ELEMENT_PLUGIN;
+}
+
 export function isPlugin(plugin: unknown): plugin is Plugin {
   return (
     isDashboardPlugin(plugin as PluginModule) ||
     isAuthPlugin(plugin as PluginModule) ||
     isTablePlugin(plugin as PluginModule) ||
     isThemePlugin(plugin as PluginModule) ||
-    isWidgetPlugin(plugin as PluginModule)
+    isWidgetPlugin(plugin as PluginModule) ||
+    isElementPlugin(plugin as PluginModule)
   );
 }
