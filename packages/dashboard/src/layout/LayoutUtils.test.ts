@@ -167,3 +167,41 @@ describe('isEqual', () => {
     ).toBe(false);
   });
 });
+
+describe('getContentItemById', () => {
+  it('finds item with the specified ID', () => {
+    const root = makeContentItem('column');
+    const needle1 = Object.assign(makeContentItem('component'), {
+      config: { id: 'needle1' },
+    });
+    const needle2 = Object.assign(makeContentItem('component'), {
+      config: { id: 'needle2' },
+    });
+    root.addChild(needle1 as ContentItem);
+    root.addChild(needle2 as ContentItem);
+
+    const found = LayoutUtils.getContentItemById(
+      root as ContentItem,
+      'needle2'
+    );
+    expect(found).toEqual(needle2);
+  });
+
+  it('returns null if item with the specified ID not found', () => {
+    const root = makeContentItem('column');
+    const needle1 = Object.assign(makeContentItem('component'), {
+      config: { id: 'needle1' },
+    });
+    const needle2 = Object.assign(makeContentItem('component'), {
+      config: { id: 'needle2' },
+    });
+    root.addChild(needle1 as ContentItem);
+    root.addChild(needle2 as ContentItem);
+
+    const found = LayoutUtils.getContentItemById(
+      root as ContentItem,
+      'noItemFound'
+    );
+    expect(found).toBeNull();
+  });
+});
