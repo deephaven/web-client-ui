@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.33](https://github.com/deephaven/web-client-ui/compare/v0.85.32...v0.85.33) (2025-07-11)
+
+### Bug Fixes
+
+- DH-19392: resolve interaction issue caused by nested radio content ([#2441](https://github.com/deephaven/web-client-ui/issues/2441)) ([#2484](https://github.com/deephaven/web-client-ui/issues/2484)) ([8e11247](https://github.com/deephaven/web-client-ui/commit/8e11247aa112421de9ddceaed8af804252b75c96))
+- DH-19864 Close tables used by Picker and ComboBox ([#2482](https://github.com/deephaven/web-client-ui/issues/2482)) ([#2487](https://github.com/deephaven/web-client-ui/issues/2487)) ([7ff571e](https://github.com/deephaven/web-client-ui/commit/7ff571ea3d218a5ebbc746f4f9f5bc8c5ed7219f))
+
 ## [0.85.32](https://github.com/deephaven/web-client-ui/compare/v0.85.31...v0.85.32) (2025-06-27)
 
 ### Features
