@@ -616,7 +616,9 @@ class FigureChartModel extends ChartModel {
     }
 
     if (typeof this.layout.title === 'string') {
-      this.layout.title = title;
+      this.layout.title = {
+        text: title,
+      };
     } else {
       this.layout.title = { ...this.layout.title };
       this.layout.title.text = title;

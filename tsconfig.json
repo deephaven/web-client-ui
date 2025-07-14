@@ -4,6 +4,7 @@
     "baseUrl": ".",
     // Override node_modules/@types
     "typeRoots": ["./@types", "./node_modules/@types"],
+    "types": ["node", "jest"],
     "paths": {
       "@deephaven/*": ["./packages/*/src"],
       // This is used to override node_modules/@types
