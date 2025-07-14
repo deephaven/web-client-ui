@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { TestUtils } from '@deephaven/test-utils';
 import type { PluginModuleMap } from './PluginTypes';
-import { usePluginsElementMap } from './useElementPluginMapping';
+import { usePluginsElementMap } from './usePluginsElementMap';
 import { getPluginsElementMap } from './PluginUtils';
 import { usePlugins } from './usePlugins';
 
