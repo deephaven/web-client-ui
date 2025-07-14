@@ -44,7 +44,7 @@ import {
 } from '@deephaven/utils';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
-import { InputFilterEvent, ChartEvent } from '../events';
+import { InputFilterEvent } from '../events';
 import {
   getColumnSelectionValidatorForDashboard,
   getInputFiltersForDashboard,
@@ -66,6 +66,8 @@ import {
 } from './ChartPanelUtils';
 import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
+import { emitFilterColumnsChanged } from '../FilterEvents';
+import { emitLinkPointSelected } from '../linker/LinkerEvent';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -160,11 +162,15 @@ interface ChartPanelState {
   isLoaded: boolean;
   isLinked: boolean;
 
-  // Map of all non-empty filters applied to the chart.
-  // Initialize the filter map to the previously stored values; input filters will be applied after load.
+  /**
+   * Map of all non-empty filters applied to the chart.
+   * Initialize the filter map to the previously stored values; input filters will be applied after load.
+   */
   filterMap: FilterMap;
-  // Map of filter values set from links, stored in panelState.
-  // Combined with inputFilters to get applied filters (filterMap).
+  /**
+   * Map of filter values set from links, stored in panelState.
+   * Combined with inputFilters to get applied filters (filterMap).
+   */
   filterValueMap: FilterMap;
   model?: ChartModel;
   columnMap: ColumnMap;
@@ -463,7 +469,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         name: column.name,
         type: column.type,
         isValid: columnSelectionValidator
-          ? columnSelectionValidator(this, column)
+          ? columnSelectionValidator(this, column, { type: 'chartLink' })
           : false,
         isActive: linkedColumnMap.has(column.name),
       }))
@@ -541,11 +547,15 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   handleColumnSelected(columnName: string): void {
     const { glEventHub } = this.props;
     const { columnMap } = this.state;
-    glEventHub.emit(
-      ChartEvent.COLUMN_SELECTED,
-      this,
-      columnMap.get(columnName)
-    );
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    const column = columnMap.get(columnName);
+    if (column == null) {
+      return;
+    }
+    emitLinkPointSelected(glEventHub, panelId, column, {
+      type: 'chartLink',
+    });
   }
 
   handleColumnMouseEnter({ type, name }: SelectorColumn): void {
@@ -554,7 +564,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (!columnSelectionValidator) {
       return;
     }
-    columnSelectionValidator(this, { type, name });
+    columnSelectionValidator(this, { type, name }, { type: 'chartLink' });
   }
 
   handleColumnMouseLeave(): void {
@@ -563,7 +573,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (!columnSelectionValidator) {
       return;
     }
-    columnSelectionValidator(this, undefined);
+    columnSelectionValidator(this, undefined, { type: 'chartLink' });
   }
 
   handleDisconnect(): void {
@@ -785,9 +795,11 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       return;
     }
     const { glEventHub } = this.props;
-    glEventHub.emit(
-      InputFilterEvent.COLUMNS_CHANGED,
-      LayoutUtils.getIdFromPanel(this),
+    const panelId = LayoutUtils.getIdFromPanel(this);
+    assertNotNull(panelId);
+    emitFilterColumnsChanged(
+      glEventHub,
+      panelId,
       Array.from(model.getFilterColumnMap().values())
     );
   }
@@ -825,7 +837,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         if (column == null || column.type !== columnType) {
           return;
         }
-        if (filterList.length < 1) {
+        if (filterList.length === 0) {
           log.debug('Ignoring empty filterList for column', columnName);
           return;
         }

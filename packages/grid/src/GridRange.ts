@@ -504,7 +504,7 @@ export class GridRange {
     range: GridRange,
     columnCount: number,
     rowCount: number
-  ): GridRange {
+  ): BoundedGridRange {
     if (GridRange.isBounded(range)) {
       return range;
     }
@@ -514,7 +514,7 @@ export class GridRange {
       range.startRow ?? 0,
       range.endColumn ?? columnCount - 1,
       range.endRow ?? rowCount - 1
-    );
+    ) as BoundedGridRange;
   }
 
   /**
@@ -529,7 +529,7 @@ export class GridRange {
     ranges: readonly GridRange[],
     columnCount: number,
     rowCount: number
-  ): GridRange[] {
+  ): BoundedGridRange[] {
     return ranges.map(r => GridRange.boundedRange(r, columnCount, rowCount));
   }
 
@@ -671,8 +671,8 @@ export class GridRange {
   /**
    * Iterate through each cell in the provided ranges
    * @param ranges The ranges to iterate through
-   * @param {(column: number, row: number, index: number) => void} callback The callback to execute. `index` is the index within that range
-   * @param {GridRange.SELECTION_DIRECTION} direction The direction to iterate in
+   * @param callback The callback to execute. `index` is the index within that range
+   * @param direction The direction to iterate in
    */
   static forEachCell(
     ranges: readonly GridRange[],

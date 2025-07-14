@@ -144,6 +144,14 @@ abstract class IrisGridModel<
   abstract get columns(): readonly DisplayColumn[];
 
   /**
+   * Retrieve the aggregated columns for this model
+   * @returns The columns that are aggregated
+   */
+  get aggregatedColumns(): readonly DisplayColumn[] {
+    return EMPTY_ARRAY;
+  }
+
+  /**
    * Retrieve the grouped columns for this model
    * @returns The columns that are grouped
    */
@@ -392,6 +400,13 @@ abstract class IrisGridModel<
   abstract columnStatistics(
     column: DhType.Column
   ): Promise<DhType.ColumnStatistics>;
+
+  /**
+   * @returns True if this model supports aggregatedColumns
+   */
+  get isAggregatedColumnsAvailable(): boolean {
+    return false;
+  }
 
   /**
    * @returns True if this model supports customColumns

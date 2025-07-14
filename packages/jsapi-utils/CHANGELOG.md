@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/deephaven/web-client-ui/compare/v1.1.0...v1.1.1) (2025-07-11)
+
+### Bug Fixes
+
+- Re-export isMessage and deprecate it ([#2483](https://github.com/deephaven/web-client-ui/issues/2483)) ([74c000d](https://github.com/deephaven/web-client-ui/commit/74c000d912b1620f83e9edce86268426856d58c1)), closes [/github.com/deephaven/web-client-ui/pull/2425/files#diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810](https://github.com/deephaven//github.com/deephaven/web-client-ui/pull/2425/files/issues/diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810) [#2425](https://github.com/deephaven/web-client-ui/issues/2425)
+
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([35046d1](https://github.com/deephaven/web-client-ui/commit/35046d16dca2105a26bba732cf3b2bdf8fcb35a5))
+
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+**Note:** Version bump only for package @deephaven/jsapi-utils
+
 ## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
 
 ### Features

@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/deephaven/web-client-ui/compare/v1.1.0...v1.1.1) (2025-07-11)
+
+### Bug Fixes
+
+- DH-19864 Close tables used by Picker and ComboBox ([#2482](https://github.com/deephaven/web-client-ui/issues/2482)) ([968c4b7](https://github.com/deephaven/web-client-ui/commit/968c4b7145947158a67a74865e514793c09c72cb))
+- DH-19882: Table not updating correctly when using react v18 ([#2486](https://github.com/deephaven/web-client-ui/issues/2486)) ([332e311](https://github.com/deephaven/web-client-ui/commit/332e31148a9cb6bb88314f43f0ecaf27826ed89c)), closes [#1631](https://github.com/deephaven/web-client-ui/issues/1631)
+- Re-export isMessage and deprecate it ([#2483](https://github.com/deephaven/web-client-ui/issues/2483)) ([74c000d](https://github.com/deephaven/web-client-ui/commit/74c000d912b1620f83e9edce86268426856d58c1)), closes [/github.com/deephaven/web-client-ui/pull/2425/files#diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810](https://github.com/deephaven//github.com/deephaven/web-client-ui/pull/2425/files/issues/diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810) [#2425](https://github.com/deephaven/web-client-ui/issues/2425)
+
+## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+### Features
+
+- Add linker support to GridWidgetPlugin ([#2459](https://github.com/deephaven/web-client-ui/issues/2459)) ([a0a868d](https://github.com/deephaven/web-client-ui/commit/a0a868d107ef7bf3db3f1b3e554f704943070029))
+- DH-14431: Add shortcuts to cycle dashboards ([#2470](https://github.com/deephaven/web-client-ui/issues/2470)) ([5b572c3](https://github.com/deephaven/web-client-ui/commit/5b572c30ac9098cdca20864bfac59fd626f2d4e0))
+- DH-19632: Add shortcuts to cycle stacks and panels ([#2458](https://github.com/deephaven/web-client-ui/issues/2458)) ([97098f2](https://github.com/deephaven/web-client-ui/commit/97098f257d087c98dc7d734c7462da3197daf43e))
+
+### Bug Fixes
+
+- DH-18906: Enable filters on constituent columns in rollups ([#2463](https://github.com/deephaven/web-client-ui/issues/2463)) ([35046d1](https://github.com/deephaven/web-client-ui/commit/35046d16dca2105a26bba732cf3b2bdf8fcb35a5))
+- DH-19614: Add tree table formatting logic to tree model ([#2461](https://github.com/deephaven/web-client-ui/issues/2461)) ([1c9a8ed](https://github.com/deephaven/web-client-ui/commit/1c9a8ed1ebd923ffa07235b453602f9775660a6f))
+- DH-19693: Add null/empty formatting to constituent strings ([#2464](https://github.com/deephaven/web-client-ui/issues/2464)) ([3dfef4e](https://github.com/deephaven/web-client-ui/commit/3dfef4e2358c4c9d240cc1c9bbcd11b18f57c248))
+- DH-19731: Dashboard overflow handling ([#2479](https://github.com/deephaven/web-client-ui/issues/2479)) ([5313ba1](https://github.com/deephaven/web-client-ui/commit/5313ba1b243abaaddd7cb611e4b517127cc8da4b))
+- Enable golden-layout jest test and fix broken EventUtils test ([#2467](https://github.com/deephaven/web-client-ui/issues/2467)) ([3e851f5](https://github.com/deephaven/web-client-ui/commit/3e851f5d3fb33a666c6bf5eb0cc7dfd535ab606c))
+- Grid making unnecessary onSelectionChanged calls ([#2471](https://github.com/deephaven/web-client-ui/issues/2471)) ([495b4b4](https://github.com/deephaven/web-client-ui/commit/495b4b46f98e9b53e6d5a3e291f75898f3dfd9e3))
+
+## [1.0.0](https://github.com/deephaven/web-client-ui/compare/v0.109.0...v1.0.0) (2025-06-13)
+
+### Features
+
+- Add input filter support to GridWidgetPlugin ([#2438](https://github.com/deephaven/web-client-ui/issues/2438)) ([9de971f](https://github.com/deephaven/web-client-ui/commit/9de971f433cd3b8ee9e95719f6641d3428659520))
+- DH-18840: Add dx linker support ([#2456](https://github.com/deephaven/web-client-ui/issues/2456)) ([5b34cd6](https://github.com/deephaven/web-client-ui/commit/5b34cd6f09c5ba4c109d09323bb830a36ae949da))
+
+### Bug Fixes
+
+- DH-18921: increase rowFooterWidth in irisGridTheme ([#2453](https://github.com/deephaven/web-client-ui/issues/2453)) ([01f5930](https://github.com/deephaven/web-client-ui/commit/01f5930672668a779c1f148d0bb315c2a93dc96f))
+- DH-19392: resolve interaction issue caused by nested radio content ([#2441](https://github.com/deephaven/web-client-ui/issues/2441)) ([8e9425e](https://github.com/deephaven/web-client-ui/commit/8e9425ee4bd954ded4146b12490ea37d85bee561))
+- DH-19393: clear aggregations in handleSelectDistinctChanged to prevent stale re… ([#2442](https://github.com/deephaven/web-client-ui/issues/2442)) ([ad4205d](https://github.com/deephaven/web-client-ui/commit/ad4205dad459bd60cc3ebefd6c6aa7ce71a3310a))
+- Download worker and monaco initializing multiple times in dev ([#2452](https://github.com/deephaven/web-client-ui/issues/2452)) ([74fd724](https://github.com/deephaven/web-client-ui/commit/74fd7241ad52342d3ddafa32461add8235ee5f84))
+- prevent keyboard shortcuts from triggering unwanted behaviour when disconnected ([#2450](https://github.com/deephaven/web-client-ui/issues/2450)) ([431c057](https://github.com/deephaven/web-client-ui/commit/431c0577f493313d6cd1b5296bb62c8ea87ed194))
+- Simple Pivot prerequisites ([#2437](https://github.com/deephaven/web-client-ui/issues/2437)) ([75fe9c1](https://github.com/deephaven/web-client-ui/commit/75fe9c11ee23e5fc59a1160750a28ae6c3f047b5))
+
 ## [0.109.0](https://github.com/deephaven/web-client-ui/compare/v0.108.0...v0.109.0) (2025-05-12)
 
 ### Features

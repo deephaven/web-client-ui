@@ -525,12 +525,14 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     const changedProps = getChangedKeys(prevProps, this.props);
     const changedState = getChangedKeys(prevState, this.state);
-    // We don't need to bother re-checking any of the metrics if only the children have changed
+    // We don't need to bother re-checking any of the metrics if no props have changed or only the children have changed
     if (
-      changedProps.length === 1 &&
-      changedProps[0] === 'children' &&
+      (changedProps.length === 0 ||
+        (changedProps.length === 1 && changedProps[0] === 'children')) &&
       changedState.length === 0
     ) {
+      // We should still draw the canvas though, as we may have been called with a `forceUpdate`
+      this.requestUpdateCanvas();
       return;
     }
 
@@ -852,6 +854,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     });
   }
 
+  /**
+   * Updates the canvas, metrics, and render state, then draws the canvas.
+   */
   updateCanvas(): void {
     this.updateCanvasScale();
 
@@ -869,7 +874,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
 
-    this.drawCanvas(metrics);
+    this.drawCanvas();
   }
 
   private updateCanvasScale(): void {
@@ -1001,7 +1006,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   clearSelectedRanges(): void {
     const { selectedRanges } = this.state;
-    this.setState({ selectedRanges: [], lastSelectedRanges: selectedRanges });
+    this.setState({
+      selectedRanges: EMPTY_ARRAY,
+      lastSelectedRanges: selectedRanges,
+    });
   }
 
   /** Clears all but the last selected range */
@@ -1206,10 +1214,19 @@ class Grid extends PureComponent<GridProps, GridState> {
         newCursorRow = null;
       }
 
+      const selectionChanged =
+        newSelectedRanges.length !== selectedRanges.length ||
+        newSelectedRanges.some(
+          (range, index) => !range.equals(selectedRanges[index])
+        );
+
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
-        selectedRanges: newSelectedRanges,
+        // The onSelectionChanged callback has already been called with the selectedRanges at this point.
+        // If the selection is not changed (e.g., the user is adding via ctrl+click and not removing),
+        // there is no need to change and trigger the callback again.
+        selectedRanges: selectionChanged ? newSelectedRanges : selectedRanges,
         lastSelectedRanges: selectedRanges,
       };
     });
@@ -1689,9 +1706,8 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Draw the grid with the metrics provided
    * When scrolling you've have to re-draw the whole canvas. As a consequence, all these drawing methods
    * must be very quick.
-   * @param metrics Metrics to use for rendering the grid
    */
-  private drawCanvas(metrics = this.updateMetrics()): void {
+  private drawCanvas(): void {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 

@@ -48,7 +48,7 @@ export default function usePromiseFactory<T, TArgs extends unknown[]>(
 ): UsePromiseFactoryResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(autoLoad);
 
   const loadPromise = useCallback(async () => {
     setIsLoading(true);

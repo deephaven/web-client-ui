@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.109.0",
+  "version": "1.1.1",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -28,7 +28,7 @@
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-types": "^1.0.0-dev0.37.2",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.39.4",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
