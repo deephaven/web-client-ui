@@ -180,9 +180,7 @@ class MockChartModel extends ChartModel {
       template: new ChartUtils(dh).makeDefaultTemplate(MockChartModel.theme),
     };
 
-    layout.title = {
-      text: 'Mock Chart',
-    };
+    layout.title = { text: 'Chart' };
 
     layout.xaxis = { title: { text: 'Datestamp' } };
     layout.yaxis = { title: { text: 'Price' } };
