@@ -8,4 +8,4 @@ export * from './usePlugins';
 export * from './WidgetView';
 export * from './PersistentStateContext';
 export * from './usePersistentState';
-export * from './useElementPluginMapping';
+export * from './usePluginsElementMap';
