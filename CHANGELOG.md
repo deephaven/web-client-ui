@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/deephaven/web-client-ui/compare/v1.1.0...v1.1.1) (2025-07-11)
+
+### Bug Fixes
+
+- DH-19864 Close tables used by Picker and ComboBox ([#2482](https://github.com/deephaven/web-client-ui/issues/2482)) ([968c4b7](https://github.com/deephaven/web-client-ui/commit/968c4b7145947158a67a74865e514793c09c72cb))
+- DH-19882: Table not updating correctly when using react v18 ([#2486](https://github.com/deephaven/web-client-ui/issues/2486)) ([332e311](https://github.com/deephaven/web-client-ui/commit/332e31148a9cb6bb88314f43f0ecaf27826ed89c)), closes [#1631](https://github.com/deephaven/web-client-ui/issues/1631)
+- Re-export isMessage and deprecate it ([#2483](https://github.com/deephaven/web-client-ui/issues/2483)) ([74c000d](https://github.com/deephaven/web-client-ui/commit/74c000d912b1620f83e9edce86268426856d58c1)), closes [/github.com/deephaven/web-client-ui/pull/2425/files#diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810](https://github.com/deephaven//github.com/deephaven/web-client-ui/pull/2425/files/issues/diff-538c1b9fba1be844a9515eb2f507e4d14d56318d6be38bb96d166acafd45c810) [#2425](https://github.com/deephaven/web-client-ui/issues/2425)
+
 ## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
 
 ### Features
