@@ -92,6 +92,9 @@ it.each([true, false])(
       usePromiseFactory(promiseFactory, args, { autoLoad })
     );
 
+    // isLoading should be true on the initial render if autoLoad is true
+    expect(result.current.isLoading).toEqual(autoLoad);
+
     if (autoLoad) {
       await waitForNextUpdate();
     }
