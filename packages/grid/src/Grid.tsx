@@ -216,6 +216,9 @@ export type GridState = {
    * so we need to throw them in componentDidUpdate
    */
   renderError?: unknown;
+
+  /** What revision the grid is drawing. Automatically increments when a forceUpdate is called. */
+  updateRevision: number;
 };
 
 /**
@@ -486,6 +489,9 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       isStuckToBottom,
       isStuckToRight,
+
+      /** What revision the grid is drawing. Automatically increments when a forceUpdate is called. */
+      updateRevision: 0,
     };
   }
 
@@ -531,8 +537,6 @@ class Grid extends PureComponent<GridProps, GridState> {
         (changedProps.length === 1 && changedProps[0] === 'children')) &&
       changedState.length === 0
     ) {
-      // We should still draw the canvas though, as we may have been called with a `forceUpdate`
-      this.requestUpdateCanvas();
       return;
     }
 
@@ -1923,6 +1927,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.metrics) throw new Error('metrics not set');
 
     this.forceUpdate();
+  }
+
+  forceUpdate(callback?: (() => void) | undefined): void {
+    this.setState(({ updateRevision = 0 }) => ({
+      updateRevision: (updateRevision + 1) % Number.MAX_SAFE_INTEGER,
+    }));
+    super.forceUpdate(callback);
   }
 
   handleWheel(event: WheelEvent): void {
