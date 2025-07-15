@@ -3,7 +3,7 @@ import type {
   ColumnName,
   InputFilter,
   IrisGridContextMenuData,
-  IrisGridModel,
+  IrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
 import { type GridRange } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
@@ -29,7 +29,7 @@ export interface TablePluginProps<S = unknown> {
   /**
    * The model for the table this plugin is associated with.
    */
-  model: IrisGridModel;
+  model: IrisGridTableModelTemplate;
 
   /**
    * The table this plugin was associated with.

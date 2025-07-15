@@ -241,6 +241,36 @@ class LayoutUtils {
   }
 
   /**
+   * Gets a content item by its ID
+   * @param item Golden layout content item to search for the content item. Typically the root.
+   * @param searchId the ID
+   */
+  static getContentItemById(
+    item: ContentItem,
+    searchId: string | string[]
+  ): ContentItem | null {
+    if (item.config?.id === searchId) {
+      return item;
+    }
+
+    if (item.contentItems == null) {
+      return null;
+    }
+
+    for (let i = 0; i < item.contentItems.length; i += 1) {
+      const contentItem = this.getContentItemById(
+        item.contentItems[i],
+        searchId
+      );
+      if (contentItem) {
+        return contentItem;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Gets the first stack which contains a contentItem with the given config values
    * @param item Golden layout content item to search for the stack
    * @param config The item properties to match
