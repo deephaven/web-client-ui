@@ -68,8 +68,8 @@ const GLOBAL_SHORTCUTS = {
   OPEN_DASHBOARD_SEARCH_MENU: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.OPEN_DASHBOARD_SEARCH_MENU',
     name: 'Open Dashboard Search Menu',
-    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.D],
-    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.D],
+    shortcut: [MODIFIER.CTRL, KEY.SLASH],
+    macShortcut: [MODIFIER.CMD, KEY.SLASH],
     isEditable: true,
   }),
   NEXT: ShortcutRegistry.createAndAdd({

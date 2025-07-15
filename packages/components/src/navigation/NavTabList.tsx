@@ -462,16 +462,6 @@ function NavTabList({
     setIsDashboardTabMenuShown(false);
   };
 
-  const contextActions = [
-    {
-      action: () => {
-        setIsDashboardTabMenuShown(!isDashboardTabMenuShown);
-      },
-      shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU,
-      isGlobal: true,
-    },
-  ];
-
   return (
     <nav className="nav-container">
       {isOverflowing && (
@@ -552,7 +542,17 @@ function NavTabList({
           <DashboardList tabs={tabs} onSelect={handleDashboardMenuSelect} />
         </Popper>
       </Button>
-      <ContextActions actions={contextActions} />
+      <ContextActions
+        actions={[
+          {
+            action: () => {
+              setIsDashboardTabMenuShown(!isDashboardTabMenuShown);
+            },
+            shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU,
+            isGlobal: true,
+          },
+        ]}
+      />
     </nav>
   );
 }
