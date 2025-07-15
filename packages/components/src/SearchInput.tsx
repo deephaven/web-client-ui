@@ -10,6 +10,7 @@ import { ContextActions } from './context-actions';
 interface SearchInputProps {
   value: string;
   placeholder: string;
+  endPlaceholder?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
@@ -76,6 +77,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
     const {
       value,
       placeholder,
+      endPlaceholder,
       onBlur,
       onChange,
       className,
@@ -161,7 +163,10 @@ class SearchInput extends PureComponent<SearchInputProps> {
             <ContextActions actions={contextActions} />
           </>
         ) : (
-          <span className="search-icon">
+          <span className="search-end-content">
+            {(endPlaceholder ?? '') !== '' && value === '' && (
+              <span className="search-end-placeholder">{endPlaceholder}</span>
+            )}
             <FontAwesomeIcon icon={vsSearch} />
           </span>
         )}

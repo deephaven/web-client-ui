@@ -14,7 +14,7 @@ import {
 } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { vsChevronRight, vsChevronLeft } from '@deephaven/icons';
+import { vsChevronRight, vsChevronLeft, vsChevronDown } from '@deephaven/icons';
 import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
 import Button from '../Button';
@@ -23,7 +23,11 @@ import './NavTabList.scss';
 import {
   type ContextAction,
   type ResolvableContextAction,
+  ContextActions,
 } from '../context-actions';
+import Popper from '../popper/Popper';
+import DashboardList from './DashboardList';
+import { GLOBAL_SHORTCUTS } from '../shortcuts';
 
 // mouse hold timeout to act as hold instead of click
 const CLICK_TIMEOUT = 500;
@@ -110,8 +114,9 @@ function isScrolledLeft(element: HTMLElement): boolean {
 
 function isScrolledRight(element: HTMLElement): boolean {
   return (
-    element.scrollLeft + element.clientWidth === element.scrollWidth ||
-    element.scrollWidth === 0
+    // single pixel buffer to account for sub-pixel rendering
+    Math.abs(element.scrollLeft + element.clientWidth - element.scrollWidth) <=
+      1 || element.scrollWidth === 0
   );
 }
 
@@ -179,8 +184,10 @@ function NavTabList({
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
   const [isOverflowing, setIsOverflowing] = useState(true);
+  const [isDashboardTabMenuShown, setIsDashboardTabMenuShown] = useState(false);
   const [disableScrollLeft, setDisableScrollLeft] = useState(true);
   const [disableScrollRight, setDisableScrollRight] = useState(true);
+
   const handleResize = useCallback(() => {
     if (containerRef.current == null) {
       return;
@@ -441,6 +448,30 @@ function NavTabList({
     [activeKey]
   );
 
+  const handleDashboardMenuClick = () => {
+    setIsDashboardTabMenuShown(!isDashboardTabMenuShown);
+  };
+
+  const handleDashboardMenuSelect = (tab: NavTabItem) => {
+    setIsDashboardTabMenuShown(false);
+
+    onSelect(tab.key);
+  };
+
+  const handleDashboardMenuClose = () => {
+    setIsDashboardTabMenuShown(false);
+  };
+
+  const contextActions = [
+    {
+      action: () => {
+        setIsDashboardTabMenuShown(!isDashboardTabMenuShown);
+      },
+      shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU,
+      isGlobal: true,
+    },
+  ];
+
   return (
     <nav className="nav-container">
       {isOverflowing && (
@@ -496,6 +527,32 @@ function NavTabList({
           disabled={disableScrollRight}
         />
       )}
+      <Button
+        kind="ghost"
+        icon={<FontAwesomeIcon icon={vsChevronDown} transform="grow-4" />}
+        className="btn-dashboard-list-menu btn-show-dashboard-list"
+        tooltip="Search open dashboards"
+        onClick={handleDashboardMenuClick}
+        disabled={tabs.length < 2}
+        style={{
+          visibility: isOverflowing ? 'visible' : 'hidden',
+          marginLeft: 'auto',
+        }}
+      >
+        <Popper
+          isShown={isDashboardTabMenuShown}
+          className="dashboard-list-menu-popper"
+          onExited={handleDashboardMenuClose}
+          options={{
+            placement: 'bottom-start',
+          }}
+          closeOnBlur
+          interactive
+        >
+          <DashboardList tabs={tabs} onSelect={handleDashboardMenuSelect} />
+        </Popper>
+      </Button>
+      <ContextActions actions={contextActions} />
     </nav>
   );
 }
