@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
+
+### Features
+
+- add dhPivotTable, dhAlignLeft, dhAlignCenter, dhAlignRight icons ([#2488](https://github.com/deephaven/web-client-ui/issues/2488)) ([43ca391](https://github.com/deephaven/web-client-ui/commit/43ca391f0254dfa6e596aab95804b324a5677fee))
+- DH-19146: ElementPlugin mapping hook ([#2477](https://github.com/deephaven/web-client-ui/issues/2477)) ([bc16dbd](https://github.com/deephaven/web-client-ui/commit/bc16dbd92d3699185768571eaea38bec973d53f6))
+- Table plugin support for GridWidgetPlugin ([#2478](https://github.com/deephaven/web-client-ui/issues/2478)) ([d698759](https://github.com/deephaven/web-client-ui/commit/d698759bc75e35d36fa5f4dab876882d8328816f))
+
+### Bug Fixes
+
+- DH-19882: Render loop occurring in React v18 ([#2490](https://github.com/deephaven/web-client-ui/issues/2490)) ([d51277b](https://github.com/deephaven/web-client-ui/commit/d51277b746d24fd4f2a0f40e030496863fba7765))
+- DH-19911: Fix initial isLoading state in usePromiseFactory when autoload is true ([#2489](https://github.com/deephaven/web-client-ui/issues/2489)) ([411f648](https://github.com/deephaven/web-client-ui/commit/411f648dec3409bfc4fab950bc93896a14de6f7e))
+
 ## [1.1.1](https://github.com/deephaven/web-client-ui/compare/v1.1.0...v1.1.1) (2025-07-11)
 
 ### Bug Fixes

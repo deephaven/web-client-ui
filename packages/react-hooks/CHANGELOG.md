@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
+
+### Bug Fixes
+
+- DH-19911: Fix initial isLoading state in usePromiseFactory when autoload is true ([#2489](https://github.com/deephaven/web-client-ui/issues/2489)) ([411f648](https://github.com/deephaven/web-client-ui/commit/411f648dec3409bfc4fab950bc93896a14de6f7e))
+
 ## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
 
 **Note:** Version bump only for package @deephaven/react-hooks

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
+
+### Features
+
+- add dhPivotTable, dhAlignLeft, dhAlignCenter, dhAlignRight icons ([#2488](https://github.com/deephaven/web-client-ui/issues/2488)) ([43ca391](https://github.com/deephaven/web-client-ui/commit/43ca391f0254dfa6e596aab95804b324a5677fee))
+
 ## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
 
 **Note:** Version bump only for package @deephaven/icons

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
+
+### Features
+
+- DH-19146: ElementPlugin mapping hook ([#2477](https://github.com/deephaven/web-client-ui/issues/2477)) ([bc16dbd](https://github.com/deephaven/web-client-ui/commit/bc16dbd92d3699185768571eaea38bec973d53f6))
+- Table plugin support for GridWidgetPlugin ([#2478](https://github.com/deephaven/web-client-ui/issues/2478)) ([d698759](https://github.com/deephaven/web-client-ui/commit/d698759bc75e35d36fa5f4dab876882d8328816f))
+
 ## [1.1.1](https://github.com/deephaven/web-client-ui/compare/v1.1.0...v1.1.1) (2025-07-11)
 
 **Note:** Version bump only for package @deephaven/plugin
