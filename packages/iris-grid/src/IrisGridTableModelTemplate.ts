@@ -1898,7 +1898,6 @@ class IrisGridTableModelTemplate<
 
   async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
-
     if (
       !edits.every(edit =>
         this.isEditableRange(
