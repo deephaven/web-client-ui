@@ -61,6 +61,11 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
     [onSelect]
   );
 
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    // Prevent mousedown from taking focus away from the search input
+    event.preventDefault();
+  }, []);
+
   const filteredTabs = useMemo(
     () =>
       tabs.filter(tab =>
@@ -101,6 +106,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
           ref={(el: HTMLLIElement | null) => {
             itemRefs.current[index] = el;
           }}
+          onMouseDown={handleMouseDown}
         >
           <Button
             kind="ghost"
@@ -122,7 +128,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
           </Button>
         </li>
       )),
-    [filteredTabs, handleTabSelect, focusedIndex]
+    [filteredTabs, handleTabSelect, focusedIndex, handleMouseDown]
   );
 
   const errorElement = useMemo(
