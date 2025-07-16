@@ -3,6 +3,7 @@ import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import { useEffect, useState } from 'react';
 import { useObjectFetch } from './useObjectFetch';
+import { type UriVariableDescriptor } from './useObjectFetcher';
 
 const log = Log.module('useWidget');
 
@@ -29,11 +30,11 @@ type WidgetWrapper<T extends WidgetTypes = dh.Widget> = {
 
 /**
  * Retrieve a widget for the given variable descriptor. Note that if the widget is successfully fetched, ownership of the widget is passed to the consumer and will need to close the object as well.
- * @param descriptor Descriptor to get the widget for. Should be stable to avoid infinite re-fetching.
+ * @param descriptor Descriptor or URI to get the widget for. Should be stable to avoid infinite re-fetching.
  * @returns A WidgetWrapper object that contains the widget or an error status if there was an issue fetching the widget. Will contain nulls if still loading.
  */
 export function useWidget<T extends WidgetTypes = dh.Widget>(
-  descriptor: dh.ide.VariableDescriptor
+  descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor
 ): WidgetWrapper<T> {
   const [wrapper, setWrapper] = useState<WidgetWrapper<T>>(() => ({
     widget: null,
