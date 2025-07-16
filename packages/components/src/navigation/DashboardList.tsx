@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { EMPTY_ARRAY } from '@deephaven/utils';
 import { Button } from '../Button';
 import SearchInput from '../SearchInput';
 import type { NavTabItem } from './NavTabList';
@@ -25,7 +26,7 @@ export interface DashboardListProps {
  * @returns A JSX element for the list of dashboard tabs, along with search
  */
 export function DashboardList(props: DashboardListProps): JSX.Element {
-  const { onSelect, tabs = [] } = props;
+  const { onSelect, tabs = EMPTY_ARRAY } = props;
   const [searchText, setSearchText] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const searchField = useRef<SearchInput>(null);
@@ -33,9 +34,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   useEffect(() => {
-    if (searchField.current) {
-      searchField.current.focus();
-    }
+    searchField.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
   useEffect(() => {
     if (focusedIndex >= 0 && itemRefs.current[focusedIndex]) {
       itemRefs.current[focusedIndex]?.scrollIntoView({
-        behavior: 'smooth',
+        behavior: 'auto',
         block: 'nearest',
       });
     }
@@ -108,6 +107,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
             data-testid={`dashboard-list-item-${tab.key ?? ''}-button`}
             onClick={() => handleTabSelect(tab)}
             className={focusedIndex === index ? 'focused' : ''}
+            style={{ transition: 'none' }}
           >
             {tab.icon ? (
               <span className="dashboard-list-item-icon">
@@ -137,7 +137,7 @@ export function DashboardList(props: DashboardListProps): JSX.Element {
         <SearchInput
           value={searchText}
           placeholder="Find open dashboard"
-          endPlaceholder={GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU.getDisplayText()}
+          endPlaceholder={GLOBAL_SHORTCUTS.OPEN_DASHBOARD_LIST.getDisplayText()}
           onChange={handleSearchChange}
           onKeyDown={handleSearchKeyDown}
           ref={searchField}

@@ -65,9 +65,9 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.CMD, MODIFIER.OPTION, MODIFIER.SHIFT, KEY.L],
     isEditable: true,
   }),
-  OPEN_DASHBOARD_SEARCH_MENU: ShortcutRegistry.createAndAdd({
-    id: 'GLOBAL.OPEN_DASHBOARD_SEARCH_MENU',
-    name: 'Open Dashboard Search Menu',
+  OPEN_DASHBOARD_LIST: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.OPEN_DASHBOARD_LIST',
+    name: 'Open Dashboard List',
     shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.D],
     macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.D],
     isEditable: true,

@@ -548,7 +548,7 @@ function NavTabList({
             action: () => {
               setIsDashboardTabMenuShown(!isDashboardTabMenuShown);
             },
-            shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_SEARCH_MENU,
+            shortcut: GLOBAL_SHORTCUTS.OPEN_DASHBOARD_LIST,
             isGlobal: true,
           },
         ]}
