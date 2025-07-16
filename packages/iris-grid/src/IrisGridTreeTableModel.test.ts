@@ -284,8 +284,12 @@ describe('IrisGridTreeTableModel colorForCell', () => {
     column?: DhType.Column,
     row?: UITreeRow
   ) => {
-    if (column) jest.spyOn(model, 'sourceColumn').mockReturnValue(column);
-    if (row) jest.spyOn(model, 'row').mockReturnValue(row);
+    if (column != null) {
+      jest.spyOn(model, 'sourceColumn').mockReturnValue(column);
+    }
+    if (row != null) {
+      jest.spyOn(model, 'row').mockReturnValue(row);
+    }
     jest.spyOn(model, 'dataForCell').mockReturnValue({ value, format });
   };
 
