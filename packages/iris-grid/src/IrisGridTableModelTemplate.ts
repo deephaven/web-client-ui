@@ -619,22 +619,12 @@ class IrisGridTableModelTemplate<
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
         const column = this.sourceColumn(x, y);
-        if (TableUtils.isDateType(column.type) || column.name === 'Date') {
-          assertNotNull(theme.dateColor);
-          return theme.dateColor;
-        }
-        if (TableUtils.isNumberType(column.type)) {
-          if ((value as number) > 0) {
-            assertNotNull(theme.positiveNumberColor);
-            return theme.positiveNumberColor;
-          }
-          if ((value as number) < 0) {
-            assertNotNull(theme.negativeNumberColor);
-            return theme.negativeNumberColor;
-          }
-          assertNotNull(theme.zeroNumberColor);
-          return theme.zeroNumberColor;
-        }
+        return IrisGridUtils.colorForValue(
+          theme,
+          column.type,
+          column.name,
+          value
+        );
       }
     } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
       assertNotNull(theme.errorTextColor);
@@ -652,17 +642,10 @@ class IrisGridTableModelTemplate<
     return this.formatForCell(x, y)?.backgroundColor ?? null;
   }
 
-  textAlignForCell(x: ModelIndex): CanvasTextAlign {
-    const column = this.columns[x];
-    const { type } = column;
+  textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
+    const column = this.sourceColumn(x, y);
 
-    if (TableUtils.isNumberType(type)) {
-      return 'right';
-    }
-    if (TableUtils.isDateType(type) || column.name === 'Date') {
-      return 'center';
-    }
-    return 'left';
+    return IrisGridUtils.textAlignForValue(column.type, column.name);
   }
 
   textForColumnHeader(x: ModelIndex, depth = 0): string | undefined {
