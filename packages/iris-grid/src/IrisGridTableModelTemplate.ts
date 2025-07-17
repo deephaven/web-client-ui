@@ -1010,7 +1010,12 @@ class IrisGridTableModelTemplate<
    * @returns The row within the pending input rows if it's a pending row, null otherwise
    */
   pendingRow(y: ModelIndex): ModelIndex | null {
+    if (!this.isEditable) {
+      return null;
+    }
+
     const pendingRow = y - this.floatingTopRowCount - this.table.size;
+
     if (pendingRow >= 0) {
       return pendingRow;
     }
