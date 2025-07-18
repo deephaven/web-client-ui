@@ -244,10 +244,10 @@ export type ElementName = string;
 /** A mapping of element names to their React components. */
 export type ElementPluginMappingDefinition = Record<
   ElementName,
-  React.ComponentType
+  React.ComponentType<any>
 >;
 
-export type ElementMap = ReadonlyMap<ElementName, React.ComponentType>;
+export type ElementMap = ReadonlyMap<ElementName, React.ComponentType<any>>;
 
 /** An element plugin is used by deephaven.ui to render custom components
  * The mapping contains the element names as keys and the React components as values.
