@@ -42,14 +42,18 @@ describe('trimMap', () => {
   });
 });
 
-describe('getTextWidth', () => {
-  const font = 'mock font';
+describe('calculateTextWidth', () => {
+  let font = 'mock font';
   const mockCharWidths = new Map([
     ['a', 10],
     ['b', 20],
     ['c', 30],
     ['d', 40],
     ['e', 50],
+    ['ab', 30],
+    ['bc', 50],
+    ['cd', 70],
+    ['de', 90],
   ]);
   let gridMetricCalculator;
   let allCharWidths;
@@ -70,7 +74,7 @@ describe('getTextWidth', () => {
       })),
     };
 
-    const textWidth = gridMetricCalculator.getTextWidth(
+    const textWidth = gridMetricCalculator.calculateTextWidth(
       mockContext,
       font,
       input
@@ -94,18 +98,17 @@ describe('getTextWidth', () => {
       measureText: jest.fn(),
     };
 
-    const firstRun = gridMetricCalculator.getTextWidth(
+    const firstRun = gridMetricCalculator.calculateTextWidth(
       mockContext,
       font,
       input
     );
-    const secondRun = gridMetricCalculator.getTextWidth(
+    const secondRun = gridMetricCalculator.calculateTextWidth(
       dummyMockContext,
       font,
       input
     );
 
-    expect(mockContext.measureText).toHaveBeenCalledTimes(input.length);
     expect(dummyMockContext.measureText).toHaveBeenCalledTimes(0);
     expect(firstRun).toEqual(100);
     expect(secondRun).toEqual(100);
@@ -119,7 +122,7 @@ describe('getTextWidth', () => {
       })),
     };
 
-    const textWidth = gridMetricCalculator.getTextWidth(
+    const textWidth = gridMetricCalculator.calculateTextWidth(
       mockContext,
       font,
       input,
@@ -128,4 +131,41 @@ describe('getTextWidth', () => {
 
     expect(textWidth).toEqual(50);
   });
+
+  // This test checks that the calculation logic is equivalent to the native canvas one.
+  // It doesn’t verify that it addresses font kerning properly, since it doesn’t actually render the text and context.measureText() just returns the text length
+  it.each([
+    [''],
+    ['a'],
+    ['a                                                                 b'],
+    [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    ],
+    [
+      'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+    ],
+    [
+      'mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm',
+    ],
+    [
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    ],
+  ])(
+    'should match the value calculated by context.measureText(): "%s"',
+    text => {
+      const canvas = global.document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      font = '20px Arial';
+
+      if (context === null) {
+        throw new Error('Could not get canvas context');
+      }
+
+      context.font = font;
+      const a = gridMetricCalculator.calculateTextWidth(context, font, text);
+      const b = context.measureText(text).width;
+
+      expect(a).toEqual(b);
+    }
+  );
 });
