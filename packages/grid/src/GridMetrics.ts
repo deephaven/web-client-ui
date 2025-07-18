@@ -174,7 +174,8 @@ export type GridMetrics = {
   movedColumns: readonly MoveOperation[];
 
   // Map of the width of the fonts
-  fontWidths: Map<string, number>;
+  fontWidthsLower: Map<string, number>;
+  fontWidthsUpper: Map<string, number>;
 
   // Map of user set column/row width/height
   userColumnWidths: ModelSizeMap;
