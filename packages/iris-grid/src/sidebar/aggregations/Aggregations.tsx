@@ -40,6 +40,7 @@ export type AggregationSettings = {
 
 export type AggregationsProps = {
   isRollup: boolean;
+  isEditable: boolean;
   settings: AggregationSettings;
   onChange: (
     settings: AggregationSettings,
@@ -52,6 +53,7 @@ export type AggregationsProps = {
 
 function Aggregations({
   isRollup,
+  isEditable,
   settings,
   onChange,
   onEdit,
@@ -219,7 +221,7 @@ function Aggregations({
       const isRollupProhibited = AggregationUtils.isRollupProhibited(
         item.operation
       );
-      const isEditable = !isClone && !isRollupOperation;
+      const isItemEditable = !isClone && !isRollupOperation;
       return (
         <>
           <div
@@ -254,7 +256,7 @@ function Aggregations({
                 icon={vsEdit}
                 tooltip="Edit Columns"
                 onClick={() => onEdit(item)}
-                disabled={!isEditable}
+                disabled={!isItemEditable}
               />
               <Button
                 kind="ghost"
@@ -309,7 +311,9 @@ function Aggregations({
                 value={`${showOnTop}`}
               >
                 <Radio value="true">Top</Radio>
-                <Radio value="false">Bottom</Radio>
+                <Radio value="false" isDisabled={isEditable}>
+                  Bottom
+                </Radio>
               </RadioGroup>
             </div>
           )}
