@@ -243,12 +243,14 @@ export type ElementName = string;
 
 /** A mapping of element names to their React components. */
 export type ElementPluginMappingDefinition<
-  P extends Record<ElementName, unknown> = {},
+  P extends Record<ElementName, unknown> = Record<string, never>,
 > = {
   [K in keyof P]: React.ComponentType<P[K]>;
 };
 
-export type ElementMap<P extends Record<string, unknown> = {}> = ReadonlyMap<
+export type ElementMap<
+  P extends Record<string, unknown> = Record<string, never>,
+> = ReadonlyMap<
   keyof P extends never ? string : keyof P,
   React.ComponentType<P[keyof P]>
 >;
