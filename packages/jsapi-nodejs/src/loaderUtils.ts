@@ -64,38 +64,29 @@ export async function loadModules<TMainModule>({
     const serverUrls = serverPaths.map(
       serverPath => new URL(serverPath, serverUrl)
     );
-    const settledResults = await Promise.allSettled(
-      serverUrls.map(url => downloadFromURL(url))
-    );
 
-    const handleResult = (
-      result: PromiseSettledResult<string>,
-      i: number
-    ): string => {
-      // If no post-download function was provided, return the result value or
-      // throw if there was a download error.
-      if (typeof download !== 'function') {
+    const downloadPromises = serverUrls.map(url => downloadFromURL(url));
+
+    let contents: string[];
+
+    if (typeof download !== 'function' || handleErrorsInPostDownload !== true) {
+      contents = await Promise.all(downloadPromises);
+    } else {
+      const results = await Promise.allSettled(downloadPromises);
+      contents = results.map((result, i) => {
         if (result.status === 'fulfilled') {
-          return result.value;
+          // Post-download transform
+          return download(serverPaths[i], result.value);
+        }
+
+        if (handleErrorsInPostDownload === true) {
+          // Post-download transform that also handles errors
+          return download(serverPaths[i], '', result.reason);
         }
 
         throw result.reason;
-      }
-
-      if (result.status === 'fulfilled') {
-        // Post-download transform
-        return download(serverPaths[i], result.value);
-      }
-
-      if (handleErrorsInPostDownload === true) {
-        // Post-download transform that also handles errors
-        return download(serverPaths[i], '', result.reason);
-      }
-
-      throw result.reason;
-    };
-
-    const contents = settledResults.map(handleResult);
+      });
+    }
 
     // Write to disk
     const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
