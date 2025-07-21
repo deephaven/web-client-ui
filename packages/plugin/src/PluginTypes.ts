@@ -242,12 +242,18 @@ export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
 export type ElementName = string;
 
 /** A mapping of element names to their React components. */
-export type ElementPluginMappingDefinition = Record<
-  ElementName,
-  React.ComponentType
->;
+export type ElementPluginMappingDefinition<
+  P extends Record<ElementName, unknown> = Record<string, never>,
+> = {
+  [K in keyof P]: React.ComponentType<P[K]>;
+};
 
-export type ElementMap = ReadonlyMap<ElementName, React.ComponentType>;
+export type ElementMap<
+  P extends Record<string, unknown> = Record<string, never>,
+> = ReadonlyMap<
+  keyof P extends never ? string : keyof P,
+  React.ComponentType<P[keyof P]>
+>;
 
 /** An element plugin is used by deephaven.ui to render custom components
  * The mapping contains the element names as keys and the React components as values.
