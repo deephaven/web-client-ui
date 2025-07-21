@@ -70,20 +70,17 @@ export async function loadModules<TMainModule>({
     let contents: string[];
 
     if (typeof download === 'function' && handleErrorsInPostDownload === true) {
-      const results = await Promise.allSettled(downloadPromises);
-      contents = results.map((result, i) => {
-        if (result.status === 'fulfilled') {
-          // Post-download transform
-          return download(serverPaths[i], result.value);
-        }
+      // If we are to handle errors in post download, we need to get both
+      // resolved and rejected Promises.
+      const settledResults = await Promise.allSettled(downloadPromises);
 
-        if (handleErrorsInPostDownload === true) {
-          // Post-download transform that also handles errors
-          return download(serverPaths[i], '', result.reason);
-        }
-
-        throw result.reason;
-      });
+      contents = settledResults.map((result, i) =>
+        result.status === 'fulfilled'
+          ? // Post-download transform
+            download(serverPaths[i], result.value)
+          : // Post-download transform that also handles errors
+            download(serverPaths[i], '', result.reason)
+      );
     } else {
       contents = await Promise.all(downloadPromises);
     }
