@@ -248,8 +248,10 @@ export type ElementPluginMappingDefinition<
   [K in keyof P]: React.ComponentType<P[K]>;
 };
 
-export type ElementMap<P extends Record<ElementName, unknown> = {}> =
-  ReadonlyMap<keyof P, React.ComponentType<P[keyof P]>>;
+export type ElementMap<P extends Record<string, unknown> = {}> = ReadonlyMap<
+  keyof P extends never ? string : keyof P,
+  React.ComponentType<P[keyof P]>
+>;
 
 /** An element plugin is used by deephaven.ui to render custom components
  * The mapping contains the element names as keys and the React components as values.
