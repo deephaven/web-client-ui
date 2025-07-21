@@ -12,23 +12,14 @@ export const SERVER_STATUS_CHECK_TIMEOUT = 3000;
  * @param retries The number of retries on failure
  * @param retryDelay The delay between retries in milliseconds
  * @param logger An optional logger object. Defaults to `console`
- * @param treat404asEmptyContent Optional flag to resolve 404s as empty content.
- * Otherwise throws an error.
  * @returns Promise which resolves to the module's exports
  */
-export async function downloadFromURL({
-  url,
+export async function downloadFromURL(
+  url: URL,
   retries = 10,
   retryDelay = 1000,
-  logger = console,
-  treat404asEmptyContent = false,
-}: {
-  url: URL;
-  retries?: number;
-  retryDelay?: number;
-  logger?: { error: (...args: unknown[]) => void };
-  treat404asEmptyContent?: boolean;
-}): Promise<string> {
+  logger: { error: (...args: unknown[]) => void } = console
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
 
@@ -55,11 +46,7 @@ export async function downloadFromURL({
 
         res.on('end', async () => {
           if (res.statusCode === 404) {
-            if (treat404asEmptyContent) {
-              resolve('');
-            } else {
-              reject(new HttpError(404, `File not found: "${url}"`));
-            }
+            reject(new HttpError(404, `File not found: "${url}"`));
             return;
           }
 
@@ -75,12 +62,10 @@ export async function downloadFromURL({
           logger.error('Retrying url:', url);
           setTimeout(
             () =>
-              downloadFromURL({
-                url,
-                retries: retries - 1,
-                retryDelay,
-                logger,
-              }).then(resolve, reject),
+              downloadFromURL(url, retries - 1, retryDelay, logger).then(
+                resolve,
+                reject
+              ),
             retryDelay
           );
         } else {

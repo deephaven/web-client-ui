@@ -5,13 +5,18 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
 import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
+import { HttpError } from './errorUtils.js';
 
 type NonEmptyArray<T> = [T, ...T[]];
+
+const DH_CORE_MODULE = 'jsapi/dh-core.js' as const;
+const DH_INTERNAL_MODULE = 'jsapi/dh-internal.js' as const;
 
 /** Transform downloaded content */
 export type PostDownloadTransform = (
   serverPath: string,
-  content: string
+  content: string,
+  error?: unknown
 ) => string;
 
 export type LoadModuleOptions = {
@@ -20,7 +25,7 @@ export type LoadModuleOptions = {
   download: boolean | PostDownloadTransform;
   storageDir: string;
   targetModuleType: 'esm' | 'cjs';
-  treat404asEmptyContent?: boolean;
+  handleErrorsInPostDownload?: boolean;
 };
 
 /**
@@ -35,7 +40,9 @@ export type LoadModuleOptions = {
  * saved to disk.
  * @param storageDir The directory to store the downloaded modules.
  * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
- * @param treat404asEmptyContent Optional flag to resolve 404s as empty content.
+ * @param handleErrorsInPostDownload If set to true, download errors will be
+ * caught and passed to the `PostDownloadTransform` function. If false (default),
+ * download errors will be thrown.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>({
@@ -44,7 +51,7 @@ export async function loadModules<TMainModule>({
   download,
   storageDir,
   targetModuleType,
-  treat404asEmptyContent = false,
+  handleErrorsInPostDownload,
 }: LoadModuleOptions): Promise<TMainModule> {
   polyfillWs();
 
@@ -57,16 +64,38 @@ export async function loadModules<TMainModule>({
     const serverUrls = serverPaths.map(
       serverPath => new URL(serverPath, serverUrl)
     );
-    let contents = await Promise.all(
-      serverUrls.map(url => downloadFromURL({ url, treat404asEmptyContent }))
+    const settledResults = await Promise.allSettled(
+      serverUrls.map(url => downloadFromURL(url))
     );
 
-    // Post-download transform
-    if (typeof download === 'function') {
-      contents = contents.map((content, i) =>
-        download(serverPaths[i], content)
-      );
-    }
+    const handleResult = (
+      result: PromiseSettledResult<string>,
+      i: number
+    ): string => {
+      // If no post-download function was provided, return the result value or
+      // throw if there was a download error.
+      if (typeof download !== 'function') {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+
+        throw result.reason;
+      }
+
+      if (result.status === 'fulfilled') {
+        // Post-download transform
+        return download(serverPaths[i], result.value);
+      }
+
+      if (handleErrorsInPostDownload === true) {
+        // Post-download transform that also handles errors
+        return download(serverPaths[i], '', result.reason);
+      }
+
+      throw result.reason;
+    };
+
+    const contents = settledResults.map(handleResult);
 
     // Write to disk
     const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
@@ -118,20 +147,17 @@ export async function loadDhModules({
     typeof DhType & { default?: typeof DhType }
   >({
     serverUrl,
-    serverPaths: ['jsapi/dh-core.js', 'jsapi/dh-internal.js'],
+    serverPaths: [DH_CORE_MODULE, DH_INTERNAL_MODULE],
     storageDir,
     targetModuleType,
-    // jsapi/dh-internal.js will be removed from Core workers in the not too
-    // distant future. Treating 404s as empty content makes this compatible with
-    // both configurations.
-    treat404asEmptyContent: true,
+    handleErrorsInPostDownload: true,
     download:
       targetModuleType === 'esm'
         ? // ESM does not need any transformation since the server modules are already ESM.
           true
         : // CJS needs a post-download transform to convert the ESM modules to CJS.
-          (serverPath, content) => {
-            if (serverPath === 'jsapi/dh-core.js') {
+          (serverPath, content, error) => {
+            if (serverPath === DH_CORE_MODULE) {
               return content
                 .replace(
                   `import {dhinternal} from './dh-internal.js';`,
@@ -140,7 +166,19 @@ export async function loadDhModules({
                 .replace(`export default dh;`, `module.exports = dh;`);
             }
 
-            if (serverPath === 'jsapi/dh-internal.js') {
+            if (serverPath === DH_INTERNAL_MODULE) {
+              if (error != null) {
+                // `dh-internal.js` module is being removed from future versions
+                // of DH core, but there's not a great way for this library to
+                // know whether it's present or not. Treat 404s as empty content
+                // to make things compatible with both configurations.
+                if (error instanceof HttpError && error.statusCode === 404) {
+                  return '';
+                }
+
+                throw error;
+              }
+
               return content.replace(
                 `export{__webpack_exports__dhinternal as dhinternal};`,
                 `module.exports={dhinternal:__webpack_exports__dhinternal};`
