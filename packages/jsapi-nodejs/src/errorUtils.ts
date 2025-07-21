@@ -1,3 +1,16 @@
+import { STATUS_CODES } from 'node:http';
+
+/** General Http Error class. */
+export class HttpError extends Error {
+  constructor(
+    public statusCode: number,
+    message?: string
+  ) {
+    super(message ?? STATUS_CODES[statusCode]);
+    this.name = 'HttpError';
+  }
+}
+
 /**
  * Return true if given error has a code:string prop. Optionally check if the
  * code matches a given value.

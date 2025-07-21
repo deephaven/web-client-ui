@@ -1,6 +1,6 @@
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { hasErrorCode, isAggregateError } from './errorUtils.js';
+import { hasErrorCode, HttpError, isAggregateError } from './errorUtils.js';
 
 export const SERVER_STATUS_CHECK_TIMEOUT = 3000;
 
@@ -12,14 +12,23 @@ export const SERVER_STATUS_CHECK_TIMEOUT = 3000;
  * @param retries The number of retries on failure
  * @param retryDelay The delay between retries in milliseconds
  * @param logger An optional logger object. Defaults to `console`
+ * @param treat404asEmptyContent Optional flag to resolve 404s as empty content.
+ * Otherwise throws an error.
  * @returns Promise which resolves to the module's exports
  */
-export async function downloadFromURL(
-  url: URL,
+export async function downloadFromURL({
+  url,
   retries = 10,
   retryDelay = 1000,
-  logger: { error: (...args: unknown[]) => void } = console
-): Promise<string> {
+  logger = console,
+  treat404asEmptyContent = false,
+}: {
+  url: URL;
+  retries?: number;
+  retryDelay?: number;
+  logger?: { error: (...args: unknown[]) => void };
+  treat404asEmptyContent?: boolean;
+}): Promise<string> {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
 
@@ -46,7 +55,11 @@ export async function downloadFromURL(
 
         res.on('end', async () => {
           if (res.statusCode === 404) {
-            reject(new Error(`File not found: "${url}"`));
+            if (treat404asEmptyContent) {
+              resolve('');
+            } else {
+              reject(new HttpError(404, `File not found: "${url}"`));
+            }
             return;
           }
 
@@ -62,10 +75,12 @@ export async function downloadFromURL(
           logger.error('Retrying url:', url);
           setTimeout(
             () =>
-              downloadFromURL(url, retries - 1, retryDelay, logger).then(
-                resolve,
-                reject
-              ),
+              downloadFromURL({
+                url,
+                retries: retries - 1,
+                retryDelay,
+                logger,
+              }).then(resolve, reject),
             retryDelay
           );
         } else {

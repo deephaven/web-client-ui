@@ -20,6 +20,7 @@ export type LoadModuleOptions = {
   download: boolean | PostDownloadTransform;
   storageDir: string;
   targetModuleType: 'esm' | 'cjs';
+  treat404asEmptyContent?: boolean;
 };
 
 /**
@@ -34,6 +35,7 @@ export type LoadModuleOptions = {
  * saved to disk.
  * @param storageDir The directory to store the downloaded modules.
  * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
+ * @param treat404asEmptyContent Optional flag to resolve 404s as empty content.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>({
@@ -42,6 +44,7 @@ export async function loadModules<TMainModule>({
   download,
   storageDir,
   targetModuleType,
+  treat404asEmptyContent = false,
 }: LoadModuleOptions): Promise<TMainModule> {
   polyfillWs();
 
@@ -55,7 +58,7 @@ export async function loadModules<TMainModule>({
       serverPath => new URL(serverPath, serverUrl)
     );
     let contents = await Promise.all(
-      serverUrls.map(url => downloadFromURL(url))
+      serverUrls.map(url => downloadFromURL({ url, treat404asEmptyContent }))
     );
 
     // Post-download transform
@@ -118,6 +121,10 @@ export async function loadDhModules({
     serverPaths: ['jsapi/dh-core.js', 'jsapi/dh-internal.js'],
     storageDir,
     targetModuleType,
+    // jsapi/dh-internal.js will be removed from Core workers in the not too
+    // distant future. Treating 404s as empty content makes this compatible with
+    // both configurations.
+    treat404asEmptyContent: true,
     download:
       targetModuleType === 'esm'
         ? // ESM does not need any transformation since the server modules are already ESM.
