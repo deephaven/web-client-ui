@@ -69,9 +69,7 @@ export async function loadModules<TMainModule>({
 
     let contents: string[];
 
-    if (typeof download !== 'function' || handleErrorsInPostDownload !== true) {
-      contents = await Promise.all(downloadPromises);
-    } else {
+    if (typeof download === 'function' && handleErrorsInPostDownload === true) {
       const results = await Promise.allSettled(downloadPromises);
       contents = results.map((result, i) => {
         if (result.status === 'fulfilled') {
@@ -86,6 +84,8 @@ export async function loadModules<TMainModule>({
 
         throw result.reason;
       });
+    } else {
+      contents = await Promise.all(downloadPromises);
     }
 
     // Write to disk
