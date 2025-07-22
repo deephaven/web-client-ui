@@ -1,16 +1,18 @@
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useObjectFetch } from './useObjectFetch';
 import { type UriVariableDescriptor } from './useObjectFetcher';
+import useDeferredApi from './useDeferredApi';
+import useApi from './useApi';
 
 const log = Log.module('useWidget');
 
 /**
  * Types of widgets that can be fetched with this hook.
  */
-type WidgetTypes =
+export type WidgetTypes =
   | dh.Table
   | dh.TreeTable
   | dh.PartitionedTable
@@ -20,9 +22,12 @@ type WidgetTypes =
 /**
  * Wrapper object for a widget and error status. Both widget and error will be `null` if it is still loading.
  */
-type WidgetWrapper<T extends WidgetTypes = dh.Widget> = {
+export type WidgetWrapper<T extends WidgetTypes = dh.Widget> = {
   /** Widget object to retrieve */
   widget: T | null;
+
+  /** Deephaven JS API to use for this widget */
+  api: typeof dh | null;
 
   /** Error status if there was an issue fetching the widget */
   error: NonNullable<unknown> | null;
@@ -31,16 +36,22 @@ type WidgetWrapper<T extends WidgetTypes = dh.Widget> = {
 /**
  * Retrieve a widget for the given variable descriptor. Note that if the widget is successfully fetched, ownership of the widget is passed to the consumer and will need to close the object as well.
  * @param descriptor Descriptor or URI to get the widget for. Should be stable to avoid infinite re-fetching.
- * @returns A WidgetWrapper object that contains the widget or an error status if there was an issue fetching the widget. Will contain nulls if still loading.
+ * @returns A WidgetWrapper object that contains the widget and JS API, or an error status if there was an issue fetching the widget. Will contain nulls if still loading.
  */
 export function useWidget<T extends WidgetTypes = dh.Widget>(
   descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor
 ): WidgetWrapper<T> {
-  const [wrapper, setWrapper] = useState<WidgetWrapper<T>>(() => ({
+  const [wrapper, setWrapper] = useState<
+    Omit<WidgetWrapper<T>, 'api' | 'ApiProvider'>
+  >(() => ({
     widget: null,
     error: null,
   }));
   const objectFetch = useObjectFetch<T>(descriptor);
+  const [descriptorApi, descriptorApiError] = useDeferredApi(descriptor);
+  const defaultApi = useApi();
+
+  const api = descriptorApi ?? defaultApi;
 
   useEffect(
     function loadWidget() {
@@ -98,7 +109,17 @@ export function useWidget<T extends WidgetTypes = dh.Widget>(
     [descriptor, objectFetch]
   );
 
-  return wrapper;
+  const wrapperWithApi = useMemo(
+    () => ({
+      ...wrapper,
+      error:
+        wrapper.error ?? (descriptorApiError as NonNullable<unknown> | null),
+      api: wrapper.widget != null ? api : null,
+    }),
+    [wrapper, api, descriptorApiError]
+  );
+
+  return wrapperWithApi;
 }
 
 export default useWidget;

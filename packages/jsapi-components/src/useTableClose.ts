@@ -8,7 +8,7 @@ import { isClosed } from '@deephaven/jsapi-utils';
  * @param table
  */
 export default function useTableClose(
-  table: dh.Table | dh.TreeTable | null | undefined
+  table: dh.Table | dh.TreeTable | dh.Widget | null | undefined
 ): void {
   useEffect(
     () => () => {
@@ -17,7 +17,7 @@ export default function useTableClose(
       }
 
       if (!isClosed(table)) {
-        table.close();
+        table.close?.();
       }
     },
     [table]

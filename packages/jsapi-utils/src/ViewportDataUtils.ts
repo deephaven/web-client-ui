@@ -113,7 +113,7 @@ export function getSize(table?: dh.Table | dh.TreeTable | null): number {
  * so will always return false.
  * @param table The table to check if it is closed.
  */
-export function isClosed(table: dh.Table | dh.TreeTable): boolean {
+export function isClosed(table: dh.Table | dh.TreeTable | dh.Widget): boolean {
   if ('isClosed' in table) {
     return table.isClosed;
   }
