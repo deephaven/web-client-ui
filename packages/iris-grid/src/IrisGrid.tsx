@@ -864,6 +864,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       rollupConfig,
       rollupSelectedColumns: [],
       aggregationSettings:
+        // Fix aggregations to the top if the grid is editable, so that the bottom is reserved for pending rows
         isEditableGridModel(model) && model.isEditable
           ? { ...aggregationSettings, showOnTop: true }
           : aggregationSettings,
