@@ -15,18 +15,26 @@ const DH_INTERNAL_MODULE = 'jsapi/dh-internal.js' as const;
 /** Transform downloaded content */
 export type PostDownloadTransform = (
   serverPath: string,
-  content: string,
-  error?: unknown
+  content: string
+) => string;
+
+export type PostDownloadErrorTransform = (
+  serverPath: string,
+  error: unknown
 ) => string;
 
 export type LoadModuleOptions = {
   serverUrl: URL;
   serverPaths: NonEmptyArray<string>;
-  download: boolean | PostDownloadTransform;
   storageDir: string;
   targetModuleType: 'esm' | 'cjs';
-  handleErrorsInPostDownload?: boolean;
-};
+} & (
+  | { download: false }
+  | {
+      download: true | PostDownloadTransform;
+      errorTransform?: PostDownloadErrorTransform;
+    }
+);
 
 /**
  * Load a list of modules from a server.
@@ -38,52 +46,56 @@ export type LoadModuleOptions = {
  * the modules will be downloaded and stored. If set to a `PostDownloadTransform`
  * function, the downloaded content will be passed to the function and the result
  * saved to disk.
+ * @param errorTransform Optional function to transform errors that occur during
+ * the download process. If not provided, errors will be thrown.
  * @param storageDir The directory to store the downloaded modules.
  * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
- * @param handleErrorsInPostDownload If set to true, download errors will be
- * caught and passed to the `PostDownloadTransform` function. If false (default),
- * download errors will be thrown.
  * @returns The default export of the first module in `serverPaths`.
  */
-export async function loadModules<TMainModule>({
-  serverUrl,
-  serverPaths,
-  download,
-  storageDir,
-  targetModuleType,
-  handleErrorsInPostDownload,
-}: LoadModuleOptions): Promise<TMainModule> {
+export async function loadModules<TMainModule>(
+  options: LoadModuleOptions
+): Promise<TMainModule> {
   polyfillWs();
+
+  const { serverUrl, serverPaths, storageDir, targetModuleType } = options;
 
   const serverStorageDir = path.join(storageDir, urlToDirectoryName(serverUrl));
 
-  if (download !== false) {
+  if (options.download !== false) {
     ensureDirectoriesExist([serverStorageDir]);
+
+    // Handle rejected Promise from download
+    const handleRejected = (reason: unknown, i: number): string => {
+      if (typeof options.errorTransform === 'function') {
+        return options.errorTransform(serverPaths[i], reason);
+      }
+
+      throw reason;
+    };
+
+    // Handle resolved Promise from download
+    const handleResolved = (value: string, i: number): string => {
+      if (typeof options.download === 'function') {
+        return options.download(serverPaths[i], value);
+      }
+
+      return value;
+    };
 
     // Download from server
     const serverUrls = serverPaths.map(
       serverPath => new URL(serverPath, serverUrl)
     );
 
-    const downloadPromises = serverUrls.map(url => downloadFromURL(url));
+    const settledResults = await Promise.allSettled(
+      serverUrls.map(url => downloadFromURL(url))
+    );
 
-    let contents: string[];
-
-    if (typeof download === 'function' && handleErrorsInPostDownload === true) {
-      // If we are to handle errors in post download, we need to get both
-      // resolved and rejected Promises.
-      const settledResults = await Promise.allSettled(downloadPromises);
-
-      contents = settledResults.map((result, i) =>
-        result.status === 'fulfilled'
-          ? // Post-download transform
-            download(serverPaths[i], result.value)
-          : // Post-download transform that also handles errors
-            download(serverPaths[i], '', result.reason)
-      );
-    } else {
-      contents = await Promise.all(downloadPromises);
-    }
+    const contents: string[] = settledResults.map((result, i) =>
+      result.status === 'rejected'
+        ? handleRejected(result.reason, i)
+        : handleResolved(result.value, i)
+    );
 
     // Write to disk
     const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
@@ -131,6 +143,50 @@ export async function loadDhModules({
     globalThis.window = globalThis;
   }
 
+  // If target module type is `cjs`, we need to transform the downloaded content
+  // by replaing some ESM specific syntax with CJS syntax.
+  const cjsDownloadTransform: PostDownloadTransform = (
+    serverPath: string,
+    content: string
+  ): string => {
+    if (serverPath === DH_CORE_MODULE) {
+      return content
+        .replace(
+          `import {dhinternal} from './dh-internal.js';`,
+          `const {dhinternal} = require("./dh-internal.js");`
+        )
+        .replace(`export default dh;`, `module.exports = dh;`);
+    }
+
+    if (serverPath === DH_INTERNAL_MODULE) {
+      return content.replace(
+        `export{__webpack_exports__dhinternal as dhinternal};`,
+        `module.exports={dhinternal:__webpack_exports__dhinternal};`
+      );
+    }
+
+    return content;
+  };
+
+  // `dh-internal.js` module is being removed from future versions of DH core,
+  // but there's not a great way for this library to know whether it's present
+  // or not. Treat 404s as empty content to make things compatible with both
+  // configurations.
+  const errorTransform: PostDownloadErrorTransform = (
+    serverPath: string,
+    error: unknown
+  ): string => {
+    if (
+      serverPath === DH_INTERNAL_MODULE &&
+      error instanceof HttpError &&
+      error.statusCode === 404
+    ) {
+      return '';
+    }
+
+    throw error;
+  };
+
   const coreModule = await loadModules<
     typeof DhType & { default?: typeof DhType }
   >({
@@ -138,43 +194,9 @@ export async function loadDhModules({
     serverPaths: [DH_CORE_MODULE, DH_INTERNAL_MODULE],
     storageDir,
     targetModuleType,
-    handleErrorsInPostDownload: true,
-    download:
-      targetModuleType === 'esm'
-        ? // ESM does not need any transformation since the server modules are already ESM.
-          true
-        : // CJS needs a post-download transform to convert the ESM modules to CJS.
-          (serverPath, content, error) => {
-            if (serverPath === DH_CORE_MODULE) {
-              return content
-                .replace(
-                  `import {dhinternal} from './dh-internal.js';`,
-                  `const {dhinternal} = require("./dh-internal.js");`
-                )
-                .replace(`export default dh;`, `module.exports = dh;`);
-            }
-
-            if (serverPath === DH_INTERNAL_MODULE) {
-              if (error != null) {
-                // `dh-internal.js` module is being removed from future versions
-                // of DH core, but there's not a great way for this library to
-                // know whether it's present or not. Treat 404s as empty content
-                // to make things compatible with both configurations.
-                if (error instanceof HttpError && error.statusCode === 404) {
-                  return '';
-                }
-
-                throw error;
-              }
-
-              return content.replace(
-                `export{__webpack_exports__dhinternal as dhinternal};`,
-                `module.exports={dhinternal:__webpack_exports__dhinternal};`
-              );
-            }
-
-            return content;
-          },
+    // Download the module and transform it if the target module type is `cjs`.
+    download: targetModuleType === 'esm' ? true : cjsDownloadTransform,
+    errorTransform,
   });
 
   // ESM uses `default` export. CJS does not.
