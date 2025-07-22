@@ -213,19 +213,6 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
   showOnTop: false,
 });
 
-function getAggregationSettingsForModel(
-  aggregationSettings: AggregationSettings,
-  model: IrisGridModel
-): AggregationSettings {
-  if (isEditableGridModel(model) && model.isEditable) {
-    return {
-      ...aggregationSettings,
-      showOnTop: true,
-    };
-  }
-  return aggregationSettings;
-}
-
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 function isEmptyConfig({
@@ -876,10 +863,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       rollupConfig,
       rollupSelectedColumns: [],
-      aggregationSettings: getAggregationSettingsForModel(
-        aggregationSettings,
-        model
-      ),
+      aggregationSettings:
+        isEditableGridModel(model) && model.isEditable
+          ? { ...aggregationSettings, showOnTop: true }
+          : aggregationSettings,
       selectedAggregation: null,
 
       openOptions: [],
