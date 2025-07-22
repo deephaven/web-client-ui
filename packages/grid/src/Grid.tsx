@@ -637,6 +637,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.resizeObserver.disconnect();
 
     this.stopDragTimer();
+
+    document.documentElement.classList.remove('grid-block-events');
   }
 
   getTheme(): GridThemeType {
