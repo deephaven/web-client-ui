@@ -10,13 +10,15 @@ import { ContextActions } from './context-actions';
 interface SearchInputProps {
   value: string;
   placeholder: string;
-  endPlaceholder?: string; // Optional placeholder text shown on the right side of the input when empty
+  /** Placeholder text shown on the right side of the input when empty */
+  endPlaceholder?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
   className: string;
   disabled?: boolean;
-  matchCount: number; // Number of search matches
+  /** Number of search matches, displayed at the end of the search field. */
+  matchCount: number;
   id: string;
   'data-testid'?: string;
   cursor?: {
