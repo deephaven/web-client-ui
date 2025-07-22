@@ -1,6 +1,6 @@
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { hasErrorCode, isAggregateError } from './errorUtils.js';
+import { hasErrorCode, HttpError, isAggregateError } from './errorUtils.js';
 
 export const SERVER_STATUS_CHECK_TIMEOUT = 3000;
 
@@ -46,7 +46,7 @@ export async function downloadFromURL(
 
         res.on('end', async () => {
           if (res.statusCode === 404) {
-            reject(new Error(`File not found: "${url}"`));
+            reject(new HttpError(404, `File not found: "${url}"`));
             return;
           }
 
