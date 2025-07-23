@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Features
+
+- DH-19897: Handle missing jsapi/dh-internal.js files on core workers ([#2501](https://github.com/deephaven/web-client-ui/issues/2501)) ([7ecb9ac](https://github.com/deephaven/web-client-ui/commit/7ecb9acb027846cf7f71d2cac9e7f844f751e734))
+
 ## [1.1.0](https://github.com/deephaven/web-client-ui/compare/v1.0.0...v1.1.0) (2025-07-07)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Bug Fixes
+
+- Fixing ComponentType props ([#2498](https://github.com/deephaven/web-client-ui/issues/2498)) ([8c8edd5](https://github.com/deephaven/web-client-ui/commit/8c8edd5ddca3bd94443180fb9a1b5dba4dbcce3b)), closes [#2477](https://github.com/deephaven/web-client-ui/issues/2477)
+
 ## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
 
 ### Features

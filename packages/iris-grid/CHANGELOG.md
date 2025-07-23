@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Bug Fixes
+
+- DH-18976: Add proper bounds to pendingRow logic ([#2457](https://github.com/deephaven/web-client-ui/issues/2457)) ([5d15019](https://github.com/deephaven/web-client-ui/commit/5d1501913fbfb28f60cb177ad9dad700be285862))
+
 ## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
 
 **Note:** Version bump only for package @deephaven/iris-grid

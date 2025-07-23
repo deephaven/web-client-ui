@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Bug Fixes
+
+- DH-19963: Remove grid-block-events when Grid unmounts ([#2507](https://github.com/deephaven/web-client-ui/issues/2507)) ([2c20ab1](https://github.com/deephaven/web-client-ui/commit/2c20ab14a05e8eca6168e96742f144360b79e6af))
+
 ## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
 
 ### Bug Fixes

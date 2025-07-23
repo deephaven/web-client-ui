@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Bug Fixes
+
+- DH-19917: reduce contrast of light theme disabled color ([#2506](https://github.com/deephaven/web-client-ui/issues/2506)) ([6127bff](https://github.com/deephaven/web-client-ui/commit/6127bff8842af2d254491df84fb78523e520b987))
+
 ## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
 
 **Note:** Version bump only for package @deephaven/components

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
+
+### Features
+
+- DH-19897: Handle missing jsapi/dh-internal.js files on core workers ([#2501](https://github.com/deephaven/web-client-ui/issues/2501)) ([7ecb9ac](https://github.com/deephaven/web-client-ui/commit/7ecb9acb027846cf7f71d2cac9e7f844f751e734))
+
+### Bug Fixes
+
+- DH-18976: Add proper bounds to pendingRow logic ([#2457](https://github.com/deephaven/web-client-ui/issues/2457)) ([5d15019](https://github.com/deephaven/web-client-ui/commit/5d1501913fbfb28f60cb177ad9dad700be285862))
+- DH-19917: reduce contrast of light theme disabled color ([#2506](https://github.com/deephaven/web-client-ui/issues/2506)) ([6127bff](https://github.com/deephaven/web-client-ui/commit/6127bff8842af2d254491df84fb78523e520b987))
+- DH-19963: Remove grid-block-events when Grid unmounts ([#2507](https://github.com/deephaven/web-client-ui/issues/2507)) ([2c20ab1](https://github.com/deephaven/web-client-ui/commit/2c20ab14a05e8eca6168e96742f144360b79e6af))
+- Fixing ComponentType props ([#2498](https://github.com/deephaven/web-client-ui/issues/2498)) ([8c8edd5](https://github.com/deephaven/web-client-ui/commit/8c8edd5ddca3bd94443180fb9a1b5dba4dbcce3b)), closes [#2477](https://github.com/deephaven/web-client-ui/issues/2477)
+
 ## [1.2.0](https://github.com/deephaven/web-client-ui/compare/v1.1.1...v1.2.0) (2025-07-16)
 
 ### Features
