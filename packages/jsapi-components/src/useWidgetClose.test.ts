@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
-import useTableClose from './useTableClose';
+import useTableClose from './useWidgetClose';
 
 const table = TestUtils.createMockProxy<dh.Table>({});
 const closedTable = TestUtils.createMockProxy<dh.Table>({ isClosed: true });

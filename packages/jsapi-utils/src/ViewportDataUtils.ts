@@ -109,13 +109,19 @@ export function getSize(table?: dh.Table | dh.TreeTable | null): number {
 }
 
 /**
- * Check if a given table is closed. Tree tables don't have an `isClosed` prop,
+ * Check if a given widget is closed based on `isClosed` prop.
+ * Tree tables and other widgets don't have an `isClosed` prop,
  * so will always return false.
- * @param table The table to check if it is closed.
+ * @param table The widget to check if it is closed.
  */
-export function isClosed(table: dh.Table | dh.TreeTable | dh.Widget): boolean {
-  if ('isClosed' in table) {
-    return table.isClosed;
+export function isClosed(widget: unknown): boolean {
+  if (
+    widget != null &&
+    typeof widget === 'object' &&
+    'isClosed' in widget &&
+    typeof widget.isClosed === 'boolean'
+  ) {
+    return widget.isClosed;
   }
 
   return false;
