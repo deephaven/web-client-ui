@@ -637,6 +637,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.resizeObserver.disconnect();
 
     this.stopDragTimer();
+
+    this.removeDocumentCursor();
   }
 
   getTheme(): GridThemeType {
