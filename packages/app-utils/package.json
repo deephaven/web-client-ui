@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "0.85.33",
+  "version": "0.85.34",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

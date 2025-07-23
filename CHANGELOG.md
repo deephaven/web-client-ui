@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.34](https://github.com/deephaven/web-client-ui/compare/v0.85.33...v0.85.34) (2025-07-23)
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([#2497](https://github.com/deephaven/web-client-ui/issues/2497)) ([d0cd79b](https://github.com/deephaven/web-client-ui/commit/d0cd79bf34a7ba9164cd194ec3ebd0d6afae32f9))
+- DH-18976: Add proper bounds to pendingRow logic ([#2457](https://github.com/deephaven/web-client-ui/issues/2457)) ([#2494](https://github.com/deephaven/web-client-ui/issues/2494)) ([a1644e7](https://github.com/deephaven/web-client-ui/commit/a1644e731c5e1908ecae5596cf0f6ff1df307735))
+- DH-19614: Add tree table formatting logic to tree model ([#2461](https://github.com/deephaven/web-client-ui/issues/2461)) ([#2491](https://github.com/deephaven/web-client-ui/issues/2491)) ([27171c5](https://github.com/deephaven/web-client-ui/commit/27171c58a3a346cf8a3d3f7254c0adce5d8463f9))
+- DH-19693: Add null/empty formatting to constituent strings ([#2495](https://github.com/deephaven/web-client-ui/issues/2495)) ([fe15465](https://github.com/deephaven/web-client-ui/commit/fe15465645f177c6f98b377257b513232e085e1d)), closes [#2464](https://github.com/deephaven/web-client-ui/issues/2464) [#2480](https://github.com/deephaven/web-client-ui/issues/2480)
+- DH-19963: Remove grid-block-events when Grid unmounts ([#2507](https://github.com/deephaven/web-client-ui/issues/2507)) ([#2508](https://github.com/deephaven/web-client-ui/issues/2508)) ([dd2ed32](https://github.com/deephaven/web-client-ui/commit/dd2ed3276eab9ca048a95f7f45bd7ce163cfa5a5))
+- Fix column width calculation logic in grid ([#2370](https://github.com/deephaven/web-client-ui/issues/2370)) ([#2499](https://github.com/deephaven/web-client-ui/issues/2499)) ([1c8f6e7](https://github.com/deephaven/web-client-ui/commit/1c8f6e7d80c03d8994c0496db13e39062ea24260))
+- prevent keyboard shortcuts from triggering unwanted behaviour when disconnected ([#2493](https://github.com/deephaven/web-client-ui/issues/2493)) ([8e3036a](https://github.com/deephaven/web-client-ui/commit/8e3036a528180f3ad31567fc710ed25704639eac)), closes [#2450](https://github.com/deephaven/web-client-ui/issues/2450)
+
 ## [0.85.33](https://github.com/deephaven/web-client-ui/compare/v0.85.32...v0.85.33) (2025-07-11)
 
 ### Bug Fixes

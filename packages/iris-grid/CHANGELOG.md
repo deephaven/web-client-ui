@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.34](https://github.com/deephaven/web-client-ui/compare/v0.85.33...v0.85.34) (2025-07-23)
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([#2497](https://github.com/deephaven/web-client-ui/issues/2497)) ([d0cd79b](https://github.com/deephaven/web-client-ui/commit/d0cd79bf34a7ba9164cd194ec3ebd0d6afae32f9))
+- DH-18976: Add proper bounds to pendingRow logic ([#2457](https://github.com/deephaven/web-client-ui/issues/2457)) ([#2494](https://github.com/deephaven/web-client-ui/issues/2494)) ([a1644e7](https://github.com/deephaven/web-client-ui/commit/a1644e731c5e1908ecae5596cf0f6ff1df307735))
+- DH-19614: Add tree table formatting logic to tree model ([#2461](https://github.com/deephaven/web-client-ui/issues/2461)) ([#2491](https://github.com/deephaven/web-client-ui/issues/2491)) ([27171c5](https://github.com/deephaven/web-client-ui/commit/27171c58a3a346cf8a3d3f7254c0adce5d8463f9))
+- DH-19693: Add null/empty formatting to constituent strings ([#2495](https://github.com/deephaven/web-client-ui/issues/2495)) ([fe15465](https://github.com/deephaven/web-client-ui/commit/fe15465645f177c6f98b377257b513232e085e1d)), closes [#2464](https://github.com/deephaven/web-client-ui/issues/2464) [#2480](https://github.com/deephaven/web-client-ui/issues/2480)
+
 ## [0.85.33](https://github.com/deephaven/web-client-ui/compare/v0.85.32...v0.85.33) (2025-07-11)
 
 ### Bug Fixes

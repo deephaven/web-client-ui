@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.34](https://github.com/deephaven/web-client-ui/compare/v0.85.33...v0.85.34) (2025-07-23)
+
+### Bug Fixes
+
+- prevent keyboard shortcuts from triggering unwanted behaviour when disconnected ([#2493](https://github.com/deephaven/web-client-ui/issues/2493)) ([8e3036a](https://github.com/deephaven/web-client-ui/commit/8e3036a528180f3ad31567fc710ed25704639eac)), closes [#2450](https://github.com/deephaven/web-client-ui/issues/2450)
+
 ## [0.85.32](https://github.com/deephaven/web-client-ui/compare/v0.85.31...v0.85.32) (2025-06-27)
 
 **Note:** Version bump only for package @deephaven/console
