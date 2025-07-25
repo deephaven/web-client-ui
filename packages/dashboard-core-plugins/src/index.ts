@@ -26,6 +26,7 @@ export * from './useConfigureRuff';
 export * from './useDashboardColumnFilters';
 export * from './useGridLinker';
 export * from './useLoadTablePlugin';
+export * from './useTablePlugin';
 
 export * from './events';
 export * from './panels';
