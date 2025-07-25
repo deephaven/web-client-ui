@@ -53,8 +53,8 @@ export type AggregationsProps = {
 
 function Aggregations({
   isRollup,
-  availablePlacements,
   settings,
+  availablePlacements = ['top', 'bottom'],
   onChange,
   onEdit,
   dh,
