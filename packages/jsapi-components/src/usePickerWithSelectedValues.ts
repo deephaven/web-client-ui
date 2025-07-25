@@ -16,7 +16,7 @@ import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportData, { type UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
 import useTableUtils from './useTableUtils';
-import useTableClose from './useTableClose';
+import useWidgetClose from './useWidgetClose';
 import {
   SEARCH_DEBOUNCE_MS,
   VIEWPORT_PADDING,
@@ -147,7 +147,7 @@ export function usePickerWithSelectedValues<TItem, TValue>({
     [maybeTable, columnName, 'asc', ...filterConditionFactories]
   );
 
-  useTableClose(listTable);
+  useWidgetClose(listTable);
 
   const list = useViewportData<TItem, dh.Table>({
     table: listTable,

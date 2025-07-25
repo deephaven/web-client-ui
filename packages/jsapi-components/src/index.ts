@@ -22,7 +22,7 @@ export * from './useShowOnlyEmptyFilter';
 export { default as useTable } from './useTable';
 export { default as useTableColumn } from './useTableColumn';
 export { default as useTableListener } from './useTableListener';
-export { default as useTableClose } from './useTableClose';
+export { default as useWidgetClose, useTableClose } from './useWidgetClose';
 export { default as useTableSize } from './useTableSize';
 export { default as useTableUtils } from './useTableUtils';
 export * from './useValueFilter';

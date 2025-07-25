@@ -11,6 +11,7 @@ import {
   type ObjectFetchManager,
   ObjectFetchManagerContext,
   sanitizeVariableDescriptor,
+  type UriVariableDescriptor,
   useApi,
   useClient,
 } from '@deephaven/jsapi-bootstrap';
@@ -168,8 +169,11 @@ export function ConnectionBootstrap({
   );
 
   const objectFetcher = useCallback(
-    async (descriptor: dh.ide.VariableDescriptor) => {
+    async (descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor) => {
       assertNotNull(connection, 'No connection available to fetch object with');
+      if (typeof descriptor === 'string') {
+        throw new Error('No URI resolvers available in Core');
+      }
       return connection.getObject(sanitizeVariableDescriptor(descriptor));
     },
     [connection]

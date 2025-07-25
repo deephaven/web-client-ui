@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
+import { type UriVariableDescriptor } from './useObjectFetcher';
 
 /** Function for unsubscribing from a given subscription */
 export type UnsubscribeFunction = () => void;
@@ -42,12 +43,12 @@ export type ObjectFetchManager = {
    * Subscribe to the fetch function for an object using a variable descriptor.
    * It's possible that the fetch function changes over time, due to disconnection/reconnection, starting/stopping of applications that the object may be associated with, etc.
    *
-   * @param descriptor Descriptor object of the object to fetch. Can be extended by a specific implementation to include more details necessary for the ObjectManager.
+   * @param descriptor Descriptor object or URI of the object to fetch. Can be extended by a specific implementation to include more details necessary for the ObjectManager.
    * @param onUpdate Callback function to be called when the object is updated.
    * @returns An unsubscribe function to stop listening for fetch updates and clean up the object.
    */
   subscribe: <T = unknown>(
-    descriptor: dh.ide.VariableDescriptor,
+    descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor,
     onUpdate: ObjectFetchUpdateCallback<T>
   ) => UnsubscribeFunction;
 };
@@ -59,12 +60,12 @@ export const ObjectFetchManagerContext =
 /**
  * Retrieve a `fetch` function for the given variable descriptor.
  *
- * @param descriptor Descriptor to get the `fetch` function for
+ * @param descriptor Descriptor or URI to get the `fetch` function for
  * @returns An object with the current `fetch` function, OR an error status set if there was an issue fetching the object.
  *          Retrying is left up to the ObjectManager implementation used from this context.
  */
 export function useObjectFetch<T = unknown>(
-  descriptor: dh.ide.VariableDescriptor
+  descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor
 ): ObjectFetchUpdate<T> {
   const [currentUpdate, setCurrentUpdate] = useState<ObjectFetchUpdate<T>>({
     status: 'loading',
