@@ -221,7 +221,7 @@ function Aggregations({
       const isRollupProhibited = AggregationUtils.isRollupProhibited(
         item.operation
       );
-      const isItemEditable = !isClone && !isRollupOperation;
+      const isEditable = !isClone && !isRollupOperation;
       return (
         <>
           <div
@@ -256,7 +256,7 @@ function Aggregations({
                 icon={vsEdit}
                 tooltip="Edit Columns"
                 onClick={() => onEdit(item)}
-                disabled={!isItemEditable}
+                disabled={!isEditable}
               />
               <Button
                 kind="ghost"
