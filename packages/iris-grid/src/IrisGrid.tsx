@@ -4837,7 +4837,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <Aggregations
               settings={aggregationSettings}
               isRollup={isRollup}
-              isEditable={isEditableGridModel(model) && model.isEditable}
+              availablePlacements={
+                isEditableGridModel(model) && model.isEditable
+                  ? ['top']
+                  : ['top', 'bottom']
+              }
               onChange={this.handleAggregationsChange}
               onEdit={this.handleAggregationEdit}
               dh={model.dh}

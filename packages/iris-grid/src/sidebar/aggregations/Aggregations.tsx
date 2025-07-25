@@ -40,7 +40,7 @@ export type AggregationSettings = {
 
 export type AggregationsProps = {
   isRollup: boolean;
-  isEditable: boolean;
+  availablePlacements: ('top' | 'bottom')[];
   settings: AggregationSettings;
   onChange: (
     settings: AggregationSettings,
@@ -53,7 +53,7 @@ export type AggregationsProps = {
 
 function Aggregations({
   isRollup,
-  isEditable,
+  availablePlacements,
   settings,
   onChange,
   onEdit,
@@ -310,8 +310,16 @@ function Aggregations({
                 onChange={handleShowOnTopChange}
                 value={`${showOnTop}`}
               >
-                <Radio value="true">Top</Radio>
-                <Radio value="false" isDisabled={isEditable}>
+                <Radio
+                  value="true"
+                  isDisabled={!availablePlacements.includes('top')}
+                >
+                  Top
+                </Radio>
+                <Radio
+                  value="false"
+                  isDisabled={!availablePlacements.includes('bottom')}
+                >
                   Bottom
                 </Radio>
               </RadioGroup>
