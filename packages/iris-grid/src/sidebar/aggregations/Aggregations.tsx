@@ -40,7 +40,7 @@ export type AggregationSettings = {
 
 export type AggregationsProps = {
   isRollup: boolean;
-  availablePlacements: ('top' | 'bottom')[];
+  availablePlacements?: ('top' | 'bottom')[];
   settings: AggregationSettings;
   onChange: (
     settings: AggregationSettings,
