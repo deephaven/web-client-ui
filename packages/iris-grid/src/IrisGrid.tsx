@@ -863,7 +863,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       rollupConfig,
       rollupSelectedColumns: [],
-      aggregationSettings,
+      aggregationSettings:
+        // Pin aggregations to the top if the grid is editable, so that the bottom is reserved for pending rows
+        isEditableGridModel(model) && model.isEditable
+          ? { ...aggregationSettings, showOnTop: true }
+          : aggregationSettings,
       selectedAggregation: null,
 
       openOptions: [],
@@ -4833,6 +4837,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <Aggregations
               settings={aggregationSettings}
               isRollup={isRollup}
+              availablePlacements={
+                isEditableGridModel(model) && model.isEditable
+                  ? ['top']
+                  : ['top', 'bottom']
+              }
               onChange={this.handleAggregationsChange}
               onEdit={this.handleAggregationEdit}
               dh={model.dh}
