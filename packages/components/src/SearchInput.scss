@@ -7,7 +7,7 @@
     padding-right: 1.75rem; // leave space for search icon and cancel button from browser
   }
 
-  .search-icon {
+  .search-end-content {
     color: var(--dh-color-search-icon);
     pointer-events: none;
     position: absolute;
@@ -17,6 +17,11 @@
     height: 100%;
     display: flex;
     align-items: center;
+    gap: $spacer-1;
+  }
+
+  .search-end-placeholder {
+    color: var(--dh-color-text-disabled);
   }
 
   ::-webkit-search-cancel-button {

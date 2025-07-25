@@ -65,6 +65,13 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.CMD, MODIFIER.OPTION, MODIFIER.SHIFT, KEY.L],
     isEditable: true,
   }),
+  OPEN_DASHBOARD_LIST: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.OPEN_DASHBOARD_LIST',
+    name: 'Open Dashboard List',
+    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.D],
+    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.D],
+    isEditable: true,
+  }),
   NEXT: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.NEXT',
     name: 'Next',
