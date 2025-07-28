@@ -13,6 +13,7 @@ export const XComponentMapContext = React.createContext(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new Map<React.ComponentType<any>, React.ComponentType<any>>()
 );
+XComponentMapContext.displayName = 'XComponentMapContext';
 
 export const XComponentMapProvider = XComponentMapContext.Provider;
 

@@ -55,6 +55,7 @@ export type ObjectFetchManager = {
 /** Context for tracking an implementation of the ObjectFetchManager. */
 export const ObjectFetchManagerContext =
   createContext<ObjectFetchManager | null>(null);
+ObjectFetchManagerContext.displayName = 'ObjectFetchManagerContext';
 
 /**
  * Retrieve a `fetch` function for the given variable descriptor.

@@ -60,6 +60,7 @@ export type ObjectFetcher = <T = unknown>(
 ) => Promise<T>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
+ObjectFetcherContext.displayName = 'ObjectFetcherContext';
 
 /**
  * Gets a descriptor that only has the ID or name set, but not both.

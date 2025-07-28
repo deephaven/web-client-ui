@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
  * Context to provide the golden layout panel ID.
  */
 export const PanelIdContext = createContext<string | null>(null);
+PanelIdContext.displayName = 'PanelIdContext';
 
 /**
  * Gets the current panel ID from the nearest context.
