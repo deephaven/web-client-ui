@@ -17,6 +17,7 @@ import {
   type PendingDataMap,
   type UITreeRow,
   type ColumnHeaderGroup,
+  type TextAlignment,
 } from '@deephaven/iris-grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter } from '@deephaven/jsapi-utils';
@@ -234,6 +235,16 @@ class MockIrisGridTreeModel
   }
 
   set formatter(formatter: Formatter) {
+    // Ignore for mock
+  }
+
+  get customColumnAlignmentMap(): Map<string, TextAlignment> | undefined {
+    return undefined;
+  }
+
+  set customColumnAlignmentMap(
+    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+  ) {
     // Ignore for mock
   }
 
