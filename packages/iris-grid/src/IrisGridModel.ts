@@ -20,6 +20,7 @@ import {
   type UITotalsTableConfig,
   type PendingDataMap,
   type PendingDataErrorMap,
+  type TextAlignment,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
@@ -248,6 +249,20 @@ abstract class IrisGridModel<
    * @param formatter The formatter to set
    */
   abstract set formatter(formatter: Formatter);
+
+  /**
+   * @returns The custom column alignment map
+   */
+  abstract get customColumnAlignmentMap():
+    | Map<string, TextAlignment>
+    | undefined;
+
+  /**
+   * @param customColumnAlignmentMap The custom column alignment map to set
+   */
+  abstract set customColumnAlignmentMap(
+    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+  );
 
   /**
    * @param value The value to format

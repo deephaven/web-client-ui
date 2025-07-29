@@ -40,6 +40,7 @@ import {
   type CellData,
   type UIViewportData,
   type PendingDataErrorMap,
+  type TextAlignment,
 } from './CommonTypes';
 import { type IrisGridThemeType } from './IrisGridTheme';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -141,6 +142,8 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
+  private irisCustomColumnAlignmentMap: Map<string, TextAlignment> | undefined;
+
   inputTable: DhType.InputTable | null;
 
   private subscription: DhType.TableViewportSubscription | null;
@@ -193,12 +196,14 @@ class IrisGridTableModelTemplate<
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
+   * @param customColumnAlignmentMap Map of custom column alignments
    */
   constructor(
     dh: typeof DhType,
     table: T,
     formatter = new Formatter(dh),
-    inputTable: DhType.InputTable | null = null
+    inputTable: DhType.InputTable | null = null,
+    customColumnAlignmentMap = new Map<string, TextAlignment>()
   ) {
     super(dh);
 
@@ -212,6 +217,7 @@ class IrisGridTableModelTemplate<
 
     this.dh = dh;
     this.irisFormatter = formatter;
+    this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
     this.irisGridUtils = new IrisGridUtils(dh);
     this.inputTable = inputTable;
     this.subscription = null;
@@ -655,6 +661,11 @@ class IrisGridTableModelTemplate<
 
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
+
+    const customAlignment = this.customColumnAlignmentMap?.get(column.name);
+    if (customAlignment != null) {
+      return customAlignment;
+    }
 
     return IrisGridUtils.textAlignForValue(column.type, column.name);
   }
@@ -1218,6 +1229,16 @@ class IrisGridTableModelTemplate<
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.FORMATTER_UPDATED)
     );
+  }
+
+  get customColumnAlignmentMap(): Map<string, TextAlignment> | undefined {
+    return this.irisCustomColumnAlignmentMap;
+  }
+
+  set customColumnAlignmentMap(
+    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+  ) {
+    this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
   }
 
   displayString(

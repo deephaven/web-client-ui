@@ -45,6 +45,7 @@ import {
   type ColumnHeaderGroup,
   type IrisGridContextMenuData,
   type PartitionConfig,
+  type TextAlignment,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -187,6 +188,7 @@ interface IrisGridPanelState {
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
+  customColumnAlignmentMap: Map<string, TextAlignment>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly dh.Sort[];
@@ -297,6 +299,7 @@ export class IrisGridPanel extends PureComponent<
       advancedSettings: new Map(AdvancedSettings.DEFAULTS),
       customColumns: [],
       customColumnFormatMap: new Map(),
+      customColumnAlignmentMap: new Map(),
       isFilterBarShown: false,
       quickFilters: new Map(),
       sorts: [],
@@ -1013,6 +1016,7 @@ export class IrisGridPanel extends PureComponent<
         advancedFilters,
         customColumns,
         customColumnFormatMap,
+        customColumnAlignmentMap,
         isFilterBarShown,
         quickFilters,
         reverse,
@@ -1047,6 +1051,7 @@ export class IrisGridPanel extends PureComponent<
         conditionalFormats,
         customColumns,
         customColumnFormatMap,
+        customColumnAlignmentMap,
         isFilterBarShown,
         isSelectingPartition,
         movedColumns,
@@ -1141,6 +1146,7 @@ export class IrisGridPanel extends PureComponent<
       conditionalFormats,
       customColumns,
       customColumnFormatMap,
+      customColumnAlignmentMap,
       error,
       isDisconnected,
       isFilterBarShown,
@@ -1222,6 +1228,7 @@ export class IrisGridPanel extends PureComponent<
             copyCursor="copy"
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
+            customColumnAlignmentMap={customColumnAlignmentMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}

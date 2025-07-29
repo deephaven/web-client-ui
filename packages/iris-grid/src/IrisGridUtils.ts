@@ -34,6 +34,7 @@ import {
   type PendingDataMap,
   type UIRow,
   type AdvancedFilterOptions,
+  type TextAlignment,
 } from './CommonTypes';
 import { type UIRollupConfig } from './sidebar/RollupRows';
 import { type AggregationSettings } from './sidebar/aggregations/Aggregations';
@@ -55,6 +56,7 @@ export type HydratedIrisGridState = Pick<
   | 'advancedFilters'
   | 'aggregationSettings'
   | 'customColumnFormatMap'
+  | 'customColumnAlignmentMap'
   | 'isFilterBarShown'
   | 'quickFilters'
   | 'customColumns'
@@ -92,6 +94,8 @@ export type DehydratedQuickFilter = [
 
 export type DehydratedCustomColumnFormat = [string, FormattingRule];
 
+export type DehydratedCustomColumnAlignment = [string, TextAlignment];
+
 export type DehydratedUserColumnWidth = [ColumnName, number];
 
 export type DehydratedUserRowHeight = [number, number];
@@ -124,6 +128,7 @@ export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
   customColumnFormatMap: readonly DehydratedCustomColumnFormat[];
+  customColumnAlignmentMap: readonly DehydratedCustomColumnAlignment[];
   isFilterBarShown: boolean;
   quickFilters: readonly DehydratedQuickFilter[];
   sorts: readonly DehydratedSort[];
@@ -1171,6 +1176,7 @@ class IrisGridUtils {
       aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
+      customColumnAlignmentMap,
       isFilterBarShown,
       metrics: { userColumnWidths, userRowHeights } = {
         userColumnWidths: EMPTY_MAP,
@@ -1202,6 +1208,7 @@ class IrisGridUtils {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
       aggregationSettings,
       customColumnFormatMap: [...customColumnFormatMap],
+      customColumnAlignmentMap: [...customColumnAlignmentMap],
       isFilterBarShown,
       quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
       sorts: IrisGridUtils.dehydrateSort(sorts),
@@ -1253,6 +1260,7 @@ class IrisGridUtils {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },
       customColumnFormatMap,
+      customColumnAlignmentMap,
       isFilterBarShown,
       quickFilters,
       sorts,
@@ -1285,6 +1293,7 @@ class IrisGridUtils {
       ),
       aggregationSettings,
       customColumnFormatMap: new Map(customColumnFormatMap),
+      customColumnAlignmentMap: new Map(customColumnAlignmentMap),
       isFilterBarShown,
       quickFilters: this.hydrateQuickFilters(
         columns,

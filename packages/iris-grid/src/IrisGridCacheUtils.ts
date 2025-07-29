@@ -48,6 +48,7 @@ function areIrisGridStatesEqual(
     'advancedFilters',
     'aggregationSettings',
     'customColumnFormatMap',
+    'customColumnAlignmentMap',
     'isFilterBarShown',
     'quickFilters',
     'customColumns',

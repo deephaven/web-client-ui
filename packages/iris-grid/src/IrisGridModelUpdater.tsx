@@ -11,6 +11,7 @@ import {
   type ColumnName,
   type UITotalsTableConfig,
   type PendingDataMap,
+  type TextAlignment,
 } from './CommonTypes';
 import type IrisGridModel from './IrisGridModel';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -39,6 +40,7 @@ interface IrisGridModelUpdaterProps {
   formatColumns: readonly dh.CustomColumn[];
   alwaysFetchColumns: readonly ColumnName[];
   formatter: Formatter;
+  customColumnAlignmentMap?: Map<string, TextAlignment>;
   rollupConfig?: dh.RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
   selectDistinctColumns?: readonly ColumnName[];
@@ -59,6 +61,7 @@ function IrisGridModelUpdater({
   right,
   filter,
   formatter,
+  customColumnAlignmentMap,
   reverse = false,
   sorts,
   customColumns,
@@ -125,6 +128,12 @@ function IrisGridModelUpdater({
       model.formatter = formatter;
     },
     [model, formatter]
+  );
+  useOnChange(
+    function updateCustomColumnAlignmentMap() {
+      model.customColumnAlignmentMap = customColumnAlignmentMap;
+    },
+    [model, customColumnAlignmentMap]
   );
   useOnChange(
     function updateCustomColumns() {

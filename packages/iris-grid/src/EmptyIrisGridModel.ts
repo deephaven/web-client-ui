@@ -11,6 +11,7 @@ import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
+  type TextAlignment,
   type PendingDataErrorMap,
   type PendingDataMap,
   type UITotalsTableConfig,
@@ -24,6 +25,8 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   modelFormatter: Formatter;
+
+  modelCustomColumnAlignmentMap: Map<string, TextAlignment> | undefined;
 
   get rowCount(): number {
     return 0;
@@ -102,6 +105,16 @@ class EmptyIrisGridModel extends IrisGridModel {
 
   set formatter(formatter: Formatter) {
     this.modelFormatter = formatter;
+  }
+
+  get customColumnAlignmentMap(): Map<string, TextAlignment> | undefined {
+    return this.modelCustomColumnAlignmentMap;
+  }
+
+  set customColumnAlignmentMap(
+    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+  ) {
+    this.modelCustomColumnAlignmentMap = customColumnAlignmentMap;
   }
 
   displayString(

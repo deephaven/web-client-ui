@@ -14,7 +14,7 @@ import {
   EMPTY_ARRAY,
   EventShimCustomEvent,
 } from '@deephaven/utils';
-import { type UIRow, type ColumnName } from './CommonTypes';
+import { type UIRow, type ColumnName, type TextAlignment } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import { type IrisGridThemeType } from './IrisGridTheme';
@@ -106,9 +106,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     dh: typeof DhType,
     table: DhType.TreeTable,
     formatter = new Formatter(dh),
-    inputTable: DhType.InputTable | null = null
+    inputTable: DhType.InputTable | null = null,
+    customColumnAlignmentMap = new Map<string, TextAlignment>()
   ) {
-    super(dh, table, formatter, inputTable);
+    super(dh, table, formatter, inputTable, customColumnAlignmentMap);
 
     this.virtualColumns =
       this.showExtraGroupColumn && table.groupedColumns.length > 1
@@ -239,6 +240,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
+
+    const customAlignment = this.customColumnAlignmentMap?.get(column.name);
+    if (customAlignment != null) {
+      return customAlignment;
+    }
+
     const row = this.row(y);
     assertNotNull(row);
 
