@@ -22,6 +22,14 @@
           {
             "label": "Asynchronous data",
             "path": "display-data/asynchronous.md"
+          },
+          {
+            "label": "Grid model",
+            "path": "display-data/custom-grid-model.md"
+          },
+          {
+            "label": "Grid renderer",
+            "path": "display-data/custom-renderer.md"
           }
         ]
       },
@@ -38,7 +46,9 @@
             "label": "Select rows or columns",
             "path": "customize/selection.md"
           },
-          { "label": "Frozen columns", "path": "customize/frozen.md" }
+          { "label": "Frozen columns", "path": "customize/frozen.md" },
+          { "label": "Canvas options", "path": "customize/canvas-options.md" },
+          { "label": "Sticky behavior", "path": "customize/sticky-behavior.md" }
         ]
       }
     ]
