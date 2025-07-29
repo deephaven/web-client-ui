@@ -112,8 +112,7 @@ export function useWidget<T extends WidgetTypes = dh.Widget>(
   const wrapperWithApi = useMemo(
     () => ({
       ...wrapper,
-      error:
-        wrapper.error ?? (descriptorApiError as NonNullable<unknown> | null),
+      error: wrapper.error ?? descriptorApiError,
       api: wrapper.widget != null ? api : null,
     }),
     [wrapper, api, descriptorApiError]
