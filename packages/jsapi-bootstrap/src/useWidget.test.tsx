@@ -3,9 +3,36 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import { type dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import { useWidget } from './useWidget';
-import { ObjectFetchManagerContext } from './useObjectFetch';
+import {
+  type ObjectFetchManager,
+  ObjectFetchManagerContext,
+} from './useObjectFetch';
+import { ApiContext } from './ApiBootstrap';
+import { DeferredApiContext } from './useDeferredApi';
 
 const WIDGET_TYPE = 'OtherWidget';
+
+function makeWrapper(
+  objectManager: ObjectFetchManager,
+  api = jest.fn(),
+  deferredApi?: jest.Mock
+) {
+  return function Wrapper({ children }: React.PropsWithChildren<never>) {
+    return (
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        <ApiContext.Provider value={api as unknown as typeof dh}>
+          {deferredApi ? (
+            <DeferredApiContext.Provider value={deferredApi}>
+              {children}
+            </DeferredApiContext.Provider>
+          ) : (
+            children
+          )}
+        </ApiContext.Provider>
+      </ObjectFetchManagerContext.Provider>
+    );
+  };
+}
 
 describe('useWidget', () => {
   it('should return a widget when available', async () => {
@@ -22,14 +49,45 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
+    const api = jest.fn();
+    const wrapper = makeWrapper(objectManager, api);
+    const { result } = renderHook(() => useWidget(descriptor), { wrapper });
+    await act(TestUtils.flushPromises);
+    expect(result.current).toEqual({
+      widget,
+      error: null,
+      api,
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('should use the deferred API if available', async () => {
+    const descriptor: dh.ide.VariableDescriptor = {
+      type: 'OtherWidget',
+      name: 'name',
+    };
+    const widget = { close: jest.fn() };
+    const fetch = jest.fn(async () => widget);
+    const objectFetch = { fetch, error: null };
+    const subscribe = jest.fn((subscribeDescriptor, onUpdate) => {
+      expect(subscribeDescriptor).toEqual(descriptor);
+      onUpdate(objectFetch);
+      return jest.fn();
+    });
+    const objectManager = { subscribe };
+    const deferredApi = {};
+    const wrapper = makeWrapper(
+      objectManager,
+      jest.fn(),
+      jest.fn(() => deferredApi)
     );
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
     await act(TestUtils.flushPromises);
-    expect(result.current).toEqual({ widget, error: null });
+    expect(result.current).toEqual({
+      widget,
+      error: null,
+      api: deferredApi,
+    });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -46,15 +104,11 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const wrapper = makeWrapper(objectManager);
 
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
 
-    expect(result.current).toEqual({ widget: null, error });
+    expect(result.current).toEqual({ widget: null, error, api: null });
   });
 
   it('should return null when still loading', () => {
@@ -65,14 +119,10 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const wrapper = makeWrapper(objectManager);
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
 
-    expect(result.current).toEqual({ widget: null, error: null });
+    expect(result.current).toEqual({ widget: null, error: null, api: null });
   });
 
   it('should close the widget and exported objects when cancelled', async () => {
@@ -95,11 +145,7 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const wrapper = makeWrapper(objectManager);
     const { result, unmount } = renderHook(() => useWidget(descriptor), {
       wrapper,
     });
@@ -107,7 +153,7 @@ describe('useWidget', () => {
     expect(widget.exportedObjects[0].close).not.toHaveBeenCalled();
     expect(widget.exportedObjects[1].close).not.toHaveBeenCalled();
 
-    expect(result.current).toEqual({ widget: null, error: null });
+    expect(result.current).toEqual({ widget: null, error: null, api: null });
 
     // Unmount before flushing the promise
     unmount();
@@ -137,16 +183,12 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const wrapper = makeWrapper(objectManager);
     const { result, unmount } = renderHook(() => useWidget(descriptor), {
       wrapper,
     });
 
-    expect(result.current).toEqual({ widget: null, error: null });
+    expect(result.current).toEqual({ widget: null, error: null, api: null });
     await act(TestUtils.flushPromises);
     unmount();
     expect(widget.close).not.toHaveBeenCalled();
@@ -168,16 +210,17 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const api = jest.fn();
+    const wrapper = makeWrapper(objectManager, api);
     const { result, unmount } = renderHook(() => useWidget(descriptor), {
       wrapper,
     });
     await act(TestUtils.flushPromises);
-    expect(result.current).toEqual({ widget: table, error: null });
+    expect(result.current).toEqual({
+      widget: table,
+      error: null,
+      api,
+    });
     expect(fetch).toHaveBeenCalledTimes(1);
     unmount();
 
@@ -199,11 +242,7 @@ describe('useWidget', () => {
       return jest.fn();
     });
     const objectManager = { subscribe };
-    const wrapper = ({ children }) => (
-      <ObjectFetchManagerContext.Provider value={objectManager}>
-        {children}
-      </ObjectFetchManagerContext.Provider>
-    );
+    const wrapper = makeWrapper(objectManager);
     const { unmount } = renderHook(() => useWidget(descriptor), { wrapper });
 
     unmount();

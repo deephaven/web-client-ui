@@ -22,6 +22,8 @@ export type IdVariableDescriptor = {
   id: string;
 };
 
+export type UriVariableDescriptor = string;
+
 export function isNameVariableDescriptor(
   value: unknown
 ): value is NameVariableDescriptor {
@@ -52,11 +54,11 @@ export function isVariableDescriptor(
 
 /**
  * Function to fetch an object based on a provided descriptor object.
- * @param descriptor Descriptor object to fetch the object from. Can be extended by a specific implementation to
- *                    include additional fields (such as a session ID) to uniquely identify an object.
+ * @param descriptor Descriptor object or URI to fetch the object from. Can be extended by a specific implementation to
+ *                   include additional fields (such as a session ID) to uniquely identify an object.
  */
 export type ObjectFetcher = <T = unknown>(
-  descriptor: dh.ide.VariableDescriptor
+  descriptor: dh.ide.VariableDescriptor | UriVariableDescriptor
 ) => Promise<T>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
