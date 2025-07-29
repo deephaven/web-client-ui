@@ -63,9 +63,9 @@ export function useDeferredApi(
             setError(null);
           }
         } catch (e) {
-          if (!isCancelled && e != null) {
+          if (!isCancelled) {
             setApi(null);
-            setError(e);
+            setError(e ?? new Error('Null error'));
           }
         }
       } else {
