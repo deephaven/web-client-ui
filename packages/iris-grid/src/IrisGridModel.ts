@@ -253,15 +253,13 @@ abstract class IrisGridModel<
   /**
    * @returns The custom column alignment map
    */
-  abstract get customColumnAlignmentMap():
-    | Map<string, TextAlignment>
-    | undefined;
+  abstract get customColumnAlignmentMap(): Map<string, TextAlignment>;
 
   /**
    * @param customColumnAlignmentMap The custom column alignment map to set
    */
   abstract set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+    customColumnAlignmentMap: Map<string, TextAlignment>
   );
 
   /**

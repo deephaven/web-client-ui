@@ -238,12 +238,12 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get customColumnAlignmentMap(): Map<string, TextAlignment> | undefined {
-    return undefined;
+  get customColumnAlignmentMap(): Map<string, TextAlignment> {
+    return new Map<string, TextAlignment>();
   }
 
   set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+    customColumnAlignmentMap: Map<string, TextAlignment>
   ) {
     // Ignore for mock
   }

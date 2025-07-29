@@ -40,7 +40,7 @@ interface IrisGridModelUpdaterProps {
   formatColumns: readonly dh.CustomColumn[];
   alwaysFetchColumns: readonly ColumnName[];
   formatter: Formatter;
-  customColumnAlignmentMap?: Map<string, TextAlignment>;
+  customColumnAlignmentMap: Map<string, TextAlignment>;
   rollupConfig?: dh.RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
   selectDistinctColumns?: readonly ColumnName[];

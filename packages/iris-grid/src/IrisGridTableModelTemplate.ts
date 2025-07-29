@@ -142,7 +142,7 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
-  private irisCustomColumnAlignmentMap: Map<string, TextAlignment> | undefined;
+  private irisCustomColumnAlignmentMap: Map<string, TextAlignment>;
 
   inputTable: DhType.InputTable | null;
 
@@ -662,7 +662,7 @@ class IrisGridTableModelTemplate<
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
 
-    const customAlignment = this.customColumnAlignmentMap?.get(column.name);
+    const customAlignment = this.customColumnAlignmentMap.get(column.name);
     if (customAlignment != null) {
       return customAlignment;
     }
@@ -1231,12 +1231,12 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get customColumnAlignmentMap(): Map<string, TextAlignment> | undefined {
+  get customColumnAlignmentMap(): Map<string, TextAlignment> {
     return this.irisCustomColumnAlignmentMap;
   }
 
   set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment> | undefined
+    customColumnAlignmentMap: Map<string, TextAlignment>
   ) {
     this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
   }
