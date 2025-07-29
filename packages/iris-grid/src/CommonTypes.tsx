@@ -10,6 +10,7 @@ export type RowIndex = ModelIndex;
 
 export type { AdvancedFilterOptions };
 export type ColumnName = string;
+export type TextAlignment = 'left' | 'center' | 'right';
 export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
 export type QuickFilterMap = Map<ModelIndex, QuickFilter>;
 export type ReadonlyAdvancedFilterMap = ReadonlyMap<ModelIndex, AdvancedFilter>;
