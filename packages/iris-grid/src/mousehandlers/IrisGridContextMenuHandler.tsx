@@ -54,6 +54,7 @@ import {
   DateTimeFormatContextMenu,
   DecimalFormatContextMenu,
   IntegerFormatContextMenu,
+  TextAlignmentFormatContextMenu,
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
@@ -375,6 +376,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         actions: this.numberFormatActions(column) ?? undefined,
       });
     }
+
+    actions.push({
+      title: 'Text Alignment',
+      group: IrisGridContextMenuHandler.GROUP_FORMAT,
+      actions: this.textAlignmentFormatActions(column),
+    });
+
     return actions;
   }
 
@@ -1114,6 +1122,28 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       });
     }
     return actions;
+  }
+
+  textAlignmentFormatActions(column: DhType.Column): ContextAction[] {
+    const { model } = this.irisGrid.props;
+    const { customColumnAlignmentMap } = this.irisGrid.state;
+    const modelIndex = model.getColumnIndexByName(column.name);
+    assertNotNull(modelIndex);
+
+    const currentAlignment = customColumnAlignmentMap.get(column.name);
+
+    const alignmentOptions =
+      TextAlignmentFormatContextMenu.getOptions(currentAlignment);
+
+    return alignmentOptions.map((option, index) => ({
+      title: option.title,
+      icon: option.isSelected ? vsCheck : option.icon,
+      order: index,
+      group: option.group,
+      action: () => {
+        this.irisGrid.handleColumnAlignmentChange(modelIndex, option.alignment);
+      },
+    }));
   }
 
   stringFilterActions(
