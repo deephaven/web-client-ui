@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
+
+### Features
+
+- Add URI support and api associated with widget to useWidget ([#2509](https://github.com/deephaven/web-client-ui/issues/2509)) ([545d2bc](https://github.com/deephaven/web-client-ui/commit/545d2bc55a27b6ccff43b9b438319b47add2e7a7))
+
 ## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
 
 **Note:** Version bump only for package @deephaven/jsapi-components

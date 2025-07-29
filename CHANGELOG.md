@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
+
+### Features
+
+- Add URI support and api associated with widget to useWidget ([#2509](https://github.com/deephaven/web-client-ui/issues/2509)) ([545d2bc](https://github.com/deephaven/web-client-ui/commit/545d2bc55a27b6ccff43b9b438319b47add2e7a7))
+- DH-19722: Better handling for large numbers of open dashboards ([#2481](https://github.com/deephaven/web-client-ui/issues/2481)) ([1d3ddff](https://github.com/deephaven/web-client-ui/commit/1d3ddff6353da0a3a7b0ba41f9d00bc59585f1b4))
+
+### Bug Fixes
+
+- DH-19601: Pin aggregations to the top in input tables ([#2502](https://github.com/deephaven/web-client-ui/issues/2502)) ([8407e4c](https://github.com/deephaven/web-client-ui/commit/8407e4c37ac3df3a37e306f229001ab56299c442))
+- Export useTablePlugin for use in dh.ui ([#2510](https://github.com/deephaven/web-client-ui/issues/2510)) ([cdd64d2](https://github.com/deephaven/web-client-ui/commit/cdd64d2f33872467488726709929071e8a8c0993))
+
 ## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
 
 ### Features

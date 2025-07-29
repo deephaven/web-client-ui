@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
+
+### Bug Fixes
+
+- DH-19601: Pin aggregations to the top in input tables ([#2502](https://github.com/deephaven/web-client-ui/issues/2502)) ([8407e4c](https://github.com/deephaven/web-client-ui/commit/8407e4c37ac3df3a37e306f229001ab56299c442))
+
 ## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
 
 ### Bug Fixes

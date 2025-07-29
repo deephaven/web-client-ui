@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
+
+### Bug Fixes
+
+- Export useTablePlugin for use in dh.ui ([#2510](https://github.com/deephaven/web-client-ui/issues/2510)) ([cdd64d2](https://github.com/deephaven/web-client-ui/commit/cdd64d2f33872467488726709929071e8a8c0993))
+
 ## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

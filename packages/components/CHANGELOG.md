@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
+
+### Features
+
+- DH-19722: Better handling for large numbers of open dashboards ([#2481](https://github.com/deephaven/web-client-ui/issues/2481)) ([1d3ddff](https://github.com/deephaven/web-client-ui/commit/1d3ddff6353da0a3a7b0ba41f9d00bc59585f1b4))
+
 ## [1.3.0](https://github.com/deephaven/web-client-ui/compare/v1.2.0...v1.3.0) (2025-07-23)
 
 ### Bug Fixes
