@@ -3141,7 +3141,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const column = model.columns[modelIndex];
     const {
-      customColumnAlignmentMap: prevCustomColumnAlignmentMap = new Map(),
+      customColumnAlignmentMap: prevCustomColumnAlignmentMap = EMPTY_MAP,
     } = this.state;
     const customColumnAlignmentMap = new Map(prevCustomColumnAlignmentMap);
 
