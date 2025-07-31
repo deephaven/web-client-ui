@@ -26,7 +26,7 @@ interface UseTablePluginProps {
   /**
    * A IrisGridUtils instance.
    */
-  irisGridUtils: IrisGridUtils;
+  irisGridUtils: IrisGridUtils | undefined;
   /**
    * The currently selected ranges in the grid.
    */
@@ -56,7 +56,9 @@ export function useTablePlugin({
   const [pluginFilters, setPluginFilters] = useState<InputFilter[]>([]);
   const customFilters = useMemo(
     () =>
-      model != null && isIrisGridTableModelTemplate(model)
+      model != null &&
+      irisGridUtils != null &&
+      isIrisGridTableModelTemplate(model)
         ? irisGridUtils.getFiltersFromInputFilters(
             model.table.columns,
             pluginFilters,
