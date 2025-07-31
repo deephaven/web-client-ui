@@ -241,9 +241,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
 
-    const customAlignment = this.columnAlignmentMap?.get(column.name);
-    if (customAlignment != null) {
-      return customAlignment;
+    const userTextAlignment = this.columnAlignmentMap?.get(column.name);
+    if (userTextAlignment != null) {
+      return userTextAlignment;
     }
 
     const row = this.row(y);

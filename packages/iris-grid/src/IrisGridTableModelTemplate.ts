@@ -195,7 +195,7 @@ class IrisGridTableModelTemplate<
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
-   * @param columnAlignmentMap Map of custom column alignments
+   * @param columnAlignmentMap Map of column alignments
    */
   constructor(
     dh: typeof DhType,
@@ -661,9 +661,9 @@ class IrisGridTableModelTemplate<
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
 
-    const customAlignment = this.columnAlignmentMap.get(column.name);
-    if (customAlignment != null) {
-      return customAlignment;
+    const userTextAlignment = this.columnAlignmentMap.get(column.name);
+    if (userTextAlignment != null) {
+      return userTextAlignment;
     }
 
     return IrisGridUtils.textAlignForValue(column.type, column.name);

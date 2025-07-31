@@ -250,7 +250,7 @@ abstract class IrisGridModel<
   abstract set formatter(formatter: Formatter);
 
   /**
-   * @returns The custom column alignment map
+   * @returns The column alignment map
    */
   abstract get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign>;
 
