@@ -1132,18 +1132,24 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const currentAlignment = customColumnAlignmentMap.get(column.name);
 
-    const alignmentOptions =
-      TextAlignmentFormatContextMenu.getOptions(currentAlignment);
-
-    return alignmentOptions.map((option, index) => ({
-      title: option.title,
-      icon: option.isSelected ? vsCheck : option.icon,
-      order: index,
-      group: option.group,
-      action: () => {
-        this.irisGrid.handleColumnAlignmentChange(modelIndex, option.alignment);
-      },
-    }));
+    return TextAlignmentFormatContextMenu.alignmentOptions.map(
+      (option, index) => ({
+        title: option.title,
+        icon:
+          (currentAlignment == null && option.alignment == null) ||
+          currentAlignment === option.alignment
+            ? vsCheck
+            : option.icon,
+        order: index,
+        group: option.group,
+        action: () => {
+          this.irisGrid.handleColumnAlignmentChange(
+            modelIndex,
+            option.alignment
+          );
+        },
+      })
+    );
   }
 
   stringFilterActions(

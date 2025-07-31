@@ -3140,18 +3140,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     const { model } = this.props;
     const column = model.columns[modelIndex];
-    const {
-      customColumnAlignmentMap: prevCustomColumnAlignmentMap = EMPTY_MAP,
-    } = this.state;
-    const customColumnAlignmentMap = new Map(prevCustomColumnAlignmentMap);
 
-    if (alignment != null) {
-      customColumnAlignmentMap.set(column.name, alignment);
-    } else {
-      customColumnAlignmentMap.delete(column.name);
-    }
-
-    this.setState({ customColumnAlignmentMap });
+    this.setState(({ customColumnAlignmentMap = EMPTY_MAP }) => {
+      const newCustomColumnAlignmentMap = new Map(customColumnAlignmentMap);
+      if (alignment != null) {
+        newCustomColumnAlignmentMap.set(column.name, alignment);
+      } else {
+        newCustomColumnAlignmentMap.delete(column.name);
+      }
+      return { customColumnAlignmentMap: newCustomColumnAlignmentMap };
+    });
   }
 
   handleMenu(e: React.MouseEvent<HTMLButtonElement>): void {
