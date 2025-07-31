@@ -141,6 +141,8 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
+  private irisColumnAlignmentMap: Map<string, CanvasTextAlign>;
+
   inputTable: DhType.InputTable | null;
 
   private subscription: DhType.TableViewportSubscription | null;
@@ -193,12 +195,14 @@ class IrisGridTableModelTemplate<
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
+   * @param columnAlignmentMap Map of column alignments
    */
   constructor(
     dh: typeof DhType,
     table: T,
     formatter = new Formatter(dh),
-    inputTable: DhType.InputTable | null = null
+    inputTable: DhType.InputTable | null = null,
+    columnAlignmentMap = new Map<string, CanvasTextAlign>()
   ) {
     super(dh);
 
@@ -212,6 +216,7 @@ class IrisGridTableModelTemplate<
 
     this.dh = dh;
     this.irisFormatter = formatter;
+    this.irisColumnAlignmentMap = columnAlignmentMap;
     this.irisGridUtils = new IrisGridUtils(dh);
     this.inputTable = inputTable;
     this.subscription = null;
@@ -655,6 +660,11 @@ class IrisGridTableModelTemplate<
 
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
+
+    const userTextAlignment = this.columnAlignmentMap.get(column.name);
+    if (userTextAlignment != null) {
+      return userTextAlignment;
+    }
 
     return IrisGridUtils.textAlignForValue(column.type, column.name);
   }
@@ -1218,6 +1228,14 @@ class IrisGridTableModelTemplate<
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.FORMATTER_UPDATED)
     );
+  }
+
+  get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
+    return this.irisColumnAlignmentMap;
+  }
+
+  set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
+    this.irisColumnAlignmentMap = columnAlignmentMap;
   }
 
   displayString(

@@ -39,6 +39,7 @@ interface IrisGridModelUpdaterProps {
   formatColumns: readonly dh.CustomColumn[];
   alwaysFetchColumns: readonly ColumnName[];
   formatter: Formatter;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
   rollupConfig?: dh.RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
   selectDistinctColumns?: readonly ColumnName[];
@@ -59,6 +60,7 @@ function IrisGridModelUpdater({
   right,
   filter,
   formatter,
+  columnAlignmentMap,
   reverse = false,
   sorts,
   customColumns,
@@ -125,6 +127,12 @@ function IrisGridModelUpdater({
       model.formatter = formatter;
     },
     [model, formatter]
+  );
+  useOnChange(
+    function updateColumnAlignmentMap() {
+      model.columnAlignmentMap = columnAlignmentMap;
+    },
+    [model, columnAlignmentMap]
   );
   useOnChange(
     function updateCustomColumns() {

@@ -187,6 +187,7 @@ interface IrisGridPanelState {
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly dh.Sort[];
@@ -297,6 +298,7 @@ export class IrisGridPanel extends PureComponent<
       advancedSettings: new Map(AdvancedSettings.DEFAULTS),
       customColumns: [],
       customColumnFormatMap: new Map(),
+      columnAlignmentMap: new Map(),
       isFilterBarShown: false,
       quickFilters: new Map(),
       sorts: [],
@@ -1013,6 +1015,7 @@ export class IrisGridPanel extends PureComponent<
         advancedFilters,
         customColumns,
         customColumnFormatMap,
+        columnAlignmentMap,
         isFilterBarShown,
         quickFilters,
         reverse,
@@ -1047,6 +1050,7 @@ export class IrisGridPanel extends PureComponent<
         conditionalFormats,
         customColumns,
         customColumnFormatMap,
+        columnAlignmentMap,
         isFilterBarShown,
         isSelectingPartition,
         movedColumns,
@@ -1141,6 +1145,7 @@ export class IrisGridPanel extends PureComponent<
       conditionalFormats,
       customColumns,
       customColumnFormatMap,
+      columnAlignmentMap,
       error,
       isDisconnected,
       isFilterBarShown,
@@ -1222,6 +1227,7 @@ export class IrisGridPanel extends PureComponent<
             copyCursor="copy"
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
+            columnAlignmentMap={columnAlignmentMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}

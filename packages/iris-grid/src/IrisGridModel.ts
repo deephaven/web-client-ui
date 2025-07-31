@@ -250,6 +250,18 @@ abstract class IrisGridModel<
   abstract set formatter(formatter: Formatter);
 
   /**
+   * @returns The column alignment map
+   */
+  abstract get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign>;
+
+  /**
+   * @param columnAlignmentMap The column alignment map to set
+   */
+  abstract set columnAlignmentMap(
+    columnAlignmentMap: Map<string, CanvasTextAlign>
+  );
+
+  /**
    * @param value The value to format
    * @param columnType The column type to format
    * @param columnName The column name to format

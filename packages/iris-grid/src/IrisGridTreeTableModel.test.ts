@@ -330,6 +330,7 @@ describe('IrisGridTreeTableModel colorForCell', () => {
     const table = irisGridTestUtils.makeTreeTable(
       testColumns,
       testColumns.slice(0, 1),
+      testColumns,
       100,
       []
     );
@@ -432,6 +433,7 @@ describe('IrisGridTreeTableModel textAlignForCell', () => {
     const table = irisGridTestUtils.makeTreeTable(
       testColumns,
       testColumns.slice(0, 1),
+      testColumns,
       100,
       []
     );
@@ -473,6 +475,142 @@ describe('IrisGridTreeTableModel textAlignForCell', () => {
     const result = model.textAlignForCell(0, 0);
     expect(result).toBe('left');
   });
+
+  describe('user-defined text alignment', () => {
+    let modelWithAlignment: IrisGridTreeTableModel;
+    let columnAlignmentMap: Map<string, CanvasTextAlign>;
+
+    beforeEach(() => {
+      const testColumns = irisGridTestUtils.makeColumns();
+      columnAlignmentMap = new Map<string, CanvasTextAlign>();
+      columnAlignmentMap.set('CenterCol', 'center');
+      columnAlignmentMap.set('MixedCol', 'center');
+      columnAlignmentMap.set('LeftCol', 'left');
+      columnAlignmentMap.set('RightCol', 'right');
+
+      const table = irisGridTestUtils.makeTreeTable(
+        testColumns,
+        testColumns.slice(0, 1),
+        testColumns,
+        100,
+        []
+      );
+      modelWithAlignment = new IrisGridTreeTableModel(
+        dh,
+        table,
+        undefined,
+        null,
+        columnAlignmentMap
+      );
+    });
+
+    it.each([
+      ['center', 'CenterCol', 'java.lang.String'],
+      ['left', 'LeftCol', 'int'],
+      ['right', 'RightCol', 'java.lang.String'],
+    ] as const)(
+      'uses user-defined %s alignment',
+      (expectedAlignment, columnName, columnType) => {
+        const testColumn = irisGridTestUtils.makeColumn(
+          columnName,
+          columnType,
+          0
+        );
+
+        jest
+          .spyOn(modelWithAlignment, 'sourceColumn')
+          .mockReturnValue(testColumn);
+        jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.default);
+
+        const result = modelWithAlignment.textAlignForCell(0, 0);
+        expect(result).toBe(expectedAlignment);
+      }
+    );
+
+    it('falls back to data type alignment', () => {
+      const numberColumn = irisGridTestUtils.makeColumn('TestCol', 'int', 0);
+
+      jest
+        .spyOn(modelWithAlignment, 'sourceColumn')
+        .mockReturnValue(numberColumn);
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.default);
+
+      const result = modelWithAlignment.textAlignForCell(0, 0);
+      expect(result).toBe('right');
+    });
+
+    it('overrides constituent type for leaf nodes', () => {
+      const constituentColumn = {
+        ...irisGridTestUtils.makeColumn('CenterCol', 'java.lang.String', 0),
+        constituentType: 'double',
+      } as DhType.Column;
+
+      jest
+        .spyOn(modelWithAlignment, 'sourceColumn')
+        .mockReturnValue(constituentColumn);
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.leaf);
+
+      const result = modelWithAlignment.textAlignForCell(0, 0);
+      expect(result).toBe('center');
+    });
+
+    it('overrides number type for both node types', () => {
+      const numberColumn = {
+        ...irisGridTestUtils.makeColumn('LeftCol', 'int', 0),
+        constituentType: 'double',
+      } as DhType.Column;
+
+      jest
+        .spyOn(modelWithAlignment, 'sourceColumn')
+        .mockReturnValue(numberColumn);
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.parent);
+      const parentResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(parentResult).toBe('left');
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.leaf);
+      const leafResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(leafResult).toBe('left');
+    });
+
+    it('overrides string type for both node types', () => {
+      const stringColumn = {
+        ...irisGridTestUtils.makeColumn('RightCol', 'java.lang.String', 0),
+        constituentType: 'java.lang.String',
+      } as DhType.Column;
+
+      jest
+        .spyOn(modelWithAlignment, 'sourceColumn')
+        .mockReturnValue(stringColumn);
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.parent);
+      const parentResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(parentResult).toBe('right');
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.leaf);
+      const leafResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(leafResult).toBe('right');
+    });
+
+    it('applies consistently to all cells', () => {
+      const mixedTypeColumn = {
+        ...irisGridTestUtils.makeColumn('MixedCol', 'int', 0),
+        constituentType: 'java.lang.String',
+      } as DhType.Column;
+
+      jest
+        .spyOn(modelWithAlignment, 'sourceColumn')
+        .mockReturnValue(mixedTypeColumn);
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.parent);
+      const parentResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(parentResult).toBe('center');
+
+      jest.spyOn(modelWithAlignment, 'row').mockReturnValue(rows.leaf);
+      const leafResult = modelWithAlignment.textAlignForCell(0, 0);
+      expect(leafResult).toBe('center');
+    });
+  });
 });
 
 describe('IrisGridTreeTableModel textForCell', () => {
@@ -510,6 +648,7 @@ describe('IrisGridTreeTableModel textForCell', () => {
     const table = irisGridTestUtils.makeTreeTable(
       testColumns,
       testColumns.slice(0, 1),
+      testColumns,
       100,
       []
     );

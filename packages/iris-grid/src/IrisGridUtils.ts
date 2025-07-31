@@ -55,6 +55,7 @@ export type HydratedIrisGridState = Pick<
   | 'advancedFilters'
   | 'aggregationSettings'
   | 'customColumnFormatMap'
+  | 'columnAlignmentMap'
   | 'isFilterBarShown'
   | 'quickFilters'
   | 'customColumns'
@@ -92,6 +93,8 @@ export type DehydratedQuickFilter = [
 
 export type DehydratedCustomColumnFormat = [string, FormattingRule];
 
+export type DehydratedUserColumnAlignment = [string, CanvasTextAlign];
+
 export type DehydratedUserColumnWidth = [ColumnName, number];
 
 export type DehydratedUserRowHeight = [number, number];
@@ -124,6 +127,7 @@ export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
   customColumnFormatMap: readonly DehydratedCustomColumnFormat[];
+  columnAlignmentMap: readonly DehydratedUserColumnAlignment[];
   isFilterBarShown: boolean;
   quickFilters: readonly DehydratedQuickFilter[];
   sorts: readonly DehydratedSort[];
@@ -1171,6 +1175,7 @@ class IrisGridUtils {
       aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
+      columnAlignmentMap,
       isFilterBarShown,
       metrics: { userColumnWidths, userRowHeights } = {
         userColumnWidths: EMPTY_MAP,
@@ -1202,6 +1207,7 @@ class IrisGridUtils {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
       aggregationSettings,
       customColumnFormatMap: [...customColumnFormatMap],
+      columnAlignmentMap: [...columnAlignmentMap],
       isFilterBarShown,
       quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
       sorts: IrisGridUtils.dehydrateSort(sorts),
@@ -1253,6 +1259,7 @@ class IrisGridUtils {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },
       customColumnFormatMap,
+      columnAlignmentMap,
       isFilterBarShown,
       quickFilters,
       sorts,
@@ -1285,6 +1292,7 @@ class IrisGridUtils {
       ),
       aggregationSettings,
       customColumnFormatMap: new Map(customColumnFormatMap),
+      columnAlignmentMap: new Map(columnAlignmentMap),
       isFilterBarShown,
       quickFilters: this.hydrateQuickFilters(
         columns,

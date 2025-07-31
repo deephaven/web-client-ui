@@ -284,6 +284,7 @@ export interface IrisGridProps {
   applyInputFiltersOnInit: boolean;
   conditionalFormats: readonly SidebarFormattingRule[];
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
@@ -408,6 +409,8 @@ export interface IrisGridState {
   isMenuShown: boolean;
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
 
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
+
   conditionalFormats: readonly SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
   conditionalFormatPreview?: SidebarFormattingRule;
@@ -484,6 +487,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     alwaysFetchColumns: EMPTY_ARRAY,
     conditionalFormats: EMPTY_ARRAY,
     customColumnFormatMap: EMPTY_MAP,
+    columnAlignmentMap: EMPTY_MAP,
     isFilterBarShown: false,
     applyInputFiltersOnInit: false,
     movedColumns: EMPTY_ARRAY,
@@ -591,6 +595,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
+    this.handleColumnAlignmentChange =
+      this.handleColumnAlignmentChange.bind(this);
     this.handleConditionalFormatCreate =
       this.handleConditionalFormatCreate.bind(this);
     this.handleConditionalFormatEdit =
@@ -718,6 +724,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       aggregationSettings,
       conditionalFormats,
       customColumnFormatMap,
+      columnAlignmentMap,
       isFilterBarShown,
       isSelectingPartition,
       partitions,
@@ -841,6 +848,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       formatter: new Formatter(dh),
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
+      columnAlignmentMap: new Map(columnAlignmentMap),
 
       conditionalFormats,
       conditionalFormatEditIndex: null,
@@ -3129,6 +3137,24 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.updateFormatter({ customColumnFormatMap });
   }
 
+  handleColumnAlignmentChange(
+    modelIndex: ModelIndex,
+    alignment: CanvasTextAlign | null
+  ): void {
+    const { model } = this.props;
+    const column = model.columns[modelIndex];
+
+    this.setState(({ columnAlignmentMap = EMPTY_MAP }) => {
+      const newColumnAlignmentMap = new Map(columnAlignmentMap);
+      if (alignment != null) {
+        newColumnAlignmentMap.set(column.name, alignment);
+      } else {
+        newColumnAlignmentMap.delete(column.name);
+      }
+      return { columnAlignmentMap: newColumnAlignmentMap };
+    });
+  }
+
   handleMenu(e: React.MouseEvent<HTMLButtonElement>): void {
     e.stopPropagation();
     this.setState({ isMenuShown: true });
@@ -4389,6 +4415,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormatPreview,
       conditionalFormatEditIndex,
 
+      columnAlignmentMap,
+
       sorts,
       reverse,
       customColumns,
@@ -4980,6 +5008,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 right={right}
                 filter={filter}
                 formatter={formatter}
+                columnAlignmentMap={columnAlignmentMap}
                 sorts={sorts}
                 reverse={reverse}
                 movedColumns={movedColumns}
