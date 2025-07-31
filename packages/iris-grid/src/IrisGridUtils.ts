@@ -55,7 +55,7 @@ export type HydratedIrisGridState = Pick<
   | 'advancedFilters'
   | 'aggregationSettings'
   | 'customColumnFormatMap'
-  | 'customColumnAlignmentMap'
+  | 'columnAlignmentMap'
   | 'isFilterBarShown'
   | 'quickFilters'
   | 'customColumns'
@@ -93,7 +93,7 @@ export type DehydratedQuickFilter = [
 
 export type DehydratedCustomColumnFormat = [string, FormattingRule];
 
-export type DehydratedCustomColumnAlignment = [string, CanvasTextAlign];
+export type DehydratedUserColumnAlignment = [string, CanvasTextAlign];
 
 export type DehydratedUserColumnWidth = [ColumnName, number];
 
@@ -127,7 +127,7 @@ export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
   customColumnFormatMap: readonly DehydratedCustomColumnFormat[];
-  customColumnAlignmentMap: readonly DehydratedCustomColumnAlignment[];
+  columnAlignmentMap: readonly DehydratedUserColumnAlignment[];
   isFilterBarShown: boolean;
   quickFilters: readonly DehydratedQuickFilter[];
   sorts: readonly DehydratedSort[];
@@ -1175,7 +1175,7 @@ class IrisGridUtils {
       aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
-      customColumnAlignmentMap,
+      columnAlignmentMap,
       isFilterBarShown,
       metrics: { userColumnWidths, userRowHeights } = {
         userColumnWidths: EMPTY_MAP,
@@ -1207,7 +1207,7 @@ class IrisGridUtils {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
       aggregationSettings,
       customColumnFormatMap: [...customColumnFormatMap],
-      customColumnAlignmentMap: [...customColumnAlignmentMap],
+      columnAlignmentMap: [...columnAlignmentMap],
       isFilterBarShown,
       quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
       sorts: IrisGridUtils.dehydrateSort(sorts),
@@ -1259,7 +1259,7 @@ class IrisGridUtils {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },
       customColumnFormatMap,
-      customColumnAlignmentMap,
+      columnAlignmentMap,
       isFilterBarShown,
       quickFilters,
       sorts,
@@ -1292,7 +1292,7 @@ class IrisGridUtils {
       ),
       aggregationSettings,
       customColumnFormatMap: new Map(customColumnFormatMap),
-      customColumnAlignmentMap: new Map(customColumnAlignmentMap),
+      columnAlignmentMap: new Map(columnAlignmentMap),
       isFilterBarShown,
       quickFilters: this.hydrateQuickFilters(
         columns,

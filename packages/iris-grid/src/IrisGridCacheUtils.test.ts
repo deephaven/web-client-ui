@@ -27,7 +27,7 @@ const irisGridState = {
     showOnTop: false,
   },
   customColumnFormatMap: new Map(),
-  customColumnAlignmentMap: new Map(),
+  columnAlignmentMap: new Map(),
   isFilterBarShown: false,
   quickFilters: new Map(),
   customColumns: [],

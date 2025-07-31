@@ -457,14 +457,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.originalModel.formatter = formatter;
   }
 
-  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
-    return this.originalModel.customColumnAlignmentMap;
+  get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
+    return this.originalModel.columnAlignmentMap;
   }
 
-  set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, CanvasTextAlign>
-  ) {
-    this.originalModel.customColumnAlignmentMap = customColumnAlignmentMap;
+  set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
+    this.originalModel.columnAlignmentMap = columnAlignmentMap;
   }
 
   setViewport = (

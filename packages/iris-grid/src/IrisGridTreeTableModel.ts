@@ -107,9 +107,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     table: DhType.TreeTable,
     formatter = new Formatter(dh),
     inputTable: DhType.InputTable | null = null,
-    customColumnAlignmentMap = new Map<string, CanvasTextAlign>()
+    columnAlignmentMap = new Map<string, CanvasTextAlign>()
   ) {
-    super(dh, table, formatter, inputTable, customColumnAlignmentMap);
+    super(dh, table, formatter, inputTable, columnAlignmentMap);
 
     this.virtualColumns =
       this.showExtraGroupColumn && table.groupedColumns.length > 1
@@ -241,7 +241,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
 
-    const customAlignment = this.customColumnAlignmentMap?.get(column.name);
+    const customAlignment = this.columnAlignmentMap?.get(column.name);
     if (customAlignment != null) {
       return customAlignment;
     }

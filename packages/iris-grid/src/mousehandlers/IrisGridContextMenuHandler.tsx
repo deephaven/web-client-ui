@@ -1126,11 +1126,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   textAlignmentFormatActions(column: DhType.Column): ContextAction[] {
     const { model } = this.irisGrid.props;
-    const { customColumnAlignmentMap } = this.irisGrid.state;
+    const { columnAlignmentMap } = this.irisGrid.state;
     const modelIndex = model.getColumnIndexByName(column.name);
     assertNotNull(modelIndex);
 
-    const currentAlignment = customColumnAlignmentMap.get(column.name);
+    const currentAlignment = columnAlignmentMap.get(column.name);
 
     return TextAlignmentFormatContextMenu.alignmentOptions.map(
       (option, index) => ({

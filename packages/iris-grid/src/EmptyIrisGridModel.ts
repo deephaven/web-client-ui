@@ -21,12 +21,12 @@ class EmptyIrisGridModel extends IrisGridModel {
     super(dh);
 
     this.modelFormatter = formatter;
-    this.modelCustomColumnAlignmentMap = new Map<string, CanvasTextAlign>();
+    this.modelColumnAlignmentMap = new Map<string, CanvasTextAlign>();
   }
 
   modelFormatter: Formatter;
 
-  modelCustomColumnAlignmentMap: Map<string, CanvasTextAlign>;
+  modelColumnAlignmentMap: Map<string, CanvasTextAlign>;
 
   get rowCount(): number {
     return 0;
@@ -107,14 +107,12 @@ class EmptyIrisGridModel extends IrisGridModel {
     this.modelFormatter = formatter;
   }
 
-  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
-    return this.modelCustomColumnAlignmentMap;
+  get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
+    return this.modelColumnAlignmentMap;
   }
 
-  set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, CanvasTextAlign>
-  ) {
-    this.modelCustomColumnAlignmentMap = customColumnAlignmentMap;
+  set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
+    this.modelColumnAlignmentMap = columnAlignmentMap;
   }
 
   displayString(

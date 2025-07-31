@@ -237,13 +237,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
+  get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
     return new Map<string, CanvasTextAlign>();
   }
 
-  set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, CanvasTextAlign>
-  ) {
+  set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
     // Ignore for mock
   }
 

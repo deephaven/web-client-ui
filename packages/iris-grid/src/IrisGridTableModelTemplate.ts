@@ -141,7 +141,7 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
-  private irisCustomColumnAlignmentMap: Map<string, CanvasTextAlign>;
+  private irisColumnAlignmentMap: Map<string, CanvasTextAlign>;
 
   inputTable: DhType.InputTable | null;
 
@@ -195,14 +195,14 @@ class IrisGridTableModelTemplate<
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
-   * @param customColumnAlignmentMap Map of custom column alignments
+   * @param columnAlignmentMap Map of custom column alignments
    */
   constructor(
     dh: typeof DhType,
     table: T,
     formatter = new Formatter(dh),
     inputTable: DhType.InputTable | null = null,
-    customColumnAlignmentMap = new Map<string, CanvasTextAlign>()
+    columnAlignmentMap = new Map<string, CanvasTextAlign>()
   ) {
     super(dh);
 
@@ -216,7 +216,7 @@ class IrisGridTableModelTemplate<
 
     this.dh = dh;
     this.irisFormatter = formatter;
-    this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
+    this.irisColumnAlignmentMap = columnAlignmentMap;
     this.irisGridUtils = new IrisGridUtils(dh);
     this.inputTable = inputTable;
     this.subscription = null;
@@ -661,7 +661,7 @@ class IrisGridTableModelTemplate<
   textAlignForCell(x: ModelIndex, y: ModelIndex): CanvasTextAlign {
     const column = this.sourceColumn(x, y);
 
-    const customAlignment = this.customColumnAlignmentMap.get(column.name);
+    const customAlignment = this.columnAlignmentMap.get(column.name);
     if (customAlignment != null) {
       return customAlignment;
     }
@@ -1230,14 +1230,12 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
-    return this.irisCustomColumnAlignmentMap;
+  get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
+    return this.irisColumnAlignmentMap;
   }
 
-  set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, CanvasTextAlign>
-  ) {
-    this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
+  set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
+    this.irisColumnAlignmentMap = columnAlignmentMap;
   }
 
   displayString(

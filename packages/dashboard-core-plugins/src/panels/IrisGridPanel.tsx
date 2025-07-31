@@ -187,7 +187,7 @@ interface IrisGridPanelState {
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
-  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly dh.Sort[];
@@ -298,7 +298,7 @@ export class IrisGridPanel extends PureComponent<
       advancedSettings: new Map(AdvancedSettings.DEFAULTS),
       customColumns: [],
       customColumnFormatMap: new Map(),
-      customColumnAlignmentMap: new Map(),
+      columnAlignmentMap: new Map(),
       isFilterBarShown: false,
       quickFilters: new Map(),
       sorts: [],
@@ -1015,7 +1015,7 @@ export class IrisGridPanel extends PureComponent<
         advancedFilters,
         customColumns,
         customColumnFormatMap,
-        customColumnAlignmentMap,
+        columnAlignmentMap,
         isFilterBarShown,
         quickFilters,
         reverse,
@@ -1050,7 +1050,7 @@ export class IrisGridPanel extends PureComponent<
         conditionalFormats,
         customColumns,
         customColumnFormatMap,
-        customColumnAlignmentMap,
+        columnAlignmentMap,
         isFilterBarShown,
         isSelectingPartition,
         movedColumns,
@@ -1145,7 +1145,7 @@ export class IrisGridPanel extends PureComponent<
       conditionalFormats,
       customColumns,
       customColumnFormatMap,
-      customColumnAlignmentMap,
+      columnAlignmentMap,
       error,
       isDisconnected,
       isFilterBarShown,
@@ -1227,7 +1227,7 @@ export class IrisGridPanel extends PureComponent<
             copyCursor="copy"
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
-            customColumnAlignmentMap={customColumnAlignmentMap}
+            columnAlignmentMap={columnAlignmentMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}

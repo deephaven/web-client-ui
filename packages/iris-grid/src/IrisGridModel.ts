@@ -252,13 +252,13 @@ abstract class IrisGridModel<
   /**
    * @returns The custom column alignment map
    */
-  abstract get customColumnAlignmentMap(): Map<string, CanvasTextAlign>;
+  abstract get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign>;
 
   /**
-   * @param customColumnAlignmentMap The custom column alignment map to set
+   * @param columnAlignmentMap The column alignment map to set
    */
-  abstract set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, CanvasTextAlign>
+  abstract set columnAlignmentMap(
+    columnAlignmentMap: Map<string, CanvasTextAlign>
   );
 
   /**

@@ -284,7 +284,7 @@ export interface IrisGridProps {
   applyInputFiltersOnInit: boolean;
   conditionalFormats: readonly SidebarFormattingRule[];
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
-  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
@@ -409,7 +409,7 @@ export interface IrisGridState {
   isMenuShown: boolean;
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
 
-  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
+  columnAlignmentMap: Map<string, CanvasTextAlign>;
 
   conditionalFormats: readonly SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
@@ -487,7 +487,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     alwaysFetchColumns: EMPTY_ARRAY,
     conditionalFormats: EMPTY_ARRAY,
     customColumnFormatMap: EMPTY_MAP,
-    customColumnAlignmentMap: EMPTY_MAP,
+    columnAlignmentMap: EMPTY_MAP,
     isFilterBarShown: false,
     applyInputFiltersOnInit: false,
     movedColumns: EMPTY_ARRAY,
@@ -724,7 +724,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       aggregationSettings,
       conditionalFormats,
       customColumnFormatMap,
-      customColumnAlignmentMap,
+      columnAlignmentMap,
       isFilterBarShown,
       isSelectingPartition,
       partitions,
@@ -848,7 +848,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       formatter: new Formatter(dh),
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
-      customColumnAlignmentMap: new Map(customColumnAlignmentMap),
+      columnAlignmentMap: new Map(columnAlignmentMap),
 
       conditionalFormats,
       conditionalFormatEditIndex: null,
@@ -3140,14 +3140,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const column = model.columns[modelIndex];
 
-    this.setState(({ customColumnAlignmentMap = EMPTY_MAP }) => {
-      const newCustomColumnAlignmentMap = new Map(customColumnAlignmentMap);
+    this.setState(({ columnAlignmentMap = EMPTY_MAP }) => {
+      const newColumnAlignmentMap = new Map(columnAlignmentMap);
       if (alignment != null) {
-        newCustomColumnAlignmentMap.set(column.name, alignment);
+        newColumnAlignmentMap.set(column.name, alignment);
       } else {
-        newCustomColumnAlignmentMap.delete(column.name);
+        newColumnAlignmentMap.delete(column.name);
       }
-      return { customColumnAlignmentMap: newCustomColumnAlignmentMap };
+      return { columnAlignmentMap: newColumnAlignmentMap };
     });
   }
 
@@ -4411,7 +4411,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormatPreview,
       conditionalFormatEditIndex,
 
-      customColumnAlignmentMap,
+      columnAlignmentMap,
 
       sorts,
       reverse,
@@ -4999,7 +4999,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 right={right}
                 filter={filter}
                 formatter={formatter}
-                customColumnAlignmentMap={customColumnAlignmentMap}
+                columnAlignmentMap={columnAlignmentMap}
                 sorts={sorts}
                 reverse={reverse}
                 movedColumns={movedColumns}
