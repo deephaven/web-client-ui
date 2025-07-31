@@ -45,7 +45,6 @@ import {
   type ColumnHeaderGroup,
   type IrisGridContextMenuData,
   type PartitionConfig,
-  type TextAlignment,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -188,7 +187,7 @@ interface IrisGridPanelState {
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   customColumns: readonly ColumnName[];
   customColumnFormatMap: Map<string, FormattingRule>;
-  customColumnAlignmentMap: Map<string, TextAlignment>;
+  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly dh.Sort[];

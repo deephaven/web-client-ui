@@ -40,7 +40,6 @@ import {
   type CellData,
   type UIViewportData,
   type PendingDataErrorMap,
-  type TextAlignment,
 } from './CommonTypes';
 import { type IrisGridThemeType } from './IrisGridTheme';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -142,7 +141,7 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
-  private irisCustomColumnAlignmentMap: Map<string, TextAlignment>;
+  private irisCustomColumnAlignmentMap: Map<string, CanvasTextAlign>;
 
   inputTable: DhType.InputTable | null;
 
@@ -203,7 +202,7 @@ class IrisGridTableModelTemplate<
     table: T,
     formatter = new Formatter(dh),
     inputTable: DhType.InputTable | null = null,
-    customColumnAlignmentMap = new Map<string, TextAlignment>()
+    customColumnAlignmentMap = new Map<string, CanvasTextAlign>()
   ) {
     super(dh);
 
@@ -1231,12 +1230,12 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get customColumnAlignmentMap(): Map<string, TextAlignment> {
+  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
     return this.irisCustomColumnAlignmentMap;
   }
 
   set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment>
+    customColumnAlignmentMap: Map<string, CanvasTextAlign>
   ) {
     this.irisCustomColumnAlignmentMap = customColumnAlignmentMap;
   }

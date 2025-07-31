@@ -20,7 +20,6 @@ import {
   type UITotalsTableConfig,
   type PendingDataMap,
   type PendingDataErrorMap,
-  type TextAlignment,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
@@ -253,13 +252,13 @@ abstract class IrisGridModel<
   /**
    * @returns The custom column alignment map
    */
-  abstract get customColumnAlignmentMap(): Map<string, TextAlignment>;
+  abstract get customColumnAlignmentMap(): Map<string, CanvasTextAlign>;
 
   /**
    * @param customColumnAlignmentMap The custom column alignment map to set
    */
   abstract set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment>
+    customColumnAlignmentMap: Map<string, CanvasTextAlign>
   );
 
   /**

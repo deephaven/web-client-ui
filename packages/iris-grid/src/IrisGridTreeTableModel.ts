@@ -14,7 +14,7 @@ import {
   EMPTY_ARRAY,
   EventShimCustomEvent,
 } from '@deephaven/utils';
-import { type UIRow, type ColumnName, type TextAlignment } from './CommonTypes';
+import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import { type IrisGridThemeType } from './IrisGridTheme';
@@ -107,7 +107,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     table: DhType.TreeTable,
     formatter = new Formatter(dh),
     inputTable: DhType.InputTable | null = null,
-    customColumnAlignmentMap = new Map<string, TextAlignment>()
+    customColumnAlignmentMap = new Map<string, CanvasTextAlign>()
   ) {
     super(dh, table, formatter, inputTable, customColumnAlignmentMap);
 

@@ -11,7 +11,7 @@ import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { type TextAlignment, type ColumnName } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import {
   type PartitionConfig,
@@ -457,12 +457,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.originalModel.formatter = formatter;
   }
 
-  get customColumnAlignmentMap(): Map<string, TextAlignment> {
+  get customColumnAlignmentMap(): Map<string, CanvasTextAlign> {
     return this.originalModel.customColumnAlignmentMap;
   }
 
   set customColumnAlignmentMap(
-    customColumnAlignmentMap: Map<string, TextAlignment>
+    customColumnAlignmentMap: Map<string, CanvasTextAlign>
   ) {
     this.originalModel.customColumnAlignmentMap = customColumnAlignmentMap;
   }

@@ -189,7 +189,6 @@ import {
   type ReadonlyAdvancedFilterMap,
   type ReadonlyAggregationMap,
   type ReadonlyQuickFilterMap,
-  type TextAlignment,
   type UITotalsTableConfig,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
@@ -285,7 +284,7 @@ export interface IrisGridProps {
   applyInputFiltersOnInit: boolean;
   conditionalFormats: readonly SidebarFormattingRule[];
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
-  customColumnAlignmentMap: Map<string, TextAlignment>;
+  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
@@ -410,7 +409,7 @@ export interface IrisGridState {
   isMenuShown: boolean;
   customColumnFormatMap: Map<ColumnName, FormattingRule>;
 
-  customColumnAlignmentMap: Map<string, TextAlignment>;
+  customColumnAlignmentMap: Map<string, CanvasTextAlign>;
 
   conditionalFormats: readonly SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;

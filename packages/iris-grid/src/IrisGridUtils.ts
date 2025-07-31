@@ -34,7 +34,6 @@ import {
   type PendingDataMap,
   type UIRow,
   type AdvancedFilterOptions,
-  type TextAlignment,
 } from './CommonTypes';
 import { type UIRollupConfig } from './sidebar/RollupRows';
 import { type AggregationSettings } from './sidebar/aggregations/Aggregations';
@@ -94,7 +93,7 @@ export type DehydratedQuickFilter = [
 
 export type DehydratedCustomColumnFormat = [string, FormattingRule];
 
-export type DehydratedCustomColumnAlignment = [string, TextAlignment];
+export type DehydratedCustomColumnAlignment = [string, CanvasTextAlign];
 
 export type DehydratedUserColumnWidth = [ColumnName, number];
 
