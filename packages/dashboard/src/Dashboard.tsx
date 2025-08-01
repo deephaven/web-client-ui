@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import throttle from 'lodash.throttle';
 import GoldenLayout from '@deephaven/golden-layout';
-import type { ItemConfig } from '@deephaven/golden-layout';
+import type { ItemConfig, Settings } from '@deephaven/golden-layout';
 import { useResizeObserver } from '@deephaven/react-hooks';
 import './layout/GoldenLayout.scss';
 import LayoutUtils from './layout/LayoutUtils';
@@ -36,7 +36,7 @@ export type DashboardProps = {
   children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
   layoutConfig?: ItemConfig[];
-  layoutSettings?: Record<string, unknown>;
+  layoutSettings?: Partial<Settings>;
   onLayoutConfigChange?: () => void;
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   onLayoutInitialized?: () => void;
