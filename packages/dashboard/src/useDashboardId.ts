@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 export const DashboardIdContext = createContext<string | null>(null);
+DashboardIdContext.displayName = 'DashboardIdContext';
 
 export function useDashboardId(): string {
   const dashboardId = useContext(DashboardIdContext);

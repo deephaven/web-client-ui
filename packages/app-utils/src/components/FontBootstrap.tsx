@@ -12,6 +12,7 @@ import '@fontsource/fira-sans/700.css';
 import '@fontsource/fira-sans/700-italic.css';
 
 export const FontsLoadedContext = createContext<boolean>(false);
+FontsLoadedContext.displayName = 'FontsLoadedContext';
 
 export type FontBootstrapProps = {
   /**

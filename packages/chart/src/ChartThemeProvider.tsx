@@ -7,6 +7,7 @@ export type ChartThemeContextValue = ChartTheme;
 export const ChartThemeContext = createContext<ChartThemeContextValue | null>(
   null
 );
+ChartThemeContext.displayName = 'ChartThemeContext';
 
 export interface ChartThemeProviderProps {
   children: ReactNode;

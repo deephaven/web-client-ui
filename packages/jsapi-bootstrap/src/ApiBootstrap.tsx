@@ -11,6 +11,7 @@ import Log from '@deephaven/log';
 const log = Log.module('@deephaven/jsapi-bootstrap.ApiBootstrap');
 
 export const ApiContext = createContext<typeof DhType | null>(null);
+ApiContext.displayName = 'ApiContext';
 
 export type ApiBootstrapProps = {
   /** URL of the API to load */
