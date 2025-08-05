@@ -42,6 +42,7 @@ export type PersistentStateContextType = {
  */
 export const PersistentStateContext =
   createContext<PersistentStateContextType | null>(null);
+PersistentStateContext.displayName = 'PersistentStateContext';
 
 export type PersistentStateProviderProps = React.PropsWithChildren<{
   /**

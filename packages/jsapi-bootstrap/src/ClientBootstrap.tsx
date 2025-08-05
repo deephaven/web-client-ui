@@ -3,6 +3,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import useCreateClient from './useCreateClient';
 
 export const ClientContext = createContext<dh.CoreClient | null>(null);
+ClientContext.displayName = 'ClientContext';
 
 export type ClientBootstrapProps = {
   /** URL of the server to connect to */

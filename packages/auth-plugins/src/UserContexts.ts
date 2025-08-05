@@ -9,5 +9,7 @@ export const UserOverrideContext = createContext<UserOverride>({});
 
 export const UserPermissionsOverrideContext =
   createContext<UserPermissionsOverride>({});
+UserPermissionsOverrideContext.displayName = 'UserPermissionsOverrideContext';
 
 export const UserContext = createContext<User | null>(null);
+UserContext.displayName = 'UserContext';

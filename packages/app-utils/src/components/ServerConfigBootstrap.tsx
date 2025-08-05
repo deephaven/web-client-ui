@@ -6,6 +6,7 @@ import { getErrorMessage } from '@deephaven/utils';
 export const ServerConfigContext = createContext<Map<string, string> | null>(
   null
 );
+ServerConfigContext.displayName = 'ServerConfigContext';
 
 export type ServerConfigBootstrapProps = {
   /**
