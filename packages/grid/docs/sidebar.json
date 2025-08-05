@@ -43,6 +43,10 @@
             "path": "customize/interaction.md"
           },
           {
+            "label": "Custom grid metric calculator",
+            "path": "customize/metric-calculator.md"
+          },
+          {
             "label": "Select rows or columns",
             "path": "customize/selection.md"
           },

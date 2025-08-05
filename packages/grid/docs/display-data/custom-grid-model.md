@@ -111,7 +111,6 @@ function parseCSV(csvText) {
 }
 
 function CustomGridExample() {
-  
   const [model] = useState(() => new DeNiroDataGridModel())
   const grid = useRef();
   const [error, setError] = useState(null);
