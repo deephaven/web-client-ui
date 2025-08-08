@@ -239,6 +239,39 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       },
       disabled: !isColumnHidden,
     });
+
+    if (isExpandableGridModel(model) && model.hasExpandableColumns) {
+      actions.push({
+        title: model.isColumnExpanded(modelIndex)
+          ? 'Collapse Column'
+          : 'Expand Column',
+        // TODO: group
+        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+        action: () => {
+          this.irisGrid.toggleExpandColumn(modelIndex);
+        },
+        disabled: !model.isColumnExpandable(modelIndex),
+      });
+
+      actions.push({
+        title: 'Expand All Columns',
+        // TODO: group
+        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+        action: () => {
+          this.irisGrid.expandAllColumns();
+        },
+      });
+
+      actions.push({
+        title: 'Collapse All Columns',
+        // TODO: group
+        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
+        action: () => {
+          this.irisGrid.collapseAllColumns();
+        },
+      });
+    }
+
     actions.push({
       title: 'Quick Filters',
       icon: vsRemove,

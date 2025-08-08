@@ -132,6 +132,42 @@ class MockTreeGridModel extends MockGridModel implements ExpandableGridModel {
     return this.getCachedDepthForRow(this.children, row);
   }
 
+  get hasExpandableColumns(): boolean {
+    return false;
+  }
+
+  get isExpandAllColumnsAvailable(): boolean {
+    return false;
+  }
+
+  isColumnExpandable(_column: ModelIndex): boolean {
+    return false;
+  }
+
+  isColumnExpanded(_column: ModelIndex): boolean {
+    return false;
+  }
+
+  setColumnExpanded(
+    _column: ModelIndex,
+    _isExpanded: boolean,
+    _expandDescendants?: boolean
+  ): void {
+    throw new Error('setColumnExpanded not implemented.');
+  }
+
+  expandAllColumns(): void {
+    throw new Error('Expand all columns not implemented.');
+  }
+
+  collapseAllColumns(): void {
+    throw new Error('Collapse all columns not implemented.');
+  }
+
+  depthForColumn(_column: ModelIndex): number {
+    throw new Error('depthForColumn not implemented.');
+  }
+
   /**
    * Returns the map key and the offsetRow given the provided children and row index.
    * If the returned key is null, then this offset row is within this model.

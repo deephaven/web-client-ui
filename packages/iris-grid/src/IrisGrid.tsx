@@ -1814,6 +1814,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   rebuildFilters(): void {
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
+
+    if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      log.debug('No filters to rebuild');
+      return;
+    }
+
     const { columns, formatter } = model;
 
     log.debug('Rebuilding filters');
@@ -2481,6 +2487,30 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       frozenColumns: [...allFrozenColumns],
       movedColumns: newMovedColumns,
     });
+  }
+
+  toggleExpandColumn(modelIndex: ModelIndex): void {
+    log.debug2('toggleExpandColumn', modelIndex);
+    const { model } = this.props;
+    if (isExpandableGridModel(model)) {
+      model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
+    }
+  }
+
+  expandAllColumns(): void {
+    log.debug2('expandAllColumns');
+    const { model } = this.props;
+    if (isExpandableGridModel(model)) {
+      model.expandAllColumns();
+    }
+  }
+
+  collapseAllColumns(): void {
+    log.debug2('collapseAllColumns');
+    const { model } = this.props;
+    if (isExpandableGridModel(model)) {
+      model.collapseAllColumns();
+    }
   }
 
   handleColumnVisibilityChanged(
