@@ -62,7 +62,7 @@ export function ApiBootstrap({
   }, [apiUrl, setGlobally]);
 
   if (isLoading) {
-    return <LoadingOverlay />;
+    return <LoadingOverlay data-testid="api-bootstrap-loading" />;
   }
   if (api == null) {
     return (

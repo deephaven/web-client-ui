@@ -14,7 +14,9 @@ const LazyIrisGrid = forwardRef<
     props,
     ref
   ): JSX.Element => (
-    <Suspense fallback={<LoadingOverlay />}>
+    <Suspense
+      fallback={<LoadingOverlay data-testid="lazy-iris-grid-loading" />}
+    >
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <IrisGrid ref={ref} {...props} />
     </Suspense>

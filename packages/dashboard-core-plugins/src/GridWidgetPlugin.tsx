@@ -143,12 +143,15 @@ export function GridWidgetPlugin({
   }, [linkerAlwaysFetchColumns, filterFetchColumns]);
 
   if (fetchResult.status === 'loading') {
-    return <LoadingOverlay isLoading />;
+    return (
+      <LoadingOverlay isLoading data-testid="grid-widget-plugin-loading" />
+    );
   }
 
   if (fetchResult.status === 'error') {
     return (
       <LoadingOverlay
+        data-testid="grid-widget-plugin-loading-error"
         errorMessage={getErrorMessage(fetchResult.error)}
         isLoading={false}
       />

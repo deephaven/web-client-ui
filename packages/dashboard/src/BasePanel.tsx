@@ -298,6 +298,7 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
       >
         {children}
         <LoadingOverlay
+          data-testid="base-panel-loading"
           errorMessage={errorMessage}
           isLoaded={isLoaded}
           isLoading={isLoading}
