@@ -240,7 +240,9 @@ export class MarkdownPanel extends Component<
             isEditing={isEditing}
             onDoubleClick={this.handleContainerDoubleClick}
           >
-            <Suspense fallback={<LoadingOverlay />}>
+            <Suspense
+              fallback={<LoadingOverlay data-testid="markdown-panel-loading" />}
+            >
               <MarkdownEditor
                 ref={markdownEditor => {
                   this.markdownEditor = markdownEditor;

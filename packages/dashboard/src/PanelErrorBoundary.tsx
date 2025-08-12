@@ -50,6 +50,7 @@ class PanelErrorBoundary extends Component<
       return (
         <div className="panel-error-boundary">
           <LoadingOverlay
+            data-testid="panel-error-boundary-loading-error"
             errorMessage={`${error}`}
             isLoading={false}
             isLoaded={false}
