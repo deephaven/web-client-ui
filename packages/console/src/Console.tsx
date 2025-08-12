@@ -347,6 +347,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         error?: string;
         changes: DhType.ide.VariableChanges;
         cancel: () => unknown;
+        startTimestamp?: DhType.LongWrapper;
+        endTimestamp?: DhType.LongWrapper;
       };
     }>
   ): void {
@@ -400,17 +402,24 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
           message: string;
           error?: string;
           changes: DhType.ide.VariableChanges;
+          startTimestamp?: DhType.LongWrapper;
+          endTimestamp?: DhType.LongWrapper;
         }
       | undefined,
     historyItem: ConsoleHistoryActionItem,
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
+    const serverStartTime = result?.startTimestamp?.asNumber();
+    const serverEndTime = result?.endTimestamp?.asNumber();
     const newHistoryItem = {
       ...historyItem,
       wrappedResult: undefined,
       cancelResult: undefined,
       result: result ?? historyItem.result,
+      serverStartTime,
+      serverEndTime,
     };
+    console.log('handleCommandResult', { newHistoryItem });
 
     this.setState(({ consoleHistory }) => {
       const itemIndex = consoleHistory.lastIndexOf(historyItem);
@@ -432,7 +441,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.updateHistory(result, newHistoryItem);
     this.updateKnownObjects(newHistoryItem);
     this.updateWorkspaceHistoryItem(
-      { error: result.error },
+      {
+        error: result.error,
+        serverStartTime,
+        serverEndTime,
+      },
       workspaceItemPromise
     );
 
@@ -659,7 +672,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
    * @param workspaceItemPromise The workspace data row promise for the workspace item to be updated
    */
   updateWorkspaceHistoryItem(
-    result: { error?: string },
+    result: {
+      error?: string;
+      serverStartTime?: number;
+      serverEndTime?: number;
+    },
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
     const promise = this.pending.add(workspaceItemPromise);

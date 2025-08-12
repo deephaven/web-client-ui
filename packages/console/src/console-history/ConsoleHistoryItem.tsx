@@ -2,7 +2,17 @@
  * Console display for use in the Iris environment.
  */
 import React, { PureComponent, type ReactElement } from 'react';
-import { Button } from '@deephaven/components';
+import {
+  ActionGroup,
+  Button,
+  Item,
+  Tooltip,
+  Text,
+  ContextualHelp,
+  Content,
+  Heading,
+  ActionButton,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import classNames from 'classnames';
@@ -12,7 +22,7 @@ import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
 import './ConsoleHistoryItem.scss';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
-
+import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
 const log = Log.module('ConsoleHistoryItem');
 
 interface ConsoleHistoryItemProps {
@@ -58,16 +68,21 @@ class ConsoleHistoryItem extends PureComponent<
 
   render(): ReactElement {
     const { disabled, item, language, iconForType } = this.props;
-    const { disabledObjects, result } = item;
+    const { disabledObjects, result, serverStartTime, serverEndTime } = item;
     const hasCommand = item.command != null && item.command !== '';
 
     let commandElement = null;
     if (hasCommand) {
       commandElement = (
-        <div className="console-history-item-command">
+        <div className="console-history-item-command  hover-container">
           <div className="console-history-gutter">&gt;</div>
           <div className="console-history-content">
             <Code language={language}>{item.command}</Code>
+            <div className="action-group-wrapper">
+              <ActionButton>Copy</ActionButton>
+              <ActionButton>Rerun</ActionButton>
+              <ConsoleHistoryItemTooltip item={item} />
+            </div>
           </div>
         </div>
       );
@@ -75,6 +90,8 @@ class ConsoleHistoryItem extends PureComponent<
 
     const resultElements = [];
     let hasButtons = false;
+
+    console.log('result', serverEndTime, serverStartTime, result);
 
     if (result) {
       const { error, message, changes } = result;

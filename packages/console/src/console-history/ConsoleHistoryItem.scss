@@ -95,3 +95,26 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
     }
   }
 }
+
+.hover-container {
+  position: relative;
+}
+
+.action-group-wrapper {
+  position: absolute;
+  top: 1.5rem;
+  right: 1rem;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* Background and text color on hover */
+.hover-container:hover {
+  background: #333;
+}
+.hover-container:hover .action-group-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+}

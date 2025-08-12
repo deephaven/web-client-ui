@@ -14,10 +14,14 @@ export interface ConsoleHistoryActionItem {
     message?: string;
     error?: unknown;
     changes?: dh.ide.VariableChanges;
+    serverStartTime?: dh.LongWrapper;
+    serverEndTime?: dh.LongWrapper;
   };
   disabledObjects?: string[];
   startTime?: number;
   endTime?: number;
+  serverStartTime?: number;
+  serverEndTime?: number;
   cancelResult?: () => void;
   wrappedResult?: CancelablePromise<unknown>;
 }
