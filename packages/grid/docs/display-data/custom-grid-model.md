@@ -4,6 +4,8 @@ For more control over how your data will be displayed, you can create your own d
 
 See [GridModel](https://github.com/deephaven/web-client-ui/blob/main/packages/grid/src/GridModel.ts) for full list of properties and methods.
 
+Note: All of these methods should return very quickly, as they will be called many times in the render cycle.
+
 ```jsx live noInline
 class DeNiroDataGridModel extends GridModel {
   private data: unknown[][];
@@ -123,13 +125,12 @@ function CustomGridExample() {
         );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch credit card data');
+          throw new Error('Failed to fetch DeNiro movie data');
         }
 
         const data = await response.text();
         const parsedData = parseCSV(data)
         model.updateData(parsedData)
-        // grid.current.forceUpdate()
       } catch (err) {
         setError(err.message);
       }
