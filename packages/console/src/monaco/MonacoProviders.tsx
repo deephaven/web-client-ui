@@ -2,7 +2,7 @@
  * Completion provider for a code session
  */
 import { PureComponent } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
@@ -12,7 +12,7 @@ import MonacoUtils from './MonacoUtils';
 const log = Log.module('MonacoCompletionProvider');
 
 interface MonacoProviderProps {
-  model: monaco.editor.ITextModel;
+  model: Monaco.editor.ITextModel;
   session: dh.IdeSession;
   language: string;
 }
@@ -46,10 +46,10 @@ class MonacoProviders extends PureComponent<
       return MonacoProviders.initRuffPromise;
     }
 
-    MonacoProviders.initRuffPromise = init({}).then(() => {
+    MonacoProviders.initRuffPromise = init({}).then(async () => {
       log.debug('Initialized Ruff', Workspace.version());
       MonacoProviders.isRuffInitialized = true;
-      MonacoProviders.updateRuffWorkspace();
+      await MonacoProviders.updateRuffWorkspace();
     });
 
     return MonacoProviders.initRuffPromise;
@@ -59,7 +59,7 @@ class MonacoProviders extends PureComponent<
    * Updates the current ruff workspace with MonacoProviders.ruffSettings.
    * Re-lints all Python models after updating.
    */
-  static updateRuffWorkspace(): void {
+  static async updateRuffWorkspace(): Promise<void> {
     if (!MonacoProviders.isRuffInitialized) {
       return;
     }
@@ -76,7 +76,7 @@ class MonacoProviders extends PureComponent<
     }
     /* eslint-enable no-console */
 
-    MonacoProviders.lintAllPython();
+    await MonacoProviders.lintAllPython();
   }
 
   /**
@@ -96,7 +96,7 @@ class MonacoProviders extends PureComponent<
     MonacoProviders.updateRuffWorkspace();
   }
 
-  static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
+  static getDiagnostics(model: Monaco.editor.ITextModel): Diagnostic[] {
     if (!MonacoProviders.ruffWorkspace) {
       return [];
     }
@@ -111,7 +111,9 @@ class MonacoProviders extends PureComponent<
     return diagnostics;
   }
 
-  static lintAllPython(): void {
+  static async lintAllPython(): Promise<void> {
+    const monaco = await MonacoUtils.lazyMonaco();
+
     if (!MonacoProviders.isRuffEnabled) {
       monaco.editor.removeAllMarkers('ruff');
       return;
@@ -123,7 +125,7 @@ class MonacoProviders extends PureComponent<
       .forEach(MonacoProviders.lintPython);
   }
 
-  static lintPython(model: monaco.editor.ITextModel): void {
+  static async lintPython(model: Monaco.editor.ITextModel): Promise<void> {
     if (!MonacoProviders.isRuffEnabled) {
       return;
     }
@@ -134,6 +136,8 @@ class MonacoProviders extends PureComponent<
 
     const diagnostics = MonacoProviders.getDiagnostics(model);
     log.debug(`Linting Python document: ${model.uri.toString()}`, diagnostics);
+
+    const monaco = await MonacoUtils.lazyMonaco();
 
     monaco.editor.setModelMarkers(
       model,
@@ -165,7 +169,8 @@ class MonacoProviders extends PureComponent<
    * @param kind The LSP kind
    * @returns Monaco kind
    */
-  static lspToMonacoKind(kind: number | undefined): number {
+  static async lspToMonacoKind(kind: number | undefined): Promise<number> {
+    const monaco = await MonacoUtils.lazyMonaco();
     const monacoKinds = monaco.languages.CompletionItemKind;
     switch (kind) {
       case 1:
@@ -230,7 +235,7 @@ class MonacoProviders extends PureComponent<
    * @param range The LSP document range to convert
    * @returns The corresponding monaco range
    */
-  static lspToMonacoRange(range: dh.lsp.Range): monaco.IRange {
+  static lspToMonacoRange(range: dh.lsp.Range): Monaco.IRange {
     const { start, end } = range;
 
     // Monaco expects the columns/ranges to start at 1. LSP starts at 0
@@ -250,7 +255,7 @@ class MonacoProviders extends PureComponent<
    * @returns The corresponding LSP position
    */
   static monacoToLspPosition(
-    position: monaco.IPosition
+    position: Monaco.IPosition
   ): Pick<dh.lsp.Position, 'line' | 'character'> {
     // Monaco 1-indexes Position. LSP 0-indexes Position
     return {
@@ -259,175 +264,188 @@ class MonacoProviders extends PureComponent<
     };
   }
 
-  static handlePythonCodeActionRequest(
-    model: monaco.editor.ITextModel,
-    range: monaco.Range
-  ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
-    if (!MonacoProviders.isRuffEnabled || !MonacoProviders.ruffWorkspace) {
+  static async createPythonCodeActionRequestHandler(): Promise<
+    (
+      model: Monaco.editor.ITextModel,
+      range: Monaco.Range
+    ) => Monaco.languages.ProviderResult<Monaco.languages.CodeActionList>
+  > {
+    const monaco = await MonacoUtils.lazyMonaco();
+
+    return function handlePythonCodeActionRequest(
+      model: Monaco.editor.ITextModel,
+      range: Monaco.Range
+    ): Monaco.languages.ProviderResult<Monaco.languages.CodeActionList> {
+      if (!MonacoProviders.isRuffEnabled || !MonacoProviders.ruffWorkspace) {
+        return {
+          actions: [],
+          dispose: () => {
+            /* no-op */
+          },
+        };
+      }
+
+      const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
+        const diagnosticRange = new monaco.Range(
+          d.location.row,
+          d.location.column,
+          d.end_location.row,
+          d.end_location.column
+        );
+        return (
+          d.code != null && // Syntax errors have no code and can't be fixed/disabled
+          diagnosticRange.intersectRanges(range)
+        );
+      });
+
+      const fixActions: Monaco.languages.CodeAction[] = diagnostics
+        .filter(({ fix }) => fix != null)
+        .map(d => {
+          let title = 'Fix';
+          if (d.fix != null) {
+            if (d.fix.message != null && d.fix.message !== '') {
+              title = `${d.code}: ${d.fix.message}`;
+            } else {
+              title = `Fix ${d.code}`;
+            }
+          }
+          return {
+            title,
+            id: `fix-${d.code}`,
+            kind: 'quickfix',
+            edit: d.fix
+              ? {
+                  edits: d.fix.edits.map(edit => ({
+                    resource: model.uri,
+                    versionId: model.getVersionId(),
+                    textEdit: {
+                      range: {
+                        startLineNumber: edit.location.row,
+                        startColumn: edit.location.column,
+                        endLineNumber: edit.end_location.row,
+                        endColumn: edit.end_location.column,
+                      },
+                      text: edit.content ?? '',
+                    },
+                  })),
+                }
+              : undefined,
+          };
+        });
+
+      const seenCodes = new Set<string>();
+      const duplicateCodes = new Set<string>();
+      diagnostics.forEach(d => {
+        if (d.code == null) {
+          return;
+        }
+        if (seenCodes.has(d.code)) {
+          duplicateCodes.add(d.code);
+        }
+        seenCodes.add(d.code);
+      });
+
+      const disableLineActions: Monaco.languages.CodeAction[] = diagnostics
+        .map(d => {
+          if (d.code == null) {
+            // The nulls are already filtered out, but TS doesn't know that
+            return [];
+          }
+          const line = model.getLineContent(d.location.row);
+          const lastToken = monaco.editor
+            .tokenize(line, model.getLanguageId())[0]
+            .at(-1);
+          const lineEdit = {
+            range: {
+              startLineNumber: d.location.row,
+              startColumn: line.length + 1,
+              endLineNumber: d.location.row,
+              endColumn: line.length + 1,
+            },
+            text: ` # noqa: ${d.code}`,
+          };
+          if (lastToken != null && lastToken.type.startsWith('comment')) {
+            // Already a comment at the end of the line
+            lineEdit.text = `# noqa: ${d.code} `;
+            if (line.startsWith('# noqa:', lastToken.offset)) {
+              // Already another suppressed rule on the line
+              lineEdit.range.startColumn = lastToken.offset + 1;
+              lineEdit.range.endColumn = lastToken.offset + 9; // "# noqa: " length + 1 to offset
+            } else {
+              lineEdit.range.startColumn = lastToken.offset + 1;
+              lineEdit.range.endColumn = line.startsWith('# ', lastToken.offset)
+                ? lastToken.offset + 3 // "# " + 1 to offset
+                : lastToken.offset + 2; // "#" + 1 to offset
+            }
+          }
+          return [
+            {
+              title: `Disable ${d.code} for ${
+                duplicateCodes.has(d.code)
+                  ? `line ${d.location.row}`
+                  : 'this line'
+              }`,
+              kind: 'quickfix',
+              edit: {
+                edits: [
+                  {
+                    resource: model.uri,
+                    versionId: model.getVersionId(),
+                    textEdit: lineEdit,
+                  },
+                ],
+              },
+            },
+          ];
+        })
+        .flat()
+        .filter(
+          // Remove actions with duplicate titles as you can't disable the same rule on a line twice
+          (action, i, arr) => arr.find(a => a.title === action.title) === action
+        );
+
+      const disableGlobalActions: Monaco.languages.CodeAction[] = [
+        ...seenCodes,
+      ].map(code => ({
+        title: `Disable ${code} for this file`,
+        kind: 'quickfix',
+        edit: {
+          edits: [
+            {
+              resource: model.uri,
+              versionId: model.getVersionId(),
+              textEdit: {
+                range: {
+                  startLineNumber: 1,
+                  startColumn: 1,
+                  endLineNumber: 1,
+                  endColumn: 1,
+                },
+                text: `# ruff: noqa: ${code}\n`,
+              },
+            },
+          ],
+        },
+      }));
+
       return {
-        actions: [],
+        actions: [
+          ...fixActions,
+          ...disableLineActions,
+          ...disableGlobalActions,
+        ],
         dispose: () => {
           /* no-op */
         },
       };
-    }
-
-    const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
-      const diagnosticRange = new monaco.Range(
-        d.location.row,
-        d.location.column,
-        d.end_location.row,
-        d.end_location.column
-      );
-      return (
-        d.code != null && // Syntax errors have no code and can't be fixed/disabled
-        diagnosticRange.intersectRanges(range)
-      );
-    });
-
-    const fixActions: monaco.languages.CodeAction[] = diagnostics
-      .filter(({ fix }) => fix != null)
-      .map(d => {
-        let title = 'Fix';
-        if (d.fix != null) {
-          if (d.fix.message != null && d.fix.message !== '') {
-            title = `${d.code}: ${d.fix.message}`;
-          } else {
-            title = `Fix ${d.code}`;
-          }
-        }
-        return {
-          title,
-          id: `fix-${d.code}`,
-          kind: 'quickfix',
-          edit: d.fix
-            ? {
-                edits: d.fix.edits.map(edit => ({
-                  resource: model.uri,
-                  versionId: model.getVersionId(),
-                  textEdit: {
-                    range: {
-                      startLineNumber: edit.location.row,
-                      startColumn: edit.location.column,
-                      endLineNumber: edit.end_location.row,
-                      endColumn: edit.end_location.column,
-                    },
-                    text: edit.content ?? '',
-                  },
-                })),
-              }
-            : undefined,
-        };
-      });
-
-    const seenCodes = new Set<string>();
-    const duplicateCodes = new Set<string>();
-    diagnostics.forEach(d => {
-      if (d.code == null) {
-        return;
-      }
-      if (seenCodes.has(d.code)) {
-        duplicateCodes.add(d.code);
-      }
-      seenCodes.add(d.code);
-    });
-
-    const disableLineActions: monaco.languages.CodeAction[] = diagnostics
-      .map(d => {
-        if (d.code == null) {
-          // The nulls are already filtered out, but TS doesn't know that
-          return [];
-        }
-        const line = model.getLineContent(d.location.row);
-        const lastToken = monaco.editor
-          .tokenize(line, model.getLanguageId())[0]
-          .at(-1);
-        const lineEdit = {
-          range: {
-            startLineNumber: d.location.row,
-            startColumn: line.length + 1,
-            endLineNumber: d.location.row,
-            endColumn: line.length + 1,
-          },
-          text: ` # noqa: ${d.code}`,
-        };
-        if (lastToken != null && lastToken.type.startsWith('comment')) {
-          // Already a comment at the end of the line
-          lineEdit.text = `# noqa: ${d.code} `;
-          if (line.startsWith('# noqa:', lastToken.offset)) {
-            // Already another suppressed rule on the line
-            lineEdit.range.startColumn = lastToken.offset + 1;
-            lineEdit.range.endColumn = lastToken.offset + 9; // "# noqa: " length + 1 to offset
-          } else {
-            lineEdit.range.startColumn = lastToken.offset + 1;
-            lineEdit.range.endColumn = line.startsWith('# ', lastToken.offset)
-              ? lastToken.offset + 3 // "# " + 1 to offset
-              : lastToken.offset + 2; // "#" + 1 to offset
-          }
-        }
-        return [
-          {
-            title: `Disable ${d.code} for ${
-              duplicateCodes.has(d.code)
-                ? `line ${d.location.row}`
-                : 'this line'
-            }`,
-            kind: 'quickfix',
-            edit: {
-              edits: [
-                {
-                  resource: model.uri,
-                  versionId: model.getVersionId(),
-                  textEdit: lineEdit,
-                },
-              ],
-            },
-          },
-        ];
-      })
-      .flat()
-      .filter(
-        // Remove actions with duplicate titles as you can't disable the same rule on a line twice
-        (action, i, arr) => arr.find(a => a.title === action.title) === action
-      );
-
-    const disableGlobalActions: monaco.languages.CodeAction[] = [
-      ...seenCodes,
-    ].map(code => ({
-      title: `Disable ${code} for this file`,
-      kind: 'quickfix',
-      edit: {
-        edits: [
-          {
-            resource: model.uri,
-            versionId: model.getVersionId(),
-            textEdit: {
-              range: {
-                startLineNumber: 1,
-                startColumn: 1,
-                endLineNumber: 1,
-                endColumn: 1,
-              },
-              text: `# ruff: noqa: ${code}\n`,
-            },
-          },
-        ],
-      },
-    }));
-
-    return {
-      actions: [...fixActions, ...disableLineActions, ...disableGlobalActions],
-      dispose: () => {
-        /* no-op */
-      },
     };
   }
 
   static handlePythonFormatRequest(
-    model: monaco.editor.ITextModel,
-    options: monaco.languages.FormattingOptions,
-    token: monaco.CancellationToken
-  ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
+    model: Monaco.editor.ITextModel,
+    options: Monaco.languages.FormattingOptions,
+    token: Monaco.CancellationToken
+  ): Monaco.languages.ProviderResult<Monaco.languages.TextEdit[]> {
     if (!MonacoProviders.ruffWorkspace) {
       return;
     }
@@ -453,28 +471,30 @@ class MonacoProviders extends PureComponent<
   componentDidMount(): void {
     const { language, session } = this.props;
 
-    this.registeredCompletionProvider =
-      monaco.languages.registerCompletionItemProvider(language, {
-        provideCompletionItems: this.handleCompletionRequest,
-        triggerCharacters: ['.', '"', "'"],
-      });
-
-    if (session.getSignatureHelp != null) {
-      this.registeredSignatureProvider =
-        monaco.languages.registerSignatureHelpProvider(language, {
-          provideSignatureHelp: this.handleSignatureRequest,
-          signatureHelpTriggerCharacters: ['(', ','],
+    MonacoUtils.lazyMonaco().then(monaco => {
+      this.registeredCompletionProvider =
+        monaco.languages.registerCompletionItemProvider(language, {
+          provideCompletionItems: this.handleCompletionRequest,
+          triggerCharacters: ['.', '"', "'"],
         });
-    }
 
-    if (session.getHover != null) {
-      this.registeredHoverProvider = monaco.languages.registerHoverProvider(
-        language,
-        {
-          provideHover: this.handleHoverRequest,
-        }
-      );
-    }
+      if (session.getSignatureHelp != null) {
+        this.registeredSignatureProvider =
+          monaco.languages.registerSignatureHelpProvider(language, {
+            provideSignatureHelp: this.handleSignatureRequest,
+            signatureHelpTriggerCharacters: ['(', ','],
+          });
+      }
+
+      if (session.getHover != null) {
+        this.registeredHoverProvider = monaco.languages.registerHoverProvider(
+          language,
+          {
+            provideHover: this.handleHoverRequest,
+          }
+        );
+      }
+    });
   }
 
   componentWillUnmount(): void {
@@ -483,17 +503,17 @@ class MonacoProviders extends PureComponent<
     this.registeredHoverProvider?.dispose();
   }
 
-  registeredCompletionProvider?: monaco.IDisposable;
+  registeredCompletionProvider?: Monaco.IDisposable;
 
-  registeredSignatureProvider?: monaco.IDisposable;
+  registeredSignatureProvider?: Monaco.IDisposable;
 
-  registeredHoverProvider?: monaco.IDisposable;
+  registeredHoverProvider?: Monaco.IDisposable;
 
   handleCompletionRequest(
-    model: monaco.editor.ITextModel,
-    position: monaco.Position,
-    context: monaco.languages.CompletionContext
-  ): monaco.languages.ProviderResult<monaco.languages.CompletionList> {
+    model: Monaco.editor.ITextModel,
+    position: Monaco.Position,
+    context: Monaco.languages.CompletionContext
+  ): Monaco.languages.ProviderResult<Monaco.languages.CompletionList> {
     const { model: propModel, session } = this.props;
     if (model !== propModel) {
       return null;
@@ -512,10 +532,13 @@ class MonacoProviders extends PureComponent<
     log.debug('Requested completion items', params);
 
     const monacoCompletionItems = completionItems
-      .then(items => {
+      .then(async items => {
         log.debug('Completion items received: ', params, items);
 
-        const suggestions = items.map(item => {
+        const suggestions: Monaco.languages.CompletionItem[] = [];
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of items) {
           const {
             label,
             kind,
@@ -527,9 +550,10 @@ class MonacoProviders extends PureComponent<
             insertTextFormat,
           } = item;
 
-          return {
+          suggestions.push({
             label,
-            kind: MonacoProviders.lspToMonacoKind(kind),
+            // eslint-disable-next-line no-await-in-loop
+            kind: await MonacoProviders.lspToMonacoKind(kind),
             detail,
             documentation:
               documentation?.kind === 'markdown'
@@ -543,8 +567,8 @@ class MonacoProviders extends PureComponent<
             // Why microsoft is using almost-but-not-LSP apis is beyond me....
             insertTextRules: insertTextFormat === 2 ? 4 : insertTextFormat,
             range: MonacoProviders.lspToMonacoRange(textEdit.range),
-          };
-        });
+          });
+        }
 
         return {
           incomplete: true,
@@ -560,12 +584,12 @@ class MonacoProviders extends PureComponent<
   }
 
   handleSignatureRequest(
-    model: monaco.editor.ITextModel,
-    position: monaco.Position,
-    token: monaco.CancellationToken,
-    context: monaco.languages.SignatureHelpContext
-  ): monaco.languages.ProviderResult<monaco.languages.SignatureHelpResult> {
-    const defaultResult: monaco.languages.SignatureHelpResult = {
+    model: Monaco.editor.ITextModel,
+    position: Monaco.Position,
+    token: Monaco.CancellationToken,
+    context: Monaco.languages.SignatureHelpContext
+  ): Monaco.languages.ProviderResult<Monaco.languages.SignatureHelpResult> {
+    const defaultResult: Monaco.languages.SignatureHelpResult = {
       value: {
         signatures: [],
         activeSignature: 0,
@@ -637,9 +661,9 @@ class MonacoProviders extends PureComponent<
   }
 
   handleHoverRequest(
-    model: monaco.editor.ITextModel,
-    position: monaco.Position
-  ): monaco.languages.ProviderResult<monaco.languages.Hover> {
+    model: Monaco.editor.ITextModel,
+    position: Monaco.Position
+  ): Monaco.languages.ProviderResult<Monaco.languages.Hover> {
     const { model: propModel, session } = this.props;
     if (model !== propModel || session.getHover == null) {
       return null;

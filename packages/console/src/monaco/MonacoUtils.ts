@@ -11,12 +11,8 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
-import * as monaco from 'monaco-editor';
-import type { Environment } from 'monaco-editor';
-// @ts-ignore
-import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+import type * as Monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import MonacoThemeRaw from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
 import GroovyLang from './lang/groovy';
 import ScalaLang from './lang/scala';
@@ -24,6 +20,7 @@ import DbLang from './lang/db';
 import LogLang from './lang/log';
 import { type Language } from './lang/Language';
 import MonacoProviders from './MonacoProviders';
+import MonacoThemeRaw from './MonacoTheme.module.scss';
 
 const log = Log.module('MonacoUtils');
 
@@ -31,19 +28,28 @@ const CONSOLE_URI_PREFIX = 'inmemory://dh-console/';
 
 declare global {
   interface Window {
-    MonacoEnvironment?: Environment;
+    MonacoEnvironment?: Monaco.Environment;
   }
 }
 
 class MonacoUtils {
   /**
+   * Lazy load the monaco module
+   * @returns Promise to the monaco module
+   */
+  static async lazyMonaco(): Promise<typeof Monaco> {
+    log.debug('Lazy loading Monaco...');
+    return import('monaco-editor');
+  }
+
+  /**
    * Initializes Monaco for the environment
    * @param getWorker The getWorker function Monaco should use
    *                  The workers should be provided by the caller and bundled by their build system (e.g. Vite, Webpack)
    */
-  static init({
+  static async init({
     getWorker,
-  }: { getWorker?: Environment['getWorker'] } = {}): void {
+  }: { getWorker?: Monaco.Environment['getWorker'] } = {}): Promise<void> {
     log.debug('Initializing Monaco...');
 
     if (getWorker !== undefined) {
@@ -52,15 +58,18 @@ class MonacoUtils {
 
     const { initTheme, registerLanguages } = MonacoUtils;
 
-    initTheme();
+    await initTheme();
 
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+    await registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
-    monaco.languages.onLanguage('python', () => {
+    const monaco = await MonacoUtils.lazyMonaco();
+
+    monaco.languages.onLanguage('python', async () => {
       monaco.languages.registerCodeActionProvider(
         'python',
         {
-          provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
+          provideCodeActions:
+            await MonacoProviders.createPythonCodeActionRequestHandler(),
         },
         { providedCodeActionKinds: ['quickfix'] }
       );
@@ -71,15 +80,15 @@ class MonacoUtils {
       });
     });
 
-    monaco.editor.onDidCreateModel(model => {
+    monaco.editor.onDidCreateModel(async model => {
       // Lint Python models on creation and on change
       if (model.getLanguageId() === 'python') {
         if (MonacoProviders.ruffWorkspace != null) {
-          MonacoProviders.lintPython(model);
+          await MonacoProviders.lintPython(model);
         }
 
         const throttledLint = throttle(
-          (m: monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
+          (m: Monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
           250
         );
 
@@ -89,7 +98,7 @@ class MonacoUtils {
       }
     });
 
-    MonacoUtils.removeConflictingKeybindings();
+    await MonacoUtils.removeConflictingKeybindings();
 
     log.debug('Monaco initialized.');
   }
@@ -97,8 +106,10 @@ class MonacoUtils {
   /**
    * Initialize current Monaco theme based on the current DH theme.
    */
-  static initTheme(): void {
+  static async initTheme(): Promise<void> {
     const { removeHashtag } = MonacoUtils;
+
+    const monaco = await MonacoUtils.lazyMonaco();
 
     const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
     log.debug2('Monaco theme:', MonacoThemeRaw);
@@ -263,7 +274,7 @@ class MonacoUtils {
    * Register the getWorker function for Monaco
    * @param getWorker The getWorker function for Monaco
    */
-  static registerGetWorker(getWorker: Environment['getWorker']): void {
+  static registerGetWorker(getWorker: Monaco.Environment['getWorker']): void {
     window.MonacoEnvironment = {
       ...window.MonacoEnvironment,
       getWorker,
@@ -279,7 +290,9 @@ class MonacoUtils {
     return color?.substring(1) ?? '';
   }
 
-  static registerLanguages(languages: Language[]): void {
+  static async registerLanguages(languages: Language[]): Promise<void> {
+    const monaco = await MonacoUtils.lazyMonaco();
+
     // First override the default loader for any language we have a custom definition for
     // https://github.com/Microsoft/monaco-editor/issues/252#issuecomment-482786867
     const languageIds = languages.map(({ id }) => id);
@@ -292,13 +305,17 @@ class MonacoUtils {
       });
 
     // Then register our language definitions
-    languages.forEach(language => {
-      MonacoUtils.registerLanguage(language);
-    });
+    // eslint-disable-next-line no-restricted-syntax
+    for (const language of languages) {
+      // eslint-disable-next-line no-await-in-loop
+      await MonacoUtils.registerLanguage(language);
+    }
   }
 
-  static registerLanguage(language: Language): void {
+  static async registerLanguage(language: Language): Promise<void> {
     log.debug2('Registering language: ', language.id);
+
+    const monaco = await MonacoUtils.lazyMonaco();
     monaco.languages.register(language);
 
     monaco.languages.onLanguage(language.id, () => {
@@ -312,10 +329,16 @@ class MonacoUtils {
    * @param editor The editor to set the EOL for
    * @param eolSequence EOL sequence
    */
-  static setEOL(
-    editor: monaco.editor.IStandaloneCodeEditor,
-    eolSequence = monaco.editor.EndOfLineSequence.LF
-  ): void {
+  static async setEOL(
+    editor: Monaco.editor.IStandaloneCodeEditor,
+    eolSequence?: Monaco.editor.EndOfLineSequence
+  ): Promise<void> {
+    if (eolSequence == null) {
+      // eslint-disable-next-line no-param-reassign
+      eolSequence = (await MonacoUtils.lazyMonaco()).editor.EndOfLineSequence
+        .LF;
+    }
+
     editor.getModel()?.setEOL(eolSequence);
   }
 
@@ -326,9 +349,9 @@ class MonacoUtils {
    * @returns A cleanup function for disposing of the created listeners
    */
   static openDocument(
-    editor: monaco.editor.IStandaloneCodeEditor,
+    editor: Monaco.editor.IStandaloneCodeEditor,
     session: dh.IdeSession
-  ): monaco.IDisposable {
+  ): Monaco.IDisposable {
     const model = editor.getModel();
     assertNotNull(model);
     const didOpenDocumentParams = {
@@ -385,7 +408,7 @@ class MonacoUtils {
   }
 
   static closeDocument(
-    editor: monaco.editor.IStandaloneCodeEditor,
+    editor: Monaco.editor.IStandaloneCodeEditor,
     session: dh.IdeSession
   ): void {
     const model = editor.getModel();
@@ -405,7 +428,7 @@ class MonacoUtils {
    * @param editor The editor the register the paste handler for
    */
   static registerPasteHandler(
-    editor: monaco.editor.IStandaloneCodeEditor
+    editor: Monaco.editor.IStandaloneCodeEditor
   ): void {
     editor.onDidPaste(pasteEvent => {
       const smartQuotes = /“|”/g;
@@ -443,7 +466,9 @@ class MonacoUtils {
    * them. Note that this is a global configuration, so all editor instances will
    * be impacted.
    */
-  static removeConflictingKeybindings(): void {
+  static async removeConflictingKeybindings(): Promise<void> {
+    const monaco = await MonacoUtils.lazyMonaco();
+
     // All editor instances share a global keybinding registry which is where
     // default keybindings are set. There doesn't appear to be a way to remove
     // default bindings, but we can add new ones that will override the existing
@@ -479,7 +504,7 @@ class MonacoUtils {
    * combination like `monaco.KeyMod.Alt | monaco.KeyMod.KeyJ`
    */
   static disableKeyBindings(
-    editor: monaco.editor.IStandaloneCodeEditor,
+    editor: Monaco.editor.IStandaloneCodeEditor,
     keybindings: number[]
   ): void {
     editor.addAction({
@@ -491,12 +516,20 @@ class MonacoUtils {
     });
   }
 
-  static getMonacoKeyCodeFromShortcut(shortcut: Shortcut): number {
+  static async getMonacoKeyCodeFromShortcut(
+    shortcut: Shortcut
+  ): Promise<number> {
     const { keyState } = shortcut;
     const { keyValue } = keyState;
     if (keyValue === null) {
       return 0;
     }
+
+    const monaco = await MonacoUtils.lazyMonaco();
+    const KeyCodeUtils = await import(
+      // @ts-ignore
+      'monaco-editor/esm/vs/base/common/keyCodes.js'
+    );
 
     const isMac = MonacoUtils.isMacPlatform();
 
@@ -521,32 +554,40 @@ class MonacoUtils {
     );
   }
 
-  static provideLinks(model: monaco.editor.ITextModel): {
-    links: monaco.languages.ILink[];
-  } {
-    const newTokens: monaco.languages.ILink[] = [];
+  static async createProvideLinks(): Promise<
+    Monaco.languages.LinkProvider['provideLinks']
+  > {
+    const monaco = await MonacoUtils.lazyMonaco();
 
-    for (let i = 1; i <= model.getLineCount(); i += 1) {
-      const lineText = model.getLineContent(i);
-      const originalTokens = linkifyFind(lineText);
+    return (
+      model: Monaco.editor.ITextModel
+    ): {
+      links: Monaco.languages.ILink[];
+    } => {
+      const newTokens: Monaco.languages.ILink[] = [];
 
-      const tokens = originalTokens.filter(token => {
-        if (token.type === 'url') {
-          return /^https?:\/\//.test(token.value);
-        }
-        return true;
-      });
-      // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
-      tokens.forEach(token => {
-        newTokens.push({
-          url: token.href,
-          range: new monaco.Range(i, token.start + 1, i, token.end + 1),
+      for (let i = 1; i <= model.getLineCount(); i += 1) {
+        const lineText = model.getLineContent(i);
+        const originalTokens = linkifyFind(lineText);
+
+        const tokens = originalTokens.filter(token => {
+          if (token.type === 'url') {
+            return /^https?:\/\//.test(token.value);
+          }
+          return true;
         });
-      });
-    }
+        // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
+        tokens.forEach(token => {
+          newTokens.push({
+            url: token.href,
+            range: new monaco.Range(i, token.start + 1, i, token.end + 1),
+          });
+        });
+      }
 
-    return {
-      links: newTokens,
+      return {
+        links: newTokens,
+      };
     };
   }
 
@@ -554,7 +595,8 @@ class MonacoUtils {
    * Generates a console URI for use with monaco.
    * @returns A new console URI
    */
-  static generateConsoleUri(): monaco.Uri {
+  static async generateConsoleUri(): Promise<Monaco.Uri> {
+    const monaco = await MonacoUtils.lazyMonaco();
     return monaco.Uri.parse(`${CONSOLE_URI_PREFIX}${nanoid()}`);
   }
 
@@ -563,7 +605,7 @@ class MonacoUtils {
    * @param model The monaco model to check
    * @returns If the model is a console model
    */
-  static isConsoleModel(model: monaco.editor.ITextModel): boolean {
+  static isConsoleModel(model: Monaco.editor.ITextModel): boolean {
     return model.uri.toString().startsWith(CONSOLE_URI_PREFIX);
   }
 
@@ -572,7 +614,7 @@ class MonacoUtils {
    * @param editor The monaco editor to check
    * @returns If the editor has a document formatter registered
    */
-  static canFormat(editor: monaco.editor.IStandaloneCodeEditor): boolean {
+  static canFormat(editor: Monaco.editor.IStandaloneCodeEditor): boolean {
     return (
       editor.getAction('editor.action.formatDocument')?.isSupported() === true
     );
@@ -583,7 +625,7 @@ class MonacoUtils {
    * @param editor The editor to format
    */
   static async formatDocument(
-    editor: monaco.editor.IStandaloneCodeEditor
+    editor: Monaco.editor.IStandaloneCodeEditor
   ): Promise<void> {
     await editor.getAction('editor.action.formatDocument')?.run();
   }

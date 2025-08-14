@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 import { useTheme } from '@deephaven/components';
-import MonacoUtils from './MonacoUtils';
+// import MonacoUtils from './MonacoUtils';
 
 export interface MonacoThemeProviderProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ export function MonacoThemeProvider({
   useEffect(
     function refreshMonacoTheme() {
       if (activeThemes != null) {
-        MonacoUtils.initTheme();
+        // MonacoUtils.initTheme();
       }
     },
     [activeThemes]
