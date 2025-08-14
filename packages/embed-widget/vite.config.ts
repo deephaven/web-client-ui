@@ -102,6 +102,11 @@ export default defineConfig(({ mode }) => {
       //     return deps;
       //   },
       // },
+      // TODO: This "should" disable module preload. It seems to work for
+      // monaco.js but not the .css. There seems to still be something eagerly
+      // loading it, but haven't been able to track it down yet. We probably
+      // don't actually want to disable this. In theory it will be fixed if we
+      // figure out what is importing it eagerly.
       modulePreload: false,
       rollupOptions: {
         output: {
@@ -116,12 +121,6 @@ export default defineConfig(({ mode }) => {
             if (id === '\0commonjsHelpers.js') {
               return 'helpers';
             }
-
-            // if (id.includes('packages')) {
-            //   if (id.includes('packages/console/dist')) {
-            //     return 'deephaven-console';
-            //   }
-            // }
 
             if (id.includes('node_modules')) {
               if (id.includes('monaco-editor')) {
