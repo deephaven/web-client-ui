@@ -1,14 +1,15 @@
 import React, { Component, type ReactElement } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import classNames from 'classnames';
 import './InputEditor.scss';
+import { MonacoUtils } from '@deephaven/console';
 
 interface InputEditorProps {
   className?: string;
   placeholder?: string;
   value: string;
   onContentChanged: (value?: string) => void;
-  editorSettings: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
+  editorSettings: Partial<Monaco.editor.IStandaloneEditorConstructionOptions>;
   editorIndex: number;
   onTab: (editorIndex: number, shiftKey: boolean) => void;
   invalid: boolean;
@@ -58,9 +59,9 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
 
   editorContainer: HTMLDivElement | null;
 
-  editor?: monaco.editor.IStandaloneCodeEditor;
+  editor?: Monaco.editor.IStandaloneCodeEditor;
 
-  initEditor(): void {
+  async initEditor(): Promise<void> {
     const { value, editorSettings } = this.props;
     const inputEditorSettings = {
       copyWithSyntaxHighlighting: 'false',
@@ -90,10 +91,11 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
       automaticLayout: true,
       autoClosingBrackets: 'beforeWhitespace',
       ...editorSettings,
-    } as monaco.editor.IStandaloneEditorConstructionOptions;
+    } as Monaco.editor.IStandaloneEditorConstructionOptions;
     if (!this.editorContainer) {
       throw new Error('editorContainer is null');
     }
+    const monaco = await MonacoUtils.lazyMonaco();
     this.editor = monaco.editor.create(
       this.editorContainer,
       inputEditorSettings
@@ -146,7 +148,7 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
     this.editor?.focus();
   }
 
-  handleKeyDown(event: monaco.IKeyboardEvent): void {
+  handleKeyDown(event: Monaco.IKeyboardEvent): void {
     const { onTab, editorIndex } = this.props;
     if (event.code === 'Tab') {
       event.stopPropagation();

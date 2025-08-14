@@ -1,5 +1,4 @@
 import React, { useEffect, useState, type ReactNode } from 'react';
-import * as monaco from 'monaco-editor';
 import { useTheme } from '@deephaven/components';
 
 interface CodeProps {
@@ -15,6 +14,7 @@ function Code({ children, language }: CodeProps): JSX.Element {
     let isCanceled = false;
     async function colorize() {
       if (children != null && activeThemes != null) {
+        const monaco = await import('monaco-editor');
         const result = await monaco.editor.colorize(
           children.toString(),
           language,

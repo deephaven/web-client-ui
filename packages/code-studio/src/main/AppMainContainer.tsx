@@ -46,7 +46,7 @@ import {
   emitCycleToPreviousTab,
 } from '@deephaven/dashboard';
 import {
-  ConsolePlugin,
+  // ConsolePlugin,
   InputFilterEvent,
   MarkdownEvent,
   NotebookEvent,
@@ -93,7 +93,7 @@ import {
   createExportLogsContextAction,
 } from '@deephaven/app-utils';
 import JSZip from 'jszip';
-import SettingsMenu from '../settings/SettingsMenu';
+import { LazySettingsMenu } from '../settings/LazySettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
@@ -1053,21 +1053,21 @@ export class AppMainContainer extends Component<
             )
           }
           plugins={[
-            <ConsolePlugin
-              key="ConsolePlugin"
-              hydrateConsole={AppMainContainer.hydrateConsole}
-              notebooksUrl={
-                new URL(
-                  `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
-                  document.baseURI
-                ).href
-              }
-            />,
+            // <ConsolePlugin
+            //   key="ConsolePlugin"
+            //   hydrateConsole={AppMainContainer.hydrateConsole}
+            //   notebooksUrl={
+            //     new URL(
+            //       `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+            //       document.baseURI
+            //     ).href
+            //   }
+            // />,
             ...dashboardPlugins,
           ]}
         />
         <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
-          <SettingsMenu
+          <LazySettingsMenu
             serverConfigValues={serverConfigValues}
             pluginData={plugins}
             onDone={this.handleSettingsMenuHide}

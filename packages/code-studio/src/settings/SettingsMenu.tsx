@@ -47,7 +47,7 @@ import AdvancedSectionContent from './AdvancedSectionContent';
 import ThemeSectionContent from './ThemeSectionContent';
 import EditorSectionContent from './EditorSectionContent';
 
-interface SettingsMenuProps {
+export interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
   pluginData: PluginModuleMap;
   user: User;

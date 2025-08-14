@@ -45,7 +45,8 @@
     "@deephaven/eslint-config": "file:../eslint-config",
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
-    "@deephaven/stylelint-config": "file:../stylelint-config"
+    "@deephaven/stylelint-config": "file:../stylelint-config",
+    "rollup-plugin-visualizer": "^6.0.3"
   },
   "publishConfig": {
     "access": "public"

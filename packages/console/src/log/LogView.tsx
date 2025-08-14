@@ -8,7 +8,7 @@ import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import { type Placement } from 'popper.js';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';
@@ -84,10 +84,10 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   componentDidMount(): void {
     this.resetLogLevels();
-    this.initMonaco();
-    this.startListening();
-
-    window.addEventListener('resize', this.handleResize);
+    this.initMonaco().then(() => {
+      this.startListening();
+      window.addEventListener('resize', this.handleResize);
+    });
   }
 
   componentDidUpdate(prevProps: LogViewProps, prevState: LogViewState): void {
@@ -117,7 +117,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   cancelListener?: () => void | null;
 
-  editor?: monaco.editor.IStandaloneCodeEditor;
+  editor?: Monaco.editor.IStandaloneCodeEditor;
 
   editorContainer: HTMLDivElement | null;
 
@@ -211,7 +211,8 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     }
   }
 
-  initMonaco(): void {
+  async initMonaco(): Promise<void> {
+    const monaco = await MonacoUtils.lazyMonaco();
     assertNotNull(this.editorContainer);
     this.editor = monaco.editor.create(this.editorContainer, {
       copyWithSyntaxHighlighting: false,

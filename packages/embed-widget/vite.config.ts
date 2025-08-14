@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
+import { visualizer } from 'rollup-plugin-visualizer';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
@@ -85,6 +86,23 @@ export default defineConfig(({ mode }) => {
       outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
       sourcemap: true,
+      // modulePreload: {
+      //   resolveDependencies: (
+      //     filename: string,
+      //     deps: string[],
+      //     context: {
+      //       hostId: string;
+      //       hostType: 'html' | 'js';
+      //     }
+      //   ) => {
+      //     return [];
+      //     // eslint-disable-next-line no-param-reassign
+      //     deps = deps.filter(dep => !dep.includes('monaco-'));
+      //     console.log('[TESTING]', filename, deps, context);
+      //     return deps;
+      //   },
+      // },
+      modulePreload: false,
       rollupOptions: {
         output: {
           manualChunks: id => {
@@ -99,9 +117,21 @@ export default defineConfig(({ mode }) => {
               return 'helpers';
             }
 
+            // if (id.includes('packages')) {
+            //   if (id.includes('packages/console/dist')) {
+            //     return 'deephaven-console';
+            //   }
+            // }
+
             if (id.includes('node_modules')) {
+              if (id.includes('monaco-editor')) {
+                return 'monaco';
+              }
               if (id.includes('plotly.js')) {
                 return 'plotly';
+              }
+              if (id.includes('mathjax')) {
+                return 'mathjax';
               }
               return 'vendor';
             }
@@ -117,6 +147,63 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        /**
+         * Plugin to log monaco imports. Notes:
+         * 1. All imports show in `chunk.imports` array (even lazy ones)
+         * 2. Lazy imports show in `chunk.dynamicImports` array
+         *
+         * Goal would be for Monaco to always be lazy imported at least for the
+         * main chunk. As-is, it shows up a number of times only in the
+         * `chunk.imports`. Haven't been able to figure out why.
+         */
+        name: 'log-chunk-deps',
+        generateBundle(options, bundle) {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const [fileName, chunk] of Object.entries(bundle)) {
+            const isMonaco = i => i.includes('monaco-');
+
+            if (
+              chunk.type === 'chunk' &&
+              (chunk.imports.some(isMonaco) ||
+                chunk.dynamicImports.some(isMonaco))
+            ) {
+              console.log(
+                `Chunk: ${fileName}${chunk.isEntry ? ', isEntry' : ''}`
+              );
+              console.log(
+                JSON.stringify(
+                  {
+                    imports: chunk.imports,
+                    dynamicImports: chunk.dynamicImports,
+                  },
+                  null,
+                  2
+                )
+              );
+            }
+          }
+        },
+      },
+      // Different visualizations of the bundle
+      (
+        [
+          // 'flamegraph',
+          // 'list',
+          // 'network',
+          // 'raw-data',
+          // 'sunburst',
+          'treemap',
+        ] as const
+      ).map(template =>
+        visualizer({
+          open: true,
+          filename: `stats-${template}.html`,
+          template,
+        })
+      ),
+    ],
   };
 });

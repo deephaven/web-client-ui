@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import * as monaco from 'monaco-editor';
+// import * as monaco from 'monaco-editor';
 import dh from '@deephaven/jsapi-shim';
 import type { DocumentRange, Position } from '@deephaven/jsapi-types';
 import MonacoProviders from './MonacoProviders';
