@@ -46,6 +46,7 @@ import {
   BoundedAxisRange,
   isExpandableGridModel,
   isDeletableGridModel,
+  isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -2490,25 +2491,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   toggleExpandColumn(modelIndex: ModelIndex): void {
-    log.debug2('toggleExpandColumn', modelIndex);
+    log.debug2('Toggle expand column', modelIndex);
     const { model } = this.props;
-    if (isExpandableGridModel(model)) {
+    if (isExpandableColumnGridModel(model)) {
       model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
     }
   }
 
   expandAllColumns(): void {
-    log.debug2('expandAllColumns');
+    log.debug2('Expand all columns');
     const { model } = this.props;
-    if (isExpandableGridModel(model)) {
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
       model.expandAllColumns();
     }
   }
 
   collapseAllColumns(): void {
-    log.debug2('collapseAllColumns');
+    log.debug2('Collapse all columns');
     const { model } = this.props;
-    if (isExpandableGridModel(model)) {
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
       model.collapseAllColumns();
     }
   }

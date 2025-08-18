@@ -160,42 +160,6 @@ class MockIrisGridTreeModel
     return this.model.depthForRow(row);
   }
 
-  get hasExpandableColumns(): boolean {
-    return false;
-  }
-
-  get isExpandAllColumnsAvailable(): boolean {
-    return false;
-  }
-
-  isColumnExpandable(_column: ModelIndex): boolean {
-    return false;
-  }
-
-  isColumnExpanded(_column: ModelIndex): boolean {
-    return false;
-  }
-
-  setColumnExpanded(
-    _column: ModelIndex,
-    _isExpanded: boolean,
-    _expandDescendants?: boolean
-  ): void {
-    throw new Error('setColumnExpanded not implemented.');
-  }
-
-  expandAllColumns(): void {
-    throw new Error('Expand all columns not implemented.');
-  }
-
-  collapseAllColumns(): void {
-    throw new Error('Collapse all columns not implemented.');
-  }
-
-  depthForColumn(_column: ModelIndex): number {
-    throw new Error('depthForColumn not implemented.');
-  }
-
   // Stub out functions for IrisGridModel functionality
   get columns(): DhType.Column[] {
     return this.getCachedColumns(this.columnCount) as DhType.Column[];

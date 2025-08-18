@@ -26,6 +26,7 @@ import {
   GridSelectionMouseHandler,
   isDeletableGridModel,
   isEditableGridModel,
+  isExpandableColumnGridModel,
   isExpandableGridModel,
   ModelIndex,
 } from '@deephaven/grid';
@@ -240,36 +241,39 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       disabled: !isColumnHidden,
     });
 
-    if (isExpandableGridModel(model) && model.hasExpandableColumns) {
-      actions.push({
-        title: model.isColumnExpanded(modelIndex)
-          ? 'Collapse Column'
-          : 'Expand Column',
-        // TODO: group
-        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-        action: () => {
-          this.irisGrid.toggleExpandColumn(modelIndex);
-        },
-        disabled: !model.isColumnExpandable(modelIndex),
-      });
+    if (isExpandableColumnGridModel(model)) {
+      if (model.isColumnExpandable(modelIndex)) {
+        actions.push({
+          title: model.isColumnExpanded(modelIndex)
+            ? `Collapse ${column.name}`
+            : `Expand ${column.name}`,
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 20,
+          action: () => {
+            this.irisGrid.toggleExpandColumn(modelIndex);
+          },
+        });
+      }
 
-      actions.push({
-        title: 'Expand All Columns',
-        // TODO: group
-        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-        action: () => {
-          this.irisGrid.expandAllColumns();
-        },
-      });
+      if (model.isExpandAllColumnsAvailable) {
+        actions.push({
+          title: 'Expand All Columns',
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 30,
+          action: () => {
+            this.irisGrid.expandAllColumns();
+          },
+        });
 
-      actions.push({
-        title: 'Collapse All Columns',
-        // TODO: group
-        group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
-        action: () => {
-          this.irisGrid.collapseAllColumns();
-        },
-      });
+        actions.push({
+          title: 'Collapse All Columns',
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 40,
+          action: () => {
+            this.irisGrid.collapseAllColumns();
+          },
+        });
+      }
     }
 
     actions.push({
