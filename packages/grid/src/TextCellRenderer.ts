@@ -2,9 +2,9 @@
 import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { VisibleIndex } from './GridMetrics';
-import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
-import GridUtils, { TokenBox, Token } from './GridUtils';
+import { type VisibleIndex } from './GridMetrics';
+import { type GridRenderState } from './GridRendererTypes';
+import GridUtils, { type TokenBox, type Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
 import TokenBoxCellRenderer from './TokenBoxCellRenderer';
 
@@ -16,8 +16,14 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     row: VisibleIndex
   ): void {
     const { metrics, model, theme } = state;
-    const { fontWidths, modelColumns, modelRows, allRowHeights, firstColumn } =
-      metrics;
+    const {
+      fontWidthsLower,
+      fontWidthsUpper,
+      modelColumns,
+      modelRows,
+      allRowHeights,
+      firstColumn,
+    } = metrics;
     const isFirstColumn = column === firstColumn;
     const { textColor } = theme;
     const rowHeight = getOrThrow(allRowHeights, row);
@@ -42,12 +48,14 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
         y: textY,
       } = GridUtils.getTextRenderMetrics(state, column, row);
 
-      const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
+      const fontWidthLower = fontWidthsLower.get(context.font);
+      const fontWidthUpper = fontWidthsUpper.get(context.font);
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
         textWidth,
-        fontWidth,
+        fontWidthLower,
+        fontWidthUpper,
         truncationChar
       );
 
@@ -71,7 +79,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
           const value = truncatedText.substring(textStart, textEnd);
           const { width } = context.measureText(value);
           const widthOfUnderline = value.endsWith('…')
-            ? context.measureText(value.substring(0, value.length - 1)).width
+            ? width - context.measureText('…').width
             : width;
 
           // Set the styling based on the token, then draw the text
@@ -135,19 +143,21 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
       y: textY,
     } = GridUtils.getTextRenderMetrics(state, column, row);
 
-    const { fontWidths } = metrics;
+    const { fontWidthsLower, fontWidthsUpper } = metrics;
 
     // Set the font and baseline and change it back after
     context.save();
     this.configureContext(context, state);
 
-    const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const fontWidthLower = fontWidthsLower.get(context.font);
+    const fontWidthUpper = fontWidthsUpper.get(context.font);
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,
       text,
       textWidth,
-      fontWidth,
+      fontWidthLower,
+      fontWidthUpper,
       truncationChar
     );
 

@@ -1,10 +1,9 @@
 /* eslint class-methods-use-this: "off" */
 import {
-  BoundedAxisRange,
-  Coordinate,
-  DEFAULT_FONT_WIDTH,
-  GridMetrics,
-  GridRangeIndex,
+  type BoundedAxisRange,
+  type Coordinate,
+  type GridMetrics,
+  type GridRangeIndex,
   GridRenderer,
   GridRenderState,
   GridThemeType,
@@ -465,7 +464,6 @@ export class IrisGridRenderer extends GridRenderer {
       allColumnXs,
       gridX,
       columnHeaderHeight,
-      fontWidths,
     } = metrics;
 
     const { headerHorizontalPadding, iconSize: themeIconSize } = theme;
@@ -500,9 +498,7 @@ export class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
-    assertNotNull(fontWidth);
-    const textWidth = text.length * fontWidth;
+    const textWidth = this.getCachedHeaderWidth(context, text);
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
     let { maxX } = bounds;
     maxX -= headerHorizontalPadding; // Right visible edge of the headers
@@ -656,22 +652,18 @@ export class IrisGridRenderer extends GridRenderer {
       }
 
       if (text != null) {
-        const { fontWidths } = metrics;
-        let fontWidth = fontWidths.get(context.font);
-        if (fontWidth == null || fontWidth === 0) {
-          fontWidth = context.measureText('8').width;
-          if (!fontWidth) {
-            fontWidth = 10;
-          }
-        }
+        const { fontWidthsLower, fontWidthsUpper } = metrics;
+        const fontWidthLower = fontWidthsLower.get(context.font);
+        const fontWidthUpper = fontWidthsUpper.get(context.font);
 
-        const maxLength =
-          (columnWidth - filterBarHorizontalPadding * 2) / fontWidth;
-        if (maxLength <= 0) {
-          text = '';
-        } else if (text.length > maxLength) {
-          text = `${text.substring(0, maxLength - 1)}…`;
-        }
+        const maxLength = columnWidth - filterBarHorizontalPadding * 2;
+        text = this.textCellRenderer.getCachedTruncatedString(
+          context,
+          text,
+          maxLength,
+          fontWidthLower,
+          fontWidthUpper
+        );
       }
     }
 

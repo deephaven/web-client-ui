@@ -87,14 +87,16 @@ abstract class CellRenderer {
       context: CanvasRenderingContext2D,
       text: string,
       width: number,
-      fontWidth: number,
+      fontWidthLower?: number,
+      fontWidthUpper?: number,
       truncationChar?: string
     ): string =>
       GridRenderer.truncateToWidth(
         context,
         text,
         width,
-        fontWidth,
+        fontWidthLower,
+        fontWidthUpper,
         truncationChar
       ),
     { max: 10000 }

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.34](https://github.com/deephaven/web-client-ui/compare/v0.85.33...v0.85.34) (2025-07-23)
+
+### Bug Fixes
+
+- Columns not auto sizing correctly ([#2359](https://github.com/deephaven/web-client-ui/issues/2359)) ([#2497](https://github.com/deephaven/web-client-ui/issues/2497)) ([d0cd79b](https://github.com/deephaven/web-client-ui/commit/d0cd79bf34a7ba9164cd194ec3ebd0d6afae32f9))
+- DH-19963: Remove grid-block-events when Grid unmounts ([#2507](https://github.com/deephaven/web-client-ui/issues/2507)) ([#2508](https://github.com/deephaven/web-client-ui/issues/2508)) ([dd2ed32](https://github.com/deephaven/web-client-ui/commit/dd2ed3276eab9ca048a95f7f45bd7ce163cfa5a5))
+- Fix column width calculation logic in grid ([#2370](https://github.com/deephaven/web-client-ui/issues/2370)) ([#2499](https://github.com/deephaven/web-client-ui/issues/2499)) ([1c8f6e7](https://github.com/deephaven/web-client-ui/commit/1c8f6e7d80c03d8994c0496db13e39062ea24260))
+
 ## [0.85.31](https://github.com/deephaven/web-client-ui/compare/v0.85.30...v0.85.31) (2025-06-27)
 
 ### Features

@@ -1,6 +1,10 @@
 import dh from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import IrisGridTreeTableModel from './IrisGridTreeTableModel';
+import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import IrisGridTreeTableModel, {
+  type UITreeRow,
+} from './IrisGridTreeTableModel';
+import type { IrisGridThemeType } from './IrisGridTheme';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
@@ -213,5 +217,343 @@ describe('IrisGridTreeTableModel isFilterable', () => {
     expect(model.isFilterable(3)).toBe(false);
     expect(model.isFilterable(4)).toBe(false);
     expect(model.isFilterable(5)).toBe(false);
+  });
+});
+
+describe('IrisGridTreeTableModel colorForCell', () => {
+  let model: IrisGridTreeTableModel;
+
+  const mockTheme: IrisGridThemeType = {
+    textColor: '#text-color',
+    dateColor: '#date-color',
+    positiveNumberColor: '#positive-color',
+    negativeNumberColor: '#negative-color',
+    zeroNumberColor: '#zero-color',
+    nullStringColor: '#null-string-color',
+  } as IrisGridThemeType;
+
+  const columns = {
+    string: irisGridTestUtils.makeColumn('StrCol', 'java.lang.String', 0),
+    number: irisGridTestUtils.makeColumn('NumCol', 'int', 0),
+    date: irisGridTestUtils.makeColumn(
+      'DateCol',
+      'io.deephaven.time.DateTime',
+      0
+    ),
+    dateNamed: irisGridTestUtils.makeColumn('Date', 'java.lang.String', 0),
+  };
+
+  const rows = {
+    default: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    parent: {
+      data: new Map(),
+      hasChildren: true,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    leaf: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 2,
+    } as UITreeRow,
+  };
+
+  beforeEach(() => {
+    const testColumns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(
+      testColumns,
+      testColumns.slice(0, 1),
+      100,
+      []
+    );
+    model = new IrisGridTreeTableModel(dh, table);
+
+    // Setup the basic mocks needed for assertNotNull checks
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(columns.string);
+    jest.spyOn(model, 'row').mockReturnValue(rows.default);
+  });
+
+  const mockCell = (
+    value: unknown,
+    format?: { color?: string },
+    column?: DhType.Column,
+    row?: UITreeRow
+  ) => {
+    if (column != null) {
+      jest.spyOn(model, 'sourceColumn').mockReturnValue(column);
+    }
+    if (row != null) {
+      jest.spyOn(model, 'row').mockReturnValue(row);
+    }
+    jest.spyOn(model, 'dataForCell').mockReturnValue({ value, format });
+  };
+
+  describe('colorForCell', () => {
+    it('returns nullStringColor for null values', () => {
+      mockCell(null);
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(mockTheme.nullStringColor);
+    });
+
+    it('returns nullStringColor for empty strings', () => {
+      mockCell('');
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(mockTheme.nullStringColor);
+    });
+
+    it('returns custom color when available', () => {
+      const customColor = '#e0e0e0';
+      mockCell('test', { color: customColor });
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(customColor);
+    });
+
+    it('delegates to IrisGridUtils.colorForValue for standard color logic', () => {
+      mockCell(42, undefined, columns.number);
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(mockTheme.positiveNumberColor);
+    });
+  });
+
+  describe('colorForCell constituent type handling', () => {
+    it('uses constituent type for tree table leaf nodes', () => {
+      const constituentColumn = {
+        ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+        constituentType: 'int',
+      } as DhType.Column;
+
+      mockCell(1, undefined, constituentColumn, rows.leaf);
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(mockTheme.positiveNumberColor);
+    });
+
+    it('ignores constituent type for non-leaf nodes', () => {
+      const constituentColumn = {
+        ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+        constituentType: 'int',
+      } as DhType.Column;
+
+      mockCell('test', undefined, constituentColumn, rows.parent);
+      const result = model.colorForCell(0, 0, mockTheme);
+      expect(result).toBe(mockTheme.textColor);
+    });
+  });
+});
+
+describe('IrisGridTreeTableModel textAlignForCell', () => {
+  let model: IrisGridTreeTableModel;
+
+  const rows = {
+    default: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    parent: {
+      data: new Map(),
+      hasChildren: true,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+    leaf: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 2,
+    } as UITreeRow,
+  };
+
+  beforeEach(() => {
+    const testColumns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(
+      testColumns,
+      testColumns.slice(0, 1),
+      100,
+      []
+    );
+    model = new IrisGridTreeTableModel(dh, table);
+  });
+
+  it('delegates to IrisGridUtils.textAlignForValue for standard alignment logic', () => {
+    const numberColumn = irisGridTestUtils.makeColumn('NumCol', 'int', 0);
+
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(numberColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.default);
+
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('right');
+  });
+
+  it('uses constituent type for tree table leaf row', () => {
+    const constituentColumn = {
+      ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+      constituentType: 'double',
+    } as DhType.Column;
+
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(constituentColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.leaf);
+
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('right');
+  });
+
+  it('ignores constituent type for non-leaf row', () => {
+    const constituentColumn = {
+      ...irisGridTestUtils.makeColumn('TestCol', 'java.lang.String', 0),
+      constituentType: 'int',
+    } as DhType.Column;
+
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(constituentColumn);
+    jest.spyOn(model, 'row').mockReturnValue(rows.parent);
+
+    const result = model.textAlignForCell(0, 0);
+    expect(result).toBe('left');
+  });
+});
+
+describe('IrisGridTreeTableModel textForCell', () => {
+  let model: IrisGridTreeTableModel;
+
+  const columns = {
+    string: irisGridTestUtils.makeColumn('StrCol', 'java.lang.String', 0),
+    stringColWithStringConstituent: {
+      ...irisGridTestUtils.makeColumn('StrCol', 'java.lang.String', 0),
+      constituentType: 'java.lang.String',
+    },
+    stringColWithIntConstituent: {
+      ...irisGridTestUtils.makeColumn('IntCol', 'int', 0),
+      constituentType: 'int',
+    } as DhType.Column,
+  };
+
+  const rows = {
+    leaf: {
+      data: new Map(),
+      hasChildren: false,
+      isExpanded: false,
+      depth: 2,
+    } as UITreeRow,
+    parent: {
+      data: new Map(),
+      hasChildren: true,
+      isExpanded: false,
+      depth: 1,
+    } as UITreeRow,
+  };
+
+  beforeEach(() => {
+    const testColumns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(
+      testColumns,
+      testColumns.slice(0, 1),
+      100,
+      []
+    );
+    model = new IrisGridTreeTableModel(dh, table);
+  });
+
+  const mockTextCell = (
+    value: unknown,
+    column: DhType.Column,
+    row: UITreeRow,
+    displayText?: string
+  ) => {
+    jest.spyOn(model, 'sourceColumn').mockReturnValue(column);
+    jest.spyOn(model, 'row').mockReturnValue(row);
+    jest.spyOn(model, 'valueForCell').mockReturnValue(value);
+    if (displayText !== undefined) {
+      jest.spyOn(model, 'displayString').mockReturnValue(displayText);
+    }
+  };
+
+  describe('leaf nodes with non-string constituent type', () => {
+    it('handles null values', () => {
+      jest
+        .spyOn(model, 'columns', 'get')
+        .mockReturnValue([columns.stringColWithIntConstituent]);
+      mockTextCell(null, columns.stringColWithIntConstituent, rows.leaf, '');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('');
+    });
+
+    it('handles normal values', () => {
+      jest
+        .spyOn(model, 'columns', 'get')
+        .mockReturnValue([columns.stringColWithIntConstituent]);
+      mockTextCell(21, columns.stringColWithIntConstituent, rows.leaf, '21');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('21');
+    });
+  });
+
+  describe('leaf nodes with formatter settings', () => {
+    beforeEach(() => {
+      jest.spyOn(model, 'columns', 'get').mockReturnValue([columns.string]);
+    });
+
+    it('shows "null" when showNullStrings is true', () => {
+      model.formatter.showNullStrings = true;
+      mockTextCell(null, columns.stringColWithIntConstituent, rows.leaf, '');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('null');
+    });
+
+    it('shows empty string when showNullStrings is false', () => {
+      model.formatter.showNullStrings = false;
+      mockTextCell(null, columns.stringColWithIntConstituent, rows.leaf, '');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('');
+    });
+
+    it('shows "empty" when showEmptyStrings is true', () => {
+      model.formatter.showEmptyStrings = true;
+      mockTextCell('', columns.stringColWithIntConstituent, rows.leaf, '');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('empty');
+    });
+
+    it('shows empty string when showEmptyStrings is false', () => {
+      model.formatter.showEmptyStrings = false;
+      mockTextCell('', columns.stringColWithIntConstituent, rows.leaf, '');
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('grouping column', () => {
+    it('shows empty string for null values in rollup grouping columns', () => {
+      Object.defineProperty(model.table, 'groupedColumns', {
+        value: [],
+      });
+      jest
+        .spyOn(model, 'getCachedGroupedColumnSet')
+        .mockReturnValue(new Set([0]));
+      mockTextCell(null, columns.string, { ...rows.parent, depth: 1 });
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('non-leaf nodes', () => {
+    it('delegates to superClass for parent nodes', () => {
+      jest
+        .spyOn(IrisGridTableModelTemplate.prototype, 'textForCell')
+        .mockReturnValue('parentString');
+      mockTextCell(
+        'parentString',
+        columns.stringColWithIntConstituent,
+        rows.parent,
+        'parentString'
+      );
+      const result = model.textForCell(0, 0);
+      expect(result).toBe('parentString');
+    });
   });
 });

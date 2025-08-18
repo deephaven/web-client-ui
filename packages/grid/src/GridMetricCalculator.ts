@@ -136,8 +136,14 @@ export class GridMetricCalculator {
   /** Calculated row heights based on cell contents */
   protected calculatedRowHeights: ModelSizeMap;
 
-  /** Cache of fonts to estimated width of one char */
-  protected fontWidths: Map<string, number>;
+  /** Cache of fonts to estimated width of the smallest char */
+  protected fontWidthsLower: Map<string, number>;
+
+  /** Cache of fonts to estimated width of the largest char */
+  protected fontWidthsUpper: Map<string, number>;
+
+  /** Cache of fonts to width of all chars */
+  protected allCharWidths: Map<string, Map<string, number>>;
 
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
   protected modelRows: VisibleToModelMap;
@@ -156,7 +162,9 @@ export class GridMetricCalculator {
     userRowHeights = new Map(),
     calculatedColumnWidths = new Map(),
     calculatedRowHeights = new Map(),
-    fontWidths = new Map(),
+    fontWidthsLower = new Map(),
+    fontWidthsUpper = new Map(),
+    allCharWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
     movedRows = [] as readonly MoveOperation[],
@@ -168,7 +176,9 @@ export class GridMetricCalculator {
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights = calculatedRowHeights;
     this.calculatedColumnWidths = calculatedColumnWidths;
-    this.fontWidths = fontWidths;
+    this.allCharWidths = allCharWidths;
+    this.fontWidthsLower = fontWidthsLower;
+    this.fontWidthsUpper = fontWidthsUpper;
 
     // Need to track the last moved rows/columns array so we know if we need to reset our models cache
     this.modelRows = modelRows;
@@ -502,7 +512,8 @@ export class GridMetricCalculator {
         : right;
 
     const {
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
       userColumnWidths,
       userRowHeights,
       calculatedRowHeights,
@@ -634,7 +645,8 @@ export class GridMetricCalculator {
       movedColumns,
 
       // Map of the width of the fonts
-      fontWidths,
+      fontWidthsLower,
+      fontWidthsUpper,
 
       // Map of user set column/row width/height
       userColumnWidths,
@@ -1666,8 +1678,16 @@ export class GridMetricCalculator {
       return columnWidth;
     }
 
-    const headerWidth = this.calculateColumnHeaderWidth(modelColumn, state);
-    const dataWidth = this.calculateColumnDataWidth(modelColumn, state);
+    const headerWidth = this.calculateColumnHeaderWidth(
+      modelColumn,
+      state,
+      maxColumnWidth
+    );
+    const dataWidth = this.calculateColumnDataWidth(
+      modelColumn,
+      state,
+      maxColumnWidth
+    );
     const cachedValue = this.calculatedColumnWidths.get(modelColumn);
     let columnWidth = Math.ceil(Math.max(headerWidth, dataWidth));
     columnWidth = Math.max(minColumnWidth, columnWidth);
@@ -1694,18 +1714,28 @@ export class GridMetricCalculator {
    */
   calculateColumnHeaderWidth(
     modelColumn: ModelIndex,
-    state: GridMetricState
+    state: GridMetricState,
+    maxColumnWidth: number
   ): number {
-    const { model, theme } = state;
-    const { headerFont, headerHorizontalPadding } = theme;
+    const { model, theme, context } = state;
+    const { headerHorizontalPadding, headerFont } = theme;
+    this.calculateLowerFontWidth(headerFont, context);
+    this.calculateUpperFontWidth(headerFont, context);
+    const totalPadding = headerHorizontalPadding * 2;
 
     const headerText = model.textForColumnHeader(modelColumn, 0);
     if (headerText !== undefined && headerText !== '') {
-      const headerFontWidth = this.getWidthForFont(headerFont, state);
-      return headerText.length * headerFontWidth + headerHorizontalPadding * 2;
+      return (
+        this.calculateTextWidth(
+          context,
+          headerFont,
+          headerText,
+          maxColumnWidth - totalPadding
+        ) + totalPadding
+      );
     }
 
-    return headerHorizontalPadding * 2;
+    return totalPadding;
   }
 
   /**
@@ -1716,9 +1746,10 @@ export class GridMetricCalculator {
    */
   calculateColumnDataWidth(
     modelColumn: ModelIndex,
-    state: GridMetricState
+    state: GridMetricState,
+    maxColumnWidth: number
   ): number {
-    const { top, height, width, model, theme } = state;
+    const { top, height, width, model, theme, context } = state;
     const { floatingTopRowCount, floatingBottomRowCount, rowCount } = model;
     const {
       font,
@@ -1729,12 +1760,14 @@ export class GridMetricCalculator {
       scrollBarSize,
       dataBarHorizontalPadding,
     } = theme;
+    this.calculateLowerFontWidth(font, context);
+    this.calculateUpperFontWidth(font, context);
 
     let columnWidth = 0;
 
-    const fontWidth = this.getWidthForFont(font, state);
     const rowsPerPage = height / rowHeight;
     const bottom = Math.ceil(top + rowsPerPage);
+    const cellPadding = cellHorizontalPadding * 2;
     GridUtils.iterateAllItems(
       top,
       bottom,
@@ -1748,8 +1781,13 @@ export class GridMetricCalculator {
 
         let cellWidth = 0;
         if (text) {
-          const cellPadding = cellHorizontalPadding * 2;
-          cellWidth = text.length * fontWidth + cellPadding;
+          cellWidth =
+            this.calculateTextWidth(
+              context,
+              font,
+              text,
+              maxColumnWidth - cellPadding
+            ) + cellPadding;
         }
 
         if (cellRenderType === 'dataBar') {
@@ -1766,10 +1804,68 @@ export class GridMetricCalculator {
         (width - rowHeaderWidth - scrollBarSize - rowFooterWidth) *
           GridMetricCalculator.MAX_COLUMN_WIDTH
       ),
-      cellHorizontalPadding * 2
+      cellPadding
     );
 
     return columnWidth;
+  }
+
+  /**
+   * Calculates the width of a string using widths of individual and pairs of characters to take into account font kerning
+   * @param context The canvas rendering context
+   * @param font The font to get the width for
+   * @param text The text to calculate the width for
+   * @param maxWidth The maximum width to calculate to
+   */
+  calculateTextWidth(
+    context: CanvasRenderingContext2D,
+    font: string,
+    text: string,
+    maxWidth?: number
+  ): number {
+    if (text.length === 0) return 0;
+    context.font = font;
+
+    if (!this.allCharWidths.has(font)) {
+      this.allCharWidths.set(font, new Map());
+    }
+    const charWidths = getOrThrow(this.allCharWidths, font);
+
+    let result = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      const char = text[i];
+      const nextChar = text[i + 1];
+
+      if (!charWidths.has(char)) {
+        charWidths.set(char, context.measureText(char).width);
+      }
+
+      if (nextChar !== undefined) {
+        if (!charWidths.has(nextChar)) {
+          charWidths.set(nextChar, context.measureText(nextChar).width);
+        }
+
+        const pair = char + nextChar;
+        if (!charWidths.has(pair)) {
+          charWidths.set(pair, context.measureText(pair).width);
+        }
+
+        result += getOrThrow(charWidths, pair);
+        if (i > 0) {
+          // Need to remove the current character that was already counted in the previous pair
+          result -= getOrThrow(charWidths, char);
+        }
+
+        if (maxWidth !== undefined && result > maxWidth) {
+          return maxWidth;
+        }
+      } else if (result === 0) {
+        // On last char and no pair found before that => Only one char in string
+        result = getOrThrow(charWidths, char);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -1797,27 +1893,51 @@ export class GridMetricCalculator {
   }
 
   /**
-   * Get the width of the provided font. Exploits the fact that we're
-   * using tabular figures so every character is same width
+   * Calculates the lower bound width of a character of the provided font.
    * @param font The font to get the width for
-   * @param state The grid metric state
-   * @returns Width of the char `8` for the specified font
+   * @param context The canvas rendering context
    */
-  getWidthForFont(font: GridFont, state: GridMetricState): number {
-    if (this.fontWidths.has(font)) {
-      return getOrThrow(this.fontWidths, font);
+  calculateLowerFontWidth(
+    font: GridFont,
+    context: CanvasRenderingContext2D
+  ): void {
+    if (this.fontWidthsLower.has(font)) {
+      return;
     }
-    const { context } = state;
+
     context.font = font;
-    const textMetrics = context.measureText('8');
+    // Assume char `.` is the smallest character
+    const textMetrics = context.measureText('.');
     const { width } = textMetrics;
 
     // context.font changes the string a little bit, e.g. '10px Arial, sans serif' => '10px Arial, "sans serif"'
     // Rather than require checking with the correct font def (theme, or context font), just key it to both
-    this.fontWidths.set(font, width);
-    this.fontWidths.set(context.font, width);
+    this.fontWidthsLower.set(font, width);
+    this.fontWidthsLower.set(context.font, width);
+  }
 
-    return width;
+  /**
+   * Calculates the upper bound width of a character of the provided font.
+   * @param font The font to get the width for
+   * @param context The canvas rendering context
+   */
+  calculateUpperFontWidth(
+    font: GridFont,
+    context: CanvasRenderingContext2D
+  ): void {
+    if (this.fontWidthsUpper.has(font)) {
+      return;
+    }
+
+    context.font = font;
+    // Assume char `m` is the largest character
+    const textMetrics = context.measureText('m');
+    const { width } = textMetrics;
+
+    // context.font changes the string a little bit, e.g. '10px Arial, sans serif' => '10px Arial, "sans serif"'
+    // Rather than require checking with the correct font def (theme, or context font), just key it to both
+    this.fontWidthsUpper.set(font, width);
+    this.fontWidthsUpper.set(context.font, width);
   }
 
   /**

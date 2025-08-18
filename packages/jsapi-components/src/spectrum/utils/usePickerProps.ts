@@ -15,6 +15,7 @@ import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 import { useItemRowDeserializer } from './useItemRowDeserializer';
 import { useGetItemIndexByValue } from '../../useGetItemIndexByValue';
 import useSearchableViewportData from '../../useSearchableViewportData';
+import useTableClose from '../../useTableClose';
 
 const log = Log.module('jsapi-components.usePickerProps');
 
@@ -76,6 +77,8 @@ export function usePickerProps<TProps>({
     TableUtils.copyTableAndApplyFilters,
     [tableSource]
   );
+
+  useTableClose(tableCopy);
 
   const keyColumn = useMemo(
     () =>
