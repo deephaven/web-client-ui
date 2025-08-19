@@ -1,5 +1,4 @@
 import React, {
-  type ComponentType,
   type ReactElement,
   useCallback,
   useEffect,
@@ -12,6 +11,7 @@ import type {
   Container,
   ItemConfig,
   ReactComponentConfig,
+  Component,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
@@ -72,7 +72,8 @@ interface DashboardLayoutProps {
   emptyDashboard?: React.ReactNode;
 
   /** Component to wrap each panel with */
-  panelWrapper?: ComponentType;
+  // NOTE: changed due to type inference issues
+  panelWrapper?: React.ElementType;
 }
 
 /**
@@ -173,11 +174,13 @@ export function DashboardLayout({
     [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, panelWrapper]
   );
   const hydrateComponent = useCallback(
-    (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
+    (name: string, props: unknown) =>
+      (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
     [hydrateMap, id]
   );
   const dehydrateComponent = useCallback(
-    (name, config) => (dehydrateMap.get(name) ?? FALLBACK_CALLBACK)(config, id),
+    (name: string, config: unknown) =>
+      (dehydrateMap.get(name) ?? FALLBACK_CALLBACK)(config, id),
     [dehydrateMap, id]
   );
   const panelManager = useMemo(
@@ -267,19 +270,19 @@ export function DashboardLayout({
     [layout.eventHub]
   );
 
-  const handleComponentCreated = useCallback(item => {
+  const handleComponentCreated = useCallback((item: Component) => {
     log.debug2('handleComponentCreated', item);
 
     if (
       item == null ||
       item.config == null ||
-      item.config.component == null ||
+      item.config.componentName == null ||
       item.element == null
     ) {
       return;
     }
 
-    const cssComponent = item.config.component
+    const cssComponent = item.config.componentName
       .replace(/([a-z])([A-Z])/g, '$1-$2')
       .toLowerCase();
     const cssClass = `${cssComponent}-component`;

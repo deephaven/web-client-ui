@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useDhId, DH_ID_PROP } from './useDhId';
 import { FiberProvider } from './useFiber';
 import { PanelIdContext } from './usePanelId';
