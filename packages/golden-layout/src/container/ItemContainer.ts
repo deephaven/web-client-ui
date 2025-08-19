@@ -26,7 +26,10 @@ export default class ItemContainer<
   tab?: Tab;
 
   // This type is to make TS happy and allow ReactComponentConfig passed to container generic
-  _config: C & { componentState: Record<string, unknown> };
+  _config: C & {
+    componentState: Record<string, unknown>;
+    variableName?: string;
+  };
 
   isHidden = false;
 
@@ -49,7 +52,10 @@ export default class ItemContainer<
     this.parent = parent;
     this.layoutManager = layoutManager;
 
-    this._config = config as C & { componentState: Record<string, unknown> };
+    this._config = config as C & {
+      componentState: Record<string, unknown>;
+      variableName?: string;
+    };
 
     this._contentElement = this._element.find('.lm_content');
 
