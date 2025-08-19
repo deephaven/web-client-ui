@@ -181,7 +181,7 @@ class ColumnStatistics extends Component<
             <div
               className={classNames('column-statistic-operation', className)}
             >
-              {operation}
+              {String(operation)}
             </div>
             <div className="column-statistic-value">{formattedValue}</div>
           </React.Fragment>

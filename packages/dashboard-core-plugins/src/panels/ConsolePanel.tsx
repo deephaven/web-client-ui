@@ -20,6 +20,7 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
+import type LayoutManager from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import { type SessionWrapper } from '@deephaven/jsapi-utils';
@@ -156,6 +157,9 @@ export class ConsolePanel extends PureComponent<
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
     this.objectSubscriptionCleanup?.();
   }
+
+  // eslint-disable-next-line react/static-property-placement
+  context!: LayoutManager;
 
   consoleRef: RefObject<Console>;
 

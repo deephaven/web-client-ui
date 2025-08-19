@@ -347,7 +347,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                       onClick={() => this.handleTypeClick(index)}
                     >
                       {this.getTypeIcon(chartType)}
-                      {this.getTypeName(chartType)}
+                      {String(this.getTypeName(chartType))}
                     </button>
                   </div>
                 );

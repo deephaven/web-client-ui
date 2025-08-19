@@ -1,4 +1,8 @@
-import { ItemList, type Range } from '@deephaven/components';
+import {
+  ItemList,
+  type Range,
+  type RenderItemProps,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
 import { RangeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
@@ -288,11 +292,11 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const handleSelectionChange = useCallback(
-    (newSelectedRanges, force = false) => {
+    (newSelectedRanges: readonly Range[], force = false) => {
       log.debug2('handleSelectionChange', newSelectedRanges);
       if (force === true || newSelectedRanges !== selectedRanges) {
-        setSelectedRanges(newSelectedRanges);
-        const selectedItems = getItems(newSelectedRanges);
+        setSelectedRanges([...newSelectedRanges]);
+        const selectedItems = getItems([...newSelectedRanges]);
         onSelectionChange(selectedItems);
       }
     },
@@ -300,7 +304,7 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const handleFocusChange = useCallback(
-    focusIndex => {
+    (focusIndex: number | null) => {
       log.debug2('handleFocusChange', focusIndex);
       if (focusIndex != null) {
         const [focusedItem] = getItems([[focusIndex, focusIndex]]);
@@ -418,7 +422,7 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const renderWrapper = useCallback(
-    itemProps =>
+    (itemProps: RenderItemProps<FileStorageItem>) =>
       renderItem({
         ...itemProps,
         isDragInProgress: draggedItems != null,

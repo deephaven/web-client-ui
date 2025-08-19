@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { DragDropContext } from 'react-beautiful-dnd';
+import { DragDropContext, type DropResult } from 'react-beautiful-dnd';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -77,20 +77,28 @@ function Aggregations({
   const [selectedOperation, setSelectedOperation] = useState(options[0]);
   const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);
   const changeSettings = useCallback(
-    (changedSettings, added = [], removed = []) => {
+    (
+      changedSettings: Partial<AggregationSettings>,
+      added: AggregationOperation[] = [],
+      removed: AggregationOperation[] = []
+    ) => {
       onChange({ ...settings, ...changedSettings }, added, removed);
     },
     [onChange, settings]
   );
   const changeAggregations = useCallback(
-    (newAggregations, added = [], removed = []) => {
+    (
+      newAggregations: readonly Aggregation[],
+      added: AggregationOperation[] = [],
+      removed: AggregationOperation[] = []
+    ) => {
       changeSettings({ aggregations: newAggregations }, added, removed);
     },
     [changeSettings]
   );
 
   const changeShowOnTop = useCallback(
-    newShowOnTop => {
+    (newShowOnTop: boolean) => {
       changeSettings({ showOnTop: newShowOnTop });
     },
     [changeSettings]
@@ -103,12 +111,12 @@ function Aggregations({
   }, []);
 
   const handleDragEnd = useCallback(
-    ({ destination, source }) => {
+    ({ destination, source }: DropResult) => {
       log.debug('handleDragEnd', destination, source);
 
       DragUtils.stopDragging();
 
-      if (destination === null) {
+      if (destination === null || destination === undefined) {
         return;
       }
 
@@ -138,8 +146,8 @@ function Aggregations({
   );
 
   const handleOperationChange = useCallback(
-    operation => {
-      setSelectedOperation(operation);
+    (operation: string) => {
+      setSelectedOperation(operation as AggregationOperation);
     },
     [setSelectedOperation]
   );
@@ -173,14 +181,14 @@ function Aggregations({
   );
 
   const handleAggregationSelectionChange = useCallback(
-    newSelectedRanges => {
-      setSelectedRanges(newSelectedRanges);
+    (newSelectedRanges: readonly Range[]) => {
+      setSelectedRanges([...newSelectedRanges]);
     },
     [setSelectedRanges]
   );
 
   const handleAggregationSelect = useCallback(
-    itemIndex => {
+    (itemIndex: number) => {
       const aggregation = aggregations[itemIndex];
       if (!AggregationUtils.isRollupOperation(aggregation.operation)) {
         onEdit(aggregation);

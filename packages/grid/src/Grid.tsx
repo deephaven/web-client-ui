@@ -238,6 +238,9 @@ export type GridState = {
 class Grid extends PureComponent<GridProps, GridState> {
   static contextType = ThemeContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof ThemeContext>;
+
   static defaultProps = {
     canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
     isStickyBottom: false,

@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { parseValueFromElement } from './PasteKeyHandler';
 
 function makeElementFromJsx(jsx: JSX.Element): HTMLElement {
   const div = document.createElement('div');
-  ReactDOM.render(jsx, div);
+  const root = createRoot(div);
+  root.render(jsx);
   return div;
 }
 
