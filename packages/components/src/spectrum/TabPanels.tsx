@@ -47,6 +47,11 @@ export function DHCTabPanels<T extends object>(
         return;
       }
 
+      // Skip children with function-based content (i.e. ItemRenderer) as it can't be portaled
+      if (typeof child.props.children === 'function') {
+        return;
+      }
+
       let portal = portalNodeMap.current.get(child.key);
       if (portal == null) {
         portal = createHtmlPortalNode({
@@ -57,6 +62,7 @@ export function DHCTabPanels<T extends object>(
         });
       }
       nextNodeMap.set(child.key, portal);
+
       nodes.push(
         <InPortal node={portal} key={child.key}>
           {child.props.children}

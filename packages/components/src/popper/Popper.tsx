@@ -28,6 +28,7 @@ import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 const POPPER_CLASS_NAME = 'popper';
 
 interface PopperProps {
+  children: React.ReactNode;
   options: PopperOptions;
   className: string;
   timeout: number;

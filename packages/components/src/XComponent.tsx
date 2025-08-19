@@ -40,16 +40,16 @@ export function createXComponent<P extends Record<string, unknown>>(
 ): XComponentType<P> {
   let forwardedRefComponent: XComponentType<P>;
   function XComponent(
-    props: P,
+    props: React.PropsWithoutRef<P>,
     ref: React.ForwardedRef<ComponentType<P>>
   ): JSX.Element {
     const ReplacementComponent = useXComponent(forwardedRefComponent);
     return canHaveRef(Component) ? (
       // eslint-disable-next-line react/jsx-props-no-spreading
-      <ReplacementComponent {...props} ref={ref} />
+      <ReplacementComponent {...(props as P)} ref={ref} />
     ) : (
       // eslint-disable-next-line react/jsx-props-no-spreading
-      <ReplacementComponent {...props} />
+      <ReplacementComponent {...(props as P)} />
     );
   }
 

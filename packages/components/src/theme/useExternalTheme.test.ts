@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import { TestUtils } from '@deephaven/test-utils';
 import type { PostMessage } from '@deephaven/utils';
 import { useExternalTheme } from './useExternalTheme';

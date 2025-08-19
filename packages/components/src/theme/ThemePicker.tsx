@@ -6,8 +6,10 @@ export function ThemePicker(): JSX.Element | null {
   const { selectedThemeKey, setSelectedThemeKey, themes } = useTheme();
 
   const onSelectionChange = useCallback(
-    (key: Key) => {
-      setSelectedThemeKey(key as string);
+    (key: Key | null) => {
+      if (key != null) {
+        setSelectedThemeKey(key as string);
+      }
     },
     [setSelectedThemeKey]
   );
