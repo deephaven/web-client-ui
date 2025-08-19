@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import useDebouncedValue from './useDebouncedValue';
 
 const DEFAULT_DEBOUNCE_MS = 100;
