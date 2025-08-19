@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@deephaven/test-utils": "file:../test-utils",
-    "@types/react": "^17.0.2"
+    "@types/react": "^18.3.12"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
