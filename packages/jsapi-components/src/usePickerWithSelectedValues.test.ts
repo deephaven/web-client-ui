@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { usePickerItemScale } from '@deephaven/components';
 import {

@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import type { FilterCondition, Table } from '@deephaven/jsapi-types';
 import { type FilterConditionFactory } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';

@@ -1,6 +1,6 @@
 import type { Table } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import useSelectDistinctTable from './useSelectDistinctTable';
 
 let table: Table;

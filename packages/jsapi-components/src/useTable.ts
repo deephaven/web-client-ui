@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
+import { type OnTableUpdatedEvent } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import useTableListener from './useTableListener';
 import ColumnNameError from './ColumnNameError';
@@ -49,13 +50,13 @@ const useTable = (
   }, [columns, table, firstRow, lastRow]);
 
   const handleUpdate = useCallback(
-    ({ detail }) => {
+    ({ detail }: OnTableUpdatedEvent) => {
       if (!columns) {
         log.error('Columns not initialized.');
         return;
       }
       const viewportData = columns.map(column =>
-        (detail.rows as dh.Row[]).map(r => r.get(column))
+        detail.rows.map(r => r.get(column))
       );
       setData(viewportData);
     },

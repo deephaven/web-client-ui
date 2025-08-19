@@ -91,7 +91,7 @@ function TableInput(props: TableInputProps): JSX.Element {
   );
 
   const formatValue = useCallback(
-    value =>
+    (value: Value) =>
       column
         ? formatter.getFormattedString(value, column.type, column.name)
         : `${value}`,
@@ -136,7 +136,7 @@ function TableInput(props: TableInputProps): JSX.Element {
     }
   }, [onChange, updatedSelection]);
 
-  const initTable = useCallback(async promise => {
+  const initTable = useCallback(async (promise: Promise<dh.Table>) => {
     try {
       const resolved = await promise;
       log.debug('Table resolved', resolved);
@@ -160,7 +160,7 @@ function TableInput(props: TableInputProps): JSX.Element {
 
   // Scroll the item matching the input into view
   const handleSearchChange = useCallback(
-    e => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = e.target;
       setSearchValue(value);
       const index = items.findIndex(item => item.displayValue.includes(value));
@@ -175,7 +175,7 @@ function TableInput(props: TableInputProps): JSX.Element {
   );
 
   const handleSelect = useCallback(
-    index => {
+    (index: number) => {
       log.debug('handleSelect', index);
       if (index >= items.length) {
         log.error('Invalid index', index);

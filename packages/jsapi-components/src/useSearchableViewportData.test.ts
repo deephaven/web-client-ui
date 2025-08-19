@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import type { DebouncedFunc } from 'lodash';
 import { TABLE_ROW_HEIGHT } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
