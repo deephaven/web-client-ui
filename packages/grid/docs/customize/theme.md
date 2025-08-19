@@ -6,7 +6,7 @@ Modify the values in the Live Editor below to try out some possibilities. For ex
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockTreeGridModel());
+  const model = useMemo(() => new MockTreeGridModel(), []);
   const theme = useMemo(
     () => ({
       allowColumnResize: true,

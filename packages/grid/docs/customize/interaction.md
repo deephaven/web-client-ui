@@ -58,15 +58,15 @@ Use these callbacks to monitor column drag operations. `onMovedColumnsChanged` f
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockGridModel({ columnCount: 10 }));
+  const model = useMemo(() => new MockGridModel({ columnCount: 10 }), []);
 
   return (
     <Grid
       model={model}
-      onMovedColumnsChanged={(movedColumns) =>
+      onMovedColumnsChanged={movedColumns =>
         console.log('Dragging columns:', movedColumns)
       }
-      onMoveColumnComplete={(movedColumns) =>
+      onMoveColumnComplete={movedColumns =>
         console.log('Finished moving columns:', movedColumns)
       }
     />
@@ -80,15 +80,13 @@ These props track row reordering. Use `onMovedRowsChanged` for live updates and 
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockGridModel({ rowCount: 100 }));
+  const model = useMemo(() => new MockGridModel({ rowCount: 100 }), []);
 
   return (
     <Grid
       model={model}
-      onMovedRowsChanged={(movedRows) =>
-        console.log('Dragging rows:', movedRows)
-      }
-      onMoveRowComplete={(movedRows) =>
+      onMovedRowsChanged={movedRows => console.log('Dragging rows:', movedRows)}
+      onMoveRowComplete={movedRows =>
         console.log('Finished moving rows:', movedRows)
       }
     />
@@ -102,14 +100,24 @@ This prop helps track what users select in the grid.
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockGridModel({ rowCount: 100, columnCount: 10 }));
+  const model = useMemo(
+    () => new MockGridModel({ rowCount: 100, columnCount: 10 }),
+    []
+  );
 
   return (
     <Grid
       model={model}
-      onSelectionChanged={(ranges) =>
+      onSelectionChanged={(ranges) => {
+        const selectedData: unknown[][] = [];
+        ranges.forEach(range => {
+          for (let r = range.startRow; r <= range.endRow; r++) {
+            // Assuming keys are the 0th and 1st column
+            selectedData.push([model.textForCell(0, r), model.textForCell(1, r)])
+          }
+        });
         console.log('User selected new range:', ranges)
-      }
+      }}
     />
   );
 }
@@ -121,14 +129,12 @@ Use this to detect scrolling or viewport shifts—ideal for performance optimiza
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockGridModel({ rowCount: 1000 }));
+  const model = useMemo(() => new MockGridModel({ rowCount: 1000 }), []);
 
   return (
     <Grid
       model={model}
-      onViewChanged={(metrics) =>
-        console.log('Viewport updated:', metrics)
-      }
+      onViewChanged={metrics => console.log('Viewport updated:', metrics)}
     />
   );
 }
@@ -136,20 +142,17 @@ function Example() {
 
 ## Handling Token Clicks
 
-This callback responds to token interactions inside the grid.
+This callback responds to token interactions inside the grid. By default, email addresses and URLs are automatically parsed from cell content, making them clickable elements within your grid cells. However, the token parsing system is fully customizable - you can configure it to recognize and handle any type of content pattern, such as phone numbers, hashtags, mentions, or custom identifiers specific to your application.
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockGridModel({ rowCount: 50 }));
+  const model = useMemo(() => new MockGridModel({ rowCount: 50 }), []);
 
   return (
     <Grid
       model={model}
-      onTokenClicked={(token) =>
-        console.log('User clicked a token:', token)
-      }
+      onTokenClicked={token => console.log('User clicked a token:', token)}
     />
   );
 }
 ```
-
