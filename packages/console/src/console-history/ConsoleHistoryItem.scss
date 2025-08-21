@@ -11,10 +11,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   display: flex;
 }
 
-.console-history-item-command {
-  white-space: pre-line;
-}
-
 .console-history-item-result .log-message {
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -100,21 +96,62 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   position: relative;
 }
 
-.action-group-wrapper {
+.console-history-actions {
+  z-index: 1000;
   position: absolute;
-  top: 1.5rem;
-  right: 1rem;
-  transform: translateY(-50%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
+  gap: $spacer-1;
+  top: 0;
+  right: $spacer-2;
+  display: none;
+  align-items: center;
+  background-color: var(--dh-color-neutral-hover-bg);
+  border-radius: $border-radius;
+  padding: $spacer-1;
 }
 
-/* Background and text color on hover */
-.hover-container:hover {
-  background: #333;
+.console-history-single-line {
+  top: -0.875rem;
 }
-.hover-container:hover .action-group-wrapper {
-  opacity: 1;
-  pointer-events: auto;
+
+.console-history-two-lines {
+  top: -0.125rem;
+}
+
+.console-history-last-single-line {
+  top: -1.5rem;
+}
+
+.console-history-first-single-line {
+  top: 0;
+}
+
+.console-history-item-command-hovered {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-command {
+  position: relative;
+  white-space: pre-line;
+}
+
+.console-history-item-contextual-help-content {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  text-align: left;
+  margin-bottom: $spacer-2;
+  white-space: nowrap;
+}
+
+.console-history-item-contextual-help {
+  section[class*='spectrum-ContextualHelp-dialog'] {
+    // The default size of the contextual help is only 250px and is too small.
+    // Just set a size automatically based on the content.
+    width: fit-content;
+    min-width: 150px;
+  }
 }

@@ -1124,6 +1124,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 supportsType={supportsType}
                 iconForType={iconForType}
                 ref={this.consoleHistoryContent}
+                handleCommandSubmit={this.handleCommandSubmit}
               />
               {historyChildren}
             </div>

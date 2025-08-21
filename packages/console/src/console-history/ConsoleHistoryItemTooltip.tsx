@@ -1,11 +1,24 @@
-import React, { Component, type ReactElement } from 'react';
-import { ContextualHelp, Tooltip } from '@deephaven/components';
+import React, {
+  Component,
+  useEffect,
+  useRef,
+  useState,
+  type ReactElement,
+} from 'react';
+import {
+  Content,
+  ContextualHelp,
+  Heading,
+  Tooltip,
+} from '@deephaven/components';
 import { TimeUtils } from '@deephaven/utils';
 import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import { func } from 'node_modules/@types/prop-types';
+import { useResizeObserver } from '@deephaven/react-hooks';
 
 interface ConsoleHistoryActionItemTooltipProps {
   item: ConsoleHistoryActionItem;
+  onOpenChange: (isOpen: boolean) => void;
 }
 
 const convertedDiff = (diff: number): string => {
@@ -34,19 +47,39 @@ const getTimeString = (
   return convertedDiff(deltaTime);
 };
 
+function useForceRepositionOnViewportResize() {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const handler = () => {
+      // Slight delay to allow layout to settle
+      requestAnimationFrame(() => {
+        setTick(t => t + 1); // Force re-render
+      });
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handler);
+    }
+
+    window.addEventListener('orientationchange', handler);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handler);
+      }
+      window.removeEventListener('orientationchange', handler);
+    };
+  }, []);
+}
+
 function CommandHistoryItemTooltip(
   props: ConsoleHistoryActionItemTooltipProps
 ): ReactElement {
+  useForceRepositionOnViewportResize();
   const { item } = props;
   const { startTime, serverStartTime, serverEndTime } = item;
   const endTime = item.endTime ?? Date.now();
-
-  console.log('CommandHistoryItemTooltip render', {
-    startTime,
-    endTime,
-    serverStartTime,
-    serverEndTime,
-  });
 
   const timeString = getTimeString(startTime, endTime);
 
@@ -60,21 +93,28 @@ function CommandHistoryItemTooltip(
   }
 
   return (
-    <ContextualHelp variant="info">
-      <div className="console-history-item-tooltip">
-        {hasTimeString && (
-          <>
-            <div>Elapsed time</div>
-            <div>{timeString}</div>
-          </>
-        )}
-        {hasServerTimeString && (
-          <>
-            <div>Elapsed server time</div>
-            <div>{serverTimeString}</div>
-          </>
-        )}
-      </div>
+    <ContextualHelp
+      variant="info"
+      onOpenChange={props.onOpenChange}
+      UNSAFE_className="console-history-item-contextual-help"
+    >
+      <Heading>Execution Info</Heading>
+      <Content>
+        <div className="console-history-item-contextual-help-content">
+          {hasTimeString && (
+            <>
+              <div>Elapsed time</div>
+              <div>{timeString}</div>
+            </>
+          )}
+          {hasServerTimeString && (
+            <>
+              <div>Elapsed server time</div>
+              <div>{serverTimeString}</div>
+            </>
+          )}
+        </div>
+      </Content>
     </ContextualHelp>
   );
 }
