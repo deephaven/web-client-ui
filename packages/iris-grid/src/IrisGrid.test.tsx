@@ -4,8 +4,13 @@ import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import { TypeValue } from '@deephaven/filters';
+import {
+  ExpandableColumnGridModel,
+  isExpandableColumnGridModel,
+} from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import IrisGridProxyModel from './IrisGridProxyModel';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this
@@ -13,6 +18,13 @@ class MockPath2D {
 }
 
 window.Path2D = MockPath2D as unknown as new () => Path2D;
+
+jest.mock('@deephaven/grid', () => ({
+  ...jest.requireActual('@deephaven/grid'),
+  isExpandableColumnGridModel: jest.fn(),
+}));
+
+const { asMock } = TestUtils;
 
 const VIEW_SIZE = 5000;
 
@@ -221,4 +233,90 @@ it('should set gotoValueSelectedColumnName to empty string if no columns are giv
   );
 
   expect(component.state.gotoValueSelectedColumnName).toEqual('');
+});
+
+describe('column expand/collapse', () => {
+  function testColumnExpandCollapse({
+    isExpandable,
+    isExpandAllAvailable,
+    expectToggleToWork,
+    expectExpandAllToWork,
+  }: {
+    isExpandable: boolean;
+    isExpandAllAvailable: boolean;
+    expectToggleToWork: boolean;
+    expectExpandAllToWork: boolean;
+  }) {
+    const model = irisGridTestUtils.makeModel() as IrisGridProxyModel &
+      ExpandableColumnGridModel;
+    const component = makeComponent(model);
+
+    model.setColumnExpanded = jest.fn();
+    model.isColumnExpanded = jest.fn(() => false);
+    model.expandAllColumns = jest.fn();
+    model.collapseAllColumns = jest.fn();
+    model.isExpandAllColumnsAvailable = isExpandAllAvailable;
+
+    asMock(isExpandableColumnGridModel).mockReturnValue(isExpandable);
+
+    component.toggleExpandColumn(0);
+    if (expectToggleToWork) {
+      expect(model.setColumnExpanded).toHaveBeenCalled();
+    } else {
+      expect(model.setColumnExpanded).not.toHaveBeenCalled();
+    }
+
+    component.expandAllColumns();
+    if (expectExpandAllToWork) {
+      expect(model.expandAllColumns).toHaveBeenCalled();
+    } else {
+      expect(model.expandAllColumns).not.toHaveBeenCalled();
+    }
+
+    component.collapseAllColumns();
+    if (expectExpandAllToWork) {
+      expect(model.collapseAllColumns).toHaveBeenCalled();
+    } else {
+      expect(model.collapseAllColumns).not.toHaveBeenCalled();
+    }
+  }
+
+  it.each([
+    {
+      description: 'model does not support expandable columns',
+      isExpandable: false,
+      isExpandAllAvailable: false,
+      expectToggleToWork: false,
+      expectExpandAllToWork: false,
+    },
+    {
+      description: 'model supports expandable columns but not expand all',
+      isExpandable: true,
+      isExpandAllAvailable: false,
+      expectToggleToWork: true,
+      expectExpandAllToWork: false,
+    },
+    {
+      description: 'model supports both expandable columns and expand all',
+      isExpandable: true,
+      isExpandAllAvailable: true,
+      expectToggleToWork: true,
+      expectExpandAllToWork: true,
+    },
+  ])(
+    'should handle column expand/collapse when $description',
+    ({
+      isExpandable,
+      isExpandAllAvailable,
+      expectToggleToWork,
+      expectExpandAllToWork,
+    }) => {
+      testColumnExpandCollapse({
+        isExpandable,
+        isExpandAllAvailable,
+        expectToggleToWork,
+        expectExpandAllToWork,
+      });
+    }
+  );
 });
