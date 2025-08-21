@@ -8,13 +8,14 @@ Both rows and columns are virtualized in this grid solution, so you can theoreti
 
 ```jsx live
 function Example() {
-  const [model] = useState(
+  const model = useMemo(
     () =>
       new MockGridModel({
         rowCount: Number.MAX_SAFE_INTEGER,
         columnCount: Number.MAX_SAFE_INTEGER,
         isEditable: true,
-      })
+      }),
+    []
   );
 
   return <Grid model={model} />;

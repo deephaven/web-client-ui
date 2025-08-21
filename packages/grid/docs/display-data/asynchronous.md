@@ -8,8 +8,9 @@ When working with big data, it's more than likely you will not have the data acc
  */
 function AsyncExample() {
   // Use a Viewport data model that we update asynchronously to display the data
-  const [model] = useState(
-    () => new ViewportDataGridModel(1000000000, 1000000)
+  const model = useMemo(
+    () => new ViewportDataGridModel(1000000000, 1000000),
+    []
   );
   const grid = useRef();
 

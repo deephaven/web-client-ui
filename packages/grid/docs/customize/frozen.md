@@ -4,12 +4,13 @@ Extending [GridModel](https://github.com/deephaven/web-client-ui/blob/main/packa
 
 ```jsx live
 function Example() {
-  const [model] = useState(
+  const model = useMemo(
     () =>
       new MockGridModel({
         floatingLeftColumnCount: 3,
         floatingTopRowCount: 1,
-      })
+      }),
+    []
   );
 
   return <Grid model={model} />;
