@@ -56,8 +56,8 @@
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
-    "@babel/cli": "7.20.7",
-    "@babel/core": "7.20.12",
+    "@babel/cli": "7.22.15",
+    "@babel/core": "7.22.20",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
     "@deephaven/eslint-config": "file:../eslint-config",
