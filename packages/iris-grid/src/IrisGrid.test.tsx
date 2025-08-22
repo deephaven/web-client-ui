@@ -78,10 +78,12 @@ function createNodeMock(element: ReactElement) {
 
 function makeComponent(
   model = irisGridTestUtils.makeModel(),
-  settings = DEFAULT_SETTINGS
+  settings = DEFAULT_SETTINGS,
+  props = {}
 ) {
   const testRenderer = TestRenderer.create(
-    <IrisGrid model={model} settings={settings} />,
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <IrisGrid model={model} settings={settings} {...props} />,
     {
       createNodeMock,
     }
@@ -233,6 +235,40 @@ it('should set gotoValueSelectedColumnName to empty string if no columns are giv
   );
 
   expect(component.state.gotoValueSelectedColumnName).toEqual('');
+});
+
+describe('rebuildFilters', () => {
+  it('updates state if filters not empty', () => {
+    const component = makeComponent(undefined, undefined, {
+      quickFilters: [
+        [
+          '2',
+          {
+            columnType: IrisGridTestUtils.DEFAULT_TYPE,
+            filterList: [
+              {
+                operator: 'eq',
+                text: 'null',
+                value: null,
+                startColumnIndex: 0,
+              },
+            ],
+          },
+        ],
+      ],
+    });
+    jest.spyOn(component, 'setState');
+    expect(component.setState).not.toBeCalled();
+    component.rebuildFilters();
+    expect(component.setState).toBeCalled();
+  });
+
+  it('does not update state for empty filters', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'setState');
+    component.rebuildFilters();
+    expect(component.setState).not.toBeCalled();
+  });
 });
 
 describe('column expand/collapse', () => {
