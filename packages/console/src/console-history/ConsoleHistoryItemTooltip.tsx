@@ -47,36 +47,24 @@ const getTimeString = (
   return convertedDiff(deltaTime);
 };
 
-function useForceRepositionOnViewportResize() {
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const handler = () => {
-      // Slight delay to allow layout to settle
-      requestAnimationFrame(() => {
-        setTick(t => t + 1); // Force re-render
-      });
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handler);
-    }
-
-    window.addEventListener('orientationchange', handler);
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handler);
-      }
-      window.removeEventListener('orientationchange', handler);
-    };
-  }, []);
-}
-
 function CommandHistoryItemTooltip(
   props: ConsoleHistoryActionItemTooltipProps
 ): ReactElement {
-  useForceRepositionOnViewportResize();
+  useEffect(() => {
+    // Sometimes, such as when closing developer tools, the window dimensions can change
+    // without a resize event being triggered, which leaves the popper floating in the
+    // wrong position until a resize event occurs.
+    // This effect fires a resize event to ensure the location is updated.
+    const handler = () => {
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    const observer = new ResizeObserver(handler);
+    observer.observe(document.body); // or document.documentElement
+
+    return () => observer.disconnect();
+  }, []);
+
   const { item } = props;
   const { startTime, serverStartTime, serverEndTime } = item;
   const endTime = item.endTime ?? Date.now();
@@ -97,6 +85,7 @@ function CommandHistoryItemTooltip(
       variant="info"
       onOpenChange={props.onOpenChange}
       UNSAFE_className="console-history-item-contextual-help"
+      key={key}
     >
       <Heading>Execution Info</Heading>
       <Content>
