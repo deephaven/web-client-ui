@@ -236,87 +236,59 @@ it('should set gotoValueSelectedColumnName to empty string if no columns are giv
 });
 
 describe('column expand/collapse', () => {
-  function testColumnExpandCollapse({
-    isExpandable,
-    isExpandAllAvailable,
-    expectToggleToWork,
-    expectExpandAllToWork,
-  }: {
-    isExpandable: boolean;
-    isExpandAllAvailable: boolean;
-    expectToggleToWork: boolean;
-    expectExpandAllToWork: boolean;
-  }) {
-    const model = irisGridTestUtils.makeModel() as IrisGridProxyModel &
-      ExpandableColumnGridModel;
-    const component = makeComponent(model);
+  let model: IrisGridProxyModel & ExpandableColumnGridModel;
+  let component: IrisGrid;
 
+  beforeEach(() => {
+    model = irisGridTestUtils.makeModel() as IrisGridProxyModel &
+      ExpandableColumnGridModel;
+    component = makeComponent(model);
     model.setColumnExpanded = jest.fn();
     model.isColumnExpanded = jest.fn(() => false);
     model.expandAllColumns = jest.fn();
     model.collapseAllColumns = jest.fn();
-    model.isExpandAllColumnsAvailable = isExpandAllAvailable;
+  });
 
-    asMock(isExpandableColumnGridModel).mockReturnValue(isExpandable);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
+  it('calls setColumnExpanded if model supports expandable columns', () => {
+    asMock(isExpandableColumnGridModel).mockReturnValue(true);
     component.toggleExpandColumn(0);
-    if (expectToggleToWork) {
-      expect(model.setColumnExpanded).toHaveBeenCalled();
-    } else {
-      expect(model.setColumnExpanded).not.toHaveBeenCalled();
-    }
+    expect(model.setColumnExpanded).toHaveBeenCalled();
+  });
+
+  it('ignores setColumnExpanded and expand/collapse all if model does not support expandable columns', () => {
+    asMock(isExpandableColumnGridModel).mockReturnValue(false);
+    component.toggleExpandColumn(0);
+    expect(model.setColumnExpanded).not.toHaveBeenCalled();
 
     component.expandAllColumns();
-    if (expectExpandAllToWork) {
-      expect(model.expandAllColumns).toHaveBeenCalled();
-    } else {
-      expect(model.expandAllColumns).not.toHaveBeenCalled();
-    }
+    expect(model.expandAllColumns).not.toHaveBeenCalled();
 
     component.collapseAllColumns();
-    if (expectExpandAllToWork) {
-      expect(model.collapseAllColumns).toHaveBeenCalled();
-    } else {
-      expect(model.collapseAllColumns).not.toHaveBeenCalled();
-    }
-  }
+    expect(model.collapseAllColumns).not.toHaveBeenCalled();
+  });
 
-  it.each([
-    {
-      description: 'model does not support expandable columns',
-      isExpandable: false,
-      isExpandAllAvailable: false,
-      expectToggleToWork: false,
-      expectExpandAllToWork: false,
-    },
-    {
-      description: 'model supports expandable columns but not expand all',
-      isExpandable: true,
-      isExpandAllAvailable: false,
-      expectToggleToWork: true,
-      expectExpandAllToWork: false,
-    },
-    {
-      description: 'model supports both expandable columns and expand all',
-      isExpandable: true,
-      isExpandAllAvailable: true,
-      expectToggleToWork: true,
-      expectExpandAllToWork: true,
-    },
-  ])(
-    'should handle column expand/collapse when $description',
-    ({
-      isExpandable,
-      isExpandAllAvailable,
-      expectToggleToWork,
-      expectExpandAllToWork,
-    }) => {
-      testColumnExpandCollapse({
-        isExpandable,
-        isExpandAllAvailable,
-        expectToggleToWork,
-        expectExpandAllToWork,
-      });
-    }
-  );
+  it('calls expandAllColumns if model supports expandable columns and expand all', () => {
+    asMock(isExpandableColumnGridModel).mockReturnValue(true);
+    model.isExpandAllColumnsAvailable = true;
+    component.expandAllColumns();
+    expect(model.expandAllColumns).toHaveBeenCalled();
+
+    component.collapseAllColumns();
+    expect(model.collapseAllColumns).toHaveBeenCalled();
+  });
+
+  it('ignores expandAllColumns if model does not support expand all', () => {
+    asMock(isExpandableColumnGridModel).mockReturnValue(true);
+    model.isExpandAllColumnsAvailable = false;
+
+    component.expandAllColumns();
+    expect(model.expandAllColumns).not.toHaveBeenCalled();
+
+    component.collapseAllColumns();
+    expect(model.collapseAllColumns).not.toHaveBeenCalled();
+  });
 });
