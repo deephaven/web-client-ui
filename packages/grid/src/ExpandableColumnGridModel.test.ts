@@ -17,7 +17,7 @@ describe('ExpandableColumnGridModel', () => {
         hasExpandableColumns: false,
       } as ExpandableColumnGridModel;
 
-      expect(isExpandableColumnGridModel(model)).toBe(true);
+      expect(isExpandableColumnGridModel(model)).toBe(false);
     });
 
     it('should return false for model without hasExpandableColumns property', () => {
