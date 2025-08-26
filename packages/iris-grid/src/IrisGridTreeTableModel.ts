@@ -2,6 +2,7 @@
 import memoize from 'memoize-one';
 import {
   BoundedAxisRange,
+  ExpandableGridModel,
   GridCell,
   GridRange,
   ModelIndex,
@@ -50,10 +51,10 @@ function isLayoutTreeTable(table: DhType.TreeTable): table is LayoutTreeTable {
   return (table as LayoutTreeTable).layoutHints !== undefined;
 }
 
-class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
-  DhType.TreeTable,
-  UITreeRow
-> {
+class IrisGridTreeTableModel
+  extends IrisGridTableModelTemplate<DhType.TreeTable, UITreeRow>
+  implements ExpandableGridModel
+{
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: DisplayColumn[];
 

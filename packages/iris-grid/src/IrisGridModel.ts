@@ -60,6 +60,7 @@ abstract class IrisGridModel<
       Event<string>
     >,
     TMode extends 'standard' | 'strict' = 'standard',
+    TDhType extends typeof DhType = typeof DhType,
   >
   extends GridModel<TEventMap & IrisGridModelEventMap, TMode>
   implements DataBarGridModel
@@ -80,14 +81,14 @@ abstract class IrisGridModel<
     VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
   } as const);
 
-  constructor(dh: typeof DhType) {
+  constructor(dh: TDhType) {
     super();
 
     this.dh = dh;
     this.listenerCount = 0;
   }
 
-  dh: typeof DhType;
+  dh: TDhType;
 
   listenerCount: number;
 
