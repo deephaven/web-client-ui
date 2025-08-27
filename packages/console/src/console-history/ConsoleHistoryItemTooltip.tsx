@@ -1,26 +1,17 @@
-import React, {
-  Component,
-  useEffect,
-  useRef,
-  useState,
-  type ReactElement,
-} from 'react';
-import {
-  Content,
-  ContextualHelp,
-  Heading,
-  Tooltip,
-} from '@deephaven/components';
-import { TimeUtils } from '@deephaven/utils';
+import React, { type ReactElement } from 'react';
+import { Content, ContextualHelp, Heading } from '@deephaven/components';
 import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
-import { func } from 'node_modules/@types/prop-types';
-import { useResizeObserver } from '@deephaven/react-hooks';
 
 interface ConsoleHistoryActionItemTooltipProps {
   item: ConsoleHistoryActionItem;
   onOpenChange: (isOpen: boolean) => void;
 }
 
+/**
+ * Converts a time difference in seconds to a human-readable string.
+ * @param diff The time difference in seconds.
+ * @returns A string representing the time difference.
+ */
 const convertedDiff = (diff: number): string => {
   if (diff < 60) {
     return `${diff.toFixed(2)}s`;
@@ -31,18 +22,40 @@ const convertedDiff = (diff: number): string => {
   return `${(diff / 3600).toFixed(2)}h`;
 };
 
-const getTimeString = (
+/**
+ * Gets a human-readable time string for the difference between two times.
+ * @param startTime The start time.
+ * @param endTime The end time.
+ * @param conversion The conversion type ('ms' or 'ns')
+ * @returns A string representing the time difference, or null if invalid.
+ */
+export const getTimeString = (
   startTime: string | number | undefined,
-  endTime: string | number | undefined
+  endTime: string | number | undefined,
+  conversion: string = 'ms'
 ): string | null => {
-  // seconds, minutes, hours
-  // rounded to two decimal places
-
   if (startTime == null || endTime === '' || endTime === 0 || endTime == null) {
     return null;
   }
-  const deltaTime =
-    (new Date(endTime).valueOf() - new Date(startTime).valueOf()) / 1000;
+
+  let conversionFactor = 1;
+  let start = null;
+  let end = null;
+  if (conversion === 'ms') {
+    conversionFactor = 1000;
+    start = new Date(startTime).valueOf();
+    end = new Date(endTime).valueOf();
+  } else if (conversion === 'ns') {
+    // can only handle dates that are already nanosecond epochs
+    conversionFactor = 1e9;
+    start = Number(startTime);
+    end = Number(endTime);
+  } else {
+    // can only handle dates that are milliseconds or nanoseconds
+    return null;
+  }
+
+  const deltaTime = (end - start) / conversionFactor;
 
   return convertedDiff(deltaTime);
 };
@@ -50,22 +63,7 @@ const getTimeString = (
 function CommandHistoryItemTooltip(
   props: ConsoleHistoryActionItemTooltipProps
 ): ReactElement {
-  useEffect(() => {
-    // Sometimes, such as when closing developer tools, the window dimensions can change
-    // without a resize event being triggered, which leaves the popper floating in the
-    // wrong position until a resize event occurs.
-    // This effect fires a resize event to ensure the location is updated.
-    const handler = () => {
-      window.dispatchEvent(new Event('resize'));
-    };
-
-    const observer = new ResizeObserver(handler);
-    observer.observe(document.body); // or document.documentElement
-
-    return () => observer.disconnect();
-  }, []);
-
-  const { item } = props;
+  const { item, onOpenChange } = props;
   const { startTime, serverStartTime, serverEndTime } = item;
   const endTime = item.endTime ?? Date.now();
 
@@ -75,17 +73,15 @@ function CommandHistoryItemTooltip(
   const hasServerTimeString = Boolean(serverStartTime && serverEndTime);
   let serverTimeString = null;
   if (serverStartTime && serverEndTime) {
-    // server provided times are in nanoseconds, convert to seconds
-    const serverTimeDiff = (serverEndTime - serverStartTime) / 1e9; // convert nanoseconds to seconds
-    serverTimeString = convertedDiff(serverTimeDiff);
+    // server provided times are in nanoseconds
+    serverTimeString = getTimeString(serverStartTime, serverEndTime, 'ns');
   }
 
   return (
     <ContextualHelp
       variant="info"
-      onOpenChange={props.onOpenChange}
+      onOpenChange={onOpenChange}
       UNSAFE_className="console-history-item-contextual-help"
-      key={key}
     >
       <Heading>Execution Info</Heading>
       <Content>
@@ -98,7 +94,7 @@ function CommandHistoryItemTooltip(
           )}
           {hasServerTimeString && (
             <>
-              <div>Elapsed server time</div>
+              <div>Server query time</div>
               <div>{serverTimeString}</div>
             </>
           )}

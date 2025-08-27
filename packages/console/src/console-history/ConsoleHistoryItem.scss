@@ -92,10 +92,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   }
 }
 
-.hover-container {
-  position: relative;
-}
-
 .console-history-actions {
   z-index: 1000;
   position: absolute;
@@ -125,19 +121,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   top: 0;
 }
 
-.console-history-item-command-hovered {
-  background-color: var(--dh-color-neutral-hover-bg);
-
-  .console-history-actions {
-    display: flex;
-  }
-}
-
-.console-history-item-command {
-  position: relative;
-  white-space: pre-line;
-}
-
 .console-history-item-contextual-help-content {
   display: grid;
   grid-template-columns: auto auto;
@@ -154,4 +137,17 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
     width: fit-content;
     min-width: 150px;
   }
+}
+
+.console-history-item-command-hovered {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-command {
+  position: relative;
+  white-space: pre-line;
 }
