@@ -419,7 +419,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       serverStartTime,
       serverEndTime,
     };
-    console.log('handleCommandResult', { newHistoryItem });
 
     this.setState(({ consoleHistory }) => {
       const itemIndex = consoleHistory.lastIndexOf(historyItem);

@@ -72,6 +72,7 @@ class ConsoleHistoryItem extends PureComponent<
 
   consoleHistoryItemClasses(): string {
     const classes = ['console-history-item-command'];
+    // console history items should stay highlighted if the tooltip is opened
     if (this.state.isTooltipVisible || this.state.isHovered) {
       classes.push('console-history-item-command-hovered');
     }
