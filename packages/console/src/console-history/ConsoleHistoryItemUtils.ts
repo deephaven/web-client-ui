@@ -3,7 +3,7 @@
  * @param diff The time difference in seconds.
  * @returns A string representing the time difference.
  */
-const convertedDiff = (diff: number): string => {
+export const convertedDiff = (diff: number): string => {
   if (diff < 60) {
     return `${diff.toFixed(2)}s`;
   }
@@ -23,7 +23,7 @@ const convertedDiff = (diff: number): string => {
 export const getTimeString = (
   startTime: string | number | undefined,
   endTime: string | number | undefined,
-  conversion: string = 'ms'
+  conversion = 'ms'
 ): string | null => {
   if (startTime == null || endTime === '' || endTime === 0 || endTime == null) {
     return null;
