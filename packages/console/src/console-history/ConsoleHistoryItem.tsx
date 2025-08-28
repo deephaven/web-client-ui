@@ -100,6 +100,8 @@ class ConsoleHistoryItem extends PureComponent<
               handleTooltipVisible={(isVisible: boolean) =>
                 this.setState({ isTooltipVisible: isVisible })
               }
+              firstItem={this.props.firstItem}
+              lastItem={this.props.lastItem}
             />
           </div>
         </div>

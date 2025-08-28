@@ -1,10 +1,9 @@
 import React, { type ReactElement } from 'react';
-import { Content, ContextualHelp, Heading } from '@deephaven/components';
+import { Content, Heading } from '@deephaven/components';
 import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 interface ConsoleHistoryActionItemTooltipProps {
   item: ConsoleHistoryActionItem;
-  onOpenChange: (isOpen: boolean) => void;
 }
 
 /**
@@ -63,26 +62,22 @@ export const getTimeString = (
 function CommandHistoryItemTooltip(
   props: ConsoleHistoryActionItemTooltipProps
 ): ReactElement {
-  const { item, onOpenChange } = props;
+  const { item } = props;
   const { startTime, serverStartTime, serverEndTime } = item;
   const endTime = item.endTime ?? Date.now();
 
   const timeString = getTimeString(startTime, endTime);
 
   const hasTimeString = Boolean(timeString);
-  const hasServerTimeString = Boolean(serverStartTime && serverEndTime);
   let serverTimeString = null;
-  if (serverStartTime && serverEndTime) {
+  if (serverStartTime != null && serverEndTime != null) {
     // server provided times are in nanoseconds
     serverTimeString = getTimeString(serverStartTime, serverEndTime, 'ns');
   }
+  const hasServerTimeString = Boolean(serverTimeString);
 
   return (
-    <ContextualHelp
-      variant="info"
-      onOpenChange={onOpenChange}
-      UNSAFE_className="console-history-item-contextual-help"
-    >
+    <>
       <Heading>Execution Info</Heading>
       <Content>
         <div className="console-history-item-contextual-help-content">
@@ -100,7 +95,7 @@ function CommandHistoryItemTooltip(
           )}
         </div>
       </Content>
-    </ContextualHelp>
+    </>
   );
 }
 
