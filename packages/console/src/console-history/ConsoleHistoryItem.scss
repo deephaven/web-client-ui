@@ -16,6 +16,19 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   white-space: pre-line;
 }
 
+.console-history-actions {
+  z-index: 1000;
+  position: absolute;
+  gap: $spacer-1;
+  top: 0;
+  right: $spacer-2;
+  display: none;
+  align-items: center;
+  background-color: var(--dh-color-neutral-hover-bg);
+  border-radius: $border-radius;
+  padding: $spacer-1;
+}
+
 .console-history-item-command-hovered {
   background-color: var(--dh-color-neutral-hover-bg);
 
@@ -103,19 +116,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
       }
     }
   }
-}
-
-.console-history-actions {
-  z-index: 1000;
-  position: absolute;
-  gap: $spacer-1;
-  top: 0;
-  right: $spacer-2;
-  display: none;
-  align-items: center;
-  background-color: var(--dh-color-neutral-hover-bg);
-  border-radius: $border-radius;
-  padding: $spacer-1;
 }
 
 .console-history-single-line {
