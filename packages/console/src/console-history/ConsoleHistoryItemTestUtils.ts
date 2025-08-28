@@ -1,0 +1,7 @@
+export const MILLIS_PER_SECOND = 1000;
+export const NANOS_PER_SECOND = 1e9;
+
+export const NANOS_PER_MIN = 60 * NANOS_PER_SECOND;
+export const NANOS_PER_HOUR = 60 * NANOS_PER_MIN;
+export const MILLIS_PER_MIN = 60 * MILLIS_PER_SECOND;
+export const MILLIS_PER_HOUR = 60 * MILLIS_PER_MIN;

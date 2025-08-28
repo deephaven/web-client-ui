@@ -12,7 +12,29 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
 }
 
 .console-history-item-command {
+  position: relative;
   white-space: pre-line;
+}
+
+.console-history-actions {
+  z-index: 1000;
+  position: absolute;
+  gap: $spacer-1;
+  top: 0;
+  right: $spacer-2;
+  display: none;
+  align-items: center;
+  background-color: var(--dh-color-neutral-hover-bg);
+  border-radius: $border-radius;
+  padding: $spacer-1;
+}
+
+.console-history-item-command-hovered {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
 }
 
 .console-history-item-result .log-message {
@@ -93,5 +115,39 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         border: 1px solid negative-opacity(50);
       }
     }
+  }
+}
+
+.console-history-single-line {
+  top: -0.875rem;
+}
+
+.console-history-two-lines {
+  top: -0.125rem;
+}
+
+.console-history-last-single-line {
+  top: -1.5rem;
+}
+
+.console-history-first-single-line {
+  top: 0;
+}
+
+.console-history-item-contextual-help-content {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  text-align: left;
+  margin-bottom: $spacer-2;
+  white-space: nowrap;
+}
+
+.console-history-item-contextual-help {
+  section[class*='spectrum-ContextualHelp-dialog'] {
+    // The default size of the contextual help is only 250px and is too small.
+    // Just set a size automatically based on the content.
+    width: fit-content;
+    min-width: 150px;
   }
 }
