@@ -13,6 +13,7 @@ import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage
 import './ConsoleHistoryItem.scss';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import ConsoleHistoryItemActions from './ConsoleHistoryItemActions';
+
 const log = Log.module('ConsoleHistoryItem');
 
 interface ConsoleHistoryItemProps {
@@ -71,17 +72,26 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   consoleHistoryItemClasses(): string {
+    const { isTooltipVisible, isHovered } = this.state;
     const classes = ['console-history-item-command'];
     // console history items should stay highlighted if the tooltip is opened
-    if (this.state.isTooltipVisible || this.state.isHovered) {
+    if (isTooltipVisible || isHovered) {
       classes.push('console-history-item-command-hovered');
     }
     return classes.join(' ');
   }
 
   render(): ReactElement {
-    const { disabled, item, language, iconForType } = this.props;
-    const { disabledObjects, result, serverStartTime, serverEndTime } = item;
+    const {
+      disabled,
+      item,
+      language,
+      iconForType,
+      handleCommandSubmit,
+      firstItem,
+      lastItem,
+    } = this.props;
+    const { disabledObjects, result } = item;
     const hasCommand = item.command != null && item.command !== '';
     let commandElement = null;
     if (hasCommand) {
@@ -96,12 +106,12 @@ class ConsoleHistoryItem extends PureComponent<
             <Code language={language}>{item.command}</Code>
             <ConsoleHistoryItemActions
               item={item}
-              handleCommandSubmit={this.props.handleCommandSubmit}
+              handleCommandSubmit={handleCommandSubmit}
               handleTooltipVisible={(isVisible: boolean) =>
                 this.setState({ isTooltipVisible: isVisible })
               }
-              firstItem={this.props.firstItem}
-              lastItem={this.props.lastItem}
+              firstItem={firstItem}
+              lastItem={lastItem}
             />
           </div>
         </div>

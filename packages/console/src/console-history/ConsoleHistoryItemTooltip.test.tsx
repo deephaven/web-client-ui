@@ -3,7 +3,6 @@ import { render } from '@testing-library/react';
 import ConsoleHistoryItemTooltip, {
   getTimeString,
 } from './ConsoleHistoryItemTooltip';
-import { get } from 'jquery';
 
 // simple conversions to seconds
 const MILLIS_PER_SECOND = 1000;

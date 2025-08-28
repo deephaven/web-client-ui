@@ -4,9 +4,9 @@
 import React, { type ReactElement } from 'react';
 import { Button, CopyButton, ContextualHelp } from '@deephaven/components';
 import './ConsoleHistoryItem.scss';
+import { vsDebugRerun } from '@deephaven/icons';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
-import { vsDebugRerun } from '@deephaven/icons';
 
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
@@ -42,7 +42,13 @@ const getActionBarClasses = (
 };
 
 function ConsoleHistoryItem(props: ConsoleHistoryItemProps): ReactElement {
-  const { item, handleCommandSubmit, firstItem, lastItem } = props;
+  const {
+    item,
+    handleCommandSubmit,
+    firstItem,
+    lastItem,
+    handleTooltipVisible,
+  } = props;
 
   const actionBarClasses = getActionBarClasses(
     item.command,
@@ -63,7 +69,7 @@ function ConsoleHistoryItem(props: ConsoleHistoryItemProps): ReactElement {
       </Button>
       <ContextualHelp
         variant="info"
-        onOpenChange={props.handleTooltipVisible}
+        onOpenChange={handleTooltipVisible}
         UNSAFE_className="console-history-item-contextual-help"
       >
         <ConsoleHistoryItemTooltip item={item} />
