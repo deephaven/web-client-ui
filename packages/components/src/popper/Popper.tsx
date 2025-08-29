@@ -20,7 +20,6 @@ import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
-import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
@@ -47,20 +46,6 @@ interface PopperState {
 }
 
 class Popper extends Component<PopperProps, PopperState> {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-    options: PropTypes.shape({}),
-    className: PropTypes.string,
-    timeout: PropTypes.number,
-    onEntered: PropTypes.func,
-    onExited: PropTypes.func,
-    isShown: PropTypes.bool,
-    closeOnBlur: PropTypes.bool,
-    interactive: PropTypes.bool,
-    referenceObject: PropTypes.shape({}),
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     options: {},
     className: '',

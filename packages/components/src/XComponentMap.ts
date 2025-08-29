@@ -5,7 +5,7 @@ export type XComponentType<P extends Record<string, unknown>> =
   React.ForwardRefExoticComponent<
     React.PropsWithoutRef<P> & React.RefAttributes<unknown>
   > & {
-    Original: React.ComponentType<P>;
+    Original: React.ComponentType<React.PropsWithoutRef<P>>;
     isXComponent: boolean;
   };
 
@@ -23,7 +23,7 @@ export const XComponentMapProvider = XComponentMapContext.Provider;
  */
 export function useXComponent<P extends Record<string, unknown>>(
   Component: XComponentType<P>
-): React.ComponentType<P> {
+): React.ComponentType<React.PropsWithoutRef<P>> {
   const ctx = useContext(XComponentMapContext);
   return ctx.get(Component) ?? Component.Original;
 }

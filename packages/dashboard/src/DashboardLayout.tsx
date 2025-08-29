@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import PropTypes from 'prop-types';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
@@ -27,7 +26,7 @@ import {
   hydrate as hydrateDefault,
 } from './DashboardUtils';
 import PanelEvent from './PanelEvent';
-import { GLPropTypes, useListener } from './layout';
+import { useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
 import {
   type PanelComponentType,
@@ -57,7 +56,7 @@ type DashboardData = {
   closed?: ClosedPanels;
 };
 
-interface DashboardLayoutProps {
+type DashboardLayoutProps = React.PropsWithChildren<{
   id: string;
 
   // Default hydrate/dehydration functions
@@ -68,13 +67,12 @@ interface DashboardLayoutProps {
   onLayoutChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
   onLayoutInitialized?: () => void;
   data?: DashboardData;
-  children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
 
   /** Component to wrap each panel with */
   // NOTE: changed due to type inference issues
   panelWrapper?: React.ElementType;
-}
+}>;
 
 /**
  * DashboardLayout component. Handles hydrating, dehydrating components, listening for dragging panels.
@@ -367,16 +365,5 @@ export function DashboardLayout({
     </>
   );
 }
-
-DashboardLayout.propTypes = {
-  id: PropTypes.string.isRequired,
-  children: PropTypes.node,
-  data: PropTypes.shape({}),
-  emptyDashboard: PropTypes.node,
-  layout: GLPropTypes.Layout.isRequired,
-  layoutConfig: PropTypes.arrayOf(PropTypes.shape({})),
-  onLayoutChange: PropTypes.func,
-  onLayoutInitialized: PropTypes.func,
-};
 
 export default DashboardLayout;

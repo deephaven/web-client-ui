@@ -23,12 +23,12 @@ import {
   vsMarkdown,
   vsDeviceCamera,
 } from '@deephaven/icons';
-import PropTypes from 'prop-types';
+import { assertNotNull } from '@deephaven/utils';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 
 interface DragSourceMenuItemProps {
-  forwardedProps: {
+  forwardedProps?: {
     iconElement: ReactNode;
     displayShortcut: string;
     isMouseSelected: boolean;
@@ -50,16 +50,16 @@ interface DragSourceMenuItemProps {
  */
 
 function DragSourceMenuItem(props: DragSourceMenuItemProps): JSX.Element {
+  const { forwardedProps } = props;
+  assertNotNull(forwardedProps, 'DragSourceMenuItem forwardedProps'); // These are added by the ContextMenuItem, but not used where we declare the itemsZ
   const {
-    forwardedProps: {
-      menuItem: { action, title, disabled: menuItemDisabled },
-      iconElement,
-      displayShortcut,
-      isMouseSelected,
-      isKeyboardSelected,
-      closeMenu,
-    },
-  } = props;
+    menuItem: { action, title, disabled: menuItemDisabled },
+    iconElement,
+    displayShortcut,
+    isMouseSelected,
+    isKeyboardSelected,
+    closeMenu,
+  } = forwardedProps;
 
   const startX = useRef<number>();
   const startY = useRef<number>();
@@ -222,36 +222,5 @@ function AppControlsMenu(props: AppControlsMenuProps): ReactElement {
     />
   );
 }
-
-AppControlsMenu.propTypes = {
-  handleControlSelect: PropTypes.func,
-  handleToolSelect: PropTypes.func,
-  onClearFilter: PropTypes.func,
-};
-
-AppControlsMenu.defaultProps = {
-  handleControlSelect: () => undefined,
-  handleToolSelect: () => undefined,
-  onClearFilter: () => undefined,
-};
-
-DragSourceMenuItem.propTypes = {
-  forwardedProps: PropTypes.shape({
-    iconElement: PropTypes.node,
-    displayShortcut: PropTypes.string,
-    isMouseSelected: PropTypes.bool.isRequired,
-    isKeyboardSelected: PropTypes.bool.isRequired,
-    closeMenu: PropTypes.func.isRequired,
-    menuItem: PropTypes.shape({
-      action: PropTypes.func,
-      title: PropTypes.string,
-      disabled: PropTypes.bool,
-    }).isRequired,
-  }),
-};
-
-DragSourceMenuItem.defaultProps = {
-  forwardedProps: null,
-};
 
 export default AppControlsMenu;

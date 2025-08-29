@@ -8,7 +8,6 @@ import React, {
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import PropTypes from 'prop-types';
 import deepEqual from 'fast-deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -539,12 +538,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showNullStrings: true,
       showExtraGroupColumn: true,
       formatter: EMPTY_ARRAY,
-      decimalFormatOptions: PropTypes.shape({
-        defaultFormatString: PropTypes.string,
-      }),
-      integerFormatOptions: PropTypes.shape({
-        defaultFormatString: PropTypes.string,
-      }),
+      decimalFormatOptions: {},
+      integerFormatOptions: {},
     },
     canCopy: true,
     canDownloadCsv: true,

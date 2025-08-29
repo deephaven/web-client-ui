@@ -32,7 +32,7 @@ function CardFlip({
 
   const front = useRef<HTMLDivElement>(null);
 
-  const transitionStart = useCallback((event: Event) => {
+  const transitionStart = useCallback((event: TransitionEvent) => {
     if (event.target === event.currentTarget) {
       document.body.classList.add('card-flip--is-flipping');
     }

@@ -36,20 +36,20 @@ import { useXComponent, type XComponentType } from './XComponentMap';
  * @returns The wrapped component
  */
 export function createXComponent<P extends Record<string, unknown>>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<React.PropsWithoutRef<P>>
 ): XComponentType<P> {
   let forwardedRefComponent: XComponentType<P>;
   function XComponent(
     props: React.PropsWithoutRef<P>,
     ref: React.ForwardedRef<ComponentType<P>>
   ): JSX.Element {
-    const ReplacementComponent = useXComponent(forwardedRefComponent);
+    const ReplacementComponent = useXComponent<P>(forwardedRefComponent);
     return canHaveRef(Component) ? (
       // eslint-disable-next-line react/jsx-props-no-spreading
-      <ReplacementComponent {...(props as P)} ref={ref} />
+      <ReplacementComponent {...props} ref={ref} />
     ) : (
       // eslint-disable-next-line react/jsx-props-no-spreading
-      <ReplacementComponent {...(props as P)} />
+      <ReplacementComponent {...props} />
     );
   }
 
@@ -60,7 +60,7 @@ export function createXComponent<P extends Record<string, unknown>>(
   })`;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  forwardedRefComponent = forwardRef(XComponent) as any;
+  forwardedRefComponent = forwardRef(XComponent) as XComponentType<P>;
 
   forwardedRefComponent.Original = Component;
   forwardedRefComponent.isXComponent = true;

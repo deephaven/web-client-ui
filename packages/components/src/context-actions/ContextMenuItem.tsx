@@ -17,19 +17,29 @@ interface ContextMenuItemProps {
 }
 
 const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
-  (props: ContextMenuItemProps, ref) => {
+  (
+    {
+      closeMenu,
+      children,
+      menuItem,
+      onMenuItemClick,
+      onMenuItemMouseMove,
+      onMenuItemContextMenu,
+      isKeyboardSelected = false,
+      isMouseSelected = false,
+      'data-testid': dataTestId,
+    }: ContextMenuItemProps,
+    ref
+  ) => {
     function handleMenuItemClick(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemClick } = props;
       onMenuItemClick(menuItem, e);
     }
 
     function handleMenuItemMouseMove(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemMouseMove } = props;
       onMenuItemMouseMove(menuItem, e);
     }
 
     function handleMenuItemContextMenu(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemContextMenu } = props;
       onMenuItemContextMenu(menuItem, e);
     }
 
@@ -42,13 +52,6 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
       if (typeof element.type === 'string') {
         return element;
       }
-      const {
-        closeMenu,
-        menuItem,
-        isKeyboardSelected,
-        isMouseSelected,
-        'data-testid': dataTestId,
-      } = props;
       const forwardedProps = {
         menuItem,
         closeMenu,
@@ -62,14 +65,6 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         forwardedProps,
       });
     }
-
-    const {
-      children,
-      menuItem,
-      isKeyboardSelected = false,
-      isMouseSelected = false,
-      'data-testid': dataTestId,
-    } = props;
 
     const displayShortcut =
       menuItem.shortcutText ?? menuItem.shortcut?.getDisplayText();
@@ -159,12 +154,5 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
 );
 
 ContextMenuItem.displayName = 'ContextMenuItem';
-
-ContextMenuItem.defaultProps = {
-  children: null,
-  isKeyboardSelected: false,
-  isMouseSelected: false,
-  'data-testid': undefined,
-};
 
 export default ContextMenuItem;

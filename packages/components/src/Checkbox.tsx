@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { useForwardedRef } from '@deephaven/react-hooks';
 
@@ -26,9 +25,9 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       checked = false,
       children,
       className,
-      disabled,
+      disabled = false,
       inputClassName,
-      isInvalid,
+      isInvalid = false,
       labelClassName,
       name,
       onChange,
@@ -93,54 +92,5 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 // Forward ref causes a false positive for display-name in eslint:
 // https://github.com/yannickcr/eslint-plugin-react/issues/2269
 Checkbox.displayName = 'Checkbox';
-
-Checkbox.propTypes = {
-  /** Current value of the checkbox. */
-  checked: (props, propName) => {
-    const { [propName]: checkedType } = props;
-    if (checkedType !== null && typeof checkedType !== 'boolean') {
-      return new Error('Checked must be a boolean or null for indeterminate');
-    }
-    return null;
-  },
-
-  /** The node/text to put in the label of this checkbox */
-  children: PropTypes.node.isRequired,
-
-  /** An extra class name to add to the outer div component */
-  className: PropTypes.string,
-
-  /** An extra class for disabling the checkbox component */
-  disabled: PropTypes.bool,
-
-  /** An extra class name for the input component */
-  inputClassName: PropTypes.string,
-
-  /** Convenience for styling appropriately for an invalid value */
-  isInvalid: PropTypes.bool,
-
-  /** An extra class name for the label component */
-  labelClassName: PropTypes.string,
-
-  /** Checkbox input name attribute */
-  name: PropTypes.string,
-
-  /** Triggered when the input is checked/unchecked */
-  onChange: PropTypes.func,
-
-  'data-testid': PropTypes.string,
-};
-
-Checkbox.defaultProps = {
-  checked: false,
-  className: '',
-  disabled: false,
-  inputClassName: '',
-  isInvalid: false,
-  labelClassName: '',
-  name: undefined,
-  onChange: undefined,
-  'data-testid': undefined,
-};
 
 export default Checkbox;

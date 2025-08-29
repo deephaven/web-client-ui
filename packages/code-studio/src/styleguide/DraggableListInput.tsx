@@ -1,6 +1,5 @@
 /* eslint no-console: "off" */
 import React, { PureComponent } from 'react';
-import type PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 import { DraggableItemList } from '@deephaven/components';
 import { type Range } from '@deephaven/utils';
@@ -28,19 +27,6 @@ class DraggableListInput extends PureComponent<
   DraggableListInputProps,
   DraggableListInputState
 > {
-  static propTypes: {
-    draggablePrefix: PropTypes.Requireable<string>;
-    droppableId: PropTypes.Requireable<string>;
-    isDragDisabled: PropTypes.Requireable<boolean>;
-    isDropDisabled: PropTypes.Requireable<boolean>;
-    isMultiSelect: PropTypes.Requireable<boolean>;
-    items: PropTypes.Requireable<unknown[]>;
-    onSelectionChange: PropTypes.Requireable<(...args: unknown[]) => unknown>;
-    selectedRanges: PropTypes.Requireable<
-      ((number | null | undefined)[] | null | undefined)[]
-    >;
-  };
-
   static defaultProps: {
     items: never[];
     draggablePrefix: string;

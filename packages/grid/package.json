@@ -41,8 +41,7 @@
     "linkifyjs": "^4.1.0",
     "lodash.clamp": "^4.0.3",
     "memoize-one": "^5.1.1",
-    "memoizee": "^0.4.15",
-    "prop-types": "^15.7.2"
+    "memoizee": "^0.4.15"
   },
   "publishConfig": {
     "access": "public"

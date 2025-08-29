@@ -1,14 +1,11 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { type ReactElement, type ReactNode } from 'react';
-import PropTypes from 'prop-types';
+import React, { type ReactElement } from 'react';
 
 function ConsoleHistoryItemResult({
   children,
-}: {
-  children: ReactNode;
-}): ReactElement {
+}: React.PropsWithChildren): ReactElement {
   return (
     <div className="console-history-item-result">
       <div className="console-history-gutter">-</div>
@@ -16,9 +13,5 @@ function ConsoleHistoryItemResult({
     </div>
   );
 }
-
-ConsoleHistoryItemResult.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 export default ConsoleHistoryItemResult;

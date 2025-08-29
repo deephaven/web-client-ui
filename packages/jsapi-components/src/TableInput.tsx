@@ -12,7 +12,7 @@ import {
   SelectValueList,
 } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
-import { PromiseUtils } from '@deephaven/utils';
+import { EMPTY_FUNCTION, PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import {
   Formatter,
@@ -54,8 +54,8 @@ function TableInput(props: TableInputProps): JSX.Element {
     settings,
     defaultValue = [],
     isInvalid = false,
-    onChange = () => false,
-    onBlur = () => false,
+    onChange = EMPTY_FUNCTION,
+    onBlur = EMPTY_FUNCTION,
     table: tablePromise,
   } = props;
   const parentRef = useRef<HTMLDivElement>(null);
@@ -304,12 +304,5 @@ function TableInput(props: TableInputProps): JSX.Element {
     </div>
   );
 }
-
-TableInput.displayName = 'TableInput';
-
-TableInput.defaultProps = {
-  isInvalid: false,
-  className: undefined,
-};
 
 export default TableInput;

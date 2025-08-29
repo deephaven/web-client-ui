@@ -49,7 +49,9 @@ export function DHCTabPanels<T extends object>(
 
       // Skip children with function-based content (i.e. ItemRenderer) as it can't be portaled
       if (typeof child.props.children === 'function') {
-        return;
+        throw new Error(
+          'DHCTabPanels cannot use keepMounted with an ItemRenderer function as its children'
+        );
       }
 
       let portal = portalNodeMap.current.get(child.key);
