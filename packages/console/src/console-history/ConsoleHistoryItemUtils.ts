@@ -3,7 +3,7 @@
  * @param diff The time difference in seconds.
  * @returns A string representing the time difference.
  */
-export const convertedDiff = (diff: number): string => {
+export function convertedDiff(diff: number): string {
   if (diff < 60) {
     return `${diff.toFixed(2)}s`;
   }
@@ -11,7 +11,7 @@ export const convertedDiff = (diff: number): string => {
     return `${(diff / 60).toFixed(2)}m`;
   }
   return `${(diff / 3600).toFixed(2)}h`;
-};
+}
 
 /**
  * Gets a human-readable time string for the difference between two times.
@@ -20,11 +20,11 @@ export const convertedDiff = (diff: number): string => {
  * @param conversion The conversion type ('ms' or 'ns')
  * @returns A string representing the time difference, or null if invalid.
  */
-export const getTimeString = (
+export function getTimeString(
   startTime: string | number | undefined,
   endTime: string | number | undefined,
   conversion = 'ms'
-): string | null => {
+): string | null {
   if (startTime == null || endTime === '' || endTime === 0 || endTime == null) {
     return null;
   }
@@ -49,4 +49,4 @@ export const getTimeString = (
   const deltaTime = (end - start) / conversionFactor;
 
   return convertedDiff(deltaTime);
-};
+}

@@ -1,81 +1,92 @@
 /**
  * Console display for use in the Iris environment.
  */
-import React, { type ReactElement } from 'react';
+import React, { memo, type ReactElement, useMemo } from 'react';
 import { Button, CopyButton, ContextualHelp } from '@deephaven/components';
 import './ConsoleHistoryItem.scss';
 import { vsDebugRerun } from '@deephaven/icons';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
+import classNames from 'classnames';
 
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
-  handleCommandSubmit: (command: string) => void;
+  onCommandSubmit: (command: string) => void;
   lastItem?: boolean;
   firstItem?: boolean;
   handleTooltipVisible: (isVisible: boolean) => void;
 }
 
-const getActionBarClasses = (
-  command: string | undefined = '',
+/**
+ * Get the action bar class for a console history item.
+ * @param lineCount The number of lines in the console history item.
+ * @param firstItem Whether this is the first item in the history.
+ * @param lastItem Whether this is the last item in the history.
+ * @returns The action bar class name or null if not applicable.
+ */
+const getActionBarClass = (
+  lineCount: number,
   firstItem = false,
   lastItem = false
-): string => {
-  const lineCount = command.split('\n').length;
-  const classes = ['console-history-actions'];
-
-  if (lineCount === 1) {
+): string | null => {
+  if (lineCount > 2) {
+    return null;
+  }
+  const lineCountCapped = Math.min(lineCount, 3);
+  let slot = '1';
+  if (lineCountCapped === 1) {
     if (firstItem) {
       // first single items are pushed down so that they are visible
       // this should be higher priority than lastItem
-      classes.push('console-history-first-single-line');
+      slot = 'first-1';
     } else if (lastItem) {
       // last single items are pushed up to prevent layout shifts
-      classes.push('console-history-last-single-line');
-    } else {
-      classes.push('console-history-single-line');
+      slot = 'last-1';
     }
-  } else if (lineCount === 2) {
-    classes.push('console-history-two-lines');
+  } else if (lineCountCapped === 2) {
+    // two lines get centered
+    slot = '2';
   }
-  return classes.join(' ');
+  return `console-history-actions-${slot}`;
 };
 
-function ConsoleHistoryItem(props: ConsoleHistoryItemProps): ReactElement {
-  const {
-    item,
-    handleCommandSubmit,
-    firstItem,
-    lastItem,
-    handleTooltipVisible,
-  } = props;
+const ConsoleHistoryItemActions = memo(
+  (props: ConsoleHistoryItemProps): ReactElement => {
+    const { item, onCommandSubmit, firstItem, lastItem, handleTooltipVisible } =
+      props;
 
-  const actionBarClasses = getActionBarClasses(
-    item.command,
-    firstItem ?? false,
-    lastItem ?? false
-  );
+    const lineCount = useMemo(
+      () => (item.command ? item.command.split('\n').length : 0),
+      [item.command]
+    );
 
-  return (
-    <div className={actionBarClasses}>
-      <CopyButton copy={item.command ?? ''} kind="inline" />
-      <Button
-        icon={vsDebugRerun}
-        kind="inline"
-        onClick={() => handleCommandSubmit(item.command ?? '')}
-        tooltip="Rerun"
-      >
-        {null}
-      </Button>
-      <ContextualHelp
-        variant="info"
-        onOpenChange={handleTooltipVisible}
-        UNSAFE_className="console-history-item-contextual-help"
-      >
-        <ConsoleHistoryItemTooltip item={item} />
-      </ContextualHelp>
-    </div>
-  );
-}
+    const actionBarClass = getActionBarClass(
+      lineCount,
+      firstItem ?? false,
+      lastItem ?? false
+    );
 
-export default ConsoleHistoryItem;
+    return (
+      <div className={classNames('console-history-actions', actionBarClass)}>
+        <CopyButton copy={item.command ?? ''} kind="inline" />
+        <Button
+          icon={vsDebugRerun}
+          kind="inline"
+          onClick={() => onCommandSubmit(item.command ?? '')}
+          tooltip="Rerun"
+        >
+          {null}
+        </Button>
+        <ContextualHelp
+          variant="info"
+          onOpenChange={handleTooltipVisible}
+          UNSAFE_className="console-history-item-contextual-help"
+        >
+          <ConsoleHistoryItemTooltip item={item} />
+        </ContextualHelp>
+      </div>
+    );
+  }
+);
+
+export default ConsoleHistoryItemActions;

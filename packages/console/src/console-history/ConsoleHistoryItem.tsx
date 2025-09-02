@@ -25,7 +25,7 @@ interface ConsoleHistoryItemProps {
   // eslint-disable-next-line react/no-unused-prop-types
   supportsType: (type: string) => boolean;
   iconForType: (type: string) => ReactElement;
-  handleCommandSubmit: (command: string) => void;
+  onCommandSubmit: (command: string) => void;
   lastItem?: boolean;
   firstItem?: boolean;
 }
@@ -87,7 +87,7 @@ class ConsoleHistoryItem extends PureComponent<
       item,
       language,
       iconForType,
-      handleCommandSubmit,
+      onCommandSubmit,
       firstItem,
       lastItem,
     } = this.props;
@@ -106,7 +106,7 @@ class ConsoleHistoryItem extends PureComponent<
             <Code language={language}>{item.command}</Code>
             <ConsoleHistoryItemActions
               item={item}
-              handleCommandSubmit={handleCommandSubmit}
+              onCommandSubmit={onCommandSubmit}
               handleTooltipVisible={(isVisible: boolean) =>
                 this.setState({ isTooltipVisible: isVisible })
               }

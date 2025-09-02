@@ -667,7 +667,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   /**
    * Updates an existing workspace CommandHistoryItem
-   * @param result The result to store with the history item. Could be empty object for success
+   * @param result The result to store with the history item.
+   * Possibly contains an error message if there was a failure, server start time, and server end time.
    * @param workspaceItemPromise The workspace data row promise for the workspace item to be updated
    */
   updateWorkspaceHistoryItem(
@@ -1123,7 +1124,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 supportsType={supportsType}
                 iconForType={iconForType}
                 ref={this.consoleHistoryContent}
-                handleCommandSubmit={this.handleCommandSubmit}
+                onCommandSubmit={this.handleCommandSubmit}
               />
               {historyChildren}
             </div>

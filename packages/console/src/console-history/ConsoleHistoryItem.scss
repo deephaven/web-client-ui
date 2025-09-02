@@ -17,7 +17,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
 }
 
 .console-history-actions {
-  z-index: 1000;
   position: absolute;
   gap: $spacer-1;
   top: 0;
@@ -118,19 +117,19 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   }
 }
 
-.console-history-single-line {
+.console-history-actions-1 {
   top: -0.875rem;
 }
 
-.console-history-two-lines {
+.console-history-actions-2 {
   top: -0.125rem;
 }
 
-.console-history-last-single-line {
+.console-history-actions-last-1 {
   top: -1.5rem;
 }
 
-.console-history-first-single-line {
+.console-history-actions-first-1 {
   top: 0;
 }
 

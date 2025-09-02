@@ -15,7 +15,7 @@ interface ConsoleHistoryProps {
   disabled?: boolean;
   supportsType: (type: string) => boolean;
   iconForType: (type: string) => ReactElement;
-  handleCommandSubmit: (command: string) => void;
+  onCommandSubmit: (command: string) => void;
 }
 
 function itemKey(i: number, item: ConsoleHistoryActionItem): string {
@@ -38,7 +38,7 @@ const ConsoleHistory = React.forwardRef(function ConsoleHistory(
     openObject,
     supportsType,
     iconForType,
-    handleCommandSubmit,
+    onCommandSubmit,
   } = props;
   const historyElements = [];
   for (let i = 0; i < items.length; i += 1) {
@@ -52,7 +52,7 @@ const ConsoleHistory = React.forwardRef(function ConsoleHistory(
         language={language}
         supportsType={supportsType}
         iconForType={iconForType}
-        handleCommandSubmit={handleCommandSubmit}
+        onCommandSubmit={onCommandSubmit}
         lastItem={i === items.length - 1}
         firstItem={i === 0}
       />
