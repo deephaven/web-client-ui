@@ -25,16 +25,16 @@ interface ConsoleHistoryItemProps {
  * @returns The action bar class name or null if not applicable.
  */
 const getActionBarClass = (
-  lineCount: number,
+  item: ConsoleHistoryActionItem,
   firstItem = false,
   lastItem = false
 ): string | null => {
+  const lineCount = item.command ? item.command.split('\n').length : 0;
   if (lineCount > 2) {
     return null;
   }
-  const lineCountCapped = Math.min(lineCount, 3);
   let slot = '1';
-  if (lineCountCapped === 1) {
+  if (lineCount === 1) {
     if (firstItem) {
       // first single items are pushed down so that they are visible
       // this should be higher priority than lastItem
@@ -43,7 +43,7 @@ const getActionBarClass = (
       // last single items are pushed up to prevent layout shifts
       slot = 'last-1';
     }
-  } else if (lineCountCapped === 2) {
+  } else {
     // two lines get centered
     slot = '2';
   }
@@ -55,15 +55,9 @@ const ConsoleHistoryItemActions = memo(
     const { item, onCommandSubmit, firstItem, lastItem, handleTooltipVisible } =
       props;
 
-    const lineCount = useMemo(
-      () => (item.command ? item.command.split('\n').length : 0),
-      [item.command]
-    );
-
-    const actionBarClass = getActionBarClass(
-      lineCount,
-      firstItem ?? false,
-      lastItem ?? false
+    const actionBarClass = useMemo(
+      () => getActionBarClass(item, firstItem ?? false, lastItem ?? false),
+      [item, firstItem, lastItem]
     );
 
     return (
