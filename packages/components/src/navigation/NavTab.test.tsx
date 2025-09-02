@@ -35,7 +35,9 @@ function MakeNavTab() {
         {provided => (
           <div ref={provided.innerRef}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <NavTab {...props}>ButtonText</NavTab>
+            <NavTab {...props} key={props.key}>
+              ButtonText
+            </NavTab>
           </div>
         )}
       </Droppable>

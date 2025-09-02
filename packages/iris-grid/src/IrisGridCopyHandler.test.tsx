@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridTestUtils } from '@deephaven/grid';
 import { copyToClipboard } from '@deephaven/utils';
@@ -89,8 +88,8 @@ beforeEach(() => {
   mockedCopyToClipboard.mockClear();
 });
 
-it('renders without crashing', () => {
-  mountCopySelection();
+it('renders without crashing', async () => {
+  await act(() => mountCopySelection());
 });
 
 it('copies column header', async () => {

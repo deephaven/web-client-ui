@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import { type TypeValue } from '@deephaven/filters';
@@ -219,7 +219,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
       contentWidth
@@ -243,7 +243,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(
       mockMetricCalculator.userColumnWidths.get(modelIndex)
@@ -289,7 +289,7 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     expect(mockMetricCalculator.userColumnWidths.size).toEqual(0);
 
@@ -317,7 +317,7 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     contentWidths.forEach((contentWidth, modelIndex) => {
       expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(

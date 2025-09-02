@@ -1,5 +1,4 @@
-import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import EditableItemList, {
   type EditableItemListProps,
@@ -40,7 +39,7 @@ it('adds invalid class for invalid input', async () => {
   const { unmount } = makeWrapper({ validate });
   const input: HTMLInputElement = screen.getByRole('textbox');
   await user.type(input, '123');
-  expect(validate).toBeCalledWith('123');
+  expect(validate).toHaveBeenCalledWith('123');
   expect(input).toHaveClass(INVALID_INPUT_CLASS);
   expectAddButton().toBeDisabled();
   unmount();
@@ -137,16 +136,18 @@ describe('delete button', () => {
     expect(screen.getByTestId('delete-item-button')).toBeDisabled();
   });
 
-  it('enabled on item click and drag', () => {
+  it('enabled on item click and drag', async () => {
+    const user = userEvent.setup();
     expect(screen.getByTestId('delete-item-button')).toBeDisabled();
     fireEvent.mouseDown(items[0]);
     fireEvent.mouseMove(items[0]);
     expect(screen.getByTestId('delete-item-button')).toBeEnabled();
-    screen.getByTestId('delete-item-button').click();
-    expect(onDelete).toBeCalledWith(expect.arrayContaining(['0']));
+    await user.click(screen.getByTestId('delete-item-button'));
+    expect(onDelete).toHaveBeenCalledWith(expect.arrayContaining(['0']));
   });
 
-  it('enabled click and drag across multiple items', () => {
+  it('enabled click and drag across multiple items', async () => {
+    const user = userEvent.setup();
     expect(screen.getByTestId('delete-item-button')).toBeDisabled();
     fireEvent.mouseDown(items[0]);
     fireEvent.mouseMove(items[0]);
@@ -154,7 +155,9 @@ describe('delete button', () => {
     fireEvent.mouseMove(items[2]);
     fireEvent.mouseUp(items[2]);
     expect(screen.getByTestId('delete-item-button')).toBeEnabled();
-    screen.getByTestId('delete-item-button').click();
-    expect(onDelete).toBeCalledWith(expect.arrayContaining(['0', '1', '2']));
+    await user.click(screen.getByTestId('delete-item-button'));
+    expect(onDelete).toHaveBeenCalledWith(
+      expect.arrayContaining(['0', '1', '2'])
+    );
   });
 });

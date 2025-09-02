@@ -27,6 +27,7 @@ describe('useApi', () => {
   });
 
   it('should throw if context is null', () => {
+    TestUtils.disableConsoleOutput();
     asMock(useContext).mockReturnValue(null);
 
     expect(() => renderHook(() => useApi())).toThrow(

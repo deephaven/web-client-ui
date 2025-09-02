@@ -93,6 +93,7 @@ it('should resolve the fetcher when set in the context', async () => {
 });
 
 it('throws an error if the context is null', async () => {
+  TestUtils.disableConsoleOutput();
   asMock(useContext).mockReturnValue(null);
 
   expect(() => renderHook(() => useObjectFetcher())).toThrow();

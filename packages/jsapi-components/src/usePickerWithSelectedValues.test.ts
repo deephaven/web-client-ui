@@ -95,7 +95,7 @@ function mockUseViewportData(size: number) {
     );
 }
 
-function renderOnceAndWait(
+async function renderOnceAndWait(
   overrides?: Partial<Parameters<typeof usePickerWithSelectedValues>[0]>
 ) {
   const hookResult = renderHook(() =>
@@ -108,6 +108,9 @@ function renderOnceAndWait(
       ...overrides,
     })
   );
+
+  // Gets rid of "wrap in act" warnings. Likely lets effects flush on mount too
+  await waitFor(() => expect(hookResult.result.current).toBeDefined());
 
   return hookResult;
 }
@@ -164,7 +167,7 @@ afterEach(() => {
 it.each([undefined, false, true])(
   'should initially filter viewport by empty search text and exclude nothing: %s',
   async trimSearchText => {
-    const { result } = renderOnceAndWait({ trimSearchText });
+    const { result } = await renderOnceAndWait({ trimSearchText });
 
     expect(result.current.searchText).toEqual('');
     expect(result.current.selectedKey).toBeNull();
@@ -200,7 +203,7 @@ it.each([undefined, false, true])(
 it.each([[undefined], [mock.filterConditionFactories]])(
   'should create distinct sorted column table applying filter condition factories: %s',
   async filterConditionFactories => {
-    renderOnceAndWait({ filterConditionFactories });
+    await renderOnceAndWait({ filterConditionFactories });
 
     expect(tableUtils.createDistinctSortedColumnTable).toHaveBeenCalledWith(
       mockTable.usersAndGroups,
@@ -212,7 +215,7 @@ it.each([[undefined], [mock.filterConditionFactories]])(
 );
 
 it('should memoize results', async () => {
-  const { rerender, result } = renderOnceAndWait();
+  const { rerender, result } = await renderOnceAndWait();
 
   const prevResult = result.current;
 
@@ -224,7 +227,7 @@ it('should memoize results', async () => {
 it.each([undefined, false, true])(
   'should filter viewport by search text after debounce',
   async trimSearchText => {
-    const { result } = renderOnceAndWait({
+    const { result } = await renderOnceAndWait({
       trimSearchText,
     });
 
@@ -279,7 +282,7 @@ it.each([
     // Setup test with search text already set
     asMock(mock.viewportData.findItem).mockReturnValue(maybeItem);
 
-    const { result } = renderOnceAndWait();
+    const { result } = await renderOnceAndWait();
 
     act(() => {
       result.current.onSearchTextChange(mock.searchText);
@@ -375,7 +378,7 @@ describe('Flags', () => {
         async (searchText, listSize) => {
           mockUseViewportData(listSize);
 
-          const { result } = renderOnceAndWait({
+          const { result } = await renderOnceAndWait({
             trimSearchText,
           });
 
@@ -419,7 +422,7 @@ describe('Flags', () => {
 
 describe('onAddValues', () => {
   it('should do nothing if given empty values', async () => {
-    const { result } = renderOnceAndWait();
+    const { result } = await renderOnceAndWait();
 
     const prevResult = result.current;
 
@@ -431,7 +434,7 @@ describe('onAddValues', () => {
   });
 
   it('should update selected value map', async () => {
-    const { result } = renderOnceAndWait();
+    const { result } = await renderOnceAndWait();
 
     const setValues = ['a', 'b', 'c', 'd', 'e'];
 
@@ -456,7 +459,7 @@ describe('onRemoveValues', () => {
   ] as const)(
     'should clear expected values: %s, %s',
     async (given, expectedSetValues) => {
-      const { result } = renderOnceAndWait();
+      const { result } = await renderOnceAndWait();
 
       act(() => {
         result.current.onAddValues(new Set(initialSetValues));
@@ -490,7 +493,7 @@ describe('searchTextExists', () => {
         isDebouncing,
       } as ReturnType<typeof useDebouncedValue>);
 
-      const { result } = renderOnceAndWait();
+      const { result } = await renderOnceAndWait();
 
       expect(useDebouncedValue).toHaveBeenCalledWith('', SEARCH_DEBOUNCE_MS);
 
@@ -509,7 +512,7 @@ describe('searchTextExists', () => {
     async exists => {
       asMock(tableUtils.doesColumnValueExist).mockResolvedValue(exists);
 
-      const { result } = renderOnceAndWait();
+      const { result } = await renderOnceAndWait();
       await waitFor(() =>
         expect(result.current.searchTextExists).toEqual(exists)
       );

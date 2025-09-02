@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import React from 'react';
 import { renderHook } from '@testing-library/react';
+import { TestUtils } from '@deephaven/test-utils';
 import usePanelRegistration from './usePanelRegistration';
 import { type PanelProps } from '../DashboardPlugin';
 
@@ -74,6 +75,7 @@ it.each([
 ])(
   'should throw an error if no COMPONENT or displayName attribute exists: "%s"',
   (_label, ComponentType) => {
+    TestUtils.disableConsoleOutput();
     expect(() =>
       renderHook(() =>
         usePanelRegistration(

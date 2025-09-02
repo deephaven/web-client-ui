@@ -1,5 +1,6 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react';
+import { TestUtils } from '@deephaven/test-utils';
 import { useDhId, DH_ID_PROP } from './useDhId';
 import { FiberProvider } from './useFiber';
 import { PanelIdContext } from './usePanelId';
@@ -71,6 +72,7 @@ describe('useDhId', () => {
   });
 
   it('should throw an error if __dhId is not a string', () => {
+    TestUtils.disableConsoleOutput();
     expect(() =>
       renderHook(() => useDhId(), {
         wrapper: ({ children }) => (

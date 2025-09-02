@@ -2,7 +2,7 @@
 /* eslint-disable react/prefer-stateless-function */
 /* eslint func-names: "off" */
 import React, { Component } from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import type { Container } from '@deephaven/golden-layout';
 import BasePanel from './BasePanel';
 
@@ -60,7 +60,7 @@ it('renders without crashing', () => {
 });
 
 describe('adds and emits events correctly', () => {
-  it('emits a signal when the tab is clicked', () => {
+  it('emits a signal when the tab is clicked', async () => {
     const on = jest.fn();
     const off = jest.fn();
     const onResize = jest.fn();
@@ -106,7 +106,7 @@ describe('adds and emits events correctly', () => {
       const testArg = { eventName };
       const propCallback = propCallbacks.get(eventName);
       expect(propCallback).not.toHaveBeenCalled();
-      eventCallbacks.get(eventName)(testArg);
+      act(() => eventCallbacks.get(eventName)(testArg));
       expect(propCallback).toHaveBeenCalledWith(testArg);
     }
 
