@@ -36,8 +36,7 @@
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/test-utils": "file:../test-utils",
-    "react-test-renderer": "^18.3.1"
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

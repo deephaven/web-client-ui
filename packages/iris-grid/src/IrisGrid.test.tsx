@@ -1,20 +1,12 @@
-import React, { type ReactElement } from 'react';
-import TestRenderer from 'react-test-renderer';
+import React, { useRef } from 'react';
+import { fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
-class MockPath2D {
-  // eslint-disable-next-line class-methods-use-this
-  addPath = jest.fn();
-}
-
-window.Path2D = MockPath2D as unknown as new () => Path2D;
-
-const VIEW_SIZE = 5000;
+const VIEW_SIZE = 500;
 
 const DEFAULT_SETTINGS: Settings = {
   timeZone: 'America/New_York',
@@ -27,63 +19,38 @@ const DEFAULT_SETTINGS: Settings = {
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeMockCanvas() {
-  return {
-    clientWidth: VIEW_SIZE,
-    clientHeight: VIEW_SIZE,
-    getBoundingClientRect: () => ({ top: 0, left: 0 }),
-    offsetLeft: 0,
-    offsetTop: 0,
-    getContext: TestUtils.makeMockContext,
-    parentElement: {
-      getBoundingClientRect: () => ({
-        width: VIEW_SIZE,
-        height: VIEW_SIZE,
-      }),
-    },
-    style: {},
-    focus: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  };
-}
+jest
+  .spyOn(Element.prototype, 'getBoundingClientRect')
+  .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE, VIEW_SIZE));
 
-function makeMockWrapper() {
-  return {
-    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
-  };
-}
+jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(VIEW_SIZE);
 
-function createNodeMock(element: ReactElement) {
-  if (element.type === 'canvas') {
-    return makeMockCanvas();
-  }
-  if (element?.props?.className?.includes('grid-wrapper') === true) {
-    return makeMockWrapper();
-  }
-  return element;
-}
+jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(VIEW_SIZE);
 
 function makeComponent(
   model = irisGridTestUtils.makeModel(),
   settings = DEFAULT_SETTINGS
 ) {
-  const testRenderer = TestRenderer.create(
-    <IrisGrid model={model} settings={settings} />,
-    {
-      createNodeMock,
-    }
-  );
-  return testRenderer.getInstance() as TestRenderer.ReactTestInstance &
-    IrisGrid;
+  let ref: React.RefObject<IrisGrid>;
+  function IrisGridWithRef() {
+    ref = useRef<IrisGrid>(null);
+    return <IrisGrid model={model} settings={settings} ref={ref} />;
+  }
+  render(<IrisGridWithRef />);
+  return ref!.current as IrisGrid;
 }
 
-function keyDown(key, component, extraArgs?) {
+function keyDown(
+  key: string,
+  component: IrisGrid,
+  extraArgs?: Partial<KeyboardEventInit>
+) {
   const args = { key, ...extraArgs };
-  component.grid.notifyKeyboardHandlers(
-    'onDown',
-    new KeyboardEvent('keydown', args)
-  );
+  fireEvent.keyDown(component.grid!.canvas!, args);
+  // component.grid.notifyKeyboardHandlers(
+  //   'onDown',
+  //   new KeyboardEvent('keydown', args)
+  // );
 }
 
 it('renders without crashing', () => {

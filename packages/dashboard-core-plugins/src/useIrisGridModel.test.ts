@@ -1,8 +1,7 @@
 import { type IrisGridModel } from '@deephaven/iris-grid';
 import { type dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
-import { renderHook, waitFor } from '@testing-library/react';
-import { act } from 'react-test-renderer';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import {
   type IrisGridModelFetchErrorResult,
   type IrisGridModelFetchSuccessResult,

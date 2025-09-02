@@ -13,8 +13,8 @@ import {
   type ModelSizeMap,
   type MoveOperation,
   type SizeMap,
+  type GridMetrics,
 } from './GridMetrics';
-import type { GridMetrics } from './GridMetrics';
 import { type GridTheme } from './GridTheme';
 import { type GridWheelEvent } from './GridMouseHandler';
 import {

@@ -1,5 +1,8 @@
-import { GridMetricCalculator, type ModelSizeMap } from '@deephaven/grid';
-import type { GridMetricState } from '@deephaven/grid';
+import {
+  GridMetricCalculator,
+  type ModelSizeMap,
+  type GridMetricState,
+} from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import type IrisGridModel from './IrisGridModel';
 import { type IrisGridThemeType } from './IrisGridTheme';
