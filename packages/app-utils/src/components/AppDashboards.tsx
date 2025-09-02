@@ -33,7 +33,7 @@ export function AppDashboards({
   onLayoutInitialized,
   onGoldenLayoutChange,
   plugins,
-  emptyDashboard = <LoadingOverlay />,
+  emptyDashboard = <LoadingOverlay data-testid="app-dashboards-loading" />,
 }: AppDashboardsProps): JSX.Element {
   const fetchObject = useObjectFetcher();
 

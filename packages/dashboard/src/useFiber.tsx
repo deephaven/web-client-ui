@@ -85,6 +85,7 @@ const FiberContext = /* @__PURE__ */ wrapContext(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   /* @__PURE__ */ React.createContext<Fiber>(null!)
 );
+FiberContext.displayName = 'FiberContext';
 
 /**
  * A react-internal {@link Fiber} provider. This component binds React children to the React Fiber tree. Call its-fine hooks within this.

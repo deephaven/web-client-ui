@@ -298,6 +298,7 @@ function TableInput(props: TableInputProps): JSX.Element {
               isLoaded={table != null}
               isLoading={table == null && error == null}
               errorMessage={error?.message ?? null}
+              data-testid="table-input-loading"
             />
           </div>
         ))}

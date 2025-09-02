@@ -88,6 +88,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps): JSX.Element {
       <LoadingOverlay
         isLoading={isLoading && error == null}
         errorMessage={getErrorMessage(error)}
+        data-testid="auth-bootstrap-loading-error"
       />
     );
   }

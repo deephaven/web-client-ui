@@ -28,6 +28,7 @@ export interface ThemeContextValue {
 const log = Log.module('ThemeProvider');
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
+ThemeContext.displayName = 'ThemeContext';
 
 export interface ThemeProviderProps {
   /*

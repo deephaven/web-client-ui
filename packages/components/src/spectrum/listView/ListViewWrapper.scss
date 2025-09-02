@@ -27,7 +27,7 @@
   --dh-list-view-item-icon-spacious: 30px;
 }
 
-.dh-list-view-wrapper-density-compact {
+.dh-list-view-wrapper-density-compact [class*='spectrum-ListView-row'] {
   // Ensure icons don't change the item height
   svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-compact);
@@ -39,7 +39,7 @@
   }
 }
 
-.dh-list-view-wrapper-density-regular {
+.dh-list-view-wrapper-density-regular [class*='spectrum-ListView-row'] {
   // Ensure icons don't change the item height
   svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-regular);
@@ -51,7 +51,7 @@
   }
 }
 
-.dh-list-view-wrapper-density-spacious {
+.dh-list-view-wrapper-density-spacious [class*='spectrum-ListView-row'] {
   // Ensure icons don't change the item height
   svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-spacious);

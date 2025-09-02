@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
+
+### Bug Fixes
+
+- Add default values for columnAlignmentMap in hydrate/dehydrate methods ([#2518](https://github.com/deephaven/web-client-ui/issues/2518)) ([acee8f1](https://github.com/deephaven/web-client-ui/commit/acee8f1cee3b14d4e3b972bee09ea8810a65c74b))
+- Correct typo in keyboard shortcut label ([#2519](https://github.com/deephaven/web-client-ui/issues/2519)) ([98b0335](https://github.com/deephaven/web-client-ui/commit/98b03358273bef1c300cd837fba73a36433aff1e))
+- Make ListViewWrapper icon CSS target only icons in rows ([#2517](https://github.com/deephaven/web-client-ui/issues/2517)) ([d71fb4a](https://github.com/deephaven/web-client-ui/commit/d71fb4a54c0f21cd1c0b1f148b4aa4bc78270c76))
+
+## [1.5.0](https://github.com/deephaven/web-client-ui/compare/v1.4.0...v1.5.0) (2025-08-05)
+
+### Features
+
+- Added displayName to React contexts ([#2512](https://github.com/deephaven/web-client-ui/issues/2512)) ([4a9a836](https://github.com/deephaven/web-client-ui/commit/4a9a836a7eb0a681ea50492f386c1060462b16dd))
+- DH-10205: Add column text alignment to web ([#2513](https://github.com/deephaven/web-client-ui/issues/2513)) ([9cfa2c3](https://github.com/deephaven/web-client-ui/commit/9cfa2c3d3acb39c60c8792fb4957994b4b3eacee))
+
+### Bug Fixes
+
+- Allow undefined for useTablePlugin irisGridUtils ([#2515](https://github.com/deephaven/web-client-ui/issues/2515)) ([9378fa4](https://github.com/deephaven/web-client-ui/commit/9378fa4da769631f127ed09ecb937d470b538121))
+- Types for dashboard layout settings were not typed correctly ([#2516](https://github.com/deephaven/web-client-ui/issues/2516)) ([eca54ca](https://github.com/deephaven/web-client-ui/commit/eca54cacdfbf64ba5171231169f37b842ba47bb9))
+
 ## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
 
 ### Features

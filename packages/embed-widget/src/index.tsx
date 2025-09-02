@@ -62,7 +62,9 @@ const root = createRoot(rootElement);
 
 root.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
-    <Suspense fallback={<LoadingOverlay />}>
+    <Suspense
+      fallback={<LoadingOverlay data-testid="embed-widget-index-loading" />}
+    >
       <AppBootstrap
         getCorePlugins={getCorePlugins}
         serverUrl={apiURL.origin}

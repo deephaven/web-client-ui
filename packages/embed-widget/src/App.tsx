@@ -235,6 +235,7 @@ function App(): JSX.Element {
       )}
       {!isLoaded && (
         <LoadingOverlay
+          data-testid="embed-widget-app-loading"
           isLoaded={isLoaded}
           isLoading={isLoading}
           errorMessage={error ?? null}

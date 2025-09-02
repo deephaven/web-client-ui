@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [1.5.0](https://github.com/deephaven/web-client-ui/compare/v1.4.0...v1.5.0) (2025-08-05)
+
+### Features
+
+- DH-10205: Add column text alignment to web ([#2513](https://github.com/deephaven/web-client-ui/issues/2513)) ([9cfa2c3](https://github.com/deephaven/web-client-ui/commit/9cfa2c3d3acb39c60c8792fb4957994b4b3eacee))
+
 ## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
 
 **Note:** Version bump only for package @deephaven/code-studio

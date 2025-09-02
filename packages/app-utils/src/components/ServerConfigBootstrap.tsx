@@ -6,6 +6,7 @@ import { getErrorMessage } from '@deephaven/utils';
 export const ServerConfigContext = createContext<Map<string, string> | null>(
   null
 );
+ServerConfigContext.displayName = 'ServerConfigContext';
 
 export type ServerConfigBootstrapProps = {
   /**
@@ -53,6 +54,7 @@ export function ServerConfigBootstrap({
   if (isLoading || error != null) {
     return (
       <LoadingOverlay
+        data-testid="server-config-bootstrap-loading"
         isLoading={isLoading && error == null}
         errorMessage={getErrorMessage(error)}
       />

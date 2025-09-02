@@ -72,7 +72,9 @@ const root = createRoot(rootElement);
 
 root.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
-    <Suspense fallback={<LoadingOverlay />}>
+    <Suspense
+      fallback={<LoadingOverlay data-testid="code-studio-index-loading" />}
+    >
       <Provider store={store}>
         <AppBootstrap
           getCorePlugins={getCorePlugins}

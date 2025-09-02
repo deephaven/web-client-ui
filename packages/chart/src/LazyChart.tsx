@@ -5,7 +5,7 @@ const Chart = lazy(() => import('./Chart.js'));
 
 function LazyChart(props: React.ComponentProps<typeof Chart>): JSX.Element {
   return (
-    <Suspense fallback={<LoadingOverlay />}>
+    <Suspense fallback={<LoadingOverlay data-testid="lazy-chart-loading" />}>
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <Chart {...props} />
     </Suspense>

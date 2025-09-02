@@ -6,7 +6,7 @@ In this example below, we set the `autoSelectColumn` property to `true`, which w
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockTreeGridModel());
+  const model = useMemo(() => new MockTreeGridModel(), []);
   const theme = useMemo(() => ({ autoSelectColumn: true }), []);
 
   return <Grid model={model} theme={theme} />;

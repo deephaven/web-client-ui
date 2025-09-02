@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
+
+### Bug Fixes
+
+- Correct typo in keyboard shortcut label ([#2519](https://github.com/deephaven/web-client-ui/issues/2519)) ([98b0335](https://github.com/deephaven/web-client-ui/commit/98b03358273bef1c300cd837fba73a36433aff1e))
+- Make ListViewWrapper icon CSS target only icons in rows ([#2517](https://github.com/deephaven/web-client-ui/issues/2517)) ([d71fb4a](https://github.com/deephaven/web-client-ui/commit/d71fb4a54c0f21cd1c0b1f148b4aa4bc78270c76))
+
+## [1.5.0](https://github.com/deephaven/web-client-ui/compare/v1.4.0...v1.5.0) (2025-08-05)
+
+### Features
+
+- Added displayName to React contexts ([#2512](https://github.com/deephaven/web-client-ui/issues/2512)) ([4a9a836](https://github.com/deephaven/web-client-ui/commit/4a9a836a7eb0a681ea50492f386c1060462b16dd))
+
 ## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
 
 ### Features

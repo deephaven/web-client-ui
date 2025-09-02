@@ -1175,7 +1175,7 @@ class IrisGridUtils {
       aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
       advancedFilters,
       customColumnFormatMap,
-      columnAlignmentMap,
+      columnAlignmentMap = EMPTY_MAP,
       isFilterBarShown,
       metrics: { userColumnWidths, userRowHeights } = {
         userColumnWidths: EMPTY_MAP,
@@ -1259,7 +1259,7 @@ class IrisGridUtils {
       advancedFilters,
       aggregationSettings = { aggregations: [], showOnTop: false },
       customColumnFormatMap,
-      columnAlignmentMap,
+      columnAlignmentMap = [],
       isFilterBarShown,
       quickFilters,
       sorts,

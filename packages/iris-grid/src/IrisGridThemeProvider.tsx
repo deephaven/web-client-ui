@@ -16,6 +16,7 @@ export const IrisGridThemeContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
 }>({ theme: null, density: 'regular' });
+IrisGridThemeContext.displayName = 'IrisGridThemeContext';
 
 export interface IrisGridThemeProviderProps {
   children: ReactNode;

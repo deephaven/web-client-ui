@@ -59,6 +59,7 @@ export class ErrorBoundary extends Component<
             errorMessage={`${error}`}
             isLoading={false}
             isLoaded={false}
+            data-testid="error-boundary-loading"
           />
         </div>
       );

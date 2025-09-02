@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
+
+**Note:** Version bump only for package @deephaven/auth-plugins
+
+## [1.5.0](https://github.com/deephaven/web-client-ui/compare/v1.4.0...v1.5.0) (2025-08-05)
+
+### Features
+
+- Added displayName to React contexts ([#2512](https://github.com/deephaven/web-client-ui/issues/2512)) ([4a9a836](https://github.com/deephaven/web-client-ui/commit/4a9a836a7eb0a681ea50492f386c1060462b16dd))
+
 ## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
 
 **Note:** Version bump only for package @deephaven/auth-plugins

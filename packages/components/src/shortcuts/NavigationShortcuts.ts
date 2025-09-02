@@ -25,7 +25,7 @@ const NAVIGATION_SHORTCUTS = {
   }),
   CYCLE_TO_PREVIOUS_TAB: ShortcutRegistry.createAndAdd({
     id: 'NAVIGATION.CYCLE_TO_PREVIOUS_TAB',
-    name: 'Cycle To Previous TAB',
+    name: 'Cycle To Previous Tab',
     shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.COLON],
     macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.SEMICOLON],
     isEditable: true,

@@ -1049,7 +1049,7 @@ export class AppMainContainer extends Component<
             activeTabKey === DEFAULT_DASHBOARD_ID ? (
               <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
             ) : (
-              <LoadingOverlay />
+              <LoadingOverlay data-testid="app-main-container-loading" />
             )
           }
           plugins={[

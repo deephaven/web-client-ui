@@ -17,6 +17,7 @@ export type DeferredApiFetcher = (
 export const DeferredApiContext = createContext<
   typeof DhType | DeferredApiFetcher | null
 >(null);
+DeferredApiContext.displayName = 'DeferredApiContext';
 
 /**
  * Retrieve the API for the current context, given the widget provided.
