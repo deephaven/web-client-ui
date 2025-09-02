@@ -1,5 +1,5 @@
-import { act, renderHook } from '@testing-library/react';
-import type { Table } from '@deephaven/jsapi-types';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { type dh } from '@deephaven/jsapi-types';
 import { type TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import useCheckIfExistsValue from './useCheckIfExistsValue';
@@ -21,7 +21,7 @@ afterEach(() => {
 
 describe.each([true, false])('useCheckIfExistsValue: %s', valueExists => {
   const mock = {
-    table: createMockProxy<Table>(),
+    table: createMockProxy<dh.Table>(),
     tableUtils: createMockProxy<TableUtils>(),
     columnNames: ['mock.columnA', 'mock.columnB'],
     debounceMs: 500,
@@ -44,7 +44,7 @@ describe.each([true, false])('useCheckIfExistsValue: %s', valueExists => {
   it.each([true, false])(
     'should check if value exists and return result: isCaseSensitive:%s',
     async isCaseSensitive => {
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useCheckIfExistsValue(
           mock.table,
           mock.columnNames,
@@ -52,8 +52,9 @@ describe.each([true, false])('useCheckIfExistsValue: %s', valueExists => {
           isCaseSensitive
         )
       );
-
-      await waitForNextUpdate();
+      await waitFor(() =>
+        expect(mock.tableUtils.doesColumnValueExist).toHaveBeenCalled()
+      );
 
       expect(mock.tableUtils.doesColumnValueExist).toHaveBeenCalledWith(
         mock.table,
@@ -78,28 +79,26 @@ describe.each([true, false])('useCheckIfExistsValue: %s', valueExists => {
       unresolvedPromise
     );
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useCheckIfExistsValue(mock.table, mock.columnNames, mock.debounceMs, true)
     );
-
-    await waitForNextUpdate();
-
-    expect(result.current).toMatchObject({
-      valueExists: null,
-      valueTrimmed: '',
-      valueTrimmedDebounced: '',
-    });
+    await waitFor(() =>
+      expect(result.current).toMatchObject({
+        valueExists: null,
+        valueTrimmed: '',
+        valueTrimmedDebounced: '',
+      })
+    );
   });
 
   it('should trim search text and treat valueExists as indeterminant while debouncing', async () => {
     jest.useFakeTimers();
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useCheckIfExistsValue(mock.table, mock.columnNames, mock.debounceMs, true)
     );
 
     completeDebounce();
-    await waitForNextUpdate();
 
     act(() => result.current.trimAndUpdateValue('  blah  '));
 
@@ -111,12 +110,12 @@ describe.each([true, false])('useCheckIfExistsValue: %s', valueExists => {
     });
 
     completeDebounce();
-    await waitForNextUpdate();
-
-    expect(result.current).toMatchObject({
-      valueExists,
-      valueTrimmed: 'blah',
-      valueTrimmedDebounced: 'blah',
-    });
+    await waitFor(() =>
+      expect(result.current).toMatchObject({
+        valueExists,
+        valueTrimmed: 'blah',
+        valueTrimmedDebounced: 'blah',
+      })
+    );
   });
 });

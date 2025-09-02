@@ -74,11 +74,16 @@ it.each([
 ])(
   'should throw an error if no COMPONENT or displayName attribute exists: "%s"',
   (_label, ComponentType) => {
-    const { result } = renderHook(() =>
-      usePanelRegistration(registerComponent, ComponentType, hydrate, dehydrate)
-    );
-
-    expect(result.error).toEqual(
+    expect(() =>
+      renderHook(() =>
+        usePanelRegistration(
+          registerComponent,
+          ComponentType,
+          hydrate,
+          dehydrate
+        )
+      )
+    ).toThrow(
       new Error(
         'ComponentType must have a `COMPONENT` or `displayName` attribute.'
       )

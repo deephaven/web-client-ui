@@ -28,6 +28,7 @@ interface MockContext {
 export interface ClickOptions {
   ctrlKey?: boolean;
   shiftKey?: boolean;
+  altKey?: boolean;
   dblClick?: boolean;
   rightClick?: boolean;
 }
@@ -210,6 +211,7 @@ export class TestUtils {
     const {
       ctrlKey = false,
       shiftKey = false,
+      altKey = false,
       dblClick = false,
       rightClick = false,
     } = options;
@@ -218,6 +220,8 @@ export class TestUtils {
       await TestUtils.controlClick(user, element, dblClick, rightClick);
     } else if (shiftKey) {
       await TestUtils.shiftClick(user, element, dblClick, rightClick);
+    } else if (altKey) {
+      await TestUtils.altClick(user, element, dblClick, rightClick);
     } else if (dblClick) {
       await user.dblClick(element);
     } else if (rightClick) {
@@ -254,13 +258,14 @@ export class TestUtils {
     ]);
   }
 
-  static async controlClick(
+  private static async clickWithModifier(
     user: ReturnType<typeof userEvent.setup>,
     element: Element,
+    modifier: string,
     dblClick = false,
     rightClick = false
   ): Promise<void> {
-    await user.keyboard('{Control>}');
+    await user.keyboard(`{${modifier}>}`);
     if (dblClick) {
       await user.dblClick(element);
     } else if (rightClick) {
@@ -268,7 +273,37 @@ export class TestUtils {
     } else {
       await user.click(element);
     }
-    await user.keyboard('{/Control}');
+    await user.keyboard(`{/${modifier}}`);
+  }
+
+  static async controlClick(
+    user: ReturnType<typeof userEvent.setup>,
+    element: Element,
+    dblClick = false,
+    rightClick = false
+  ): Promise<void> {
+    await TestUtils.clickWithModifier(
+      user,
+      element,
+      'Control',
+      dblClick,
+      rightClick
+    );
+  }
+
+  static async altClick(
+    user: ReturnType<typeof userEvent.setup>,
+    element: Element,
+    dblClick = false,
+    rightClick = false
+  ): Promise<void> {
+    await TestUtils.clickWithModifier(
+      user,
+      element,
+      'Alt',
+      dblClick,
+      rightClick
+    );
   }
 
   /**

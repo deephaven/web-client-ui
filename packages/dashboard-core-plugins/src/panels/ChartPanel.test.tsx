@@ -43,7 +43,7 @@ function makeGlComponent() {
   };
 }
 
-function makeChartModel(options) {
+function makeChartModel(options?) {
   return new MockChartModel(dh, options);
 }
 
@@ -97,13 +97,16 @@ function makeChartPanelWrapper({
 }
 
 function callUpdateFunction(isLoading = false) {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate({
-    isLoading,
-  });
+  act(
+    () =>
+      MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate({
+        isLoading,
+      })
+  );
 }
 
 function callErrorFunction() {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onError();
+  act(() => MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onError());
 }
 
 function expectLoading(container) {

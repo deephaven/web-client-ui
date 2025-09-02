@@ -71,19 +71,19 @@ describe('useDhId', () => {
   });
 
   it('should throw an error if __dhId is not a string', () => {
-    const { result } = renderHook(() => useDhId(), {
-      wrapper: ({ children }) => (
-        <FiberProvider>
-          {React.Children.map(children, c => {
-            if (React.isValidElement(c)) {
-              return React.cloneElement(c, { [DH_ID_PROP]: 42 });
-            }
-            return c;
-          })}
-        </FiberProvider>
-      ),
-    });
-
-    expect(result.error?.message).toMatch(/to be a string/);
+    expect(() =>
+      renderHook(() => useDhId(), {
+        wrapper: ({ children }) => (
+          <FiberProvider>
+            {React.Children.map(children, c => {
+              if (React.isValidElement(c)) {
+                return React.cloneElement(c, { [DH_ID_PROP]: 42 });
+              }
+              return c;
+            })}
+          </FiberProvider>
+        ),
+      })
+    ).toThrow(/to be a string/);
   });
 });

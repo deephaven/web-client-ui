@@ -95,6 +95,5 @@ it('should resolve the fetcher when set in the context', async () => {
 it('throws an error if the context is null', async () => {
   asMock(useContext).mockReturnValue(null);
 
-  const { result } = renderHook(() => useObjectFetcher());
-  expect(result.error).not.toBeNull();
+  expect(() => renderHook(() => useObjectFetcher())).toThrow();
 });

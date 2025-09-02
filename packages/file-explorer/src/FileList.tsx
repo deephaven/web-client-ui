@@ -87,7 +87,7 @@ export function FileList(props: FileListProps): JSX.Element {
   const [dropTargetItem, setDropTargetItem] = useState<FileStorageItem>();
   const [draggedItems, setDraggedItems] = useState<FileStorageItem[]>();
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
-  const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
+  const [selectedRanges, setSelectedRanges] = useState([] as readonly Range[]);
 
   const focusedIndex = useRef<number | null>();
 
@@ -95,7 +95,7 @@ export function FileList(props: FileListProps): JSX.Element {
   const fileList = useRef<HTMLDivElement>(null);
 
   const getItems = useCallback(
-    (ranges: Range[]): FileStorageItem[] => {
+    (ranges: readonly Range[]): FileStorageItem[] => {
       if (ranges.length === 0 || loadedViewport == null) {
         return [];
       }
@@ -179,7 +179,7 @@ export function FileList(props: FileListProps): JSX.Element {
     (itemIndex: number, event: React.SyntheticEvent) => {
       const item = loadedViewport.items[itemIndex - loadedViewport.offset];
       if (item !== undefined) {
-        log.debug('handleItemClick', item);
+        log.info('handleItemClick', item);
 
         onSelect(item, event);
         if (isDirectory(item)) {
@@ -295,8 +295,8 @@ export function FileList(props: FileListProps): JSX.Element {
     (newSelectedRanges: readonly Range[], force = false) => {
       log.debug2('handleSelectionChange', newSelectedRanges);
       if (force === true || newSelectedRanges !== selectedRanges) {
-        setSelectedRanges([...newSelectedRanges]);
-        const selectedItems = getItems([...newSelectedRanges]);
+        setSelectedRanges(newSelectedRanges);
+        const selectedItems = getItems(newSelectedRanges);
         onSelectionChange(selectedItems);
       }
     },

@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+import { render } from '@testing-library/react';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 const DEFAULT_ITEM = {
@@ -8,10 +8,7 @@ const DEFAULT_ITEM = {
 };
 
 it('renders default item without crashing', () => {
-  const div = document.createElement('div');
-  const root = createRoot(div);
-
-  root.render(
+  render(
     <ConsoleHistoryItem
       item={DEFAULT_ITEM}
       language="python"

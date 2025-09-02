@@ -194,36 +194,44 @@ it('listens for widgets properly', async () => {
 
   expect(screen.getByText('No bound variables found.')).toBeTruthy();
 
-  callback({
-    created: [TABLE_A],
-    removed: [],
-    updated: [],
+  act(() => {
+    callback({
+      created: [TABLE_A],
+      removed: [],
+      updated: [],
+    });
   });
 
   expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 
-  callback({
-    created: [TABLE_B],
-    removed: [],
-    updated: [TABLE_A],
+  act(() => {
+    callback({
+      created: [TABLE_B],
+      removed: [],
+      updated: [TABLE_A],
+    });
   });
 
   expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
   expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  callback({
-    created: [],
-    removed: [TABLE_A],
-    updated: [],
+  act(() => {
+    callback({
+      created: [],
+      removed: [TABLE_A],
+      updated: [],
+    });
   });
 
   expect(screen.queryByRole('button', { name: 'a' })).toBeNull();
   expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  callback({
-    created: [TABLE_A],
-    removed: [TABLE_B],
-    updated: [],
+  act(() => {
+    callback({
+      created: [TABLE_A],
+      removed: [TABLE_B],
+      updated: [],
+    });
   });
 
   expect(screen.queryByRole('button', { name: 'b' })).toBeNull();

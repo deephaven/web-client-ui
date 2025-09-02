@@ -34,6 +34,15 @@ function makeSnapshotFn() {
   return jest.fn(() => Promise.resolve(DEFAULT_EXPECTED_TEXT));
 }
 
+function makeDelayedSnapshotFn() {
+  return jest.fn(
+    () =>
+      new Promise<string>(resolve => {
+        setTimeout(() => resolve(DEFAULT_EXPECTED_TEXT), 500);
+      })
+  );
+}
+
 function makeCopyRangesOperation(
   ranges = GridTestUtils.makeRanges(),
   includeHeaders = false,
@@ -60,9 +69,9 @@ function makeCopyHeaderOperation(
   };
 }
 
-function makeModel() {
+function makeModel(delayed = false) {
   const model = irisGridTestUtils.makeModel();
-  model.textSnapshot = makeSnapshotFn();
+  model.textSnapshot = delayed ? makeDelayedSnapshotFn() : makeSnapshotFn();
   model.textForColumnHeader = jest.fn((c: number) => c.toString());
   return model;
 }
@@ -111,12 +120,11 @@ it('copies immediately if less than 10,000 rows of data', async () => {
 
 it('prompts to copy if more than 10,000 rows of data', async () => {
   const user = userEvent.setup({ delay: null });
-  const model = makeModel();
+  const model = makeModel(true);
   const ranges = GridTestUtils.makeRanges(1, 10001);
   const copyOperation = makeCopyRangesOperation(ranges);
   mountCopySelection({ copyOperation, model });
   const copyBtn = screen.getByText('Copy');
-  expect(copyBtn).toBeTruthy();
   expect(
     screen.getByText(
       'Are you sure you want to copy 10,001 rows to your clipboard?'

@@ -30,8 +30,7 @@ describe('useTheme', () => {
   it('should throw if context is null', () => {
     asMock(useContext).mockReturnValue(null);
 
-    const { result } = renderHook(() => useTheme());
-    expect(result.error).toEqual(
+    expect(() => renderHook(() => useTheme())).toThrow(
       new Error(
         'No ThemeContext value found. Component must be wrapped in a ThemeContext.Provider'
       )

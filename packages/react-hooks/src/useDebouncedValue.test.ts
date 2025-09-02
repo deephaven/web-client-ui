@@ -20,21 +20,23 @@ it('should return the initial value', () => {
 
 it('should return the initial value after the debounce time has elapsed', () => {
   const value = 'mock value';
-  const { result, rerender } = renderHook(() =>
-    useDebouncedValue(value, DEFAULT_DEBOUNCE_MS)
-  );
+  let renderCount = 0;
+  const { result, rerender } = renderHook(() => {
+    renderCount += 1;
+    return useDebouncedValue(value, DEFAULT_DEBOUNCE_MS);
+  });
   expect(result.current).toEqual({ isDebouncing: true, value });
-  expect(result.all.length).toBe(1);
+  expect(renderCount).toBe(1);
 
   rerender();
   expect(result.current).toEqual({ isDebouncing: true, value });
-  expect(result.all.length).toBe(2);
+  expect(renderCount).toBe(2);
 
   act(() => {
     jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
   });
   expect(result.current).toEqual({ isDebouncing: false, value });
-  expect(result.all.length).toBe(3);
+  expect(renderCount).toBe(3);
 });
 
 it('should return the updated value after the debounce time has elapsed', () => {

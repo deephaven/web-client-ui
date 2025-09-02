@@ -1,11 +1,8 @@
-import { createRoot } from 'react-dom/client';
+import { render } from '@testing-library/react';
 import { parseValueFromElement } from './PasteKeyHandler';
 
 function makeElementFromJsx(jsx: JSX.Element): HTMLElement {
-  const div = document.createElement('div');
-  const root = createRoot(div);
-  root.render(jsx);
-  return div;
+  return render(jsx).container;
 }
 
 describe('table parsing', () => {

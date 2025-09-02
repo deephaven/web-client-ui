@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+import { render } from '@testing-library/react';
 import ConsoleHistory from './ConsoleHistory';
 
 function makeHistoryItem(
@@ -33,19 +33,15 @@ function makeHistoryItems(count) {
 }
 
 it('renders an empty list without crashing', () => {
-  const div = document.createElement('div');
   const items = makeHistoryItems(0);
-  const root = createRoot(div);
-  root.render(
+  render(
     <ConsoleHistory items={items} language="python" openObject={jest.fn()} />
   );
 });
 
 it('renders a list of 100 without crashing', () => {
-  const div = document.createElement('div');
   const items = makeHistoryItems(100);
-  const root = createRoot(div);
-  root.render(
+  render(
     <ConsoleHistory items={items} language="python" openObject={jest.fn()} />
   );
 });

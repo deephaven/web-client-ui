@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import {
   defaultTheme,
   Item,
@@ -57,15 +57,15 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    act(() => screen.getByRole('button', { name: /foo/ }).click());
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 2', { selector: 'span' }).click());
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 1', { selector: 'span' }).click());
     expect(screen.getByText('foo: 0')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });
@@ -90,15 +90,15 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    act(() => screen.getByRole('button', { name: /foo/ }).click());
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 2', { selector: 'span' }).click());
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 1', { selector: 'span' }).click());
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });
@@ -128,15 +128,15 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    act(() => screen.getByRole('button', { name: /foo/ }).click());
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 2', { selector: 'span' }).click());
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    act(() => screen.getByText('Tab 1', { selector: 'span' }).click());
     expect(screen.getByText('foo: 0')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });
