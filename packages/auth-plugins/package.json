@@ -45,8 +45,7 @@
     "js-cookie": "^3.0.5"
   },
   "devDependencies": {
-    "@deephaven/test-utils": "file:../test-utils",
-    "@types/react": "^18.3.12"
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
