@@ -16,6 +16,9 @@ import {
 } from './NavigationEvent';
 import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
+  type DehydratedDashboardPanelProps,
+  type DehydratedPanelConfig,
+  type DehydratedPanelProps,
   isWrappedComponent,
   type PanelComponent,
   type PanelComponentType,
@@ -31,13 +34,13 @@ enum CycleDirection {
 
 export type PanelHydraterFunction = (
   name: string,
-  props: PanelProps
-) => PanelProps;
+  props: DehydratedPanelProps
+) => DehydratedDashboardPanelProps;
 
 export type PanelDehydraterFunction = (
   name: string,
   config: ReactComponentConfig
-) => ReactComponentConfig;
+) => DehydratedPanelConfig;
 
 export type ClosedPanel = ReactComponentConfig & {
   /**
@@ -87,8 +90,10 @@ class PanelManager {
    */
   constructor(
     layout: GoldenLayout,
-    hydrateComponent: PanelHydraterFunction = (name, props) => props,
-    dehydrateComponent: PanelDehydraterFunction = (name, config) => config,
+    hydrateComponent: PanelHydraterFunction = (name, props) =>
+      props as DehydratedDashboardPanelProps,
+    dehydrateComponent: PanelDehydraterFunction = (name, config) =>
+      config as DehydratedPanelConfig,
     openedMap: OpenedPanelMap = new Map(),
     closed: ClosedPanel[] = [],
     onPanelsUpdated: PanelsUpdateCallback = () => undefined

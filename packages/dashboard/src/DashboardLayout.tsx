@@ -1,4 +1,5 @@
 import React, {
+  type ComponentType,
   type ReactElement,
   useCallback,
   useEffect,
@@ -10,7 +11,7 @@ import type {
   Container,
   ItemConfig,
   ReactComponentConfig,
-  Component,
+  AbstractContentItem,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
@@ -19,7 +20,7 @@ import { type RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { type ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
-import LayoutUtils from './layout/LayoutUtils';
+import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
   canHaveRef,
   dehydrate as dehydrateDefault,
@@ -29,10 +30,12 @@ import PanelEvent from './PanelEvent';
 import { useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
 import {
+  type PanelConfig,
   type PanelComponentType,
   type PanelDehydrateFunction,
   type PanelHydrateFunction,
   type PanelProps,
+  type DehydratedPanelProps,
 } from './DashboardPlugin';
 import DashboardPanelWrapper from './DashboardPanelWrapper';
 import { PanelIdContext } from './usePanelId';
@@ -50,7 +53,7 @@ const DEFAULT_CALLBACK = (): void => undefined;
 const STATE_CHANGE_THROTTLE_MS = 1000;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
-const FALLBACK_CALLBACK = (props: unknown): unknown => props;
+const FALLBACK_CALLBACK = <P,>(props: P): P => props;
 
 type DashboardData = {
   closed?: ClosedPanels;
@@ -70,8 +73,7 @@ type DashboardLayoutProps = React.PropsWithChildren<{
   emptyDashboard?: React.ReactNode;
 
   /** Component to wrap each panel with */
-  // NOTE: changed due to type inference issues
-  panelWrapper?: React.ElementType;
+  panelWrapper?: ComponentType<React.PropsWithChildren<DehydratedPanelProps>>;
 }>;
 
 /**
@@ -104,8 +106,11 @@ export function DashboardLayout({
     layout.getReactChildren()
   );
 
-  const hydrateMap = useMemo(() => new Map(), []);
-  const dehydrateMap = useMemo(() => new Map(), []);
+  const hydrateMap = useMemo(() => new Map<string, PanelHydrateFunction>(), []);
+  const dehydrateMap = useMemo(
+    () => new Map<string, PanelDehydrateFunction>(),
+    []
+  );
   const registerComponent = useCallback(
     (
       name: string,
@@ -172,13 +177,19 @@ export function DashboardLayout({
     [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, panelWrapper]
   );
   const hydrateComponent = useCallback(
-    (name: string, props: unknown) =>
-      (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
+    (name: string, props: DehydratedPanelProps) =>
+      (hydrateMap.get(name) ?? (FALLBACK_CALLBACK as PanelHydrateFunction))(
+        props,
+        id
+      ),
     [hydrateMap, id]
   );
   const dehydrateComponent = useCallback(
-    (name: string, config: unknown) =>
-      (dehydrateMap.get(name) ?? FALLBACK_CALLBACK)(config, id),
+    (name: string, config: PanelConfig) =>
+      (dehydrateMap.get(name) ?? (FALLBACK_CALLBACK as PanelDehydrateFunction))(
+        config,
+        id
+      ),
     [dehydrateMap, id]
   );
   const panelManager = useMemo(
@@ -268,19 +279,20 @@ export function DashboardLayout({
     [layout.eventHub]
   );
 
-  const handleComponentCreated = useCallback((item: Component) => {
+  const handleComponentCreated = useCallback((item: AbstractContentItem) => {
     log.debug2('handleComponentCreated', item);
 
     if (
       item == null ||
       item.config == null ||
-      item.config.componentName == null ||
+      !isReactComponentConfig(item.config) ||
+      item.config.component == null ||
       item.element == null
     ) {
       return;
     }
 
-    const cssComponent = item.config.componentName
+    const cssComponent = item.config.component
       .replace(/([a-z])([A-Z])/g, '$1-$2')
       .toLowerCase();
     const cssClass = `${cssComponent}-component`;

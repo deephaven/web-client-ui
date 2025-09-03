@@ -1,7 +1,8 @@
 import {
-  type DehydratedDashboardPanelProps,
   type DehydratedPanelConfig,
   type PanelConfig,
+  type DehydratedPanelProps,
+  type LocalDashboardProps,
 } from './DashboardPlugin';
 
 export { canHaveRef } from '@deephaven/components';
@@ -43,10 +44,10 @@ export function dehydrate(config: PanelConfig): DehydratedPanelConfig {
  * @param localDashboardId The local dashboard ID to hydrate the panel with
  * @returns The hydrated panel props
  */
-export function hydrate<T extends DehydratedDashboardPanelProps>(
-  props: T,
-  localDashboardId = ''
-): T {
+export function hydrate<P extends DehydratedPanelProps>(
+  props: P,
+  localDashboardId: string
+): P & LocalDashboardProps {
   return {
     ...props,
     localDashboardId,

@@ -6,6 +6,7 @@ import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
   DashboardUtils,
+  type DehydratedPanelProps,
   type DehydratedDashboardPanelProps,
   LayoutUtils,
   type PanelComponent,
@@ -571,7 +572,7 @@ export function ConsolePlugin(
 
   const hydrateNotebook = useCallback(
     (
-      panelProps: DehydratedDashboardPanelProps,
+      panelProps: DehydratedPanelProps,
       panelDashboardId: string
     ): DehydratedDashboardPanelProps =>
       DashboardUtils.hydrate(
