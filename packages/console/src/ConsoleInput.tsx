@@ -1,6 +1,6 @@
 import React, { PureComponent, type ReactElement, type RefObject } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import {
   assertNotNull,
@@ -38,7 +38,7 @@ interface ConsoleInputProps {
 interface ConsoleInputState {
   commandEditorHeight: number;
   isFocused: boolean;
-  model: monaco.editor.ITextModel | null;
+  model: Monaco.editor.ITextModel | null;
 }
 
 /**
@@ -103,7 +103,7 @@ export class ConsoleInput extends PureComponent<
 
   commandContainer: RefObject<HTMLDivElement>;
 
-  commandEditor?: monaco.editor.IStandaloneCodeEditor;
+  commandEditor?: Monaco.editor.IStandaloneCodeEditor;
 
   commandHistoryIndex: number | null;
 
@@ -156,12 +156,13 @@ export class ConsoleInput extends PureComponent<
     }
   }
 
-  initCommandEditor(): void {
+  async initCommandEditor(): Promise<void> {
     const { language, session } = this.props;
+    const monaco = await MonacoUtils.lazyMonaco();
     const model = monaco.editor.createModel(
       '',
       language,
-      MonacoUtils.generateConsoleUri()
+      await MonacoUtils.generateConsoleUri()
     );
     const commandSettings = {
       copyWithSyntaxHighlighting: false,
