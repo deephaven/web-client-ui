@@ -1,4 +1,7 @@
-import { type ScriptEditor } from '@deephaven/console';
+import {
+  type CommandHistorySettings,
+  type ScriptEditor,
+} from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
@@ -172,7 +175,7 @@ export function ConsolePlugin(
       if (fileId != null && previewFileMap.has(fileId)) {
         return previewFileMap.get(fileId);
       }
-      if (createIfNecessary as boolean) {
+      if (createIfNecessary) {
         return nanoid();
       }
       return undefined;
@@ -374,8 +377,8 @@ export function ConsolePlugin(
       sessionLanguage,
       isPreview = false,
     }: {
-      id: string;
-      settings: Record<string, unknown>;
+      id: string | undefined;
+      settings: CommandHistorySettings;
       fileMetadata: FileMetadata;
       session: dh.IdeSession;
       sessionLanguage: string;
@@ -410,7 +413,7 @@ export function ConsolePlugin(
     (
       session: dh.IdeSession,
       sessionLanguage: string,
-      settings: Record<string, unknown>,
+      settings: CommandHistorySettings,
       fileMetadata: FileMetadata = {
         id: null,
         itemName: getNotebookFileName(settings),
@@ -423,6 +426,8 @@ export function ConsolePlugin(
         focusPanelById(panelId);
         return;
       }
+
+      // Should never happen because getPanelForFileMetadata will create an ID by default
       if (panelId == null) {
         log.error('Panel ID for file metadata is null');
         return;
@@ -456,7 +461,7 @@ export function ConsolePlugin(
     (
       session: dh.IdeSession,
       sessionLanguage: string,
-      settings: Record<string, unknown>,
+      settings: CommandHistorySettings,
       fileMetadata: FileMetadata,
       // linter recognizes shouldFocus as any if I don't specify boolean here
       // eslint-disable-next-line @typescript-eslint/no-inferrable-types
@@ -545,7 +550,7 @@ export function ConsolePlugin(
     (
       session: dh.IdeSession,
       sessionLanguage: string,
-      settings: Record<string, unknown> = {},
+      settings: CommandHistorySettings = {} as CommandHistorySettings,
       createIfNecessary = true
     ) => {
       const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
@@ -555,7 +560,7 @@ export function ConsolePlugin(
           settings.value != null &&
           notebookPanel.notebook != null
         ) {
-          notebookPanel.notebook.append(settings.value as string);
+          notebookPanel.notebook.append(settings.value);
         }
       } else if (createIfNecessary) {
         createNotebook(session, sessionLanguage, settings);

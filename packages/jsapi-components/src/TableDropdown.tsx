@@ -105,7 +105,6 @@ export function TableDropdown({
 
   // Since values could be anything, not just strings, track the selected index based on the current data
   const selectedIndex = useMemo(
-    // eslint-disable-next-line eqeqeq
     () =>
       allValues.findIndex(
         value =>

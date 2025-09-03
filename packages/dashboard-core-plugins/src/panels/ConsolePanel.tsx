@@ -20,7 +20,6 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
-import type LayoutManager from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import { type SessionWrapper } from '@deephaven/jsapi-utils';
@@ -96,6 +95,9 @@ export class ConsolePanel extends PureComponent<
 
   static contextType = LayoutManagerContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof LayoutManagerContext>;
+
   constructor(props: ConsolePanelProps) {
     super(props);
 
@@ -157,9 +159,6 @@ export class ConsolePanel extends PureComponent<
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
     this.objectSubscriptionCleanup?.();
   }
-
-  // eslint-disable-next-line react/static-property-placement
-  context!: LayoutManager;
 
   consoleRef: RefObject<Console>;
 
@@ -258,6 +257,7 @@ export class ConsolePanel extends PureComponent<
     object: dh.ide.VariableDescriptor & { title?: string },
     forceOpen = true
   ): void {
+    assertNotNull(this.context);
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;

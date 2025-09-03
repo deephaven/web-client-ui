@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronRight, type IconDefinition } from '@deephaven/icons';
@@ -31,17 +31,26 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
     }: ContextMenuItemProps,
     ref
   ) => {
-    function handleMenuItemClick(e: React.MouseEvent): void {
-      onMenuItemClick(menuItem, e);
-    }
+    const handleMenuItemClick = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemClick(menuItem, e);
+      },
+      [menuItem, onMenuItemClick]
+    );
 
-    function handleMenuItemMouseMove(e: React.MouseEvent): void {
-      onMenuItemMouseMove(menuItem, e);
-    }
+    const handleMenuItemMouseMove = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemMouseMove(menuItem, e);
+      },
+      [menuItem, onMenuItemMouseMove]
+    );
 
-    function handleMenuItemContextMenu(e: React.MouseEvent): void {
-      onMenuItemContextMenu(menuItem, e);
-    }
+    const handleMenuItemContextMenu = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemContextMenu(menuItem, e);
+      },
+      [menuItem, onMenuItemContextMenu]
+    );
 
     function renderCustomMenuElement(
       element: React.ReactElement,

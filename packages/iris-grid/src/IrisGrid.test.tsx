@@ -37,7 +37,7 @@ function makeComponent(
     return <IrisGrid model={model} settings={settings} ref={ref} />;
   }
   render(<IrisGridWithRef />);
-  return ref!.current as IrisGrid;
+  return ref!.current!;
 }
 
 function keyDown(
@@ -47,10 +47,6 @@ function keyDown(
 ) {
   const args = { key, ...extraArgs };
   fireEvent.keyDown(component.grid!.canvas!, args);
-  // component.grid.notifyKeyboardHandlers(
-  //   'onDown',
-  //   new KeyboardEvent('keydown', args)
-  // );
 }
 
 it('renders without crashing', () => {

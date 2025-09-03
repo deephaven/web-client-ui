@@ -48,7 +48,7 @@ function makeGridComponent(
     );
   }
   render(<GridWithRef />);
-  return ref!.current as Grid;
+  return ref!.current!;
 }
 
 function getClientX(

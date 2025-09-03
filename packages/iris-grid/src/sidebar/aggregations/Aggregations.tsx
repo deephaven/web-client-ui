@@ -75,7 +75,7 @@ function Aggregations({
     [aggregations, dh]
   );
   const [selectedOperation, setSelectedOperation] = useState(options[0]);
-  const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);
+  const [selectedRanges, setSelectedRanges] = useState<readonly Range[]>([]);
   const changeSettings = useCallback(
     (
       changedSettings: Partial<AggregationSettings>,
@@ -116,7 +116,7 @@ function Aggregations({
 
       DragUtils.stopDragging();
 
-      if (destination === null || destination === undefined) {
+      if (destination == null) {
         return;
       }
 
@@ -182,7 +182,7 @@ function Aggregations({
 
   const handleAggregationSelectionChange = useCallback(
     (newSelectedRanges: readonly Range[]) => {
-      setSelectedRanges([...newSelectedRanges]);
+      setSelectedRanges(newSelectedRanges);
     },
     [setSelectedRanges]
   );

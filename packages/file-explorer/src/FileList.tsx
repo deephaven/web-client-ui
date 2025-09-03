@@ -179,7 +179,7 @@ export function FileList(props: FileListProps): JSX.Element {
     (itemIndex: number, event: React.SyntheticEvent) => {
       const item = loadedViewport.items[itemIndex - loadedViewport.offset];
       if (item !== undefined) {
-        log.info('handleItemClick', item);
+        log.debug('handleItemClick', item);
 
         onSelect(item, event);
         if (isDirectory(item)) {

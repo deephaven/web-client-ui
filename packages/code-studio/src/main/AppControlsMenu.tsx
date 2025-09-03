@@ -51,7 +51,7 @@ interface DragSourceMenuItemProps {
 
 function DragSourceMenuItem(props: DragSourceMenuItemProps): JSX.Element {
   const { forwardedProps } = props;
-  assertNotNull(forwardedProps, 'DragSourceMenuItem forwardedProps'); // These are added by the ContextMenuItem, but not used where we declare the itemsZ
+  assertNotNull(forwardedProps, 'DragSourceMenuItem forwardedProps'); // These are added by the ContextMenuItem, but not used where we declare the items
   const {
     menuItem: { action, title, disabled: menuItemDisabled },
     iconElement,

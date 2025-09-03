@@ -75,6 +75,7 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
 
   const handleConditionChange = useCallback(
     (updatedConditionConfig: ConditionConfig, isValid: boolean) => {
+      log.debug('handleConditionChange', updatedConditionConfig, isValid);
       setConditionConfig(updatedConditionConfig);
       setConditionValid(isValid);
     },

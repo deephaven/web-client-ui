@@ -1,5 +1,6 @@
-import { type Key, useCallback } from 'react';
+import { useCallback } from 'react';
 import { Item, Picker } from '@adobe/react-spectrum';
+import type { Key } from '@react-types/shared';
 import useTheme from './useTheme';
 
 export function ThemePicker(): JSX.Element | null {
@@ -8,7 +9,7 @@ export function ThemePicker(): JSX.Element | null {
   const onSelectionChange = useCallback(
     (key: Key | null) => {
       if (key != null) {
-        setSelectedThemeKey(key as string);
+        setSelectedThemeKey(`${key}`);
       }
     },
     [setSelectedThemeKey]
