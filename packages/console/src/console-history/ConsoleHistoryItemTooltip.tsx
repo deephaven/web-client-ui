@@ -1,7 +1,7 @@
 import React, { type ReactElement, useMemo, memo } from 'react';
 import { Content, Heading } from '@deephaven/components';
-import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import { TimeUtils } from '@deephaven/utils';
+import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 interface ConsoleHistoryActionItemTooltipProps {
   item: ConsoleHistoryActionItem;
@@ -50,5 +50,7 @@ const ConsoleHistoryItemTooltip = memo(
     );
   }
 );
+
+ConsoleHistoryItemTooltip.displayName = 'ConsoleHistoryItemTooltip';
 
 export default ConsoleHistoryItemTooltip;

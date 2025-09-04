@@ -3,12 +3,17 @@ export type TimeString = `${string}:${string}:${string}`;
 
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
+
   static MILLIS_PER_SECOND = 1000;
+
   static NANOS_PER_SECOND = 1e9;
 
   static NANOS_PER_MIN = 60 * TimeUtils.NANOS_PER_SECOND;
+
   static NANOS_PER_HOUR = 60 * TimeUtils.NANOS_PER_MIN;
+
   static MILLIS_PER_MIN = 60 * TimeUtils.MILLIS_PER_SECOND;
+
   static MILLIS_PER_HOUR = 60 * TimeUtils.MILLIS_PER_MIN;
 
   static TIME_ZONES = Object.freeze([

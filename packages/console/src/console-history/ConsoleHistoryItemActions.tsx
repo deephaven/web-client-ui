@@ -5,9 +5,9 @@ import React, { memo, type ReactElement, useMemo } from 'react';
 import { Button, CopyButton, ContextualHelp } from '@deephaven/components';
 import './ConsoleHistoryItem.scss';
 import { vsDebugRerun } from '@deephaven/icons';
+import classNames from 'classnames';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
-import classNames from 'classnames';
 
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
@@ -21,6 +21,9 @@ interface ConsoleHistoryItemProps {
  * @returns The action bar class name or null if not applicable.
  */
 const getActionBarClass = (item: ConsoleHistoryActionItem): string | null => {
+  if (!item.command) {
+    return null;
+  }
   const lineCount = item.command ? item.command.split('\n').length : 0;
   if (lineCount > 2) {
     return null;
@@ -56,5 +59,7 @@ const ConsoleHistoryItemActions = memo(
     );
   }
 );
+
+ConsoleHistoryItemActions.displayName = 'ConsoleHistoryItemActions';
 
 export default ConsoleHistoryItemActions;

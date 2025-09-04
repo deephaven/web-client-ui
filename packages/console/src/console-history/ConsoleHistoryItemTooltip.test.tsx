@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
 import { TimeUtils } from '@deephaven/utils';
+import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
 
 describe('ConsoleHistoryItemTooltip', () => {
   const item = {

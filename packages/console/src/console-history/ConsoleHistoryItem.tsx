@@ -26,8 +26,6 @@ interface ConsoleHistoryItemProps {
   supportsType: (type: string) => boolean;
   iconForType: (type: string) => ReactElement;
   onCommandSubmit: (command: string) => void;
-  lastItem?: boolean;
-  firstItem?: boolean;
 }
 
 interface ConsoleHistoryItemState {

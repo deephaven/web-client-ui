@@ -1,12 +1,13 @@
 import TimeUtils, { type TimeString } from './TimeUtils';
 
-const MILLIS_PER_SECOND = TimeUtils.MILLIS_PER_SECOND;
-const NANOS_PER_SECOND = TimeUtils.NANOS_PER_SECOND;
-
-const NANOS_PER_MIN = TimeUtils.NANOS_PER_MIN;
-const NANOS_PER_HOUR = TimeUtils.NANOS_PER_HOUR;
-const MILLIS_PER_MIN = TimeUtils.MILLIS_PER_MIN;
-const MILLIS_PER_HOUR = TimeUtils.MILLIS_PER_HOUR;
+const {
+  MILLIS_PER_SECOND,
+  NANOS_PER_SECOND,
+  NANOS_PER_MIN,
+  NANOS_PER_HOUR,
+  MILLIS_PER_MIN,
+  MILLIS_PER_HOUR,
+} = TimeUtils;
 
 describe('formatElapsedTime parsing tests', () => {
   function testFormatElapsedTime(time: number, expectedResult: string) {
