@@ -21,7 +21,7 @@ interface ConsoleHistoryItemProps {
  * @returns The action bar class name or null if not applicable.
  */
 const getActionBarClass = (item: ConsoleHistoryActionItem): string | null => {
-  if (!item.command) {
+  if (item?.command == null) {
     return null;
   }
   const lineCount = item.command ? item.command.split('\n').length : 0;
