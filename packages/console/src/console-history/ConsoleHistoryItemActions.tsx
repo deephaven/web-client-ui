@@ -12,39 +12,21 @@ import classNames from 'classnames';
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
   onCommandSubmit: (command: string) => void;
-  lastItem?: boolean;
-  firstItem?: boolean;
   handleTooltipVisible: (isVisible: boolean) => void;
 }
 
 /**
  * Get the action bar class for a console history item.
  * @param lineCount The number of lines in the console history item.
- * @param firstItem Whether this is the first item in the history.
- * @param lastItem Whether this is the last item in the history.
  * @returns The action bar class name or null if not applicable.
  */
-const getActionBarClass = (
-  item: ConsoleHistoryActionItem,
-  firstItem = false,
-  lastItem = false
-): string | null => {
+const getActionBarClass = (item: ConsoleHistoryActionItem): string | null => {
   const lineCount = item.command ? item.command.split('\n').length : 0;
   if (lineCount > 2) {
     return null;
   }
   let slot = '1';
-  if (lineCount === 1) {
-    if (firstItem) {
-      // first single items are pushed down so that they are visible
-      // this should be higher priority than lastItem
-      slot = 'first-1';
-    } else if (lastItem) {
-      // last single items are pushed up to prevent layout shifts
-      slot = 'last-1';
-    }
-  } else {
-    // two lines get centered
+  if (lineCount === 2) {
     slot = '2';
   }
   return `console-history-actions-${slot}`;
@@ -52,13 +34,9 @@ const getActionBarClass = (
 
 const ConsoleHistoryItemActions = memo(
   (props: ConsoleHistoryItemProps): ReactElement => {
-    const { item, onCommandSubmit, firstItem, lastItem, handleTooltipVisible } =
-      props;
+    const { item, onCommandSubmit, handleTooltipVisible } = props;
 
-    const actionBarClass = useMemo(
-      () => getActionBarClass(item, firstItem ?? false, lastItem ?? false),
-      [item, firstItem, lastItem]
-    );
+    const actionBarClass = useMemo(() => getActionBarClass(item), [item]);
 
     return (
       <div className={classNames('console-history-actions', actionBarClass)}>

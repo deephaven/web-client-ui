@@ -82,15 +82,8 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   render(): ReactElement {
-    const {
-      disabled,
-      item,
-      language,
-      iconForType,
-      onCommandSubmit,
-      firstItem,
-      lastItem,
-    } = this.props;
+    const { disabled, item, language, iconForType, onCommandSubmit } =
+      this.props;
     const { disabledObjects, result } = item;
     const hasCommand = item.command != null && item.command !== '';
     let commandElement = null;
@@ -110,8 +103,6 @@ class ConsoleHistoryItem extends PureComponent<
               handleTooltipVisible={(isVisible: boolean) =>
                 this.setState({ isTooltipVisible: isVisible })
               }
-              firstItem={firstItem}
-              lastItem={lastItem}
             />
           </div>
         </div>

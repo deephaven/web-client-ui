@@ -53,8 +53,6 @@ const ConsoleHistory = React.forwardRef(function ConsoleHistory(
         supportsType={supportsType}
         iconForType={iconForType}
         onCommandSubmit={onCommandSubmit}
-        lastItem={i === items.length - 1}
-        firstItem={i === 0}
       />
     );
     historyElements.push(historyElement);

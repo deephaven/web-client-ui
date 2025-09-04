@@ -118,19 +118,24 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
 }
 
 .console-history-actions-1 {
-  top: -0.875rem;
+  // actions are centered over the line
+  // note that the actions are much wider than the line itself
+  top: -($spacer-4 * 0.875);
 }
 
 .console-history-actions-2 {
-  top: -0.125rem;
+  // actions are centered over the line
+  top: -($spacer-1 * 0.5);
 }
 
-.console-history-actions-last-1 {
-  top: -1.5rem;
+.console-command-result:last-child .console-history-actions-1 {
+  // pushed down so that the actions are visible
+  top: -$spacer-4;
 }
 
-.console-history-actions-first-1 {
-  top: 0;
+.console-command-result:first-child .console-history-actions-1 {
+  // pushed up to prevent layout shifts
+  top: $spacer-0;
 }
 
 .console-history-item-contextual-help-content {
