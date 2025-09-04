@@ -16,7 +16,7 @@
  */
 
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
@@ -125,10 +125,10 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   initPopper(): void {
-    let { popper } = this.state;
+    const { popper: statePopper } = this.state;
     const { closeOnBlur, referenceObject } = this.props;
 
-    if (popper) {
+    if (statePopper) {
       return;
     }
 
@@ -149,7 +149,11 @@ class Popper extends Component<PopperProps, PopperState> {
       parent = this.container.current;
     }
 
-    popper = new PopperJs(referenceObject || parent, this.element, options);
+    const popper = new PopperJs(
+      referenceObject || parent,
+      this.element,
+      options
+    );
     popper.scheduleUpdate();
 
     // delayed due to scheduleUpdate
@@ -170,7 +174,10 @@ class Popper extends Component<PopperProps, PopperState> {
       }
     });
 
-    this.setState({ popper });
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ popper });
+    });
   }
 
   destroyPopper(updateState = true): void {
@@ -197,7 +204,11 @@ class Popper extends Component<PopperProps, PopperState> {
 
   show(): void {
     this.initPopper();
-    this.setState({ show: true });
+
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ show: true });
+    });
   }
 
   hide(): void {

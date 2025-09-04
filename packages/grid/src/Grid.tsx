@@ -1144,7 +1144,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         )
       );
       return {
-        selectedRanges: newRanges,
+        selectedRanges: GridRange.consolidate(newRanges),
         selectionEndColumn: column,
         selectionEndRow: row,
       };
