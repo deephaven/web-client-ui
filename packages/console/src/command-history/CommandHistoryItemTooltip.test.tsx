@@ -30,6 +30,7 @@ function makeCommandStarted() {
     command: 'started',
     result: null,
     startTime: Date.now(),
+    endTime: Date.now(),
   };
 }
 
@@ -99,14 +100,14 @@ describe('different command results', () => {
     expect(cleanup).toHaveBeenCalled();
   });
 
-  it('renders <1s elapsed time for a command that was just started', () => {
+  it('renders correct time for a command that was just started', () => {
     callback(makeCommandStarted());
-    expect(screen.getByText('<1s')).toBeTruthy();
+    expect(screen.getByText('0.00s')).toBeTruthy();
   });
 
   it('renders correct time for completed command', () => {
     callback(makeCommandCompletedSuccess());
-    expect(screen.getByText('5s')).toBeTruthy();
+    expect(screen.getByText('5.00s')).toBeTruthy();
   });
 
   it('shows error message', () => {
