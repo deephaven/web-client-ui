@@ -1,5 +1,13 @@
 import TimeUtils, { type TimeString } from './TimeUtils';
 
+const MILLIS_PER_SECOND = TimeUtils.MILLIS_PER_SECOND;
+const NANOS_PER_SECOND = TimeUtils.NANOS_PER_SECOND;
+
+const NANOS_PER_MIN = TimeUtils.NANOS_PER_MIN;
+const NANOS_PER_HOUR = TimeUtils.NANOS_PER_HOUR;
+const MILLIS_PER_MIN = TimeUtils.MILLIS_PER_MIN;
+const MILLIS_PER_HOUR = TimeUtils.MILLIS_PER_HOUR;
+
 describe('formatElapsedTime parsing tests', () => {
   function testFormatElapsedTime(time: number, expectedResult: string) {
     const result = TimeUtils.formatElapsedTime(time);
@@ -167,5 +175,116 @@ describe('parseTime tests', () => {
     testParseTimeThrows(1234);
     testParseTimeThrows('10');
     testParseTimeThrows('not a time');
+  });
+});
+
+describe('formatConvertedDuration converts as expected', () => {
+  it('returns null for invalid inputs', () => {
+    expect(TimeUtils.formatConvertedDuration(undefined, 1000)).toBeNull();
+    expect(TimeUtils.formatConvertedDuration(1000, undefined)).toBeNull();
+    expect(TimeUtils.formatConvertedDuration(1000, '')).toBeNull();
+    expect(TimeUtils.formatConvertedDuration(1000, 0)).toBeNull();
+    expect(TimeUtils.formatConvertedDuration(1000, 1000, 'invalid')).toBeNull();
+  });
+
+  it('returns correct seconds for nano conversion', () => {
+    expect(
+      TimeUtils.formatConvertedDuration(0, 59.99 * NANOS_PER_SECOND, 'ns')
+    ).toBe('59.99s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * NANOS_PER_SECOND,
+        60 * NANOS_PER_SECOND,
+        'ns'
+      )
+    ).toBe('1.00s');
+  });
+
+  it('returns correct minutes for nano conversion', () => {
+    expect(TimeUtils.formatConvertedDuration(0, 59 * NANOS_PER_MIN, 'ns')).toBe(
+      '59m 0.0s'
+    );
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * NANOS_PER_MIN,
+        60 * NANOS_PER_MIN,
+        'ns'
+      )
+    ).toBe('1m 0.0s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        0,
+        59 * NANOS_PER_MIN + 59.9 * NANOS_PER_SECOND,
+        'ns'
+      )
+    ).toBe('59m 59.9s');
+  });
+
+  it('returns correct hours for nano conversion', () => {
+    expect(
+      TimeUtils.formatConvertedDuration(0, 59 * NANOS_PER_HOUR, 'ns')
+    ).toBe('59h 0m 0s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        0,
+        59 * NANOS_PER_HOUR + 59 * NANOS_PER_MIN + 59 * NANOS_PER_SECOND,
+        'ns'
+      )
+    ).toBe('59h 59m 59s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * NANOS_PER_HOUR,
+        60 * NANOS_PER_HOUR,
+        'ns'
+      )
+    ).toBe('1h 0m 0s');
+  });
+
+  it('returns correct seconds for milli conversion', () => {
+    expect(
+      TimeUtils.formatConvertedDuration(0, 59.99 * MILLIS_PER_SECOND)
+    ).toBe('59.99s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * MILLIS_PER_SECOND,
+        60 * MILLIS_PER_SECOND
+      )
+    ).toBe('1.00s');
+  });
+
+  it('returns correct minutes for milli conversion', () => {
+    expect(TimeUtils.formatConvertedDuration(0, 59 * MILLIS_PER_MIN)).toBe(
+      '59m 0.0s'
+    );
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * MILLIS_PER_MIN,
+        60 * MILLIS_PER_MIN
+      )
+    ).toBe('1m 0.0s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        0,
+        59 * MILLIS_PER_MIN + 59.9 * MILLIS_PER_SECOND
+      )
+    ).toBe('59m 59.9s');
+  });
+
+  it('returns correct hours for milli conversion', () => {
+    expect(TimeUtils.formatConvertedDuration(0, 59 * MILLIS_PER_HOUR)).toBe(
+      '59h 0m 0s'
+    );
+    expect(
+      TimeUtils.formatConvertedDuration(
+        0,
+        59 * MILLIS_PER_HOUR + 59 * MILLIS_PER_MIN + 59 * MILLIS_PER_SECOND
+      )
+    ).toBe('59h 59m 59s');
+    expect(
+      TimeUtils.formatConvertedDuration(
+        59 * MILLIS_PER_HOUR,
+        60 * MILLIS_PER_HOUR
+      )
+    ).toBe('1h 0m 0s');
   });
 });

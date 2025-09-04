@@ -38,23 +38,6 @@ export class CommandHistoryItemTooltip extends Component<
     onUpdate: (): void => undefined,
   };
 
-  static getTimeString(
-    startTime: string | undefined,
-    endTime: string | number
-  ): string | null {
-    if (startTime == null || endTime === '' || endTime === 0) {
-      return null;
-    }
-
-    const deltaTime = Math.round(
-      (new Date(endTime).valueOf() - new Date(startTime).valueOf()) / 1000
-    );
-
-    if (deltaTime < 1) return '<1s';
-
-    return TimeUtils.formatElapsedTime(deltaTime);
-  }
-
   constructor(props: CommandHistoryItemTooltipProps) {
     super(props);
 
@@ -167,7 +150,7 @@ export class CommandHistoryItemTooltip extends Component<
 
     const errorMessage = result?.error ?? error;
 
-    const timeString = CommandHistoryItemTooltip.getTimeString(
+    const timeString = TimeUtils.formatConvertedDuration(
       startTime,
       endTime ?? currentTime
     );

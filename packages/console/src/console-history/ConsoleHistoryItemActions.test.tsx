@@ -11,7 +11,7 @@ describe('clicking calls functionality', () => {
     return render(
       <ConsoleHistoryItemActions
         item={{ command: 'Test command' }}
-        handleCommandSubmit={handleCommandSubmit}
+        onCommandSubmit={handleCommandSubmit}
         handleTooltipVisible={jest.fn()}
       />
     );

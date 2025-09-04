@@ -1,7 +1,7 @@
 import React, { type ReactElement, useMemo, memo } from 'react';
 import { Content, Heading } from '@deephaven/components';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
-import { getTimeString } from './ConsoleHistoryItemUtils';
+import { TimeUtils } from '@deephaven/utils';
 
 interface ConsoleHistoryActionItemTooltipProps {
   item: ConsoleHistoryActionItem;
@@ -13,13 +13,17 @@ const ConsoleHistoryItemTooltip = memo(
     const { startTime, serverStartTime, serverEndTime } = item;
     const endTime = useMemo(() => item.endTime ?? Date.now(), [item.endTime]);
 
-    const timeString = getTimeString(startTime, endTime);
+    const timeString = TimeUtils.formatConvertedDuration(startTime, endTime);
 
     const hasTimeString = Boolean(timeString);
     let serverTimeString = null;
     if (serverStartTime != null && serverEndTime != null) {
       // server provided times are in nanoseconds
-      serverTimeString = getTimeString(serverStartTime, serverEndTime, 'ns');
+      serverTimeString = TimeUtils.formatConvertedDuration(
+        serverStartTime,
+        serverEndTime,
+        'ns'
+      );
     }
     const hasServerTimeString = Boolean(serverTimeString);
 

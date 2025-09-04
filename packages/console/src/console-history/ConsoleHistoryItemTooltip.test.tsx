@@ -1,17 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import ConsoleHistoryItemTooltip from './ConsoleHistoryItemTooltip';
-import {
-  MILLIS_PER_SECOND,
-  NANOS_PER_SECOND,
-} from './ConsoleHistoryItemTestUtils';
+import { TimeUtils } from '@deephaven/utils';
 
 describe('ConsoleHistoryItemTooltip', () => {
   const item = {
     startTime: 0,
-    endTime: 2 * MILLIS_PER_SECOND,
+    endTime: 2 * TimeUtils.MILLIS_PER_SECOND,
     serverStartTime: 0,
-    serverEndTime: NANOS_PER_SECOND,
+    serverEndTime: TimeUtils.NANOS_PER_SECOND,
   };
 
   it('renders the formatted type name', () => {

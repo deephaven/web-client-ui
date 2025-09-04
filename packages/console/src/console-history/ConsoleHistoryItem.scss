@@ -28,7 +28,15 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
   padding: $spacer-1;
 }
 
-.console-history-item-command-hovered {
+.console-history-item-command-tooltip-active {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-command:hover {
   background-color: var(--dh-color-neutral-hover-bg);
 
   .console-history-actions {

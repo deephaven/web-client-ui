@@ -25,11 +25,7 @@ const getActionBarClass = (item: ConsoleHistoryActionItem): string | null => {
   if (lineCount > 2) {
     return null;
   }
-  let slot = '1';
-  if (lineCount === 2) {
-    slot = '2';
-  }
-  return `console-history-actions-${slot}`;
+  return `console-history-actions-${lineCount}`;
 };
 
 const ConsoleHistoryItemActions = memo(

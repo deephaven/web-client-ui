@@ -31,7 +31,6 @@ interface ConsoleHistoryItemProps {
 }
 
 interface ConsoleHistoryItemState {
-  isHovered: boolean;
   isTooltipVisible: boolean;
 }
 
@@ -47,7 +46,6 @@ class ConsoleHistoryItem extends PureComponent<
     super(props);
 
     this.state = {
-      isHovered: false,
       isTooltipVisible: false,
     };
 
@@ -72,11 +70,11 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   consoleHistoryItemClasses(): string {
-    const { isTooltipVisible, isHovered } = this.state;
+    const { isTooltipVisible } = this.state;
     const classes = ['console-history-item-command'];
     // console history items should stay highlighted if the tooltip is opened
-    if (isTooltipVisible || isHovered) {
-      classes.push('console-history-item-command-hovered');
+    if (isTooltipVisible) {
+      classes.push('console-history-item-command-tooltip-active');
     }
     return classes.join(' ');
   }
@@ -89,11 +87,7 @@ class ConsoleHistoryItem extends PureComponent<
     let commandElement = null;
     if (hasCommand) {
       commandElement = (
-        <div
-          className={this.consoleHistoryItemClasses()}
-          onMouseOver={() => this.setState({ isHovered: true })}
-          onMouseOut={() => this.setState({ isHovered: false })}
-        >
+        <div className={this.consoleHistoryItemClasses()}>
           <div className="console-history-gutter">&gt;</div>
           <div className="console-history-content">
             <Code language={language}>{item.command}</Code>
