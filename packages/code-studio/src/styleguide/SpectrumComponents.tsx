@@ -88,6 +88,16 @@ export function SpectrumComponents(): JSX.Element {
                 </Dialog>
               )}
             </DialogTrigger>
+            <DialogTrigger type="popover">
+              <ActionButton>Popover</ActionButton>
+              <Dialog>
+                <Heading>Popover</Heading>
+                <Divider />
+                <Content>
+                  <Text>This is a popover.</Text>
+                </Content>
+              </Dialog>
+            </DialogTrigger>
           </Flex>
         </SampleSection>
         <SampleSection name="spectrum-well" component={View}>
