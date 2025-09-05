@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronRight, type IconDefinition } from '@deephaven/icons';
@@ -17,21 +17,40 @@ interface ContextMenuItemProps {
 }
 
 const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
-  (props: ContextMenuItemProps, ref) => {
-    function handleMenuItemClick(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemClick } = props;
-      onMenuItemClick(menuItem, e);
-    }
+  (
+    {
+      closeMenu,
+      children,
+      menuItem,
+      onMenuItemClick,
+      onMenuItemMouseMove,
+      onMenuItemContextMenu,
+      isKeyboardSelected = false,
+      isMouseSelected = false,
+      'data-testid': dataTestId,
+    }: ContextMenuItemProps,
+    ref
+  ) => {
+    const handleMenuItemClick = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemClick(menuItem, e);
+      },
+      [menuItem, onMenuItemClick]
+    );
 
-    function handleMenuItemMouseMove(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemMouseMove } = props;
-      onMenuItemMouseMove(menuItem, e);
-    }
+    const handleMenuItemMouseMove = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemMouseMove(menuItem, e);
+      },
+      [menuItem, onMenuItemMouseMove]
+    );
 
-    function handleMenuItemContextMenu(e: React.MouseEvent): void {
-      const { menuItem, onMenuItemContextMenu } = props;
-      onMenuItemContextMenu(menuItem, e);
-    }
+    const handleMenuItemContextMenu = useCallback(
+      (e: React.MouseEvent): void => {
+        onMenuItemContextMenu(menuItem, e);
+      },
+      [menuItem, onMenuItemContextMenu]
+    );
 
     function renderCustomMenuElement(
       element: React.ReactElement,
@@ -42,13 +61,6 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
       if (typeof element.type === 'string') {
         return element;
       }
-      const {
-        closeMenu,
-        menuItem,
-        isKeyboardSelected,
-        isMouseSelected,
-        'data-testid': dataTestId,
-      } = props;
       const forwardedProps = {
         menuItem,
         closeMenu,
@@ -62,14 +74,6 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         forwardedProps,
       });
     }
-
-    const {
-      children,
-      menuItem,
-      isKeyboardSelected = false,
-      isMouseSelected = false,
-      'data-testid': dataTestId,
-    } = props;
 
     const displayShortcut =
       menuItem.shortcutText ?? menuItem.shortcut?.getDisplayText();
@@ -159,12 +163,5 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
 );
 
 ContextMenuItem.displayName = 'ContextMenuItem';
-
-ContextMenuItem.defaultProps = {
-  children: null,
-  isKeyboardSelected: false,
-  isMouseSelected: false,
-  'data-testid': undefined,
-};
 
 export default ContextMenuItem;

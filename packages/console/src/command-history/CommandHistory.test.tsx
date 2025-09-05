@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CommandHistory from './CommandHistory';
 import { type CommandHistoryTable } from './CommandHistoryStorage';
@@ -65,7 +65,7 @@ function mountItems(itemLength = 10) {
     />
   );
   const items = makeItems(itemLength);
-  updateFunction({ items, offset: 0 });
+  act(() => updateFunction({ items, offset: 0 }));
 
   return wrapper;
 }
@@ -79,19 +79,19 @@ function getCommandItem(index) {
 }
 function clickItem(itemIndex, mouseEventInit = {}) {
   const item = getCommandItem(itemIndex);
-  fireEvent.mouseDown(item, mouseEventInit);
-  fireEvent.mouseUp(item, mouseEventInit);
+  act(() => fireEvent.mouseDown(item, mouseEventInit));
+  act(() => fireEvent.mouseUp(item, mouseEventInit));
 }
 
 function dragRange(start, end) {
   const startItem = getCommandItem(start);
-  fireEvent.mouseDown(startItem);
+  act(() => fireEvent.mouseDown(startItem));
   for (let i = start; i <= end; i += 1) {
     const item = getCommandItem(i);
-    fireEvent.mouseMove(item);
+    act(() => fireEvent.mouseMove(item));
   }
   const endItem = getCommandItem(end);
-  fireEvent.mouseUp(endItem);
+  act(() => fireEvent.mouseUp(endItem));
 }
 
 it('renders an empty list without crashing', () => {

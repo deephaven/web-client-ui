@@ -1,5 +1,4 @@
-import React from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import type { Container } from '@deephaven/golden-layout';
 import { MarkdownPanel } from './MarkdownPanel';
 
@@ -38,6 +37,6 @@ function mountMarkdownPanel(
   );
 }
 
-it('mount/unmount MarkdownPanel without crashing', () => {
-  mountMarkdownPanel();
+it('mount/unmount MarkdownPanel without crashing', async () => {
+  await act(() => mountMarkdownPanel());
 });

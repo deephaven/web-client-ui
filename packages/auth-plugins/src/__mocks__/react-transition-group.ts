@@ -5,8 +5,6 @@ interface TransitionProps {
   in: boolean;
 }
 
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable react/prop-types */
 export function Transition({
   children,
   in: inProp,

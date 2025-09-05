@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import {
@@ -127,15 +127,23 @@ it.each([options, optionsUseDefaults, optionsTableNull, optionsTableIsClosed])(
 );
 
 it('should memoize result', () => {
-  const { rerender, result } = renderHook(() => useViewportData(options), {
-    wrapper,
-  });
+  const renders = [];
+  const { rerender } = renderHook(
+    () => {
+      const data = useViewportData(options);
+      renders.push(data);
+      return data;
+    },
+    {
+      wrapper,
+    }
+  );
 
   rerender();
 
-  expect(result.all.length).toEqual(3);
+  expect(renders.length).toEqual(3);
 
-  const [a, b] = result.all.slice(-2);
+  const [a, b] = renders.slice(-2);
 
   expect(a).toBe(b);
 });

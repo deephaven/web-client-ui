@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { TestUtils } from '@deephaven/test-utils';
 import type { PostMessage } from '@deephaven/utils';
 import { useExternalTheme } from './useExternalTheme';
@@ -47,9 +47,7 @@ it.each([
     asMock(isExternalThemeEnabled).mockReturnValue(isEnabled);
     asMock(requestExternalThemeData).mockResolvedValue(mockExternalThemeData);
 
-    const { result, unmount, waitForNextUpdate } = renderHook(() =>
-      useExternalTheme()
-    );
+    const { result, unmount } = renderHook(() => useExternalTheme());
 
     expect(result.current.isPending).toEqual(isEnabled);
 
@@ -65,10 +63,11 @@ it.each([
       return;
     }
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(findWindowEventHandlers('message')).toHaveLength(1);
+    });
 
     const messageHandlers = findWindowEventHandlers('message');
-    expect(messageHandlers).toHaveLength(1);
 
     const messageHandler = messageHandlers[0];
 
@@ -117,7 +116,7 @@ it.each([
       );
     }
 
-    const { result, waitForNextUpdate } = renderHook(() => useExternalTheme());
+    const { result } = renderHook(() => useExternalTheme());
 
     expect(result.current.isPending).toEqual(isEnabled);
 
@@ -126,8 +125,9 @@ it.each([
       return;
     }
 
-    await waitForNextUpdate();
-    expect(requestExternalThemeData).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(requestExternalThemeData).toHaveBeenCalled();
+    });
 
     if (externalThemeDataOrError instanceof Error) {
       expect(result.current).toEqual({

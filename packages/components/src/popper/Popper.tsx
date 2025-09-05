@@ -16,11 +16,10 @@
  */
 
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
-import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
@@ -28,6 +27,7 @@ import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 const POPPER_CLASS_NAME = 'popper';
 
 interface PopperProps {
+  children: React.ReactNode;
   options: PopperOptions;
   className: string;
   timeout: number;
@@ -46,20 +46,6 @@ interface PopperState {
 }
 
 class Popper extends Component<PopperProps, PopperState> {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-    options: PropTypes.shape({}),
-    className: PropTypes.string,
-    timeout: PropTypes.number,
-    onEntered: PropTypes.func,
-    onExited: PropTypes.func,
-    isShown: PropTypes.bool,
-    closeOnBlur: PropTypes.bool,
-    interactive: PropTypes.bool,
-    referenceObject: PropTypes.shape({}),
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     options: {},
     className: '',
@@ -139,10 +125,10 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   initPopper(): void {
-    let { popper } = this.state;
+    const { popper: statePopper } = this.state;
     const { closeOnBlur, referenceObject } = this.props;
 
-    if (popper) {
+    if (statePopper) {
       return;
     }
 
@@ -163,7 +149,11 @@ class Popper extends Component<PopperProps, PopperState> {
       parent = this.container.current;
     }
 
-    popper = new PopperJs(referenceObject || parent, this.element, options);
+    const popper = new PopperJs(
+      referenceObject || parent,
+      this.element,
+      options
+    );
     popper.scheduleUpdate();
 
     // delayed due to scheduleUpdate
@@ -184,7 +174,10 @@ class Popper extends Component<PopperProps, PopperState> {
       }
     });
 
-    this.setState({ popper });
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ popper });
+    });
   }
 
   destroyPopper(updateState = true): void {
@@ -211,7 +204,11 @@ class Popper extends Component<PopperProps, PopperState> {
 
   show(): void {
     this.initPopper();
-    this.setState({ show: true });
+
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ show: true });
+    });
   }
 
   hide(): void {

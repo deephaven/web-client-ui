@@ -1,6 +1,5 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import Stack from './Stack';
 
 // Mock the CSS transitions to appear right away, and call the entered animation after a timeout

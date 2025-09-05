@@ -1,5 +1,5 @@
-import React from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
+import { ThemeProvider } from '@deephaven/components';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
@@ -34,28 +34,28 @@ function makeIrisGridPartitionSelector(
 ) {
   return render(
     <ApiContext.Provider value={dh}>
-      <IrisGridPartitionSelector
-        model={model}
-        onChange={onChange}
-        partitionConfig={partitionConfig as PartitionConfig}
-      />
+      <ThemeProvider themes={[]}>
+        <IrisGridPartitionSelector
+          model={model}
+          onChange={onChange}
+          partitionConfig={partitionConfig as PartitionConfig}
+        />
+      </ThemeProvider>
     </ApiContext.Provider>
   );
 }
 
-it('unmounts successfully without crashing', () => {
-  makeIrisGridPartitionSelector();
+it('mounts successfully without crashing', async () => {
+  await act(() => makeIrisGridPartitionSelector());
 });
 
-it('should display multiple selectors to match columns', () => {
+it('should display multiple selectors to match columns', async () => {
   const columns = [
     irisGridTestUtils.makeColumn('a'),
     irisGridTestUtils.makeColumn('b'),
   ];
-  const { container } = makeIrisGridPartitionSelector(makeModel(columns));
+  const component = makeIrisGridPartitionSelector(makeModel(columns));
 
-  const selectors = Array.from(
-    container.getElementsByClassName('column-selector')
-  );
+  const selectors = await component.findAllByText('Select a key');
   expect(selectors).toHaveLength(2);
 });

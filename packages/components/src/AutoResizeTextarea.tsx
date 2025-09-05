@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 import './AutoResizeTextarea.scss';
@@ -143,27 +142,5 @@ function AutoResizeTextarea({
     />
   );
 }
-
-AutoResizeTextarea.propTypes = {
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  className: PropTypes.string,
-  placeholder: PropTypes.string,
-  spellCheck: PropTypes.bool,
-  disabled: PropTypes.bool,
-  delimiter: PropTypes.string,
-  id: PropTypes.string,
-  'data-testid': PropTypes.string,
-};
-
-AutoResizeTextarea.defaultProps = {
-  className: '',
-  id: '',
-  placeholder: '',
-  disabled: false,
-  spellCheck: false,
-  delimiter: '',
-  'data-testid': undefined,
-};
 
 export default AutoResizeTextarea;

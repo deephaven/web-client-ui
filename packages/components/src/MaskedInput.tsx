@@ -557,25 +557,4 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
   }
 );
 
-MaskedInput.defaultProps = {
-  className: '',
-  placeholder: undefined,
-  onChange(): void {
-    // no-op
-  },
-  onSelect(): void {
-    // no-op
-  },
-  getNextSegmentValue: (range, delta, segmentValue) => segmentValue,
-  getPreferredReplacementString: DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
-  selection: undefined,
-  onFocus(): void {
-    // no-op
-  },
-  onBlur(): void {
-    // no-op
-  },
-  'data-testid': undefined,
-};
-
 export default MaskedInput;

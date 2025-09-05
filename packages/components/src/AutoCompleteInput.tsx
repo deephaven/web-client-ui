@@ -17,7 +17,6 @@
  *
  */
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
@@ -66,25 +65,6 @@ class AutoCompleteInput extends Component<
   AutoCompleteInputProps,
   AutoCompleteInputState
 > {
-  static propTypes = {
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        title: PropTypes.string.isRequired,
-        value: PropTypes.string.isRequired,
-      })
-    ).isRequired,
-    popperOptions: PropTypes.shape({}),
-    onChange: PropTypes.func,
-    inputPlaceholder: PropTypes.string,
-    disabled: PropTypes.bool,
-    className: PropTypes.string,
-    defaultTitle: PropTypes.string,
-    spellCheck: PropTypes.bool,
-    onEnter: PropTypes.func,
-    noMatchText: PropTypes.string,
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     onChange(): void {
       // no-op

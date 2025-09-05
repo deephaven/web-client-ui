@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { forwardRef, useCallback, useRef } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

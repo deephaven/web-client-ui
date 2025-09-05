@@ -68,12 +68,14 @@ class IrisGridPartitionSelector extends Component<
         t.close()
       );
 
-      this.setState({
-        keysTable,
-        baseTable,
-        isLoading: false,
-      });
-      this.updatePartitionOptions();
+      this.setState(
+        {
+          keysTable,
+          baseTable,
+          isLoading: false,
+        },
+        this.updatePartitionOptions
+      );
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
         // Just re-throw the error if it's not a cancel

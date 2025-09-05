@@ -86,17 +86,17 @@ function ConditionalFormatEditor(
     onSave(rule);
   }, [onSave, rule]);
 
-  const handleFormatterChange = useCallback(value => {
+  const handleFormatterChange = useCallback((value: FormatterType) => {
     log.debug('handleFormatterChange', value);
     setFormatter(value);
   }, []);
 
   const handleRuleChange = useCallback(
-    (ruleConfig, isRuleValid: boolean) => {
+    (ruleConfig: BaseFormatConfig, isRuleValid: boolean) => {
       log.debug('handleRuleChange', ruleConfig, isRuleValid, selectedFormatter);
       const updatedRule = {
         type: selectedFormatter,
-        config: ruleConfig as BaseFormatConfig,
+        config: ruleConfig,
       };
       setRule(updatedRule);
       setIsValid(isRuleValid);

@@ -197,12 +197,12 @@ function PopOvers(props: PopOversProps): JSX.Element {
     }
   }
 
-  const onFirstTimeSelect = useCallback(selection => {
+  const onFirstTimeSelect = useCallback((selection: SelectionSegment) => {
     firstTimeSelectionRef.current = selection;
     secondTimeSelectionRef.current = null;
   }, []);
 
-  const onSecondTimeSelect = useCallback(selection => {
+  const onSecondTimeSelect = useCallback((selection: SelectionSegment) => {
     firstTimeSelectionRef.current = null;
     secondTimeSelectionRef.current = selection;
   }, []);

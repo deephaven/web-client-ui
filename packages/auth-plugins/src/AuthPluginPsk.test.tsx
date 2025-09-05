@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@deephaven/components';
 import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
-import type { CoreClient } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import AuthPluginPsk from './AuthPluginPsk';
 import { AUTH_HANDLER_TYPE_PSK as AUTH_TYPE } from './AuthHandlerTypes';
 import { type AuthConfigMap } from './AuthPlugin';
@@ -54,7 +54,7 @@ function makeCoreClient() {
 }
 
 function renderComponent(
-  client: CoreClient = makeCoreClient(),
+  client: DhType.CoreClient = makeCoreClient(),
   authConfigValues: AuthConfigMap = new Map()
 ) {
   return render(
@@ -197,11 +197,9 @@ describe('component tests', () => {
     expectMockChild().not.toBeInTheDocument();
     expect(mockLogin).not.toHaveBeenCalled();
 
-    await act(async () => {
-      await user.type(screen.getByRole('textbox', { name: 'Token' }), token);
-      await user.click(screen.getByRole('button', { name: 'Login' }));
-      await loginPromise;
-    });
+    await user.type(screen.getByRole('textbox', { name: 'Token' }), token);
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+    await loginPromise;
 
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -228,10 +226,8 @@ describe('component tests', () => {
     expectInput().toBeInTheDocument();
     expectMockChild().not.toBeInTheDocument();
 
-    await act(async () => {
-      await user.type(screen.getByRole('textbox', { name: 'Token' }), token);
-      await user.click(screen.getByRole('button', { name: 'Login' }));
-    });
+    await user.type(screen.getByRole('textbox', { name: 'Token' }), token);
+    await user.click(screen.getByRole('button', { name: 'Login' }));
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
         type: AUTH_TYPE,

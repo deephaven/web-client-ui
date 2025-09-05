@@ -27,7 +27,7 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
       id: panelId = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
-      dragEvent = null,
+      dragEvent = undefined,
     } = {}) => {
       const openedMarkdowns = panelManager.getOpenedPanelConfigsOfType(
         MarkdownPanel.COMPONENT

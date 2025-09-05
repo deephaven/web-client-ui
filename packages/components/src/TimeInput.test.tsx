@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TimeUtils } from '@deephaven/utils';
 import type { SelectionSegment } from './MaskedInput';
@@ -292,7 +292,7 @@ describe('select and type', () => {
     const onChange = jest.fn();
     const { unmount } = makeTimeInput({ onChange });
     const input: HTMLInputElement = screen.getByRole('textbox');
-    input.focus();
+    act(() => input.focus());
     await user.type(input, '{shift}{backspace}{backspace}', {
       initialSelectionStart: 6,
       initialSelectionEnd: 6,
@@ -301,7 +301,7 @@ describe('select and type', () => {
     expect(onChange).lastCalledWith(TimeUtils.parseTime('12:30:00'));
     expect(input.value).toEqual('12:3');
 
-    input.blur();
+    act(() => input.blur());
 
     // Blur should update the internal value to match the last onChange
     // but not trigger another onChange
@@ -310,7 +310,7 @@ describe('select and type', () => {
     expect(input.value).toEqual('12:30:00');
 
     // Fill in missing chars in the middle
-    input.focus();
+    act(() => input.focus());
     await user.type(input, '{shift}{backspace}', {
       skipClick: true,
       initialSelectionStart: 3,
@@ -319,7 +319,7 @@ describe('select and type', () => {
     expect(input.value).toEqual(
       `12:${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:00`
     );
-    input.blur();
+    act(() => input.blur());
     expect(input.value).toEqual('12:00:00');
 
     unmount();
