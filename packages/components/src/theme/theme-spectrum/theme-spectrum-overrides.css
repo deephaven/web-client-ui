@@ -131,3 +131,9 @@ span[class*='spectrum-ToggleSwitch-switch'] {
   /* increase contrast of switch in off position */
   background: var(--dh-toggle-switch-bg);
 }
+
+[class*='spectrum-Popover'] {
+  /* Sspectrum popovers have excessive space, tighten up the dialog padding to match DH style, */
+  /* Originally --spectrum-global-dimension-static-size-500) */
+  --spectrum-popover-padding: var(--spectrum-global-dimension-size-200);
+}
