@@ -133,8 +133,8 @@ span[class*='spectrum-ToggleSwitch-switch'] {
 }
 
 [class*='spectrum-Popover'] {
-  /* Spectrum popovers have excessive space, tighten up the dialog padding to match DH style,
-  Originally --spectrum-global-dimension-static-size-500) */
+  /* Spectrum popovers have excessive space. Tighten up the dialog padding to match DH style,
+  padding was originally --spectrum-global-dimension-static-size-500) */
 
   --spectrum-dialog-padding: var(--spectrum-global-dimension-size-200);
 }
