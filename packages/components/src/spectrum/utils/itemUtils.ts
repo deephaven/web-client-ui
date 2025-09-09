@@ -1,6 +1,5 @@
 import { type ReactElement, type ReactNode } from 'react';
-import { type Key } from 'react-aria-components';
-import type { ItemRenderer } from '@react-types/shared';
+import type { ItemRenderer, Key } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, type KeyedItem, type SelectionT } from '@deephaven/utils';
 import {

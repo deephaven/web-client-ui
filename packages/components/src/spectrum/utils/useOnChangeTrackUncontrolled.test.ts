@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react';
-import { type ItemKey } from './itemUtils';
 import {
   useOnChangeTrackUncontrolled,
   type UseOnChangeTrackUncontrolledOptions,
@@ -26,7 +25,7 @@ describe('useOnChangeTrackUncontrolled', () => {
     },
     uncontrolled: {},
     uncontrolledWithDefault: { defaultSelectedKey },
-  } satisfies Record<string, UseOnChangeTrackUncontrolledOptions<ItemKey>>;
+  } satisfies Record<string, UseOnChangeTrackUncontrolledOptions>;
 
   it.each([
     [props.uncontrolled, [undefined, changedKey]],
