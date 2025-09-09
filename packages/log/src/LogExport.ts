@@ -8,9 +8,14 @@ import type LogHistory from './LogHistory';
 export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['api'],
   ['client'],
+  ['clientUtils'],
   ['dashboardData', '*', 'connection'],
   ['dashboardData', '*', 'sessionWrapper'],
+  ['dashboardData', '*', 'openedMap'],
+  ['draftManager', 'draftStorage'],
   ['layoutStorage'],
+  ['schemaService', 'client'],
+  ['schemaService', 'schemaStorage'],
   ['storage'],
 ];
 
