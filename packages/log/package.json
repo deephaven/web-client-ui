@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "event-target-shim": "^6.0.2",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "safe-stable-stringify": "^2.5.0"
   },
   "files": [
     "dist"
