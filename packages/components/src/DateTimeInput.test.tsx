@@ -68,10 +68,9 @@ it('adds missing trailing zeros', async () => {
   });
   const input: HTMLInputElement = screen.getByRole('textbox');
 
-  input.focus();
   await user.type(input, '1', {
-    initialSelectionStart: 21,
-    initialSelectionEnd: 21,
+    initialSelectionStart: 20,
+    initialSelectionEnd: 23,
   });
   expect(input.value).toEqual(`2022-02-22 00:00:00.100`);
   expect(onChange).toBeCalledWith(`2022-02-22 00:00:00.100000000`);

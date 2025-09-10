@@ -44,6 +44,7 @@ import {
   emitCycleToPreviousStack,
   emitCycleToNextTab,
   emitCycleToPreviousTab,
+  type DehydratedPanelProps,
 } from '@deephaven/dashboard';
 import {
   ConsolePlugin,
@@ -175,7 +176,7 @@ export class AppMainContainer extends Component<
   }
 
   static hydrateConsole(
-    props: DehydratedDashboardPanelProps,
+    props: DehydratedPanelProps,
     id: string
   ): DehydratedDashboardPanelProps {
     return DashboardUtils.hydrate(

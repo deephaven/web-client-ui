@@ -32,17 +32,20 @@ function CardFlip({
 
   const front = useRef<HTMLDivElement>(null);
 
-  const transitionStart = useCallback(event => {
+  const transitionStart = useCallback((event: TransitionEvent) => {
     if (event.target === event.currentTarget) {
       document.body.classList.add('card-flip--is-flipping');
     }
   }, []);
 
-  const transitionEnd = useCallback(event => {
-    if (event.target === event.currentTarget) {
-      document.body.classList.remove('card-flip--is-flipping');
-    }
-  }, []);
+  const transitionEnd = useCallback(
+    (event: React.TransitionEvent<HTMLDivElement>) => {
+      if (event.target === event.currentTarget) {
+        document.body.classList.remove('card-flip--is-flipping');
+      }
+    },
+    []
+  );
 
   useEffect(
     function setIsFlippingClassOnTransitionStart() {

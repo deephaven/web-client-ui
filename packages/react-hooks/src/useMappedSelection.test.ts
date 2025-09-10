@@ -1,5 +1,5 @@
 import { type Key } from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { type KeyedItem } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { useMappedSelection } from './useMappedSelection';

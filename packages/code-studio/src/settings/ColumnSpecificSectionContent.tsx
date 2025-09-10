@@ -42,8 +42,9 @@ import {
   removeFormatRuleExtraProps,
   isFormatRuleValidForSave,
   type ValidFormatterItem,
+  type FormatterItem,
+  type FormatOption,
 } from './SettingsUtils';
-import type { FormatterItem, FormatOption } from './SettingsUtils';
 import ColumnTypeOptions from './ColumnTypeOptions';
 import DateTimeOptions from './DateTimeOptions';
 

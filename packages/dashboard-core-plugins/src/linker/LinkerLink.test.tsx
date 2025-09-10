@@ -1,6 +1,8 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Type as FilterType } from '@deephaven/filters';
+import { TestUtils } from '@deephaven/test-utils';
 import LinkerLink from './LinkerLink';
 
 function makeLinkerLink({
@@ -36,6 +38,7 @@ function makeLinkerLink({
 }
 
 it('mounts and renders correct comparison operators for strings', async () => {
+  const user = userEvent.setup();
   const onOperatorChanged = jest.fn();
   const props = {
     startColumnType: 'java.lang.String',
@@ -47,7 +50,7 @@ it('mounts and renders correct comparison operators for strings', async () => {
   const dropdownAndDeleteButton = await screen.findAllByRole('button');
   expect(dropdownAndDeleteButton[0]).toHaveTextContent('a*');
 
-  dropdownAndDeleteButton[0].click();
+  await user.click(dropdownAndDeleteButton[0]);
   const dropdownMenu = await screen.findAllByRole('button');
   expect(dropdownMenu).toHaveLength(8); // includes dropdown and delete button
   expect(dropdownMenu[2]).toHaveTextContent('is exactly');
@@ -57,7 +60,7 @@ it('mounts and renders correct comparison operators for strings', async () => {
   expect(dropdownMenu[6]).toHaveTextContent('starts with');
   expect(dropdownMenu[7]).toHaveTextContent('ends with');
 
-  dropdownMenu[4].click();
+  await user.click(dropdownMenu[4]);
   expect(onOperatorChanged).toHaveBeenCalledWith(
     'LINK_ID',
     FilterType.contains
@@ -71,6 +74,7 @@ it('renders correct symbol for endsWith', async () => {
 });
 
 it('mounts and renders correct comparison operators for numbers', async () => {
+  const user = userEvent.setup();
   const props = {
     x1: 10,
     x2: 10,
@@ -83,7 +87,7 @@ it('mounts and renders correct comparison operators for numbers', async () => {
   const dropdownAndDeleteButton = await screen.findAllByRole('button');
   expect(dropdownAndDeleteButton[0]).toHaveTextContent('!=');
 
-  dropdownAndDeleteButton[0].click();
+  await user.click(dropdownAndDeleteButton[0]);
   const dropdownMenu = await screen.findAllByRole('button');
   expect(dropdownMenu).toHaveLength(8); // includes dropdown and delete button
   expect(dropdownMenu[2]).toHaveTextContent('is equal to');
@@ -95,6 +99,7 @@ it('mounts and renders correct comparison operators for numbers', async () => {
 });
 
 it('mounts and renders correct comparison operators for date/time', async () => {
+  const user = userEvent.setup();
   const props = {
     x1: 10,
     x2: 20,
@@ -107,7 +112,7 @@ it('mounts and renders correct comparison operators for date/time', async () => 
   const dropdownAndDeleteButton = await screen.findAllByRole('button');
   expect(dropdownAndDeleteButton[0]).toHaveTextContent('<');
 
-  dropdownAndDeleteButton[0].click();
+  await user.click(dropdownAndDeleteButton[0]);
   const dropdownMenu = await screen.findAllByRole('button');
   expect(dropdownMenu).toHaveLength(8); // includes dropdown and delete button
   expect(dropdownMenu[2]).toHaveTextContent('date is');
@@ -119,6 +124,7 @@ it('mounts and renders correct comparison operators for date/time', async () => 
 });
 
 it('mounts and renders correct comparison operators for booleans', async () => {
+  const user = userEvent.setup();
   const props = {
     x1: 10,
     x2: 20,
@@ -131,7 +137,7 @@ it('mounts and renders correct comparison operators for booleans', async () => {
   const dropdownAndDeleteButton = await screen.findAllByRole('button');
   expect(dropdownAndDeleteButton[0]).toHaveTextContent('>=');
 
-  dropdownAndDeleteButton[0].click();
+  await user.click(dropdownAndDeleteButton[0]);
   const dropdownMenu = await screen.findAllByRole('button');
   expect(dropdownMenu).toHaveLength(4); // includes dropdown and delete button
   expect(dropdownMenu[2]).toHaveTextContent('is equal to');
@@ -147,17 +153,18 @@ it('returns an empty label for invalid column type', async () => {
 });
 
 it('calls onClick when the link is clicked and onDelete on alt-click and button press', async () => {
+  const user = userEvent.setup();
   const onClick = jest.fn();
   const onDelete = jest.fn();
   makeLinkerLink({ onClick, onDelete });
 
   const linkPath = screen.getByTestId('link-select');
-  fireEvent.click(linkPath);
+  await user.click(linkPath);
   expect(onClick).toHaveBeenCalledTimes(1);
 
-  fireEvent.click(linkPath, { altKey: true });
+  await TestUtils.altClick(user, linkPath);
   expect(onDelete).toHaveBeenCalledTimes(1);
   const dropdownAndDeleteButton = await screen.findAllByRole('button');
-  dropdownAndDeleteButton[1].click();
+  await user.click(dropdownAndDeleteButton[1]);
   expect(onDelete).toHaveBeenCalledTimes(2);
 });

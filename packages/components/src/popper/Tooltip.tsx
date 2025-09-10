@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import Popper, { type PopperOptions, type ReferenceObject } from './Popper';
@@ -255,7 +256,12 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
 
     if (!isShown) {
       this.popper.current?.show();
-      this.setState({ isShown: true });
+      // This is needed for the positioning to work consistently.
+      // Without this, the tooltip sometimes overflows the screen
+      // or ends up in a different position when hovered a second time.
+      flushSync(() => {
+        this.setState({ isShown: true });
+      });
 
       const { interactive } = this.props;
       if (interactive) {

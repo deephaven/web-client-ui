@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { ObjectFetchManagerContext, useObjectFetch } from './useObjectFetch';
 
 it('should resolve the objectFetch when in the context', async () => {

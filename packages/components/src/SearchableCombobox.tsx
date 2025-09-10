@@ -22,7 +22,7 @@ export function SearchableCombobox<TItem, TKey extends Key>({
   ...props
 }: SearchableComboboxProps<TItem, TKey>): JSX.Element {
   const renderItem = useCallback(
-    item => {
+    (item: TItem) => {
       const key = getKey(item);
       const displayText = getItemDisplayText(item);
 

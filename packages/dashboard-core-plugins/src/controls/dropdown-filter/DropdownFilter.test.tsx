@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IrisGridTestUtils } from '@deephaven/iris-grid';
 import DropdownFilter, { type DropdownFilterProps } from './DropdownFilter';
@@ -389,7 +389,7 @@ describe('options when source is selected', () => {
     it('handles call to `clearFilter()` from parent', () => {
       expect(getOption(value).selected).toBe(true);
 
-      containerRef.current?.clearFilter();
+      act(() => containerRef.current?.clearFilter());
 
       values.forEach(v => {
         expect(getOption(v).selected).toBe(false);
@@ -399,12 +399,15 @@ describe('options when source is selected', () => {
     it('handles call to `setFilterState` from parent', () => {
       expect(getOption(value).selected).toBe(true);
 
-      containerRef.current?.setFilterState({
-        name: columns[2].name,
-        type: columns[2].type,
-        value: values[2],
-        isValueShown: false,
-      });
+      act(
+        () =>
+          containerRef.current?.setFilterState({
+            name: columns[2].name,
+            type: columns[2].type,
+            value: values[2],
+            isValueShown: false,
+          })
+      );
 
       jest.runOnlyPendingTimers();
 
@@ -421,11 +424,13 @@ describe('options when source is selected', () => {
     it('handles call to `setFilterState` with undefined values from parent', () => {
       expect(getOption(value).selected).toBe(true);
 
-      containerRef.current?.setFilterState({
-        name: 'FilterSource',
-        type: undefined,
-        value: undefined,
-        isValueShown: undefined,
+      act(() => {
+        containerRef.current?.setFilterState({
+          name: 'FilterSource',
+          type: undefined,
+          value: undefined,
+          isValueShown: undefined,
+        });
       });
 
       jest.runOnlyPendingTimers();

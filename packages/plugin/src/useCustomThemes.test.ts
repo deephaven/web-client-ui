@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useExternalTheme, type ThemeData } from '@deephaven/components';
 import { TestUtils } from '@deephaven/test-utils';
 import { useCustomThemes } from './useCustomThemes';

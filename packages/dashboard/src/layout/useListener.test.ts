@@ -1,6 +1,6 @@
 import { type EventEmitter } from '@deephaven/golden-layout';
 import { TestUtils } from '@deephaven/test-utils';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import useListener from './useListener';
 
 it('should register listener on mount and deregister on unmount', () => {

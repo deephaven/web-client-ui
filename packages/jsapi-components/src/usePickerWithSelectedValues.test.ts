@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { usePickerItemScale } from '@deephaven/components';
 import {
@@ -109,7 +109,8 @@ async function renderOnceAndWait(
     })
   );
 
-  await hookResult.waitForNextUpdate();
+  // Gets rid of "wrap in act" warnings. Likely lets effects flush on mount too
+  await waitFor(() => expect(hookResult.result.current).toBeDefined());
 
   return hookResult;
 }
@@ -226,7 +227,7 @@ it('should memoize results', async () => {
 it.each([undefined, false, true])(
   'should filter viewport by search text after debounce',
   async trimSearchText => {
-    const { result, waitForNextUpdate } = await renderOnceAndWait({
+    const { result } = await renderOnceAndWait({
       trimSearchText,
     });
 
@@ -246,14 +247,14 @@ it.each([undefined, false, true])(
 
     // debouncedSearchText change will trigger another doesColumnValueExist
     // call which will update state once resolved
-    await waitForNextUpdate();
-
-    expect(createSearchTextFilter).toHaveBeenCalledWith(
-      tableUtils,
-      mock.columnName,
-      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText,
-      mock.timeZone
-    );
+    await waitFor(() => {
+      expect(createSearchTextFilter).toHaveBeenCalledWith(
+        tableUtils,
+        mock.columnName,
+        trimSearchText === true ? mock.searchTextTrimmed : mock.searchText,
+        mock.timeZone
+      );
+    });
 
     expect(createSelectedValuesFilter).not.toHaveBeenCalled();
 
@@ -281,7 +282,7 @@ it.each([
     // Setup test with search text already set
     asMock(mock.viewportData.findItem).mockReturnValue(maybeItem);
 
-    const { result, waitForNextUpdate } = await renderOnceAndWait();
+    const { result } = await renderOnceAndWait();
 
     act(() => {
       result.current.onSearchTextChange(mock.searchText);
@@ -290,9 +291,9 @@ it.each([
 
     // debouncedSearchText change will trigger another doesColumnValueExist
     // call which will update state once resolved
-    await waitForNextUpdate();
-
-    expect(result.current.searchText).toEqual(mock.searchText);
+    await waitFor(() => {
+      expect(result.current.searchText).toEqual(mock.searchText);
+    });
 
     jest.clearAllMocks();
     // End setup
@@ -342,9 +343,9 @@ it.each([
 
     // debouncedSearchText change will trigger another doesColumnValueExist
     // call which will update state once resolved
-    await waitForNextUpdate();
-
-    expect(result.current.selectedKey).toBeNull();
+    await waitFor(() => {
+      expect(result.current.selectedKey).toBeNull();
+    });
     expect(result.current.selectedValueMap).toEqual(expectedValueMap);
   }
 );
@@ -377,7 +378,7 @@ describe('Flags', () => {
         async (searchText, listSize) => {
           mockUseViewportData(listSize);
 
-          const { result, waitForNextUpdate } = await renderOnceAndWait({
+          const { result } = await renderOnceAndWait({
             trimSearchText,
           });
 
@@ -402,7 +403,9 @@ describe('Flags', () => {
           // debouncedSearchText change will trigger another doesColumnValueExist
           // call which will update state once resolved
           if (searchTextMaybeTrimmed !== '') {
-            await waitForNextUpdate();
+            await waitFor(() => {
+              expect(result.current.searchText).toEqual(searchText);
+            });
           }
 
           expect(result.current).toMatchObject({
@@ -421,14 +424,12 @@ describe('onAddValues', () => {
   it('should do nothing if given empty values', async () => {
     const { result } = await renderOnceAndWait();
 
-    const initialRenderCount = result.all.length;
     const prevResult = result.current;
 
     act(() => {
       result.current.onAddValues(new Set());
     });
 
-    expect(result.all.length).toEqual(initialRenderCount + 1);
     expect(result.current.selectedValueMap).toBe(prevResult.selectedValueMap);
   });
 
@@ -499,7 +500,9 @@ describe('searchTextExists', () => {
       if (valueExistsIsLoading || isDebouncing) {
         expect(result.current.searchTextExists).toBeNull();
       } else {
-        expect(result.current.searchTextExists).toEqual(valueExists);
+        await waitFor(() =>
+          expect(result.current.searchTextExists).toEqual(valueExists)
+        );
       }
     }
   );
@@ -510,7 +513,9 @@ describe('searchTextExists', () => {
       asMock(tableUtils.doesColumnValueExist).mockResolvedValue(exists);
 
       const { result } = await renderOnceAndWait();
-      expect(result.current.searchTextExists).toEqual(exists);
+      await waitFor(() =>
+        expect(result.current.searchTextExists).toEqual(exists)
+      );
     }
   );
 });

@@ -1,6 +1,5 @@
 /* eslint no-console: "off" */
 import React, { PureComponent } from 'react';
-import type PropTypes from 'prop-types';
 import { ItemList } from '@deephaven/components';
 
 interface ItemListInput {
@@ -22,8 +21,6 @@ class ItemListInput extends PureComponent<
   ItemListInputState
 > {
   static defaultProps: { isMultiSelect: boolean };
-
-  static propTypes: { isMultiSelect: PropTypes.Requireable<boolean> };
 
   constructor(props: ItemListInputProps) {
     super(props);

@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
   type CustomizableWorkspace,
@@ -32,15 +31,6 @@ function StyleGuideInit(props: {
 
   return workspace != null ? <StyleGuide /> : null;
 }
-
-StyleGuideInit.propTypes = {
-  workspace: PropTypes.shape({}),
-  setWorkspace: PropTypes.func.isRequired,
-};
-
-StyleGuideInit.defaultProps = {
-  workspace: null,
-};
 
 const mapStateToProps = (
   state: RootState
