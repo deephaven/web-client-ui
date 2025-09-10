@@ -12,6 +12,7 @@ import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
 import './ConsoleHistoryItem.scss';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
+import ConsoleHistoryItemActions from './ConsoleHistoryItemActions';
 
 const log = Log.module('ConsoleHistoryItem');
 
@@ -24,11 +25,16 @@ interface ConsoleHistoryItemProps {
   // eslint-disable-next-line react/no-unused-prop-types
   supportsType: (type: string) => boolean;
   iconForType: (type: string) => ReactElement;
+  onCommandSubmit: (command: string) => void;
+}
+
+interface ConsoleHistoryItemState {
+  isTooltipVisible: boolean;
 }
 
 class ConsoleHistoryItem extends PureComponent<
   ConsoleHistoryItemProps,
-  Record<string, never>
+  ConsoleHistoryItemState
 > {
   static defaultProps = {
     disabled: false,
@@ -37,8 +43,13 @@ class ConsoleHistoryItem extends PureComponent<
   constructor(props: ConsoleHistoryItemProps) {
     super(props);
 
+    this.state = {
+      isTooltipVisible: false,
+    };
+
     this.handleCancelClick = this.handleCancelClick.bind(this);
     this.handleObjectClick = this.handleObjectClick.bind(this);
+    this.consoleHistoryItemClasses = this.consoleHistoryItemClasses.bind(this);
   }
 
   handleObjectClick(object: dh.ide.VariableDefinition): void {
@@ -56,18 +67,35 @@ class ConsoleHistoryItem extends PureComponent<
     }
   }
 
+  consoleHistoryItemClasses(): string {
+    const { isTooltipVisible } = this.state;
+    const classes = ['console-history-item-command'];
+    // console history items should stay highlighted if the tooltip is opened
+    if (isTooltipVisible) {
+      classes.push('console-history-item-command-tooltip-active');
+    }
+    return classes.join(' ');
+  }
+
   render(): ReactElement {
-    const { disabled, item, language, iconForType } = this.props;
+    const { disabled, item, language, iconForType, onCommandSubmit } =
+      this.props;
     const { disabledObjects, result } = item;
     const hasCommand = item.command != null && item.command !== '';
-
     let commandElement = null;
     if (hasCommand) {
       commandElement = (
-        <div className="console-history-item-command">
+        <div className={this.consoleHistoryItemClasses()}>
           <div className="console-history-gutter">&gt;</div>
           <div className="console-history-content">
             <Code language={language}>{item.command}</Code>
+            <ConsoleHistoryItemActions
+              item={item}
+              onCommandSubmit={onCommandSubmit}
+              handleTooltipVisible={(isVisible: boolean) =>
+                this.setState({ isTooltipVisible: isVisible })
+              }
+            />
           </div>
         </div>
       );
