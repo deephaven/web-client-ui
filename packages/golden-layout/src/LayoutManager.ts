@@ -1049,10 +1049,7 @@ export class LayoutManager extends EventEmitter {
    * @param e The keydown event
    */
   _windowKeydown(e: JQuery.KeyDownEvent) {
-    if (
-      (e.key === 'Escape' || e.key === 'Esc') &&
-      this._maximisedItem !== null
-    ) {
+    if (e.key === 'Escape' && this._maximisedItem !== null) {
       const active = document.activeElement;
       if (
         active &&
