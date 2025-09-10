@@ -67,6 +67,10 @@ class IrisGridTableModel
     return this.table.selectDistinct != null;
   }
 
+  get isOrganizeColumnsAvailable(): boolean {
+    return true;
+  }
+
   get isCustomColumnsAvailable(): boolean {
     return this.table.applyCustomColumns != null;
   }
