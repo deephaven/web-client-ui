@@ -247,8 +247,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     }
 
     const row = this.row(y);
-    assertNotNull(row);
-
     let typeForFormatting = column.type;
 
     // For tree table leaf nodes, use the constituent type for formatting
