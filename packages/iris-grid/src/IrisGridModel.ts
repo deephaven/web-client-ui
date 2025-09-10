@@ -408,6 +408,13 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @returns True if this model supports column groups and moved columns
+   */
+  get isOrganizeColumnsAvailable(): boolean {
+    return false;
+  }
+
+  /**
    * @returns True if this model supports customColumns
    */
   get isCustomColumnsAvailable(): boolean {

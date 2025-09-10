@@ -46,6 +46,7 @@ import {
   BoundedAxisRange,
   isExpandableGridModel,
   isDeletableGridModel,
+  isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -386,6 +387,9 @@ export interface IrisGridState {
 
   // Current ongoing copy operation
   copyOperation: CopyOperation | null;
+
+  // Map of column indexes to their current names
+  columnNameMap: Map<ModelIndex, ColumnName>;
 
   // The filter that is currently being applied. Reset after update is received
   loadingText: string | null;
@@ -791,6 +795,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       focusedFilterBarColumn: null,
       metricCalculator,
       metrics: undefined,
+      columnNameMap: new Map(
+        model.columns.map((col, index) => [index, col.name])
+      ),
 
       partitionConfig:
         partitionConfig ??
@@ -1102,6 +1109,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedOptionItems = memoize(
     (
       isChartBuilderAvailable: boolean,
+      isOrganizeColumnsAvailable: boolean,
       isCustomColumnsAvailable: boolean,
       isFormatColumnsAvailable: boolean,
       isRollupAvailable: boolean,
@@ -1126,11 +1134,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: dhGraphLineUp,
         });
       }
-      optionItems.push({
-        type: OptionType.VISIBILITY_ORDERING_BUILDER,
-        title: 'Organize Columns',
-        icon: dhEye,
-      });
+      if (isOrganizeColumnsAvailable) {
+        optionItems.push({
+          type: OptionType.VISIBILITY_ORDERING_BUILDER,
+          title: 'Organize Columns',
+          icon: dhEye,
+        });
+      }
       if (isFormatColumnsAvailable) {
         optionItems.push({
           type: OptionType.CONDITIONAL_FORMATTING,
@@ -1814,6 +1824,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   rebuildFilters(): void {
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
+
+    if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      log.debug('No filters to rebuild');
+      return;
+    }
+
     const { columns, formatter } = model;
 
     log.debug('Rebuilding filters');
@@ -2483,6 +2499,36 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  toggleExpandColumn(modelIndex: ModelIndex): void {
+    log.debug2('Toggle expand column', modelIndex);
+    const { model } = this.props;
+    if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
+      model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
+    }
+  }
+
+  expandAllColumns(): void {
+    log.debug2('Expand all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.expandAllColumns();
+    }
+  }
+
+  collapseAllColumns(): void {
+    log.debug2('Collapse all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.collapseAllColumns();
+    }
+  }
+
   handleColumnVisibilityChanged(
     modelIndexes: readonly ModelIndex[],
     isVisible: boolean
@@ -2651,6 +2697,42 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
     this.grid?.forceUpdate();
+  }
+
+  /**
+   * Update the user column widths when indexes change after expand/collapse.
+   */
+  updateUserColumnWidths(): void {
+    const { model } = this.props;
+    const { metricCalculator, columnNameMap: prevColumnNameMap } = this.state;
+    const columnNameMap = new Map(
+      model.columns.map((col, index) => [index, col.name])
+    );
+
+    // Map userColumnWidths to column names
+    const userColumnWidths = metricCalculator.getUserColumnWidths();
+    const namedUserColumnWidths = new Map<string, number>();
+    userColumnWidths.forEach((width, modelIndex) => {
+      const name = prevColumnNameMap.get(modelIndex);
+      if (width != null && name != null) {
+        namedUserColumnWidths.set(name, width);
+      }
+      metricCalculator.resetColumnWidth(modelIndex);
+    });
+
+    // Restore the column widths with new indexes
+    namedUserColumnWidths.forEach((width, name) => {
+      const modelIndex = model.getColumnIndexByName(name);
+      if (modelIndex != null) {
+        metricCalculator.setColumnWidth(modelIndex, width);
+      }
+    });
+
+    // We store metrics in both Grid and IrisGrid state, keep them in sync
+    this.setState({
+      metrics: this.grid?.updateMetrics(),
+      columnNameMap,
+    });
   }
 
   toggleSort(columnIndex: VisibleIndex, addToExisting: boolean): void {
@@ -3412,8 +3494,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('custom columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.updateUserColumnWidths();
+
+      // Make sure stopLoading() is called after the updateMetrics call in updateUserColumnWidths,
+      // otherwise IrisGridModelUpdater queues an extra setViewport based on old metrics.
       this.stopLoading();
-      this.grid?.forceUpdate();
     } else {
       this.loadTableState();
     }
@@ -4631,6 +4716,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const optionItems = this.getCachedOptionItems(
       onCreateChart !== undefined && model.isChartBuilderAvailable,
+      model.isOrganizeColumnsAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
       model.isRollupAvailable,
