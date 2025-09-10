@@ -170,6 +170,7 @@ export class LayoutManager extends EventEmitter {
     this._onUnload = this._onUnload.bind(this);
     this._windowBlur = this._windowBlur.bind(this);
     this._windowFocus = this._windowFocus.bind(this);
+    this._windowKeydown = this._windowKeydown.bind(this);
 
     this.config = this._createConfig(config);
     this._originalContainer = container;
@@ -498,6 +499,7 @@ export class LayoutManager extends EventEmitter {
     $(window).off('resize', this._onResize);
     $(window).off('unload beforeunload', this._onUnload);
     $(window).off('blur.lm').off('focus.lm');
+    $(window).off('keydown', this._windowKeydown);
     this.root.callDownwards('_$destroy', [], true);
     this.root.contentItems = [];
     this.tabDropPlaceholder.remove();
@@ -1023,7 +1025,8 @@ export class LayoutManager extends EventEmitter {
     $(window)
       .on('unload beforeunload', this._onUnload)
       .on('blur.lm', this._windowBlur)
-      .on('focus.lm', this._windowFocus);
+      .on('focus.lm', this._windowFocus)
+      .on('keydown', this._windowKeydown);
   }
 
   /**
@@ -1035,6 +1038,34 @@ export class LayoutManager extends EventEmitter {
 
   _windowFocus() {
     this.root.element.removeClass('lm_window_blur');
+  }
+
+  /**
+   * Handles the escape key to close maximized items, as long as the focus isn't within an input.
+   * The escape key has local behaviors in inputs like the Monaco editor or search that we don't
+   * want to react to as they are not captured.
+   *
+   * @private
+   * @param e The keydown event
+   */
+  _windowKeydown(e: JQuery.KeyDownEvent) {
+    if (
+      (e.key === 'Escape' || e.key === 'Esc') &&
+      this._maximisedItem !== null
+    ) {
+      const active = document.activeElement;
+      if (
+        active &&
+        (active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.tagName === 'SELECT' ||
+          (active as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+
+      this._maximisedItem.toggleMaximise();
+    }
   }
 
   /**
