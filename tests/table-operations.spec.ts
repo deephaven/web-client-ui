@@ -241,9 +241,8 @@ test('organize columns', async ({ page }) => {
   });
 
   await test.step('Move Selection Down', async () => {
-    await page
-      .getByRole('button', { name: 'Move selection down' })
-      .click({ clickCount: 2 });
+    await page.getByRole('button', { name: 'Move selection down' }).click();
+    await page.getByRole('button', { name: 'Move selection down' }).click();
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
@@ -429,13 +428,11 @@ test('custom column', async ({ page, browserName }) => {
 
     await waitForLoadingDone(page);
 
-    // TODO: This is disabled due to test failing in CI but not locally. Should
-    // be fixed and re-enabled in #1553.
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
 
-test('rollup rows and aggregrate columns', async ({ page }) => {
+test('rollup rows and aggregate columns', async ({ page }) => {
   await openTableOption(page, 'Rollup Rows');
 
   const stringColumn = page.getByRole('button', { name: 'String' });

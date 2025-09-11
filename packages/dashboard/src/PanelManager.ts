@@ -470,7 +470,6 @@ class PanelManager {
   }
 
   addClosedPanel(glContainer: Container): void {
-    const { root } = this.layout;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config && isReactComponentConfig(config)) {
       const dehydratedConfig = this.dehydrateComponent(
@@ -479,7 +478,7 @@ class PanelManager {
       );
       if (dehydratedConfig != null) {
         (dehydratedConfig as ClosedPanel).parentStackId =
-          LayoutUtils.getStackForConfig(root, config)?.config.id;
+          glContainer.tab?.header.parent.config.id;
         this.closed.push(dehydratedConfig);
       }
     }

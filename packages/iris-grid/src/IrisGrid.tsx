@@ -3278,8 +3278,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
+
+    // We get 2 identical ranges here,
+    // but consolidating in `Grid#moveSelection` causes
+    // deselection to break, so just consolidate here.
+    // This will only update the goto row input for row index
     if (
-      GridRange.rowCount(selectedRanges) === 1 &&
+      GridRange.rowCount(GridRange.consolidate(selectedRanges)) === 1 &&
       selectedRanges[0].startRow != null
     ) {
       this.setState({ gotoRow: `${selectedRanges[0].startRow + 1}` });

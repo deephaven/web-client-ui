@@ -309,7 +309,7 @@ export function ConsolePlugin(
       log.debug('closeFilePanel', fileMetadata);
       const { id: fileId } = fileMetadata;
       if (fileId == null) {
-        log.debug('File ID is null, ignore close event');
+        log.warn('File ID is null, ignore close event');
         return;
       }
       let panelId = null;
