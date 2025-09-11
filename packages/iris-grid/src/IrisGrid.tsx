@@ -194,6 +194,7 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
+import { flushSync } from 'react-dom';
 
 const log = Log.module('IrisGrid');
 
@@ -3462,7 +3463,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           `change moved columns for removed custom columns`,
           newMovedColumns
         );
-        this.setState({ movedColumns: newMovedColumns });
+        flushSync(() => {
+          this.setState({ movedColumns: newMovedColumns });
+        });
       }
       if (!deepEqual(selectDistinctColumns, newSelectDistinctColumns)) {
         log.debug(
@@ -3473,7 +3476,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    this.setState({ customColumns });
+    flushSync(() => {
+      this.setState({ customColumns });
+    });
     if (customColumns.length > 0) {
       // If there are no custom columns, the change handler never fires
       // This causes the loader to stay until canceled by the user

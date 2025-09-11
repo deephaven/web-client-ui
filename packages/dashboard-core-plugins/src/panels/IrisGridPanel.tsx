@@ -105,6 +105,7 @@ import {
   emitLinkPointSelected,
   emitLinkSourceDataSelected,
 } from '../linker/LinkerEvent';
+import { flushSync } from 'react-dom';
 
 const log = Log.module('IrisGridPanel');
 
@@ -817,6 +818,7 @@ export class IrisGridPanel extends PureComponent<
     const panelId = LayoutUtils.getIdFromPanel(this);
     assertNotNull(panelId);
     emitFilterColumnsChanged(glEventHub, panelId, columns);
+    flushSync(() => {});
   }
 
   startModelListening(model: IrisGridModel): void {
