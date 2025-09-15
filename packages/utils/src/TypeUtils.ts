@@ -65,3 +65,17 @@ export type UndoPartial<T> = T extends Partial<infer U> ? U : never;
  * type A = typeof x[keyof typeof x]; // 1 | 2 | 3
  */
 export type ValueOf<T> = T[keyof T];
+
+/**
+ * Removes the index signature from a type.
+ * This can be useful if you want to Omit a key from a type,
+ * but the type has an index signature. Otherwise, the index signature
+ * is the only thing that remains after Omit.
+ */
+export type RemoveIndexSignature<T> = {
+  [K in keyof T as string extends K
+    ? never
+    : number extends K
+    ? never
+    : K]: T[K];
+};
