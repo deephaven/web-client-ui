@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   waitForLoadingDone,
   openTable,
@@ -236,7 +236,7 @@ test('open custom context menu with another custom context menu open', async ({
 }) => {
   await page.goto('');
 
-  await page.getByText('Console').click({ button: 'right' });
+  await page.getByText('Console', { exact: true }).click({ button: 'right' });
   await expect(page.getByText('Close', { exact: true })).toHaveCount(1);
 
   await page
@@ -244,5 +244,5 @@ test('open custom context menu with another custom context menu open', async ({
     .click({ button: 'right', force: true });
   await expect(page.getByText('Close', { exact: true })).toHaveCount(1);
 
-  await page.getByText('Console').click({ force: true });
+  await page.getByText('Console', { exact: true }).click({ force: true });
 });
