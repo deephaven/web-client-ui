@@ -1173,7 +1173,6 @@ class IrisGridTableModelTemplate<
     };
 
     const { columns } = data;
-    console.log(data, columns);
     for (let r = 0; r < data.rows.length; r += 1) {
       const row = data.rows[r];
       const newRow = this.extractViewportRow(row, columns);
@@ -1375,8 +1374,6 @@ class IrisGridTableModelTemplate<
         top,
         bottom
       );
-      console.log('apply viewport', columns?.at(-1));
-      console.trace();
       this.applyBufferedViewport(viewportTop, viewportBottom, columns);
     },
     APPLY_VIEWPORT_THROTTLE,

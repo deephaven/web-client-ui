@@ -152,7 +152,6 @@ function IrisGridModelUpdater({
   );
   useOnChange(
     function updateViewport() {
-      console.log('updating viewport', columns?.at(-1));
       model.setViewport(top, bottom, columns);
     },
     [model, top, bottom, columns]
