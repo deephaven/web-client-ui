@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-18648: Ensure grid panel doesn't crash when Pandas query restarted ([#2528](https://github.com/deephaven/web-client-ui/issues/2528)) ([9c969f0](https://github.com/deephaven/web-client-ui/commit/9c969f03fe27daff543c9dac920a69e7c949331c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

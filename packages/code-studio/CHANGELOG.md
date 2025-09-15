@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- reduce spectrum popover excessive padding ([#2530](https://github.com/deephaven/web-client-ui/issues/2530)) ([53c4d26](https://github.com/deephaven/web-client-ui/commit/53c4d26045c3237b58aaffb8cb069f332b62120c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 **Note:** Version bump only for package @deephaven/code-studio

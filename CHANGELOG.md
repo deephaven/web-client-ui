@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-18648: Ensure grid panel doesn't crash when Pandas query restarted ([#2528](https://github.com/deephaven/web-client-ui/issues/2528)) ([9c969f0](https://github.com/deephaven/web-client-ui/commit/9c969f03fe27daff543c9dac920a69e7c949331c))
+- DH-19948: increase max dashboard tab title width ([#2532](https://github.com/deephaven/web-client-ui/issues/2532)) ([ceda82b](https://github.com/deephaven/web-client-ui/commit/ceda82bca9a998e9565babb8ab435cc90f13c513))
+- Export support logs is not working ([#2531](https://github.com/deephaven/web-client-ui/issues/2531)) ([f2d2317](https://github.com/deephaven/web-client-ui/commit/f2d2317d8c88f82d2ea45bde09b789e2a79ced20))
+- reduce spectrum popover excessive padding ([#2530](https://github.com/deephaven/web-client-ui/issues/2530)) ([53c4d26](https://github.com/deephaven/web-client-ui/commit/53c4d26045c3237b58aaffb8cb069f332b62120c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/web-client-ui
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 ### Bug Fixes
