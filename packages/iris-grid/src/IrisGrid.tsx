@@ -275,20 +275,20 @@ export interface IrisGridContextMenuData {
 }
 
 export interface IrisGridProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   advancedFilters: ReadonlyAdvancedFilterMap;
-  advancedSettings: Map<AdvancedSettingsType, boolean>;
+  advancedSettings: ReadonlyMap<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
   isFilterBarShown: boolean;
   applyInputFiltersOnInit: boolean;
   conditionalFormats: readonly SidebarFormattingRule[];
-  customColumnFormatMap: Map<ColumnName, FormattingRule>;
-  columnAlignmentMap: Map<string, CanvasTextAlign>;
+  customColumnFormatMap: ReadonlyMap<ColumnName, FormattingRule>;
+  columnAlignmentMap: ReadonlyMap<string, CanvasTextAlign>;
+  model: IrisGridModel;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
   customFilters: readonly DhType.FilterCondition[];
-  model: IrisGridModel;
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
   onColumnSelected: (column: DhType.Column) => void;
   onError: (error: unknown) => void;
@@ -308,8 +308,8 @@ export interface IrisGridProps {
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
   settings?: Settings;
-  userColumnWidths: ModelSizeMap;
-  userRowHeights: ModelSizeMap;
+  userColumnWidths: ReadonlyMap<ModelIndex, number>;
+  userRowHeights: ReadonlyMap<ModelIndex, number>;
   onSelectionChanged: (gridRanges: readonly GridRange[]) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
@@ -320,7 +320,7 @@ export interface IrisGridProps {
   isStuckToRight: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  columnSelectionValidator: (value: DhType.Column | null) => boolean;
+  columnSelectionValidator?: (value: DhType.Column | null) => boolean;
   columnAllowedCursor: string;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -333,7 +333,7 @@ export interface IrisGridProps {
 
   showSearchBar: boolean;
   searchValue: string;
-  selectedSearchColumns: readonly ColumnName[];
+  selectedSearchColumns?: readonly ColumnName[];
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -349,7 +349,7 @@ export interface IrisGridProps {
   frozenColumns: readonly ColumnName[];
 
   // Theme override for IrisGridTheme
-  theme: GridThemeType;
+  theme?: GridThemeType;
 
   canToggleSearch: boolean;
 
@@ -480,7 +480,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static loadingSpinnerDelay = 800;
 
   static defaultProps = {
-    children: null,
     advancedFilters: EMPTY_MAP,
     advancedSettings: EMPTY_MAP,
     alwaysFetchColumns: EMPTY_ARRAY,
@@ -515,7 +514,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     isSelectingPartition: false,
     isStuckToBottom: false,
     isStuckToRight: false,
-    columnSelectionValidator: null,
     columnAllowedCursor: 'linker',
     columnNotAllowedCursor: 'linker-not-allowed',
     copyCursor: 'copy',
@@ -523,7 +521,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onlyFetchVisibleColumns: true,
     showSearchBar: false,
     searchValue: '',
-    selectedSearchColumns: null,
     invertSearchColumns: true,
     onContextMenu: (): readonly ResolvableContextAction[] => EMPTY_ARRAY,
     pendingDataMap: EMPTY_MAP,
@@ -538,19 +535,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showNullStrings: true,
       showExtraGroupColumn: true,
       formatter: EMPTY_ARRAY,
-      decimalFormatOptions: {},
-      integerFormatOptions: {},
     },
     canCopy: true,
     canDownloadCsv: true,
-    frozenColumns: null,
-    theme: null,
+    frozenColumns: EMPTY_ARRAY,
     // Do not set a default density prop since we need to know if it overrides the global density setting
     density: undefined,
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
-  };
+  } satisfies Partial<IrisGridProps>;
 
   constructor(props: IrisGridProps) {
     super(props);
@@ -1437,7 +1431,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedTheme = memoize(
     (
       contextTheme: IrisGridThemeType | null,
-      theme: Partial<IrisGridThemeType> | null,
+      theme: Partial<IrisGridThemeType> | undefined,
       isEditable: boolean,
       floatingRowCount: number,
       density: 'compact' | 'regular' | 'spacious'
@@ -2569,7 +2563,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMovedColumnsChanged(model.initialMovedColumns);
     this.handleHeaderGroupsChanged(model.initialColumnHeaderGroups);
     this.setState({
-      frozenColumns: model.layoutHints?.frozenColumns ?? [],
+      frozenColumns: model.layoutHints?.frozenColumns ?? EMPTY_ARRAY,
     });
   }
 
@@ -3662,11 +3656,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // when selectDistinctModel is cleared and the rollupConfig is set on the model.
     this.setState({
       rollupConfig,
-      movedColumns: [],
-      frozenColumns: [],
-      sorts: [],
+      movedColumns: EMPTY_ARRAY,
+      frozenColumns: EMPTY_ARRAY,
+      sorts: EMPTY_ARRAY,
       reverse: false,
-      selectDistinctColumns: [],
+      selectDistinctColumns: EMPTY_ARRAY,
     });
   }
 

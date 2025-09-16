@@ -1174,8 +1174,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         // If it's the exact same single selection, then deselect.
         // For if we click on one cell multiple times.
         return {
-          selectedRanges: [],
-          lastSelectedRanges: [],
+          selectedRanges: EMPTY_ARRAY,
+          lastSelectedRanges: EMPTY_ARRAY,
           cursorColumn: null,
           cursorRow: null,
         };
