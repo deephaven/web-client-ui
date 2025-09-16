@@ -357,7 +357,7 @@ export async function dragComponent(
   target: Locator,
   targetIndicator: Locator,
   offsetY = 0,
-  steps = 50
+  steps = 100
 ): Promise<void> {
   const page = element.page();
   const destinationPos = await target.boundingBox();
@@ -369,7 +369,7 @@ export async function dragComponent(
   await page.mouse.down();
   await page.mouse.move(
     destinationPos.x + destinationPos.width / 2,
-    destinationPos.y + destinationPos.height / 2 + offsetY + 1,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
     {
       steps,
     }
@@ -378,7 +378,10 @@ export async function dragComponent(
   // https://playwright.dev/docs/input#dragging-manually
   await page.mouse.move(
     destinationPos.x + destinationPos.width / 2,
-    destinationPos.y + destinationPos.height / 2 + offsetY
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
   );
 
   await expect(targetIndicator).not.toHaveCount(0);
