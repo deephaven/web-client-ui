@@ -2,11 +2,7 @@ import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';
-import {
-  DragDropContext,
-  Droppable,
-  type DropResult,
-} from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';

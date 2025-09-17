@@ -4,7 +4,7 @@ import {
   Draggable,
   Droppable,
   type DropResult,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsGripper, vsTrash } from '@deephaven/icons';

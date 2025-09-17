@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import classNames from 'classnames';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { type IconDefinition, vsClose } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { NavTabItem } from './NavTabList';
