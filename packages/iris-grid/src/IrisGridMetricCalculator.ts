@@ -1,3 +1,5 @@
+import deepEqual from 'fast-deep-equal';
+import memoizeOne from 'memoize-one';
 import {
   GridMetricCalculator,
   GridMetrics,
@@ -30,29 +32,12 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   // Column widths by name to keep track of columns going in and out of viewport
   userColumnWidthsByName: Map<ColumnName, number> = new Map();
 
-  private cachedModelColumns: readonly dh.Column[] | undefined;
+  // Cached model column names to detect when column map update is necessary
+  private cachedModelColumnNames: readonly ColumnName[] | undefined;
 
-  // constructor(...args: IrisGridMetricCalculatorParameters) {
-  //   super(...args);
-  //   const [config] = args;
-  //   const { model, userColumnWidths } = config;
-
-  //   this.model = model;
-
-  //   // Populate userColumnWidthsByName from index-based userColumnWidths arg
-  //   // and the map of existing column names.
-  //   // We need to persist widths for all columns, even the ones that are not currently present because the model can expand and collapse
-  //   // TODO: this will be problematic for user width persistence since the model can initialize with partial set of columns
-  //   // and populates the rest on model update.
-  //   // TODO: change the arg type to Map<ColumnName, number>?
-  //   this.userColumnWidthsByName = new Map<ColumnName, number>();
-  //   userColumnWidths?.forEach((width, modelIndex) => {
-  //     const name = model.columns[modelIndex]?.name;
-  //     if (name != null) {
-  //       this.userColumnWidthsByName.set(name, width);
-  //     }
-  //   });
-  // }
+  private getCachedCurrentModelColumnNames = memoizeOne(
+    (columns: readonly dh.Column[]) => columns.map(col => col.name)
+  );
 
   /**
    * Updates the user column widths based on the current model state
@@ -73,7 +58,14 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
    * @param model The current IrisGridModel
    */
   private updateColumnWidthsIfNecessary(model: IrisGridModel): void {
-    if (model.columns !== this.cachedModelColumns) {
+    // Comparing model.columns references wouldn't work here because
+    // the reference can change in the model without the actual column definitions changing
+    if (
+      !deepEqual(
+        this.getCachedCurrentModelColumnNames(model.columns),
+        this.cachedModelColumnNames
+      )
+    ) {
       this.resetCalculatedColumnWidths();
       this.updateUserColumnWidths(model);
     }
@@ -116,7 +108,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     // Update column widths if columns in the cached model don't match the current model passed in the state
     this.updateColumnWidthsIfNecessary(model);
 
-    this.cachedModelColumns = model.columns;
+    this.cachedModelColumnNames = model.columns.map(col => col.name);
     return super.getMetrics(state);
   }
 
@@ -128,10 +120,10 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   setColumnWidth(column: number, size: number): void {
     super.setColumnWidth(column, size);
     assertNotNull(
-      this.cachedModelColumns,
+      this.cachedModelColumnNames,
       'setColumnWidth should be called after getMetrics'
     );
-    const name = this.cachedModelColumns[column]?.name;
+    const name = this.cachedModelColumnNames[column];
     if (name != null) {
       this.userColumnWidthsByName.set(name, size);
       trimMap(this.userColumnWidthsByName);
@@ -145,10 +137,10 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   resetColumnWidth(column: number): void {
     super.resetColumnWidth(column);
     assertNotNull(
-      this.cachedModelColumns,
+      this.cachedModelColumnNames,
       'resetColumnWidth should be called after getMetrics'
     );
-    const name = this.cachedModelColumns[column]?.name;
+    const name = this.cachedModelColumnNames[column];
     if (name != null) {
       this.userColumnWidthsByName.delete(name);
     }
