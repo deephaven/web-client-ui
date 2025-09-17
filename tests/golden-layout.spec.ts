@@ -11,6 +11,11 @@ test.describe('tests golden-layout operations', () => {
     page = await browser.newPage();
     await page.goto('');
 
+    // If the new layout is imported within 1 second of the page load
+    // it causes the original layout to be applied due to a redux update
+    // on DashboardLayout unmount and React 18 batching
+    await page.waitForTimeout(1100);
+
     // load a custom layout for the tests
     await page.getByTestId('app-main-panels-button').click();
     // start listener before click
