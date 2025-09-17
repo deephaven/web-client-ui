@@ -34,7 +34,6 @@ import {
   GridMouseHandler,
   GridRange,
   GridRangeIndex,
-  GridThemeType,
   GridUtils,
   KeyHandler,
   ModelIndex,
@@ -125,7 +124,10 @@ import {
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
-import IrisGridMetricCalculator from './IrisGridMetricCalculator';
+import IrisGridMetricCalculator, {
+  getColumnNameMap,
+  IrisGridMetricState,
+} from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
 import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
@@ -345,7 +347,7 @@ export interface IrisGridProps {
   frozenColumns: readonly ColumnName[];
 
   // Theme override for IrisGridTheme
-  theme: GridThemeType;
+  theme: Partial<IrisGridThemeType> & Record<string, unknown>;
 
   canToggleSearch: boolean;
 
@@ -387,9 +389,6 @@ export interface IrisGridState {
 
   // Current ongoing copy operation
   copyOperation: CopyOperation | null;
-
-  // Map of column indexes to their current names
-  columnNameMap: Map<ModelIndex, ColumnName>;
 
   // The filter that is currently being applied. Reset after update is received
   loadingText: string | null;
@@ -795,9 +794,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       focusedFilterBarColumn: null,
       metricCalculator,
       metrics: undefined,
-      columnNameMap: new Map(
-        model.columns.map((col, index) => [index, col.name])
-      ),
 
       partitionConfig:
         partitionConfig ??
@@ -1461,6 +1457,27 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getKeyHandlers(): readonly KeyHandler[] {
     const { keyHandlers } = this.props;
     return this.getCachedKeyHandlers(keyHandlers);
+  }
+
+  getMetricState(): IrisGridMetricState | undefined {
+    const gridMetricState = this.grid?.getMetricState();
+    if (gridMetricState == null) {
+      return undefined;
+    }
+    const { isFilterBarShown, advancedFilters, quickFilters, sorts, reverse } =
+      this.state;
+    const { model } = this.props;
+
+    return {
+      ...gridMetricState,
+      model,
+      theme: this.getTheme(),
+      isFilterBarShown,
+      advancedFilters,
+      quickFilters,
+      sorts,
+      reverse,
+    };
   }
 
   getCachedMouseHandlers = memoize(
@@ -2417,7 +2434,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
-      const metricState = this.grid?.getMetricState();
+      const metricState = this.getMetricState();
       assertNotNull(metricState);
       const newLeft = metricCalculator.getLastLeft(
         metricState,
@@ -2559,12 +2576,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleColumnVisibilityReset(): void {
-    const { metricCalculator, metrics } = this.state;
+    const { metricCalculator } = this.state;
     const { model } = this.props;
-    assertNotNull(metrics);
-    for (let i = 0; i < metrics.columnCount; i += 1) {
-      metricCalculator.resetColumnWidth(i);
-    }
+    metricCalculator.resetAllColumnWidths();
     this.handleMovedColumnsChanged(model.initialMovedColumns);
     this.handleHeaderGroupsChanged(model.initialColumnHeaderGroups);
     this.setState({
@@ -2700,38 +2714,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Update the user column widths when indexes change after expand/collapse.
+   * Updates grid metrics after model columns have changed
+   * to keep Grid and IrisGrid metrics in sync since metrics are stored in both places.
    */
-  updateUserColumnWidths(): void {
-    const { model } = this.props;
-    const { metricCalculator, columnNameMap: prevColumnNameMap } = this.state;
-    const columnNameMap = new Map(
-      model.columns.map((col, index) => [index, col.name])
-    );
-
-    // Map userColumnWidths to column names
-    const userColumnWidths = metricCalculator.getUserColumnWidths();
-    const namedUserColumnWidths = new Map<string, number>();
-    userColumnWidths.forEach((width, modelIndex) => {
-      const name = prevColumnNameMap.get(modelIndex);
-      if (width != null && name != null) {
-        namedUserColumnWidths.set(name, width);
-      }
-      metricCalculator.resetColumnWidth(modelIndex);
-    });
-
-    // Restore the column widths with new indexes
-    namedUserColumnWidths.forEach((width, name) => {
-      const modelIndex = model.getColumnIndexByName(name);
-      if (modelIndex != null) {
-        metricCalculator.setColumnWidth(modelIndex, width);
-      }
-    });
-
-    // We store metrics in both Grid and IrisGrid state, keep them in sync
+  updateMetrics(): void {
     this.setState({
       metrics: this.grid?.updateMetrics(),
-      columnNameMap,
     });
   }
 
@@ -3491,12 +3479,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleCustomColumnsChanged(): void {
-    log.debug('custom columns changed');
+    log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
-      this.updateUserColumnWidths();
+      this.updateMetrics();
 
-      // Make sure stopLoading() is called after the updateMetrics call in updateUserColumnWidths,
+      // Make sure stopLoading() is called after the updateMetrics call,
       // otherwise IrisGridModelUpdater queues an extra setViewport based on old metrics.
       this.stopLoading();
     } else {

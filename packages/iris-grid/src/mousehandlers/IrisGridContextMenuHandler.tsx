@@ -273,7 +273,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         this.irisGrid.toggleFilterBar(visibleIndex);
       },
-      // TODO: confirm with Don
       disabled: !model.isFilterable(modelIndex),
     });
     actions.push({
