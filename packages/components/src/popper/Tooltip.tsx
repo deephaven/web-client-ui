@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import Popper, { type PopperOptions, type ReferenceObject } from './Popper';
@@ -255,13 +254,12 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     this.stopTimer();
 
     if (!isShown) {
-      this.popper.current?.show();
+      // this.popper.current?.show();
       // This is needed for the positioning to work consistently.
       // Without this, the tooltip sometimes overflows the screen
       // or ends up in a different position when hovered a second time.
-      flushSync(() => {
-        this.setState({ isShown: true });
-      });
+
+      this.setState({ isShown: true });
 
       const { interactive } = this.props;
       if (interactive) {
@@ -324,6 +322,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
           onExited={this.handleExited}
           interactive={interactive}
           referenceObject={referenceObject}
+          isShown={isShown}
         >
           <div className="tooltip-content"> {isShown && children}</div>
         </Popper>
