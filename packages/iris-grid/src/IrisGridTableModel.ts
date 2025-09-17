@@ -195,6 +195,11 @@ class IrisGridTableModel
 
   updateFrozenColumns(columns: ColumnName[]): void {
     this.userFrozenColumns = columns;
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+        detail: this.columns,
+      })
+    );
   }
 
   get partitionColumns(): readonly DhType.Column[] {
