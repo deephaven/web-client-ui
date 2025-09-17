@@ -16,7 +16,7 @@
  */
 
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
@@ -85,8 +85,19 @@ class Popper extends Component<PopperProps, PopperState> {
     };
   }
 
-  componentDidMount(): void {
-    this.initPopper();
+  componentDidUpdate(prevProps: PopperProps): void {
+    const { isShown } = this.props;
+
+    if (prevProps.isShown !== isShown) {
+      if (isShown) {
+        cancelAnimationFrame(this.rAF);
+        this.rAF = window.requestAnimationFrame(() => {
+          this.show();
+        });
+      } else {
+        this.hide();
+      }
+    }
   }
 
   componentWillUnmount(): void {
@@ -164,7 +175,9 @@ class Popper extends Component<PopperProps, PopperState> {
     });
 
     // Needed to make the animation work
-    this.setState({ popper });
+    flushSync(() => {
+      this.setState({ popper });
+    });
   }
 
   destroyPopper(updateState = true): void {
@@ -193,7 +206,9 @@ class Popper extends Component<PopperProps, PopperState> {
     this.initPopper();
 
     // Needed to make the animation work
-    this.setState({ show: true });
+    flushSync(() => {
+      this.setState({ show: true });
+    });
   }
 
   hide(): void {
