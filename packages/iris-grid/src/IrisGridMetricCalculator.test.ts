@@ -2,7 +2,6 @@ import { GridMetricCalculator } from '@deephaven/grid';
 import { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import {
-  getColumnNameMap,
   IrisGridMetricCalculator,
   type IrisGridMetricState,
 } from './IrisGridMetricCalculator';
@@ -49,9 +48,7 @@ describe('IrisGridMetricCalculator', () => {
         return index !== -1 ? index : undefined;
       },
     });
-    calculator = new IrisGridMetricCalculator({
-      columnNameMap: getColumnNameMap(model),
-    });
+    calculator = new IrisGridMetricCalculator();
     state = makeGridMetricState(model);
   });
 
@@ -60,22 +57,14 @@ describe('IrisGridMetricCalculator', () => {
 
     expect(model.getColumnIndexByName('Column1')).toBe(0);
 
-    calculator.setColumnWidth(
-      state,
-      model.getColumnIndexByName('Column1'),
-      100
-    );
-    calculator.setColumnWidth(
-      state,
-      model.getColumnIndexByName('Column2'),
-      200
-    );
-    calculator.setColumnWidth(
-      state,
-      model.getColumnIndexByName('Column3'),
-      300
-    );
+    // setColumnWidth requires getMetrics call
+    calculator.getMetrics(state);
+    calculator.setColumnWidth(model.getColumnIndexByName('Column1'), 100);
+    calculator.setColumnWidth(model.getColumnIndexByName('Column2'), 200);
+    calculator.setColumnWidth(model.getColumnIndexByName('Column3'), 300);
 
+    // Calling getMetrics to update user column widths
+    calculator.getMetrics(state);
     expect(calculator.getUserColumnWidths().size).toBe(3);
 
     // Delete Column2
@@ -83,6 +72,7 @@ describe('IrisGridMetricCalculator', () => {
 
     expect(state.model.columns[1].name).toBe('Column3');
 
+    calculator.getMetrics(state);
     expect([...calculator.getUserColumnWidths().entries()]).toEqual([
       [0, 100],
       [1, 300],
@@ -98,6 +88,7 @@ describe('IrisGridMetricCalculator', () => {
       ...columns.slice(1),
     ];
 
+    calculator.getMetrics(state);
     expect([...calculator.getUserColumnWidths().entries()]).toEqual([
       [0, 100],
       [1, 200],
@@ -106,20 +97,13 @@ describe('IrisGridMetricCalculator', () => {
   });
 
   it('setColumnWidth updates user column width', () => {
-    calculator.setColumnWidth(
-      state,
-      model.getColumnIndexByName('Column1'),
-      100
-    );
+    calculator.getMetrics(state);
+    calculator.setColumnWidth(model.getColumnIndexByName('Column1'), 100);
 
     expect(calculator.getUserColumnWidths().size).toBe(1);
     expect(calculator.getUserColumnWidths().get(0)).toBe(100);
 
-    calculator.setColumnWidth(
-      state,
-      model.getColumnIndexByName('Column1'),
-      150
-    );
+    calculator.setColumnWidth(model.getColumnIndexByName('Column1'), 150);
     expect(calculator.getUserColumnWidths().get(0)).toBe(150);
   });
 });

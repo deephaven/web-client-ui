@@ -125,7 +125,6 @@ import {
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator, {
-  getColumnNameMap,
   IrisGridMetricState,
 } from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
