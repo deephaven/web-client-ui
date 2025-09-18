@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Bug Fixes
+
+- IrisGridModelUpdater causes "cannot update during an existing state transition" warning ([#2536](https://github.com/deephaven/web-client-ui/issues/2536)) ([ee2ba42](https://github.com/deephaven/web-client-ui/commit/ee2ba42573f76fb8373dd6c0d1de290e3a5990b4))
+
 ## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
 
 **Note:** Version bump only for package @deephaven/iris-grid
