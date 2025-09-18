@@ -2,7 +2,7 @@ import React, { type ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
 import {
   type ExpandableColumnGridModel,

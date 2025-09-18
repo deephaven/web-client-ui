@@ -42,7 +42,7 @@ import type IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import ColumnHeaderGroup, {
-  ColumnHeaderGroupConfig,
+  type ColumnHeaderGroupConfig,
 } from './ColumnHeaderGroup';
 import {
   isPartitionedGridModelProvider,

@@ -1,11 +1,11 @@
 import { GridMetricCalculator } from '@deephaven/grid';
-import { dh } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { type dh } from '@deephaven/jsapi-types';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   IrisGridMetricCalculator,
   type IrisGridMetricState,
 } from './IrisGridMetricCalculator';
-import IrisGridModel from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 
 const { createMockProxy } = TestUtils;
 

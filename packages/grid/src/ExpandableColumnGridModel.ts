@@ -1,5 +1,5 @@
-import GridModel from './GridModel';
-import { ModelIndex } from './GridMetrics';
+import type GridModel from './GridModel';
+import { type ModelIndex } from './GridMetrics';
 
 export function isExpandableColumnGridModel(
   model: GridModel

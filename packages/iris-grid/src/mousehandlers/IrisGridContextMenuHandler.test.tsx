@@ -1,16 +1,20 @@
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
-  ExpandableColumnGridModel,
-  GridMetrics,
+  type ExpandableColumnGridModel,
+  type GridMetrics,
   type GridPoint,
   type ModelIndex,
 } from '@deephaven/grid';
-import { dh } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { ContextActionUtils } from '@deephaven/components';
 import IrisGridContextMenuHandler from './IrisGridContextMenuHandler';
-import IrisGrid, { IrisGridProps, IrisGridState } from '../IrisGrid';
-import IrisGridModel from '../IrisGridModel';
-import { IrisGridThemeType } from '../IrisGridTheme';
+import {
+  type default as IrisGrid,
+  type IrisGridProps,
+  type IrisGridState,
+} from '../IrisGrid';
+import type IrisGridModel from '../IrisGridModel';
+import { type IrisGridThemeType } from '../IrisGridTheme';
 
 const { createMockProxy } = TestUtils;
 
@@ -38,6 +42,9 @@ function makeMockModel({
     columns,
     isColumnExpandable: jest.fn(() => true),
     isColumnExpanded: jest.fn(() => false),
+    getColumnIndexByName: jest.fn((name: string) =>
+      columns.find(col => col.name === name)
+    ),
   });
 }
 
@@ -61,6 +68,7 @@ function makeMockIrisGrid({
       }),
       advancedFilters: new Map(),
       quickFilters: new Map(),
+      columnAlignmentMap: new Map(),
     }),
     getTheme: jest.fn().mockReturnValue(theme),
   });
