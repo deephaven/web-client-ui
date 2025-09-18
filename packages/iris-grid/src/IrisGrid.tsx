@@ -183,6 +183,7 @@ import {
   type AdvancedFilterOptions,
   type ColumnName,
   type InputFilter,
+  type IrisGridStateOverride,
   type OperationMap,
   type OptionItem,
   type PendingDataErrorMap,
@@ -1401,6 +1402,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedStateOverride = memoize(
     (
+      model: IrisGridModel,
+      theme: IrisGridThemeType,
       hoverSelectColumn: GridRangeIndex,
       isFilterBarShown: boolean,
       isSelectingColumn: boolean,
@@ -1411,7 +1414,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
-    ): Partial<IrisGridState & IrisGridProps> => ({
+    ): IrisGridStateOverride => ({
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
@@ -1499,19 +1504,36 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (gridMetricState == null) {
       return undefined;
     }
-    const { isFilterBarShown, advancedFilters, quickFilters, sorts, reverse } =
-      this.state;
-    const { model } = this.props;
-
-    return {
-      ...gridMetricState,
-      model,
-      theme: this.getTheme(),
-      isFilterBarShown,
+    const {
       advancedFilters,
+      hoverSelectColumn,
+      isFilterBarShown,
+      isMenuShown,
+      loadingScrimProgress,
       quickFilters,
       sorts,
       reverse,
+      rollupConfig,
+    } = this.state;
+
+    const { model, isSelectingColumn } = this.props;
+
+    return {
+      ...gridMetricState,
+      ...this.getCachedStateOverride(
+        model,
+        this.getTheme(),
+        hoverSelectColumn,
+        isFilterBarShown,
+        isSelectingColumn,
+        loadingScrimProgress,
+        quickFilters,
+        advancedFilters,
+        sorts,
+        reverse,
+        rollupConfig,
+        isMenuShown
+      ),
     };
   }
 
@@ -4545,6 +4567,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const userColumnWidths = metricCalculator.getUserColumnWidths();
     const stateOverride = this.getCachedStateOverride(
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,

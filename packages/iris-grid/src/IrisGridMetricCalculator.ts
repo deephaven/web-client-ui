@@ -11,22 +11,9 @@ import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import type IrisGridModel from './IrisGridModel';
-import { type IrisGridThemeType } from './IrisGridTheme';
-import {
-  type ColumnName,
-  type ReadonlyAdvancedFilterMap,
-  type ReadonlyQuickFilterMap,
-} from './CommonTypes';
+import { type IrisGridStateOverride, type ColumnName } from './CommonTypes';
 
-export interface IrisGridMetricState extends GridMetricState {
-  model: IrisGridModel;
-  theme: IrisGridThemeType;
-  isFilterBarShown: boolean;
-  advancedFilters: ReadonlyAdvancedFilterMap;
-  quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly dh.Sort[];
-  reverse: boolean;
-}
+export type IrisGridMetricState = GridMetricState & IrisGridStateOverride;
 
 export class IrisGridMetricCalculator extends GridMetricCalculator {
   // Column widths by name to keep track of columns going in and out of viewport
