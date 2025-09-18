@@ -100,16 +100,15 @@ test.describe('console scroll tests', () => {
       state: 'attached',
     });
 
-    // Wait for the scroll to complete, since it starts on the next available animation frame
-    await page.waitForTimeout(500);
-
     // Expect the console to be scrolled to the bottom
-    const scrollPane = await scrollPanelLocator(page);
-    expect(
-      await scrollPane.evaluate(el =>
-        Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+    const scrollPane = scrollPanelLocator(page);
+    expect
+      .poll(() =>
+        scrollPane.evaluate(el =>
+          Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+        )
       )
-    ).toBeLessThanOrEqual(0);
+      .toBeLessThanOrEqual(0);
   });
 
   test('scrolls to the bottom when focus changed when command executed', async () => {
@@ -133,14 +132,13 @@ test.describe('console scroll tests', () => {
     // Switch back to the console, and expect it to be scrolled to the bottom
     await panelTabLocator(page, 'Console').click();
 
-    // Wait for the scroll to complete, since it starts on the next available animation frame
-    await page.waitForTimeout(500);
-
-    const scrollPane = await scrollPanelLocator(page);
-    expect(
-      await scrollPane.evaluate(el =>
-        Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+    const scrollPane = scrollPanelLocator(page);
+    expect
+      .poll(() =>
+        scrollPane.evaluate(el =>
+          Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
+        )
       )
-    ).toBeLessThanOrEqual(0);
+      .toBeLessThanOrEqual(0);
   });
 });
