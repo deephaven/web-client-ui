@@ -30,7 +30,7 @@ export interface IrisGridMetricState extends GridMetricState {
 
 export class IrisGridMetricCalculator extends GridMetricCalculator {
   // Column widths by name to keep track of columns going in and out of viewport
-  userColumnWidthsByName: Map<ColumnName, number> = new Map();
+  private userColumnWidthsByName: Map<ColumnName, number> = new Map();
 
   // Cached model column names to detect when the column width map update is necessary
   private cachedModelColumnNames: readonly ColumnName[] | undefined;
