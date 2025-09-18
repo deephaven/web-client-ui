@@ -137,7 +137,7 @@ test('select distinct values', async ({ page }) => {
 });
 
 test('search', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Search Bar').click();
+  await page.getByText('Search Bar').click();
 
   const searchBar = page.getByTestId('cross-column-search');
   await expect(searchBar).toHaveCount(1);
@@ -634,8 +634,8 @@ test('advanced settings', async ({ page }) => {
 
     await openTableOption(page, 'Advanced Settings');
     await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from a control'
+      .getByText(
+        'Clear current table filters before applying new filters from a control'
       )
       .click();
     await page.getByTestId('btn-page-close').click();
@@ -677,8 +677,8 @@ test('advanced settings', async ({ page }) => {
 
     await openTableOption(page, 'Advanced Settings');
     await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from an incoming link filter'
+      .getByText(
+        'Clear current table filters before applying new filters from an incoming link filter'
       )
       .click();
     await page.getByTestId('btn-page-close').click();

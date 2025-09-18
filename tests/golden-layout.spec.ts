@@ -185,6 +185,7 @@ test('reopen last closed panel', async ({ page }) => {
     test.step('Close panel copies', async () => {
       await expect(page.getByLabel('Close tab')).toHaveCount(4);
       await page.getByLabel('Close tab').nth(3).click();
+      await page.waitForTimeout(200);
       await page.getByLabel('Close tab').nth(1).click();
       await expect(page.getByLabel('Close tab')).toHaveCount(2);
     });
