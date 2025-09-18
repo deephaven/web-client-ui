@@ -39,6 +39,25 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     (columns: readonly dh.Column[]) => columns.map(col => col.name)
   );
 
+  private updateCalculatedColumnWidths(model: IrisGridModel): void {
+    assertNotNull(this.cachedModelColumnNames);
+    const calculatedColumnWidthsByName = new Map<ColumnName, number>();
+    this.cachedModelColumnNames.forEach((name, index) => {
+      const prevColumnWidth = this.calculatedColumnWidths.get(index);
+      if (prevColumnWidth != null) {
+        calculatedColumnWidthsByName.set(name, prevColumnWidth);
+      }
+    });
+    this.resetCalculatedColumnWidths();
+    calculatedColumnWidthsByName.forEach((width, name) => {
+      const index = model.getColumnIndexByName(name);
+      if (index != null) {
+        this.calculatedColumnWidths.set(index, width);
+      }
+    });
+    trimMap(this.calculatedColumnWidths);
+  }
+
   /**
    * Updates the user column widths based on the current model state
    * @param model The current IrisGridModel
@@ -61,14 +80,17 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     // Comparing model.columns references wouldn't work here because
     // the reference can change in the model without the actual column definitions changing
     if (
+      this.cachedModelColumnNames != null &&
       !deepEqual(
         this.getCachedCurrentModelColumnNames(model.columns),
         this.cachedModelColumnNames
       )
     ) {
-      this.resetCalculatedColumnWidths();
+      // Preserve column widths when possible to minimize visual shifts in the grid layout
+      this.updateCalculatedColumnWidths(model);
       this.updateUserColumnWidths(model);
     }
+    this.cachedModelColumnNames = model.columns.map(col => col.name);
   }
 
   getGridY(state: IrisGridMetricState): number {
@@ -108,7 +130,6 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     // Update column widths if columns in the cached model don't match the current model passed in the state
     this.updateColumnWidthsIfNecessary(model);
 
-    this.cachedModelColumnNames = model.columns.map(col => col.name);
     return super.getMetrics(state);
   }
 
