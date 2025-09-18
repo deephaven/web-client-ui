@@ -32,7 +32,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   // Column widths by name to keep track of columns going in and out of viewport
   userColumnWidthsByName: Map<ColumnName, number> = new Map();
 
-  // Cached model column names to detect when column map update is necessary
+  // Cached model column names to detect when the column width map update is necessary
   private cachedModelColumnNames: readonly ColumnName[] | undefined;
 
   private getCachedCurrentModelColumnNames = memoizeOne(
@@ -99,7 +99,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
-   * Gets the metrics for the current state. This method has to be called to update cachedModelColumns on model columns change.
+   * Gets the metrics for the current state. This method has to be called before setColumnSize or resetColumnSize.
    * @param state The current IrisGridMetricState
    * @returns The metrics for the current state
    */
@@ -155,8 +155,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
-   * Gets the user column widths for the current state
-   * @param state The current IrisGridMetricState
+   * Gets the user column widths
    * @returns A map of user column widths
    */
   getUserColumnWidths(): ModelSizeMap {

@@ -94,6 +94,7 @@ export async function openTable(
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
+    await expect(page.locator('.iris-panel-scrim-background')).toHaveCount(0);
     await expect(page.locator('.grid-wrapper')).toHaveCount(panelCount + 1);
   }
 }
