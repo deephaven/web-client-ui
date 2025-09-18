@@ -1,38 +1,10 @@
 import React from 'react';
-import TestRenderer from 'react-test-renderer';
-import { waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { TestUtils } from '@deephaven/test-utils';
+import ContextActions from './ContextActions';
 import ContextActionUtils from './ContextActionUtils';
 import ContextMenuRoot from './ContextMenuRoot';
-
-let spy: jest.SpyInstance;
-beforeEach(() => {
-  spy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
-    // mock request animation frame
-    // see https://github.com/deephaven/web-client-ui/issues/508
-    // only safe to mock like this if RAF is non-recursive
-    cb(0);
-    return 0;
-  });
-});
-
-afterEach(() => {
-  spy.mockRestore();
-});
-
-type ContextMenuMock = {
-  addEventListener: jest.Mock<void>;
-  removeEventListener: jest.Mock<void>;
-  getBoundingClientRect: jest.Mock<{
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  }>;
-  focus: jest.Mock<void>;
-  setAttribute: jest.Mock<void>;
-  offsetParent: ContextMenuMock | null;
-  parentElement: ContextMenuMock | null;
-};
 
 const TEST_MENU_1 = [
   { title: 'Test1' },
@@ -40,166 +12,73 @@ const TEST_MENU_1 = [
   { title: 'Test3' },
 ];
 
-function contextMenuMock(
-  mock: ContextMenuMock,
-  element: JSX.Element
-): ContextMenuMock | null {
-  if (element.props != null && element.props.className != null) {
-    if (element.props.className.indexOf('context-menu') !== -1) {
-      return mock;
-    }
-  }
-
-  return null;
-}
-
-function DEFAULT_MOCK(mockParent = true): ContextMenuMock {
-  return {
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    getBoundingClientRect: jest.fn(() => ({
-      top: 0,
-      left: 0,
-      width: 0,
-      height: 0,
-    })),
-    focus: jest.fn(),
-    offsetParent: mockParent ? DEFAULT_MOCK(false) : null,
-    parentElement: mockParent ? DEFAULT_MOCK(false) : null,
-    setAttribute: jest.fn(),
-  };
-}
-
-it('renders without crashing', () => {
-  const mock = DEFAULT_MOCK();
-
-  const tree = TestRenderer.create(
-    <div>
+it('renders without crashing', async () => {
+  render(
+    <>
+      <ContextActions actions={TEST_MENU_1} />
       <ContextMenuRoot />
-    </div>,
-    {
-      createNodeMock: contextMenuMock.bind(this, mock),
-    }
+    </>
   );
-
-  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement?.addEventListener.mock.calls[0][0]).toBe(
-    'contextmenu'
-  );
-  expect(mock.parentElement?.addEventListener.mock.calls[0][1]).not.toBeNull();
-  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(0);
-
-  expect(tree).toMatchSnapshot();
-
-  tree.unmount();
-
-  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(1);
 });
 
-it('handles the context menu event on the parent, renders an array of menu items', () => {
-  const mock = DEFAULT_MOCK();
+it('handles the context menu event on the parent, renders an array of menu items', async () => {
+  const user = userEvent.setup();
 
-  const tree = TestRenderer.create(
-    <div>
+  const menu = render(
+    <>
+      <ContextActions actions={TEST_MENU_1} />
       <ContextMenuRoot />
-    </div>,
-    {
-      createNodeMock: contextMenuMock.bind(this, mock),
-    }
+    </>
   );
 
-  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement?.addEventListener.mock.calls[0][0]).toBe(
-    'contextmenu'
-  );
-  expect(mock.parentElement?.addEventListener.mock.calls[0][1]).not.toBeNull();
-  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(0);
-
-  expect(tree.root.findAllByType('button').length).toBe(0);
-
-  expect(tree).toMatchSnapshot();
-
-  const mockEvent = { preventDefault: jest.fn(), contextActions: TEST_MENU_1 };
-  const handleContextMenu =
-    mock.parentElement?.addEventListener.mock.calls[0][1];
-  handleContextMenu(mockEvent);
-
-  expect(tree.root.findAllByType('button').length).toBe(TEST_MENU_1.length);
-
-  tree.unmount();
-
-  expect(mock.parentElement?.addEventListener.mock.calls.length).toBe(1);
-  expect(mock.parentElement?.removeEventListener.mock.calls.length).toBe(1);
+  expect(menu.queryAllByRole('button').length).toBe(0);
+  await TestUtils.rightClick(user, menu.container);
+  expect(menu.queryAllByRole('button').length).toBe(TEST_MENU_1.length);
 });
 
 it('renders a promise returning menu items properly', async () => {
-  const mock = DEFAULT_MOCK();
+  const user = userEvent.setup();
   const promise = Promise.resolve(TEST_MENU_1);
-
-  const tree = TestRenderer.create(
-    <div>
+  const menu = render(
+    <>
+      <ContextActions actions={[...TEST_MENU_1, promise]} />
       <ContextMenuRoot />
-    </div>,
-    {
-      createNodeMock: contextMenuMock.bind(this, mock),
-    }
+    </>
   );
 
-  const mockEvent = { preventDefault: jest.fn(), contextActions: [promise] };
-  const handleContextMenu =
-    mock.parentElement?.addEventListener.mock.calls[0][1];
-  handleContextMenu(mockEvent);
-
-  await waitFor(() =>
-    expect(tree.root.findAllByType('button').length).toBe(TEST_MENU_1.length)
-  );
-  expect(tree).toMatchSnapshot();
+  expect(menu.queryAllByRole('button').length).toBe(0);
+  await TestUtils.rightClick(user, menu.container);
+  expect(menu.queryAllByRole('button').length).toBe(TEST_MENU_1.length * 2);
 });
 
-it('renders an empty menu for a rejected promise', () => {
-  const mock = DEFAULT_MOCK();
-  const promise = Promise.reject();
-
-  const tree = TestRenderer.create(
-    <div>
+it('renders an empty menu for a rejected promise', async () => {
+  const user = userEvent.setup();
+  const promise = () => Promise.reject();
+  const menu = render(
+    <>
+      <ContextActions actions={[...TEST_MENU_1, promise]} />
       <ContextMenuRoot />
-    </div>,
-    {
-      createNodeMock: contextMenuMock.bind(this, mock),
-    }
+    </>
   );
 
-  const mockEvent = { preventDefault: jest.fn(), contextActions: [promise] };
-  const handleContextMenu =
-    mock.parentElement?.addEventListener.mock.calls[0][1];
-  handleContextMenu(mockEvent);
+  await TestUtils.rightClick(user, menu.container);
 
-  expect(tree.root.findAllByType('button').length).toBe(0);
-  expect(tree).toMatchSnapshot();
+  expect(menu.queryAllByRole('button').length).toBe(TEST_MENU_1.length);
 });
 
-it('renders a menu from a promise returned from a function', () => {
-  const mock = DEFAULT_MOCK();
-  const promise = Promise.resolve([]);
-  const fn = () => promise;
-
-  const tree = TestRenderer.create(
-    <div>
+it('renders a menu from a promise returned from a function', async () => {
+  const user = userEvent.setup();
+  const promise = Promise.resolve(TEST_MENU_1);
+  const menu = render(
+    <>
+      <ContextActions actions={() => promise} />
       <ContextMenuRoot />
-    </div>,
-    {
-      createNodeMock: contextMenuMock.bind(this, mock),
-    }
+    </>
   );
 
-  const mockEvent = { preventDefault: jest.fn(), contextActions: [fn] };
-  const handleContextMenu =
-    mock.parentElement?.addEventListener.mock.calls[0][1];
-  handleContextMenu(mockEvent);
-
-  expect(tree.root.findAllByType('button').length).toBe(0);
-  expect(tree).toMatchSnapshot();
+  expect(menu.queryAllByRole('button').length).toBe(0);
+  await TestUtils.rightClick(user, menu.container);
+  expect(menu.queryAllByRole('button').length).toBe(TEST_MENU_1.length);
 });
 
 it('sorts by title properly', () => {

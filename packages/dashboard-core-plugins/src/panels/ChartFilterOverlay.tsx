@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
@@ -70,7 +69,7 @@ function ChartFilterOverlay({
   );
 
   const handleOpenLinker = useCallback(
-    event => {
+    (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       event.preventDefault();
 
@@ -134,15 +133,5 @@ function ChartFilterOverlay({
     </div>
   );
 }
-
-ChartFilterOverlay.propTypes = {
-  columnMap: PropTypes.instanceOf(Map).isRequired,
-  inputFilterMap: PropTypes.instanceOf(Map).isRequired,
-  linkedColumnMap: PropTypes.instanceOf(Map).isRequired,
-  onAdd: PropTypes.func.isRequired,
-  onOpenLinker: PropTypes.func.isRequired,
-  waitingFilterMap: PropTypes.instanceOf(Map).isRequired,
-  waitingInputMap: PropTypes.instanceOf(Map).isRequired,
-};
 
 export default ChartFilterOverlay;

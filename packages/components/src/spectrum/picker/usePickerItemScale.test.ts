@@ -1,6 +1,6 @@
 import { TestUtils } from '@deephaven/test-utils';
 import type { ProviderContext } from '@react-types/provider';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useSpectrumThemeProvider } from '../../theme';
 import { PICKER_ITEM_HEIGHTS } from '../../UIConstants';
 import { usePickerItemScale } from './usePickerItemScale';

@@ -59,7 +59,9 @@ test('lazy loads mathjax', async ({ page }) => {
   const markdownButton = page.getByText('Markdown Widget');
   await markdownButton.click();
 
-  await expect(page.locator('.markdown-panel')).toBeVisible();
+  await expect(page.locator('.markdown-panel')).toBeVisible({
+    timeout: 30_000, // Webkit takes a while for this sometimes
+  });
   await expect(page.locator('.markdown-panel .loading-spinner')).toHaveCount(0);
 
   const mathjaxRequest = requests.find(req =>

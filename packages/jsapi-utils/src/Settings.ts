@@ -1,7 +1,7 @@
 import { type FormattingRule } from './Formatter';
 
 export interface ColumnFormatSettings {
-  formatter?: FormattingRule[];
+  formatter?: readonly FormattingRule[];
 }
 
 export interface DateTimeFormatSettings {

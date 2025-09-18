@@ -23,7 +23,12 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull, type Brand } from '@deephaven/utils';
 import { type DashboardLayoutConfig } from '../DashboardLayout';
-import { type PanelConfig } from '../DashboardPlugin';
+import {
+  type PanelConfig,
+  type DehydratedPanelProps,
+  type DehydratedDashboardPanelProps,
+  type DehydratedPanelConfig,
+} from '../DashboardPlugin';
 
 const log = Log.module('LayoutUtils');
 
@@ -405,8 +410,8 @@ class LayoutUtils {
     config: ItemConfig[],
     dehydrateComponent: (
       componentName: string,
-      config: ItemConfig
-    ) => PanelConfig
+      config: PanelConfig
+    ) => DehydratedPanelConfig
   ): (PanelConfig | ItemConfig)[] {
     if (config == null || !config.length) {
       return [];
@@ -415,14 +420,17 @@ class LayoutUtils {
 
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
-      const { component, content } = itemConfig as ReactComponentConfig;
-      if (component) {
-        const dehydratedComponent = dehydrateComponent(component, itemConfig);
+      const { content } = itemConfig;
+      if (isReactComponentConfig(itemConfig)) {
+        const dehydratedComponent = dehydrateComponent(
+          itemConfig.component,
+          itemConfig
+        );
         if (dehydratedComponent != null) {
           dehydratedConfig.push(dehydratedComponent);
         } else {
           log.debug2(
-            `dehydrateLayoutConfig: skipping unmapped component "${component}"`
+            `dehydrateLayoutConfig: skipping unmapped component "${itemConfig.component}"`
           );
         }
       } else if (content) {
@@ -524,8 +532,8 @@ class LayoutUtils {
     config: (PanelConfig | ItemConfig)[],
     hydrateComponent: (
       componentName: string,
-      config: PanelConfig | ItemConfig
-    ) => ReactComponentConfig
+      props: DehydratedPanelProps
+    ) => DehydratedDashboardPanelProps
   ): DashboardLayoutConfig {
     if (config == null || !config.length) {
       return [];

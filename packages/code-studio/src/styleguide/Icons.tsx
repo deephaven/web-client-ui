@@ -8,7 +8,6 @@ import {
 } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Icon } from '@deephaven/components';
-import PropTypes from 'prop-types';
 import SampleSection from './SampleSection';
 
 async function copyText(text: string): Promise<void | ErrorConstructor> {
@@ -53,12 +52,6 @@ function Flash({ message, message: { text } }: FlashProps): JSX.Element {
 
   return <p className={show ? 'flash in' : 'flash out'}>{text}</p>;
 }
-
-Flash.propTypes = {
-  message: PropTypes.shape({
-    text: PropTypes.node,
-  }).isRequired,
-};
 
 function Icons(): React.ReactElement {
   const [dhFilter, setDhFilter] = useState<boolean>(true);

@@ -31,23 +31,17 @@ async function filterAndScreenshot(
   screenshotName: string
 ) {
   await test.step('Select first 3 rows', async () => {
-    await page.mouse.move(
-      gridLocation.x + 1,
-      gridLocation.y + 1 + columnHeight + filterHeight
-    );
-    await page.mouse.down();
-    await page.mouse.move(
-      gridLocation.x + 1,
-      gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
-    );
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    await page.mouse.click(
-      gridLocation.x + 1,
-      gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
-      { button: 'right' }
-    );
-    await page.waitForTimeout(500);
+    const x = gridLocation.x + 5;
+    const y =
+      gridLocation.y + 1 + columnHeight + filterHeight + 0.5 * rowHeight;
+    await page.mouse.click(x, y);
+
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.up('Shift');
+
+    await page.mouse.click(x, y, { button: 'right' });
     await expectContextMenus(page, 1);
   });
 

@@ -1,4 +1,5 @@
-import { type Key, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { Key } from '@react-types/shared';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,

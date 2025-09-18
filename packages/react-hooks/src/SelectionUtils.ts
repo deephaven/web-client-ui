@@ -1,5 +1,4 @@
-import type { Key } from 'react';
-import type { Selection } from '@react-types/shared';
+import type { Key, Selection } from '@react-types/shared';
 import {
   generateRange,
   type KeyedItem,
@@ -74,7 +73,7 @@ export function isSelectionMaybeInvertedEqual<T>(
  */
 export function mapSelection<TItem, TMap>(
   selectedItemKeys: Selection,
-  getItem: (key: React.Key) => KeyedItem<TItem> | undefined,
+  getItem: (key: Key) => KeyedItem<TItem> | undefined,
   mapItem: (item: KeyedItem<TItem>) => TMap
 ): SelectionT<TMap> {
   if (selectedItemKeys === 'all') {

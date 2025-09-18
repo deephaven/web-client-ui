@@ -110,7 +110,7 @@ export default function RuffSettingsModal({
   }, [model, formattedDefaultSettings]);
 
   const validate = useCallback(
-    val => {
+    (val: string) => {
       try {
         JSON.parse(val);
         setIsValid(true);

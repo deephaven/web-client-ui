@@ -7,7 +7,7 @@ import {
   type Settings,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useFormatter } from './useFormatter';
 
 jest.mock('@deephaven/jsapi-bootstrap');

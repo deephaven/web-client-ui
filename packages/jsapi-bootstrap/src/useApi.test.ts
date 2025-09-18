@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/test-utils';
@@ -27,10 +27,10 @@ describe('useApi', () => {
   });
 
   it('should throw if context is null', () => {
+    TestUtils.disableConsoleOutput();
     asMock(useContext).mockReturnValue(null);
 
-    const { result } = renderHook(() => useApi());
-    expect(result.error).toEqual(
+    expect(() => renderHook(() => useApi())).toThrow(
       new Error(
         'No API available in useApi. Was code wrapped in ApiBootstrap or ApiContext.Provider?'
       )

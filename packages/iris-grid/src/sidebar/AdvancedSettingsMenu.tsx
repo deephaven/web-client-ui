@@ -8,7 +8,7 @@ export type AdvancedSettingsMenuCallback = (
 ) => void;
 
 export type AdvancedSettingsMenuProps = {
-  items: Map<AdvancedSettingsType, boolean>;
+  items: ReadonlyMap<AdvancedSettingsType, boolean>;
   onChange?: AdvancedSettingsMenuCallback;
 };
 

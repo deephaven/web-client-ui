@@ -46,7 +46,7 @@ export function createFormatterFromSettings(
 
 export function getColumnFormats(
   settings?: ColumnFormatSettings
-): FormattingRule[] | undefined {
+): readonly FormattingRule[] | undefined {
   if (settings && settings.formatter) {
     const { formatter } = settings;
     return formatter;

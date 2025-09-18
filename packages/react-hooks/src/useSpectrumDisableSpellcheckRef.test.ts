@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { type DOMRefValue } from '@react-types/shared';
 import { TestUtils } from '@deephaven/test-utils';
 import useSetAttributesCallback from './useSetAttributesCallback';

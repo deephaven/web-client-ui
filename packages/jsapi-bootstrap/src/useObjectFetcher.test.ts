@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/test-utils';
 import {
@@ -93,8 +93,8 @@ it('should resolve the fetcher when set in the context', async () => {
 });
 
 it('throws an error if the context is null', async () => {
+  TestUtils.disableConsoleOutput();
   asMock(useContext).mockReturnValue(null);
 
-  const { result } = renderHook(() => useObjectFetcher());
-  expect(result.error).not.toBeNull();
+  expect(() => renderHook(() => useObjectFetcher())).toThrow();
 });

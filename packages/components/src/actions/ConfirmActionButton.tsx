@@ -26,7 +26,7 @@ export function ConfirmActionButton({
   onConfirm,
 }: ConfirmActionButtonProps): JSX.Element {
   const renderDialog = useCallback(
-    close => (
+    (close: () => void) => (
       <ConfirmationDialog
         heading={heading}
         confirmationButtonLabel={confirmationButtonLabel}

@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import type { dh } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
 import { type WindowedListData } from '@deephaven/react-hooks';

@@ -5,6 +5,7 @@ import React, {
   type ReactElement,
   type RefObject,
 } from 'react';
+import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -44,6 +45,7 @@ import {
   emitCycleToPreviousStack,
   emitCycleToNextTab,
   emitCycleToPreviousTab,
+  type DehydratedPanelProps,
 } from '@deephaven/dashboard';
 import {
   ConsolePlugin,
@@ -175,7 +177,7 @@ export class AppMainContainer extends Component<
   }
 
   static hydrateConsole(
-    props: DehydratedDashboardPanelProps,
+    props: DehydratedPanelProps,
     id: string
   ): DehydratedDashboardPanelProps {
     return DashboardUtils.hydrate(
@@ -714,7 +716,7 @@ export class AppMainContainer extends Component<
   }
 
   handleExportLayoutClick(): void {
-    log.info('handleExportLayoutClick');
+    log.debug('handleExportLayoutClick');
 
     this.setState({ isPanelsMenuShown: false });
 
@@ -723,7 +725,7 @@ export class AppMainContainer extends Component<
       const { data } = workspace;
       const exportedConfig = UserLayoutUtils.exportLayout(data);
 
-      log.info('handleExportLayoutClick exportedConfig', exportedConfig);
+      log.debug('handleExportLayoutClick exportedConfig', exportedConfig);
 
       const blob = new Blob([JSON.stringify(exportedConfig)], {
         type: 'application/json',
@@ -742,7 +744,7 @@ export class AppMainContainer extends Component<
   }
 
   handleImportLayoutClick(): void {
-    log.info('handleImportLayoutClick');
+    log.debug('handleImportLayoutClick');
 
     this.setState({ isPanelsMenuShown: false });
 
@@ -754,7 +756,7 @@ export class AppMainContainer extends Component<
   }
 
   handleResetLayoutClick(): void {
-    log.info('handleResetLayoutClick');
+    log.debug('handleResetLayoutClick');
 
     this.setState({
       isPanelsMenuShown: false,
@@ -784,11 +786,17 @@ export class AppMainContainer extends Component<
       const { filterSets, layoutConfig, links, pluginDataMap } =
         UserLayoutUtils.normalizeLayout(exportedLayout);
 
-      updateWorkspaceData({ layoutConfig });
-      updateDashboardData(DEFAULT_DASHBOARD_ID, {
-        filterSets,
-        links,
-        pluginDataMap,
+      // When we import a layout, the previous Dashboard flushes changes on unmount.
+      // If there were any pending changes, then the new layout is set in redux,
+      // the old Dashboard unmounts and flushes its changes which resets the layout in redux,
+      // and then the new Dashboard mounts with the old layout.
+      flushSync(() => {
+        updateWorkspaceData({ layoutConfig });
+        updateDashboardData(DEFAULT_DASHBOARD_ID, {
+          filterSets,
+          links,
+          pluginDataMap,
+        });
       });
       this.setState(({ layoutIteration }) => ({
         layoutIteration: layoutIteration + 1,

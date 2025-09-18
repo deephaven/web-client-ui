@@ -92,7 +92,7 @@ export interface ChartPanelTableMetadata extends PanelMetadata {
     title: string;
     xAxis: string;
     series: string[];
-    type: keyof dh.plot.SeriesPlotStyle;
+    type: keyof typeof dh.plot.SeriesPlotStyle;
   };
   tableSettings: TableSettings;
 }

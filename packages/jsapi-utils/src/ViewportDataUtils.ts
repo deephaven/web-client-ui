@@ -1,4 +1,4 @@
-import type { Key } from 'react';
+import type { Key } from '@react-types/shared';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';

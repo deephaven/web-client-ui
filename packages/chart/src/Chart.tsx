@@ -247,7 +247,7 @@ class Chart extends Component<ChartProps, ChartState> {
 
   plotWrapperMerged: React.RefCallback<HTMLDivElement>;
 
-  columnFormats?: FormattingRule[];
+  columnFormats?: readonly FormattingRule[];
 
   dateTimeFormatterOptions?: DateTimeColumnFormatterOptions;
 

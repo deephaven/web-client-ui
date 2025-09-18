@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import useDebouncedCallback from './useDebouncedCallback';
 
 const callback: (text: string) => void = jest.fn();

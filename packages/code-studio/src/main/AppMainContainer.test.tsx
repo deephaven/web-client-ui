@@ -194,36 +194,44 @@ it('listens for widgets properly', async () => {
 
   expect(screen.getByText('No bound variables found.')).toBeTruthy();
 
-  callback({
-    created: [TABLE_A],
-    removed: [],
-    updated: [],
+  act(() => {
+    callback({
+      created: [TABLE_A],
+      removed: [],
+      updated: [],
+    });
   });
 
   expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
 
-  callback({
-    created: [TABLE_B],
-    removed: [],
-    updated: [TABLE_A],
+  act(() => {
+    callback({
+      created: [TABLE_B],
+      removed: [],
+      updated: [TABLE_A],
+    });
   });
 
   expect(screen.getByRole('button', { name: 'a' })).toBeTruthy();
   expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  callback({
-    created: [],
-    removed: [TABLE_A],
-    updated: [],
+  act(() => {
+    callback({
+      created: [],
+      removed: [TABLE_A],
+      updated: [],
+    });
   });
 
   expect(screen.queryByRole('button', { name: 'a' })).toBeNull();
   expect(screen.getByRole('button', { name: 'b' })).toBeTruthy();
 
-  callback({
-    created: [TABLE_A],
-    removed: [TABLE_B],
-    updated: [],
+  act(() => {
+    callback({
+      created: [TABLE_A],
+      removed: [TABLE_B],
+      updated: [],
+    });
   });
 
   expect(screen.queryByRole('button', { name: 'b' })).toBeNull();
@@ -277,20 +285,18 @@ describe('imports layout correctly', () => {
     const oldKey = screen.getByTestId('dashboard-key').textContent ?? '';
     expect(oldKey.length).not.toBe(0);
 
-    await act(async () => {
-      const text = JSON.stringify(EMPTY_LAYOUT);
-      const file = TestUtils.createMockProxy<File>({
-        text: () => Promise.resolve(text),
-        name: 'layout.json',
-        type: 'application/json',
-      });
-
-      // Technically, the "Import Layout" button in the panels list is what the user clicks on to show the file picker
-      // However, the testing library uses the `.upload` command on the `input` element directly, which we don't display
-      // So just fetch it by testid and use the `.upload` command: https://testing-library.com/docs/user-event/utility/#upload
-      const importInput = screen.getByTestId('input-import-layout');
-      await userEvent.upload(importInput, file);
+    const text = JSON.stringify(EMPTY_LAYOUT);
+    const file = TestUtils.createMockProxy<File>({
+      text: () => Promise.resolve(text),
+      name: 'layout.json',
+      type: 'application/json',
     });
+
+    // Technically, the "Import Layout" button in the panels list is what the user clicks on to show the file picker
+    // However, the testing library uses the `.upload` command on the `input` element directly, which we don't display
+    // So just fetch it by testid and use the `.upload` command: https://testing-library.com/docs/user-event/utility/#upload
+    const importInput = screen.getByTestId('input-import-layout');
+    await userEvent.upload(importInput, file);
 
     expect(screen.getByText('{"localDashboardId":"default"}')).toBeTruthy();
 

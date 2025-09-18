@@ -6,8 +6,12 @@ import {
   type MoveOperation,
 } from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
-import { isFlattenedTreeItem, type ReadonlyTreeItems } from './types';
-import type { FlattenedItem, TreeItem } from './types';
+import {
+  isFlattenedTreeItem,
+  type ReadonlyTreeItems,
+  type FlattenedItem,
+  type TreeItem,
+} from './types';
 
 /**
  * Gets the depth of an item dragged with a given x-axis offset

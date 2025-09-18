@@ -1,5 +1,5 @@
-import { type Key, type ReactElement, type ReactNode } from 'react';
-import type { ItemRenderer } from '@react-types/shared';
+import { type ReactElement, type ReactNode } from 'react';
+import type { ItemRenderer, Key } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, type KeyedItem, type SelectionT } from '@deephaven/utils';
 import {
@@ -257,7 +257,7 @@ export function isNormalizedItemsWithKeysList<
   }
 
   return (
-    !isItemOrSection(node[0]) &&
+    !isItemOrSection(node[0] as ReactNode) &&
     node[0] != null &&
     typeof node[0] === 'object' &&
     'key' in node[0]

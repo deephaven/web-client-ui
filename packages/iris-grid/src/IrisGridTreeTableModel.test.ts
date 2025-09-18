@@ -1,8 +1,8 @@
+import { act } from '@testing-library/react';
 import { GridRange } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
-import { act } from 'react-dom/test-utils';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridTreeTableModel, {

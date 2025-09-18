@@ -4,9 +4,14 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
-import type { Container } from '@deephaven/golden-layout';
-import { type PanelComponent } from '@deephaven/dashboard';
-import { ChartPanel, type ChartPanelMetadata } from './ChartPanel';
+import { type InputFilter } from '@deephaven/iris-grid';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
+import { type PanelComponent, type PanelProps } from '@deephaven/dashboard';
+import {
+  ChartPanel,
+  type ChartPanelProps,
+  type ChartPanelMetadata,
+} from './ChartPanel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';
@@ -43,7 +48,7 @@ function makeGlComponent() {
   };
 }
 
-function makeChartModel(options) {
+function makeChartModel(options?) {
   return new MockChartModel(dh, options);
 }
 
@@ -59,16 +64,16 @@ function makeGridPanel() {
   return {
     props: { inputFilters: [] },
     state: { panelState: null },
-  };
+  } as unknown as PanelComponent;
 }
 
 function makeChartPanelWrapper({
-  glContainer = makeGlComponent(),
-  glEventHub = makeGlComponent(),
+  glContainer = makeGlComponent() as unknown as Container,
+  glEventHub = makeGlComponent() as unknown as EventEmitter,
   columnSelectionValidator = undefined,
   makeModel = () => Promise.resolve(makeChartModel()),
-  metadata = { figure: 'testFigure' },
-  inputFilters = [],
+  metadata = { figure: 'testFigure', type: 'Figure' },
+  inputFilters = [] as InputFilter[],
   links = [],
   localDashboardId = DASHBOARD_ID,
   isLinkerActive = false,
@@ -76,7 +81,7 @@ function makeChartPanelWrapper({
   setDashboardIsolatedLinkerPanelId = jest.fn(),
   source = makeTable(),
   sourcePanel = makeGridPanel(),
-} = {}) {
+}: Partial<PanelProps & ChartPanelProps> = {}) {
   return (
     <ChartPanel
       columnSelectionValidator={columnSelectionValidator}
@@ -97,13 +102,16 @@ function makeChartPanelWrapper({
 }
 
 function callUpdateFunction(isLoading = false) {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate({
-    isLoading,
-  });
+  act(
+    () =>
+      MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate({
+        isLoading,
+      })
+  );
 }
 
 function callErrorFunction() {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onError();
+  act(() => MockChart.mock.calls[MockChart.mock.calls.length - 1][0].onError());
 }
 
 function expectLoading(container) {
@@ -128,7 +136,14 @@ function checkPanelOverlays({
   isWaitingForInput = false,
   waitingFilters = 0,
   waitingFiltersInvalid = 0,
-} = {}) {
+}: {
+  container: HTMLElement;
+  isLoading?: boolean;
+  isSelectingColumn?: boolean;
+  isWaitingForInput?: boolean;
+  waitingFilters?: number;
+  waitingFiltersInvalid?: number;
+}) {
   const isPromptShown = isWaitingForInput || waitingFilters > 0;
   if (isLoading) {
     expectLoading(container);
@@ -153,13 +168,13 @@ function checkPanelOverlays({
   ).toBe(waitingFiltersInvalid);
 }
 
-it('mounts/unmounts without crashing', () => {
-  render(makeChartPanelWrapper());
+it('mounts/unmounts without crashing', async () => {
+  await act(() => render(makeChartPanelWrapper()));
 });
 
 it('unmounts while still resolving the model successfully', async () => {
   const model = makeChartModel();
-  let modelResolve = null;
+  let modelResolve!: (value: unknown) => void;
   const modelPromise = new Promise(resolve => {
     modelResolve = resolve;
   });
@@ -435,7 +450,7 @@ describe('linker column selection', () => {
 
   it('shows the column selector if linker active and filterable columns', async () => {
     const columnNames = ['Field_A', 'Field_B', 'Field_C'];
-    const disabledColumnNames = [];
+    const disabledColumnNames: string[] = [];
     const columnSelectionValidator = (panel, column) =>
       disabledColumnNames.find(
         disabledColumn => disabledColumn === column.name
@@ -469,6 +484,7 @@ describe('linker column selection', () => {
         links: [
           {
             id: 'TEST_LINK',
+            type: 'chartLink',
             start: {
               panelId: 'DIFFERENT_PANEL',
               columnName: 'Column',
@@ -518,18 +534,36 @@ it('adds listeners to the source table when passed in and linked', async () => {
   const { rerender } = render(
     makeChartPanelWrapper({
       makeModel,
-      metadata: { settings: { isLinked: true } },
-      source: null,
-      sourcePanel: null,
+      metadata: {
+        type: 'Figure',
+        settings: {
+          isLinked: true,
+          title: 'title',
+          xAxis: 'x',
+          series: [],
+          type: 'BAR',
+        },
+      },
+      source: undefined,
+      sourcePanel: undefined,
     })
   );
   const source = makeTable();
   rerender(
     makeChartPanelWrapper({
       makeModel,
-      metadata: { settings: { isLinked: true } },
+      metadata: {
+        type: 'Figure',
+        settings: {
+          isLinked: true,
+          title: 'title',
+          xAxis: 'x',
+          series: [],
+          type: 'BAR',
+        },
+      },
       source,
-      sourcePanel: null,
+      sourcePanel: undefined,
     })
   );
   await act(() => Promise.resolve());

@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import usePromiseFactory, {
   type UsePromiseFactoryResult,
 } from './usePromiseFactory';
@@ -45,35 +45,25 @@ beforeEach(() => {
 });
 
 it('should return loading state while loading and data if promise resolves', async () => {
-  const { result, waitForNextUpdate } = renderHook(() =>
-    usePromiseFactory(promiseFactory, args)
-  );
+  const { result } = renderHook(() => usePromiseFactory(promiseFactory, args));
 
   // While loading
   expect(promiseFactory).toHaveBeenCalledWith(...args);
   expect(result.current).toEqual(expected.loadingState);
 
-  await waitForNextUpdate();
-
-  // After promise resolves
-  expect(result.current).toEqual(expected.resolvedState);
+  await waitFor(() => expect(result.current).toEqual(expected.resolvedState));
 });
 
 it('should return loading state while loading and error if promise fails', async () => {
   promiseFactory.mockRejectedValue(rejectionError);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
-    usePromiseFactory(promiseFactory, args)
-  );
+  const { result } = renderHook(() => usePromiseFactory(promiseFactory, args));
 
   // While loading
   expect(promiseFactory).toHaveBeenCalledWith(...args);
   expect(result.current).toEqual(expected.loadingState);
 
-  await waitForNextUpdate();
-
-  // After promise resolves
-  expect(result.current).toEqual(expected.errorState);
+  await waitFor(() => expect(result.current).toEqual(expected.errorState));
 });
 
 it('should not auto load promise if autoLoad is false', () => {
@@ -88,7 +78,7 @@ it('should not auto load promise if autoLoad is false', () => {
 it.each([true, false])(
   'should support explicit loading via reload function: %s',
   async autoLoad => {
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       usePromiseFactory(promiseFactory, args, { autoLoad })
     );
 
@@ -96,7 +86,9 @@ it.each([true, false])(
     expect(result.current.isLoading).toEqual(autoLoad);
 
     if (autoLoad) {
-      await waitForNextUpdate();
+      await waitFor(() => {
+        expect(result.current).toEqual(expected.resolvedState);
+      });
     }
 
     // Reset any auto load mock data
@@ -112,9 +104,8 @@ it.each([true, false])(
       autoLoad ? expected.reloadingState : expected.loadingState
     );
 
-    await waitForNextUpdate();
-
-    // After promise resolves
-    expect(result.current).toEqual(expected.resolvedState);
+    await waitFor(() => {
+      expect(result.current).toEqual(expected.resolvedState);
+    });
   }
 );

@@ -297,7 +297,7 @@ export class DropdownFilterPanel extends Component<
 
   cleanup?: () => void;
 
-  columnFormats?: FormattingRule[];
+  columnFormats?: readonly FormattingRule[];
 
   getCachedValues = memoize(
     (

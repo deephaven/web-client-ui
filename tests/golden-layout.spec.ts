@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { gotoPage, openPlot, openTable } from './utils';
 
 // doesn't execute any server commands, safe to run in parallel
@@ -17,6 +17,12 @@ test.describe('tests golden-layout operations', () => {
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.locator('button:has-text("Import Layout")').click();
     const fileChooser = await fileChooserPromise;
+
+    // If the new layout is imported within 1 second of the page load
+    // it causes the original layout to be applied due to a redux update
+    // on DashboardLayout unmount and React 18 batching
+    await page.waitForTimeout(1500);
+
     // load a test layout that uses the panel placeholder
     await fileChooser.setFiles('tests/deephaven-app-layout.test.json');
 
@@ -179,6 +185,7 @@ test('reopen last closed panel', async ({ page }) => {
     test.step('Close panel copies', async () => {
       await expect(page.getByLabel('Close tab')).toHaveCount(4);
       await page.getByLabel('Close tab').nth(3).click();
+      await page.waitForTimeout(200);
       await page.getByLabel('Close tab').nth(1).click();
       await expect(page.getByLabel('Close tab')).toHaveCount(2);
     });
