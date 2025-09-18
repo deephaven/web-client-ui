@@ -79,18 +79,19 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   private updateColumnWidthsIfNecessary(model: IrisGridModel): void {
     // Comparing model.columns references wouldn't work here because
     // the reference can change in the model without the actual column definitions changing
+    const modelColumnNames = this.getCachedCurrentModelColumnNames(
+      model.columns
+    );
     if (
       this.cachedModelColumnNames != null &&
-      !deepEqual(
-        this.getCachedCurrentModelColumnNames(model.columns),
-        this.cachedModelColumnNames
-      )
+      this.cachedModelColumnNames !== modelColumnNames &&
+      !deepEqual(modelColumnNames, this.cachedModelColumnNames)
     ) {
       // Preserve column widths when possible to minimize visual shifts in the grid layout
       this.updateCalculatedColumnWidths(model);
       this.updateUserColumnWidths(model);
     }
-    this.cachedModelColumnNames = model.columns.map(col => col.name);
+    this.cachedModelColumnNames = modelColumnNames;
   }
 
   getGridY(state: IrisGridMetricState): number {
