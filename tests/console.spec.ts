@@ -102,7 +102,7 @@ test.describe('console scroll tests', () => {
 
     // Expect the console to be scrolled to the bottom
     const scrollPane = scrollPanelLocator(page);
-    expect
+    await expect
       .poll(() =>
         scrollPane.evaluate(el =>
           Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
@@ -133,7 +133,7 @@ test.describe('console scroll tests', () => {
     await panelTabLocator(page, 'Console').click();
 
     const scrollPane = scrollPanelLocator(page);
-    expect
+    await expect
       .poll(() =>
         scrollPane.evaluate(el =>
           Math.floor(el.scrollHeight - el.scrollTop - el.clientHeight)
