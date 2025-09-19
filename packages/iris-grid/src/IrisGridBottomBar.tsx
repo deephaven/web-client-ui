@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
@@ -27,6 +27,7 @@ export function IrisGridBottomBar({
   onExiting,
   onExited,
 }: IrisGridBottomBarProps): JSX.Element {
+  const nodeRef = useRef<HTMLDivElement>(null);
   return (
     <CSSTransition
       in={isShown}
@@ -38,8 +39,10 @@ export function IrisGridBottomBar({
       onExited={onExited}
       mountOnEnter
       unmountOnExit
+      nodeRef={nodeRef}
     >
       <div
+        ref={nodeRef}
         className={classNames('iris-grid-bottom-bar', className)}
         role="presentation"
         onClick={onClick}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -29,6 +29,7 @@ function LoadingOverlay({
   timeout = ThemeExport.transitionMs,
   'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element {
+  const nodeRef = useRef<HTMLDivElement>(null);
   const messageTestId =
     dataTestId != null ? `${dataTestId}-message` : undefined;
   const spinnerTestId =
@@ -41,8 +42,13 @@ function LoadingOverlay({
       classNames={classNames(className, { fade: isLoaded })}
       mountOnEnter
       unmountOnExit
+      nodeRef={nodeRef}
     >
-      <div className="fill-parent-absolute" data-testid={dataTestId}>
+      <div
+        ref={nodeRef}
+        className="fill-parent-absolute"
+        data-testid={dataTestId}
+      >
         <div
           className={classNames(
             'iris-panel-message-overlay',
