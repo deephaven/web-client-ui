@@ -272,6 +272,11 @@ export interface IrisGridContextMenuData {
   modelColumn: GridRangeIndex;
 }
 
+export type MouseHandlersProp = readonly (
+  | GridMouseHandler
+  | ((irisGrid: IrisGrid) => GridMouseHandler)
+)[];
+
 export interface IrisGridProps {
   children: React.ReactNode;
   advancedFilters: ReadonlyAdvancedFilterMap;
@@ -354,7 +359,7 @@ export interface IrisGridProps {
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
-  mouseHandlers: readonly GridMouseHandler[];
+  mouseHandlers: MouseHandlersProp;
 
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
@@ -732,13 +737,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnHeaderGroups,
     } = props;
 
+    const { mouseHandlers: mouseHandlersProp } = props;
+
     const { dh } = model;
     const keyHandlers: KeyHandler[] = [
       new CopyCellKeyHandler(this),
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    const mouseHandlers: GridMouseHandler[] = [
+    const mouseHandlers: (
+      | GridMouseHandler
+      | ((irisGrid: IrisGrid) => GridMouseHandler)
+    )[] = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -750,6 +760,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
       new IrisGridPartitionedTableMouseHandler(this),
+      ...mouseHandlersProp,
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
@@ -1067,7 +1078,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   keyHandlers: readonly KeyHandler[];
 
-  mouseHandlers: readonly GridMouseHandler[];
+  mouseHandlers: MouseHandlersProp;
 
   get gridWrapper(): HTMLDivElement | null {
     return this.grid?.canvasWrapper.current ?? null;
@@ -1480,9 +1491,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   getCachedMouseHandlers = memoize(
-    (
-      mouseHandlers: readonly GridMouseHandler[]
-    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers]
+    (mouseHandlers: MouseHandlersProp): readonly GridMouseHandler[] =>
+      [...mouseHandlers, ...this.mouseHandlers].map(handler =>
+        typeof handler === 'function' ? handler(this) : handler
+      )
   );
 
   getCachedRenderer = memoize(

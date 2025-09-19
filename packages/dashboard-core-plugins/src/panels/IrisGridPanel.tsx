@@ -46,6 +46,7 @@ import {
   IrisGridContextMenuData,
   PartitionConfig,
   IrisGridRenderer,
+  MouseHandlersProp,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -68,7 +69,6 @@ import {
 import { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
-  GridMouseHandler,
   GridState,
   ModelIndex,
   ModelSizeMap,
@@ -153,9 +153,9 @@ export interface OwnProps extends DashboardPanelProps {
   /** Load a plugin defined by the table */
   loadPlugin: (pluginName: string) => TablePluginComponent;
 
-  theme?: IrisGridThemeType;
+  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
 
-  mouseHandlers?: readonly GridMouseHandler[];
+  mouseHandlers?: MouseHandlersProp;
   renderer?: IrisGridRenderer;
 }
 
