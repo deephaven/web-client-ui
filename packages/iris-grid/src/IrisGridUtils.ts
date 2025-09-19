@@ -41,7 +41,9 @@ import { type FormattingRule as SidebarFormattingRule } from './sidebar/conditio
 import type IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
+import ColumnHeaderGroup, {
+  type ColumnHeaderGroupConfig,
+} from './ColumnHeaderGroup';
 import {
   isPartitionedGridModelProvider,
   type PartitionConfig,
@@ -1015,18 +1017,23 @@ class IrisGridUtils {
    *
    * @returns Object containing groups array, max depth, map of name to parent group, and map of name to group
    */
-  static parseColumnHeaderGroups(
+  static parseColumnHeaderGroups<
+    T extends ColumnHeaderGroup,
+    C extends ColumnHeaderGroupConfig,
+  >(
     model: IrisGridModel,
-    groupsParam: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[]
+    groupsParam: readonly (DhType.ColumnGroup | T)[],
+    makeColumnHeaderGroup: (args: C) => T = (args: C) =>
+      new ColumnHeaderGroup(args) as T
   ): {
-    groups: ColumnHeaderGroup[];
+    groups: T[];
     maxDepth: number;
-    parentMap: Map<string, ColumnHeaderGroup>;
-    groupMap: Map<string, ColumnHeaderGroup>;
+    parentMap: Map<string, T>;
+    groupMap: Map<string, T>;
   } {
     let maxDepth = 1;
-    const parentMap: Map<string, ColumnHeaderGroup> = new Map();
-    const groupMap: Map<string, ColumnHeaderGroup> = new Map();
+    const parentMap: Map<string, T> = new Map();
+    const groupMap: Map<string, T> = new Map();
 
     // Remove any empty groups before parsing
     const groups = groupsParam?.filter(
@@ -1040,9 +1047,7 @@ class IrisGridUtils {
     const originalGroupMap = new Map(groups.map(group => [group.name, group]));
     const seenChildren = new Set<string>();
 
-    const addGroup = (
-      group: DhType.ColumnGroup | ColumnHeaderGroup
-    ): ColumnHeaderGroup => {
+    const addGroup = (group: DhType.ColumnGroup | T): T => {
       const { name } = group;
 
       assertNotNull(name, 'Column header group has no name');
@@ -1057,7 +1062,7 @@ class IrisGridUtils {
         return existingGroup;
       }
 
-      const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
+      const childIndexes: T['childIndexes'] = [];
       let depth = 1;
 
       if (group.children == null) {
@@ -1088,13 +1093,15 @@ class IrisGridUtils {
         }
       });
 
-      const columnHeaderGroup = new ColumnHeaderGroup({
-        ...group,
+      const headerGroupConfig = {
+        ...(group as C),
         name,
         children: group.children,
         depth,
         childIndexes: childIndexes.flat(),
-      });
+      };
+
+      const columnHeaderGroup = makeColumnHeaderGroup(headerGroupConfig);
 
       groupMap.set(name, columnHeaderGroup);
       group.children?.forEach(childName =>

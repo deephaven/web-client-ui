@@ -1,10 +1,12 @@
 import { type AdvancedFilterOptions } from '@deephaven/jsapi-utils';
-import { type ModelIndex } from '@deephaven/grid';
+import { type GridRangeIndex, type ModelIndex } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { type Shortcut } from '@deephaven/components';
 import { type IconDefinition } from '@deephaven/icons';
 import type AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { type OptionType } from './sidebar';
+import { type UIRollupConfig, type OptionType } from './sidebar';
+import type IrisGridModel from './IrisGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
 
 export type RowIndex = ModelIndex;
 
@@ -84,3 +86,18 @@ export type PendingDataErrorMap<T extends Error = Error> = ReadonlyMap<
   RowIndex,
   readonly T[]
 >;
+
+export interface IrisGridStateOverride extends Record<string, unknown> {
+  model: IrisGridModel;
+  theme: IrisGridThemeType;
+  hoverSelectColumn: GridRangeIndex;
+  isFilterBarShown: boolean;
+  isMenuShown: boolean;
+  isSelectingColumn: boolean;
+  loadingScrimProgress: number | null;
+  advancedFilters: ReadonlyAdvancedFilterMap;
+  quickFilters: ReadonlyQuickFilterMap;
+  sorts: readonly dh.Sort[];
+  reverse: boolean;
+  rollupConfig: UIRollupConfig | undefined;
+}

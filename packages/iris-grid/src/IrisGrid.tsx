@@ -34,7 +34,6 @@ import {
   type GridMouseHandler,
   GridRange,
   type GridRangeIndex,
-  type GridThemeType,
   GridUtils,
   type KeyHandler,
   type ModelIndex,
@@ -46,6 +45,7 @@ import {
   type BoundedAxisRange,
   isExpandableGridModel,
   isDeletableGridModel,
+  isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -125,7 +125,9 @@ import {
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
-import IrisGridMetricCalculator from './IrisGridMetricCalculator';
+import IrisGridMetricCalculator, {
+  type IrisGridMetricState,
+} from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
 import {
@@ -181,6 +183,7 @@ import {
   type AdvancedFilterOptions,
   type ColumnName,
   type InputFilter,
+  type IrisGridStateOverride,
   type OperationMap,
   type OptionItem,
   type PendingDataErrorMap,
@@ -350,7 +353,7 @@ export interface IrisGridProps {
   frozenColumns: readonly ColumnName[];
 
   // Theme override for IrisGridTheme
-  theme: GridThemeType;
+  theme: Partial<IrisGridThemeType> & Record<string, unknown>;
 
   canToggleSearch: boolean;
 
@@ -1399,6 +1402,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedStateOverride = memoize(
     (
+      model: IrisGridModel,
+      theme: IrisGridThemeType,
       hoverSelectColumn: GridRangeIndex,
       isFilterBarShown: boolean,
       isSelectingColumn: boolean,
@@ -1409,7 +1414,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
-    ): Partial<IrisGridState & IrisGridProps> => ({
+    ): IrisGridStateOverride => ({
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
@@ -1490,6 +1497,44 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getKeyHandlers(): readonly KeyHandler[] {
     const { keyHandlers } = this.props;
     return this.getCachedKeyHandlers(keyHandlers);
+  }
+
+  getMetricState(): IrisGridMetricState | undefined {
+    const gridMetricState = this.grid?.getMetricState();
+    if (gridMetricState == null) {
+      return undefined;
+    }
+    const {
+      advancedFilters,
+      hoverSelectColumn,
+      isFilterBarShown,
+      isMenuShown,
+      loadingScrimProgress,
+      quickFilters,
+      sorts,
+      reverse,
+      rollupConfig,
+    } = this.state;
+
+    const { model, isSelectingColumn } = this.props;
+
+    return {
+      ...gridMetricState,
+      ...this.getCachedStateOverride(
+        model,
+        this.getTheme(),
+        hoverSelectColumn,
+        isFilterBarShown,
+        isSelectingColumn,
+        loadingScrimProgress,
+        quickFilters,
+        advancedFilters,
+        sorts,
+        reverse,
+        rollupConfig,
+        isMenuShown
+      ),
+    };
   }
 
   getCachedMouseHandlers = memoize(
@@ -1860,6 +1905,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   rebuildFilters(): void {
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
+
+    if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      log.debug('No filters to rebuild');
+      return;
+    }
+
     const { columns, formatter } = model;
 
     log.debug('Rebuilding filters');
@@ -2453,7 +2504,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
-      const metricState = this.grid?.getMetricState();
+      const metricState = this.getMetricState();
       assertNotNull(metricState);
       const newLeft = metricCalculator.getLastLeft(
         metricState,
@@ -2535,6 +2586,36 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  toggleExpandColumn(modelIndex: ModelIndex): void {
+    log.debug2('Toggle expand column', modelIndex);
+    const { model } = this.props;
+    if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
+      model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
+    }
+  }
+
+  expandAllColumns(): void {
+    log.debug2('Expand all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.expandAllColumns();
+    }
+  }
+
+  collapseAllColumns(): void {
+    log.debug2('Collapse all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.collapseAllColumns();
+    }
+  }
+
   handleColumnVisibilityChanged(
     modelIndexes: readonly ModelIndex[],
     isVisible: boolean
@@ -2565,12 +2646,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleColumnVisibilityReset(): void {
-    const { metricCalculator, metrics } = this.state;
+    const { metricCalculator } = this.state;
     const { model } = this.props;
-    assertNotNull(metrics);
-    for (let i = 0; i < metrics.columnCount; i += 1) {
-      metricCalculator.resetColumnWidth(i);
-    }
+    metricCalculator.resetAllColumnWidths();
     this.handleMovedColumnsChanged(model.initialMovedColumns);
     this.handleHeaderGroupsChanged(model.initialColumnHeaderGroups);
     this.setState({
@@ -2703,6 +2781,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
     this.grid?.forceUpdate();
+  }
+
+  /**
+   * Updates grid metrics after model columns have changed
+   * to keep Grid and IrisGrid metrics in sync since metrics are stored in both places.
+   */
+  updateMetrics(): void {
+    this.setState({
+      metrics: this.grid?.updateMetrics(),
+    });
   }
 
   toggleSort(columnIndex: VisibleIndex, addToExisting: boolean): void {
@@ -3479,11 +3567,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleCustomColumnsChanged(): void {
-    log.debug('custom columns changed');
+    log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.updateMetrics();
+
+      // Make sure stopLoading() is called after the updateMetrics call,
+      // otherwise IrisGridModelUpdater queues an extra setViewport based on old metrics.
       this.stopLoading();
-      this.grid?.forceUpdate();
     } else {
       this.loadTableState();
     }
@@ -4476,6 +4567,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const userColumnWidths = metricCalculator.getUserColumnWidths();
     const stateOverride = this.getCachedStateOverride(
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
