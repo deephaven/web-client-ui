@@ -45,6 +45,8 @@ import {
   ColumnHeaderGroup,
   IrisGridContextMenuData,
   PartitionConfig,
+  IrisGridRenderer,
+  MouseHandlersProp,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -151,7 +153,10 @@ export interface OwnProps extends DashboardPanelProps {
   /** Load a plugin defined by the table */
   loadPlugin: (pluginName: string) => TablePluginComponent;
 
-  theme?: IrisGridThemeType;
+  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
+
+  mouseHandlers?: MouseHandlersProp;
+  renderer?: IrisGridRenderer;
 }
 
 interface StateProps {
@@ -993,6 +998,8 @@ export class IrisGridPanel extends PureComponent<
         rollupConfig,
         aggregationSettings,
         sorts,
+        // TODO:
+        // DH-20403: IrisGrid should persist user column widths when the model initializes with a partial column list
         userColumnWidths,
         userRowHeights,
         showSearchBar,
@@ -1103,8 +1110,10 @@ export class IrisGridPanel extends PureComponent<
       inputFilters,
       links,
       metadata,
+      mouseHandlers,
       panelState,
       user,
+      renderer,
       settings,
       theme,
     } = this.props;
@@ -1206,11 +1215,13 @@ export class IrisGridPanel extends PureComponent<
             isSelectingPartition={isSelectingPartition}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
+            mouseHandlers={mouseHandlers}
             movedColumns={movedColumns}
             movedRows={movedRows}
             partitions={partitions}
             partitionConfig={partitionConfig}
             quickFilters={quickFilters}
+            renderer={renderer}
             reverse={reverse}
             rollupConfig={rollupConfig}
             settings={settings}

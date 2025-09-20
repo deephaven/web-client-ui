@@ -105,3 +105,16 @@ export type UndoPartial<T> = T extends Partial<infer U> ? U : never;
  * type A = typeof x[keyof typeof x]; // 1 | 2 | 3
  */
 export type ValueOf<T> = T[keyof T];
+
+/**
+ * Extracts the tail of a tuple type after the first element.
+ *
+ * e.g. Given
+ * declare const x: [{ a: 1 }, { b: 2 }, { c: 3 }];
+ *
+ * The tail type can be extracted like this:
+ * type A = Tail<typeof x>; // [{ b: 2 }, { c: 3 }]
+ */
+export type Tail<T extends unknown[]> = T extends [unknown, ...infer U]
+  ? U
+  : [];

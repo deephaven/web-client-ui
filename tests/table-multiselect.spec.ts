@@ -55,7 +55,7 @@ async function filterAndScreenshot(
     await page.getByRole('button', { name: 'Filter by Values' }).hover();
     await expectContextMenus(page, 2);
     await page.getByRole('button', { name: filterType, exact: true }).click();
-    await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
+    await waitForLoadingDone(page, '.iris-panel-scrim-background');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot(
       screenshotName
     );
