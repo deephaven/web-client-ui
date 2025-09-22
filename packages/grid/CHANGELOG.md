@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.35](https://github.com/deephaven/web-client-ui/compare/v0.85.34...v0.85.35) (2025-09-22)
+
+### Features
+
+- DH-13515: Support expandable columns in grids v0.85 ([#2524](https://github.com/deephaven/web-client-ui/issues/2524)) ([c5d9663](https://github.com/deephaven/web-client-ui/commit/c5d9663192335e68d80a0d896e3e1d42eedd9361))
+
 ## [0.85.34](https://github.com/deephaven/web-client-ui/compare/v0.85.33...v0.85.34) (2025-07-23)
 
 ### Bug Fixes
