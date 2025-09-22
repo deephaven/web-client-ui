@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   makeTableCommand,
   pasteInMonaco,
@@ -112,6 +112,9 @@ test.beforeEach(async ({ page }) => {
     if (msg.type() === 'error') {
       throw new Error(msg.text());
     }
+  });
+  page.on('pageerror', error => {
+    throw error;
   });
 
   await openTable(page, 'all_types');
