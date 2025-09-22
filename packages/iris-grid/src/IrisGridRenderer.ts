@@ -915,9 +915,10 @@ export class IrisGridRenderer extends GridRenderer {
       metrics
     );
 
-    assertNotNull(left);
-    assertNotNull(rowHeight);
-    assertNotNull(top);
+    if (left == null || rowHeight == null || top == null) {
+      return NULL_POSITION;
+    }
+
     const { cellHorizontalPadding } = theme;
 
     const width = EXPAND_ICON_SIZE + 2 * cellHorizontalPadding;
