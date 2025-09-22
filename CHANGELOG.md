@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Features
+
+- close maximized panels with escape key ([#2533](https://github.com/deephaven/web-client-ui/issues/2533)) ([b90d540](https://github.com/deephaven/web-client-ui/commit/b90d5406a57afca220ae41bad195490f0cbdea46)), closes [#1165](https://github.com/deephaven/web-client-ui/issues/1165)
+
+### Bug Fixes
+
+- DH-20388: VITE_MODULE_PLUGINS_URL path should be relative ([#2535](https://github.com/deephaven/web-client-ui/issues/2535)) ([1e1b473](https://github.com/deephaven/web-client-ui/commit/1e1b4731fc2f8597308c1b2977f162d0f12c2602))
+- IrisGridModelUpdater causes "cannot update during an existing state transition" warning ([#2536](https://github.com/deephaven/web-client-ui/issues/2536)) ([ee2ba42](https://github.com/deephaven/web-client-ui/commit/ee2ba42573f76fb8373dd6c0d1de290e3a5990b4))
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-18648: Ensure grid panel doesn't crash when Pandas query restarted ([#2528](https://github.com/deephaven/web-client-ui/issues/2528)) ([9c969f0](https://github.com/deephaven/web-client-ui/commit/9c969f03fe27daff543c9dac920a69e7c949331c))
+- DH-19948: increase max dashboard tab title width ([#2532](https://github.com/deephaven/web-client-ui/issues/2532)) ([ceda82b](https://github.com/deephaven/web-client-ui/commit/ceda82bca9a998e9565babb8ab435cc90f13c513))
+- Export support logs is not working ([#2531](https://github.com/deephaven/web-client-ui/issues/2531)) ([f2d2317](https://github.com/deephaven/web-client-ui/commit/f2d2317d8c88f82d2ea45bde09b789e2a79ced20))
+- reduce spectrum popover excessive padding ([#2530](https://github.com/deephaven/web-client-ui/issues/2530)) ([53c4d26](https://github.com/deephaven/web-client-ui/commit/53c4d26045c3237b58aaffb8cb069f332b62120c))
+
 ## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
 
 **Note:** Version bump only for package @deephaven/web-client-ui

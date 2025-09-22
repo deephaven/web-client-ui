@@ -2,6 +2,7 @@ export * from './ColumnHeaderGroup';
 export * from './EditableGridModel';
 export * from './DeletableGridModel';
 export * from './ExpandableGridModel';
+export * from './ExpandableColumnGridModel';
 export { default as Grid } from './Grid';
 export * from './Grid';
 export * from './GridMetricCalculator';

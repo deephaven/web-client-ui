@@ -1022,6 +1022,8 @@ export class IrisGridPanel extends PureComponent<
         rollupConfig,
         aggregationSettings,
         sorts,
+        // TODO:
+        // DH-20403: IrisGrid should persist user column widths when the model initializes with a partial column list
         userColumnWidths,
         userRowHeights,
         showSearchBar,

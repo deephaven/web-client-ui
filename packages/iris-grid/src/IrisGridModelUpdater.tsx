@@ -181,14 +181,6 @@ function IrisGridModelUpdater({
     [model, isTotalsAvailable, totalsConfig]
   );
   useOnChange(
-    function updateFrozenColumns() {
-      if (frozenColumns) {
-        model.updateFrozenColumns(frozenColumns);
-      }
-    },
-    [model, frozenColumns]
-  );
-  useOnChange(
     function updateColumnHeaderGroups() {
       model.columnHeaderGroups = columnHeaderGroups;
     },
@@ -204,6 +196,14 @@ function IrisGridModelUpdater({
   );
   // These setters are wrapped in useEffect instead of useOnChange because they emit an event
   // that potentially causes side effects, violating the rule that render should be a pure function.
+  useEffect(
+    function updateFrozenColumns() {
+      if (frozenColumns) {
+        model.updateFrozenColumns(frozenColumns);
+      }
+    },
+    [model, frozenColumns]
+  );
   useEffect(
     function updatePendingRowCount() {
       model.pendingRowCount = pendingRowCount;

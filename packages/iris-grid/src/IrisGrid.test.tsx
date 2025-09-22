@@ -4,8 +4,13 @@ import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
+import {
+  type ExpandableColumnGridModel,
+  isExpandableColumnGridModel,
+} from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import type IrisGridProxyModel from './IrisGridProxyModel';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this
@@ -13,6 +18,13 @@ class MockPath2D {
 }
 
 window.Path2D = MockPath2D as unknown as new () => Path2D;
+
+jest.mock('@deephaven/grid', () => ({
+  ...jest.requireActual('@deephaven/grid'),
+  isExpandableColumnGridModel: jest.fn(),
+}));
+
+const { asMock } = TestUtils;
 
 const VIEW_SIZE = 5000;
 
@@ -66,10 +78,12 @@ function createNodeMock(element: ReactElement) {
 
 function makeComponent(
   model = irisGridTestUtils.makeModel(),
-  settings = DEFAULT_SETTINGS
+  settings = DEFAULT_SETTINGS,
+  props = {}
 ) {
   const testRenderer = TestRenderer.create(
-    <IrisGrid model={model} settings={settings} />,
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <IrisGrid model={model} settings={settings} {...props} />,
     {
       createNodeMock,
     }
@@ -356,6 +370,99 @@ describe('handleResizeAllColumns', () => {
       expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
         contentWidth
       );
+    });
+  });
+
+  describe('rebuildFilters', () => {
+    it('updates state if filters not empty', () => {
+      const component = makeComponent(undefined, undefined, {
+        quickFilters: [
+          [
+            '2',
+            {
+              columnType: IrisGridTestUtils.DEFAULT_TYPE,
+              filterList: [
+                {
+                  operator: 'eq',
+                  text: 'null',
+                  value: null,
+                  startColumnIndex: 0,
+                },
+              ],
+            },
+          ],
+        ],
+      });
+      jest.spyOn(component, 'setState');
+      expect(component.setState).not.toBeCalled();
+      component.rebuildFilters();
+      expect(component.setState).toBeCalled();
+    });
+
+    it('does not update state for empty filters', () => {
+      const component = makeComponent();
+      jest.spyOn(component, 'setState');
+      component.rebuildFilters();
+      expect(component.setState).not.toBeCalled();
+    });
+  });
+
+  describe('column expand/collapse', () => {
+    let model: IrisGridProxyModel & ExpandableColumnGridModel;
+    let component: IrisGrid;
+
+    beforeEach(() => {
+      model = irisGridTestUtils.makeModel() as IrisGridProxyModel &
+        ExpandableColumnGridModel;
+      component = makeComponent(model);
+      model.setColumnExpanded = jest.fn();
+      model.isColumnExpanded = jest.fn(() => false);
+      model.expandAllColumns = jest.fn();
+      model.collapseAllColumns = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('calls setColumnExpanded if model supports expandable columns', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.hasExpandableColumns = true;
+      component.toggleExpandColumn(0);
+      expect(model.setColumnExpanded).toHaveBeenCalled();
+    });
+
+    it('ignores setColumnExpanded and expand/collapse all if model does not support expandable columns', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(false);
+      component.toggleExpandColumn(0);
+      expect(model.setColumnExpanded).not.toHaveBeenCalled();
+
+      component.expandAllColumns();
+      expect(model.expandAllColumns).not.toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).not.toHaveBeenCalled();
+    });
+
+    it('calls expandAllColumns if model supports expandable columns and expand all', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.isExpandAllColumnsAvailable = true;
+      component.expandAllColumns();
+      expect(model.expandAllColumns).toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).toHaveBeenCalled();
+    });
+
+    it('ignores expandAllColumns if model does not support expand all', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.isExpandAllColumnsAvailable = false;
+
+      component.expandAllColumns();
+      expect(model.expandAllColumns).not.toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).not.toHaveBeenCalled();
     });
   });
 });

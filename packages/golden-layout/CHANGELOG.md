@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Features
+
+- close maximized panels with escape key ([#2533](https://github.com/deephaven/web-client-ui/issues/2533)) ([b90d540](https://github.com/deephaven/web-client-ui/commit/b90d5406a57afca220ae41bad195490f0cbdea46)), closes [#1165](https://github.com/deephaven/web-client-ui/issues/1165)
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+**Note:** Version bump only for package @deephaven/golden-layout
+
 ## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
 
 **Note:** Version bump only for package @deephaven/golden-layout
