@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
