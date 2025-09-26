@@ -3,16 +3,16 @@
  */
 import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 import './Editor.scss';
 
 export interface EditorProps {
   className: string;
-  onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
-  onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
-  settings: monaco.editor.IStandaloneEditorConstructionOptions;
+  onEditorInitialized: (editor: Monaco.editor.IStandaloneCodeEditor) => void;
+  onEditorWillDestroy: (editor: Monaco.editor.IStandaloneCodeEditor) => void;
+  settings: Monaco.editor.IStandaloneEditorConstructionOptions;
 }
 
 class Editor extends Component<EditorProps, Record<string, never>> {
@@ -46,10 +46,11 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
   container: HTMLDivElement | null;
 
-  editor?: monaco.editor.IStandaloneCodeEditor;
+  editor?: Monaco.editor.IStandaloneCodeEditor;
 
-  setLanguage(language: string): void {
+  async setLanguage(language: string): Promise<void> {
     if (this.editor) {
+      const monaco = await MonacoUtils.lazyMonaco();
       const model = this.editor.getModel();
       assertNotNull(model);
       monaco.editor.setModelLanguage(model, language);
@@ -74,7 +75,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     this.editor?.layout();
   }
 
-  initEditor(): void {
+  async initEditor(): Promise<void> {
     const { onEditorInitialized } = this.props;
     let { settings } = this.props;
     settings = {
@@ -96,6 +97,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     };
     assertNotNull(this.container);
 
+    const monaco = await MonacoUtils.lazyMonaco();
     this.editor = monaco.editor.create(this.container, settings);
 
     this.editor.addAction({
@@ -117,7 +119,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     this.editor.layout();
 
     monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: MonacoUtils.provideLinks,
+      provideLinks: await MonacoUtils.createProvideLinks(),
     });
 
     onEditorInitialized(this.editor);

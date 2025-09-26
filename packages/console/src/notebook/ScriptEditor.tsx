@@ -66,40 +66,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   }
 
   componentDidUpdate(prevProps: ScriptEditorProps): void {
-    const { sessionLanguage, settings } = this.props;
-
-    const language = settings?.language;
-
-    const languageChanged = language !== prevProps.settings?.language;
-    if (languageChanged) {
-      log.debug('Set language', language);
-      this.setLanguage(language);
-    }
-
-    const sessionDisconnected =
-      sessionLanguage == null && prevProps.sessionLanguage != null;
-    const languageMatch = language === sessionLanguage;
-    const prevLanguageMatch =
-      prevProps.settings?.language === prevProps.sessionLanguage;
-    if (
-      sessionDisconnected ||
-      (sessionLanguage !== undefined && prevLanguageMatch && !languageMatch)
-    ) {
-      // Session disconnected or language changed from matching the session language to non-matching
-      log.debug('De-init completion');
-      this.deInitCodeCompletion();
-    }
-
-    const sessionConnected =
-      sessionLanguage != null && prevProps.sessionLanguage == null;
-    if (
-      (sessionConnected && languageMatch) ||
-      (sessionLanguage !== undefined && !prevLanguageMatch && languageMatch)
-    ) {
-      // Session connected with a matching language or notebook language changed to matching
-      log.debug('Init completion');
-      this.initCodeCompletion();
-    }
+    this.handleEditorUpdated(prevProps);
   }
 
   componentWillUnmount(): void {
@@ -141,7 +108,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     return ScriptEditorUtils.outdentCode(model.getValueInRange(wholeLineRange));
   }
 
-  handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
+  async handleEditorInitialized(
+    innerEditor: editor.IStandaloneCodeEditor
+  ): Promise<void> {
     const {
       focusOnMount,
       onChange,
@@ -156,12 +125,12 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     this.editor = innerEditor;
     this.setState({ model: this.editor.getModel() });
 
-    MonacoUtils.setEOL(innerEditor);
+    await MonacoUtils.setEOL(innerEditor);
     MonacoUtils.registerPasteHandler(innerEditor);
 
     // Always initialize context actions when the editor is created to ensure that unwanted default
     // OS shortcuts are overridden by custom shortcuts.
-    this.initContextActions();
+    await this.initContextActions();
 
     if (session != null && settings && sessionLanguage === settings.language) {
       this.initCodeCompletion();
@@ -173,6 +142,43 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
 
     onEditorInitialized(this.editor);
+  }
+
+  async handleEditorUpdated(prevProps: ScriptEditorProps): Promise<void> {
+    const { sessionLanguage, settings } = this.props;
+
+    const language = settings?.language;
+
+    const languageChanged = language !== prevProps.settings?.language;
+    if (languageChanged) {
+      log.debug('Set language', language);
+      await this.setLanguage(language);
+    }
+
+    const sessionDisconnected =
+      sessionLanguage == null && prevProps.sessionLanguage != null;
+    const languageMatch = language === sessionLanguage;
+    const prevLanguageMatch =
+      prevProps.settings?.language === prevProps.sessionLanguage;
+    if (
+      sessionDisconnected ||
+      (sessionLanguage !== undefined && prevLanguageMatch && !languageMatch)
+    ) {
+      // Session disconnected or language changed from matching the session language to non-matching
+      log.debug('De-init completion');
+      this.deInitCodeCompletion();
+    }
+
+    const sessionConnected =
+      sessionLanguage != null && prevProps.sessionLanguage == null;
+    if (
+      (sessionConnected && languageMatch) ||
+      (sessionLanguage !== undefined && !prevLanguageMatch && languageMatch)
+    ) {
+      // Session connected with a matching language or notebook language changed to matching
+      log.debug('Init completion');
+      this.initCodeCompletion();
+    }
   }
 
   handleEditorWillDestroy(innerEditor: editor.IStandaloneCodeEditor): void {
@@ -225,7 +231,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     onRunCommand(command);
   }
 
-  initContextActions(): void {
+  async initContextActions(): Promise<void> {
     if (this.contextActionCleanups.length > 0) {
       log.error('Context actions already initialized.');
       return;
@@ -241,7 +247,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
         id: 'run-code',
         label: 'Run',
         keybindings: [
-          MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.NOTEBOOK.RUN),
+          await MonacoUtils.getMonacoKeyCodeFromShortcut(
+            SHORTCUTS.NOTEBOOK.RUN
+          ),
         ],
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
@@ -257,7 +265,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
         id: 'run-selected-code',
         label: 'Run Selected',
         keybindings: [
-          MonacoUtils.getMonacoKeyCodeFromShortcut(
+          await MonacoUtils.getMonacoKeyCodeFromShortcut(
             SHORTCUTS.NOTEBOOK.RUN_SELECTED
           ),
         ],
@@ -350,9 +358,9 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     }
   }
 
-  setLanguage(language?: string): void {
+  async setLanguage(language?: string): Promise<void> {
     if (this.editorComponent.current && language !== undefined) {
-      this.editorComponent.current.setLanguage(language);
+      await this.editorComponent.current.setLanguage(language);
     }
   }
 

@@ -14,7 +14,7 @@ import { getNotebookSettings, updateNotebookSettings } from '@deephaven/redux';
 import { vsSettings } from '@deephaven/icons';
 import {
   MonacoProviders,
-  RuffSettingsModal,
+  LazyRuffSettingsModal,
   RUFF_DEFAULT_SETTINGS,
 } from '@deephaven/console';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -139,7 +139,7 @@ export function EditorSectionContent(): JSX.Element {
         </ActionButton>
       </div>
       {isRuffSettingsOpen && (
-        <RuffSettingsModal
+        <LazyRuffSettingsModal
           text={val}
           isOpen={isRuffSettingsOpen}
           onClose={handleRuffSettingsClose}

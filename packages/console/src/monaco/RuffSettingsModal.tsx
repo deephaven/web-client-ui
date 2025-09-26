@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import { Workspace } from '@astral-sh/ruff-wasm-web';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -25,7 +25,7 @@ import ruffSchema from './ruffSchema';
 import './RuffSettingsModal.scss';
 import MonacoProviders from './MonacoProviders';
 
-interface RuffSettingsModalProps {
+export interface RuffSettingsModalProps {
   text: string;
   isOpen: boolean;
   onClose: () => void;
@@ -34,11 +34,14 @@ interface RuffSettingsModalProps {
   defaultSettings?: Record<string, unknown>;
 }
 
-const RUFF_SETTINGS_URI = monaco.Uri.parse(
-  'inmemory://dh-config/ruff-settings.json'
-);
+// const RUFF_SETTINGS_URI = Monaco.Uri.parse(
+//   'inmemory://dh-config/ruff-settings.json'
+// );
 
-function registerRuffSchema(): void {
+function registerRuffSchema(
+  monaco: typeof Monaco,
+  ruffSettingsUri: Monaco.Uri
+): void {
   const { schemas = [] } =
     monaco.languages.json.jsonDefaults.diagnosticsOptions;
 
@@ -49,7 +52,7 @@ function registerRuffSchema(): void {
         ...schemas,
         {
           uri: 'json://ruff-schema',
-          fileMatch: [RUFF_SETTINGS_URI.toString()],
+          fileMatch: [ruffSettingsUri.toString()],
           schema: ruffSchema,
         },
       ],
@@ -65,14 +68,17 @@ async function getRuffVersion(): Promise<string> {
 export default function RuffSettingsModal({
   text,
   isOpen,
+  monaco,
   onClose,
   onSave,
   readOnly = false,
   defaultSettings = RUFF_DEFAULT_SETTINGS,
-}: RuffSettingsModalProps): React.ReactElement | null {
+}: RuffSettingsModalProps & {
+  monaco: typeof Monaco;
+}): React.ReactElement | null {
   const [isValid, setIsValid] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor>();
 
   const formattedDefaultSettings = useMemo(
     () => JSON.stringify(defaultSettings, null, 2),
@@ -81,8 +87,13 @@ export default function RuffSettingsModal({
 
   const { data: ruffVersion } = usePromiseFactory(getRuffVersion);
 
+  const ruffSettingsUri = useMemo(
+    () => monaco.Uri.parse('inmemory://dh-config/ruff-settings.json'),
+    [monaco]
+  );
+
   const [model] = useState(() =>
-    monaco.editor.createModel(text, 'json', RUFF_SETTINGS_URI)
+    monaco.editor.createModel(text, 'json', ruffSettingsUri)
   );
 
   const handleClose = useCallback((): void => {
@@ -129,17 +140,17 @@ export default function RuffSettingsModal({
   });
 
   const onEditorInitialized = useCallback(
-    (editor: monaco.editor.IStandaloneCodeEditor): void => {
+    (editor: Monaco.editor.IStandaloneCodeEditor): void => {
       editorRef.current = editor;
 
       model.onDidChangeContent(() => {
         debouncedValidate(model.getValue());
       });
 
-      registerRuffSchema();
+      registerRuffSchema(monaco, ruffSettingsUri);
       debouncedValidate(model.getValue());
     },
-    [debouncedValidate, model]
+    [debouncedValidate, model, monaco, ruffSettingsUri]
   );
 
   if (!isOpen) {

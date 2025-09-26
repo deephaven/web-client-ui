@@ -1,5 +1,5 @@
 /* eslint-disable no-bitwise */
-import * as monaco from 'monaco-editor';
+// import * as monaco from 'monaco-editor';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import { TestUtils } from '@deephaven/test-utils';
 import MonacoUtils from './MonacoUtils';
