@@ -76,7 +76,7 @@ export class TextUtils {
     if (value === 1) {
       return singular;
     }
-    return pluralized != null ? pluralized : `${singular}s`;
+    return pluralized ?? `${singular}s`;
   }
 }
 
