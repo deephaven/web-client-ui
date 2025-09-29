@@ -85,3 +85,15 @@ describe('sort text', () => {
     expect(TextUtils.sort('A', 'A', false)).toBe(0);
   });
 });
+
+describe('pluralize', () => {
+  it('handles singular', () => {
+    expect(TextUtils.pluralize(1, 'item')).toBe('item');
+    expect(TextUtils.pluralize(1, 'item', 'pluralized')).toBe('item');
+  });
+
+  it('handles plural', () => {
+    expect(TextUtils.pluralize(2, 'item')).toBe('items');
+    expect(TextUtils.pluralize(2, 'item', 'pluralized')).toBe('pluralized');
+  });
+});
