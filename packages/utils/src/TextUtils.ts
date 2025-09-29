@@ -60,6 +60,24 @@ export class TextUtils {
     }
     return 0;
   }
+
+  /**
+   * Pluralize a string based on a value
+   * @param value The value to use for pluralization
+   * @param singular The singular form of the string
+   * @param pluralized The pluralized form of the string. If not provided, will append 's' to the singular form.
+   * @returns The pluralized string
+   */
+  static pluralize(
+    value: number,
+    singular: string,
+    pluralized?: string
+  ): string {
+    if (value === 1) {
+      return singular;
+    }
+    return pluralized != null ? pluralized : `${singular}s`;
+  }
 }
 
 export default TextUtils;
