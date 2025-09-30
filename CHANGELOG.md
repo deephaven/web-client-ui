@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.0](https://github.com/deephaven/web-client-ui/compare/v1.6.0...v1.7.0) (2025-09-24)
+
+### Features
+
+- DH-13515: Expandable columns support ([#2537](https://github.com/deephaven/web-client-ui/issues/2537)) ([6938c47](https://github.com/deephaven/web-client-ui/commit/6938c477a03f4d747851f10c43549dbdae69b648))
+
+### Bug Fixes
+
+- DH-20229: Value is null or undefined when scrolling rollup ([#2538](https://github.com/deephaven/web-client-ui/issues/2538)) ([7b752ae](https://github.com/deephaven/web-client-ui/commit/7b752aec56a797d0adc545a2bbbd32df6bed09fa))
+
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Features
+
+- close maximized panels with escape key ([#2533](https://github.com/deephaven/web-client-ui/issues/2533)) ([b90d540](https://github.com/deephaven/web-client-ui/commit/b90d5406a57afca220ae41bad195490f0cbdea46)), closes [#1165](https://github.com/deephaven/web-client-ui/issues/1165)
+
+### Bug Fixes
+
+- DH-20388: VITE_MODULE_PLUGINS_URL path should be relative ([#2535](https://github.com/deephaven/web-client-ui/issues/2535)) ([1e1b473](https://github.com/deephaven/web-client-ui/commit/1e1b4731fc2f8597308c1b2977f162d0f12c2602))
+- IrisGridModelUpdater causes "cannot update during an existing state transition" warning ([#2536](https://github.com/deephaven/web-client-ui/issues/2536)) ([ee2ba42](https://github.com/deephaven/web-client-ui/commit/ee2ba42573f76fb8373dd6c0d1de290e3a5990b4))
+
 ## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
 
 ### Bug Fixes

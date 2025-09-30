@@ -3,7 +3,6 @@ import {
   type BoundedAxisRange,
   type Coordinate,
   type GridMetrics,
-  type GridRangeIndex,
   GridRenderer,
   type GridRenderState,
   type GridThemeType,
@@ -14,13 +13,11 @@ import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
-  type ReadonlyAdvancedFilterMap,
-  type ReadonlyQuickFilterMap,
   type AdvancedFilter,
   type QuickFilter,
+  type IrisGridStateOverride,
 } from './CommonTypes';
 import { type IrisGridThemeType } from './IrisGridTheme';
-import type IrisGridModel from './IrisGridModel';
 import IrisGridTextCellRenderer from './IrisGridTextCellRenderer';
 import IrisGridDataBarCellRenderer from './IrisGridDataBarCellRenderer';
 import { getIcon } from './IrisGridIcons';
@@ -35,18 +32,7 @@ const ICON_NAMES = Object.freeze({
 
 const EXPAND_ICON_SIZE = 10;
 
-export type IrisGridRenderState = GridRenderState & {
-  model: IrisGridModel;
-  theme: IrisGridThemeType;
-  hoverSelectColumn: GridRangeIndex;
-  isSelectingColumn: boolean;
-  loadingScrimProgress: number;
-  reverse: boolean;
-  isFilterBarShown: boolean;
-  advancedFilters: ReadonlyAdvancedFilterMap;
-  quickFilters: ReadonlyQuickFilterMap;
-  isMenuShown: boolean;
-};
+export type IrisGridRenderState = GridRenderState & IrisGridStateOverride;
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
  * */
@@ -929,9 +915,10 @@ export class IrisGridRenderer extends GridRenderer {
       metrics
     );
 
-    assertNotNull(left);
-    assertNotNull(rowHeight);
-    assertNotNull(top);
+    if (left == null || rowHeight == null || top == null) {
+      return NULL_POSITION;
+    }
+
     const { cellHorizontalPadding } = theme;
 
     const width = EXPAND_ICON_SIZE + 2 * cellHorizontalPadding;

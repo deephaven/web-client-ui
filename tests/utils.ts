@@ -1,7 +1,7 @@
 import {
-  Locator,
+  type Locator,
   expect,
-  Page,
+  type Page,
   chromium,
   firefox,
   webkit,
