@@ -764,7 +764,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    const mouseHandlers: MouseHandlersProp = [
+    const mouseHandlers: (
+      | GridMouseHandler
+      | ((irisGrid: IrisGrid) => GridMouseHandler)
+    )[] = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -1549,7 +1552,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (mouseHandlers: MouseHandlersProp): readonly GridMouseHandler[] =>
       [...mouseHandlers, ...this.mouseHandlers].map(handler =>
         typeof handler === 'function' ? handler(this) : handler
-      )
+      ),
+    { max: 1 }
   );
 
   getCachedRenderer = memoize(
