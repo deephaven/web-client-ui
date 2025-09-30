@@ -36,7 +36,7 @@ export type LinkColumn = {
 };
 
 export type LinkDataValue<T = unknown> = {
-  operator: FilterTypeValue;
+  operator?: FilterTypeValue; // Default behavior treats no operator as equals
   text: string;
   value: T;
   startColumnIndex: number;

@@ -562,7 +562,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     // combine them so they could be set in a single call per target panel
     for (let i = 0; i < links.length; i += 1) {
       const { start, end, operator } = links[i];
-      if (start.panelId === sourceId && end != null && operator != null) {
+      if (start.panelId === sourceId && end != null) {
         const { panelId: endPanelId, columnName, columnType } = end;
         // Map of column name to column type and filter value
         const existingFilterMap = panelFilterMap.get(endPanelId);
