@@ -352,7 +352,7 @@ export interface IrisGridProps {
   frozenColumns: readonly ColumnName[];
 
   // Theme override for IrisGridTheme
-  theme: Partial<IrisGridThemeType> & Record<string, unknown>;
+  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
 
   canToggleSearch: boolean;
 
