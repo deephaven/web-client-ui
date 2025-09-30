@@ -2586,11 +2586,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  toggleExpandColumn(modelIndex: ModelIndex): void {
+  toggleExpandColumn(
+    modelIndex: ModelIndex,
+    expandDescendants?: boolean
+  ): void {
     log.debug2('Toggle expand column', modelIndex);
     const { model } = this.props;
     if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
-      model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
+      model.setColumnExpanded(
+        modelIndex,
+        !model.isColumnExpanded(modelIndex),
+        expandDescendants
+      );
     }
   }
 
