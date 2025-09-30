@@ -45,25 +45,14 @@ function makeComponent(
   settings = DEFAULT_SETTINGS,
   props = {}
 ) {
-<<<<<<< HEAD
   let ref: React.RefObject<IrisGrid>;
   function IrisGridWithRef() {
     ref = useRef<IrisGrid>(null);
-    return <IrisGrid model={model} settings={settings} ref={ref} />;
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    return <IrisGrid model={model} settings={settings} ref={ref} {...props} />;
   }
   render(<IrisGridWithRef />);
   return ref!.current!;
-=======
-  const testRenderer = TestRenderer.create(
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <IrisGrid model={model} settings={settings} {...props} />,
-    {
-      createNodeMock,
-    }
-  );
-  return testRenderer.getInstance() as TestRenderer.ReactTestInstance &
-    IrisGrid;
->>>>>>> upstream/main
 }
 
 function keyDown(
