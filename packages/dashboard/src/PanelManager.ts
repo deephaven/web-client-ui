@@ -477,6 +477,8 @@ class PanelManager {
         config
       );
       if (dehydratedConfig != null) {
+        // Not using LayoutUtils.getStackForConfig here because the panel may be removed from the root config already.
+        // The container config should be the same as it was when it was unmounted, so this avoids the issue of the config not existing on root.
         (dehydratedConfig as ClosedPanel).parentStackId =
           glContainer.tab?.header.parent.config.id;
         this.closed.push(dehydratedConfig);
