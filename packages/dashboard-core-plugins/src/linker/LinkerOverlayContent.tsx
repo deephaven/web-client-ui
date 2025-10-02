@@ -317,7 +317,7 @@ export class LinkerOverlayContent extends Component<
           return null;
         }
       })
-      .filter(item => item != null);
+      .filter(item => item != null) as VisibleLink[];
 
     return (
       <div
