@@ -10,7 +10,10 @@ import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
 import { vsGripper } from '@deephaven/icons';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import {
+  type TypeValue as FilterTypeValue,
+  Type as FilterType,
+} from '@deephaven/filters';
 import clamp from 'lodash.clamp';
 import {
   isLinkableFromPanel,
@@ -308,7 +311,7 @@ export class LinkerOverlayContent extends Component<
             operator,
             startColumnType,
             type,
-          };
+          } as const;
         } catch (error) {
           log.warn('Unable to get point for link', link, error);
           return null;
@@ -345,7 +348,7 @@ export class LinkerOverlayContent extends Component<
               onClick={onLinkSelected}
               onDelete={onLinkDeleted}
               isSelected={selectedIds.has(id)}
-              operator={operator}
+              operator={operator ?? FilterType.eq}
               startColumnType={startColumnType}
               type={type}
               onOperatorChanged={this.handleOperatorChanged}
