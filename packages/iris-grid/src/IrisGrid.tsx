@@ -253,7 +253,7 @@ function isEmptyConfig({
 }
 
 export type FilterData = {
-  operator: FilterTypeValue;
+  operator?: FilterTypeValue; // Default behavior treats no operator as equals
   text: string;
   value: unknown;
   startColumnIndex: number;
