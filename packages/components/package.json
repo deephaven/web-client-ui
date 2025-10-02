@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "1.5.3",
+  "version": "1.7.1",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
