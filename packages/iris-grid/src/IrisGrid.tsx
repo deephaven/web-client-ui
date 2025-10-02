@@ -745,10 +745,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    const mouseHandlers: (
-      | GridMouseHandler
-      | ((irisGrid: IrisGrid) => GridMouseHandler)
-    )[] = [
+    const mouseHandlers: MouseHandlersProp = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -761,10 +758,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new PendingMouseHandler(this),
       new IrisGridPartitionedTableMouseHandler(this),
       ...mouseHandlersProp,
+      ...(canCopy ? [new IrisGridCopyCellMouseHandler(this)] : []),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
-      mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
     }
     const movedColumns =
       movedColumnsProp.length > 0
@@ -1494,7 +1491,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (mouseHandlers: MouseHandlersProp): readonly GridMouseHandler[] =>
       [...mouseHandlers, ...this.mouseHandlers].map(handler =>
         typeof handler === 'function' ? handler(this) : handler
-      )
+      ),
+    { max: 1 }
   );
 
   getCachedRenderer = memoize(
@@ -2527,11 +2525,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  toggleExpandColumn(modelIndex: ModelIndex): void {
+  toggleExpandColumn(
+    modelIndex: ModelIndex,
+    expandDescendants?: boolean
+  ): void {
     log.debug2('Toggle expand column', modelIndex);
     const { model } = this.props;
     if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
-      model.setColumnExpanded(modelIndex, !model.isColumnExpanded(modelIndex));
+      model.setColumnExpanded(
+        modelIndex,
+        !model.isColumnExpanded(modelIndex),
+        expandDescendants
+      );
     }
   }
 
