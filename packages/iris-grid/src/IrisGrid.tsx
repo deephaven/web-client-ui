@@ -764,10 +764,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    const mouseHandlers: (
-      | GridMouseHandler
-      | ((irisGrid: IrisGrid) => GridMouseHandler)
-    )[] = [
+    const mouseHandlers: MouseHandlersProp = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -780,10 +777,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new PendingMouseHandler(this),
       new IrisGridPartitionedTableMouseHandler(this),
       ...mouseHandlersProp,
+      ...(canCopy ? [new IrisGridCopyCellMouseHandler(this)] : []),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
-      mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
     }
     const movedColumns =
       movedColumnsProp.length > 0
