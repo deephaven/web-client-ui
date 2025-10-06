@@ -14,9 +14,14 @@ export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['dashboardData', '*', 'openedMap'],
   ['draftManager', 'draftStorage'],
   ['layoutStorage'],
-  ['schemaService', 'client'],
-  ['schemaService', 'schemaStorage'],
   ['storage'],
+
+  // Below are confirmed enterprise specific keys, and will be moved in DH-20410
+  ['schemaService', 'client'],
+  ['schemaService', 'clientUtils'],
+  ['schemaService', 'schemaStorage'],
+  ['corePlusManager', 'dheClient'],
+  ['dheClient'],
 ];
 
 function stringifyReplacer(blacklist: string[][]) {
