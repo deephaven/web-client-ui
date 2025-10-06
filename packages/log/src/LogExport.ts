@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import stringify from 'safe-stable-stringify';
+import { configure } from 'safe-stable-stringify';
 import type LogHistory from './LogHistory';
 
 // List of objects to blacklist
@@ -23,6 +23,9 @@ export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['corePlusManager', 'dheClient'],
   ['dheClient'],
 ];
+
+// The default maximum depth to serialize to in the redux data
+const DEFAULT_MAXIMUM_DEPTH = 10;
 
 function stringifyReplacer(blacklist: string[][]) {
   // modified from:
@@ -68,8 +71,15 @@ function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
 
 export function getReduxDataString(
   reduxData: Record<string, unknown>,
-  blacklist: string[][] = []
+  blacklist: string[][] = [],
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): string {
+  // Limit the maximum depth to prevent linked structures from blowing up the log size
+  // All objects at the maximum depth are replaced with "[Object]" or "[Array]"
+  const stringify = configure({
+    maximumDepth,
+  });
+
   return (
     // Using safe-stable-stringify which handles circular references and BigInt
     // All circular references are replaced with "[Circular]", and BigInt values are converted to a number
@@ -106,6 +116,7 @@ function formatDate(date: Date): string {
  * @param metadata Additional metadata to include in the metadata.json file
  * @param reduxData Redux data to include in the redux.json file
  * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
+ * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
@@ -114,6 +125,7 @@ export async function exportLogs(
   metadata?: Record<string, unknown>,
   reduxData?: Record<string, unknown>,
   blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH,
   fileNamePrefix = `${formatDate(new Date())}_support_logs`
 ): Promise<void> {
   const zip = new JSZip();
@@ -123,7 +135,10 @@ export async function exportLogs(
     folder.file('metadata.json', getFormattedMetadata(metadata));
   }
   if (reduxData != null) {
-    folder.file('redux.json', getReduxDataString(reduxData, blacklist));
+    folder.file(
+      'redux.json',
+      getReduxDataString(reduxData, blacklist, maximumDepth)
+    );
   }
 
   const blob = await zip.generateAsync({ type: 'blob' });
