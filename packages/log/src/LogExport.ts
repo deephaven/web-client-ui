@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import stringify from 'safe-stable-stringify';
+import { configure } from 'safe-stable-stringify';
 import type LogHistory from './LogHistory';
 
 // List of objects to blacklist
@@ -14,10 +14,18 @@ export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['dashboardData', '*', 'openedMap'],
   ['draftManager', 'draftStorage'],
   ['layoutStorage'],
-  ['schemaService', 'client'],
-  ['schemaService', 'schemaStorage'],
   ['storage'],
+
+  // Below are confirmed enterprise specific keys, and will be moved in DH-20410
+  ['schemaService', 'client'],
+  ['schemaService', 'clientUtils'],
+  ['schemaService', 'schemaStorage'],
+  ['corePlusManager', 'dheClient'],
+  ['dheClient'],
 ];
+
+// The default maximum depth to serialize to in the redux data
+const DEFAULT_MAXIMUM_DEPTH = 10;
 
 function stringifyReplacer(blacklist: string[][]) {
   // modified from:
@@ -63,8 +71,15 @@ function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
 
 export function getReduxDataString(
   reduxData: Record<string, unknown>,
-  blacklist: string[][] = []
+  blacklist: string[][] = [],
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): string {
+  // Limit the maximum depth to prevent linked structures from blowing up the log size
+  // All objects at the maximum depth are replaced with "[Object]" or "[Array]"
+  const stringify = configure({
+    maximumDepth,
+  });
+
   return (
     // Using safe-stable-stringify which handles circular references and BigInt
     // All circular references are replaced with "[Circular]", and BigInt values are converted to a number
@@ -102,6 +117,7 @@ function formatDate(date: Date): string {
  * @param reduxData Redux data to include in the redux.json file
  * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
@@ -109,7 +125,8 @@ export async function exportLogs(
   metadata?: Record<string, unknown>,
   reduxData?: Record<string, unknown>,
   blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
-  fileNamePrefix = `${formatDate(new Date())}_support_logs`
+  fileNamePrefix = `${formatDate(new Date())}_support_logs`,
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
@@ -118,7 +135,10 @@ export async function exportLogs(
     folder.file('metadata.json', getFormattedMetadata(metadata));
   }
   if (reduxData != null) {
-    folder.file('redux.json', getReduxDataString(reduxData, blacklist));
+    folder.file(
+      'redux.json',
+      getReduxDataString(reduxData, blacklist, maximumDepth)
+    );
   }
 
   const blob = await zip.generateAsync({ type: 'blob' });
