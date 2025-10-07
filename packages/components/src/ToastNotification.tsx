@@ -8,7 +8,7 @@ import './ToastNotification.scss';
 import { FadeTransition } from './transitions';
 
 type ToastNotificationProps = {
-  buttons?: (typeof Button)[];
+  buttons?: React.ReactNode[];
   classNames?: string;
   isShown?: boolean;
   message?: string;

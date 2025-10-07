@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import type { ListData } from '@adobe/react-spectrum';
-import { type Key, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { Key } from '@react-types/shared';
 
 /**
  * Subset of React Stately ListData + bulkUpdate.

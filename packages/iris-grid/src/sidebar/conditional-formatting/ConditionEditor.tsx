@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -137,9 +137,9 @@ function isNumberConditionValid(
 
 function getNumberInputs(
   selectedCondition: NumberCondition,
-  handleValueChange: (e: unknown) => void,
-  handleStartValueChange: (e: unknown) => void,
-  handleEndValueChange: (e: unknown) => void,
+  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  handleStartValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  handleEndValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   conditionValue?: string,
   startValue?: string,
   endValue?: string
@@ -187,7 +187,7 @@ function getNumberInputs(
 
 function getStringInputs(
   selectedCondition: StringCondition,
-  handleValueChange: (e: unknown) => void,
+  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -209,7 +209,7 @@ function getStringInputs(
 
 function getDateInputs(
   selectedCondition: DateCondition,
-  handleValueChange: (e: unknown) => void,
+  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -235,7 +235,7 @@ function getBooleanInputs(): null {
 
 function getCharInputs(
   selectedCondition: CharCondition,
-  handleValueChange: (e: unknown) => void,
+  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -300,23 +300,32 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
     setCondition(value as Condition);
   }, []);
 
-  const handleValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleValueChange', value);
-    setValue(value);
-  }, []);
+  const handleValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      log.debug('handleValueChange', value);
+      setValue(value);
+    },
+    []
+  );
 
-  const handleStartValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleStartValueChange', value);
-    setStartValue(value);
-  }, []);
+  const handleStartValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      log.debug('handleStartValueChange', value);
+      setStartValue(value);
+    },
+    []
+  );
 
-  const handleEndValueChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleEndValueChange', value);
-    setEndValue(value);
-  }, []);
+  const handleEndValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      log.debug('handleEndValueChange', value);
+      setEndValue(value);
+    },
+    []
+  );
 
   useEffect(
     function changeCondition() {

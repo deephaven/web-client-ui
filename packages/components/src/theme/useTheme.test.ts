@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { TestUtils } from '@deephaven/test-utils';
 import { useTheme } from './useTheme';
 
@@ -28,10 +28,10 @@ describe('useTheme', () => {
   });
 
   it('should throw if context is null', () => {
+    TestUtils.disableConsoleOutput();
     asMock(useContext).mockReturnValue(null);
 
-    const { result } = renderHook(() => useTheme());
-    expect(result.error).toEqual(
+    expect(() => renderHook(() => useTheme())).toThrow(
       new Error(
         'No ThemeContext value found. Component must be wrapped in a ThemeContext.Provider'
       )

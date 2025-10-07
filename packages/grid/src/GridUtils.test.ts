@@ -1,9 +1,8 @@
-import { type AxisRange } from './GridAxisRange';
+import { type AxisRange, type BoundedAxisRange } from './GridAxisRange';
 import { type ModelIndex, type MoveOperation } from './GridMetrics';
 import type GridMetrics from './GridMetrics';
 import GridRange, { type GridRangeIndex } from './GridRange';
 import GridUtils, { type Token, type TokenBox } from './GridUtils';
-import type { BoundedAxisRange } from './GridAxisRange';
 
 function expectModelIndexes(
   movedItems: MoveOperation[],

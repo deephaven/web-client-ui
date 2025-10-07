@@ -1,8 +1,12 @@
-import { type ScriptEditor } from '@deephaven/console';
+import {
+  type CommandHistorySettings,
+  type ScriptEditor,
+} from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
   DashboardUtils,
+  type DehydratedPanelProps,
   type DehydratedDashboardPanelProps,
   LayoutUtils,
   type PanelComponent,
@@ -12,6 +16,7 @@ import {
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import { type CloseOptions, isComponent } from '@deephaven/golden-layout';
+import { type dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -140,24 +145,27 @@ export function ConsolePlugin(
   );
 
   const handleSettingsChanged = useCallback(
-    consoleSettings => {
+    (consoleSettings: Record<string, unknown>) => {
       dispatch(setDashboardConsoleSettings(id, consoleSettings));
     },
     [dispatch, id]
   );
 
-  const getNotebookFileName = useCallback(({ language }) => {
-    const extension = language === 'python' ? 'py' : language;
-    let title = null;
-    if (extension == null) {
-      log.debug('No extension for language', language);
-      title = `Untitled-${notebookIndex.current}`;
-    } else {
-      title = `Untitled-${notebookIndex.current}.${extension}`;
-    }
-    notebookIndex.current += 1;
-    return title;
-  }, []);
+  const getNotebookFileName = useCallback(
+    ({ language }: { language?: string }) => {
+      const extension = language === 'python' ? 'py' : language;
+      let title = null;
+      if (extension == null) {
+        log.debug('No extension for language', language);
+        title = `Untitled-${notebookIndex.current}`;
+      } else {
+        title = `Untitled-${notebookIndex.current}.${extension}`;
+      }
+      notebookIndex.current += 1;
+      return title;
+    },
+    []
+  );
 
   const getPanelIdForFileMetadata = useCallback(
     (fileMetadata: FileMetadata, createIfNecessary = true) => {
@@ -168,7 +176,7 @@ export function ConsolePlugin(
       if (fileId != null && previewFileMap.has(fileId)) {
         return previewFileMap.get(fileId);
       }
-      if (createIfNecessary as boolean) {
+      if (createIfNecessary) {
         return nanoid();
       }
       return undefined;
@@ -177,14 +185,14 @@ export function ConsolePlugin(
   );
 
   const renamePanel = useCallback(
-    (panelId, newTitle) => {
+    (panelId: string, newTitle: string) => {
       LayoutUtils.renameComponent(layout.root, { id: panelId }, newTitle);
     },
     [layout.root]
   );
 
   const renameFilePanel = useCallback(
-    (oldName, newName) => {
+    (oldName: string, newName: string) => {
       log.debug('Rename file panel', oldName, newName);
       let panelId;
       if (openFileMap.has(oldName)) {
@@ -225,7 +233,7 @@ export function ConsolePlugin(
    * If the panel is not already open, then it just logs an error and does nothing.
    */
   const showFilePanel = useCallback(
-    fileMetadata => {
+    (fileMetadata: FileMetadata) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata, false);
       if (panelId == null) {
         log.error('Could not find panel id for file metadata', fileMetadata);
@@ -237,7 +245,7 @@ export function ConsolePlugin(
   );
 
   const registerFilePanel = useCallback(
-    (panelId, fileMetadata: FileMetadata, isPreview: boolean) => {
+    (panelId: string, fileMetadata: FileMetadata, isPreview: boolean) => {
       log.debug('registerFilePanel', panelId, fileMetadata, isPreview);
       if (fileMetadata == null || fileMetadata.id == null) {
         log.debug('Ignore empty file id', fileMetadata);
@@ -297,9 +305,13 @@ export function ConsolePlugin(
   );
 
   const closeFilePanel = useCallback(
-    (fileMetadata, options?: CloseOptions) => {
+    (fileMetadata: FileMetadata, options?: CloseOptions) => {
       log.debug('closeFilePanel', fileMetadata);
       const { id: fileId } = fileMetadata;
+      if (fileId == null) {
+        log.warn('File ID is null, ignore close event');
+        return;
+      }
       let panelId = null;
       let isPreview = false;
       if (openFileMap.has(fileId)) {
@@ -317,7 +329,7 @@ export function ConsolePlugin(
     [layout.root, openFileMap, previewFileMap, unregisterFilePanel]
   );
 
-  const getNotebookTitle = useCallback(fileMetadata => {
+  const getNotebookTitle = useCallback((fileMetadata: FileMetadata) => {
     const { itemName } = fileMetadata;
     return FileUtils.getBaseName(itemName);
   }, []);
@@ -332,7 +344,7 @@ export function ConsolePlugin(
   );
 
   const fileIsOpenAsPreview = useCallback(
-    fileMetadata => {
+    (fileMetadata: FileMetadata) => {
       const { id: fileId } = fileMetadata;
       log.debug('fileIsOpenAsPreview', fileMetadata, fileId, previewFileMap);
       return fileId != null && previewFileMap.has(fileId);
@@ -344,7 +356,7 @@ export function ConsolePlugin(
    * Attempts to focus the panel with the provided panelId
    */
   const focusPanelById = useCallback(
-    panelId => {
+    (panelId: string) => {
       if (panelId == null) {
         return;
       }
@@ -365,6 +377,13 @@ export function ConsolePlugin(
       session,
       sessionLanguage,
       isPreview = false,
+    }: {
+      id: string | undefined;
+      settings: CommandHistorySettings;
+      fileMetadata: FileMetadata;
+      session: dh.IdeSession;
+      sessionLanguage: string;
+      isPreview?: boolean;
     }) => {
       const panelState = {
         settings,
@@ -393,16 +412,25 @@ export function ConsolePlugin(
 
   const createNotebook = useCallback(
     (
-      session,
-      sessionLanguage,
-      settings,
-      fileMetadata = { id: null, itemName: getNotebookFileName(settings) }
+      session: dh.IdeSession,
+      sessionLanguage: string,
+      settings: CommandHistorySettings,
+      fileMetadata: FileMetadata = {
+        id: null,
+        itemName: getNotebookFileName(settings),
+      }
     ) => {
       const panelId = getPanelIdForFileMetadata(fileMetadata);
       if (fileIsOpen(fileMetadata) && panelId != null) {
         log.debug('File is already open, focus panel');
         showFilePanel(fileMetadata);
         focusPanelById(panelId);
+        return;
+      }
+
+      // Should never happen because getPanelForFileMetadata will create an ID by default
+      if (panelId == null) {
+        log.error('Panel ID for file metadata is null');
         return;
       }
       const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
@@ -432,10 +460,10 @@ export function ConsolePlugin(
 
   const selectNotebook = useCallback(
     (
-      session,
-      sessionLanguage,
-      settings,
-      fileMetadata,
+      session: dh.IdeSession,
+      sessionLanguage: string,
+      settings: CommandHistorySettings,
+      fileMetadata: FileMetadata,
       // linter recognizes shouldFocus as any if I don't specify boolean here
       // eslint-disable-next-line @typescript-eslint/no-inferrable-types
       shouldFocus: boolean = false
@@ -453,8 +481,9 @@ export function ConsolePlugin(
 
       if (panelId == null || panelId === '') {
         throw new Error(
-          'Unable to retrieve or create panelId for metadata',
-          fileMetadata
+          `Unable to retrieve or create panelId for metadata: ${JSON.stringify(
+            fileMetadata
+          )}`
         );
       }
 
@@ -491,7 +520,7 @@ export function ConsolePlugin(
           component: NotebookPanel.COMPONENT,
           id: panelId,
         });
-        if (item && isComponent(item)) {
+        if (fileId != null && item && isComponent(item)) {
           item.container.emit(NotebookEvent.PROMOTE_FROM_PREVIEW);
           deletePreviewFileMapEntry(fileId);
           addOpenFileMapEntry(fileId, panelId);
@@ -519,7 +548,12 @@ export function ConsolePlugin(
 
   /** Attempts to send the text to a notebook matching the passed in settings */
   const sendToNotebook = useCallback(
-    (session, sessionLanguage, settings = {}, createIfNecessary = true) => {
+    (
+      session: dh.IdeSession,
+      sessionLanguage: string,
+      settings: CommandHistorySettings = {} as CommandHistorySettings,
+      createIfNecessary = true
+    ) => {
       const notebookPanel = panelManager.getLastUsedPanelOfType(NotebookPanel);
       if (notebookPanel && isNotebookPanel(notebookPanel)) {
         if (
@@ -529,7 +563,7 @@ export function ConsolePlugin(
         ) {
           notebookPanel.notebook.append(settings.value);
         }
-      } else if (createIfNecessary as boolean) {
+      } else if (createIfNecessary) {
         createNotebook(session, sessionLanguage, settings);
       }
     },
@@ -538,7 +572,7 @@ export function ConsolePlugin(
 
   const hydrateNotebook = useCallback(
     (
-      panelProps: DehydratedDashboardPanelProps,
+      panelProps: DehydratedPanelProps,
       panelDashboardId: string
     ): DehydratedDashboardPanelProps =>
       DashboardUtils.hydrate(

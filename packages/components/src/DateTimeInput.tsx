@@ -105,13 +105,4 @@ export const DateTimeInput = React.forwardRef<
 
 DateTimeInput.displayName = 'DateTimeInput';
 
-DateTimeInput.defaultProps = {
-  className: '',
-  onChange: () => undefined,
-  defaultValue: '',
-  onFocus: () => undefined,
-  onBlur: () => undefined,
-  'data-testid': undefined,
-};
-
 export default DateTimeInput;

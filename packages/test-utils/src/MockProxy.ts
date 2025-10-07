@@ -18,7 +18,7 @@ const mockProxyDefaultProps = {
   [Symbol.iterator]: undefined,
   then: undefined,
   // Jest makes calls to `asymmetricMatch`, `hasAttribute`, `nodeType`
-  // `tagName`, and `toJSON`. react-test-renderer checks `ref`
+  // `tagName`, and `toJSON`
   asymmetricMatch: undefined,
   ref: undefined,
   hasAttribute: undefined,

@@ -1,5 +1,6 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
+import { TestUtils } from '@deephaven/test-utils';
 import { useDhId, DH_ID_PROP } from './useDhId';
 import { FiberProvider } from './useFiber';
 import { PanelIdContext } from './usePanelId';
@@ -71,19 +72,20 @@ describe('useDhId', () => {
   });
 
   it('should throw an error if __dhId is not a string', () => {
-    const { result } = renderHook(() => useDhId(), {
-      wrapper: ({ children }) => (
-        <FiberProvider>
-          {React.Children.map(children, c => {
-            if (React.isValidElement(c)) {
-              return React.cloneElement(c, { [DH_ID_PROP]: 42 });
-            }
-            return c;
-          })}
-        </FiberProvider>
-      ),
-    });
-
-    expect(result.error?.message).toMatch(/to be a string/);
+    TestUtils.disableConsoleOutput();
+    expect(() =>
+      renderHook(() => useDhId(), {
+        wrapper: ({ children }) => (
+          <FiberProvider>
+            {React.Children.map(children, c => {
+              if (React.isValidElement(c)) {
+                return React.cloneElement(c, { [DH_ID_PROP]: 42 });
+              }
+              return c;
+            })}
+          </FiberProvider>
+        ),
+      })
+    ).toThrow(/to be a string/);
   });
 });

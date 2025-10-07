@@ -154,11 +154,15 @@ test.describe('tests simple table operations', () => {
       quickFiltersItem.locator('.btn.btn-switch.active')
     ).toHaveCount(1);
 
-    // Open the Advanced Filters panel from the table (pick the 'y' column)
-    // Note: This may click in the wrong place if the browser size is changed
+    // Enabling quick filters should focus the first column
+    // Move to the 2nd column (y column)
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(200);
+
     await page
-      .locator('.iris-grid .grid-wrapper')
-      .click({ position: { x: 100, y: 35 } });
+      .locator('.iris-grid .grid-wrapper button.advanced-filter-button')
+      .first() // For some reason we render 2 buttons under each other?
+      .click();
 
     // wait for the panel to open
     await expect(page.locator('.advanced-filter-creator')).toHaveCount(1);

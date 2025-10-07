@@ -1,16 +1,14 @@
-import React, { type ReactElement, type ReactNode } from 'react';
-import PropTypes from 'prop-types';
+import React, { type ReactElement } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Collapse } from '@deephaven/components';
 import { vsTriangleDown } from '@deephaven/icons';
 
-interface SettingsMenuSectionProps {
-  children: ReactNode;
+type SettingsMenuSectionProps = React.PropsWithChildren<{
   isExpanded: boolean;
   sectionKey: string;
   title: ReactElement;
   onToggle: (sectionkey: string) => void;
-}
+}>;
 
 function SettingsMenuSection(props: SettingsMenuSectionProps): ReactElement {
   const { children, isExpanded, sectionKey, title, onToggle } = props;
@@ -37,18 +35,5 @@ function SettingsMenuSection(props: SettingsMenuSectionProps): ReactElement {
     </>
   );
 }
-
-SettingsMenuSection.propTypes = {
-  children: PropTypes.node,
-  isExpanded: PropTypes.bool.isRequired,
-  sectionKey: PropTypes.string.isRequired,
-  title: PropTypes.node.isRequired,
-  onToggle: PropTypes.func,
-};
-
-SettingsMenuSection.defaultProps = {
-  children: null,
-  onToggle: () => undefined,
-};
 
 export default SettingsMenuSection;

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSlotProps } from '@react-spectrum/utils';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
@@ -89,7 +88,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const {
       kind,
       variant,
-      type,
+      type = 'button',
       tooltip,
       icon,
       disabled = false,
@@ -206,80 +205,5 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
-
-Button.propTypes = {
-  kind: PropTypes.oneOf(BUTTON_KINDS).isRequired,
-  variant: PropTypes.oneOf(VARIANT_KINDS),
-  type: PropTypes.oneOf<ButtonTypes>(['submit', 'reset', 'button']),
-  tooltip(props) {
-    const { tooltip, icon, children } = props;
-    if (tooltip === undefined && icon != null && children == null) {
-      return new Error('Tooltip is required for icon only buttons');
-    }
-    return null;
-  },
-  icon(props) {
-    const { children, icon } = props;
-    if (icon == null && children == null) {
-      return new Error('Icon is required if no children are provided');
-    }
-
-    if (
-      children == null &&
-      !React.isValidElement(icon) &&
-      (icon == null || icon.iconName === '' || icon.iconName == null)
-    ) {
-      return new Error(
-        'Icon must be react element or fontawesome IconDefinition'
-      );
-    }
-
-    return null;
-  },
-  disabled: PropTypes.bool,
-  active: PropTypes.bool,
-  onClick(props) {
-    const { onClick, type } = props;
-    if (type === 'button' && typeof onClick !== 'function') {
-      return new Error('type button requires an onClick function');
-    }
-    if (onClick !== undefined && typeof onClick !== 'function') {
-      return new Error('onClick must be a function');
-    }
-    return null;
-  },
-  onContextMenu: PropTypes.func,
-  onMouseUp: PropTypes.func,
-  onMouseDown: PropTypes.func,
-  onMouseEnter: PropTypes.func,
-  onMouseLeave: PropTypes.func,
-  onKeyDown: PropTypes.func,
-  tabIndex: PropTypes.number,
-  children: PropTypes.node,
-  className: PropTypes.string,
-  style: PropTypes.object,
-  'data-testid': PropTypes.string,
-};
-
-Button.defaultProps = {
-  type: 'button',
-  onClick: undefined,
-  onContextMenu: undefined,
-  onMouseUp: undefined,
-  onMouseDown: undefined,
-  onMouseEnter: undefined,
-  onMouseLeave: undefined,
-  onKeyDown: undefined,
-  variant: undefined,
-  tooltip: undefined,
-  icon: undefined,
-  disabled: false,
-  active: undefined,
-  tabIndex: undefined,
-  children: undefined,
-  className: undefined,
-  style: {},
-  'data-testid': undefined,
-};
 
 export default Button;

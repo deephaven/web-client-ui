@@ -177,7 +177,7 @@ class HierarchicalCheckboxMenu extends Component<
     this.setAllValues(false);
   }
 
-  renderMenuElement(): React.ReactNode {
+  renderMenuElement(): JSX.Element {
     const { valueMap, 'data-testid': dataTestId } = this.props;
     return (
       <div className="hcm-menu-container">

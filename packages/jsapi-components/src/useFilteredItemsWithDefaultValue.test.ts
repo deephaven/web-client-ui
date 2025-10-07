@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { type KeyedItem } from '@deephaven/jsapi-utils';
 import useFilteredItemsWithDefaultValue from './useFilteredItemsWithDefaultValue';
 

@@ -16,6 +16,9 @@ import {
 } from './NavigationEvent';
 import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
 import {
+  type DehydratedDashboardPanelProps,
+  type DehydratedPanelConfig,
+  type DehydratedPanelProps,
   isWrappedComponent,
   type PanelComponent,
   type PanelComponentType,
@@ -31,13 +34,13 @@ enum CycleDirection {
 
 export type PanelHydraterFunction = (
   name: string,
-  props: PanelProps
-) => PanelProps;
+  props: DehydratedPanelProps
+) => DehydratedDashboardPanelProps;
 
 export type PanelDehydraterFunction = (
   name: string,
   config: ReactComponentConfig
-) => ReactComponentConfig;
+) => DehydratedPanelConfig;
 
 export type ClosedPanel = ReactComponentConfig & {
   /**
@@ -87,8 +90,10 @@ class PanelManager {
    */
   constructor(
     layout: GoldenLayout,
-    hydrateComponent: PanelHydraterFunction = (name, props) => props,
-    dehydrateComponent: PanelDehydraterFunction = (name, config) => config,
+    hydrateComponent: PanelHydraterFunction = (name, props) =>
+      props as DehydratedDashboardPanelProps,
+    dehydrateComponent: PanelDehydraterFunction = (name, config) =>
+      config as DehydratedPanelConfig,
     openedMap: OpenedPanelMap = new Map(),
     closed: ClosedPanel[] = [],
     onPanelsUpdated: PanelsUpdateCallback = () => undefined
@@ -465,7 +470,6 @@ class PanelManager {
   }
 
   addClosedPanel(glContainer: Container): void {
-    const { root } = this.layout;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config && isReactComponentConfig(config)) {
       const dehydratedConfig = this.dehydrateComponent(
@@ -473,8 +477,10 @@ class PanelManager {
         config
       );
       if (dehydratedConfig != null) {
+        // Not using LayoutUtils.getStackForConfig here because the panel may be removed from the root config already.
+        // The container config should be the same as it was when it was unmounted, so this avoids the issue of the config not existing on root.
         (dehydratedConfig as ClosedPanel).parentStackId =
-          LayoutUtils.getStackForConfig(root, config)?.config.id;
+          glContainer.tab?.header.parent.config.id;
         this.closed.push(dehydratedConfig);
       }
     }

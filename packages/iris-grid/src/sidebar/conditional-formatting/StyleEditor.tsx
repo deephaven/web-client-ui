@@ -47,11 +47,14 @@ function StyleEditor(props: ConditionEditorProps): JSX.Element {
   const [dropdownWidth, setDropdownWidth] = useState(DEFAULT_DROPDOWN_WIDTH);
   const csContainer = useRef<HTMLDivElement>(null);
 
-  const handleBackgroundChange = useCallback(e => {
-    const { value } = e.target;
-    log.debug('handleBackgroundChange', value);
-    setBackground(value);
-  }, []);
+  const handleBackgroundChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      log.debug('handleBackgroundChange', value);
+      setBackground(value);
+    },
+    []
+  );
 
   const handleMenuClosed = useCallback(() => {
     if (isShown) {

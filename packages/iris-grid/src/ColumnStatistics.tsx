@@ -1,4 +1,4 @@
-import React, { Component, type Key } from 'react';
+import React, { Component } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
@@ -17,7 +17,7 @@ const STATS_LABEL_OVERRIDES: Record<string, string> = {
 };
 
 interface Statistic {
-  operation: Key;
+  operation: string;
   className?: string;
   value: unknown;
   type: string;

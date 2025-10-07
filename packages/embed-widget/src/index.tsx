@@ -1,10 +1,11 @@
+import { createRoot } from 'react-dom/client';
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss'; // Do NOT move any lower. This needs to be imported before any other styles
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import { logInit } from '@deephaven/log';
 import './index.scss';
+import { assertNotNull } from '@deephaven/utils';
 
 logInit(
   parseInt(import.meta.env.VITE_LOG_LEVEL ?? '2', 10),
@@ -55,7 +56,11 @@ async function getCorePlugins() {
   ];
 }
 
-ReactDOM.render(
+const rootElement = document.getElementById('root');
+assertNotNull(rootElement);
+const root = createRoot(rootElement);
+
+root.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense
       fallback={<LoadingOverlay data-testid="embed-widget-index-loading" />}
@@ -69,6 +74,5 @@ ReactDOM.render(
         <App />
       </AppBootstrap>
     </Suspense>
-  </ApiBootstrap>,
-  document.getElementById('root')
+  </ApiBootstrap>
 );

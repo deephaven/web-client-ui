@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import Log from '@deephaven/log';
-import { TimeUtils } from '@deephaven/utils';
+import { EMPTY_FUNCTION, TimeUtils } from '@deephaven/utils';
 import MaskedInput, { type SelectionSegment } from './MaskedInput';
 import { DEFAULT_GET_PREFERRED_REPLACEMENT_STRING } from './MaskedInputUtils';
 
@@ -51,11 +51,11 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
     const {
       allowValueWrapping = true,
       className = '',
-      onChange = () => false,
+      onChange = EMPTY_FUNCTION,
       value: propsValue = 0,
-      onFocus = () => false,
-      onBlur = () => false,
-      onSelect = () => false,
+      onFocus = EMPTY_FUNCTION,
+      onBlur = EMPTY_FUNCTION,
+      onSelect = EMPTY_FUNCTION,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
@@ -180,16 +180,5 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
     );
   }
 );
-
-TimeInput.defaultProps = {
-  allowValueWrapping: true,
-  className: '',
-  onChange: () => false,
-  onSelect: () => false,
-  value: 0,
-  onFocus: () => false,
-  onBlur: () => false,
-  'data-testid': undefined,
-};
 
 export default TimeInput;
