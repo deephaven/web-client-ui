@@ -50,12 +50,11 @@
     "memoizee": "^0.4.15",
     "nanoid": "^5.0.7",
     "popper.js": "^1.16.1",
-    "prop-types": "^15.7.2",
-    "react-beautiful-dnd": "^13.1.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-reverse-portal": "^2.3.0",
     "react-transition-group": "^4.4.2",
-    "react-virtualized-auto-sizer": "1.0.6",
-    "react-window": "^1.8.6"
+    "react-virtualized-auto-sizer": "1.0.7",
+    "react-window": "^1.8.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -65,7 +64,7 @@
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/test-utils": "file:../test-utils",
-    "react-redux": "^7.2.4"
+    "react-redux": "^7.2.7"
   },
   "files": [
     "dist",

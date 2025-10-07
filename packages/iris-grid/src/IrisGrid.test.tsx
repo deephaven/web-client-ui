@@ -1,5 +1,5 @@
-import React, { type ReactElement } from 'react';
-import TestRenderer from 'react-test-renderer';
+import React, { useRef } from 'react';
+import { act, fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
@@ -12,13 +12,6 @@ import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import type IrisGridProxyModel from './IrisGridProxyModel';
 
-class MockPath2D {
-  // eslint-disable-next-line class-methods-use-this
-  addPath = jest.fn();
-}
-
-window.Path2D = MockPath2D as unknown as new () => Path2D;
-
 jest.mock('@deephaven/grid', () => ({
   ...jest.requireActual('@deephaven/grid'),
   isExpandableColumnGridModel: jest.fn(),
@@ -26,7 +19,7 @@ jest.mock('@deephaven/grid', () => ({
 
 const { asMock } = TestUtils;
 
-const VIEW_SIZE = 5000;
+const VIEW_SIZE = 500;
 
 const DEFAULT_SETTINGS: Settings = {
   timeZone: 'America/New_York',
@@ -39,65 +32,36 @@ const DEFAULT_SETTINGS: Settings = {
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeMockCanvas() {
-  return {
-    clientWidth: VIEW_SIZE,
-    clientHeight: VIEW_SIZE,
-    getBoundingClientRect: () => ({ top: 0, left: 0 }),
-    offsetLeft: 0,
-    offsetTop: 0,
-    getContext: TestUtils.makeMockContext,
-    parentElement: {
-      getBoundingClientRect: () => ({
-        width: VIEW_SIZE,
-        height: VIEW_SIZE,
-      }),
-    },
-    style: {},
-    focus: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  };
-}
+jest
+  .spyOn(Element.prototype, 'getBoundingClientRect')
+  .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE, VIEW_SIZE));
 
-function makeMockWrapper() {
-  return {
-    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
-  };
-}
+jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(VIEW_SIZE);
 
-function createNodeMock(element: ReactElement) {
-  if (element.type === 'canvas') {
-    return makeMockCanvas();
-  }
-  if (element?.props?.className?.includes('grid-wrapper') === true) {
-    return makeMockWrapper();
-  }
-  return element;
-}
+jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(VIEW_SIZE);
 
 function makeComponent(
   model = irisGridTestUtils.makeModel(),
   settings = DEFAULT_SETTINGS,
   props = {}
 ) {
-  const testRenderer = TestRenderer.create(
+  let ref: React.RefObject<IrisGrid>;
+  function IrisGridWithRef() {
+    ref = useRef<IrisGrid>(null);
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <IrisGrid model={model} settings={settings} {...props} />,
-    {
-      createNodeMock,
-    }
-  );
-  return testRenderer.getInstance() as TestRenderer.ReactTestInstance &
-    IrisGrid;
+    return <IrisGrid model={model} settings={settings} ref={ref} {...props} />;
+  }
+  render(<IrisGridWithRef />);
+  return ref!.current!;
 }
 
-function keyDown(key, component, extraArgs?) {
+function keyDown(
+  key: string,
+  component: IrisGrid,
+  extraArgs?: Partial<KeyboardEventInit>
+) {
   const args = { key, ...extraArgs };
-  component.grid.notifyKeyboardHandlers(
-    'onDown',
-    new KeyboardEvent('keydown', args)
-  );
+  fireEvent.keyDown(component.grid!.canvas!, args);
 }
 
 it('renders without crashing', () => {
@@ -266,7 +230,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
       contentWidth
@@ -290,7 +254,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(
       mockMetricCalculator.userColumnWidths.get(modelIndex)
@@ -336,7 +300,7 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     expect(mockMetricCalculator.userColumnWidths.size).toEqual(0);
 
@@ -364,7 +328,7 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     contentWidths.forEach((contentWidth, modelIndex) => {
       expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(

@@ -95,6 +95,9 @@ export class ConsolePanel extends PureComponent<
 
   static contextType = LayoutManagerContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof LayoutManagerContext>;
+
   constructor(props: ConsolePanelProps) {
     super(props);
 
@@ -254,6 +257,7 @@ export class ConsolePanel extends PureComponent<
     object: dh.ide.VariableDescriptor & { title?: string },
     forceOpen = true
   ): void {
+    assertNotNull(this.context);
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;

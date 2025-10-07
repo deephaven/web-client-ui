@@ -1,5 +1,4 @@
 import React, { useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { SplitButtonGroup } from './SplitButtonGroup';
 import Button from './Button';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';
@@ -143,31 +142,5 @@ function BasicModal(props: BasicModalProps): JSX.Element {
     </Modal>
   );
 }
-
-BasicModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  headerText: PropTypes.string.isRequired,
-  bodyText: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
-  onCancel: PropTypes.func,
-  onConfirm: PropTypes.func.isRequired,
-  onDiscard: PropTypes.func,
-  onModalDisable: PropTypes.func,
-  cancelButtonText: PropTypes.string,
-  confirmButtonText: PropTypes.string,
-  discardButtonText: PropTypes.string,
-  children: PropTypes.node,
-  'data-testid': PropTypes.string,
-};
-
-BasicModal.defaultProps = {
-  children: undefined,
-  cancelButtonText: 'Cancel',
-  confirmButtonText: 'Okay',
-  discardButtonText: 'Discard',
-  onCancel: undefined,
-  onDiscard: undefined,
-  onModalDisable: undefined,
-  'data-testid': undefined,
-};
 
 export default BasicModal;

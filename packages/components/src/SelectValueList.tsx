@@ -80,7 +80,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
       const style = {
         height: rowHeight,
       };
-      const text = displayValue != null ? displayValue : value;
+      const text = displayValue != null ? displayValue : `${value}`;
 
       return (
         // Tab index is needed so the item could be a related target in the blur event details

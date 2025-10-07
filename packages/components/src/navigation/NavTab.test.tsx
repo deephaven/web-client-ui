@@ -13,7 +13,6 @@ const mockOnClose = jest.fn();
 
 const defaultProps = {
   tab: { key: 'TEST', title: 'TEST', isCloseable: true },
-  key: 'testKey',
   index: 0,
   isActive: true,
   onSelect: (key: string) => null,
@@ -35,7 +34,7 @@ function MakeNavTab() {
         {provided => (
           <div ref={provided.innerRef}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <NavTab {...props}>ButtonText</NavTab>
+            <NavTab {...props} key="testKey" />
           </div>
         )}
       </Droppable>

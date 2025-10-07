@@ -238,6 +238,9 @@ export type GridState = {
 class Grid extends PureComponent<GridProps, GridState> {
   static contextType = ThemeContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof ThemeContext>;
+
   static defaultProps = {
     canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
     isStickyBottom: false,
@@ -1171,8 +1174,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         // If it's the exact same single selection, then deselect.
         // For if we click on one cell multiple times.
         return {
-          selectedRanges: [],
-          lastSelectedRanges: [],
+          selectedRanges: EMPTY_ARRAY,
+          lastSelectedRanges: EMPTY_ARRAY,
           cursorColumn: null,
           cursorRow: null,
         };

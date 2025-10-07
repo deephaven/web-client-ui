@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
@@ -101,7 +101,7 @@ async function expectNotLoading(container) {
 }
 
 it('mounts and unmounts without crashing', async () => {
-  makeIrisGridPanelWrapper();
+  await act(() => makeIrisGridPanelWrapper());
 });
 
 it('unmounts while still resolving a table successfully', async () => {
@@ -137,7 +137,7 @@ it('shows the loading spinner until grid is ready', async () => {
       onStateChange: (param1: unknown, param2: unknown) => any;
     }[]
   )[0];
-  params.onStateChange({}, {});
+  act(() => params.onStateChange({}, {}));
 
   await expectNotLoading(container);
 });

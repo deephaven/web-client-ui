@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import React from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
+import { TestUtils } from '@deephaven/test-utils';
 import usePanelRegistration from './usePanelRegistration';
 import { type PanelProps } from '../DashboardPlugin';
 
@@ -74,11 +75,17 @@ it.each([
 ])(
   'should throw an error if no COMPONENT or displayName attribute exists: "%s"',
   (_label, ComponentType) => {
-    const { result } = renderHook(() =>
-      usePanelRegistration(registerComponent, ComponentType, hydrate, dehydrate)
-    );
-
-    expect(result.error).toEqual(
+    TestUtils.disableConsoleOutput();
+    expect(() =>
+      renderHook(() =>
+        usePanelRegistration(
+          registerComponent,
+          ComponentType,
+          hydrate,
+          dehydrate
+        )
+      )
+    ).toThrow(
       new Error(
         'ComponentType must have a `COMPONENT` or `displayName` attribute.'
       )

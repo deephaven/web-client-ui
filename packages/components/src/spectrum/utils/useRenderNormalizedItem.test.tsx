@@ -1,6 +1,6 @@
 import React, { type Key } from 'react';
 import { Item } from '@adobe/react-spectrum';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { TestUtils } from '@deephaven/test-utils';
 import { ItemContent } from '../ItemContent';

@@ -3,11 +3,11 @@ import memoizeOne from 'memoize-one';
 import {
   GridMetricCalculator,
   type GridMetrics,
+  type GridMetricState,
   type ModelIndex,
   type ModelSizeMap,
   trimMap,
 } from '@deephaven/grid';
-import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import type IrisGridModel from './IrisGridModel';

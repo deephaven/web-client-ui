@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import Log from '@deephaven/log';
 import { TestUtils } from '@deephaven/test-utils';
 import useAsyncInterval from './useAsyncInterval';

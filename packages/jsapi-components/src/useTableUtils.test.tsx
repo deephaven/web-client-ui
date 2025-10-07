@@ -1,6 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { makeApiContextWrapper } from './HookTestUtils';
 import useTableUtils from './useTableUtils';
 

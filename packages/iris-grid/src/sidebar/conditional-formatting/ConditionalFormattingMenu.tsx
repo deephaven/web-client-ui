@@ -102,7 +102,7 @@ function ConditionalFormattingMenu(
   } = props;
 
   const handleRuleClick = useCallback(
-    (e, rule, index) => {
+    (e: React.MouseEvent, rule: FormattingRule, index: number) => {
       e.stopPropagation();
       log.debug('Rule clicked', rule, index);
       onSelect(index);
@@ -111,7 +111,7 @@ function ConditionalFormattingMenu(
   );
 
   const handleDeleteClick = useCallback(
-    (e, rule, index) => {
+    (e: React.MouseEvent, rule: FormattingRule, index: number) => {
       e.stopPropagation();
       log.debug('Delete button clicked', rule, index);
       const updatedRules = [...rules];
@@ -121,7 +121,7 @@ function ConditionalFormattingMenu(
     [onChange, rules]
   );
 
-  const handleDragHandlerClick = useCallback(e => {
+  const handleDragHandlerClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
   }, []);
 

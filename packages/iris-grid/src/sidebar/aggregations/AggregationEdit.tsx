@@ -45,7 +45,7 @@ function AggregationEdit({
   const list = useRef<ItemList<AggregationEditItem>>(null);
 
   const isSelected = useCallback(
-    name => (selected.includes(name) ? !invert : invert),
+    (name: string) => (selected.includes(name) ? !invert : invert),
     [invert, selected]
   );
 
@@ -73,7 +73,7 @@ function AggregationEdit({
   );
 
   const handleSelect = useCallback(
-    itemIndex => {
+    (itemIndex: number) => {
       const { name } = validColumns[itemIndex];
       const selectedIndex = selected.indexOf(name);
       let newSelected = [...selected];
@@ -100,7 +100,7 @@ function AggregationEdit({
   }, [aggregation, onChange]);
 
   const handleViewportChange = useCallback(
-    (newTop, newBottom) => {
+    (newTop: number, newBottom: number) => {
       setTop(newTop);
       setBottom(newBottom);
     },
