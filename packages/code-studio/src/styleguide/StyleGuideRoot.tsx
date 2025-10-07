@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
-import { FontBootstrap } from '@deephaven/app-utils';
+import { FontBootstrap } from '@deephaven/components';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
