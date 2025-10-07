@@ -38,7 +38,7 @@ export function moveItemsFromDrop(
     index: i,
   }));
 
-  let newMoves: MoveOperation[] = [];
+  let newMoves = [] as MoveOperation[];
   let newGroups = columnHeaderGroups;
 
   const firstVisibleIndex = selectedParentItems[0].data.visibleIndex;
@@ -104,17 +104,21 @@ export function moveItemsFromDrop(
     newMoves
   );
 
-  return { groups: newGroups, movedColumns: movedColumns.concat(newMoves) };
+  return {
+    groups: newGroups,
+    movedColumns:
+      newMoves.length > 0 ? movedColumns.concat(newMoves) : movedColumns,
+  };
 }
 
 export function moveToGroup<T>(
   item: FlattenedItem<T>,
   toName: string | null,
   columnGroups: readonly ColumnHeaderGroup[]
-): ColumnHeaderGroup[] {
+): readonly ColumnHeaderGroup[] {
   if (item.parentId === toName) {
     // Don't need to move an item if it is already in the group
-    return [...columnGroups];
+    return columnGroups;
   }
 
   let newGroups = columnGroups.map(group => new ColumnHeaderGroup(group));

@@ -70,7 +70,7 @@ function Builder({
       onColumnVisibilityChanged={onColumnVisibilityChanged}
       onMovedColumnsChanged={onMovedColumnsChanged}
       onReset={onReset}
-      ref={builderRef}
+      __testRef={builderRef}
     />
   );
 }
@@ -1012,7 +1012,7 @@ test('Edit group name', async () => {
   await user.type(nameInput, '{Backspace}');
   expect(screen.queryAllByText('Invalid name').length).toBe(0);
 
-  const confirmButton = screen.getByLabelText('Confirm');
+  const confirmButton = await screen.findByLabelText('Confirm');
   await user.click(confirmButton);
   expect(mockHandler).toBeCalledWith([
     expect.objectContaining({ ...NESTED_COLUMN_HEADER_GROUPS[1], name: 'abc' }),

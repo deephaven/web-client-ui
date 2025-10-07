@@ -88,9 +88,10 @@ describe('move items', () => {
   });
 
   it('skips moving an item to its original position', () => {
-    const movedItems = GridUtils.moveItem(2, 2, []);
+    const originalMoved: MoveOperation[] = [];
+    const movedItems = GridUtils.moveItem(2, 2, originalMoved);
 
-    expect(movedItems.length).toBe(0);
+    expect(movedItems).toBe(originalMoved);
     expectModelIndexes(movedItems, [0, 1, 2, 3]);
     expectVisibleIndexes(movedItems, [0, 1, 2, 3]);
   });
@@ -143,9 +144,10 @@ describe('move ranges', () => {
   });
 
   it('skips moving an item to its original position', () => {
-    const movedItems = GridUtils.moveRange([0, 2], 0, []);
+    const originalMoved: MoveOperation[] = [];
+    const movedItems = GridUtils.moveRange([0, 2], 0, originalMoved);
 
-    expect(movedItems.length).toBe(0);
+    expect(movedItems).toBe(originalMoved);
     expectModelIndexes(movedItems, [0, 1, 2, 3]);
     expectVisibleIndexes(movedItems, [0, 1, 2, 3]);
   });

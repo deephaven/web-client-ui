@@ -197,6 +197,7 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
+import { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGrid');
 
@@ -645,6 +646,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleViewportUpdated = this.handleViewportUpdated.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
     this.setFilterMap = this.setFilterMap.bind(this);
+    this.handleFrozenColumnsChanged =
+      this.handleFrozenColumnsChanged.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
@@ -2584,6 +2587,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  /**
+   * Updates the entire list of frozen columns.
+   * Used by VisibilityOrderingBuilder.
+   * @param frozenColumns The new list of frozen columns
+   */
+  handleFrozenColumnsChanged(frozenColumns: readonly ColumnName[]): void {
+    this.setState({ frozenColumns });
+  }
+
   toggleExpandColumn(
     modelIndex: ModelIndex,
     expandDescendants?: boolean
@@ -3401,12 +3413,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnHeaderGroups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[]
   ): void {
     const { model } = this.props;
+
     this.setState(
       {
-        columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
-          model,
-          columnHeaderGroups
-        ).groups,
+        columnHeaderGroups: columnHeaderGroups.every(isColumnHeaderGroup)
+          ? columnHeaderGroups
+          : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
+              .groups,
       },
       () => this.grid?.forceUpdate()
     );
@@ -4922,6 +4935,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onReset={this.handleColumnVisibilityReset}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
+              onFrozenColumnsChanged={this.handleFrozenColumnsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
             />
           );

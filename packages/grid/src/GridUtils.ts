@@ -755,16 +755,16 @@ export class GridUtils {
    * @param oldMovedItems The old reordered items
    * @returns The new reordered items
    */
-  static moveItem(
+  static moveItem<T extends readonly MoveOperation[]>(
     from: VisibleIndex,
     to: VisibleIndex,
-    oldMovedItems: readonly MoveOperation[]
-  ): MoveOperation[] {
+    oldMovedItems: T
+  ): T {
     if (from === to) {
-      return [...oldMovedItems];
+      return oldMovedItems;
     }
 
-    const movedItems: MoveOperation[] = [...oldMovedItems];
+    const movedItems = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
 
     // Check if we should combine with the previous move
@@ -787,7 +787,7 @@ export class GridUtils {
       movedItems.push({ from, to });
     }
 
-    return movedItems;
+    return movedItems as unknown as T;
   }
 
   /**
@@ -808,12 +808,12 @@ export class GridUtils {
    *                    Both will result in [0, 2] -> 1
    * @returns The new reordered items
    */
-  static moveRange(
+  static moveRange<T extends readonly MoveOperation[]>(
     from: BoundedAxisRange,
     toParam: VisibleIndex,
-    oldMovedItems: readonly MoveOperation[],
+    oldMovedItems: T,
     isPreMoveTo = false
-  ): MoveOperation[] {
+  ): T {
     if (from[0] === from[1]) {
       return GridUtils.moveItem(from[0], toParam, oldMovedItems);
     }
@@ -825,7 +825,7 @@ export class GridUtils {
     }
 
     if (from[0] === to) {
-      return [...oldMovedItems];
+      return oldMovedItems;
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -856,15 +856,15 @@ export class GridUtils {
       movedItems.pop();
     }
 
-    return movedItems;
+    return movedItems as unknown as T;
   }
 
-  static moveItemOrRange(
+  static moveItemOrRange<T extends readonly MoveOperation[]>(
     from: VisibleIndex | BoundedAxisRange,
     to: VisibleIndex,
-    oldMovedItems: MoveOperation[],
+    oldMovedItems: T,
     isPreMoveTo = false
-  ): MoveOperation[] {
+  ): T {
     return Array.isArray(from)
       ? GridUtils.moveRange(from, to, oldMovedItems, isPreMoveTo)
       : GridUtils.moveItem(from, to, oldMovedItems);
