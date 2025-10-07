@@ -116,8 +116,8 @@ function formatDate(date: Date): string {
  * @param metadata Additional metadata to include in the metadata.json file
  * @param reduxData Redux data to include in the redux.json file
  * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
- * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
@@ -125,8 +125,8 @@ export async function exportLogs(
   metadata?: Record<string, unknown>,
   reduxData?: Record<string, unknown>,
   blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
-  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH,
-  fileNamePrefix = `${formatDate(new Date())}_support_logs`
+  fileNamePrefix = `${formatDate(new Date())}_support_logs`,
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
