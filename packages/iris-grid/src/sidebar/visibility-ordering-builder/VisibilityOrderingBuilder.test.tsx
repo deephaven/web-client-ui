@@ -1180,7 +1180,8 @@ test('Sets drag item display string on multi-select', async () => {
       [],
       [],
       [],
-      [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`]
+      [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`],
+      true
     )
   );
 
@@ -1220,7 +1221,7 @@ test('On drag start/end', () => {
   );
 
   const items = flattenTree(
-    getTreeItems(COLUMNS, [], [], [], [`${COLUMN_PREFIX}0`])
+    getTreeItems(COLUMNS, [], [], [], [`${COLUMN_PREFIX}0`], true)
   );
 
   act(() => builder.current?.handleDragStart(`${COLUMN_PREFIX}0`));

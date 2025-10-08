@@ -1126,11 +1126,17 @@ class VisibilityOrderingBuilder extends PureComponent<
       movedColumns: readonly MoveOperation[],
       columnHeaderGroups: readonly ColumnHeaderGroup[],
       hiddenColumns: readonly ModelIndex[],
-      selectedColumns: ReadonlySet<string>
+      selectedColumns: ReadonlySet<string>,
+      showHiddenColumns: boolean
     ): readonly IrisGridTreeItem[] =>
-      getTreeItems(columns, movedColumns, columnHeaderGroups, hiddenColumns, [
-        ...selectedColumns.values(),
-      ]),
+      getTreeItems(
+        columns,
+        movedColumns,
+        columnHeaderGroups,
+        hiddenColumns,
+        [...selectedColumns.values()],
+        showHiddenColumns
+      ),
     { max: 1000 }
   );
 
@@ -1142,14 +1148,15 @@ class VisibilityOrderingBuilder extends PureComponent<
   getTreeItems(): readonly IrisGridTreeItem[] {
     const { model, movedColumns, hiddenColumns, columnHeaderGroups } =
       this.props;
-    const { selectedColumns } = this.state;
+    const { selectedColumns, showHiddenColumns } = this.state;
 
     return this.memoizedGetTreeItems(
       model.columns,
       movedColumns,
       columnHeaderGroups,
       hiddenColumns,
-      selectedColumns
+      selectedColumns,
+      showHiddenColumns
     );
   }
 
