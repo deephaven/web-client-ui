@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { CommandHistoryItemTooltip } from './CommandHistoryItemTooltip';
 import { type CommandHistoryStorageItem } from './CommandHistoryStorage';
 
@@ -81,13 +81,13 @@ describe('different command results', () => {
     cleanup = jest.fn();
     commandHistoryStorage = makeCommandHistoryStorage();
     commandHistoryStorage.listenItem = jest.fn((language, id, cb) => {
-      callback = data => cb({ data });
+      callback = data => act(() => cb({ data }));
       return cleanup;
     });
     ({ unmount } = shallowTooltip(makeItem(), commandHistoryStorage));
 
     // Run the pending timers so that it tries to load the data
-    jest.runOnlyPendingTimers();
+    act(() => jest.runOnlyPendingTimers());
   });
 
   it('shows loading spinner while waiting for updates', () => {

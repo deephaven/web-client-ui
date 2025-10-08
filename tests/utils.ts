@@ -1,7 +1,7 @@
 import {
-  Locator,
+  type Locator,
   expect,
-  Page,
+  type Page,
   chromium,
   firefox,
   webkit,
@@ -401,7 +401,7 @@ export async function openTableOption(
   tableOption: string
 ): Promise<void> {
   await expect(page.getByText('Table Options')).toHaveCount(1);
-  await page.locator(`data-testid=menu-item-${tableOption}`).click();
+  await page.getByText(tableOption).click();
 
   // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible
   await expect(page.getByText('Table Options')).toHaveCount(0);

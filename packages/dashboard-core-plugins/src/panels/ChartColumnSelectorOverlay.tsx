@@ -40,7 +40,7 @@ function ChartColumnSelectorOverlay({
               )}
               onClick={() => onColumnSelected(column.name)}
               onMouseEnter={() => {
-                if (onMouseEnter) onMouseEnter(column);
+                onMouseEnter?.(column);
               }}
               onMouseLeave={onMouseLeave}
               disabled={!column.isValid}
@@ -57,10 +57,5 @@ function ChartColumnSelectorOverlay({
 
 ChartColumnSelectorOverlay.makeButtonClassName = (columnName: string) =>
   `btn-chart-column-selector-${columnName}`;
-
-ChartColumnSelectorOverlay.defaultProps = {
-  onMouseEnter: (): void => undefined,
-  onMouseLeave: (): void => undefined,
-};
 
 export default ChartColumnSelectorOverlay;

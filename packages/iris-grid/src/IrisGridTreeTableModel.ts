@@ -2,6 +2,7 @@
 import memoize from 'memoize-one';
 import {
   type BoundedAxisRange,
+  type ExpandableGridModel,
   type GridCell,
   GridRange,
   type ModelIndex,
@@ -93,10 +94,10 @@ export function isIrisGridTreeTableModel(
   return (tableModel as IrisGridTreeTableModel).showExtraGroupColumn != null;
 }
 
-class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
-  DhType.TreeTable,
-  UITreeRow
-> {
+class IrisGridTreeTableModel
+  extends IrisGridTableModelTemplate<DhType.TreeTable, UITreeRow>
+  implements ExpandableGridModel
+{
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: DisplayColumn[];
 
@@ -247,8 +248,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     }
 
     const row = this.row(y);
-    assertNotNull(row);
-
     let typeForFormatting = column.type;
 
     // For tree table leaf nodes, use the constituent type for formatting

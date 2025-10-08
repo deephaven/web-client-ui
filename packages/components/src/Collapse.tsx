@@ -1,7 +1,6 @@
 // Port of https://github.com/react-bootstrap/react-bootstrap/blob/master/src/Collapse.js
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 
 interface CollapseProps {
@@ -13,14 +12,6 @@ interface CollapseProps {
 }
 
 class Collapse extends Component<CollapseProps> {
-  static propTypes = {
-    className: PropTypes.string,
-    in: PropTypes.bool.isRequired,
-    children: PropTypes.node.isRequired,
-    autoFocusOnShow: PropTypes.bool,
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     className: '',
     autoFocusOnShow: false,

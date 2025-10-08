@@ -37,6 +37,7 @@ export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   onDragStart: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
+  onDragExit: () => void;
   onDrop: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
 };
 
@@ -53,6 +54,7 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
     onDragStart,
     onDragOver,
     onDragEnd,
+    onDragExit,
     onDrop,
   } = props;
 
@@ -97,6 +99,7 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
       onDragStart={e => onDragStart(itemIndex, e)}
       onDragOver={e => onDragOver(itemIndex, e)}
       onDragEnd={e => onDragEnd(itemIndex, e)}
+      onDragExit={onDragExit}
       onDrop={e => onDrop(itemIndex, e)}
       draggable
       role="presentation"

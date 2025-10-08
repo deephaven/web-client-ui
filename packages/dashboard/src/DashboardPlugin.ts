@@ -56,17 +56,26 @@ export type PanelComponentType<
 
 export type PanelMetadata = WidgetDescriptor;
 
-export type PanelProps = GLPanelProps & {
+/**
+ * Props with metadata, panelState, GoldenLayout props, but not dashboardId
+ */
+export type PanelProps = GLPanelProps & DehydratedPanelProps;
+
+export type DehydratedPanelProps = {
   metadata?: PanelMetadata;
   panelState?: unknown;
 };
 
-export type DehydratedPanelProps = Omit<PanelProps, keyof GLPanelProps>;
-
 export type LocalDashboardProps = { localDashboardId: string };
 
+/**
+ * Props with metadata, panelState, dashboardId, and GoldenLayout props
+ */
 export type DashboardPanelProps = PanelProps & LocalDashboardProps;
 
+/**
+ * Props with metadata, panelState, and dashboardId, but not GoldenLayout props
+ */
 export type DehydratedDashboardPanelProps = DehydratedPanelProps &
   LocalDashboardProps;
 
@@ -97,15 +106,15 @@ export interface DashboardPanelDefinition {
 
 export type DeregisterComponentFunction = () => void;
 
-export type PanelHydrateFunction<
-  T extends DehydratedDashboardPanelProps = DehydratedDashboardPanelProps,
-  R extends T = T,
-> = (props: T, dashboardId: string) => R;
+export type PanelHydrateFunction = (
+  props: DehydratedPanelProps,
+  dashboardId: string
+) => DehydratedDashboardPanelProps;
 
 export type PanelDehydrateFunction = (
   config: PanelConfig,
   dashboardId: string
-) => PanelConfig | null;
+) => DehydratedPanelConfig;
 
 export type DashboardPluginComponentProps = {
   id: string;

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "1.5.3",
+  "version": "1.7.1",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -56,8 +56,7 @@
     "memoizee": "^0.4.15",
     "monaco-editor": "^0.43.0",
     "nanoid": "^5.0.7",
-    "prop-types": "^15.7.2",
-    "react-beautiful-dnd": "^13.1.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-transition-group": "^4.4.2"
   },
   "peerDependencies": {

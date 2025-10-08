@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EventShimCustomEvent } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
@@ -46,7 +46,7 @@ test('Calls on save', async () => {
 
 test('Switches to loader button while saving', async () => {
   jest.useFakeTimers();
-  const user = userEvent.setup({ delay: null });
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const model = irisGridTestUtils.makeModel();
   const mockSave = jest.fn(() =>
     setTimeout(() => {
@@ -62,9 +62,11 @@ test('Switches to loader button while saving', async () => {
 
   await user.click(screen.getByText(/Save/));
   expect(screen.getByText('Applying')).toBeInTheDocument();
-  jest.advanceTimersByTime(50);
+  act(() => jest.advanceTimersByTime(50));
   expect(screen.getByText('Success')).toBeInTheDocument();
-  jest.advanceTimersByTime(CustomColumnBuilder.SUCCESS_SHOW_DURATION);
+  act(() =>
+    jest.advanceTimersByTime(CustomColumnBuilder.SUCCESS_SHOW_DURATION)
+  );
   expect(screen.getByText(/Save/)).toBeInTheDocument();
 
   // Component should ignore this event and not change the save button
@@ -93,7 +95,7 @@ test('Ignores empty names or formulas on save', async () => {
   await user.click(screen.getByText('Add Another Column'));
   await user.type(screen.getAllByPlaceholderText('Column Name')[1], 'test');
   await user.click(screen.getByText(/Save/));
-  expect(mockSave).toBeCalledWith(customColumns);
+  expect(mockSave).toHaveBeenCalledWith(customColumns);
 });
 
 test('Ignores deleted formulas on save', async () => {
@@ -104,7 +106,7 @@ test('Ignores deleted formulas on save', async () => {
     // Monaco makes a call to performance.mark(), so we need to leave it intact
     doNotFake: ['performance'],
   });
-  const user = userEvent.setup({ delay: null });
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const model = irisGridTestUtils.makeModel();
   const mockSave = jest.fn(() =>
     setTimeout(() => {
@@ -121,17 +123,18 @@ test('Ignores deleted formulas on save', async () => {
   await user.keyboard('bar');
 
   await user.click(screen.getByText(/Save/));
-  jest.advanceTimersByTime(50); // Applying duration
-  jest.advanceTimersByTime(CustomColumnBuilder.SUCCESS_SHOW_DURATION);
+  act(() =>
+    jest.advanceTimersByTime(50 + CustomColumnBuilder.SUCCESS_SHOW_DURATION)
+  );
 
-  expect(mockSave).toBeCalledWith(['foo=bar']);
+  expect(mockSave).toHaveBeenCalledWith(['foo=bar']);
 
   mockSave.mockClear();
 
   await user.click(container.querySelectorAll('.input-editor-wrapper')[0]);
   await user.keyboard('{Control>}a{/Control}{Backspace}');
-  await user.click(screen.getByText(/Save/));
-  expect(mockSave).toBeCalledWith([]);
+  await user.click(await screen.findByText(/Save/));
+  expect(mockSave).toHaveBeenCalledWith([]);
 
   jest.useRealTimers();
 });
@@ -168,10 +171,12 @@ test('Displays request failure message', async () => {
   expect(screen.queryByText(/Error message/)).toBeNull();
 
   await user.click(screen.getByText(/Save/));
-  model.dispatchEvent(
-    new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
-      detail: { errorMessage: 'Error message' },
-    })
+  act(() =>
+    model.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
+        detail: { errorMessage: 'Error message' },
+      })
+    )
   );
 
   expect(screen.getByText(/Error message/)).toBeInTheDocument();

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { SELECTION_DIRECTION } from './GridRange';
 import GridUtils from './GridUtils';
 import './CellInputField.scss';
@@ -40,16 +40,16 @@ const directionForKey = (key: string): SELECTION_DIRECTION | undefined => {
 };
 
 export function CellInputField({
-  selectionRange = undefined,
+  selectionRange,
   className = '',
   disabled = false,
   value: propsValue = '',
   isQuickEdit: propsIsQuickEdit = true,
-  onChange = () => undefined,
-  onCancel = () => undefined,
-  onDone = () => undefined,
-  onContextMenu = () => undefined,
-  style = {},
+  onChange = EMPTY_FUNCTION,
+  onCancel = EMPTY_FUNCTION,
+  onDone = EMPTY_FUNCTION,
+  onContextMenu = EMPTY_FUNCTION,
+  style,
 }: CellInputFieldProps): JSX.Element {
   const inputField = useRef<HTMLTextAreaElement>(null);
   // Use a ref for `isCancelled` as we need to know when it's cancelled after it's called by the event handlers as well
@@ -205,31 +205,5 @@ export function CellInputField({
     />
   );
 }
-
-CellInputField.propTypes = {
-  selectionRange: PropTypes.arrayOf(PropTypes.number),
-  className: PropTypes.string,
-  disabled: PropTypes.bool,
-  isQuickEdit: PropTypes.bool,
-  value: PropTypes.string,
-  onChange: PropTypes.func,
-  onCancel: PropTypes.func,
-  onDone: PropTypes.func,
-  onContextMenu: PropTypes.func,
-  style: PropTypes.shape({}),
-};
-
-CellInputField.defaultProps = {
-  selectionRange: null,
-  className: '',
-  disabled: false,
-  value: '',
-  isQuickEdit: true,
-  onChange: () => undefined,
-  onCancel: () => undefined,
-  onDone: () => undefined,
-  onContextMenu: () => undefined,
-  style: {},
-};
 
 export default CellInputField;

@@ -172,4 +172,27 @@ describe('getReduxDataString', () => {
     const result = getReduxDataString(reduxData, [['*']]);
     expect(result).toBe('{}');
   });
+
+  it('should respect maximum depth', () => {
+    const reduxData = {
+      key1: {
+        key2: {
+          key3: 'too deep',
+        },
+        key4: ['too deep'],
+      },
+    };
+    const result = getReduxDataString(reduxData, [], 2);
+    const expected = JSON.stringify(
+      {
+        key1: {
+          key2: '[Object]',
+          key4: '[Array]',
+        },
+      },
+      null,
+      2
+    );
+    expect(result).toBe(expected);
+  });
 });

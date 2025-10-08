@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-bootstrap",
-  "version": "1.5.3",
+  "version": "1.7.1",
   "description": "Deephaven JSAPI Bootstrap",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,8 +29,7 @@
     "@deephaven/utils": "file:../utils"
   },
   "devDependencies": {
-    "@deephaven/test-utils": "file:../test-utils",
-    "react": "^17.x"
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

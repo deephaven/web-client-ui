@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "1.5.3",
+  "version": "1.7.1",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,11 +22,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "devDependencies": {
-    "@deephaven/test-utils": "file:../test-utils",
-    "react": "^17.x",
-    "react-dom": "^17.x",
-    "react-redux": "^7.x",
-    "redux": "^4.x"
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "dependencies": {
     "@adobe/react-spectrum": "3.38.0",

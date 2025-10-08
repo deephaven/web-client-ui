@@ -96,10 +96,10 @@ class SelectionKeyHandler extends KeyHandler {
         return true;
       }
       case 'Escape':
+        if (grid.state.selectedRanges.length === 0) return false;
         grid.clearSelectedRanges();
-        // Event consumed, but propagation not stopped
-        // so the shortcut could be handled by the global handler
-        return { preventDefault: false, stopPropagation: false };
+        // consume the event, and stop propagation only if there were selected ranges to clear
+        return { preventDefault: false, stopPropagation: true };
       case 'Enter':
         if (grid.state.selectedRanges.length > 0) {
           grid.moveCursorInDirection(

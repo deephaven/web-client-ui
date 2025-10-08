@@ -3,7 +3,6 @@ import React, {
   type KeyboardEvent,
   PureComponent,
 } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import {
   Modal,
@@ -57,18 +56,6 @@ export type NewItemModalState = {
 };
 
 class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
-  static propTypes = {
-    isOpen: PropTypes.bool,
-    title: PropTypes.string.isRequired,
-    defaultValue: PropTypes.string,
-    type: PropTypes.oneOf(['file', 'directory']).isRequired,
-    onSubmit: PropTypes.func,
-    onCancel: PropTypes.func,
-    placeholder: PropTypes.string,
-    storage: PropTypes.shape({}).isRequired,
-    notifyOnExtensionChange: PropTypes.bool,
-  };
-
   static defaultProps = {
     isOpen: false,
     defaultValue: '/',

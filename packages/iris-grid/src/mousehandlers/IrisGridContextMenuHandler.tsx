@@ -26,6 +26,7 @@ import {
   GridSelectionMouseHandler,
   isDeletableGridModel,
   isEditableGridModel,
+  isExpandableColumnGridModel,
   isExpandableGridModel,
   type ModelIndex,
 } from '@deephaven/grid';
@@ -243,6 +244,29 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       },
       disabled: !isColumnHidden,
     });
+
+    if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
+      if (model.isExpandAllColumnsAvailable) {
+        actions.push({
+          title: 'Expand All Columns',
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 30,
+          action: () => {
+            this.irisGrid.expandAllColumns();
+          },
+        });
+
+        actions.push({
+          title: 'Collapse All Columns',
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 40,
+          action: () => {
+            this.irisGrid.collapseAllColumns();
+          },
+        });
+      }
+    }
+
     actions.push({
       title: 'Resize Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -269,6 +293,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         this.irisGrid.toggleFilterBar(visibleIndex);
       },
+      disabled: !model.isFilterable(modelIndex),
     });
     actions.push({
       title: 'Advanced Filters',

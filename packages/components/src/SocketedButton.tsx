@@ -6,8 +6,7 @@ import { dhExclamation, vsLink } from '@deephaven/icons';
 
 import './SocketedButton.scss';
 
-type SocketedButtonProps = {
-  children?: React.ReactNode;
+type SocketedButtonProps = React.PropsWithChildren<{
   className?: string;
   disabled?: boolean;
   id?: string;
@@ -19,18 +18,18 @@ type SocketedButtonProps = {
   onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>;
   style?: React.CSSProperties;
   'data-testid'?: string;
-};
+}>;
 
 const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
   (props: SocketedButtonProps, ref) => {
     const {
       children,
       className,
-      disabled,
+      disabled = false,
       id,
-      isLinked,
-      isLinkedSource,
-      isInvalid,
+      isLinked = false,
+      isLinkedSource = false,
+      isInvalid = false,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -87,20 +86,5 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
 );
 
 SocketedButton.displayName = 'SocketedButton';
-
-SocketedButton.defaultProps = {
-  children: undefined,
-  className: '',
-  disabled: false,
-  id: undefined,
-  isLinked: false,
-  isLinkedSource: false,
-  isInvalid: false,
-  onClick: undefined,
-  onMouseEnter: undefined,
-  onMouseLeave: undefined,
-  style: undefined,
-  'data-testid': undefined,
-};
 
 export default SocketedButton;

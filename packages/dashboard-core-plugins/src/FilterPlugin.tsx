@@ -169,7 +169,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       id = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
-      dragEvent = null,
+      dragEvent = undefined,
     }) => {
       const config = {
         type: 'react-component' as const,
@@ -229,7 +229,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       id = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
-      dragEvent = null,
+      dragEvent = undefined,
     }) => {
       const config = {
         type: 'react-component' as const,

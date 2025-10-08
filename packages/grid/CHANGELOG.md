@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/grid
+
+## [1.7.0](https://github.com/deephaven/web-client-ui/compare/v1.6.0...v1.7.0) (2025-09-24)
+
+### Features
+
+- DH-13515: Expandable columns support ([#2537](https://github.com/deephaven/web-client-ui/issues/2537)) ([6938c47](https://github.com/deephaven/web-client-ui/commit/6938c477a03f4d747851f10c43549dbdae69b648))
+
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Features
+
+- close maximized panels with escape key ([#2533](https://github.com/deephaven/web-client-ui/issues/2533)) ([b90d540](https://github.com/deephaven/web-client-ui/commit/b90d5406a57afca220ae41bad195490f0cbdea46)), closes [#1165](https://github.com/deephaven/web-client-ui/issues/1165)
+
 ## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
 
 **Note:** Version bump only for package @deephaven/grid

@@ -1,4 +1,5 @@
 /* eslint class-methods-use-this: "off" */
+import { flushSync } from 'react-dom';
 import {
   GridMouseHandler,
   type GridPoint,
@@ -86,7 +87,9 @@ class IrisGridColumnTooltipMouseHandler extends GridMouseHandler {
     }
 
     if (newTooltip !== shownColumnTooltip) {
-      this.irisGrid.setState({ shownColumnTooltip: newTooltip });
+      flushSync(() => {
+        this.irisGrid.setState({ shownColumnTooltip: newTooltip });
+      });
     }
 
     return false;

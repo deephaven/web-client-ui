@@ -1,20 +1,25 @@
-import React, { type ReactElement } from 'react';
-import TestRenderer from 'react-test-renderer';
+import React, { useRef } from 'react';
+import { act, fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
+import {
+  type ExpandableColumnGridModel,
+  isExpandableColumnGridModel,
+} from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import type IrisGridProxyModel from './IrisGridProxyModel';
 
-class MockPath2D {
-  // eslint-disable-next-line class-methods-use-this
-  addPath = jest.fn();
-}
+jest.mock('@deephaven/grid', () => ({
+  ...jest.requireActual('@deephaven/grid'),
+  isExpandableColumnGridModel: jest.fn(),
+}));
 
-window.Path2D = MockPath2D as unknown as new () => Path2D;
+const { asMock } = TestUtils;
 
-const VIEW_SIZE = 5000;
+const VIEW_SIZE = 500;
 
 const DEFAULT_SETTINGS: Settings = {
   timeZone: 'America/New_York',
@@ -27,63 +32,36 @@ const DEFAULT_SETTINGS: Settings = {
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeMockCanvas() {
-  return {
-    clientWidth: VIEW_SIZE,
-    clientHeight: VIEW_SIZE,
-    getBoundingClientRect: () => ({ top: 0, left: 0 }),
-    offsetLeft: 0,
-    offsetTop: 0,
-    getContext: TestUtils.makeMockContext,
-    parentElement: {
-      getBoundingClientRect: () => ({
-        width: VIEW_SIZE,
-        height: VIEW_SIZE,
-      }),
-    },
-    style: {},
-    focus: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  };
-}
+jest
+  .spyOn(Element.prototype, 'getBoundingClientRect')
+  .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE, VIEW_SIZE));
 
-function makeMockWrapper() {
-  return {
-    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
-  };
-}
+jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(VIEW_SIZE);
 
-function createNodeMock(element: ReactElement) {
-  if (element.type === 'canvas') {
-    return makeMockCanvas();
-  }
-  if (element?.props?.className?.includes('grid-wrapper') === true) {
-    return makeMockWrapper();
-  }
-  return element;
-}
+jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(VIEW_SIZE);
 
 function makeComponent(
   model = irisGridTestUtils.makeModel(),
-  settings = DEFAULT_SETTINGS
+  settings = DEFAULT_SETTINGS,
+  props = {}
 ) {
-  const testRenderer = TestRenderer.create(
-    <IrisGrid model={model} settings={settings} />,
-    {
-      createNodeMock,
-    }
-  );
-  return testRenderer.getInstance() as TestRenderer.ReactTestInstance &
-    IrisGrid;
+  let ref: React.RefObject<IrisGrid>;
+  function IrisGridWithRef() {
+    ref = useRef<IrisGrid>(null);
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    return <IrisGrid model={model} settings={settings} ref={ref} {...props} />;
+  }
+  render(<IrisGridWithRef />);
+  return ref!.current!;
 }
 
-function keyDown(key, component, extraArgs?) {
+function keyDown(
+  key: string,
+  component: IrisGrid,
+  extraArgs?: Partial<KeyboardEventInit>
+) {
   const args = { key, ...extraArgs };
-  component.grid.notifyKeyboardHandlers(
-    'onDown',
-    new KeyboardEvent('keydown', args)
-  );
+  fireEvent.keyDown(component.grid!.canvas!, args);
 }
 
 it('renders without crashing', () => {
@@ -252,7 +230,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
       contentWidth
@@ -276,7 +254,7 @@ describe('handleResizeColumn', () => {
       irisGrid.state.metrics.contentColumnWidths.get(modelIndex);
     expect(contentWidth).toBeDefined();
 
-    irisGrid.handleResizeColumn(modelIndex);
+    act(() => irisGrid.handleResizeColumn(modelIndex));
 
     expect(
       mockMetricCalculator.userColumnWidths.get(modelIndex)
@@ -322,7 +300,7 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     expect(mockMetricCalculator.userColumnWidths.size).toEqual(0);
 
@@ -350,12 +328,105 @@ describe('handleResizeAllColumns', () => {
     Object.assign(irisGrid.state.metricCalculator, mockMetricCalculator);
     const contentWidths = irisGrid.state.metrics.contentColumnWidths;
 
-    irisGrid.handleResizeAllColumns();
+    act(() => irisGrid.handleResizeAllColumns());
 
     contentWidths.forEach((contentWidth, modelIndex) => {
       expect(mockMetricCalculator.userColumnWidths.get(modelIndex)).toEqual(
         contentWidth
       );
+    });
+  });
+
+  describe('rebuildFilters', () => {
+    it('updates state if filters not empty', () => {
+      const component = makeComponent(undefined, undefined, {
+        quickFilters: [
+          [
+            '2',
+            {
+              columnType: IrisGridTestUtils.DEFAULT_TYPE,
+              filterList: [
+                {
+                  operator: 'eq',
+                  text: 'null',
+                  value: null,
+                  startColumnIndex: 0,
+                },
+              ],
+            },
+          ],
+        ],
+      });
+      jest.spyOn(component, 'setState');
+      expect(component.setState).not.toBeCalled();
+      component.rebuildFilters();
+      expect(component.setState).toBeCalled();
+    });
+
+    it('does not update state for empty filters', () => {
+      const component = makeComponent();
+      jest.spyOn(component, 'setState');
+      component.rebuildFilters();
+      expect(component.setState).not.toBeCalled();
+    });
+  });
+
+  describe('column expand/collapse', () => {
+    let model: IrisGridProxyModel & ExpandableColumnGridModel;
+    let component: IrisGrid;
+
+    beforeEach(() => {
+      model = irisGridTestUtils.makeModel() as IrisGridProxyModel &
+        ExpandableColumnGridModel;
+      component = makeComponent(model);
+      model.setColumnExpanded = jest.fn();
+      model.isColumnExpanded = jest.fn(() => false);
+      model.expandAllColumns = jest.fn();
+      model.collapseAllColumns = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('calls setColumnExpanded if model supports expandable columns', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.hasExpandableColumns = true;
+      component.toggleExpandColumn(0);
+      expect(model.setColumnExpanded).toHaveBeenCalled();
+    });
+
+    it('ignores setColumnExpanded and expand/collapse all if model does not support expandable columns', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(false);
+      component.toggleExpandColumn(0);
+      expect(model.setColumnExpanded).not.toHaveBeenCalled();
+
+      component.expandAllColumns();
+      expect(model.expandAllColumns).not.toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).not.toHaveBeenCalled();
+    });
+
+    it('calls expandAllColumns if model supports expandable columns and expand all', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.isExpandAllColumnsAvailable = true;
+      component.expandAllColumns();
+      expect(model.expandAllColumns).toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).toHaveBeenCalled();
+    });
+
+    it('ignores expandAllColumns if model does not support expand all', () => {
+      asMock(isExpandableColumnGridModel).mockReturnValue(true);
+      model.isExpandAllColumnsAvailable = false;
+
+      component.expandAllColumns();
+      expect(model.expandAllColumns).not.toHaveBeenCalled();
+
+      component.collapseAllColumns();
+      expect(model.collapseAllColumns).not.toHaveBeenCalled();
     });
   });
 });

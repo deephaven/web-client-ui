@@ -1,5 +1,7 @@
-import React, { type ReactElement } from 'react';
-import TestRenderer from 'react-test-renderer';
+import React, { useRef } from 'react';
+import { fireEvent, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
 import GridRange from './GridRange';
 import GridRenderer from './GridRenderer';
@@ -10,83 +12,19 @@ import MockGridData from './MockGridData';
 import { type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
 
-function makeMockContext(): CanvasRenderingContext2D {
-  // Just return a partial mock
-  return {
-    arc: jest.fn(),
-    beginPath: jest.fn(),
-    clip: jest.fn(),
-    closePath: jest.fn(),
-    createLinearGradient: jest.fn(() => ({
-      addColorStop: jest.fn(),
-    })),
-    fill: jest.fn(),
-    fillRect: jest.fn(),
-    fillText: jest.fn(),
-    lineTo: jest.fn(),
-    measureText: jest.fn(str => ({ width: str.length * 10 }) as TextMetrics),
-    moveTo: jest.fn(),
-    rect: jest.fn(),
-    restore: jest.fn(),
-    setTransform: jest.fn(),
-    save: jest.fn(),
-    stroke: jest.fn(),
-    strokeRect: jest.fn(),
-    translate: jest.fn(),
-    scale: jest.fn(),
-    createPattern: jest.fn(),
-  } as unknown as CanvasRenderingContext2D;
-}
-
-// We only use the '2d' mode of getContext. Defining the type in TS is tricky,
-// so just use any here and call it a day.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-HTMLCanvasElement.prototype.getContext = jest.fn(makeMockContext) as any;
-
 const defaultTheme = { ...GridTheme, autoSizeColumns: false } as GridThemeType;
 
-const VIEW_SIZE = 5000;
+const VIEW_SIZE = 1000;
 
 const DEFAULT_PASTE_DATA = 'TEST_PASTE_DATA';
 
-function makeMockCanvas() {
-  return {
-    clientWidth: VIEW_SIZE,
-    clientHeight: VIEW_SIZE,
-    getBoundingClientRect: () => ({ top: 0, left: 0 }),
-    offsetLeft: 0,
-    offsetTop: 0,
-    getContext: makeMockContext,
-    parentElement: {
-      getBoundingClientRect: () => ({
-        width: VIEW_SIZE,
-        height: VIEW_SIZE,
-      }),
-    },
-    style: {},
-    focus: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  };
-}
+jest
+  .spyOn(Element.prototype, 'getBoundingClientRect')
+  .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE, VIEW_SIZE));
 
-function makeMockWrapper() {
-  return {
-    focus: jest.fn(),
-    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
-  };
-}
+jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(VIEW_SIZE);
 
-function createNodeMock(element: ReactElement) {
-  if (element.type === 'canvas') {
-    return makeMockCanvas();
-  }
-  if (element?.props?.className?.includes('grid-wrapper') === true) {
-    return makeMockWrapper();
-  }
-
-  return null;
-}
+jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(VIEW_SIZE);
 
 function makeGridComponent(
   model: GridModel = new MockGridModel(),
@@ -95,17 +33,22 @@ function makeGridComponent(
     onSelectionChanged: jest.fn(),
   }
 ): Grid {
-  const testRenderer = TestRenderer.create(
-    <Grid
-      model={model}
-      theme={theme}
-      onSelectionChanged={onSelectionChanged}
-    />,
-    {
-      createNodeMock,
-    }
-  );
-  return testRenderer.getInstance() as unknown as Grid;
+  let ref: React.RefObject<Grid>;
+  function GridWithRef() {
+    ref = useRef<Grid>(null);
+    return (
+      <div>
+        <Grid
+          model={model}
+          theme={theme}
+          onSelectionChanged={onSelectionChanged}
+          ref={ref}
+        />
+      </div>
+    );
+  }
+  render(<GridWithRef />);
+  return ref!.current!;
 }
 
 function getClientX(
@@ -124,36 +67,16 @@ function getClientY(
   return columnHeaderHeight + rowHeight * rowIndex + 1;
 }
 
-function mouseEvent(
-  column: VisibleIndex,
-  row: VisibleIndex,
-  fn: React.MouseEventHandler,
-  type: string,
-  extraArgs?: MouseEventInit,
-  clientX = getClientX(column),
-  clientY = getClientY(row)
-) {
-  const mouseArgs = { clientX, clientY, ...extraArgs };
-  fn(new MouseEvent(type, mouseArgs) as unknown as React.MouseEvent);
-}
-
 function mouseDown(
   column: VisibleIndex,
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseEvent(
-    column,
-    row,
-    component.handleMouseDown,
-    'mousedown',
-    extraMouseArgs,
-    clientX,
-    clientY
-  );
+  const mouseArgs = { clientX, clientY, ...extraMouseArgs };
+  fireEvent.mouseDown(component.canvas!, mouseArgs);
 }
 
 function mouseMove(
@@ -161,18 +84,11 @@ function mouseMove(
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseEvent(
-    column,
-    row,
-    component.handleMouseDrag as unknown as React.MouseEventHandler,
-    'mousemove',
-    extraMouseArgs,
-    clientX,
-    clientY
-  );
+  const mouseArgs = { clientX, clientY, ...extraMouseArgs };
+  fireEvent.mouseMove(component.canvas!, mouseArgs);
 }
 
 function mouseUp(
@@ -180,18 +96,11 @@ function mouseUp(
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseEvent(
-    column,
-    row,
-    component.handleMouseUp as unknown as React.MouseEventHandler,
-    'mouseup',
-    extraMouseArgs,
-    clientX,
-    clientY
-  );
+  const mouseArgs = { clientX, clientY, ...extraMouseArgs };
+  fireEvent.mouseUp(component.canvas!, mouseArgs);
 }
 
 function mouseClick(
@@ -199,11 +108,12 @@ function mouseClick(
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseDown(column, row, component, extraMouseArgs, clientX, clientY);
-  mouseUp(column, row, component, extraMouseArgs, clientX, clientY);
+  const mouseArgs = { clientX, clientY, ...extraMouseArgs };
+  fireEvent.mouseDown(component.canvas!, mouseArgs);
+  fireEvent.mouseUp(component.canvas!, mouseArgs);
 }
 
 function mouseRightClick(
@@ -211,27 +121,17 @@ function mouseRightClick(
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseEvent(
-    column,
-    row,
-    component.handleContextMenu,
-    'mousedown',
-    extraMouseArgs,
+  const mouseArgs = {
     clientX,
-    clientY
-  );
-  mouseEvent(
-    column,
-    row,
-    component.handleContextMenu,
-    'mouseup',
-    extraMouseArgs,
-    clientX,
-    clientY
-  );
+    clientY,
+    button: 2,
+    buttons: 2,
+    ...extraMouseArgs,
+  };
+  fireEvent.contextMenu(component.canvas!, mouseArgs);
 }
 
 function mouseDoubleClick(
@@ -239,26 +139,20 @@ function mouseDoubleClick(
   row: VisibleIndex,
   component: Grid,
   extraMouseArgs?: MouseEventInit,
-  clientX?: number,
-  clientY?: number
+  clientX = getClientX(column),
+  clientY = getClientY(row)
 ) {
-  mouseEvent(
-    column,
-    row,
-    component.handleDoubleClick,
-    'dblclick',
-    extraMouseArgs,
+  const mouseArgs = {
     clientX,
-    clientY
-  );
+    clientY,
+    ...extraMouseArgs,
+  };
+  fireEvent.dblClick(component.canvas!, mouseArgs);
 }
 
 function keyDown(key: string, component: Grid, extraArgs?: KeyboardEventInit) {
   const args = { key, ...extraArgs };
-  component.notifyKeyboardHandlers(
-    'onDown',
-    new KeyboardEvent('keydown', args) as unknown as React.KeyboardEvent
-  );
+  fireEvent.keyDown(component.canvas!, args);
 }
 
 function arrowDown(component: Grid, extraArgs?: KeyboardEventInit) {
@@ -514,14 +408,12 @@ it('handles mouse shift click to extend selection', () => {
   expect(component.state.selectedRanges.length).toBe(1);
   expect(component.state.selectedRanges[0]).toEqual(new GridRange(3, 2, 5, 5));
 
-  mouseClick(10, 12, component, { shiftKey: true });
+  mouseClick(9, 9, component, { shiftKey: true });
 
-  expect(component.state.selectionEndRow).toBe(12);
-  expect(component.state.selectionEndColumn).toBe(10);
+  expect(component.state.selectionEndRow).toBe(9);
+  expect(component.state.selectionEndColumn).toBe(9);
   expect(component.state.selectedRanges.length).toBe(1);
-  expect(component.state.selectedRanges[0]).toEqual(
-    new GridRange(5, 5, 10, 12)
-  );
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(5, 5, 9, 9));
 });
 
 it('handles mouse ctrl click to add to selection', () => {
@@ -541,20 +433,20 @@ it('handles mouse ctrl click to add to selection', () => {
 it('deselects when ctrl clicking within a selected range', () => {
   const component = makeGridComponent();
   mouseDown(5, 5, component);
-  mouseMove(10, 10, component);
-  mouseUp(10, 10, component);
+  mouseMove(9, 9, component);
+  mouseUp(9, 9, component);
 
-  mouseClick(8, 7, component, { ctrlKey: true });
+  mouseClick(7, 7, component, { ctrlKey: true });
 
   // Cursor should reset to the start range
   expect(component.state.cursorColumn).toBe(5);
   expect(component.state.cursorRow).toBe(5);
   expect(component.state.selectedRanges.length).toBe(4);
   expect(component.state.selectedRanges).toEqual([
-    new GridRange(5, 5, 10, 6),
+    new GridRange(5, 5, 9, 6),
     new GridRange(5, 7, 7, 7),
-    new GridRange(9, 7, 10, 7),
-    new GridRange(5, 8, 10, 10),
+    new GridRange(9, 7, 9, 7),
+    new GridRange(5, 8, 9, 9),
   ]);
 });
 
@@ -577,17 +469,16 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
   expect(component.state.selectedRanges.length).toBe(1);
   expect(component.state.selectedRanges[0]).toEqual(new GridRange(2, 3, 8, 7));
 
-  mouseClick(10, 12, component, { ctrlKey: true, shiftKey: true });
+  mouseClick(9, 9, component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(10);
-  expect(component.state.selectionEndRow).toBe(12);
+  expect(component.state.selectionEndColumn).toBe(9);
+  expect(component.state.selectionEndRow).toBe(9);
   expect(component.state.selectedRanges.length).toBe(1);
-  expect(component.state.selectedRanges[0]).toEqual(
-    new GridRange(2, 3, 10, 12)
-  );
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(2, 3, 9, 9));
 });
 
 it('handles double clicking a cell to edit', async () => {
+  const user = userEvent.setup();
   const model = new MockGridModel({ isEditable: true });
   const component = makeGridComponent(model);
   const column = 5;
@@ -604,7 +495,9 @@ it('handles double clicking a cell to edit', async () => {
   expect(component.state.editingCell?.column).toBe(column);
   expect(component.state.editingCell?.row).toBe(row);
 
-  component.handleEditCellCommit(value);
+  await user.keyboard('{Control>}a{/Control}');
+  await user.keyboard(value);
+  await user.keyboard('[Enter]');
 
   expect(model.textForCell(column, row)).toBe(value);
 
@@ -666,76 +559,79 @@ it('handles keyboard arrow to extend selection down/up', () => {
 });
 
 it('handles keyboard pageDown to move cursor and/or selection down', () => {
-  const model = new MockGridModel({ rowCount: 800, columnCount: 10 });
+  const model = new MockGridModel({ rowCount: 200, columnCount: 10 });
   const component = makeGridComponent(model);
 
   // Try moving the selected row one page down.
   // Click on row 4, hit the pageDown key.
   mouseClick(1, 4, component);
   pageDown(component);
-  expect(component.state.selectionEndRow).toBe(252);
-  expect(component.state.cursorRow).toBe(252);
+  expect(component.state.selectionEndRow).toBe(51);
+  expect(component.state.cursorRow).toBe(51);
 
   // Try selecting a range with shift+pageDown
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(252);
-  expect(component.state.selectionEndRow).toBe(500);
+  expect(component.state.selectionStartRow).toBe(51);
+  expect(component.state.selectionEndRow).toBe(98);
 
   // Try increasing the selection with another shift+pageDown.
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(252);
-  expect(component.state.selectionEndRow).toBe(748);
+  expect(component.state.selectionStartRow).toBe(51);
+  expect(component.state.selectionEndRow).toBe(145);
 
   // Try changing the selected row with an arrow key.
   arrowUp(component);
-  expect(component.state.selectionStartRow).toBe(251);
-  expect(component.state.selectionEndRow).toBe(251);
-  expect(component.state.cursorRow).toBe(251);
+  expect(component.state.selectionStartRow).toBe(50);
+  expect(component.state.selectionEndRow).toBe(50);
+  expect(component.state.cursorRow).toBe(50);
 
-  // Move another 3 pages down. Try selecting beyond the table row limit.
+  // Move another 4 pages down. Try selecting beyond the table row limit.
   pageDown(component, { shiftKey: true });
   pageDown(component, { shiftKey: true });
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(251);
-  expect(component.state.selectionEndRow).toBe(799);
+  pageDown(component, { shiftKey: true });
+  expect(component.state.selectionStartRow).toBe(50);
+  expect(component.state.selectionEndRow).toBe(199);
 });
 
 it('handles keyboard pageUp to move cursor and/or selection up', () => {
-  const model = new MockGridModel({ rowCount: 800, columnCount: 10 });
+  const model = new MockGridModel({ rowCount: 200, columnCount: 10 });
   const component = makeGridComponent(model);
 
   // Setup - start at the bottom of the table.
-  mouseClick(1, 245, component);
+  mouseClick(1, 47, component);
+  pageDown(component);
   pageDown(component);
   pageDown(component);
   pageDown(component);
 
   // Try moving the selected row one page up.
   pageUp(component);
-  expect(component.state.selectionEndRow).toBe(551);
-  expect(component.state.cursorRow).toBe(551);
+  expect(component.state.selectionEndRow).toBe(152);
+  expect(component.state.cursorRow).toBe(152);
 
   // Try selecting a range with shift+pageUp
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(551);
-  expect(component.state.selectionEndRow).toBe(303);
+  expect(component.state.selectionStartRow).toBe(152);
+  expect(component.state.selectionEndRow).toBe(105);
 
   // Try increasing the selection with another shift+pageUp.
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(551);
-  expect(component.state.selectionEndRow).toBe(55);
+  expect(component.state.selectionStartRow).toBe(152);
+  expect(component.state.selectionEndRow).toBe(58);
 
   // Try changing the selected row with an arrow key.
   arrowDown(component);
-  expect(component.state.selectionStartRow).toBe(552);
-  expect(component.state.selectionEndRow).toBe(552);
-  expect(component.state.cursorRow).toBe(552);
+  expect(component.state.selectionStartRow).toBe(153);
+  expect(component.state.selectionEndRow).toBe(153);
+  expect(component.state.cursorRow).toBe(153);
 
   // Move another page up. Try selecting beyond the first table row.
   pageUp(component, { shiftKey: true });
   pageUp(component, { shiftKey: true });
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(552);
+  pageUp(component, { shiftKey: true });
+  expect(component.state.selectionStartRow).toBe(153);
   expect(component.state.selectionEndRow).toBe(0);
 });
 
@@ -948,7 +844,9 @@ describe('mac specific shortcut tests', () => {
 });
 
 describe('truncate to width', () => {
-  const context = makeMockContext();
+  const context = TestUtils.createMockProxy<CanvasRenderingContext2D>({
+    measureText: jest.fn(str => ({ width: str.length * 10 }) as TextMetrics),
+  });
 
   function expectTruncate(
     str: string,

@@ -84,7 +84,7 @@ it('can delete a format rule', async () => {
   expect(addBtn).not.toBeNull();
   await user.click(addBtn);
 
-  const delBtn = screen.getByRole('button', { name: /Delete Format Rule/g });
+  const delBtn = screen.getByRole('button', { name: /Delete Format Rule/ });
   expect(delBtn).not.toBeNull();
   await user.click(delBtn);
 
