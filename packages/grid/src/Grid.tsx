@@ -516,12 +516,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     // apply on mount, so that it works with a static model
     // https://github.com/deephaven/web-client-ui/issues/581
     const { isStuckToBottom, isStuckToRight } = this.props;
-    if (isStuckToBottom) {
-      this.scrollToBottom();
-    }
-    if (isStuckToRight) {
-      this.scrollToRight();
-    }
+    const { top, left } = this.getStickyScrollPosition(
+      isStuckToBottom,
+      isStuckToRight
+    );
+    this.setState({ top, left });
   }
 
   componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
@@ -611,7 +610,14 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.requestUpdateCanvas();
 
-    this.checkStickyScroll();
+    if (this.needToUpdateScroll()) {
+      const { top, left } = this.getStickyScrollPosition(
+        isStickyBottom,
+        isStickyRight
+      );
+      updatedState.top = top;
+      updatedState.left = left;
+    }
 
     if (this.validateSelection()) {
       this.checkSelectionChange(prevState);
@@ -776,29 +782,41 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState({ isStuckToBottom: false });
   }
 
-  /**
-   * Scrolls to bottom, if not already at bottom
-   */
-  scrollToBottom(): void {
-    if (!this.metrics) return;
-    const { bottomVisible, rowCount, top, lastTop } = this.metrics;
-    if ((bottomVisible < rowCount - 1 && bottomVisible > 0) || top > lastTop) {
-      this.setState({ top: lastTop });
-    }
-  }
+  getStickyScrollPosition(
+    isStickyBottom: boolean,
+    isStickyRight: boolean
+  ): { top: VisibleIndex; left: VisibleIndex } {
+    // eslint-disable-next-line react/destructuring-assignment
+    if (!this.metrics) return { left: this.state.left, top: this.state.top };
 
-  /**
-   * Scrolls to right, if not already at right
-   */
-  scrollToRight(): void {
-    if (!this.metrics) return;
-    const { rightVisible, columnCount, left, lastLeft } = this.metrics;
+    const {
+      bottomVisible,
+      rowCount,
+      top,
+      lastTop,
+      rightVisible,
+      columnCount,
+      left,
+      lastLeft,
+    } = this.metrics;
+
+    let newTop = top;
+    let newLeft = left;
+
     if (
-      (rightVisible < columnCount - 1 && rightVisible > 0) ||
-      left > lastLeft
+      isStickyBottom &&
+      ((bottomVisible < rowCount - 1 && bottomVisible > 0) || top > lastTop)
     ) {
-      this.setState({ left: lastLeft });
+      newTop = lastTop;
     }
+    if (
+      isStickyRight &&
+      ((rightVisible < columnCount - 1 && rightVisible > 0) || left > lastLeft)
+    ) {
+      newLeft = lastLeft;
+    }
+
+    return { top: newTop, left: newLeft };
   }
 
   /**
@@ -928,38 +946,32 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  /**
-   * Compares the current metrics with the previous metrics to see if we need to scroll when it is stuck to the bottom or the right
-   */
-  checkStickyScroll(): void {
-    if (!this.metrics) {
-      return;
+  needToUpdateScroll(): boolean {
+    if (!this.metrics || !this.prevMetrics) {
+      return false;
     }
 
-    if (this.prevMetrics) {
-      const { rowCount, columnCount, height, width } = this.metrics;
-      const {
-        rowCount: prevRowCount,
-        columnCount: prevColumnCount,
-        height: prevHeight,
-        width: prevWidth,
-      } = this.prevMetrics;
+    const { rowCount, columnCount, height, width } = this.metrics;
+    const {
+      rowCount: prevRowCount,
+      columnCount: prevColumnCount,
+      height: prevHeight,
+      width: prevWidth,
+    } = this.prevMetrics;
 
-      if (prevRowCount !== rowCount || height !== prevHeight) {
-        const { isStuckToBottom } = this.state;
-        if (isStuckToBottom) {
-          this.scrollToBottom();
-        }
-      }
-
-      if (prevColumnCount !== columnCount || width !== prevWidth) {
-        const { isStuckToRight } = this.state;
-        if (isStuckToRight) {
-          this.scrollToRight();
-        }
+    if (prevRowCount !== rowCount || height !== prevHeight) {
+      const { isStuckToBottom } = this.state;
+      if (isStuckToBottom) {
+        return true;
       }
     }
-    this.prevMetrics = this.metrics;
+    if (prevColumnCount !== columnCount || width !== prevWidth) {
+      const { isStuckToRight } = this.state;
+      if (isStuckToRight) {
+        return true;
+      }
+    }
+    return false;
   }
 
   updateMetrics(state = this.state): GridMetrics {
