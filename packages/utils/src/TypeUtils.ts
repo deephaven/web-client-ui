@@ -71,6 +71,14 @@ export type ValueOf<T> = T[keyof T];
  * This can be useful if you want to Omit a key from a type,
  * but the type has an index signature. Otherwise, the index signature
  * is the only thing that remains after Omit.
+ *
+ * e.g.
+ * type A = { a: string; b: number; [key: string]: string };
+ * type B = Omit<A, 'a'>; // { [key: string]: string }
+ * type C = Omit<RemoveIndexSignature<A>, 'a'>; // { b: number }
+ *
+ * B does not maintain that the 'b' property is present, but keeps just the index signature.
+ * By removing the signature and then omitting, you still get the 'b' property.
  */
 export type RemoveIndexSignature<T> = {
   [K in keyof T as string extends K

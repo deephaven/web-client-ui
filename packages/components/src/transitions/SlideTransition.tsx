@@ -7,6 +7,8 @@ import classNames from 'classnames';
 import type { RemoveIndexSignature } from '@deephaven/utils';
 import ThemeExport from '../ThemeExport';
 
+const DISPLAY_CONTENTS = { display: 'contents' };
+
 type SlideDirection = 'left' | 'right';
 
 type SlideTransitionProps =
@@ -57,7 +59,7 @@ function SlideTransition({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     >
-      <div ref={setRef} style={{ display: 'contents' }}>
+      <div ref={setRef} style={DISPLAY_CONTENTS}>
         {children}
       </div>
     </CSSTransition>

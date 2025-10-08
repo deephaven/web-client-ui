@@ -9,6 +9,8 @@ import classNames from 'classnames';
 import type { RemoveIndexSignature } from '@deephaven/utils';
 import ThemeExport from '../ThemeExport';
 
+const DISPLAY_CONTENTS = { display: 'contents' };
+
 type FadeTransitionProps =
   // We default the timeout, so user doesn't need to provide it
   // However, CSSTransitionProps get confused if you don't provide a timeout, it requires an endHandler
@@ -59,7 +61,7 @@ function FadeTransition({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     >
-      <div ref={setRef} style={{ display: 'contents' }}>
+      <div ref={setRef} style={DISPLAY_CONTENTS}>
         {children}
       </div>
     </CSSTransition>
