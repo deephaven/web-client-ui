@@ -44,3 +44,11 @@ $console-gutter-width: 30px;
     }
   }
 }
+
+.console-history-item-tooltip {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  text-align: left;
+  margin-bottom: $spacer-2;
+}
