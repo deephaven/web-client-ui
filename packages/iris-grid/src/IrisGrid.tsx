@@ -3413,13 +3413,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnHeaderGroups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[]
   ): void {
     const { model } = this.props;
+    const { columnHeaderGroups: prevColumnHeaderGroups } = this.state;
+    if (prevColumnHeaderGroups === columnHeaderGroups) {
+      return;
+    }
 
     this.setState(
       {
-        columnHeaderGroups: columnHeaderGroups.every(isColumnHeaderGroup)
-          ? columnHeaderGroups
-          : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
-              .groups,
+        // undo/redo will pass already parsed groups
+        // Parsing them again causes a loop with undo/redo that makes it unusable
+        columnHeaderGroups:
+          columnHeaderGroups.every(isColumnHeaderGroup) &&
+          columnHeaderGroups.every(group => group.isValid())
+            ? columnHeaderGroups
+            : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
+                .groups,
       },
       () => this.grid?.forceUpdate()
     );
