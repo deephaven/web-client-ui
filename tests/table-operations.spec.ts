@@ -526,7 +526,14 @@ test('rollup rows and aggregate columns', async ({ page }) => {
     await page
       .getByRole('button', { name: 'Edit Columns', exact: true })
       .click();
-    await page.getByText('Double', { exact: true }).click();
+
+    const locator = page.getByText('Double', { exact: true });
+    // Sometimes this becomes flaky presumably because of the animation
+    // or some React inner workings causing 2 elements to briefly exist.
+    // They are identical except their label ID assigned by the component we use.
+    // Waiting for only 1 to exist should hopefully fix flakiness.
+    await expect(locator).toHaveCount(1);
+    await locator.click();
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });

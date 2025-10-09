@@ -112,9 +112,9 @@ test('scroll expanded rollup while moving mouse over rows', async ({
     await openTableOption(page, 'Rollup Rows');
 
     await test.step('Rollup column', async () => {
-      const xColumn = page.getByRole('button', { name: 'y' });
-      expect(xColumn).toBeTruthy();
-      await xColumn.dblclick();
+      const yColumn = page.getByRole('button', { name: 'y', exact: true });
+      expect(yColumn).toBeTruthy();
+      await yColumn.dblclick();
       await waitForLoadingDone(page);
     });
 
