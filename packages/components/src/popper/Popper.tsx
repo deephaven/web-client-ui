@@ -108,6 +108,8 @@ class Popper extends Component<PopperProps, PopperState> {
 
   container: React.RefObject<HTMLDivElement>;
 
+  nodeRef = React.createRef<HTMLDivElement>();
+
   // This is the request animation frame handle number
   rAF: number;
 
@@ -256,8 +258,10 @@ class Popper extends Component<PopperProps, PopperState> {
           classNames="popper-transition"
           onEntered={this.handleEnter}
           onExited={this.handleExit}
+          nodeRef={this.nodeRef}
         >
           <div
+            ref={this.nodeRef}
             onClick={e => {
               // stop click events from escaping popper
               e.stopPropagation();

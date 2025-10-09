@@ -42,6 +42,7 @@ function Modal({
 }: ModalProps): React.ReactElement | null {
   const element = useRef<HTMLElement>();
   const background = useRef<HTMLDivElement>(null);
+  const backdropFade = useRef<HTMLDivElement>(null);
   const [backgroundClicked, setBackgroundClicked] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -118,8 +119,10 @@ function Modal({
             }}
             timeout={ThemeExport.transitionMs}
             onExited={onExited}
+            nodeRef={backdropFade}
           >
             <div
+              ref={backdropFade}
               className={classNames('modal-backdrop fade')}
               style={{ zIndex: 1050 }}
             />
@@ -134,6 +137,7 @@ function Modal({
             }}
             timeout={ThemeExport.transitionMs}
             onExited={onExited}
+            nodeRef={background}
           >
             <div
               ref={background}
