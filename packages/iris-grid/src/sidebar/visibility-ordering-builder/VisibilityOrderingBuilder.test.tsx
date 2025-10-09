@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
@@ -97,21 +97,24 @@ function BuilderWithNestedGroups({
   return <Builder model={model} {...rest} />;
 }
 
-function BuilderWithStateManagement({
-  model = makeModel(),
-  hiddenColumns = [],
-  movedColumns = model.initialMovedColumns,
-  columnHeaderGroups = model.columnHeaderGroups,
-  onColumnHeaderGroupChanged = jest.fn(),
-  onColumnVisibilityChanged = jest.fn(),
-  onMovedColumnsChanged = jest.fn(),
-  onFrozenColumnsChanged = jest.fn(),
-  onReset = jest.fn(),
-  builderRef = React.createRef(),
-}: Partial<VisibilityOrderingBuilderProps> & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  builderRef?: React.RefObject<any>;
-} = {}) {
+function BuilderWithStateManagement(
+  props: Partial<VisibilityOrderingBuilderProps> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    builderRef?: React.RefObject<any>;
+  } = {}
+) {
+  const [model] = useState(() => props.model ?? makeModel());
+  const {
+    hiddenColumns = [],
+    movedColumns = model.initialMovedColumns,
+    columnHeaderGroups = model.columnHeaderGroups,
+    onColumnHeaderGroupChanged = jest.fn(),
+    onColumnVisibilityChanged = jest.fn(),
+    onMovedColumnsChanged = jest.fn(),
+    onFrozenColumnsChanged = jest.fn(),
+    onReset = jest.fn(),
+    builderRef = React.createRef(),
+  } = props;
   const [movedCols, setMovedCols] = useState(movedColumns);
   const prevMovedColumns = useRef(movedColumns);
 
