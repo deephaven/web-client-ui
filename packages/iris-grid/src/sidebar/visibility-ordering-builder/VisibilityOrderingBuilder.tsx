@@ -71,6 +71,7 @@ import {
   moveItemsFromDrop,
   moveToGroup,
 } from './VisibilityOrderingBuilderUtils';
+import IrisGridUtils from '../../IrisGridUtils';
 
 const DEBOUNCE_SEARCH_COLUMN = 150;
 
@@ -79,7 +80,7 @@ interface IndexRange {
   nextIndex: number;
 }
 
-interface VisibilityOrderingBuilderWrapperProps {
+export interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
   movedColumns: readonly MoveOperation[];
   hiddenColumns: readonly ModelIndex[];
@@ -93,16 +94,14 @@ interface VisibilityOrderingBuilderWrapperProps {
     operations: readonly MoveOperation[],
     cb?: () => void
   ) => void;
-  onColumnHeaderGroupChanged: (
-    groups: readonly (dh.ColumnGroup | ColumnHeaderGroup)[]
-  ) => void;
+  onColumnHeaderGroupChanged: (groups: readonly ColumnHeaderGroup[]) => void;
   onFrozenColumnsChanged: (columns: readonly ColumnName[]) => void;
-  __testRef?: React.Ref<VisibilityOrderingBuilder>;
+  __testRef?: React.Ref<VisibilityOrderingBuilderInner>;
 }
 
-interface VisibilityOrderingBuilderProps
+interface VisibilityOrderingBuilderInnerProps
   extends Omit<
-    VisibilityOrderingBuilderWrapperProps,
+    VisibilityOrderingBuilderProps,
     'onFrozenColumnsChanged' | '__testRef'
   > {
   undo: () => void;
@@ -113,7 +112,7 @@ interface VisibilityOrderingBuilderProps
   endUndoGroup: () => void;
 }
 
-interface VisibilityOrderingBuilderState {
+interface VisibilityOrderingBuilderInnerState {
   selectedColumns: Set<string>;
   queriedColumnIndex: number | undefined;
   queriedColumnRange: IndexRange | undefined;
@@ -123,9 +122,9 @@ interface VisibilityOrderingBuilderState {
   showHiddenColumns: boolean;
 }
 
-class VisibilityOrderingBuilder extends PureComponent<
-  VisibilityOrderingBuilderProps,
-  VisibilityOrderingBuilderState
+class VisibilityOrderingBuilderInner extends PureComponent<
+  VisibilityOrderingBuilderInnerProps,
+  VisibilityOrderingBuilderInnerState
 > {
   static SORTING_OPTIONS = { DSC: 'DSC', ASC: 'ASC' } as const;
 
@@ -141,7 +140,7 @@ class VisibilityOrderingBuilder extends PureComponent<
     return column.isProxy !== true;
   }
 
-  constructor(props: VisibilityOrderingBuilderProps) {
+  constructor(props: VisibilityOrderingBuilderInnerProps) {
     super(props);
 
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
@@ -170,7 +169,7 @@ class VisibilityOrderingBuilder extends PureComponent<
     this.list = null;
   }
 
-  componentDidUpdate(prevProps: VisibilityOrderingBuilderProps): void {
+  componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
     const { movedColumns } = this.props;
     if (movedColumns !== prevProps.movedColumns) {
       const { searchFilter } = this.state;
@@ -416,7 +415,7 @@ class VisibilityOrderingBuilder extends PureComponent<
    *
    */
   moveSelectedColumns(
-    option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
+    option: keyof typeof VisibilityOrderingBuilderInner.MOVE_OPTIONS
   ): { newMoves: MoveOperation[]; groups: readonly ColumnHeaderGroup[] } {
     const { columnHeaderGroups } = this.props;
     const { selectedColumns } = this.state;
@@ -430,8 +429,8 @@ class VisibilityOrderingBuilder extends PureComponent<
     const selectedItems = this.getSelectedParentItems();
 
     const isMovingUpward =
-      option === VisibilityOrderingBuilder.MOVE_OPTIONS.UP ||
-      option === VisibilityOrderingBuilder.MOVE_OPTIONS.TOP;
+      option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.UP ||
+      option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP;
 
     // for moving up and to the top, move column(s) in visibility index order
     // for moving down and to the bottom, move column(s) in reverse visibility index order
@@ -451,7 +450,7 @@ class VisibilityOrderingBuilder extends PureComponent<
       } = selectedItems[i];
 
       switch (option) {
-        case VisibilityOrderingBuilder.MOVE_OPTIONS.TOP: {
+        case VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP: {
           newMoves = GridUtils.moveItemOrRange(
             visibleIndex,
             firstMovableIndex,
@@ -466,7 +465,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           updatedGroups = moveToGroup(selectedItems[i], null, updatedGroups);
           break;
         }
-        case VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM: {
+        case VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM: {
           newMoves = GridUtils.moveItemOrRange(
             visibleIndex,
             lastMovableIndex,
@@ -481,7 +480,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           updatedGroups = moveToGroup(selectedItems[i], null, updatedGroups);
           break;
         }
-        case VisibilityOrderingBuilder.MOVE_OPTIONS.UP: {
+        case VisibilityOrderingBuilderInner.MOVE_OPTIONS.UP: {
           const itemIndex = treeItems.findIndex(item => item.id === id);
           // Array.findLast would be better here, but it's too new for our browser support
           const prevItemIndex = treeItems
@@ -534,7 +533,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           }
           break;
         }
-        case VisibilityOrderingBuilder.MOVE_OPTIONS.DOWN: {
+        case VisibilityOrderingBuilderInner.MOVE_OPTIONS.DOWN: {
           const itemIndex = treeItems.findIndex(item => item.id === id);
           const nextItem = treeItems.find(
             (item, idx) => idx > itemIndex && !selectedColumns.has(item.id)
@@ -594,7 +593,7 @@ class VisibilityOrderingBuilder extends PureComponent<
    * @param option The move operation
    */
   handleMoveColumns(
-    option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
+    option: keyof typeof VisibilityOrderingBuilderInner.MOVE_OPTIONS
   ): void {
     const { onMovedColumnsChanged, movedColumns, onColumnHeaderGroupChanged } =
       this.props;
@@ -602,12 +601,12 @@ class VisibilityOrderingBuilder extends PureComponent<
     const { newMoves, groups } = this.moveSelectedColumns(option);
     let scrollListAfterMove: (() => void) | undefined;
 
-    if (option === VisibilityOrderingBuilder.MOVE_OPTIONS.TOP) {
+    if (option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP) {
       scrollListAfterMove = () => {
         this.list?.parentElement?.scroll({ top: 0 });
       };
     }
-    if (option === VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM) {
+    if (option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM) {
       scrollListAfterMove = () => {
         this.list?.parentElement?.scroll({
           top: this.list.parentElement.scrollHeight,
@@ -636,13 +635,13 @@ class VisibilityOrderingBuilder extends PureComponent<
    */
   getSortMoves(
     itemsParam: readonly IrisGridTreeItem[],
-    option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS,
+    option: keyof typeof VisibilityOrderingBuilderInner.SORTING_OPTIONS,
     movedColumns: readonly MoveOperation[]
   ): MoveOperation[] {
     const items = [...itemsParam];
     // Sort all the movable columns
     const isAscending =
-      option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
+      option === VisibilityOrderingBuilderInner.SORTING_OPTIONS.ASC;
     items.sort((a, b) => {
       const aName = a.id.toUpperCase();
       const bName = b.id.toUpperCase();
@@ -686,7 +685,7 @@ class VisibilityOrderingBuilder extends PureComponent<
   }
 
   handleSortColumns(
-    option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS
+    option: keyof typeof VisibilityOrderingBuilderInner.SORTING_OPTIONS
   ): void {
     const { model, onMovedColumnsChanged } = this.props;
     const tree = this.getTreeItems();
@@ -971,7 +970,7 @@ class VisibilityOrderingBuilder extends PureComponent<
     } = this.props;
 
     const { newMoves, groups } = this.moveSelectedColumns(
-      VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
+      VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP
     );
 
     const newGroups = groups.filter(group => !group.isNew);
@@ -1222,7 +1221,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             movedColumns
           );
           const column = columns[modelIndex];
-          if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+          if (VisibilityOrderingBuilderInner.shouldRenderColumn(column)) {
             elements.push(this.renderImmovableItem(column.name));
           }
         }
@@ -1238,7 +1237,7 @@ class VisibilityOrderingBuilder extends PureComponent<
       ) {
         const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
         const column = columns[modelIndex];
-        if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+        if (VisibilityOrderingBuilderInner.shouldRenderColumn(column)) {
           elements.push(this.renderImmovableItem(column.name));
         }
       }
@@ -1268,7 +1267,7 @@ class VisibilityOrderingBuilder extends PureComponent<
       ) {
         const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
         const column = columns[modelIndex];
-        if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+        if (VisibilityOrderingBuilderInner.shouldRenderColumn(column)) {
           elements.push(this.renderImmovableItem(column.name));
         }
       }
@@ -1400,7 +1399,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             cursor={cursor}
           />
           <MenuTrigger closeOnSelect={false}>
-            <ActionButton isQuiet>
+            <ActionButton isQuiet aria-label="More options">
               <FontAwesomeIcon icon={vsKebabVertical} />
             </ActionButton>
             <SpectrumMenu
@@ -1458,7 +1457,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             tooltip="Sort ascending"
             onClick={() => {
               this.handleSortColumns(
-                VisibilityOrderingBuilder.SORTING_OPTIONS.ASC
+                VisibilityOrderingBuilderInner.SORTING_OPTIONS.ASC
               );
             }}
           />
@@ -1469,7 +1468,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             tooltip="Sort descending"
             onClick={() => {
               this.handleSortColumns(
-                VisibilityOrderingBuilder.SORTING_OPTIONS.DSC
+                VisibilityOrderingBuilderInner.SORTING_OPTIONS.DSC
               );
             }}
           />
@@ -1501,7 +1500,9 @@ class VisibilityOrderingBuilder extends PureComponent<
             className="px-1"
             tooltip="Move selection up"
             onClick={() => {
-              this.handleMoveColumns(VisibilityOrderingBuilder.MOVE_OPTIONS.UP);
+              this.handleMoveColumns(
+                VisibilityOrderingBuilderInner.MOVE_OPTIONS.UP
+              );
             }}
             disabled={!hasSelection}
           />
@@ -1512,7 +1513,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             tooltip="Move selection down"
             onClick={() => {
               this.handleMoveColumns(
-                VisibilityOrderingBuilder.MOVE_OPTIONS.DOWN
+                VisibilityOrderingBuilderInner.MOVE_OPTIONS.DOWN
               );
             }}
             disabled={!hasSelection}
@@ -1524,7 +1525,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             tooltip="Move selection to top"
             onClick={() => {
               this.handleMoveColumns(
-                VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
+                VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP
               );
             }}
             disabled={!hasSelection}
@@ -1536,7 +1537,7 @@ class VisibilityOrderingBuilder extends PureComponent<
             tooltip="Move selection to bottom"
             onClick={() => {
               this.handleMoveColumns(
-                VisibilityOrderingBuilder.MOVE_OPTIONS.BOTTOM
+                VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM
               );
             }}
             disabled={!hasSelection}
@@ -1560,8 +1561,8 @@ class VisibilityOrderingBuilder extends PureComponent<
 
 // The forwardRef is for a hacky unit test to check the
 // drag and drop display
-const VisibilityOrderingBuilderWrapper = memo(
-  (props: VisibilityOrderingBuilderWrapperProps) => {
+const VisibilityOrderingBuilder = memo(
+  (props: VisibilityOrderingBuilderProps) => {
     const {
       movedColumns,
       hiddenColumns,
@@ -1640,6 +1641,16 @@ const VisibilityOrderingBuilderWrapper = memo(
       state.movedColumns,
     ]);
 
+    const handleColumnHeaderGroupChanged = useCallback(
+      (groups: readonly (dh.ColumnGroup | ColumnHeaderGroup)[]) => {
+        onColumnHeaderGroupChanged(
+          // Updates which model indexes are in the groups if items were added/removed
+          IrisGridUtils.parseColumnHeaderGroups(props.model, groups).groups
+        );
+      },
+      [onColumnHeaderGroupChanged, props.model]
+    );
+
     const handleUndo = useCallback(() => {
       isUndoRedoAction.current = true;
       undo();
@@ -1651,7 +1662,7 @@ const VisibilityOrderingBuilderWrapper = memo(
     }, [redo]);
 
     return (
-      <VisibilityOrderingBuilder
+      <VisibilityOrderingBuilderInner
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
         ref={__testRef}
@@ -1660,7 +1671,7 @@ const VisibilityOrderingBuilderWrapper = memo(
         columnHeaderGroups={columnHeaderGroups}
         onMovedColumnsChanged={onMovedColumnsChanged}
         onColumnVisibilityChanged={onColumnVisibilityChanged}
-        onColumnHeaderGroupChanged={onColumnHeaderGroupChanged}
+        onColumnHeaderGroupChanged={handleColumnHeaderGroupChanged}
         undo={handleUndo}
         canUndo={canUndo}
         redo={handleRedo}
@@ -1672,7 +1683,6 @@ const VisibilityOrderingBuilderWrapper = memo(
   }
 );
 
-VisibilityOrderingBuilderWrapper.displayName =
-  'VisibilityOrderingBuilderWrapper';
+VisibilityOrderingBuilder.displayName = 'VisibilityOrderingBuilder';
 
-export default VisibilityOrderingBuilderWrapper;
+export default VisibilityOrderingBuilder;

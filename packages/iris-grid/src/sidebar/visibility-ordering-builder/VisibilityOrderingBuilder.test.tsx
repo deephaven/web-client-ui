@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
 import { assertNotNull } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
+import { ThemeProvider } from '@deephaven/components';
 import dh from '@deephaven/jsapi-shim';
-import type { ColumnGroup } from '@deephaven/jsapi-types';
-import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import VisibilityOrderingBuilder, {
+  type VisibilityOrderingBuilderProps,
+} from './VisibilityOrderingBuilder';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';
 import { flattenTree, getTreeItems } from './sortable-tree/utilities';
@@ -21,7 +24,7 @@ const COLUMN_PREFIX = 'TestColumn';
 const GROUP_PREFIX = 'TestGroup';
 const COLUMNS = irisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
 const SELECTED_CLASS = 'isSelected';
-const COLUMN_HEADER_GROUPS: ColumnGroup[] = [
+const COLUMN_HEADER_GROUPS = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
     children: [COLUMNS[1].name, COLUMNS[3].name],
@@ -31,8 +34,8 @@ const COLUMN_HEADER_GROUPS: ColumnGroup[] = [
     children: [COLUMNS[2].name, COLUMNS[4].name],
     color: '#ffffff',
   },
-];
-const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
+] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
+const NESTED_COLUMN_HEADER_GROUPS = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
     children: [COLUMNS[1].name, COLUMNS[3].name, `${GROUP_PREFIX}TwoAndFour`],
@@ -42,7 +45,7 @@ const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
     children: [COLUMNS[2].name, COLUMNS[4].name],
     color: '#ffffff',
   },
-];
+] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
 
 window.HTMLElement.prototype.scroll = jest.fn();
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
@@ -55,10 +58,12 @@ function Builder({
   onColumnHeaderGroupChanged = jest.fn(),
   onColumnVisibilityChanged = jest.fn(),
   onMovedColumnsChanged = jest.fn(),
+  onFrozenColumnsChanged = jest.fn(),
   onReset = jest.fn(),
   builderRef = React.createRef(),
-}: Partial<VisibilityOrderingBuilder['props']> & {
-  builderRef?: React.RefObject<VisibilityOrderingBuilder>;
+}: Partial<VisibilityOrderingBuilderProps> & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  builderRef?: React.RefObject<any>;
 } = {}) {
   return (
     <VisibilityOrderingBuilder
@@ -69,6 +74,7 @@ function Builder({
       onColumnHeaderGroupChanged={onColumnHeaderGroupChanged}
       onColumnVisibilityChanged={onColumnVisibilityChanged}
       onMovedColumnsChanged={onMovedColumnsChanged}
+      onFrozenColumnsChanged={onFrozenColumnsChanged}
       onReset={onReset}
       __testRef={builderRef}
     />
@@ -78,7 +84,7 @@ function Builder({
 function BuilderWithGroups({
   model = makeModelWithGroups(),
   ...rest
-}: Partial<VisibilityOrderingBuilder['props']> = {}) {
+}: Partial<VisibilityOrderingBuilderProps> = {}) {
   // eslint-disable-next-line react/jsx-props-no-spreading
   return <Builder model={model} {...rest} />;
 }
@@ -86,9 +92,80 @@ function BuilderWithGroups({
 function BuilderWithNestedGroups({
   model = makeModelWithGroups(NESTED_COLUMN_HEADER_GROUPS),
   ...rest
-}: Partial<VisibilityOrderingBuilder['props']> = {}) {
+}: Partial<VisibilityOrderingBuilderProps> = {}) {
   // eslint-disable-next-line react/jsx-props-no-spreading
   return <Builder model={model} {...rest} />;
+}
+
+function BuilderWithStateManagement({
+  model = makeModel(),
+  hiddenColumns = [],
+  movedColumns = model.initialMovedColumns,
+  columnHeaderGroups = model.columnHeaderGroups,
+  onColumnHeaderGroupChanged = jest.fn(),
+  onColumnVisibilityChanged = jest.fn(),
+  onMovedColumnsChanged = jest.fn(),
+  onFrozenColumnsChanged = jest.fn(),
+  onReset = jest.fn(),
+  builderRef = React.createRef(),
+}: Partial<VisibilityOrderingBuilderProps> & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  builderRef?: React.RefObject<any>;
+} = {}) {
+  const [movedCols, setMovedCols] = useState(movedColumns);
+  const prevMovedColumns = useRef(movedColumns);
+
+  if (movedColumns !== prevMovedColumns.current) {
+    prevMovedColumns.current = movedColumns;
+    setMovedCols(movedColumns);
+  }
+
+  const handleMovedColumnsChanged = useCallback(
+    (cols: readonly MoveOperation[], cb?: () => void) => {
+      setMovedCols(cols);
+      onMovedColumnsChanged(cols, cb);
+    },
+    [onMovedColumnsChanged]
+  );
+
+  const [columnGroups, setColumnGroups] = useState(columnHeaderGroups);
+  const handleColumnHeaderGroupChanged = useCallback(
+    (cols: readonly ColumnHeaderGroup[]) => {
+      setColumnGroups(cols);
+      onColumnHeaderGroupChanged(cols);
+    },
+    [onColumnHeaderGroupChanged]
+  );
+
+  const [hiddenCols, setHiddenCols] = useState(hiddenColumns);
+  const handleColumnVisibilityChanged = useCallback(
+    (cols: readonly number[], isVisible: boolean) => {
+      setHiddenCols(prevHidden => {
+        const newHidden = isVisible
+          ? prevHidden.filter(col => !cols.includes(col))
+          : [...prevHidden, ...cols];
+        return newHidden;
+      });
+      onColumnVisibilityChanged(cols, isVisible);
+    },
+    [onColumnVisibilityChanged]
+  );
+  return (
+    <ThemeProvider themes={[]}>
+      <VisibilityOrderingBuilder
+        model={model}
+        hiddenColumns={hiddenCols}
+        movedColumns={movedCols}
+        columnHeaderGroups={columnGroups}
+        onColumnHeaderGroupChanged={handleColumnHeaderGroupChanged}
+        onColumnVisibilityChanged={handleColumnVisibilityChanged}
+        onMovedColumnsChanged={handleMovedColumnsChanged}
+        onFrozenColumnsChanged={onFrozenColumnsChanged}
+        onReset={onReset}
+        __testRef={builderRef}
+      />
+    </ThemeProvider>
+  );
 }
 
 function makeModel() {
@@ -331,7 +408,7 @@ test('Moves items in and out of groups with up button', async () => {
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const mockMoveHandler = jest.fn();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
-    VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
+    VisibilityOrderingBuilderProps['onColumnHeaderGroupChanged']
   >;
   const getUpButton = () => screen.getByLabelText('Move selection up');
   const model = makeModelWithGroups(NESTED_COLUMN_HEADER_GROUPS);
@@ -487,7 +564,7 @@ test('Moves items in and out of groups with down button', async () => {
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const mockMoveHandler = jest.fn();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
-    VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
+    VisibilityOrderingBuilderProps['onColumnHeaderGroupChanged']
   >;
   const getDownButton = () => screen.getByLabelText('Move selection down');
   let model = makeModelWithGroups(NESTED_COLUMN_HEADER_GROUPS);
@@ -782,7 +859,7 @@ test('Sort ascending items with frozen/front/back columns', async () => {
 
   await selectItems(user, [1]);
   await user.click(sortButton());
-  const newMoves = [];
+  const newMoves: readonly MoveOperation[] = [];
   expect(mockHandler).toBeCalledWith(newMoves);
 });
 
@@ -819,7 +896,7 @@ test('Creates groups', async () => {
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const model = makeModel();
   const mockGroupHandler = jest.fn() as jest.MockedFunction<
-    VisibilityOrderingBuilder['props']['onColumnHeaderGroupChanged']
+    VisibilityOrderingBuilderProps['onColumnHeaderGroupChanged']
   >;
   const mockMoveHandler = jest.fn((_, cb) => cb());
   const { rerender } = render(
@@ -1166,12 +1243,192 @@ test('Resets state', async () => {
   expect(mockReset).toBeCalledTimes(1);
 });
 
+describe('Undo/redo', () => {
+  test('moves and keyboard', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const mockHandler = jest.fn();
+    render(<BuilderWithStateManagement onMovedColumnsChanged={mockHandler} />);
+
+    await clickItem(user, 1);
+    const moveDownBtn = screen.getByLabelText('Move selection down');
+    await user.click(moveDownBtn);
+
+    const newMoves = [{ from: 1, to: 2 }];
+
+    mockHandler.mockReset();
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockHandler).toHaveBeenCalledWith([], undefined);
+    expect(mockHandler).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockHandler).toHaveBeenCalledTimes(1);
+
+    mockHandler.mockReset();
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+    expect(mockHandler).toHaveBeenCalledWith(newMoves, undefined);
+    expect(mockHandler).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+    expect(mockHandler).toHaveBeenCalledTimes(1);
+  });
+
+  test('groups and menu button', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const mockMoveHandler = jest.fn();
+    const mockGroupHandler = jest.fn() as jest.MockedFunction<
+      VisibilityOrderingBuilderProps['onColumnHeaderGroupChanged']
+    >;
+    render(
+      <BuilderWithStateManagement
+        onMovedColumnsChanged={mockMoveHandler}
+        onColumnHeaderGroupChanged={mockGroupHandler}
+      />
+    );
+
+    await selectItems(user, [1, 3]);
+    const createGroupBtn = screen.getByText('Group');
+    await user.click(createGroupBtn);
+
+    await user.type(screen.getByPlaceholderText('Group Name'), 'TestGroup');
+    await user.keyboard('{Enter}');
+
+    const groupObject = {
+      children: [`${COLUMN_PREFIX}1`, `${COLUMN_PREFIX}3`],
+      name: 'TestGroup',
+    };
+
+    mockGroupHandler.mockReset();
+    mockMoveHandler.mockReset();
+
+    await user.click(screen.getByLabelText('More options'));
+
+    const undoBtn = screen.getByLabelText('Undo');
+    await user.click(undoBtn);
+    expect(mockGroupHandler).toHaveBeenCalledWith([]);
+    expect(mockMoveHandler).toHaveBeenCalledWith([], undefined);
+    expect(mockGroupHandler).toHaveBeenCalledTimes(1);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(1);
+
+    await user.click(undoBtn);
+    expect(mockGroupHandler).toHaveBeenCalledTimes(1);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(1);
+
+    mockGroupHandler.mockReset();
+    mockMoveHandler.mockReset();
+
+    const redoBtn = screen.getByLabelText('Redo');
+    await user.click(redoBtn);
+    expect(mockGroupHandler).toHaveBeenCalledWith([
+      expect.objectContaining(groupObject),
+    ]);
+    expect(mockMoveHandler).toHaveBeenCalledWith(
+      [
+        { from: 1, to: 0 },
+        { from: 3, to: 1 },
+      ],
+      undefined
+    );
+    expect(mockGroupHandler).toHaveBeenCalledTimes(1);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(1);
+
+    await user.click(redoBtn);
+    expect(mockGroupHandler).toHaveBeenCalledTimes(1);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('hidden columns', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const mockVisibilityHandler = jest.fn();
+    render(
+      <BuilderWithStateManagement
+        onColumnVisibilityChanged={mockVisibilityHandler}
+      />
+    );
+
+    await selectItems(user, [0, 1, 2]);
+    const hideButton = screen.getByText('Hide Selected');
+    await user.click(hideButton);
+    expect(mockVisibilityHandler).toHaveBeenCalledWith([0, 1, 2], false);
+
+    mockVisibilityHandler.mockReset();
+    await user.keyboard('{Control>}z{/Control}');
+    // Undo/redo calls a pair of show/hide since that's how the visibility handler
+    // expects changes
+    expect(mockVisibilityHandler).toHaveBeenCalledWith([0, 1, 2], true);
+    expect(mockVisibilityHandler).toHaveBeenCalledWith([], false);
+    expect(mockVisibilityHandler).toHaveBeenCalledTimes(2);
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockVisibilityHandler).toHaveBeenCalledTimes(2);
+
+    mockVisibilityHandler.mockReset();
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+    expect(mockVisibilityHandler).toHaveBeenCalledWith([0, 1, 2], false);
+    expect(mockVisibilityHandler).toHaveBeenCalledWith([], true);
+    expect(mockVisibilityHandler).toHaveBeenCalledTimes(2);
+  });
+
+  it('frozen columns', async () => {
+    // Frozen columns can only be changed by the grid directly and not in the menu
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const mockFrozenHandler = jest.fn();
+    const model = makeModel();
+    const { rerender } = render(
+      <BuilderWithStateManagement
+        model={model}
+        onFrozenColumnsChanged={mockFrozenHandler}
+      />
+    );
+
+    model.updateFrozenColumns([`${COLUMN_PREFIX}1`]);
+    const columnMoves = [{ from: 1, to: 0 }];
+
+    rerender(
+      <BuilderWithStateManagement
+        model={model}
+        movedColumns={columnMoves}
+        onFrozenColumnsChanged={mockFrozenHandler}
+      />
+    );
+
+    await selectItems(user, [0]); // Just to focus in the element
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockFrozenHandler).toHaveBeenCalledWith([]);
+    expect(mockFrozenHandler).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockFrozenHandler).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+    expect(mockFrozenHandler).toHaveBeenCalledWith([`${COLUMN_PREFIX}1`]);
+    expect(mockFrozenHandler).toHaveBeenCalledTimes(2);
+
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+    expect(mockFrozenHandler).toHaveBeenCalledTimes(2);
+  });
+});
+
+test('Show hidden columns option', async () => {
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  const hiddenColumns = [1, 3, 5, 7, 9];
+  render(<BuilderWithStateManagement hiddenColumns={hiddenColumns} />);
+
+  expect(screen.getAllByText(COLUMN_PREFIX, { exact: false }).length).toBe(10);
+
+  await user.click(screen.getByLabelText('More options'));
+  await user.click(screen.getByText('Show hidden columns'));
+
+  expect(screen.getAllByText(COLUMN_PREFIX, { exact: false }).length).toBe(5);
+});
+
 test('Sets drag item display string on multi-select', async () => {
   // This is a hacky test and calls the method directly
   // RTL can't simulate drag and drop (in jsdom at least)
   // So this is the best option for now
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-  const builder = React.createRef<VisibilityOrderingBuilder>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder = React.createRef<any>();
   render(<Builder builderRef={builder} />);
 
   const items = flattenTree(
@@ -1209,7 +1466,8 @@ test('On drag start/end', () => {
   // This is a hacky test and calls the method directly
   // RTL can't simulate drag and drop (in jsdom at least)
   // So this is the best option for now
-  const builder = React.createRef<VisibilityOrderingBuilder>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder = React.createRef<any>();
   const mockGroupHandler = jest.fn();
   const mockMoveHandler = jest.fn();
   render(
@@ -1237,7 +1495,8 @@ test('On drag start/end', () => {
 });
 
 test('changeSelectedColumn moves queried column index and loops', () => {
-  const builder = React.createRef<VisibilityOrderingBuilder>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder = React.createRef<any>();
   render(<Builder builderRef={builder} />);
 
   act(() => builder.current?.searchColumns('TestColumn'));
@@ -1251,7 +1510,8 @@ test('changeSelectedColumn moves queried column index and loops', () => {
 });
 
 test('adjustQueriedIndex sets queriedColumnRange to prevIndex = 9 and nextIndex = 0', () => {
-  const builder = React.createRef<VisibilityOrderingBuilder>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder = React.createRef<any>();
   render(<Builder builderRef={builder} />);
 
   act(() => builder.current?.searchColumns('TestColumn'));
