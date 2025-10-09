@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
@@ -181,7 +181,7 @@ function makeModelWithGroups(groups = COLUMN_HEADER_GROUPS) {
   return irisGridTestUtils.makeModel(
     irisGridTestUtils.makeTable({
       columns: COLUMNS,
-      layoutHints: { columnGroups: groups },
+      layoutHints: { columnGroups: groups as DhType.ColumnGroup[] },
     })
   );
 }
