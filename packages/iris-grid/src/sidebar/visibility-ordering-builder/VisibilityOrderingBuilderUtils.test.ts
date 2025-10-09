@@ -181,10 +181,7 @@ describe('Move to group', () => {
     const { flattenedItems, groups } = makeTreeItems(COLUMN_HEADER_GROUPS);
 
     const moveItem = getItem(flattenedItems, COLUMNS[1].name);
-    expect(moveToGroup(moveItem, moveItem.parentId, groups)).toEqual([
-      expect.objectContaining(COLUMN_HEADER_GROUPS[0]),
-      expect.objectContaining(COLUMN_HEADER_GROUPS[1]),
-    ]);
+    expect(moveToGroup(moveItem, moveItem.parentId, groups)).toBe(groups);
   });
 
   test('Move the last item out of a group', () => {
@@ -217,6 +214,39 @@ describe('Move to group', () => {
 });
 
 describe('Move items from drop', () => {
+  test('Drop an item at the same spot returns same array', () => {
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
+    const fromItem = getItem(flattenedItems, COLUMNS[0].name);
+    const toItem = getProjectedItem(flattenedItems, fromItem.id, fromItem.id);
+    expect(
+      moveItemsFromDrop(
+        fromItem,
+        toItem,
+        movedColumns,
+        groups,
+        flattenedItems,
+        [fromItem],
+        0,
+        COLUMNS.length - 1
+      ).movedColumns
+    ).toBe(movedColumns);
+
+    const fromItem2 = getItem(flattenedItems, COLUMNS[1].name);
+    expect(
+      moveItemsFromDrop(
+        fromItem,
+        toItem,
+        movedColumns,
+        groups,
+        flattenedItems,
+        [fromItem, fromItem2],
+        0,
+        COLUMNS.length - 1
+      ).movedColumns
+    ).toBe(movedColumns);
+  });
+
   test('Move an item into a group from above', () => {
     const { flattenedItems, groups, movedColumns } =
       makeTreeItems(SINGLE_HEADER_GROUPS);

@@ -146,6 +146,9 @@ export default defineConfig(({ mode }) => {
     css: {
       devSourcemap: true,
     },
+    define: {
+      'process.env': {},
+    },
     plugins: [react()],
     esbuild: {
       /**

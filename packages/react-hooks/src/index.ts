@@ -37,3 +37,4 @@ export * from './useSpectrumDisableSpellcheckRef';
 export * from './useWindowedListData';
 export * from './useResizeObserver';
 export * from './useMergeRef';
+export * from './useUndoRedo';

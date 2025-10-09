@@ -86,6 +86,20 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.SHIFT, KEY.ENTER],
     isEditable: false,
   }),
+  UNDO: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.UNDO',
+    name: 'Undo',
+    shortcut: [MODIFIER.CTRL, KEY.Z],
+    macShortcut: [MODIFIER.CMD, KEY.Z],
+    isEditable: false,
+  }),
+  REDO: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.REDO',
+    name: 'Redo',
+    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.Z],
+    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.Z],
+    isEditable: false,
+  }),
 };
 
 export default GLOBAL_SHORTCUTS;
