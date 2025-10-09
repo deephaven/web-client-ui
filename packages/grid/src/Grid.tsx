@@ -946,6 +946,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
+  /**
+   * Compares the current metrics with the previous metrics to see if we need to scroll when it is stuck to the bottom or the right
+   */
   needToUpdateScroll(): boolean {
     if (!this.metrics || !this.prevMetrics) {
       return false;
