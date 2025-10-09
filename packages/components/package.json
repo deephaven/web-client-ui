@@ -29,6 +29,8 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
+    "@fontsource/fira-mono": "5.0.13",
+    "@fontsource/fira-sans": "5.0.20",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@internationalized/date": "^3.5.5",

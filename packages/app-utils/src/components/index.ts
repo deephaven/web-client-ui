@@ -3,8 +3,6 @@ export * from './AppDashboards';
 export * from './AuthBootstrap';
 export * from './ConnectionBootstrap';
 export * from './ConnectionContext';
-export * from './FontBootstrap';
-export * from './FontsLoaded';
 export * from './PluginsBootstrap';
 export * from './ThemeBootstrap';
 export * from './useConnection';
