@@ -18,7 +18,6 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   type CancelablePromise,
-  EMPTY_ARRAY,
   EventShimCustomEvent,
   PromiseUtils,
   assertNotNull,
