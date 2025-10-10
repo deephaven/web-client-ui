@@ -6,7 +6,7 @@ import { dhFreeze, dhRefresh, dhSortSlash, vsLock } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { type CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import { isExpandableGridModel } from '@deephaven/grid';
+import { isEditableGridModel, isExpandableGridModel } from '@deephaven/grid';
 import './ColumnStatistics.scss';
 import { type DisplayColumn } from './IrisGridModel';
 import type IrisGridModel from './IrisGridModel';
@@ -224,6 +224,15 @@ class ColumnStatistics extends Component<
             {model.isColumnFrozen(columnIndex) ? 'Frozen' : 'Not movable'}
           </div>
         )}
+        {columnIndex != null &&
+          isEditableGridModel(model) &&
+          !column.isInputTableKeyColumn &&
+          !column.isInputTableValueColumn && (
+            <div className="column-statistics-status">
+              <FontAwesomeIcon icon={vsLock} className="mr-1" />
+              Not editable
+            </div>
+          )}
         <div className="column-statistics-grid">
           {statistics == null && (
             <>
