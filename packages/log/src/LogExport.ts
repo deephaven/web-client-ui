@@ -8,7 +8,6 @@ import type LogHistory from './LogHistory';
 export const DEFAULT_PATH_IGNORE_LIST: string[][] = [
   ['api'],
   ['client'],
-  ['clientUtils'],
   ['dashboardData', '*', 'connection'],
   ['dashboardData', '*', 'sessionWrapper'],
   ['dashboardData', '*', 'openedMap'],
