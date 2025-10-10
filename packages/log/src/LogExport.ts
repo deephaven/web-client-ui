@@ -2,32 +2,23 @@ import JSZip from 'jszip';
 import { configure } from 'safe-stable-stringify';
 import type LogHistory from './LogHistory';
 
-// List of objects to blacklist
+// List of paths to ignore
 // '' represents the root object
 // * represents a wildcard key
-export const DEFAULT_PATH_BLACKLIST: string[][] = [
+export const DEFAULT_PATH_IGNORE_LIST: string[][] = [
   ['api'],
   ['client'],
-  ['clientUtils'],
   ['dashboardData', '*', 'connection'],
   ['dashboardData', '*', 'sessionWrapper'],
   ['dashboardData', '*', 'openedMap'],
-  ['draftManager', 'draftStorage'],
   ['layoutStorage'],
   ['storage'],
-
-  // Below are confirmed enterprise specific keys, and will be moved in DH-20410
-  ['schemaService', 'client'],
-  ['schemaService', 'clientUtils'],
-  ['schemaService', 'schemaStorage'],
-  ['corePlusManager', 'dheClient'],
-  ['dheClient'],
 ];
 
 // The default maximum depth to serialize to in the redux data
 const DEFAULT_MAXIMUM_DEPTH = 10;
 
-function stringifyReplacer(blacklist: string[][]) {
+function stringifyReplacer(ignoreList: string[][]) {
   // modified from:
   // https://stackoverflow.com/questions/61681176/json-stringify-replacer-how-to-get-full-path
   const pathMap = new Map();
@@ -40,8 +31,8 @@ function stringifyReplacer(blacklist: string[][]) {
     if (value === Object(value)) pathMap.set(value, [...currPath]);
     currPath.shift();
 
-    // check blacklists
-    if (isOnBlackList(currPath, blacklist)) {
+    // check ignore list
+    if (isOnIgnoreList(currPath, ignoreList)) {
       return undefined;
     }
 
@@ -49,20 +40,20 @@ function stringifyReplacer(blacklist: string[][]) {
       return Array.from(value.entries());
     }
 
-    // not in blacklist, return value
+    // not in ignore list, return value
     return value;
   };
 }
 
-function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
-  for (let i = 0; i < blacklist.length; i += 1) {
+function isOnIgnoreList(currPath: string[], ignoreList: string[][]): boolean {
+  for (let i = 0; i < ignoreList.length; i += 1) {
     if (
-      currPath.length === blacklist[i].length &&
+      currPath.length === ignoreList[i].length &&
       currPath.every(
-        (v, index) => blacklist[i][index] === '*' || v === blacklist[i][index]
+        (v, index) => ignoreList[i][index] === '*' || v === ignoreList[i][index]
       )
     ) {
-      // blacklist match
+      // ignore list match
       return true;
     }
   }
@@ -71,7 +62,7 @@ function isOnBlackList(currPath: string[], blacklist: string[][]): boolean {
 
 export function getReduxDataString(
   reduxData: Record<string, unknown>,
-  blacklist: string[][] = [],
+  ignoreList: string[][] = [],
   maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): string {
   // Limit the maximum depth to prevent linked structures from blowing up the log size
@@ -85,7 +76,7 @@ export function getReduxDataString(
     // All circular references are replaced with "[Circular]", and BigInt values are converted to a number
     stringify(
       reduxData,
-      stringifyReplacer(blacklist),
+      stringifyReplacer(ignoreList),
       2 // Indent w/ 2 spaces
     ) ?? ''
   );
@@ -115,7 +106,7 @@ function formatDate(date: Date): string {
  * @param logHistory Log history to include in the console.txt file
  * @param metadata Additional metadata to include in the metadata.json file
  * @param reduxData Redux data to include in the redux.json file
- * @param blacklist List of JSON paths to blacklist in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
+ * @param ignoreList List of JSON paths to ignore in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
@@ -124,7 +115,7 @@ export async function exportLogs(
   logHistory: LogHistory,
   metadata?: Record<string, unknown>,
   reduxData?: Record<string, unknown>,
-  blacklist: string[][] = DEFAULT_PATH_BLACKLIST,
+  ignoreList: string[][] = DEFAULT_PATH_IGNORE_LIST,
   fileNamePrefix = `${formatDate(new Date())}_support_logs`,
   maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
 ): Promise<void> {
@@ -137,7 +128,7 @@ export async function exportLogs(
   if (reduxData != null) {
     folder.file(
       'redux.json',
-      getReduxDataString(reduxData, blacklist, maximumDepth)
+      getReduxDataString(reduxData, ignoreList, maximumDepth)
     );
   }
 
