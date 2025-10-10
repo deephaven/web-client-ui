@@ -39,11 +39,11 @@ describe('getReduxDataString', () => {
     expect(result).toBe(expected);
   });
 
-  it('should apply blacklist paths', () => {
+  it('should apply ignore list paths', () => {
     const reduxData = {
-      key1: 'should be blacklisted',
+      key1: 'should be ignored',
       key2: {
-        'key2.1': 'should also be blacklisted',
+        'key2.1': 'should also be ignored',
       },
       key3: 'value',
     };
@@ -83,25 +83,25 @@ describe('getReduxDataString', () => {
     expect(result).toBe(expected);
   });
 
-  it('should handle wildcards in blacklist paths', () => {
+  it('should handle wildcards in ignore list paths', () => {
     const reduxData = {
-      key1: 'not blacklisted',
+      key1: 'not ignored',
       key2: {
         keyA: {
-          key1: 'blacklisted',
+          key1: 'ignored',
         },
         keyB: {
-          key1: 'blacklisted',
+          key1: 'ignored',
         },
         keyC: {
-          key1: 'blacklisted',
+          key1: 'ignored',
         },
       },
     };
     const result = getReduxDataString(reduxData, [['key2', '*', 'key1']]);
     const expected = JSON.stringify(
       {
-        key1: 'not blacklisted',
+        key1: 'not ignored',
         key2: {
           keyA: {},
           keyB: {},
@@ -114,21 +114,21 @@ describe('getReduxDataString', () => {
     expect(result).toBe(expected);
   });
 
-  it('should handle nested wildcards in blacklist paths', () => {
+  it('should handle nested wildcards in ignore list paths', () => {
     const reduxData = {
-      key1: 'not blacklisted',
+      key1: 'not ignored',
       key2: {
         keyA: {
-          key1: 'blacklisted',
+          key1: 'ignored',
           key2: {
-            key3: 'blacklisted',
+            key3: 'ignored',
           },
         },
         keyB: {
-          key1: 'blacklisted',
+          key1: 'ignored',
           key2: {
-            key3: 'blacklisted',
-            key4: 'blacklisted',
+            key3: 'ignored',
+            key4: 'ignored',
           },
         },
       },
@@ -136,7 +136,7 @@ describe('getReduxDataString', () => {
     const result = getReduxDataString(reduxData, [['key2', '*', '*']]);
     const expected = JSON.stringify(
       {
-        key1: 'not blacklisted',
+        key1: 'not ignored',
         key2: {
           keyA: {},
           keyB: {},
@@ -148,14 +148,14 @@ describe('getReduxDataString', () => {
     expect(result).toBe(expected);
   });
 
-  it('should handle wildcard blacklist paths with no matches', () => {
+  it('should handle wildcard ignore list paths with no matches', () => {
     const reduxData = {
-      key1: 'not blacklisted',
+      key1: 'not ignored',
       key2: {
         keyA: {
-          key1: 'not blacklisted',
+          key1: 'not ignored',
           key2: {
-            key3: 'not blacklisted',
+            key3: 'not ignored',
           },
         },
       },
@@ -165,9 +165,9 @@ describe('getReduxDataString', () => {
     expect(result).toBe(expected);
   });
 
-  it('root wildcard should blacklist all', () => {
+  it('root wildcard should ignore all', () => {
     const reduxData = {
-      key1: 'should not be blacklisted',
+      key1: 'should be ignored',
     };
     const result = getReduxDataString(reduxData, [['*']]);
     expect(result).toBe('{}');
