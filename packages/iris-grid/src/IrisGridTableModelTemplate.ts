@@ -1916,7 +1916,7 @@ class IrisGridTableModelTemplate<
         )
       )
     ) {
-      throw new Error(`Uneditable ranges ${edits}`);
+      throw new Error(`Edits contain uneditable ranges`);
     }
 
     try {
