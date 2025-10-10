@@ -12,16 +12,8 @@ export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['dashboardData', '*', 'connection'],
   ['dashboardData', '*', 'sessionWrapper'],
   ['dashboardData', '*', 'openedMap'],
-  ['draftManager', 'draftStorage'],
   ['layoutStorage'],
   ['storage'],
-
-  // Below are confirmed enterprise specific keys, and will be moved in DH-20410
-  ['schemaService', 'client'],
-  ['schemaService', 'clientUtils'],
-  ['schemaService', 'schemaStorage'],
-  ['corePlusManager', 'dheClient'],
-  ['dheClient'],
 ];
 
 // The default maximum depth to serialize to in the redux data
