@@ -21,7 +21,7 @@ export function StyleGuideRoot(): JSX.Element {
     // disable annoying dnd-react warnings
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    window['__react-beautiful-dnd-disable-dev-warnings'] = true;
+    window['__@hello-pangea/dnd-disable-dev-warnings'] = true;
   }, []);
 
   return (
