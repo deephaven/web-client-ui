@@ -1644,6 +1644,11 @@ class IrisGridTableModelTemplate<
     return this.columns[modelIndex].isSortable ?? true;
   }
 
+  isInputTableKeyValueColumn(modelIndex: ModelIndex): boolean {
+    const column = this.columns[modelIndex];
+    return column.isInputTableKeyColumn || column.isInputTableValueColumn;
+  }
+
   isKeyColumn(x: ModelIndex): boolean {
     return this.keyColumnSet.has(this.columns[x].name);
   }
@@ -1674,6 +1679,11 @@ class IrisGridTableModelTemplate<
     // Check if any of the columns in grid range are key columns
     const bound = range.endColumn ?? this.table.size;
     for (let column = range.startColumn; column <= bound; column += 1) {
+      // If any column in the range is not an input table key/value column, the range is not editable
+      if (!this.isInputTableKeyValueColumn(column)) {
+        return false;
+      }
+
       if (this.isKeyColumn(column)) {
         isKeyColumnInRange = true;
         break;
