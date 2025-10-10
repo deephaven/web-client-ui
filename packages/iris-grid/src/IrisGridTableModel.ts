@@ -96,6 +96,15 @@ class IrisGridTableModel
     return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
   }
 
+  getMemoizedValueColumnSet = memoize(
+    (inputTableValues?: readonly ColumnName[]) =>
+      new Set(inputTableValues ?? EMPTY_ARRAY)
+  );
+
+  get valueColumnSet(): Set<ColumnName> {
+    return this.getMemoizedValueColumnSet(this.inputTable?.values);
+  }
+
   getMemoizedFrontColumns = memoize(
     (layoutHintsFrontColumns: ColumnName[] | undefined) =>
       layoutHintsFrontColumns ?? EMPTY_ARRAY
