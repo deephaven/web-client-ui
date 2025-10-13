@@ -1097,6 +1097,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   mouseHandlers: MouseHandlersProp;
 
+  slideTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
+
+  bottomTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
+
   get gridWrapper(): HTMLDivElement | null {
     return this.grid?.canvasWrapper.current ?? null;
   }
@@ -5068,8 +5072,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
             mountOnEnter
             unmountOnExit
+            nodeRef={this.slideTransitionRef}
           >
-            <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
+            <div
+              ref={this.slideTransitionRef}
+              className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary"
+            >
               {isPartitionedGridModel(model) && model.isPartitionRequired && (
                 <IrisGridPartitionSelector
                   model={model}
@@ -5089,8 +5097,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
             mountOnEnter
             unmountOnExit
+            nodeRef={this.bottomTransitionRef}
           >
-            <div className="iris-grid-bar">
+            <div ref={this.bottomTransitionRef} className="iris-grid-bar">
               <CrossColumnSearch
                 value={searchValue}
                 selectedColumns={selectedSearchColumns}

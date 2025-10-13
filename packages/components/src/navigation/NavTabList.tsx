@@ -11,7 +11,7 @@ import {
   DragDropContext,
   Droppable,
   type OnDragEndResponder,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { vsChevronRight, vsChevronLeft, vsChevronDown } from '@deephaven/icons';

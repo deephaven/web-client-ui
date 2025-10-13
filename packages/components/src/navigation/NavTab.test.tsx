@@ -6,7 +6,7 @@ import {
   type DropResult,
   Droppable,
   type ResponderProvided,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import NavTab from './NavTab';
 
 const mockOnClose = jest.fn();
