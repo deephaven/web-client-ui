@@ -151,9 +151,6 @@ test('stuck to bottom scroll growing table', async ({ page }) => {
   await openButton.click();
   await waitForLoadingDone(page);
 
-  // There can be a brief delay before data appears after loading is done
-  await page.waitForTimeout(2000);
-
   const gridCanvas = page.locator('.iris-grid .grid-wrapper');
   await gridCanvas.click({ position: { x: 10, y: 80 } });
   // Scroll to end of table to get stuck at bottom
@@ -189,9 +186,6 @@ test('stuck to bottom scroll shrinking and growing table', async ({ page }) => {
   await openButton.click();
   await waitForLoadingDone(page);
 
-  // There can be a brief delay before data appears after loading is done
-  await page.waitForTimeout(2000);
-
   const gridCanvas = page.locator('.iris-grid .grid-wrapper');
   await gridCanvas.click({ position: { x: 10, y: 80 } });
   // Scroll to end of table to get stuck at bottom
@@ -202,7 +196,7 @@ test('stuck to bottom scroll shrinking and growing table', async ({ page }) => {
   await pasteInMonaco(consoleInput, `${shrinkFunction}()`);
   await page.keyboard.press('Enter');
 
-  // No reliable way to know when the added rows have loaded, so just wait
+  // No reliable way to know when the removed rows have loaded, so just wait
   await page.waitForTimeout(2000);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
