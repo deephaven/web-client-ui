@@ -1,4 +1,5 @@
-import { getReduxDataString } from './LogExport';
+import { exportLogs, getReduxDataString } from './LogExport';
+import type LogHistory from './LogHistory';
 
 describe('getReduxDataString', () => {
   it('should return a JSON string of the redux data', () => {
@@ -194,5 +195,31 @@ describe('getReduxDataString', () => {
       2
     );
     expect(result).toBe(expected);
+  });
+});
+
+describe('exportLogs', () => {
+  Object.defineProperty(URL, 'createObjectURL', {
+    value: jest.fn(() => 'blob:url'),
+    writable: true,
+  });
+
+  it('should create a zip and trigger download', async () => {
+    const mockLogHistory = {
+      getFormattedHistory: jest.fn().mockReturnValue('console log history'),
+    };
+    const mockCreateElement = jest.spyOn(document, 'createElement');
+    const mockLink = {
+      href: '',
+      download: '',
+      click: jest.fn(),
+    };
+    mockCreateElement.mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+
+    await exportLogs(mockLogHistory as unknown as LogHistory);
+
+    expect(mockLogHistory.getFormattedHistory).toHaveBeenCalled();
+    expect(mockLink.download).toContain('support_logs.zip');
+    expect(mockLink.click).toHaveBeenCalled();
   });
 });
