@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { LoadingOverlay } from '@deephaven/components';
+import LoadingOverlay from '../LoadingOverlay';
 import { FontsLoadedContext } from './FontBootstrap';
 
 export type FontsLoadedProps = {
