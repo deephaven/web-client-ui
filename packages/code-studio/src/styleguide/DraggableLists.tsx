@@ -5,7 +5,7 @@ import {
   type DragStart,
   type DragUpdate,
   type DropResult,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import memoize from 'memoizee';
 import {
   DragUtils,
@@ -99,7 +99,7 @@ class DraggableLists extends Component<
     const isSameList = sourceListIndex === destinationListIndex;
     let destinationIndex = destination.index;
     if (isSameList && source.index < destination.index) {
-      // react-beautiful-dnd adjusts the index when dragging within a list already, however that only supports single selection
+      // @hello-pangea/dnd adjusts the index when dragging within a list already, however that only supports single selection
       // We need to change it back to the index we actually want it to drop at before adjusting for the removed source index, as
       // we adjust the index based on all the selected ranges, not just the source.index.
       destinationIndex += 1;
