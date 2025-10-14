@@ -132,16 +132,16 @@ test('scroll expanded rollup while moving mouse over rows', async ({
   });
 });
 
-test('stuck to bottom scrolling', async ({ page }) => {
-  // Need to generate a new append only table for each test
+test('stuck to bottom scroll growing table', async ({ page }) => {
+  // Need to generate a new shrink grow table for each test
   const id = generateId();
-  const tableName = `_${id}_append_only_table`;
-  const functionName = `func_${id}`;
+  const tableName = `_${id}_shrink_grow_table`;
+  const growFunction = `func_${id}`;
   const consoleInput = page.locator('.console-input');
 
   await pasteInMonaco(
     consoleInput,
-    `${tableName}, ${functionName} = create_append_only_table()`
+    `${tableName}, _, ${growFunction} = create_shrink_grow_table()`
   );
   await page.keyboard.press('Enter');
   await waitForLoadingDone(page);
@@ -161,7 +161,53 @@ test('stuck to bottom scrolling', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   // Add more rows to the table and take another screenshot
-  await pasteInMonaco(consoleInput, `${functionName}()`);
+  await pasteInMonaco(consoleInput, `${growFunction}()`);
+  await page.keyboard.press('Enter');
+
+  // No reliable way to know when the added rows have loaded, so just wait
+  await page.waitForTimeout(2000);
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+});
+
+test('stuck to bottom scroll shrinking and growing table', async ({ page }) => {
+  // Need to generate a new shrink grow table for each test
+  const id = generateId();
+  const tableName = `_${id}_shrink_grow_table`;
+  const growFunction = `grow_${id}`;
+  const shrinkFunction = `shrink_${id}`;
+  const consoleInput = page.locator('.console-input');
+
+  await pasteInMonaco(
+    consoleInput,
+    `${tableName}, ${shrinkFunction}, ${growFunction} = create_shrink_grow_table()`
+  );
+  await page.keyboard.press('Enter');
+  await waitForLoadingDone(page);
+
+  // Open the newly created table
+  const openButton = page.getByRole('button', { name: tableName, exact: true });
+  await openButton.click();
+  await waitForLoadingDone(page);
+
+  // There can be a brief delay before data appears after loading is done
+  await page.waitForTimeout(2000);
+
+  const gridCanvas = page.locator('.iris-grid .grid-wrapper');
+  await gridCanvas.click({ position: { x: 10, y: 80 } });
+  // Scroll to end of table to get stuck at bottom
+  await page.mouse.wheel(0, 1000);
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+  // Shrink the table and take another screenshot
+  await pasteInMonaco(consoleInput, `${shrinkFunction}()`);
+  await page.keyboard.press('Enter');
+
+  // No reliable way to know when the added rows have loaded, so just wait
+  await page.waitForTimeout(2000);
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+  // Add more rows to the table and take another screenshot
+  await pasteInMonaco(consoleInput, `${growFunction}()`);
   await page.keyboard.press('Enter');
 
   // No reliable way to know when the added rows have loaded, so just wait
