@@ -1,23 +1,23 @@
 import {
   Type as FilterType,
   Operator as FilterOperator,
-  type TypeValue as FilterTypeValue,
-  type OperatorValue as FilterOperatorValue,
+  TypeValue as FilterTypeValue,
+  OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   assertNotNull,
   bindAllMethods,
-  type CancelablePromise,
+  CancelablePromise,
   PromiseUtils,
   removeNullAndUndefined,
   TextUtils,
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { type ColumnName } from './Formatter';
-import { createValueFilter, type FilterConditionFactory } from './FilterUtils';
+import { ColumnName } from './Formatter';
+import { createValueFilter, FilterConditionFactory } from './FilterUtils';
 import { getSize } from './ViewportDataUtils';
 
 const log = Log.module('TableUtils');
@@ -622,6 +622,7 @@ export class TableUtils {
    * @param eventName Event to listen for
    * @param timeout Event timeout in milliseconds, defaults to 0
    * @param matcher Optional function to determine if the promise can be resolved or stays pending
+   * @deprecated Use `makeCancelableEventPromise` instead.
    * @returns Resolves with the event data
    */
   static makeCancelableTableEventPromise<TEventDetails = unknown>(
@@ -630,6 +631,30 @@ export class TableUtils {
     timeout = 0,
     matcher: ((event: DhType.Event<TEventDetails>) => boolean) | null = null
   ): CancelablePromise<DhType.Event<TEventDetails>> {
+    return TableUtils.makeCancelableEventPromise(table, eventName, {
+      timeout,
+      matcher: matcher ?? undefined,
+    });
+  }
+
+  /**
+   * Make a cancelable promise for a one-shot event with a timeout.
+   * @param emitter The object emitting the event
+   * @param eventName Event to listen for
+   * @param options Optional options for listening
+   * @param options.timeout Event timeout in milliseconds, defaults to 0
+   * @param options.matcher Optional function to determine if the promise can be resolved or stays pending
+   * @returns Resolves with the event data
+   */
+  static makeCancelableEventPromise<TEventDetails = unknown>(
+    emitter: DhType.HasEventHandling,
+    eventName: string,
+    options: {
+      timeout?: number;
+      matcher?: (event: DhType.Event<TEventDetails>) => boolean;
+    } = {}
+  ): CancelablePromise<DhType.Event<TEventDetails>> {
+    const { timeout = 0, matcher } = options;
     let eventCleanup: () => void;
     let timeoutId: ReturnType<typeof setTimeout>;
     let isPending = true;
@@ -639,17 +664,20 @@ export class TableUtils {
         isPending = false;
         reject(new TimeoutError(`Event "${eventName}" timed out.`));
       }, timeout);
-      eventCleanup = table.addEventListener<TEventDetails>(eventName, event => {
-        if (matcher != null && !matcher(event)) {
-          log.debug2('Event triggered, but matcher returned false.');
-          return;
+      eventCleanup = emitter.addEventListener<TEventDetails>(
+        eventName,
+        event => {
+          if (matcher != null && !matcher(event)) {
+            log.debug2('Event triggered, but matcher returned false.');
+            return;
+          }
+          log.debug2('Event triggered, resolving.');
+          eventCleanup();
+          clearTimeout(timeoutId);
+          isPending = false;
+          resolve(event);
         }
-        log.debug2('Event triggered, resolving.');
-        eventCleanup();
-        clearTimeout(timeoutId);
-        isPending = false;
-        resolve(event);
-      });
+      );
     }) as CancelablePromise<DhType.Event<TEventDetails>>;
     wrappedPromise.cancel = () => {
       if (isPending) {
