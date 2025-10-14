@@ -226,9 +226,9 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
     // Clean up unnamed groups on unmount
-    const newGroups = columnHeaderGroups.filter(group => !group.isNew);
-    if (newGroups.length !== columnHeaderGroups.length) {
-      onColumnHeaderGroupChanged(newGroups);
+    const filteredGroups = columnHeaderGroups.filter(group => !group.isNew);
+    if (filteredGroups.length !== columnHeaderGroups.length) {
+      onColumnHeaderGroupChanged(filteredGroups);
     }
   }
 
