@@ -3426,12 +3426,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       {
         // undo/redo will pass already parsed groups
         // Parsing them again causes a loop with undo/redo that makes it unusable
-        columnHeaderGroups:
-          columnHeaderGroups.every(isColumnHeaderGroup) &&
-          columnHeaderGroups.every(group => group.isValid())
-            ? columnHeaderGroups
-            : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
-                .groups,
+        columnHeaderGroups: columnHeaderGroups.every(
+          (group): group is ColumnHeaderGroup =>
+            isColumnHeaderGroup(group) && group.isValid()
+        )
+          ? columnHeaderGroups
+          : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
+              .groups,
       },
       () => this.grid?.forceUpdate()
     );
