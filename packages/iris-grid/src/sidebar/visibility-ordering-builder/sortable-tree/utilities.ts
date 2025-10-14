@@ -254,14 +254,16 @@ function flatten<T>(
   parentId: string | null = null,
   depth = 0
 ): FlattenedItem<T>[] {
-  return items.reduce<FlattenedItem<T>[]>(
-    (acc, item, index) => [
-      ...acc,
-      { ...item, parentId, depth, index },
-      ...flatten(item.children, item.id, depth + 1),
-    ],
-    []
-  );
+  return items
+    .reduce<FlattenedItem<T>[]>(
+      (acc, item) => [
+        ...acc,
+        { ...item, parentId, depth, index: 0 }, // Index will be recalculated after
+        ...flatten(item.children, item.id, depth + 1),
+      ],
+      []
+    )
+    .map((item, index) => ({ ...item, index })); // Recalculate indexes to be sequential
 }
 
 /**

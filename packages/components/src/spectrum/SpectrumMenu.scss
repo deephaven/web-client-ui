@@ -4,10 +4,10 @@
   kbd {
     // Unsetting bootstrap overrides
     padding: unset;
-    font-size: revert;
-    color: revert;
-    background-color: revert;
-    border-radius: revert;
+    font-size: unset;
+    color: unset;
+    background-color: unset;
+    border-radius: unset;
 
     // From Spectrum styles to match the label
     padding-inline-start: var(--spectrum-global-dimension-size-125);

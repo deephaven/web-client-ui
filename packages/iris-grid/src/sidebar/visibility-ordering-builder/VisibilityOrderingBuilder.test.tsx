@@ -1410,6 +1410,50 @@ describe('Undo/redo', () => {
     await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
     expect(mockFrozenHandler).toHaveBeenCalledTimes(2);
   });
+
+  it('multiple changes', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const mockMoveHandler = jest.fn();
+    const mockGroupHandler = jest.fn();
+    render(
+      <BuilderWithStateManagement
+        onMovedColumnsChanged={mockMoveHandler}
+        onColumnHeaderGroupChanged={mockGroupHandler}
+      />
+    );
+
+    await clickItem(user, 1);
+    const moveDownBtn = screen.getByLabelText('Move selection down');
+    await user.click(moveDownBtn);
+
+    await selectItems(user, [1, 3]);
+    const createGroupBtn = screen.getByText('Group');
+    await user.click(createGroupBtn);
+
+    await user.type(screen.getByPlaceholderText('Group Name'), 'TestGroup');
+    await user.keyboard('{Enter}');
+
+    mockMoveHandler.mockReset();
+    mockGroupHandler.mockReset();
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockMoveHandler).toHaveBeenCalledWith(
+      [{ from: 1, to: 2 }],
+      undefined
+    );
+    expect(mockGroupHandler).toHaveBeenCalledWith([]);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(1);
+    expect(mockGroupHandler).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(mockMoveHandler).toHaveBeenCalledWith([], undefined);
+    expect(mockGroupHandler).toHaveBeenCalledWith([]);
+    expect(mockMoveHandler).toHaveBeenCalledTimes(2);
+    expect(mockGroupHandler).toHaveBeenCalledTimes(2);
+
+    mockMoveHandler.mockReset();
+    mockGroupHandler.mockReset();
+    await user.keyboard('{Control>}{Shift>}z{/Control}{/Shift}');
+  });
 });
 
 test('Show hidden columns option', async () => {
@@ -1423,6 +1467,31 @@ test('Show hidden columns option', async () => {
   await user.click(screen.getByText('Show hidden columns'));
 
   expect(screen.getAllByText(COLUMN_PREFIX, { exact: false }).length).toBe(5);
+});
+
+test('Maintain focus after group creation and removal', async () => {
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  render(<BuilderWithStateManagement />);
+
+  await selectItems(user, [1]);
+  expect(
+    screen.getByText(`${COLUMN_PREFIX}1`).closest('.tree-item')
+  ).toHaveFocus();
+
+  const createGroupBtn = screen.getByText('Group');
+  await user.click(createGroupBtn);
+
+  await user.type(screen.getByPlaceholderText('Group Name'), 'TestGroup');
+  await user.keyboard('{Enter}');
+
+  expect(screen.getByText('TestGroup').closest('.tree-item')).toHaveFocus();
+
+  await user.click(screen.getByLabelText('Delete group'));
+
+  // Focus goes back to the first item in the deleted group
+  expect(
+    screen.getByText(`${COLUMN_PREFIX}1`).closest('.tree-item')
+  ).toHaveFocus();
 });
 
 test('Sets drag item display string on multi-select', async () => {

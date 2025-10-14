@@ -53,6 +53,7 @@ import {
 import clamp from 'lodash.clamp';
 import throttle from 'lodash.throttle';
 import { useUndoRedo } from '@deephaven/react-hooks';
+import Log from '@deephaven/log';
 import './VisibilityOrderingBuilder.scss';
 import { type DisplayColumn } from '../../IrisGridModel';
 import type IrisGridModel from '../../IrisGridModel';
@@ -72,6 +73,8 @@ import {
   moveToGroup,
 } from './VisibilityOrderingBuilderUtils';
 import IrisGridUtils from '../../IrisGridUtils';
+
+const log = Log.module('VisibilityOrderingBuilder');
 
 const DEBOUNCE_SEARCH_COLUMN = 150;
 
@@ -169,11 +172,52 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.list = null;
   }
 
+  componentDidMount(): void {
+    assertNotNull(this.wrapperRef.current);
+    // This fixes focus loss when editing a group because we use the name as the key for rendering.
+    // When the name is changed or group deleted, we lose focus entirely which is indicated by
+    // the focusout relatedTarget being null.
+    this.wrapperRef.current.addEventListener('focusin', (e: FocusEvent) => {
+      if (e.target instanceof HTMLElement) {
+        const treeItem = e.target.closest('.tree-item') as HTMLElement | null;
+        if (treeItem != null) {
+          this.lastFocusedItemIndex =
+            typeof treeItem.dataset.index === 'string'
+              ? parseInt(treeItem.dataset.index, 10)
+              : null;
+        }
+      }
+    });
+  }
+
   componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
     const { movedColumns } = this.props;
     if (movedColumns !== prevProps.movedColumns) {
       const { searchFilter } = this.state;
       this.searchColumns(searchFilter, false);
+    }
+
+    // document.activeElement is either body or html when nothing is focused.
+    // If there is no focused element, then we probably deleted or renamed a group
+    // resulting in focus loss. Try to re-establish focus.
+    // Cannot use focusout event for this because it doesn't fire when the focused element is deleted
+    // (except in Chrome which is against the spec here).
+    if (
+      (document.activeElement === document.body ||
+        document.activeElement === document.documentElement) &&
+      this.lastFocusedItemIndex != null
+    ) {
+      const itemToFocus = this.list?.querySelector(
+        `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
+      );
+
+      if (itemToFocus == null || !(itemToFocus instanceof HTMLElement)) {
+        log.warn('Could not maintain focus');
+        this.lastFocusedItemIndex = null;
+        return;
+      }
+
+      itemToFocus.focus();
     }
   }
 
@@ -187,6 +231,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       onColumnHeaderGroupChanged(newGroups);
     }
   }
+
+  wrapperRef = React.createRef<HTMLDivElement>();
+
+  lastFocusedItemIndex: number | null = null;
 
   list: HTMLDivElement | null;
 
@@ -877,10 +925,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     } = this.props;
 
     const selectedParentItems = this.getSelectedParentItems();
-    const flattenedItems = flattenTree(this.getTreeItems()).map((item, i) => ({
-      ...item,
-      index: i,
-    }));
+    const flattenedItems = flattenTree(this.getTreeItems());
     const firstMovableIndex = this.getFirstMovableIndex();
     const lastMovableIndex = this.getLastMovableIndex();
 
@@ -949,7 +994,8 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   );
 
   handleGroupDelete(group: ColumnHeaderGroup): void {
-    const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
+    const { columnHeaderGroups, endUndoGroup, onColumnHeaderGroupChanged } =
+      this.props;
     const newGroups = columnHeaderGroups.filter(g => g.name !== group.name);
     const parentIndex = newGroups.findIndex(g => g.name === group.parent);
     if (parentIndex >= 0) {
@@ -959,6 +1005,8 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       newGroups.splice(parentIndex, 1, newParent);
     }
     onColumnHeaderGroupChanged(newGroups);
+    // Could be started from editing a new group which is deleted without saving
+    endUndoGroup();
   }
 
   handleGroupCreate(): void {
@@ -1374,6 +1422,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     return (
       <div
         role="menu"
+        ref={this.wrapperRef}
         className="visibility-ordering-builder"
         tabIndex={0}
         onKeyUp={this.handleKeyboardShortcut}
@@ -1409,14 +1458,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
               )}
             >
               <Section aria-label="Undo and Redo">
-                <Item key="undo">
+                <Item key="undo" textValue="Undo">
                   <Icon>
                     <FontAwesomeIcon icon={vsBlank} />
                   </Icon>
                   <Text>Undo</Text>
                   <Keyboard>{GLOBAL_SHORTCUTS.UNDO.getDisplayText()}</Keyboard>
                 </Item>
-                <Item key="redo">
+                <Item key="redo" textValue="Redo">
                   <Icon>
                     <FontAwesomeIcon icon={vsBlank} />
                   </Icon>
@@ -1425,7 +1474,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
                 </Item>
               </Section>
               <Section aria-label="More actions">
-                <Item key="showHidden">
+                <Item key="showHidden" textValue="Show hidden columns">
                   <Icon>
                     <FontAwesomeIcon
                       icon={showHiddenColumns ? vsCheck : vsBlank}
@@ -1559,7 +1608,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   }
 }
 
-// The forwardRef is for a hacky unit test to check the
 // drag and drop display
 const VisibilityOrderingBuilder = memo(
   (props: VisibilityOrderingBuilderProps) => {
@@ -1571,6 +1619,7 @@ const VisibilityOrderingBuilder = memo(
       onColumnVisibilityChanged,
       onColumnHeaderGroupChanged,
       onFrozenColumnsChanged,
+      // Used for unit tests only
       __testRef,
     } = props;
 

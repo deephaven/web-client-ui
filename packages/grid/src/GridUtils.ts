@@ -753,13 +753,26 @@ export class GridUtils {
    * @param from The visible index to move from
    * @param to The visible index to move the item to
    * @param oldMovedItems The old reordered items
-   * @returns The new reordered items
+   * @returns The new reordered items. The original array if the operation is a no-op.
    */
-  static moveItem<T extends readonly MoveOperation[]>(
+  static moveItem(
     from: VisibleIndex,
     to: VisibleIndex,
-    oldMovedItems: T
-  ): T {
+    oldMovedItems: MoveOperation[]
+  ): MoveOperation[];
+
+  static moveItem(
+    from: VisibleIndex,
+    to: VisibleIndex,
+    oldMovedItems: readonly MoveOperation[]
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveItem(
+    from: VisibleIndex,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[]
+  ): MoveOperation[] | readonly MoveOperation[] {
     if (from === to) {
       return oldMovedItems;
     }
@@ -787,7 +800,7 @@ export class GridUtils {
       movedItems.push({ from, to });
     }
 
-    return movedItems as unknown as T;
+    return movedItems;
   }
 
   /**
@@ -806,14 +819,29 @@ export class GridUtils {
    *                    E.g. Move range [0, 2] 1 item down (after element 3)
    *                    The move is [0, 2] -> 1 if this is false. [0, 2] -> 3 if this is true
    *                    Both will result in [0, 2] -> 1
-   * @returns The new reordered items
+   * @returns The new reordered items. The original array if the operation is a no-op.
    */
-  static moveRange<T extends readonly MoveOperation[]>(
+  static moveRange(
+    from: BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo?: boolean
+  ): MoveOperation[];
+
+  static moveRange(
     from: BoundedAxisRange,
     toParam: VisibleIndex,
-    oldMovedItems: T,
+    oldMovedItems: readonly MoveOperation[],
+    isPreMoveTo?: boolean
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveRange(
+    from: BoundedAxisRange,
+    toParam: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[],
     isPreMoveTo = false
-  ): T {
+  ): MoveOperation[] | readonly MoveOperation[] {
     if (from[0] === from[1]) {
       return GridUtils.moveItem(from[0], toParam, oldMovedItems);
     }
@@ -856,15 +884,30 @@ export class GridUtils {
       movedItems.pop();
     }
 
-    return movedItems as unknown as T;
+    return movedItems;
   }
 
-  static moveItemOrRange<T extends readonly MoveOperation[]>(
+  static moveItemOrRange(
     from: VisibleIndex | BoundedAxisRange,
     to: VisibleIndex,
-    oldMovedItems: T,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo?: boolean
+  ): MoveOperation[];
+
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: readonly MoveOperation[],
+    isPreMoveTo?: boolean
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[],
     isPreMoveTo = false
-  ): T {
+  ): MoveOperation[] | readonly MoveOperation[] {
     return Array.isArray(from)
       ? GridUtils.moveRange(from, to, oldMovedItems, isPreMoveTo)
       : GridUtils.moveItem(from, to, oldMovedItems);
