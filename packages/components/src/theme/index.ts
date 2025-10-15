@@ -9,3 +9,5 @@ export * from './Logo';
 export * from './colorUtils';
 export * from './useExternalTheme';
 export * from './useSpectrumThemeProvider';
+export * from './FontsLoaded';
+export * from './FontBootstrap';

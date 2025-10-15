@@ -41,7 +41,8 @@ function getTreeItem(
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
   hiddenColumnSet: Set<ModelIndex>,
-  selectedItems: Set<string>
+  selectedItems: Set<string>,
+  showHiddenColumns: boolean
 ): IrisGridTreeItem {
   const modelIndex = columns.findIndex(col => col.name === name);
   if (modelIndex === -1) {
@@ -57,6 +58,10 @@ function getTreeItem(
       id: name,
       selected: selectedItems.has(name),
       children: group.children
+        .filter(
+          (_, i) =>
+            showHiddenColumns || !hiddenColumnSet.has(group.childIndexes[i])
+        )
         .map(childName =>
           getTreeItem(
             columns,
@@ -64,7 +69,8 @@ function getTreeItem(
             columnHeaderGroupMap,
             childName,
             hiddenColumnSet,
-            selectedItems
+            selectedItems,
+            showHiddenColumns
           )
         )
         .sort((a, b) => {
@@ -102,7 +108,8 @@ export function getTreeItems(
   movedColumns: readonly MoveOperation[],
   columnHeaderGroups: readonly ColumnHeaderGroup[],
   hiddenColumns: readonly ModelIndex[],
-  selectedItems: readonly string[]
+  selectedItems: readonly string[],
+  showHiddenColumns: boolean
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
   const selectedItemsSet = new Set(selectedItems);
@@ -129,7 +136,8 @@ export function getTreeItems(
       groupMap,
       group ? group.name : columnName,
       hiddenColumnSet,
-      selectedItemsSet
+      selectedItemsSet,
+      showHiddenColumns
     );
 
     items.push(item);
@@ -246,14 +254,16 @@ function flatten<T>(
   parentId: string | null = null,
   depth = 0
 ): FlattenedItem<T>[] {
-  return items.reduce<FlattenedItem<T>[]>(
-    (acc, item, index) => [
-      ...acc,
-      { ...item, parentId, depth, index },
-      ...flatten(item.children, item.id, depth + 1),
-    ],
-    []
-  );
+  return items
+    .reduce<FlattenedItem<T>[]>(
+      (acc, item) => [
+        ...acc,
+        { ...item, parentId, depth, index: 0 }, // Index will be recalculated after
+        ...flatten(item.children, item.id, depth + 1),
+      ],
+      []
+    )
+    .map((item, index) => ({ ...item, index })); // Recalculate indexes to be sequential
 }
 
 /**

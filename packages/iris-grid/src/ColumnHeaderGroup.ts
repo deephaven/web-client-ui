@@ -91,4 +91,13 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
   get isNew(): boolean {
     return this.name.startsWith(ColumnHeaderGroup.NEW_GROUP_PREFIX);
   }
+
+  /**
+   * Checks if a group is valid.
+   * An invalid group needs to be re-parsed with the corresponding model.
+   * @returns true if the group is valid (all children have indexes)
+   */
+  isValid(): boolean {
+    return this.children.length === this.childIndexes.length;
+  }
 }
