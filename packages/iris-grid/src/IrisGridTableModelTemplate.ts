@@ -1772,7 +1772,7 @@ class IrisGridTableModelTemplate<
     text: string
   ): Promise<void> {
     if (!this.isEditableRanges(ranges as GridRange[])) {
-      throw new Error(`Uneditable ranges ${ranges}`);
+      throw new Error(`Edits contain uneditable ranges`);
     }
 
     try {
