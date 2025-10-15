@@ -1,23 +1,23 @@
 import {
   Type as FilterType,
   Operator as FilterOperator,
-  TypeValue as FilterTypeValue,
-  OperatorValue as FilterOperatorValue,
+  type TypeValue as FilterTypeValue,
+  type OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   assertNotNull,
   bindAllMethods,
-  CancelablePromise,
+  type CancelablePromise,
   PromiseUtils,
   removeNullAndUndefined,
   TextUtils,
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
-import { ColumnName } from './Formatter';
-import { createValueFilter, FilterConditionFactory } from './FilterUtils';
+import { type ColumnName } from './Formatter';
+import { createValueFilter, type FilterConditionFactory } from './FilterUtils';
 import { getSize } from './ViewportDataUtils';
 
 const log = Log.module('TableUtils');
