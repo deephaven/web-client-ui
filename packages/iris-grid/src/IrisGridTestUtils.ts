@@ -1,5 +1,5 @@
 import { type GridRangeIndex, type ModelSizeMap } from '@deephaven/grid';
-import type { dh as DhType } from '@deephaven/jsapi-types';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
@@ -117,9 +117,19 @@ class IrisGridTestUtils {
     return table;
   }
 
-  makeInputTable(keyColumns: DhType.Column[] = []): DhType.InputTable {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (this.dh as any).InputTable(keyColumns);
+  static makeInputTable(
+    keyColumns: DhType.Column[] = [],
+    valueColumns: DhType.Column[] = []
+  ): DhType.InputTable {
+    const { keys, values } = [...keyColumns, ...valueColumns].reduce(
+      (acc, col) => {
+        if (keyColumns.includes(col)) acc.keys.push(col.name);
+        else acc.values.push(col.name);
+        return acc;
+      },
+      { keys: [], values: [] } as { keys: string[]; values: string[] }
+    );
+    return { keys, values } as DhType.InputTable;
   }
 
   makeSubscription(table = this.makeTable()): DhType.TableViewportSubscription {
