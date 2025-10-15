@@ -75,6 +75,7 @@ const VisibilityOrderingItem = forwardRef<
         'multiple-dragged': childCount > 2,
       })}
       onClick={handleClick}
+      data-index={item.index}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleProps}
     >

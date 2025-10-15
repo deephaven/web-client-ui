@@ -109,6 +109,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    define: {
+      'process.env': {},
+    },
     optimizeDeps: {
       esbuildOptions: {
         // Some packages need this to start properly if they reference global

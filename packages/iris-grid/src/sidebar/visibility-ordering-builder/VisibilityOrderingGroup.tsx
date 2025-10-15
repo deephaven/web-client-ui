@@ -26,7 +26,6 @@ export default function VisibilityOrderingGroup(
 ): JSX.Element {
   const { group, onDelete, onColorChange, onNameChange, validateName } = props;
   const { isNew } = group;
-  const groupRef = useRef(group);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [isColorInputOpen, setIsColorInputOpen] = useState(false);
@@ -49,18 +48,6 @@ export default function VisibilityOrderingGroup(
       }
     },
     [isEditing]
-  );
-
-  useEffect(
-    function deleteNewOnUnmount() {
-      return () => {
-        if (groupRef.current.isNew) {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          onDelete(groupRef.current);
-        }
-      };
-    },
-    [onDelete]
   );
 
   useEffect(
@@ -94,7 +81,10 @@ export default function VisibilityOrderingGroup(
 
   const handleConfirm = (): void => {
     if (isValid) {
-      onNameChange(group, name);
+      // Don't trigger change if the value is the same
+      if (group.name !== name) {
+        onNameChange(group, name);
+      }
       setIsEditing(false);
     }
   };
@@ -228,7 +218,6 @@ export default function VisibilityOrderingGroup(
                 border: 0,
               }}
               onChange={e => {
-                group.color = e.target.value;
                 onColorChange(group, e.target.value);
               }}
             />
