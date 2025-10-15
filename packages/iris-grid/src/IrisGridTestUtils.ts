@@ -1,5 +1,5 @@
 import { type GridRangeIndex, type ModelSizeMap } from '@deephaven/grid';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import { type dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
