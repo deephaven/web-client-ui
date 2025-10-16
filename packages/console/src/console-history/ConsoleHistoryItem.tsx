@@ -49,7 +49,6 @@ class ConsoleHistoryItem extends PureComponent<
 
     this.handleCancelClick = this.handleCancelClick.bind(this);
     this.handleObjectClick = this.handleObjectClick.bind(this);
-    this.consoleHistoryItemClasses = this.consoleHistoryItemClasses.bind(this);
   }
 
   handleObjectClick(object: dh.ide.VariableDefinition): void {
