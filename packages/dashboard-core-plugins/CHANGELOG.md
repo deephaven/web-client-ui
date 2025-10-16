@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- DH-20500: Links without operators not working ([#2541](https://github.com/deephaven/web-client-ui/issues/2541)) ([cbb4fc5](https://github.com/deephaven/web-client-ui/commit/cbb4fc56d621bb337c5ff5449de5396b79edbff6))
+- Pass optional expandDescendants arg to setColumnExpanded ([#2540](https://github.com/deephaven/web-client-ui/issues/2540)) ([a19bc11](https://github.com/deephaven/web-client-ui/commit/a19bc11446da4328bc5c216064ec810b24ee0312))
+
 ## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
