@@ -129,13 +129,13 @@ class TimeUtils {
     const mins = Math.floor((time % 3600) / 60);
     const seconds = time % 60;
 
-    if (time < 60) {
-      return `${seconds.toFixed(2)}s`;
+    if (hours > 0) {
+      return `${hours}h ${mins}m ${seconds}s`;
     }
-    if (time < 3600) {
+    if (mins > 0) {
       return `${mins}m ${seconds.toFixed(1)}s`;
     }
-    return `${hours}h ${mins}m ${seconds}s`;
+    return `${seconds.toFixed(2)}s`;
   }
 
   /**

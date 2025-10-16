@@ -67,17 +67,8 @@ class ConsoleHistoryItem extends PureComponent<
     }
   }
 
-  consoleHistoryItemClasses(): string {
-    const { isTooltipVisible } = this.state;
-    const classes = ['console-history-item-command'];
-    // console history items should stay highlighted if the tooltip is opened
-    if (isTooltipVisible) {
-      classes.push('console-history-item-command-tooltip-active');
-    }
-    return classes.join(' ');
-  }
-
   render(): ReactElement {
+    const { isTooltipVisible } = this.state;
     const { disabled, item, language, iconForType, onCommandSubmit } =
       this.props;
     const { disabledObjects, result } = item;
@@ -85,7 +76,11 @@ class ConsoleHistoryItem extends PureComponent<
     let commandElement = null;
     if (hasCommand) {
       commandElement = (
-        <div className={this.consoleHistoryItemClasses()}>
+        <div
+          className={classNames('console-history-item-command', {
+            'console-history-item-command-tooltip-active': isTooltipVisible,
+          })}
+        >
           <div className="console-history-gutter">&gt;</div>
           <div className="console-history-content">
             <Code language={language}>{item.command}</Code>
