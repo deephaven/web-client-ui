@@ -226,6 +226,7 @@ class ColumnStatistics extends Component<
         )}
         {columnIndex != null &&
           isEditableGridModel(model) &&
+          model.isEditable &&
           !model.keyColumnSet.has(column.name) &&
           !model.valueColumnSet.has(column.name) && (
             <div className="column-statistics-status">
