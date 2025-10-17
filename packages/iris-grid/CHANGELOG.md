@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Column organization overflow and undo/redo ([#2546](https://github.com/deephaven/web-client-ui/issues/2546)) ([5ef19c2](https://github.com/deephaven/web-client-ui/commit/5ef19c2976576b6a604d305bf0df7c4040616f81))
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- Add explicit refs to react-transition-group for React 19 support ([#2534](https://github.com/deephaven/web-client-ui/issues/2534)) ([eaa583e](https://github.com/deephaven/web-client-ui/commit/eaa583efb0b0d0a44ef5ddc72a7835fb2174d8f2))
+- DH-20500: Links without operators not working ([#2541](https://github.com/deephaven/web-client-ui/issues/2541)) ([cbb4fc5](https://github.com/deephaven/web-client-ui/commit/cbb4fc56d621bb337c5ff5449de5396b79edbff6))
+- Pass optional expandDescendants arg to setColumnExpanded ([#2540](https://github.com/deephaven/web-client-ui/issues/2540)) ([a19bc11](https://github.com/deephaven/web-client-ui/commit/a19bc11446da4328bc5c216064ec810b24ee0312))
+
 ## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
 
 **Note:** Version bump only for package @deephaven/iris-grid

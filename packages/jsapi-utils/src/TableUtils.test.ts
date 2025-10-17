@@ -2815,6 +2815,63 @@ describe('makeCancelableTableEventPromise', () => {
   });
 });
 
+describe('makeCancelableEventPromise', () => {
+  const DEFAULT_EVENT = 'DEFAULT_EVENT';
+  const DEFAULT_EMITTER = {
+    removeEventListener: jest.fn(),
+    addEventListener: jest.fn(() => DEFAULT_EMITTER.removeEventListener),
+  };
+  function makeCancelableEventPromise(
+    table = DEFAULT_EMITTER,
+    event = DEFAULT_EVENT,
+    timeout = 0,
+    matcher = undefined
+  ) {
+    const promise = TableUtils.makeCancelableEventPromise(table, event, {
+      timeout,
+      matcher,
+    });
+    promise.catch(() => null);
+    return promise;
+  }
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    DEFAULT_EMITTER.removeEventListener.mockClear();
+  });
+
+  it('Subscribes to a given event, returns a cancelable promise', () => {
+    const cancelablePromise = makeCancelableEventPromise();
+    expect(DEFAULT_EMITTER.addEventListener).toHaveBeenCalled();
+    expect(cancelablePromise).toBeInstanceOf(Promise);
+    expect(cancelablePromise).toHaveProperty('cancel');
+  });
+  it('Multiple cancel calls clean up subscription only once', () => {
+    const cancelablePromise = makeCancelableEventPromise();
+    cancelablePromise.cancel();
+    cancelablePromise.cancel();
+    expect(DEFAULT_EMITTER.removeEventListener).toHaveBeenCalledTimes(1);
+  });
+  it('Timeout rejects promise and cleans up subscription', () => {
+    const cancelablePromise = makeCancelableEventPromise();
+    jest.runOnlyPendingTimers();
+    expect.assertions(2);
+    expect(DEFAULT_EMITTER.removeEventListener).toHaveBeenCalledTimes(1);
+    expect(cancelablePromise).rejects.not.toBeNull();
+  });
+  it('Cancel after timeout cleans up subscription only once', () => {
+    const cancelablePromise = makeCancelableEventPromise();
+    jest.runOnlyPendingTimers();
+    cancelablePromise.cancel();
+    expect(DEFAULT_EMITTER.removeEventListener).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('converts filter type to appropriate string value for quick filters', () => {
   function testFilterType(filterType: FilterTypeValue, expectedResult: string) {
     expect(TableUtils.getFilterOperatorString(filterType)).toBe(expectedResult);

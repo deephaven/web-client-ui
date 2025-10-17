@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Bug Fixes
+
+- DH-20255 Limit maximum depth to serialize redux log data ([#2544](https://github.com/deephaven/web-client-ui/issues/2544)) ([9cd6593](https://github.com/deephaven/web-client-ui/commit/9cd6593745de96f7f0a04541161fda3ad1c76925))
+
 ## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
 
 ### Bug Fixes
