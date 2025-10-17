@@ -351,6 +351,13 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @returns Names of value columns
+   */
+  get valueColumnSet(): Set<ColumnName> {
+    return EMPTY_SET;
+  }
+
+  /**
    * @returns Names of columns which should be frozen to the front and floating
    */
   get frozenColumns(): readonly ColumnName[] {

@@ -247,7 +247,10 @@ describe('pending new rows tests', () => {
     });
     table.close = jest.fn();
 
-    inputTable = irisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
+    inputTable = IrisGridTestUtils.makeInputTable(
+      table.columns.slice(0, 3),
+      table.columns.slice(3, 5)
+    );
 
     model = irisGridTestUtils.makeModel(table, new Formatter(dh), inputTable);
     model.pendingRowCount = PENDING_ROW_COUNT;
