@@ -24,7 +24,7 @@ function getDragDepth(offset: number, indentationWidth: number): number {
   return Math.round(offset / indentationWidth);
 }
 
-interface IrisGridTreeItemData {
+export interface IrisGridTreeItemData {
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
   isVisible: boolean;

@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useRef } from 'react';
+import React, { forwardRef, memo, useCallback, useRef } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhEye, dhEyeSlash, vsGripper } from '@deephaven/icons';
@@ -13,6 +13,11 @@ type VisibilityOrderingItemProps = {
   childCount: number;
   item: FlattenedIrisGridTreeItem;
   onVisibilityChange: (modelIndexes: number[], isVisible: boolean) => void;
+  /**
+   * If true, allows changing visibility by clicking and dragging over multiple item
+   * visibility buttons.
+   */
+  visibilityClickAndDrag: boolean;
   onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
   onGroupDelete: (group: ColumnHeaderGroup) => void;
   onGroupColorChange: (
@@ -38,6 +43,7 @@ const VisibilityOrderingItem = forwardRef<
     childCount,
     item,
     onVisibilityChange,
+    visibilityClickAndDrag,
     onClick,
     onGroupDelete,
     onGroupColorChange,
@@ -86,11 +92,16 @@ const VisibilityOrderingItem = forwardRef<
         // We PropType validate onClick for Button
         onClick={emptyOnClick}
         onMouseDown={handleVisibilityChange}
-        onMouseEnter={handleVisibilityChange}
+        onMouseEnter={
+          visibilityClickAndDrag ? handleVisibilityChange : undefined
+        }
         icon={isVisible ? dhEye : dhEyeSlash}
         tooltip="Toggle visibility"
       />
-      <span className={classNames('column-name', group && 'column-group')}>
+      <span
+        title={value}
+        className={classNames('column-name', group && 'column-group')}
+      >
         {/* Display a normal item if this is the drag overlay clone, even if it's a group */}
         {group && !clone ? (
           <VisibilityOrderingGroup
@@ -115,4 +126,6 @@ const VisibilityOrderingItem = forwardRef<
   );
 });
 
-export default VisibilityOrderingItem;
+const MemoizedVisibilityOrderingItem = memo(VisibilityOrderingItem);
+
+export default MemoizedVisibilityOrderingItem;

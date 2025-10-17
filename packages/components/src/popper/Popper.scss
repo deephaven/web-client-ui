@@ -7,6 +7,10 @@ $animation-offset: 10px;
 .popper-container {
   position: absolute;
   z-index: 5000;
+
+  .spectrum-theme-provider {
+    max-height: inherit;
+  }
 }
 
 .popper.popper-tooltip {

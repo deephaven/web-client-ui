@@ -20,7 +20,6 @@ const HORIZONTAL: string[] = [KeyboardCode.Left, KeyboardCode.Right];
 
 export function sortableTreeKeyboardCoordinates(
   context: SensorContext,
-  indicator: boolean,
   indentationWidth: number
 ): KeyboardCoordinateGetter {
   return (
@@ -139,13 +138,10 @@ export function sortableTreeKeyboardCoordinates(
             );
             const isBelow = newIndex > activeIndex;
             const modifier = isBelow ? 1 : -1;
-            const nextOffset = indicator
-              ? (collisionRect.height - activeRect.height) / 2
-              : 0;
 
             const newCoordinates = {
               x: newRect.left + depth * indentationWidth,
-              y: newRect.top + modifier * nextOffset,
+              y: newRect.top + modifier,
             };
 
             return newCoordinates;

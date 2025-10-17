@@ -87,6 +87,7 @@ class Popper extends Component<PopperProps, PopperState> {
 
   componentDidUpdate(prevProps: PopperProps): void {
     const { isShown } = this.props;
+    const { popper } = this.state;
 
     if (prevProps.isShown !== isShown) {
       if (isShown) {
@@ -97,6 +98,10 @@ class Popper extends Component<PopperProps, PopperState> {
       } else {
         this.hide();
       }
+    }
+
+    if (popper) {
+      popper.scheduleUpdate();
     }
   }
 
@@ -143,6 +148,7 @@ class Popper extends Component<PopperProps, PopperState> {
       placement: 'auto',
       modifiers: { preventOverflow: { boundariesElement: 'viewport' } },
       ...options,
+      onUpdate: console.log,
     };
     document.body.appendChild(this.element);
 

@@ -5,7 +5,8 @@ $depth-margin: calc(
   0.5rem + 8px + 0.5px
 ); // Tree item 0.25rem padding, Icon button 0.25rem, half of icon size, and half pixel to offset 1px border
 
-.visibility-ordering-list {
+.visibility-ordering-list,
+.visibility-search-list {
   .tree-item {
     position: relative;
     display: flex;

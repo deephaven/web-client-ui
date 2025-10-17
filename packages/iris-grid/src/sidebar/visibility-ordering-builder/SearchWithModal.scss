@@ -1,0 +1,23 @@
+@import '../../IrisGrid.scss';
+
+.visibility-search-list {
+  width: 0.75 * $table-sidebar-max-width;
+  padding: $spacer-1;
+  overflow: auto;
+  max-height: inherit;
+  border: 1px solid var(--dh-color-popover-border);
+
+  .popper-arrow {
+    display: none;
+  }
+
+  .tree-item {
+    padding: $spacer-1;
+  }
+
+  .no-results {
+    padding: $spacer-1;
+    margin: auto;
+    color: var(--dh-color-text-disabled);
+  }
+}
