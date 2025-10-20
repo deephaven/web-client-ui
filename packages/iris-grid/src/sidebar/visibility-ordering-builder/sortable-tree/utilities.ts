@@ -160,7 +160,8 @@ export function getTreeItems(
  * @param overId ID of the item currently being dragged over
  * @param dragOffset The x-axis offset of the dragged item
  * @param indentationWidth The width for each level of the tree
- * @returns The projected position and depth if the item were to be dropped
+ * @returns The projected position and depth if the item were to be dropped.
+ *          Null if the projection could not be calculated.
  */
 export function getProjection(
   items: FlattenedItem[],
@@ -173,9 +174,12 @@ export function getProjection(
   maxDepth: number;
   minDepth: number;
   parentId: string | null;
-} {
+} | null {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
+  if (overItemIndex === -1 || activeItemIndex === -1) {
+    return null;
+  }
   const activeItem = items[activeItemIndex];
   const newItems = arrayMove(items, activeItemIndex, overItemIndex);
   const previousItem: FlattenedItem | undefined = newItems[overItemIndex - 1];

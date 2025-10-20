@@ -8,6 +8,7 @@ export interface TreeItemProps<T> {
   childCount?: number;
   clone?: boolean;
   depth: number;
+  withDepthMarkers?: boolean;
   disableInteraction?: boolean;
   ghost?: boolean;
   handleProps?: Record<string, unknown>;
@@ -39,6 +40,7 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
   const {
     clone = false,
     depth,
+    withDepthMarkers = true,
     disableInteraction = false,
     ghost = false,
     handleProps,
@@ -53,13 +55,19 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
 
   const depthMarkers = useMemo(
     () =>
-      Array(depth)
-        .fill(0)
-        .map((_, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <span key={`depth-line-${i}`} className="depth-line" style={style} />
-        )),
-    [depth, style]
+      withDepthMarkers
+        ? Array(depth)
+            .fill(0)
+            .map((_, i) => (
+              <span
+                // eslint-disable-next-line react/no-array-index-key
+                key={`depth-line-${i}`}
+                className="depth-line"
+                style={style}
+              />
+            ))
+        : null,
+    [depth, style, withDepthMarkers]
   );
 
   const renderItemProps = useMemo(
@@ -84,7 +92,7 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
       })}
       ref={wrapperRef}
     >
-      {!clone && depthMarkers}
+      {!clone && withDepthMarkers && depthMarkers}
       {renderItem(renderItemProps)}
     </li>
   );

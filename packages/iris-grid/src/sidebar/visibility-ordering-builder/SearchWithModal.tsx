@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { DragStartEvent, useDndMonitor } from '@dnd-kit/core';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { type DragStartEvent, useDndMonitor } from '@dnd-kit/core';
 import type { TextFieldRef } from '@react-types/textfield';
-import { Popper, SearchField } from '@deephaven/components';
+import { GridUtils } from '@deephaven/grid';
+import { ActionButton, Popper, SearchField } from '@deephaven/components';
+import { useResizeObserver } from '@deephaven/react-hooks';
 import SortableTree from './sortable-tree/SortableTree';
 import { type TreeItemRenderFnProps } from './sortable-tree/TreeItem';
 import type {
@@ -10,19 +12,21 @@ import type {
 } from './sortable-tree/utilities';
 import './SearchWithModal.scss';
 import MemoizedSearchItem from './SearchItem';
-import { GridUtils } from '@deephaven/grid';
-import PopperJs from 'popper.js';
 
 interface SearchWithModalProps {
   items: FlattenedIrisGridTreeItem[];
   onModalOpenChange: (isOpen: boolean) => void;
   onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
+  onDragStart?: (event: DragStartEvent) => void;
+  addToSelection: (columnNames: string[], addToExisting: boolean) => void;
 }
 
 export function SearchWithModal({
   items,
   onModalOpenChange,
   onClick,
+  onDragStart,
+  addToSelection,
 }: SearchWithModalProps): JSX.Element {
   const [searchValue, setSearchValue] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +49,16 @@ export function SearchWithModal({
     onModalOpenChange(false);
   }, [onModalOpenChange, isModalOpen]);
 
+  const handleInputChange = useCallback(
+    (value: string) => {
+      // Open in case the user hit escape to close the modal then started typing
+      // without blurring the input
+      handleModalOpen();
+      setSearchValue(value);
+    },
+    [handleModalOpen]
+  );
+
   const handleInputBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       if (
@@ -57,11 +71,26 @@ export function SearchWithModal({
     [handleModalClose]
   );
 
-  useDndMonitor({
-    onDragStart: (e: DragStartEvent) => {
-      console.log(e);
+  const handleModalBlur = useCallback(
+    (e: React.FocusEvent) => {
+      const searchElement = searchRef.current?.getInputElement();
+      if (!searchElement || !searchElement.contains(e.relatedTarget as Node)) {
+        handleModalClose();
+      }
+    },
+    [handleModalClose]
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      onDragStart?.(event);
       handleModalClose();
     },
+    [onDragStart, handleModalClose]
+  );
+
+  useDndMonitor({
+    onDragStart: handleDragStart,
   });
 
   const handleClick = useCallback(
@@ -93,6 +122,27 @@ export function SearchWithModal({
     [handleClick]
   );
 
+  // Close on escape with empty search.
+  // If there is a search value, let the input handle the escape to clear the search.
+  const handleEscapeKeydown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape' && searchValue === '') {
+        handleModalClose();
+      }
+    },
+    [handleModalClose, searchValue]
+  );
+
+  // Detect if the user resizes the panel height while the popper is open
+  useResizeObserver(
+    searchRef.current
+      ?.getInputElement()
+      ?.closest('.visibility-ordering-builder'),
+    () => {
+      popperRef.current?.scheduleUpdate();
+    }
+  );
+
   const filteredItems = useMemo(() => {
     if (searchValue === '') {
       return items;
@@ -101,45 +151,50 @@ export function SearchWithModal({
     return items.filter(item => item.id.toLowerCase().includes(lowerSearch));
   }, [items, searchValue]);
 
+  const handleSelectMatching = useCallback(() => {
+    const matchingNames = filteredItems.map(item => item.id);
+    addToSelection(matchingNames, false);
+    handleModalClose();
+  }, [filteredItems, addToSelection, handleModalClose]);
+
+  const hasMultipleSelection = useMemo(() => {
+    let foundOne = false;
+    return filteredItems.some(item => {
+      if (item.selected) {
+        if (foundOne) {
+          return true;
+        }
+        foundOne = true;
+      }
+      return false;
+    });
+  }, [filteredItems]);
+
+  const hasMultipleMatches = searchValue !== '' && filteredItems.length > 1;
+  const showFooterButtons = hasMultipleSelection || hasMultipleMatches;
+
   return (
     <>
       <SearchField
         aria-label="Search columns"
         ref={searchRef}
         value={searchValue}
-        onChange={setSearchValue}
+        onChange={handleInputChange}
         onFocus={handleModalOpen}
         onBlur={handleInputBlur}
+        onKeyDown={handleEscapeKeydown}
       />
       <Popper
         ref={popperRef}
         isShown={isModalOpen}
         interactive
+        keepInParent
+        onBlur={handleModalBlur}
         options={{
           placement: 'bottom-end',
           modifiers: {
             preventOverflow: {
-              boundariesElement: 'scrollParent',
               priority: ['top'],
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              fn: (data, options: any) => {
-                const modified =
-                  PopperJs.Defaults.modifiers?.preventOverflow?.fn?.(
-                    data,
-                    options
-                  );
-
-                if (modified == null) {
-                  return data;
-                }
-
-                modified.styles.maxHeight = `${
-                  document.documentElement.clientHeight -
-                  data.offsets.popper.top -
-                  2 * options.padding // Double padding because there is top and bottom to account for
-                }px`;
-                return modified ?? data;
-              },
             },
             flip: {
               enabled: false,
@@ -149,20 +204,33 @@ export function SearchWithModal({
         referenceObject={searchRef.current?.getInputElement()}
         className="visibility-search-list"
       >
-        <SortableTree items={filteredItems} renderItem={renderItem} />
-        {filteredItems.length === 0 && (
-          <div className="no-results">No matching columns</div>
-        )}
-        {/* <div>
-          <hr />
+        <div className="visibility-search-list-inner">
+          {filteredItems.length === 0 ? (
+            <div className="no-results">No matching columns</div>
+          ) : (
+            <>
+              <SortableTree
+                items={filteredItems}
+                withDepthMarkers={false}
+                renderItem={renderItem}
+              />
+              {showFooterButtons && (
+                <div className="footer-buttons">
+                  {hasMultipleSelection && (
+                    <ActionButton isQuiet onPress={handleModalClose}>
+                      Select Group
+                    </ActionButton>
+                  )}
+                  {hasMultipleMatches && (
+                    <ActionButton isQuiet onPress={handleSelectMatching}>
+                      Select Matching
+                    </ActionButton>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
-        <button
-          type="button"
-          className="close-button"
-          onClick={handleModalClose}
-        >
-          ×
-        </button> */}
       </Popper>
     </>
   );

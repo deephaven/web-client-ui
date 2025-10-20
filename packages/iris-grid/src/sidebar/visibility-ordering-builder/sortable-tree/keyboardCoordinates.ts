@@ -46,14 +46,23 @@ export function sortableTreeKeyboardCoordinates(
         current: { items, offset },
       } = context;
 
-      if (HORIZONTAL.includes(event.code) && over?.id != null) {
-        const { depth, maxDepth, minDepth } = getProjection(
-          items,
-          active.id as string,
-          over.id as string,
-          offset,
-          indentationWidth
-        );
+      const projection =
+        over?.id != null
+          ? getProjection(
+              items,
+              active.id as string,
+              over.id as string,
+              offset,
+              indentationWidth
+            )
+          : null;
+
+      if (
+        HORIZONTAL.includes(event.code) &&
+        over?.id != null &&
+        projection != null
+      ) {
+        const { depth, maxDepth, minDepth } = projection;
 
         switch (event.code) {
           case KeyboardCode.Left:
@@ -128,14 +137,20 @@ export function sortableTreeKeyboardCoordinates(
           const activeIndex = items.findIndex(({ id }) => id === active.id);
           const activeItem = items[activeIndex];
 
-          if (newItem != null && activeItem != null) {
-            const { depth } = getProjection(
-              items,
-              active.id as string,
-              closestId as string,
-              (newItem.depth - activeItem.depth) * indentationWidth,
-              indentationWidth
-            );
+          const closestProjection = getProjection(
+            items,
+            active.id as string,
+            closestId as string,
+            (newItem.depth - activeItem.depth) * indentationWidth,
+            indentationWidth
+          );
+
+          if (
+            newItem != null &&
+            activeItem != null &&
+            closestProjection != null
+          ) {
+            const { depth } = closestProjection;
             const isBelow = newIndex > activeIndex;
             const modifier = isBelow ? 1 : -1;
 

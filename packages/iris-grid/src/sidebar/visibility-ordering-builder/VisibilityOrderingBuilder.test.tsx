@@ -1522,6 +1522,6 @@ test('On drag start/end', () => {
   expectSelection([0]);
 
   act(() => builder.current?.handleDragEnd(items[0], items[1]));
-  expect(mockGroupHandler).toBeCalledWith([]);
-  expect(mockMoveHandler).toBeCalledWith([{ from: 0, to: 1 }]);
+  expect(mockGroupHandler).not.toHaveBeenCalled();
+  expect(mockMoveHandler).toHaveBeenCalledWith([{ from: 0, to: 1 }]);
 });

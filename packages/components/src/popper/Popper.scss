@@ -29,9 +29,11 @@ $animation-offset: 10px;
     opacity $transition;
   pointer-events: none;
   outline: 0;
+  max-height: inherit;
 
   .popper-content {
     position: relative;
+    max-height: inherit;
 
     .tooltip-content {
       text-align: center;

@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
   closestCenter,
@@ -16,16 +17,22 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   MeasuringStrategy,
+  DragOverlay,
+  type DropAnimation,
+  defaultDropAnimation,
+  type Modifier,
 } from '@dnd-kit/core';
-import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { flattenTree, getProjection } from './utilities';
+import { CSS } from '@dnd-kit/utilities';
+import { flattenTree, getChildCount, getProjection } from './utilities';
 import type { FlattenedItem, SensorContext, TreeItem } from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import PointerSensorWithInteraction from './PointerSensorWithInteraction';
+import { SortableTreeItem } from './SortableTreeItem';
+import { type TreeItemRenderFn } from './TreeItem';
 
 const MEASURING = {
   droppable: {
@@ -39,13 +46,81 @@ const CONSTRAINT = {
   },
 };
 
-const MODIFIERS = [snapCenterToCursor];
+const dropAnimationConfig: DropAnimation = {
+  keyframes({ transform }) {
+    return [
+      { opacity: 1, transform: CSS.Transform.toString(transform.initial) },
+      {
+        opacity: 0,
+        transform: CSS.Transform.toString({
+          ...transform.final,
+          x: transform.final.x + 5,
+          y: transform.final.y + 5,
+        }),
+      },
+    ];
+  },
+  easing: 'ease-out',
+  sideEffects({ active }) {
+    active.node.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: defaultDropAnimation.duration,
+      easing: defaultDropAnimation.easing,
+    });
+  },
+};
+
+/**
+ * This adjusts the transform to move to the cursor if it gets shifted due to multi-select.
+ * With multi-select, the selected items (except dragged) are removed on drag.
+ * This can cause the overlay item to disconnect from the cursor in some cases.
+ * E.g. select first 3 items, start dragging from 3rd item.
+ * Without this modifier, the drag overlay will be shifted 60px up from the cursor after the items are removed.
+ *
+ * This assumes all items are the same height as the dragged item
+ * @param args Modifier args from dnd-kit
+ * @returns Transform so that the dragged item stays on the cursor
+ */
+function adjustToCursor(args: Parameters<Modifier>[0]): {
+  y: number;
+  x: number;
+  scaleX: number;
+  scaleY: number;
+} {
+  if (
+    adjustToCursor.offsetY == null &&
+    args.activeNodeRect &&
+    args.activatorEvent instanceof PointerEvent
+  ) {
+    adjustToCursor.offsetY =
+      Math.floor(
+        (args.activatorEvent.clientY - args.activeNodeRect.top) /
+          args.activeNodeRect.height
+      ) * args.activeNodeRect.height;
+  }
+
+  if (!args.activeNodeRect) {
+    adjustToCursor.offsetY = null;
+  }
+
+  return {
+    ...args.transform,
+    y: args.transform.y + (adjustToCursor.offsetY ?? 0),
+  };
+}
+
+// Used to track the offset for adjustToCursor
+// Once drag starts, set this. Once it ends, null this
+// Kind of hacky to store it as a property on the function,
+// but avoids a singleton state or needing hooks to maintain this.
+// The logic came from the dnd-kit example.
+adjustToCursor.offsetY = null as number | null;
 
 type Props<T> = React.PropsWithChildren<{
   items: TreeItem<T>[];
   indentationWidth?: number;
   onDragStart?: (id: string) => void;
   onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
+  renderItem: TreeItemRenderFn<T>;
 }>;
 
 export default function SortableTreeDndContext<T>({
@@ -54,6 +129,7 @@ export default function SortableTreeDndContext<T>({
   onDragStart,
   onDragEnd,
   children,
+  renderItem,
 }: Props<T>): JSX.Element {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -70,6 +146,9 @@ export default function SortableTreeDndContext<T>({
 
     return flattenedTree;
   }, [activeId, items]);
+
+  const activeItem =
+    activeId != null ? flattenedItems.find(({ id }) => id === activeId) : null;
 
   const projected =
     activeId != null && overId != null
@@ -171,7 +250,6 @@ export default function SortableTreeDndContext<T>({
   return (
     <DndContext
       sensors={sensors}
-      // modifiers={MODIFIERS}
       collisionDetection={closestCenter}
       measuring={MEASURING}
       onDragStart={handleDragStart}
@@ -182,6 +260,26 @@ export default function SortableTreeDndContext<T>({
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
         {children}
+        {createPortal(
+          <DragOverlay
+            dropAnimation={dropAnimationConfig}
+            modifiers={[adjustToCursor]}
+            className="visibility-ordering-list"
+          >
+            {activeId != null && activeItem ? (
+              <SortableTreeItem
+                id={activeId}
+                depth={activeItem.depth}
+                clone
+                childCount={getChildCount(items, activeId) + 1}
+                value={activeId.toString()}
+                renderItem={renderItem}
+                item={activeItem}
+              />
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
       </SortableContext>
     </DndContext>
   );

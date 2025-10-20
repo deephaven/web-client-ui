@@ -85,19 +85,21 @@ const VisibilityOrderingItem = forwardRef<
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleProps}
     >
-      <Button
-        ref={buttonRef}
-        kind="ghost"
-        className="px-1"
-        // We PropType validate onClick for Button
-        onClick={emptyOnClick}
-        onMouseDown={handleVisibilityChange}
-        onMouseEnter={
-          visibilityClickAndDrag ? handleVisibilityChange : undefined
-        }
-        icon={isVisible ? dhEye : dhEyeSlash}
-        tooltip="Toggle visibility"
-      />
+      {!clone && (
+        <Button
+          ref={buttonRef}
+          kind="ghost"
+          className="px-1"
+          // We PropType validate onClick for Button
+          onClick={emptyOnClick}
+          onMouseDown={handleVisibilityChange}
+          onMouseEnter={
+            visibilityClickAndDrag ? handleVisibilityChange : undefined
+          }
+          icon={isVisible ? dhEye : dhEyeSlash}
+          tooltip="Toggle visibility"
+        />
+      )}
       <span
         title={value}
         className={classNames('column-name', group && 'column-group')}

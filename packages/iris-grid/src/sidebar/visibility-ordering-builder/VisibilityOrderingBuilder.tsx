@@ -11,7 +11,6 @@ import {
   GridUtils,
   type ModelIndex,
   type MoveOperation,
-  type VisibleIndex,
 } from '@deephaven/grid';
 import { TextUtils, assertNotNull, DbNameValidator } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -34,6 +33,7 @@ import {
 } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
+import { type DragStartEvent } from '@dnd-kit/core';
 import type { Key } from '@react-types/shared';
 import {
   ActionButton,
@@ -73,7 +73,6 @@ import {
 import IrisGridUtils from '../../IrisGridUtils';
 import SearchWithModal from './SearchWithModal';
 import SortableTreeDndContext from './sortable-tree/SortableTreeDndContext';
-import MemoizedSearchItem from './SearchItem';
 
 const log = Log.module('VisibilityOrderingBuilder');
 
@@ -83,7 +82,7 @@ export interface VisibilityOrderingBuilderProps {
   hiddenColumns: readonly ModelIndex[];
   columnHeaderGroups: readonly ColumnHeaderGroup[];
   onColumnVisibilityChanged: (
-    columns: readonly VisibleIndex[],
+    columns: readonly ModelIndex[],
     isVisible: boolean
   ) => void;
   onReset: () => void;
@@ -150,6 +149,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.handleSearchModalOpenChange =
       this.handleSearchModalOpenChange.bind(this);
     this.handleSearchItemClicked = this.handleSearchItemClicked.bind(this);
+    this.handleSearchDragStart = this.handleSearchDragStart.bind(this);
     this.renderItem = this.renderItem.bind(this);
 
     this.state = {
@@ -574,10 +574,21 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     onMovedColumnsChanged(newMoves);
   }
 
+  /**
+   * Handles clicking on an item in the visibility ordering list.
+   * Adds and removes to selection as necessary based on modifier and shift keys.
+   * Returns the columns to be added to the selection, if any.
+   *
+   * @param name The name of the column clicked
+   * @param event The click event
+   * @param showHiddenColumns If hidden columns should be included in the selection
+   * @returns The columns to be added to the selection, if any`
+   */
   handleItemClick(
     name: string,
-    event: React.MouseEvent<HTMLElement, MouseEvent>
-  ): void {
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    showHiddenColumns?: boolean
+  ): string[] {
     event.stopPropagation();
 
     // Click was triggered by an interactive element. Ignore select
@@ -585,10 +596,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       event.target instanceof HTMLElement &&
       (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT')
     ) {
-      return;
+      return [];
     }
 
-    event.currentTarget.focus();
+    event.currentTarget?.focus();
 
     const { selectedColumns, lastSelectedColumn } = this.state;
     const isModifierKeyDown = GridUtils.isModifierKeyDown(event);
@@ -598,10 +609,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     if (isSelected && isModifierKeyDown) {
       this.removeColumnFromSelected(name);
-      return;
+      return [];
     }
 
-    const movableItems = flattenTree(this.getTreeItems());
+    const movableItems = flattenTree(this.getTreeItems(showHiddenColumns));
 
     if (isSelected && !isShiftKeyDown && lastSelectedColumn === name) {
       const selectedItem = movableItems.find(({ id }) => id === name);
@@ -610,7 +621,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       // If clicking on an item and it's the only thing selected, deselect it
       if (childCount + 1 === selectedColumns.size) {
         this.resetSelection();
-        return;
+        return [];
       }
     }
 
@@ -638,43 +649,57 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.setState({
       lastSelectedColumn: name,
     });
+
+    return columnsToBeAdded;
   }
 
   handleSearchItemClicked(
     name: string,
     event: React.MouseEvent<HTMLElement>
   ): void {
-    this.handleItemClick(name, event);
-    if (!event.shiftKey && !GridUtils.isModifierKeyDown(event)) {
-      const { selectedColumns, showHiddenColumns } = this.state;
-      const { onColumnVisibilityChanged } = this.props;
-      if (!showHiddenColumns) {
-        const treeItems = this.getTreeItems();
-        const flattenedItems = flattenTree(treeItems);
-        const nameToIndexes = new Map(
-          flattenedItems.map(item => [item.id, item.data.modelIndex])
-        );
-        const columnsToToggle = [
-          // Pass through Set to dedupe model indexes
-          ...new Set(
-            [...selectedColumns.values()]
-              .map(n => nameToIndexes.get(n))
-              .filter((i): i is number | number[] => i != null)
-              .flat()
-          ),
-        ];
-        onColumnVisibilityChanged(columnsToToggle, true);
-      }
-      const items = flattenTree(this.getTreeItems());
-      const index = items.findIndex(item => item.id === name);
-      if (index >= 0) {
-        // Scroll to the item that was clicked
-        const itemElement = this.list?.querySelector(
-          `.item-wrapper:nth-child(${index + 1})`
-        );
-        itemElement?.scrollIntoView({ block: 'nearest' });
-      }
+    const columnsToAdd = this.handleItemClick(name, event, true);
+    const { showHiddenColumns } = this.state;
+    const { onColumnVisibilityChanged } = this.props;
+
+    if (columnsToAdd.length === 0) {
+      return;
     }
+
+    const modelIndexesToShow = this.getSelectedItemModelIndexes(
+      new Set(columnsToAdd)
+    );
+
+    if (!showHiddenColumns) {
+      onColumnVisibilityChanged(modelIndexesToShow, true);
+    }
+
+    if (event.shiftKey || GridUtils.isModifierKeyDown(event)) {
+      return;
+    }
+
+    const items = flattenTree(this.getTreeItems());
+    const index = items.findIndex(item => item.id === name);
+    if (index >= 0) {
+      // Scroll to the item that was clicked
+      const itemElement = this.list?.querySelector(
+        `.item-wrapper:nth-child(${index + 1})`
+      );
+      itemElement?.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  handleSearchDragStart(e: DragStartEvent): void {
+    const columnName = e.active.id as string;
+    const { model, onColumnVisibilityChanged } = this.props;
+    const { showHiddenColumns } = this.state;
+    if (showHiddenColumns) {
+      return;
+    }
+    const columnIndex = model.getColumnIndexByName(columnName);
+    if (columnIndex == null) {
+      return;
+    }
+    onColumnVisibilityChanged([columnIndex], true);
   }
 
   /**
@@ -1037,12 +1062,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   /**
    * Gets the tree of movable items in order. Memoized for efficiency
    * Use flattenItems(this.getTreeItems()) if a flat list is needed
+   * @param showHiddenColumns Whether to show hidden columns in the tree. Defaults to the current state value.
    * @returns The movable tree items in order
    */
-  getTreeItems(): readonly IrisGridTreeItem[] {
+  getTreeItems(showHiddenColumns?: boolean): readonly IrisGridTreeItem[] {
     const { model, movedColumns, hiddenColumns, columnHeaderGroups } =
       this.props;
-    const { selectedColumns, showHiddenColumns } = this.state;
+    const { selectedColumns, showHiddenColumns: showHiddenColumnsState } =
+      this.state;
 
     return this.memoizedGetTreeItems(
       model.columns,
@@ -1050,8 +1077,16 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       columnHeaderGroups,
       hiddenColumns,
       selectedColumns,
-      showHiddenColumns
+      showHiddenColumns ?? showHiddenColumnsState
     );
+  }
+
+  getSelectedItemModelIndexes(columnNames: Set<string>): ModelIndex[] {
+    const { model } = this.props;
+    return [...columnNames.values()]
+      .map(name => model.getColumnIndexByName(name))
+      .filter(i => i != null)
+      .flat();
   }
 
   /**
@@ -1232,22 +1267,12 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
     const flattenedItems = flattenTree(treeItems);
-    const nameToIndexes = new Map(
-      flattenedItems.map(item => [item.id, item.data.modelIndex])
-    );
     const hiddenColumnsSet = new Set(hiddenColumns);
 
-    const columnsToToggle = [
-      // Pass through Set to dedupe model indexes
-      ...new Set(
-        hasSelection
-          ? [...selectedColumns.values()]
-              .map(name => nameToIndexes.get(name))
-              .filter((i): i is number | number[] => i != null)
-              .flat()
-          : treeItems.map(item => item.data.modelIndex).flat()
-      ),
-    ];
+    const columnsToToggle = hasSelection
+      ? this.getSelectedItemModelIndexes(selectedColumns)
+      : treeItems.map(item => item.data.modelIndex).flat();
+
     const areSomeVisible = columnsToToggle.some(
       column => !hiddenColumnsSet.has(column)
     );
@@ -1270,6 +1295,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
         items={flattenedItems}
         onDragStart={this.handleDragStart}
         onDragEnd={this.handleDragEnd}
+        renderItem={this.renderItem}
       >
         <div
           role="menu"
@@ -1295,6 +1321,8 @@ class VisibilityOrderingBuilderInner extends PureComponent<
               items={flattenedItems}
               onModalOpenChange={this.handleSearchModalOpenChange}
               onClick={this.handleSearchItemClicked}
+              onDragStart={this.handleSearchDragStart}
+              addToSelection={this.addColumnToSelected}
             />
 
             <MenuTrigger closeOnSelect={false}>
