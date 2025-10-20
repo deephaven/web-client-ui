@@ -42,10 +42,10 @@ class IrisGridTokenMouseHandler extends GridTokenMouseHandler {
     const { model } = this.irisGrid.props;
     const isUserHoveringLink = this.isHoveringLink(gridPoint, grid);
     const modelColumn = this.irisGrid.getModelColumn(gridPoint.column);
-    const tooltip = model.tooltipForCell(
-      modelColumn ?? gridPoint.column,
-      gridPoint.row
-    );
+    const tooltip =
+      modelColumn != null
+        ? model.tooltipForCell(modelColumn, gridPoint.row)
+        : null;
 
     if (
       isUserHoveringLink &&

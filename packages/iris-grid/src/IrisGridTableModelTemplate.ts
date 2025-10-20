@@ -685,8 +685,8 @@ class IrisGridTableModelTemplate<
     return null;
   }
 
-  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
-    if (column === null || row === null) return null;
+  tooltipForCell(column: ModelIndex, row: GridRangeIndex): string | null {
+    if (row === null) return null;
     if (TableUtils.isDateType(this.columns[column].type)) {
       return this.displayString(
         this.valueForCell(column, row),
