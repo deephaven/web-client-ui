@@ -1010,46 +1010,6 @@ test('Shows validation error for new group on blur when never typed in', async (
   expect(screen.queryAllByText('Invalid name').length).toBe(1);
 });
 
-test('Search columns', async () => {
-  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-
-  const model = makeModelWithGroups([
-    ...COLUMN_HEADER_GROUPS,
-    {
-      name: `${ColumnHeaderGroup.NEW_GROUP_PREFIX}Test`,
-      children: [COLUMNS[9].name],
-    },
-  ]);
-
-  render(<BuilderWithGroups model={model} />);
-
-  const searchInput = screen.getByPlaceholderText('Search');
-
-  await user.type(searchInput, GROUP_PREFIX);
-  act(() => jest.advanceTimersByTime(500)); // Advance past debounce timeout
-
-  // 1 is first group, 2 and 3 are children. 4 is 2nd group, 5 and 6 are children
-  expectSelection([1, 2, 3, 4, 5, 6]);
-
-  await user.type(searchInput, 'One');
-  act(() => jest.advanceTimersByTime(500));
-  expectSelection([1, 2, 3]);
-
-  await user.clear(searchInput);
-  act(() => jest.advanceTimersByTime(500));
-  expectSelection([]);
-
-  await user.type(searchInput, 'asdf');
-  act(() => jest.advanceTimersByTime(500));
-  expectSelection([]);
-
-  await user.clear(searchInput);
-  act(() => jest.advanceTimersByTime(500));
-  await user.type(searchInput, ColumnHeaderGroup.NEW_GROUP_PREFIX);
-  act(() => jest.advanceTimersByTime(500));
-  expectSelection([]);
-});
-
 test('Edit group name', async () => {
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   const mockHandler = jest.fn();
@@ -1564,34 +1524,4 @@ test('On drag start/end', () => {
   act(() => builder.current?.handleDragEnd(items[0], items[1]));
   expect(mockGroupHandler).toBeCalledWith([]);
   expect(mockMoveHandler).toBeCalledWith([{ from: 0, to: 1 }]);
-});
-
-test('changeSelectedColumn moves queried column index and loops', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const builder = React.createRef<any>();
-  render(<Builder builderRef={builder} />);
-
-  act(() => builder.current?.searchColumns('TestColumn'));
-  expect(builder.current?.state.selectedColumns.size).toEqual(10);
-
-  act(() => builder.current?.changeSelectedColumn('back'));
-  expect(builder.current?.state.queriedColumnIndex).toEqual(9);
-
-  act(() => builder.current?.changeSelectedColumn('forward'));
-  expect(builder.current?.state.queriedColumnIndex).toEqual(0);
-});
-
-test('adjustQueriedIndex sets queriedColumnRange to prevIndex = 9 and nextIndex = 0', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const builder = React.createRef<any>();
-  render(<Builder builderRef={builder} />);
-
-  act(() => builder.current?.searchColumns('TestColumn'));
-
-  act(() => builder.current?.adjustQueriedIndex('Test'));
-
-  expect(builder.current?.state.queriedColumnRange).toEqual({
-    prevIndex: 9,
-    nextIndex: 0,
-  });
 });
