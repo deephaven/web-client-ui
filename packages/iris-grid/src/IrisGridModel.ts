@@ -644,7 +644,7 @@ abstract class IrisGridModel<
     throw new Error('Method not implemented.');
   }
 
-  tooltipForCell(column: ModelIndex, row: GridRangeIndex): string | null {
+  tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     return null;
   }
 }
