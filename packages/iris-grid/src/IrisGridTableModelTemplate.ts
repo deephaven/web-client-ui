@@ -7,7 +7,6 @@ import {
   type EditableGridModel,
   type EditOperation,
   GridRange,
-  type GridRangeIndex,
   GridUtils,
   memoizeClear,
   type ModelIndex,

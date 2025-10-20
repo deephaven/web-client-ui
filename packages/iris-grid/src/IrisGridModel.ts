@@ -7,7 +7,6 @@ import {
   type GridCell,
   GridModel,
   type GridRange,
-  type GridRangeIndex,
   type GridThemeType,
   type ModelIndex,
   type MoveOperation,
