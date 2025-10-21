@@ -7,7 +7,6 @@ import {
   type GridCell,
   GridModel,
   type GridRange,
-  type GridRangeIndex,
   type GridThemeType,
   type ModelIndex,
   type MoveOperation,
@@ -644,7 +643,7 @@ abstract class IrisGridModel<
     throw new Error('Method not implemented.');
   }
 
-  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
+  tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     return null;
   }
 }

@@ -7,7 +7,6 @@ import {
   type EditableGridModel,
   type EditOperation,
   GridRange,
-  type GridRangeIndex,
   GridUtils,
   memoizeClear,
   type ModelIndex,
@@ -685,8 +684,7 @@ class IrisGridTableModelTemplate<
     return null;
   }
 
-  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
-    if (column === null || row === null) return null;
+  tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     if (TableUtils.isDateType(this.columns[column].type)) {
       return this.displayString(
         this.valueForCell(column, row),
