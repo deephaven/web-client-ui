@@ -9,18 +9,26 @@ type SearchItemProps = {
   value: string;
   item: FlattenedIrisGridTreeItem;
   onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
+  onKeyDown: (name: string, event: React.KeyboardEvent<HTMLElement>) => void;
   handleProps?: Record<string, unknown>;
 };
 
 const SearchItem = forwardRef<HTMLDivElement, SearchItemProps>(
   function VisibilityOrderingItem(props, ref) {
-    const { value, item, onClick, handleProps } = props;
+    const { value, item, onClick, onKeyDown, handleProps } = props;
 
     const handleClick = useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
         onClick(value, event);
       },
       [onClick, value]
+    );
+
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLElement>) => {
+        onKeyDown(value, event);
+      },
+      [onKeyDown, value]
     );
 
     return (
@@ -31,6 +39,7 @@ const SearchItem = forwardRef<HTMLDivElement, SearchItemProps>(
           isSelected: item.selected,
         })}
         onClick={handleClick}
+        onKeyDownCapture={handleKeyDown}
         data-index={item.index}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...handleProps}

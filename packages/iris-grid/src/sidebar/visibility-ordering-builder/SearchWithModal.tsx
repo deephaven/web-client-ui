@@ -103,6 +103,40 @@ export function SearchWithModal({
     [onClick, handleModalClose]
   );
 
+  const handleItemKeyDown = useCallback(
+    (name: string, event: React.KeyboardEvent<HTMLElement>) => {
+      const { key } = event;
+      if (key === 'Enter') {
+        // Select item and close modal
+        event.preventDefault();
+        event.stopPropagation();
+        addToSelection([name], false);
+        handleModalClose();
+      } else if (key === 'ArrowDown') {
+        // Move focus to the next item
+        event.preventDefault();
+        event.stopPropagation();
+        const nextElement = (
+          event.currentTarget.parentElement as HTMLElement | null
+        )?.nextElementSibling // .item-wrapper has the next sibling
+          ?.querySelector('.tree-item[tabindex="0"]') as HTMLElement | null;
+        nextElement?.scrollIntoView({ block: 'nearest' });
+        nextElement?.focus();
+      } else if (key === 'ArrowUp') {
+        // Move focus to the previous item
+        event.preventDefault();
+        event.stopPropagation();
+        const prevElement = (
+          event.currentTarget.parentElement as HTMLElement | null
+        )?.previousElementSibling // .item-wrapper has the previous sibling
+          ?.querySelector('.tree-item[tabindex="0"]') as HTMLElement | null;
+        prevElement?.scrollIntoView({ block: 'nearest' });
+        prevElement?.focus();
+      }
+    },
+    [addToSelection, handleModalClose]
+  );
+
   const renderItem = useCallback(
     ({
       value,
@@ -116,21 +150,11 @@ export function SearchWithModal({
         value={value}
         item={item}
         onClick={handleClick}
+        onKeyDown={handleItemKeyDown}
         handleProps={handleProps}
       />
     ),
-    [handleClick]
-  );
-
-  // Close on escape with empty search.
-  // If there is a search value, let the input handle the escape to clear the search.
-  const handleEscapeKeydown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape' && searchValue === '') {
-        handleModalClose();
-      }
-    },
-    [handleModalClose, searchValue]
+    [handleClick, handleItemKeyDown]
   );
 
   // Detect if the user resizes the panel height while the popper is open
@@ -150,6 +174,26 @@ export function SearchWithModal({
     const lowerSearch = searchValue.toLowerCase();
     return items.filter(item => item.id.toLowerCase().includes(lowerSearch));
   }, [items, searchValue]);
+
+  const handleSearchKeyDown = useCallback(
+    // Close on escape with empty search.
+    // If there is a search value, let the input handle the escape to clear the search.
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape' && searchValue === '') {
+        handleModalClose();
+      }
+
+      if (e.key === 'ArrowDown' && filteredItems.length > 0) {
+        e.preventDefault();
+        // Focus the first item in the list
+        const firstItem = popperRef.current?.element.querySelector(
+          '.tree-item[tabindex="0"]'
+        ) as HTMLElement | null;
+        firstItem?.focus();
+      }
+    },
+    [filteredItems.length, handleModalClose, searchValue]
+  );
 
   const handleSelectMatching = useCallback(() => {
     const matchingNames = filteredItems.map(item => item.id);
@@ -182,7 +226,7 @@ export function SearchWithModal({
         onChange={handleInputChange}
         onFocus={handleModalOpen}
         onBlur={handleInputBlur}
-        onKeyDown={handleEscapeKeydown}
+        onKeyDown={handleSearchKeyDown}
       />
       <Popper
         ref={popperRef}
@@ -190,6 +234,7 @@ export function SearchWithModal({
         interactive
         keepInParent
         onBlur={handleModalBlur}
+        onExited={handleModalClose} // May exit due to escape which does not trigger blur
         options={{
           placement: 'bottom-end',
           modifiers: {

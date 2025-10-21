@@ -10,6 +10,7 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
+  type KeyboardSensorOptions,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -165,12 +166,20 @@ export default function SortableTreeDndContext<T>({
     offset: offsetLeft,
   });
   const keyboardOptions = useMemo(
-    () => ({
-      coordinateGetter: sortableTreeKeyboardCoordinates(
-        sensorContext,
-        indentationWidth
-      ),
-    }),
+    () =>
+      ({
+        coordinateGetter: sortableTreeKeyboardCoordinates(
+          sensorContext,
+          indentationWidth
+        ),
+        keyboardCodes: {
+          // Default is space and enter for start/end,
+          // but enter is used to select items from the search list
+          start: ['Space'],
+          cancel: ['Escape'],
+          end: ['Space'],
+        },
+      }) satisfies KeyboardSensorOptions,
     [indentationWidth]
   );
 
