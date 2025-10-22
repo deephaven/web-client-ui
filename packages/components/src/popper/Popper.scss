@@ -7,6 +7,10 @@ $animation-offset: 10px;
 .popper-container {
   position: absolute;
   z-index: 5000;
+
+  .spectrum-theme-provider {
+    max-height: inherit;
+  }
 }
 
 .popper.popper-tooltip {
@@ -25,9 +29,11 @@ $animation-offset: 10px;
     opacity $transition;
   pointer-events: none;
   outline: 0;
+  max-height: inherit;
 
   .popper-content {
     position: relative;
+    max-height: inherit;
 
     .tooltip-content {
       text-align: center;

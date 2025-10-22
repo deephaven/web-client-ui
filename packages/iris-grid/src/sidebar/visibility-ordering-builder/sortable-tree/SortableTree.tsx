@@ -1,71 +1,33 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-  type DragStartEvent,
-  type DragMoveEvent,
-  type DragEndEvent,
-  type DragOverEvent,
-  MeasuringStrategy,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { useEffect, useMemo, useRef } from 'react';
+import classNames from 'classnames';
+import { useDndContext } from '@dnd-kit/core';
 import { flattenTree, getProjection } from './utilities';
-import type { FlattenedItem, SensorContext, TreeItem } from './types';
-import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
-import PointerSensorWithInteraction from './PointerSensorWithInteraction';
-import SortableTreeInner from './SortableTreeInner';
-
-const MEASURING = {
-  droppable: {
-    strategy: MeasuringStrategy.Always,
-  },
-};
-
-const CONSTRAINT = {
-  activationConstraint: {
-    distance: 5,
-  },
-};
+import { SortableTreeItem } from './SortableTreeItem';
+import { TreeItem, type TreeItemRenderFn } from './TreeItem';
+import type { TreeItem as TreeItemType } from './types';
 
 interface Props<T> {
-  items: TreeItem<T>[];
+  items: TreeItemType<T>[];
   indentationWidth?: number;
-  indicator?: boolean;
-  onDragStart?: (id: string) => void;
-  onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
-  renderItem: (props: {
-    clone: boolean;
-    childCount?: number;
-    value: string;
-    item: FlattenedItem<T>;
-    ref: React.Ref<HTMLDivElement>;
-    handleProps?: Record<string, unknown>;
-  }) => JSX.Element;
+  renderItem: TreeItemRenderFn<T>;
+  isDraggable?: boolean;
+  withDepthMarkers?: boolean;
 }
 
 export default function SortableTree<T>({
   items,
-  indicator = false,
   indentationWidth = 30,
-  onDragStart,
-  onDragEnd,
   renderItem,
+  isDraggable = true,
+  withDepthMarkers = true,
 }: Props<T>): JSX.Element {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
-  const [offsetLeft, setOffsetLeft] = useState(0);
+  const dndContext = useDndContext();
+  const activeId = (dndContext.active?.id as string) ?? null;
+  const overId = (dndContext.over?.id as string) ?? null;
+  const offsetLeft = dndContext.active
+    ? (dndContext.active.rect.current.translated?.left ?? 0) -
+      (dndContext.active.rect.current.initial?.left ?? 0)
+    : 0;
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -79,8 +41,29 @@ export default function SortableTree<T>({
     return flattenedTree;
   }, [activeId, items]);
 
+  const context = useDndContext();
+  const contextRef = useRef(context);
+
+  useEffect(
+    function updateContextRef() {
+      contextRef.current = context;
+    },
+    [context]
+  );
+
+  // Without this, animations are funky when using the move/sort buttons
+  // dnd-kit only remeasures on drag/drop by default
+  // The context object changes while dragging (items don't)
+  // Using the context ref allows this to trigger properly on only items changes
+  useEffect(
+    function remeasureContainers() {
+      contextRef.current.measureDroppableContainers(items.map(({ id }) => id));
+    },
+    [items]
+  );
+
   const projected =
-    activeId != null && overId != null
+    isDraggable && activeId != null && overId != null
       ? getProjection(
           flattenedItems,
           activeId,
@@ -89,116 +72,37 @@ export default function SortableTree<T>({
           indentationWidth
         )
       : null;
-  const sensorContext: SensorContext = useRef({
-    items: flattenedItems,
-    offset: offsetLeft,
-  });
-  const keyboardOptions = useMemo(
-    () => ({
-      coordinateGetter: sortableTreeKeyboardCoordinates(
-        sensorContext,
-        indicator,
-        indentationWidth
-      ),
-    }),
-    [indentationWidth, indicator]
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensorWithInteraction, CONSTRAINT),
-    useSensor(KeyboardSensor, keyboardOptions)
-  );
-
-  const sortedIds = useMemo(
-    () => flattenedItems.map(({ id }) => id),
-    [flattenedItems]
-  );
-
-  useEffect(() => {
-    sensorContext.current = {
-      items: flattenedItems,
-      offset: offsetLeft,
-    };
-  }, [flattenedItems, offsetLeft]);
-
-  const handleDragStart = useCallback(
-    ({ active: { id: newActiveId } }: DragStartEvent) => {
-      setActiveId(newActiveId as string);
-      setOverId(newActiveId as string);
-      onDragStart?.(newActiveId as string);
-
-      document.body.style.setProperty('cursor', 'grabbing');
-    },
-    [onDragStart]
-  );
-
-  const handleDragMove = useCallback(({ delta }: DragMoveEvent) => {
-    setOffsetLeft(delta.x);
-  }, []);
-
-  const handleDragOver = useCallback(({ over }: DragOverEvent) => {
-    setOverId((over?.id as string) ?? null);
-  }, []);
-
-  const resetState = useCallback(() => {
-    setOverId(null);
-    setActiveId(null);
-    setOffsetLeft(0);
-
-    document.body.style.setProperty('cursor', '');
-  }, []);
-
-  const handleDragEnd = useCallback(
-    ({ active, over }: DragEndEvent) => {
-      resetState();
-
-      if (projected && over) {
-        const { depth, parentId } = projected;
-
-        const clonedItems: FlattenedItem<T>[] = JSON.parse(
-          JSON.stringify(flattenTree(items))
-        );
-        const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
-        const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-        const activeTreeItem = clonedItems[activeIndex];
-
-        clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
-
-        onDragEnd?.(activeTreeItem, {
-          ...clonedItems[overIndex],
-          parentId: projected.parentId,
-        });
-      }
-    },
-    [items, onDragEnd, projected, resetState]
-  );
-
-  const handleDragCancel = useCallback(() => {
-    resetState();
-  }, [resetState]);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      measuring={MEASURING}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
+    <div
+      className={classNames(
+        'tree-container',
+        activeId != null && 'marching-ants'
+      )}
     >
-      <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <SortableTreeInner
-          items={flattenedItems}
-          renderItem={renderItem}
-          indicator={indicator}
-          indentationWidth={indentationWidth}
-          activeId={activeId}
-          overId={overId}
-          offsetLeft={offsetLeft}
-        />
-      </SortableContext>
-    </DndContext>
+      {flattenedItems.map(item => {
+        const { id, depth } = item;
+        return isDraggable ? (
+          <SortableTreeItem
+            key={id}
+            id={id}
+            value={id}
+            depth={id === activeId && projected ? projected.depth : depth}
+            item={item}
+            renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
+          />
+        ) : (
+          <TreeItem
+            key={id}
+            value={id}
+            depth={depth}
+            item={item}
+            renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
+          />
+        );
+      })}
+    </div>
   );
 }

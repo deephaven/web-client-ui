@@ -149,6 +149,7 @@
 
   /* Popovers */
   --dh-color-popover-bg: var(--dh-color-bg);
+  --dh-color-popover-border: var(--dh-color-gray-400);
 
   /* Tooltips */
   --dh-color-tooltip-bg: var(--dh-color-gray-400);
