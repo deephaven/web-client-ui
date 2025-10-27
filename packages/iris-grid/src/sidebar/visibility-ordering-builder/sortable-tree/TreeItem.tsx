@@ -90,6 +90,7 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
         ghost,
         disableInteraction,
       })}
+      data-id={item.id}
       ref={wrapperRef}
     >
       {!clone && withDepthMarkers && depthMarkers}

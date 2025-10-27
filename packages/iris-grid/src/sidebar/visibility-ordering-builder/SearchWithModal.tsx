@@ -18,7 +18,7 @@ interface SearchWithModalProps {
   onModalOpenChange: (isOpen: boolean) => void;
   onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
   onDragStart?: (event: DragStartEvent) => void;
-  addToSelection: (columnNames: string[], addToExisting: boolean) => void;
+  setSelection: (columnNames: string[]) => void;
 }
 
 export function SearchWithModal({
@@ -26,7 +26,7 @@ export function SearchWithModal({
   onModalOpenChange,
   onClick,
   onDragStart,
-  addToSelection,
+  setSelection,
 }: SearchWithModalProps): JSX.Element {
   const [searchValue, setSearchValue] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,7 +110,7 @@ export function SearchWithModal({
         // Select item and close modal
         event.preventDefault();
         event.stopPropagation();
-        addToSelection([name], false);
+        setSelection([name]);
         handleModalClose();
       } else if (key === 'ArrowDown') {
         // Move focus to the next item
@@ -118,7 +118,7 @@ export function SearchWithModal({
         event.stopPropagation();
         const nextElement = (
           event.currentTarget.parentElement as HTMLElement | null
-        )?.nextElementSibling // .item-wrapper has the next sibling
+        )?.nextElementSibling // The parent item-wrapper elements are siblings, not the tree-items
           ?.querySelector('.tree-item[tabindex="0"]') as HTMLElement | null;
         nextElement?.scrollIntoView({ block: 'nearest' });
         nextElement?.focus();
@@ -128,13 +128,17 @@ export function SearchWithModal({
         event.stopPropagation();
         const prevElement = (
           event.currentTarget.parentElement as HTMLElement | null
-        )?.previousElementSibling // .item-wrapper has the previous sibling
+        )?.previousElementSibling // The parent item-wrapper elements are siblings, not the tree-items
           ?.querySelector('.tree-item[tabindex="0"]') as HTMLElement | null;
-        prevElement?.scrollIntoView({ block: 'nearest' });
-        prevElement?.focus();
+        if (prevElement) {
+          prevElement.scrollIntoView({ block: 'nearest' });
+          prevElement.focus();
+        } else {
+          searchRef.current?.getInputElement()?.focus();
+        }
       }
     },
-    [addToSelection, handleModalClose]
+    [setSelection, handleModalClose]
   );
 
   const renderItem = useCallback(
@@ -183,23 +187,31 @@ export function SearchWithModal({
         handleModalClose();
       }
 
-      if (e.key === 'ArrowDown' && filteredItems.length > 0) {
+      if (e.key === 'Enter' && filteredItems.length > 0) {
+        e.preventDefault();
+        // Select the first item in the list
+        const firstItem = filteredItems[0];
+        setSelection([firstItem.id]);
+        handleModalClose();
+      }
+
+      if (e.key === 'ArrowDown' && filteredItems.length > 1) {
         e.preventDefault();
         // Focus the first item in the list
-        const firstItem = popperRef.current?.element.querySelector(
+        const treeItems = popperRef.current?.element.querySelectorAll(
           '.tree-item[tabindex="0"]'
-        ) as HTMLElement | null;
-        firstItem?.focus();
+        ) as NodeListOf<HTMLElement>;
+        treeItems[0]?.focus();
       }
     },
-    [filteredItems.length, handleModalClose, searchValue]
+    [setSelection, filteredItems, handleModalClose, searchValue]
   );
 
   const handleSelectMatching = useCallback(() => {
     const matchingNames = filteredItems.map(item => item.id);
-    addToSelection(matchingNames, false);
+    setSelection(matchingNames);
     handleModalClose();
-  }, [filteredItems, addToSelection, handleModalClose]);
+  }, [filteredItems, setSelection, handleModalClose]);
 
   const hasMultipleSelection = useMemo(() => {
     let foundOne = false;

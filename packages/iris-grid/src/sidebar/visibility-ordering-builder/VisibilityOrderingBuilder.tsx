@@ -148,6 +148,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.handleKeyboardShortcut = this.handleKeyboardShortcut.bind(this);
     this.handleSearchModalOpenChange =
       this.handleSearchModalOpenChange.bind(this);
+    this.handleSearchSelect = this.handleSearchSelect.bind(this);
     this.handleSearchItemClicked = this.handleSearchItemClicked.bind(this);
     this.handleSearchDragStart = this.handleSearchDragStart.bind(this);
     this.renderItem = this.renderItem.bind(this);
@@ -181,6 +182,16 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   }
 
   componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
+    // Scroll to the item when it's available
+    const itemElement = this.list?.querySelector(
+      `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"]`
+    );
+    if (itemElement instanceof HTMLElement) {
+      itemElement.scrollIntoView({ block: 'nearest' });
+      itemElement.focus();
+      this.scrollAndFocusColumnOnUpdate = null;
+    }
+
     // document.activeElement is either body or html when nothing is focused.
     // If there is no focused element, then we probably deleted or renamed a group
     // resulting in focus loss. Try to re-establish focus.
@@ -219,6 +230,12 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   lastFocusedItemIndex: number | null = null;
 
   list: HTMLDivElement | null;
+
+  /**
+   * This is set by the search modal handlers since a column could be hidden
+   * and not displayed in the list. We need to wait until the update to scroll to it.
+   */
+  scrollAndFocusColumnOnUpdate: string | null = null;
 
   resetVisibilityOrdering(): void {
     const {
@@ -677,15 +694,26 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       return;
     }
 
-    const items = flattenTree(this.getTreeItems());
-    const index = items.findIndex(item => item.id === name);
-    if (index >= 0) {
-      // Scroll to the item that was clicked
-      const itemElement = this.list?.querySelector(
-        `.item-wrapper:nth-child(${index + 1})`
-      );
-      itemElement?.scrollIntoView({ block: 'nearest' });
+    this.scrollAndFocusColumnOnUpdate = name;
+  }
+
+  handleSearchSelect(names: string[]): void {
+    if (names.length === 0) {
+      return;
     }
+    const { showHiddenColumns } = this.state;
+    const { onColumnVisibilityChanged } = this.props;
+
+    if (!showHiddenColumns) {
+      const modelIndexesToShow = this.getSelectedItemModelIndexes(
+        new Set(names)
+      );
+      onColumnVisibilityChanged(modelIndexesToShow, true);
+    }
+
+    const [firstItem] = names;
+    this.scrollAndFocusColumnOnUpdate = firstItem;
+    this.addColumnToSelected(names, false);
   }
 
   handleSearchDragStart(e: DragStartEvent): void {
@@ -1250,6 +1278,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   handleSearchModalOpenChange(isOpen: boolean): void {
     if (isOpen) {
       this.resetSelection();
+    } else {
+      const { showHiddenColumns, selectedColumns } = this.state;
+      const { onColumnVisibilityChanged } = this.props;
+      if (!showHiddenColumns) {
+        const modelIndexesToShow =
+          this.getSelectedItemModelIndexes(selectedColumns);
+        onColumnVisibilityChanged(modelIndexesToShow, true);
+      }
     }
     this.setState({ isSearchModalOpen: isOpen });
   }
@@ -1322,7 +1358,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
               onModalOpenChange={this.handleSearchModalOpenChange}
               onClick={this.handleSearchItemClicked}
               onDragStart={this.handleSearchDragStart}
-              addToSelection={this.addColumnToSelected}
+              setSelection={this.handleSearchSelect}
             />
 
             <MenuTrigger closeOnSelect={false}>
