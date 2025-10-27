@@ -126,14 +126,14 @@ class Popper extends Component<PopperProps, PopperState> {
     const { popper } = this.state;
 
     if (prevProps.isShown !== isShown) {
-      if (isShown) {
-        cancelAnimationFrame(this.rAF);
-        this.rAF = window.requestAnimationFrame(() => {
+      cancelAnimationFrame(this.rAF);
+      this.rAF = window.requestAnimationFrame(() => {
+        if (isShown) {
           this.show();
-        });
-      } else {
-        this.hide();
-      }
+        } else {
+          this.hide();
+        }
+      });
     }
 
     if (popper) {

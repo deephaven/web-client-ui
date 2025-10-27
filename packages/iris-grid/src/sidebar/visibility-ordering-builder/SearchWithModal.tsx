@@ -198,10 +198,10 @@ export function SearchWithModal({
       if (e.key === 'ArrowDown' && filteredItems.length > 1) {
         e.preventDefault();
         // Focus the first item in the list
-        const treeItems = popperRef.current?.element.querySelectorAll(
+        const item = popperRef.current?.element.querySelector(
           '.tree-item[tabindex="0"]'
-        ) as NodeListOf<HTMLElement>;
-        treeItems[0]?.focus();
+        ) as HTMLElement | null;
+        item?.focus();
       }
     },
     [setSelection, filteredItems, handleModalClose, searchValue]

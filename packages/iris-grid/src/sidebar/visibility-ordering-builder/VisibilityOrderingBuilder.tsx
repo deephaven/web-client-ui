@@ -183,36 +183,38 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
     // Scroll to the item when it's available
-    const itemElement = this.list?.querySelector(
-      `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"]`
-    );
-    if (itemElement instanceof HTMLElement) {
-      itemElement.scrollIntoView({ block: 'nearest' });
-      itemElement.focus();
-      this.scrollAndFocusColumnOnUpdate = null;
+    if (this.scrollAndFocusColumnOnUpdate != null) {
+      const itemElement = this.list?.querySelector(
+        `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"]`
+      );
+      if (itemElement instanceof HTMLElement) {
+        itemElement.scrollIntoView({ block: 'nearest' });
+        itemElement.focus();
+        this.scrollAndFocusColumnOnUpdate = null;
+      }
     }
 
     // document.activeElement is either body or html when nothing is focused.
     // If there is no focused element, then we probably deleted or renamed a group
     // resulting in focus loss. Try to re-establish focus.
-    // Cannot use focusout event for this because it doesn't fire when the focused element is deleted
+    // Cannot rely on focusout event for this because it doesn't fire when the focused element is deleted
     // (except in Chrome which is against the spec here).
-    if (
-      (document.activeElement === document.body ||
-        document.activeElement === document.documentElement) &&
-      this.lastFocusedItemIndex != null
-    ) {
-      const itemToFocus = this.list?.querySelector(
-        `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
-      );
+    if (this.lastFocusedItemIndex != null) {
+      if (
+        document.activeElement === document.body ||
+        document.activeElement === document.documentElement
+      ) {
+        const itemToFocus = this.list?.querySelector(
+          `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
+        );
 
-      if (itemToFocus == null || !(itemToFocus instanceof HTMLElement)) {
-        log.warn('Could not maintain focus');
-        this.lastFocusedItemIndex = null;
-        return;
+        if (itemToFocus != null && itemToFocus instanceof HTMLElement) {
+          itemToFocus.focus();
+        } else {
+          log.warn('Could not maintain focus');
+        }
       }
-
-      itemToFocus.focus();
+      this.lastFocusedItemIndex = null;
     }
   }
 
@@ -841,6 +843,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
+    // this.scrollAndFocusColumnOnUpdate = from.id; // Focus the dragged item after the move
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
