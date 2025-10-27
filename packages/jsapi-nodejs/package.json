@@ -21,7 +21,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "@deephaven/jsapi-types": "^1.0.0-dev0.39.4",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.40.4",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "ws": "^8.18.0"
