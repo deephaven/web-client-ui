@@ -22,7 +22,7 @@ export function useSetPaddedViewportCallback(
   table: dh.Table | dh.TreeTable | null,
   viewportSize: number,
   viewportPadding: number,
-  viewportSubscriptionOptions: dh.ViewportSubscriptionOptions | null
+  viewportSubscriptionOptions: dh.ViewportSubscriptionOptions | null = null
 ): (firstRow: number) => void {
   const subscriptionRef = useRef<dh.TableViewportSubscription | null>(null);
 
