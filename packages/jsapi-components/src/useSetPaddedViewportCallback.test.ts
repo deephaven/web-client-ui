@@ -4,15 +4,24 @@ import { TestUtils } from '@deephaven/test-utils';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 
+let table: dh.Table;
+let viewportOptions: dh.ViewportSubscriptionOptions;
+const viewportSize = 10;
+const viewportPadding = 4;
+
 beforeEach(() => {
   jest.clearAllMocks();
+  table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
+  viewportOptions = {
+    rows: {
+      first: 0,
+      last: 0,
+    },
+    columns: table?.columns ?? [],
+  };
 });
 
 it('should create a callback that sets a padded viewport', () => {
-  const table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
-  const viewportSize = 10;
-  const viewportPadding = 4;
-
   const { result } = renderHook(() =>
     useSetPaddedViewportCallback(table, viewportSize, viewportPadding, null)
   );
@@ -40,20 +49,9 @@ it('should use TableViewportSubscription if viewport options are provided', () =
     close: jest.fn(),
   };
 
-  const table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
   (table.createViewportSubscription as jest.Mock).mockReturnValue(
     mockSubscription
   );
-
-  const viewportSize = 10;
-  const viewportPadding = 4;
-  const viewportOptions = {
-    rows: {
-      first: 0,
-      last: 0,
-    },
-    columns: table?.columns ?? [],
-  };
 
   const { result } = renderHook(() =>
     useSetPaddedViewportCallback(
@@ -94,17 +92,6 @@ it('should use TableViewportSubscription if viewport options are provided', () =
 it('should use setViewport if provided a tree table', () => {
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(true);
 
-  const table = TestUtils.createMockProxy<dh.TreeTable>({ size: 100 });
-  const viewportSize = 10;
-  const viewportPadding = 4;
-  const viewportOptions = {
-    rows: {
-      first: 0,
-      last: 0,
-    },
-    columns: table?.columns ?? [],
-  };
-
   const { result } = renderHook(() =>
     useSetPaddedViewportCallback(
       table,
@@ -137,20 +124,9 @@ it('should set update viewport subscription if called in same render as the hook
     close: jest.fn(),
   };
 
-  const table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
   (table.createViewportSubscription as jest.Mock).mockReturnValue(
     mockSubscription
   );
-
-  const viewportSize = 10;
-  const viewportPadding = 4;
-  const viewportOptions = {
-    rows: {
-      first: 0,
-      last: 0,
-    },
-    columns: table.columns,
-  };
 
   renderHook(() => {
     const callback = useSetPaddedViewportCallback(
