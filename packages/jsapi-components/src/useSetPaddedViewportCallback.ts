@@ -38,6 +38,10 @@ export function useSetPaddedViewportCallback(
 
   return useCallback(
     function setPaddedViewport(firstRow: number) {
+      if (table == null) {
+        return;
+      }
+
       const [first, last] = padFirstAndLastRow(
         firstRow,
         viewportSize,
@@ -48,8 +52,7 @@ export function useSetPaddedViewportCallback(
       if (
         subscriptionRef.current == null &&
         viewportSubscriptionOptions != null &&
-        !TableUtils.isTreeTable(table) &&
-        table != null
+        !TableUtils.isTreeTable(table)
       ) {
         subscriptionRef.current = table.createViewportSubscription(
           viewportSubscriptionOptions
@@ -57,7 +60,7 @@ export function useSetPaddedViewportCallback(
       }
 
       if (subscriptionRef.current == null) {
-        table?.setViewport(first, last);
+        table.setViewport(first, last);
         return;
       }
 
@@ -66,7 +69,7 @@ export function useSetPaddedViewportCallback(
           first,
           last,
         },
-        columns: table?.columns ?? [],
+        columns: table.columns,
       });
     },
     [table, viewportPadding, viewportSize, viewportSubscriptionOptions]
