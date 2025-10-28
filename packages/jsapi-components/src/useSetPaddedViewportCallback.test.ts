@@ -17,7 +17,7 @@ beforeEach(() => {
       first: 0,
       last: 0,
     },
-    columns: table?.columns ?? [],
+    columns: table.columns,
   };
 });
 
