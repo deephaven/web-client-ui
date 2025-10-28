@@ -201,13 +201,14 @@ it('should create a new subscription when viewportSubscriptionOptions or table c
   );
   expect(mockSubscription2.update).toHaveBeenCalled();
 
-  // Change viewportSubscriptionOptions and rerender
+  // Change table and rerender
   const newTable = TestUtils.createMockProxy<dh.Table>({ size: 100 });
   rerender({ table: newTable, options: newViewportOptions });
   expect(mockSubscription2.close).toHaveBeenCalled();
 
   // Call callback again, which should create a new subscription
   result.current(30);
+  expect(table.createViewportSubscription).toHaveBeenCalledTimes(2);
   expect(newTable.createViewportSubscription).toHaveBeenCalledTimes(1);
   expect(newTable.createViewportSubscription).toHaveBeenCalledWith(
     newViewportOptions
