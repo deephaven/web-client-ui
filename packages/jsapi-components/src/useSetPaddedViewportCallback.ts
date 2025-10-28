@@ -60,7 +60,7 @@ export function useSetPaddedViewportCallback(
         return;
       }
 
-      subscriptionRef.current?.update({
+      subscriptionRef.current.update({
         rows: {
           first,
           last,
