@@ -213,3 +213,34 @@ it('should create a new subscription when viewportSubscriptionOptions or table c
     newViewportOptions
   );
 });
+
+it('should close subscription on unmount', () => {
+  jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
+
+  const mockSubscription = {
+    update: jest.fn(),
+    close: jest.fn(),
+  };
+
+  (table.createViewportSubscription as jest.Mock).mockReturnValue(
+    mockSubscription
+  );
+
+  const { result, unmount } = renderHook(() =>
+    useSetPaddedViewportCallback(
+      table,
+      viewportSize,
+      viewportPadding,
+      viewportOptions
+    )
+  );
+
+  result.current(30);
+  expect(table.createViewportSubscription).toHaveBeenCalledWith(
+    viewportOptions
+  );
+  expect(mockSubscription.close).not.toHaveBeenCalled();
+
+  unmount();
+  expect(mockSubscription.close).toHaveBeenCalled();
+});
