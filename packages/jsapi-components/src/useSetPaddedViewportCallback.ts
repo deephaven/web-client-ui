@@ -46,10 +46,10 @@ export function useSetPaddedViewportCallback(
       );
 
       if (
-        table != null &&
-        !TableUtils.isTreeTable(table) &&
+        subscriptionRef.current == null &&
         viewportSubscriptionOptions != null &&
-        subscriptionRef.current == null
+        !TableUtils.isTreeTable(table) &&
+        table != null
       ) {
         subscriptionRef.current = table.createViewportSubscription(
           viewportSubscriptionOptions
