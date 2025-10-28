@@ -64,13 +64,12 @@ it('should use TableViewportSubscription if viewport options are provided', () =
     )
   );
 
+  // Call callback for the first time, which should create a subscription
+  const firstRow = 30;
+  result.current(firstRow);
   expect(table.createViewportSubscription).toHaveBeenCalledWith(
     viewportOptions
   );
-
-  // Call our `setPaddedViewport` callback.
-  const firstRow = 30;
-  result.current(firstRow);
 
   const expected = {
     firstRow: firstRow - viewportPadding,
@@ -86,6 +85,7 @@ it('should use TableViewportSubscription if viewport options are provided', () =
   });
 
   expect(table.setViewport).not.toHaveBeenCalled();
+  expect(table.createViewportSubscription).toHaveBeenCalledTimes(1);
 });
 
 it('should use setViewport if provided a tree table', () => {

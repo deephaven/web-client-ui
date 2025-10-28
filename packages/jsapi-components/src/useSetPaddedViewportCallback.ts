@@ -26,25 +26,15 @@ export function useSetPaddedViewportCallback(
 ): (firstRow: number) => void {
   const subscriptionRef = useRef<dh.TableViewportSubscription | null>(null);
 
-  useEffect(() => {
-    if (
-      table == null ||
-      TableUtils.isTreeTable(table) ||
-      viewportSubscriptionOptions == null
-    ) {
-      return;
-    }
-
-    subscriptionRef.current = table.createViewportSubscription(
-      viewportSubscriptionOptions
-    );
-    return () => {
+  useEffect(
+    () => () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.close();
         subscriptionRef.current = null;
       }
-    };
-  }, [table, viewportSubscriptionOptions]);
+    },
+    [table, viewportSubscriptionOptions]
+  );
 
   return useCallback(
     function setPaddedViewport(firstRow: number) {
@@ -54,6 +44,17 @@ export function useSetPaddedViewportCallback(
         viewportPadding,
         getSize(table)
       );
+
+      if (
+        table != null &&
+        !TableUtils.isTreeTable(table) &&
+        viewportSubscriptionOptions != null &&
+        subscriptionRef.current == null
+      ) {
+        subscriptionRef.current = table.createViewportSubscription(
+          viewportSubscriptionOptions
+        );
+      }
 
       if (subscriptionRef.current == null) {
         table?.setViewport(first, last);
@@ -68,7 +69,7 @@ export function useSetPaddedViewportCallback(
         columns: table?.columns ?? [],
       });
     },
-    [subscriptionRef, table, viewportPadding, viewportSize]
+    [table, viewportPadding, viewportSize, viewportSubscriptionOptions]
   );
 }
 
