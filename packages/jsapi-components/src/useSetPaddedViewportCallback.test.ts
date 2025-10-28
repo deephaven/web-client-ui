@@ -84,8 +84,11 @@ it('should use TableViewportSubscription if viewport options are provided', () =
     columns: table.columns,
   });
 
-  expect(table.setViewport).not.toHaveBeenCalled();
+  // Call callback again to check if existing subscription is used
+  result.current(firstRow + 10);
   expect(table.createViewportSubscription).toHaveBeenCalledTimes(1);
+
+  expect(table.setViewport).not.toHaveBeenCalled();
 });
 
 it('should use setViewport if provided a tree table', () => {
@@ -124,4 +127,46 @@ it('should use setViewport if provided a tree table', () => {
     expected.firstRow,
     expected.lastRow
   );
+});
+
+it('should set update viewport subscription if called in same render as the hook', () => {
+  jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
+
+  const mockSubscription = {
+    update: jest.fn(),
+    close: jest.fn(),
+  };
+
+  const table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
+  (table.createViewportSubscription as jest.Mock).mockReturnValue(
+    mockSubscription
+  );
+
+  const viewportSize = 10;
+  const viewportPadding = 4;
+  const viewportOptions = {
+    rows: {
+      first: 0,
+      last: 0,
+    },
+    columns: table.columns,
+  };
+
+  renderHook(() => {
+    const callback = useSetPaddedViewportCallback(
+      table,
+      viewportSize,
+      viewportPadding,
+      viewportOptions
+    );
+
+    // Call the callback in same render
+    callback(30);
+  });
+
+  expect(table.createViewportSubscription).toHaveBeenCalledWith(
+    viewportOptions
+  );
+  expect(mockSubscription.update).toHaveBeenCalled();
+  expect(table.setViewport).not.toHaveBeenCalled();
 });
