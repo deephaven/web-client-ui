@@ -146,3 +146,70 @@ it('should set update viewport subscription if called in same render as the hook
   expect(mockSubscription.update).toHaveBeenCalled();
   expect(table.setViewport).not.toHaveBeenCalled();
 });
+
+it('should create a new subscription when viewportSubscriptionOptions or table changes', () => {
+  jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
+
+  const mockSubscription1 = {
+    update: jest.fn(),
+    close: jest.fn(),
+  };
+
+  const mockSubscription2 = {
+    update: jest.fn(),
+    close: jest.fn(),
+  };
+
+  (table.createViewportSubscription as jest.Mock)
+    .mockReturnValueOnce(mockSubscription1)
+    .mockReturnValueOnce(mockSubscription2);
+
+  const { result, rerender } = renderHook(
+    ({ table: hookTable, options }) =>
+      useSetPaddedViewportCallback(
+        hookTable,
+        viewportSize,
+        viewportPadding,
+        options
+      ),
+    {
+      initialProps: { table, options: viewportOptions },
+    }
+  );
+
+  // Call callback for the first time, which should create a subscription
+  result.current(30);
+  expect(table.createViewportSubscription).toHaveBeenCalledTimes(1);
+  expect(table.createViewportSubscription).toHaveBeenCalledWith(
+    viewportOptions
+  );
+  expect(mockSubscription1.update).toHaveBeenCalled();
+
+  // Change viewportSubscriptionOptions and rerender
+  const newViewportOptions = {
+    ...viewportOptions,
+    rows: { first: 5, last: 15 },
+  };
+  rerender({ table, options: newViewportOptions });
+  expect(mockSubscription1.close).toHaveBeenCalled();
+
+  // Call callback again, which should create a new subscription
+  result.current(30);
+  expect(table.createViewportSubscription).toHaveBeenCalledTimes(2);
+  expect(table.createViewportSubscription).toHaveBeenLastCalledWith(
+    newViewportOptions
+  );
+  expect(mockSubscription2.update).toHaveBeenCalled();
+
+  // Change viewportSubscriptionOptions and rerender
+  const newTable = TestUtils.createMockProxy<dh.Table>({ size: 100 });
+  rerender({ table: newTable, options: newViewportOptions });
+  expect(mockSubscription2.close).toHaveBeenCalled();
+
+  // Call callback again, which should create a new subscription
+  result.current(30);
+  expect(newTable.createViewportSubscription).toHaveBeenCalledTimes(1);
+  expect(newTable.createViewportSubscription).toHaveBeenCalledWith(
+    newViewportOptions
+  );
+});
