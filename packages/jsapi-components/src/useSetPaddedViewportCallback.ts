@@ -30,12 +30,12 @@ export function useSetPaddedViewportCallback(
     null
   );
 
-  function cleanupSubscription() {
+  const cleanupSubscription = () => {
     if (subscriptionRef.current) {
       subscriptionRef.current.close();
       subscriptionRef.current = null;
     }
-  }
+  };
 
   if (
     prevTableRef.current !== table ||
@@ -46,7 +46,12 @@ export function useSetPaddedViewportCallback(
     cleanupSubscription();
   }
 
-  useEffect(() => () => cleanupSubscription(), []);
+  useEffect(
+    () => () => {
+      cleanupSubscription();
+    },
+    []
+  );
 
   return useCallback(
     function setPaddedViewport(firstRow: number) {
