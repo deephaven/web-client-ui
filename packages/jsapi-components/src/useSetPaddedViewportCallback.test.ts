@@ -123,28 +123,49 @@ it('should set update viewport subscription if called in same render as the hook
     update: jest.fn(),
     close: jest.fn(),
   };
+  const mockSubscription2 = {
+    update: jest.fn(),
+    close: jest.fn(),
+  };
 
-  (table.createViewportSubscription as jest.Mock).mockReturnValue(
-    mockSubscription
+  (table.createViewportSubscription as jest.Mock)
+    .mockReturnValueOnce(mockSubscription)
+    .mockReturnValueOnce(mockSubscription2);
+
+  const { rerender } = renderHook(
+    options => {
+      const callback = useSetPaddedViewportCallback(
+        table,
+        viewportSize,
+        viewportPadding,
+        options
+      );
+
+      // Call the callback in same render
+      callback(30);
+    },
+    { initialProps: viewportOptions }
   );
-
-  renderHook(() => {
-    const callback = useSetPaddedViewportCallback(
-      table,
-      viewportSize,
-      viewportPadding,
-      viewportOptions
-    );
-
-    // Call the callback in same render
-    callback(30);
-  });
 
   expect(table.createViewportSubscription).toHaveBeenCalledWith(
     viewportOptions
   );
   expect(mockSubscription.update).toHaveBeenCalled();
   expect(table.setViewport).not.toHaveBeenCalled();
+  expect(mockSubscription.close).not.toHaveBeenCalled();
+
+  jest.clearAllMocks();
+
+  // Just make this a new reference to trigger the effect
+  const viewportOptions2 = { ...viewportOptions };
+
+  rerender(viewportOptions2);
+
+  expect(table.createViewportSubscription).toHaveBeenCalledWith(
+    viewportOptions2
+  );
+  expect(mockSubscription.update).not.toHaveBeenCalled();
+  expect(mockSubscription2.update).toHaveBeenCalled();
 });
 
 it('should create a new subscription when viewportSubscriptionOptions or table changes', () => {
