@@ -196,7 +196,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
       </div>
       <div className="widget-list-footer">
         <Button kind="ghost" onClick={onExportLayout}>
-          <div className="fa-md fa-layers">
+          <div className="fa-md fa-layers mr-1">
             <FontAwesomeIcon
               mask={vsPreview}
               icon={vsArrowSmallDown}
@@ -210,7 +210,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
           Export Layout
         </Button>
         <Button kind="ghost" onClick={onImportLayout}>
-          <div className="fa-md fa-layers">
+          <div className="fa-md fa-layers mr-1">
             <FontAwesomeIcon
               mask={vsPreview}
               icon={vsArrowSmallUp}

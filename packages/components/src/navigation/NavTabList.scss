@@ -159,10 +159,12 @@ $tab-control-btn-offset: -8px;
   }
 
   .tab-controls-btn-left {
+    background-image: linear-gradient(270deg, transparent 0%, $background 40%);
     margin-right: $tab-control-btn-offset;
   }
 
   .tab-controls-btn-right {
+    background-image: linear-gradient(90deg, transparent 0%, $background 40%);
     margin-left: $tab-control-btn-offset;
   }
 }
