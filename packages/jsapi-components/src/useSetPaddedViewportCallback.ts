@@ -30,26 +30,23 @@ export function useSetPaddedViewportCallback(
     null
   );
 
+  function cleanupSubscription() {
+    if (subscriptionRef.current) {
+      subscriptionRef.current.close();
+      subscriptionRef.current = null;
+    }
+  }
+
   if (
     prevTableRef.current !== table ||
     prevViewportOptionsRef.current !== viewportSubscriptionOptions
   ) {
     prevTableRef.current = table;
     prevViewportOptionsRef.current = viewportSubscriptionOptions;
-
-    subscriptionRef.current?.close();
-    subscriptionRef.current = null;
+    cleanupSubscription();
   }
 
-  useEffect(
-    () => () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.close();
-        subscriptionRef.current = null;
-      }
-    },
-    []
-  );
+  useEffect(() => () => cleanupSubscription(), []);
 
   return useCallback(
     function setPaddedViewport(firstRow: number) {
