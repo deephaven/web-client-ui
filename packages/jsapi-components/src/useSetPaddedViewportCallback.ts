@@ -46,12 +46,7 @@ export function useSetPaddedViewportCallback(
     cleanupSubscription();
   }
 
-  useEffect(
-    () => () => {
-      cleanupSubscription();
-    },
-    []
-  );
+  useEffect(() => cleanupSubscription, []);
 
   return useCallback(
     function setPaddedViewport(firstRow: number) {
