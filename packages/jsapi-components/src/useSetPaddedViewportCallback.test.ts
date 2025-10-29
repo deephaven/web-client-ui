@@ -161,6 +161,7 @@ it('should set update viewport subscription if called in same render as the hook
 
   rerender(viewportOptions2);
 
+  expect(mockSubscription.close).toHaveBeenCalled();
   expect(table.createViewportSubscription).toHaveBeenCalledWith(
     viewportOptions2
   );
