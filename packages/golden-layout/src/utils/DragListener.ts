@@ -11,7 +11,7 @@ class DragListener extends EventEmitter {
   private _eElement: JQuery<HTMLElement> | undefined;
   private _oDocument: JQuery<Document> | undefined;
   private _eBody: JQuery<HTMLElement> | undefined;
-  private _eRoot: Root | undefined;
+  private _root: Root | undefined;
   private _destroyAfterMouseUp: boolean;
 
   /**
@@ -37,7 +37,7 @@ class DragListener extends EventEmitter {
 
   constructor(
     eElement: JQuery<HTMLElement>,
-    eRoot: Root | undefined = undefined,
+    root?: Root,
     destroyAfterMouseUp = false
   ) {
     super();
@@ -45,7 +45,7 @@ class DragListener extends EventEmitter {
     this._eElement = eElement;
     this._oDocument = $(document);
     this._eBody = $(document.body);
-    this._eRoot = eRoot;
+    this._root = root;
     // used by drag sources, to destroy listener at the right time
     this._destroyAfterMouseUp = destroyAfterMouseUp;
 
@@ -125,7 +125,7 @@ class DragListener extends EventEmitter {
       // after dragStop, so that .lm_dragging is removed after size is processed
       // and any overflow: hidden remains applied during the calculations
       this._eBody?.removeClass('lm_dragging');
-      this._eRoot?.childElementContainer.removeClass('lm_dragging');
+      this._root?.childElementContainer.removeClass('lm_dragging');
       if (!(this._eElement instanceof Window)) {
         this._eElement?.removeClass('lm_dragging');
       }
@@ -139,7 +139,7 @@ class DragListener extends EventEmitter {
     this._bDragging = true;
     this._eBody?.addClass('lm_dragging');
     this._eElement?.addClass('lm_dragging');
-    this._eRoot?.childElementContainer.addClass('lm_dragging');
+    this._root?.childElementContainer.addClass('lm_dragging');
     this._oDocument?.find('iframe')?.css('pointer-events', 'none');
     this.emit('dragStart', this._nOriginalX, this._nOriginalY);
   }
