@@ -34,7 +34,11 @@ export default class DragSource {
    * Called initially and after every drag
    */
   _createDragListener() {
-    this._dragListener = new DragListener(this._element, true);
+    this._dragListener = new DragListener(
+      this._element,
+      this._layoutManager.root,
+      true
+    );
     this._dragListener.on('dragStart', this._onDragStart, this);
     this._dragListener.on('dragStop', this._createDragListener, this);
     return this._dragListener;

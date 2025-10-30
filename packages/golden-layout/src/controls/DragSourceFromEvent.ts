@@ -42,7 +42,15 @@ export default class DragSourceFromEvent {
       return;
     }
 
-    this._dragListener = new DragListener(this._element, true);
+    if (!this._layoutManager) {
+      return;
+    }
+
+    this._dragListener = new DragListener(
+      this._element,
+      this._layoutManager.root,
+      true
+    );
     this._dragListener.on('dragStart', this._onDragStart, this);
     this._dragListener.on('dragStop', this._destroy, this);
 

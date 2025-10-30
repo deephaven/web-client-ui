@@ -82,7 +82,7 @@ type DashboardLayoutProps = React.PropsWithChildren<{
 export function DashboardLayout({
   id,
   children,
-  emptyDashboard = <div>Dashboard is empty.</div>,
+  emptyDashboard = <div className="dashboard-empty">Dashboard is empty.</div>,
   layout,
   layoutConfig = DEFAULT_LAYOUT_CONFIG,
   onLayoutChange = DEFAULT_CALLBACK,

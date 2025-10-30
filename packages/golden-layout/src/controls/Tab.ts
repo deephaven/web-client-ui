@@ -50,7 +50,10 @@ export default class Tab {
       this._layoutManager.config.settings?.reorderEnabled &&
       contentItem.config.reorderEnabled
     ) {
-      this._dragListener = new DragListener(this.element);
+      this._dragListener = new DragListener(
+        this.element,
+        this._layoutManager.root
+      );
       this._dragListener.on('dragStart', this._onDragStart, this);
       this.contentItem.on(
         'destroy',
