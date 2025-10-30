@@ -19,6 +19,7 @@ $dashboard-list-background-hover-color: var(--dh-color-highlight-hover);
 
   .dashboard-list {
     display: grid;
+    align-content: start;
     padding: 0;
     margin: 0;
     overflow: auto;

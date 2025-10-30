@@ -277,9 +277,9 @@ function NavTabList({
     const { children } = containerRef.current;
     for (let i = 0; i < children.length; i += 1) {
       const child = children[i] as HTMLElement;
-      // Add 5px to right edge to account for rounding of offset values
+      // Subtract 5px from right edge to account for rounding of offset values
       if (
-        child.offsetLeft + 5 >
+        child.offsetLeft + child.offsetWidth - 5 >
         containerRef.current.scrollLeft + containerRef.current.offsetWidth
       ) {
         child.scrollIntoView({
