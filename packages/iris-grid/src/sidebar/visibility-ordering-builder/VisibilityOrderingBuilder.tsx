@@ -6,6 +6,7 @@ import React, {
   useRef,
   type ReactElement,
 } from 'react';
+import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import {
   GridUtils,
@@ -807,7 +808,11 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   handleDragStart(id: string): void {
     const { selectedColumns } = this.state;
     if (!selectedColumns.has(id)) {
-      this.addColumnToSelected([id], false);
+      // For some reason, flushSync is needed here to prevent issues when
+      // dragging multiple items, dropping, then immediately dragging a single item
+      // over the previously dragged group. Without flushSync, the item being dragged
+      // can cause items in the previously dragged group to be in completely wrong places.
+      flushSync(() => this.addColumnToSelected([id], false));
     }
   }
 
