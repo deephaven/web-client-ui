@@ -12,7 +12,36 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
 }
 
 .console-history-item-command {
+  position: relative;
   white-space: pre-line;
+}
+
+.console-history-actions {
+  position: absolute;
+  gap: $spacer-1;
+  top: 0;
+  right: $spacer-2;
+  display: none;
+  align-items: center;
+  background-color: var(--dh-color-neutral-hover-bg);
+  border-radius: $border-radius;
+  padding: $spacer-1;
+}
+
+.console-history-item-command-tooltip-active {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-command:hover {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
 }
 
 .console-history-item-result .log-message {
@@ -93,5 +122,44 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         border: 1px solid negative-opacity(50);
       }
     }
+  }
+}
+
+.console-history-actions-1 {
+  // actions are centered over the line
+  // note that the actions are much wider than the line itself
+  top: -($spacer-3 * 0.875);
+}
+
+.console-history-actions-2 {
+  // actions are centered over the line
+  top: -($spacer-1 * 0.5);
+}
+
+.console-command-result:last-child .console-history-actions-1 {
+  // pushed down so that the actions are visible
+  top: -$spacer-4;
+}
+
+.console-command-result:first-child .console-history-actions-1 {
+  // pushed up to prevent layout shifts
+  top: $spacer-0;
+}
+
+.console-history-item-contextual-help-content {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: $spacer-1 $spacer-3;
+  text-align: left;
+  margin-bottom: $spacer-2;
+  white-space: nowrap;
+}
+
+.console-history-item-contextual-help {
+  section[class*='spectrum-ContextualHelp-dialog'] {
+    // The default size of the contextual help is only 250px and is too small.
+    // Just set a size automatically based on the content.
+    width: fit-content;
+    min-width: 150px;
   }
 }
