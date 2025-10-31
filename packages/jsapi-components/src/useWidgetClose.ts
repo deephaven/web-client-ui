@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { type WidgetTypes } from '@deephaven/jsapi-bootstrap';
 import { isClosed } from '@deephaven/jsapi-utils';
 
 /**
@@ -8,7 +7,7 @@ import { isClosed } from '@deephaven/jsapi-utils';
  * @param widget The widget to close
  */
 export default function useWidgetClose(
-  widget: WidgetTypes | null | undefined
+  widget: { close: () => void } | null | undefined
 ): void {
   useEffect(
     () => () => {
