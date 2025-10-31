@@ -186,7 +186,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     // Scroll to the item when it's available
     if (this.scrollAndFocusColumnOnUpdate != null) {
       const itemElement = this.list?.querySelector(
-        `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"]`
+        `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"] .tree-item`
       );
       if (itemElement instanceof HTMLElement) {
         itemElement.scrollIntoView({ block: 'nearest' });
@@ -200,22 +200,21 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     // resulting in focus loss. Try to re-establish focus.
     // Cannot rely on focusout event for this because it doesn't fire when the focused element is deleted
     // (except in Chrome which is against the spec here).
-    if (this.lastFocusedItemIndex != null) {
-      if (
-        document.activeElement === document.body ||
-        document.activeElement === document.documentElement
-      ) {
-        const itemToFocus = this.list?.querySelector(
-          `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
-        );
+    if (
+      (document.activeElement === document.body ||
+        document.activeElement === document.documentElement) &&
+      this.lastFocusedItemIndex !== null
+    ) {
+      const itemToFocus = this.list?.querySelector(
+        `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
+      );
 
-        if (itemToFocus != null && itemToFocus instanceof HTMLElement) {
-          itemToFocus.focus();
-        } else {
-          log.warn('Could not maintain focus');
-        }
+      if (itemToFocus != null && itemToFocus instanceof HTMLElement) {
+        itemToFocus.focus();
+      } else {
+        log.warn('Could not maintain focus');
+        this.lastFocusedItemIndex = null;
       }
-      this.lastFocusedItemIndex = null;
     }
   }
 

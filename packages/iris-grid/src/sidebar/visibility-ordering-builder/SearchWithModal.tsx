@@ -195,7 +195,7 @@ export function SearchWithModal({
         handleModalClose();
       }
 
-      if (e.key === 'ArrowDown' && filteredItems.length > 1) {
+      if (e.key === 'ArrowDown' && filteredItems.length > 0) {
         e.preventDefault();
         // Focus the first item in the list
         const item = popperRef.current?.element.querySelector(
