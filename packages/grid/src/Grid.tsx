@@ -1416,9 +1416,17 @@ class Grid extends PureComponent<GridProps, GridState> {
   moveViewToCell(column: GridRangeIndex, row: GridRangeIndex): void {
     if (!this.metrics) throw new Error('metrics not set');
 
-    const { metricCalculator } = this;
-    const { bottomVisible, rightVisible, topVisible, leftVisible } =
-      this.metrics;
+    const { metricCalculator, props } = this;
+    const { isStickyBottom, isStickyRight, model } = props;
+    const {
+      bottomVisible,
+      rightVisible,
+      topVisible,
+      leftVisible,
+      lastTop,
+      lastLeft,
+    } = this.metrics;
+    const { rowCount, columnCount } = model;
     const metricState = this.getMetricState(this.state);
     let { top, left, topOffset, leftOffset } = this.state;
 
@@ -1427,7 +1435,13 @@ class Grid extends PureComponent<GridProps, GridState> {
         top = metricCalculator.getTopForTopVisible(metricState, row);
         topOffset = 0;
       } else if (row > bottomVisible) {
-        top = metricCalculator.getTopForBottomVisible(metricState, row);
+        // When navigating to the last row with isStickyBottom enabled,
+        // scroll to lastTop to enable sticky bottom behavior
+        if (isStickyBottom && row === rowCount - 1) {
+          top = lastTop;
+        } else {
+          top = metricCalculator.getTopForBottomVisible(metricState, row);
+        }
         topOffset = 0;
       }
     }
@@ -1437,7 +1451,13 @@ class Grid extends PureComponent<GridProps, GridState> {
         left = metricCalculator.getLeftForLeftVisible(metricState, column);
         leftOffset = 0;
       } else if (column > rightVisible) {
-        left = metricCalculator.getLeftForRightVisible(metricState, column);
+        // When navigating to the last column with isStickyRight enabled,
+        // scroll to lastLeft to enable sticky right behavior
+        if (isStickyRight && column === columnCount - 1) {
+          left = lastLeft;
+        } else {
+          left = metricCalculator.getLeftForRightVisible(metricState, column);
+        }
         leftOffset = 0;
       }
     }
