@@ -59,6 +59,19 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   }
 }
 
+// give visual indication of the bounds of a nested golden-layout while dragging
+.lm_goldenlayout .lm_goldenlayout.lm_dragging {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: var(--dh-color-highlight-selected);
+    border: 1px dashed var(--dh-color-hover-border);
+    pointer-events: none;
+    z-index: 9999;
+  }
+}
+
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
   background: $background;
