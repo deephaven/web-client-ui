@@ -75,6 +75,16 @@ function App(): JSX.Element {
   const dispatch = useDispatch();
   const serverConfig = useServerConfig();
 
+  // Update the browser title when the widget name is available
+  useEffect(
+    function updateTitle() {
+      if (name != null) {
+        document.title = `${name} - Deephaven`;
+      }
+    },
+    [name]
+  );
+
   useEffect(
     function initializeApp() {
       async function initApp(): Promise<void> {
