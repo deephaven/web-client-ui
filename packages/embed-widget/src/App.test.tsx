@@ -2,6 +2,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { createMockStore } from '@deephaven/redux';
+import { TestUtils } from '@deephaven/test-utils';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import App from './App';
@@ -48,7 +49,7 @@ jest.mock('@deephaven/jsapi-utils', () => ({
 }));
 
 describe('App', () => {
-  const mockApi = {} as DhType;
+  const mockApi = TestUtils.createMockProxy<DhType>();
   let store: ReturnType<typeof createMockStore>;
 
   beforeEach(() => {
