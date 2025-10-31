@@ -935,4 +935,83 @@ describe('paste tests', () => {
       expect(model.setValues).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('sticky bottom behavior', () => {
+    function makeGridWithStickyBottom(
+      model: GridModel = new MockGridModel(),
+      isStickyBottom = true
+    ): Grid {
+      let ref: React.RefObject<Grid>;
+      function GridWithRef() {
+        ref = useRef<Grid>(null);
+        return (
+          <div>
+            <Grid
+              model={model}
+              theme={defaultTheme}
+              isStickyBottom={isStickyBottom}
+              onSelectionChanged={jest.fn()}
+              ref={ref}
+            />
+          </div>
+        );
+      }
+      render(<GridWithRef />);
+      return ref!.current!;
+    }
+
+    it('enables isStuckToBottom when navigating to last row with Ctrl+End', () => {
+      const model = new MockGridModel();
+      const { rowCount } = model;
+      const component = makeGridWithStickyBottom(model, true);
+
+      // Start from the middle of the grid
+      mouseClick(5, 5, component);
+
+      // Navigate to the last row with Ctrl+End
+      end(component, { ctrlKey: true });
+
+      // Check that we're at the last row
+      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+
+      // Check that isStuckToBottom is now true
+      expect(component.state.isStuckToBottom).toBe(true);
+    });
+
+    it('enables isStuckToBottom when navigating to last row with Ctrl+ArrowDown', () => {
+      const model = new MockGridModel();
+      const { rowCount } = model;
+      const component = makeGridWithStickyBottom(model, true);
+
+      // Start from the middle of the grid
+      mouseClick(5, 5, component);
+
+      // Navigate to the last row with Ctrl+ArrowDown
+      arrowDown(component, { ctrlKey: true });
+
+      // Check that we're at the last row
+      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+
+      // Check that isStuckToBottom is now true
+      expect(component.state.isStuckToBottom).toBe(true);
+    });
+
+    it('does not enable isStuckToBottom when isStickyBottom is false', () => {
+      const model = new MockGridModel();
+      const { rowCount } = model;
+      const component = makeGridWithStickyBottom(model, false);
+
+      // Start from the middle of the grid
+      mouseClick(5, 5, component);
+
+      // Navigate to the last row with Ctrl+End
+      end(component, { ctrlKey: true });
+
+      // Check that we're at the last row
+      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+
+      // Check that isStuckToBottom is still false
+      expect(component.state.isStuckToBottom).toBe(false);
+    });
+  });
 });
