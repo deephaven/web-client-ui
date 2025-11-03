@@ -24,7 +24,6 @@ dist/
 .stylelintcache
 lerna-debug.log
 Lerna-Profile-*.json
-.nx/
 
 .idea
 
