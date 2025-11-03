@@ -1573,6 +1573,75 @@ describe('Search', () => {
     expect(screen.queryAllByText(/B\d/).length).toBe(5);
   });
 
+  test('Arrow keys navigate search elements', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    render(<BuilderWithStateManagement />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+
+    await user.click(searchInput);
+
+    // Ensure DOM updates happened and the modal is opened
+    await waitFor(() =>
+      expect(
+        screen.queryAllByText(COLUMN_PREFIX, { exact: false }).length
+      ).toBe(2 * COLUMNS.length)
+    );
+
+    await user.keyboard('{ArrowDown}');
+    expect(
+      screen.getAllByText(COLUMNS[0].name)[1].closest('.tree-item')
+    ).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(
+      screen.getAllByText(COLUMNS[1].name)[1].closest('.tree-item')
+    ).toHaveFocus();
+
+    await user.keyboard('{ArrowUp}');
+    await user.keyboard('{ArrowUp}');
+
+    expect(searchInput).toHaveFocus();
+  });
+
+  test('Enter selects search item', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    render(<BuilderWithStateManagement />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+
+    await user.click(searchInput);
+
+    // Ensure DOM updates happened and the modal is opened
+    await waitFor(() =>
+      expect(
+        screen.queryAllByText(COLUMN_PREFIX, { exact: false }).length
+      ).toBe(2 * COLUMNS.length)
+    );
+
+    await user.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(
+        screen.getByText(COLUMNS[0].name).closest('.tree-item')
+      ).toHaveFocus()
+    );
+
+    await user.click(searchInput);
+
+    // Ensure DOM updates happened and the modal is opened
+    await waitFor(() =>
+      expect(
+        screen.queryAllByText(COLUMN_PREFIX, { exact: false }).length
+      ).toBe(2 * COLUMNS.length)
+    );
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    await waitFor(() =>
+      expect(
+        screen.getByText(COLUMNS[1].name).closest('.tree-item')
+      ).toHaveFocus()
+    );
+  });
+
   test('Select matching button works', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     const model = makeModel([
