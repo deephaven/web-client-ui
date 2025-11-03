@@ -1416,17 +1416,9 @@ class Grid extends PureComponent<GridProps, GridState> {
   moveViewToCell(column: GridRangeIndex, row: GridRangeIndex): void {
     if (!this.metrics) throw new Error('metrics not set');
 
-    const { metricCalculator, props } = this;
-    const { model } = props;
-    const {
-      bottomVisible,
-      rightVisible,
-      topVisible,
-      leftVisible,
-      lastTop,
-      lastLeft,
-    } = this.metrics;
-    const { rowCount, columnCount } = model;
+    const { metricCalculator } = this;
+    const { bottomVisible, rightVisible, topVisible, leftVisible } =
+      this.metrics;
     const metricState = this.getMetricState(this.state);
     let { top, left, topOffset, leftOffset } = this.state;
 
@@ -1435,12 +1427,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         top = metricCalculator.getTopForTopVisible(metricState, row);
         topOffset = 0;
       } else if (row > bottomVisible) {
-        // When navigating to the last row, scroll to lastTop to trigger sticky bottom behavior
-        if (rowCount > 0 && row === rowCount - 1) {
-          top = lastTop;
-        } else {
-          top = metricCalculator.getTopForBottomVisible(metricState, row);
-        }
+        top = metricCalculator.getTopForBottomVisible(metricState, row);
         topOffset = 0;
       }
     }
@@ -1450,12 +1437,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         left = metricCalculator.getLeftForLeftVisible(metricState, column);
         leftOffset = 0;
       } else if (column > rightVisible) {
-        // When navigating to the last column, scroll to lastLeft to trigger sticky right behavior
-        if (columnCount > 0 && column === columnCount - 1) {
-          left = lastLeft;
-        } else {
-          left = metricCalculator.getLeftForRightVisible(metricState, column);
-        }
+        left = metricCalculator.getLeftForRightVisible(metricState, column);
         leftOffset = 0;
       }
     }
