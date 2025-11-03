@@ -14,7 +14,7 @@ type SearchItemProps = {
 };
 
 const SearchItem = forwardRef<HTMLDivElement, SearchItemProps>(
-  function VisibilityOrderingItem(props, ref) {
+  function SearchItem(props, ref) {
     const { value, item, onClick, onKeyDown, handleProps } = props;
 
     const handleClick = useCallback(

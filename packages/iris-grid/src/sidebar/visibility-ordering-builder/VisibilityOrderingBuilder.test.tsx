@@ -1,5 +1,11 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
@@ -171,10 +177,8 @@ function BuilderWithStateManagement(
   );
 }
 
-function makeModel() {
-  return irisGridTestUtils.makeModel(
-    irisGridTestUtils.makeTable({ columns: COLUMNS })
-  );
+function makeModel(columns = COLUMNS) {
+  return irisGridTestUtils.makeModel(irisGridTestUtils.makeTable({ columns }));
 }
 
 function makeModelWithGroups(groups = COLUMN_HEADER_GROUPS) {
@@ -218,8 +222,8 @@ async function clearSelection(user: ReturnType<typeof userEvent.setup>) {
   }
 }
 
-function expectSelection(indexes: number[]) {
-  const elements = screen.getAllByText(ALL_PREFIX, { exact: false });
+function expectSelection(indexes: number[], prefix = ALL_PREFIX) {
+  const elements = screen.getAllByText(prefix, { exact: false });
   const selection = elements
     .map((element, i) => ({ element, i }))
     .filter(({ element }) => element.closest(`.${SELECTED_CLASS}`) != null)
@@ -1524,4 +1528,148 @@ test('On drag start/end', () => {
   act(() => builder.current?.handleDragEnd(items[0], items[1]));
   expect(mockGroupHandler).not.toHaveBeenCalled();
   expect(mockMoveHandler).toHaveBeenCalledWith([{ from: 0, to: 1 }]);
+});
+
+describe('Search', () => {
+  test('Filters items based on search input', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const model = makeModel([
+      ...irisGridTestUtils.makeColumns(5, 'A'),
+      ...irisGridTestUtils.makeColumns(5, 'B'),
+    ]);
+    render(<BuilderWithStateManagement model={model} />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+
+    await user.click(searchInput);
+
+    // Ensure DOM updates happened and the modal is opened
+    await waitFor(() => expect(screen.queryAllByText(/A\d/).length).toBe(10));
+    expect(screen.queryByText('Select Matching')).not.toBeInTheDocument();
+
+    await user.type(searchInput, 'A');
+
+    // A columns are shown in the search list and original list
+    expect(screen.queryAllByText(/A\d/).length).toBe(10);
+    expect(screen.queryAllByText(/B\d/).length).toBe(5);
+    expect(screen.getByText('Select Matching')).toBeInTheDocument();
+
+    await user.clear(searchInput);
+    await user.type(searchInput, '2');
+
+    // A2/B2 column is shown in the search list and original list
+    await waitFor(() => expect(screen.queryAllByText(/A2/).length).toBe(2));
+    await waitFor(() => expect(screen.queryAllByText(/B2/).length).toBe(2));
+    expect(screen.queryAllByText(/A\d/).length).toBe(6);
+    expect(screen.queryAllByText(/B\d/).length).toBe(6);
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'not present');
+
+    await waitFor(() =>
+      expect(screen.getByText('No matching columns')).toBeInTheDocument()
+    );
+    expect(screen.queryAllByText(/A\d/).length).toBe(5);
+    expect(screen.queryAllByText(/B\d/).length).toBe(5);
+  });
+
+  test('Select matching button works', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const model = makeModel([
+      ...irisGridTestUtils.makeColumns(5, 'A'),
+      ...irisGridTestUtils.makeColumns(5, 'B'),
+    ]);
+    render(<BuilderWithStateManagement model={model} />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+    expect(screen.queryByText('Select Matching')).not.toBeInTheDocument();
+
+    await user.type(searchInput, 'A1');
+
+    // Wait for search results to show
+    await waitFor(() => expect(screen.queryAllByText('A2').length).toBe(1));
+    expect(screen.queryByText('Select Matching')).not.toBeInTheDocument();
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'Ab');
+
+    await waitFor(() =>
+      expect(screen.getByText('No matching columns')).toBeInTheDocument()
+    );
+    expect(screen.queryByText('Select Matching')).not.toBeInTheDocument();
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'A');
+
+    // A columns are shown in the search list and original list
+    const selectButton = await waitFor(() =>
+      screen.getByText('Select Matching')
+    );
+    await user.click(selectButton);
+
+    await waitFor(() => expectSelection([0, 1, 2, 3, 4], 'A'));
+  });
+
+  test('Select group button works', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const model = makeModel([
+      ...irisGridTestUtils.makeColumns(5, 'A'),
+      ...irisGridTestUtils.makeColumns(5, 'B'),
+    ]);
+    render(<BuilderWithStateManagement model={model} />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+
+    await user.click(searchInput);
+    await waitFor(() => expect(screen.getAllByText('A1').length).toBe(2));
+
+    await TestUtils.controlClick(user, screen.getAllByText('A1')[1]);
+    await TestUtils.controlClick(user, screen.getAllByText('A2')[1]);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Select Matching')).not.toBeInTheDocument();
+      expect(screen.queryByText('Select Group')).toBeInTheDocument();
+    });
+
+    await user.type(searchInput, 'A');
+
+    await waitFor(() => {
+      expect(screen.queryByText('Select Matching')).toBeInTheDocument();
+      expect(screen.queryByText('Select Group')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Select Group'));
+
+    // Modal closed
+    await waitFor(() => expect(screen.getAllByText('A1').length).toBe(1));
+    expectSelection([1, 2], 'A');
+  });
+
+  test('Scrolls to item when selected via search', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    render(<BuilderWithStateManagement />);
+
+    const searchInput = screen.getByLabelText('Search columns');
+
+    await user.click(searchInput);
+
+    // Wait for search modal to open
+    await waitFor(() =>
+      expect(
+        screen.queryAllByText(COLUMN_PREFIX, { exact: false }).length
+      ).toBe(2 * COLUMNS.length)
+    );
+
+    // Globally mocked scrollIntoView for this test file
+    jest.mocked(window.HTMLElement.prototype.scrollIntoView).mockClear();
+
+    // Click the search item
+    await user.click(screen.getAllByText(COLUMNS.at(-1)!.name)[1]);
+
+    await waitFor(() => {
+      const item = screen.getByText(COLUMNS.at(-1)!.name);
+      expect(item.scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(item.closest('.tree-item')).toHaveFocus();
+    });
+  });
 });
