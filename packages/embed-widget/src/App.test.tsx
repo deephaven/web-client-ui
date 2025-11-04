@@ -89,10 +89,8 @@ describe('App', () => {
       </Provider>
     );
 
-    // Give it a moment to potentially update
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Title should remain the default
-    expect(document.title).toBe('Deephaven Embedded Widget');
+    await waitFor(() => {
+      expect(document.title).toBe('Deephaven Embedded Widget');
+    });
   });
 });
