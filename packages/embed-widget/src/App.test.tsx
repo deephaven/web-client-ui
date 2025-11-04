@@ -49,7 +49,7 @@ jest.mock('@deephaven/jsapi-utils', () => ({
 }));
 
 describe('App', () => {
-  const mockApi = TestUtils.createMockProxy<DhType>();
+  const mockApi = TestUtils.createMockProxy<typeof DhType>();
   let store: ReturnType<typeof createMockStore>;
 
   beforeEach(() => {
