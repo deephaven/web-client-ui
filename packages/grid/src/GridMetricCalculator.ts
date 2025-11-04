@@ -919,10 +919,13 @@ export class GridMetricCalculator {
     state: GridMetricState,
     bottomVisible: VisibleIndex
   ): VisibleIndex {
-    const { height } = state;
+    const { height, theme } = state;
+    const { scrollBarSize } = theme;
     const gridY = this.getGridY(state);
     const floatingBottomHeight = this.getFloatingBottomHeight(state);
-    const availableHeight = height - gridY - floatingBottomHeight;
+    // Account for scrollbar space to match lastTop calculation
+    const availableHeight =
+      height - gridY - floatingBottomHeight - scrollBarSize;
     return this.getLastTop(state, bottomVisible, availableHeight);
   }
 
@@ -958,10 +961,12 @@ export class GridMetricCalculator {
     state: GridMetricState,
     rightVisible: VisibleIndex
   ): VisibleIndex {
-    const { width } = state;
+    const { width, theme } = state;
+    const { scrollBarSize } = theme;
     const gridX = this.getGridX(state);
     const floatingRightWidth = this.getFloatingRightWidth(state);
-    const availableWidth = width - gridX - floatingRightWidth;
+    // Account for scrollbar space to match lastLeft calculation
+    const availableWidth = width - gridX - floatingRightWidth - scrollBarSize;
     return this.getLastLeft(state, rightVisible, availableWidth);
   }
 
