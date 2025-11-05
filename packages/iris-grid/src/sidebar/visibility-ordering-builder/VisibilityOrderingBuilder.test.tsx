@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { type DragStartEvent } from '@dnd-kit/core';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
 import { assertNotNull } from '@deephaven/utils';
@@ -1518,11 +1519,24 @@ test('On drag start/end', () => {
     getTreeItems(COLUMNS, [], [], [], [`${COLUMN_PREFIX}0`], true)
   );
 
-  act(() => builder.current?.handleDragStart(`${COLUMN_PREFIX}0`));
+  const mockActivatorEvent = {
+    active: TestUtils.createMockProxy(),
+    activatorEvent: TestUtils.createMockProxy<Event>({
+      currentTarget: TestUtils.createMockProxy(),
+    }),
+  } satisfies DragStartEvent;
+
+  act(
+    () =>
+      builder.current?.handleDragStart(`${COLUMN_PREFIX}0`, mockActivatorEvent)
+  );
   expectSelection([0]);
 
   // This hits the path where the item is already selected in dragStart
-  act(() => builder.current?.handleDragStart(`${COLUMN_PREFIX}0`));
+  act(
+    () =>
+      builder.current?.handleDragStart(`${COLUMN_PREFIX}0`, mockActivatorEvent)
+  );
   expectSelection([0]);
 
   act(() => builder.current?.handleDragEnd(items[0], items[1]));
