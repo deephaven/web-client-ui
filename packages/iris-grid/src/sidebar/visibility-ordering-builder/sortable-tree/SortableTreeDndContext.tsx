@@ -119,7 +119,7 @@ adjustToCursor.offsetY = null as number | null;
 type Props<T> = React.PropsWithChildren<{
   items: TreeItem<T>[];
   indentationWidth?: number;
-  onDragStart?: (id: string) => void;
+  onDragStart?: (id: string, event: DragStartEvent) => void;
   onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
   renderItem: TreeItemRenderFn<T>;
 }>;
@@ -201,10 +201,13 @@ export default function SortableTreeDndContext<T>({
   }, [flattenedItems, offsetLeft]);
 
   const handleDragStart = useCallback(
-    ({ active: { id: newActiveId } }: DragStartEvent) => {
+    (event: DragStartEvent) => {
+      const {
+        active: { id: newActiveId },
+      } = event;
       setActiveId(newActiveId as string);
       setOverId(newActiveId as string);
-      onDragStart?.(newActiveId as string);
+      onDragStart?.(newActiveId as string, event);
 
       document.body.style.setProperty('cursor', 'grabbing');
     },

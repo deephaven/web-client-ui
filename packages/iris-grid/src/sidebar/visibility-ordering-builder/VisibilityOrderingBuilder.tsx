@@ -151,7 +151,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       this.handleSearchModalOpenChange.bind(this);
     this.handleSearchSelect = this.handleSearchSelect.bind(this);
     this.handleSearchItemClicked = this.handleSearchItemClicked.bind(this);
-    this.handleSearchDragStart = this.handleSearchDragStart.bind(this);
     this.renderItem = this.renderItem.bind(this);
 
     this.state = {
@@ -182,7 +181,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     });
   }
 
-  componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
+  componentDidUpdate(): void {
     // Scroll to the item when it's available
     if (this.scrollAndFocusColumnOnUpdate != null) {
       const itemElement = this.list?.querySelector(
@@ -606,7 +605,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   handleItemClick(
     name: string,
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    showHiddenColumns?: boolean
+    showHiddenColumns = false
   ): string[] {
     event.stopPropagation();
 
@@ -718,20 +717,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.addColumnToSelected(names, false);
   }
 
-  handleSearchDragStart(e: DragStartEvent): void {
-    const columnName = e.active.id as string;
-    const { model, onColumnVisibilityChanged } = this.props;
-    const { showHiddenColumns } = this.state;
-    if (showHiddenColumns) {
-      return;
-    }
-    const columnIndex = model.getColumnIndexByName(columnName);
-    if (columnIndex == null) {
-      return;
-    }
-    onColumnVisibilityChanged([columnIndex], true);
-  }
-
   /**
    * Adds columns or groups to the selected column set
    * Groups being added will add all of their children to the selection as well
@@ -804,15 +789,30 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     });
   }
 
-  handleDragStart(id: string): void {
+  handleDragStart(id: string, event: DragStartEvent): void {
     const { selectedColumns } = this.state;
-    if (!selectedColumns.has(id)) {
-      // For some reason, flushSync is needed here to prevent issues when
-      // dragging multiple items, dropping, then immediately dragging a single item
-      // over the previously dragged group. Without flushSync, the item being dragged
-      // can cause items in the previously dragged group to be in completely wrong places.
-      flushSync(() => this.addColumnToSelected([id], false));
+    if (selectedColumns.has(id)) {
+      return;
     }
+
+    const dragEvent =
+      event.activatorEvent as unknown as React.MouseEvent<HTMLElement>;
+    const isAddingToSelection =
+      GridUtils.isModifierKeyDown(dragEvent) || dragEvent.shiftKey;
+    // For some reason, flushSync is needed here to prevent issues when
+    // dragging multiple items, dropping, then immediately dragging a single item
+    // over the previously dragged group. Without flushSync, the item being dragged
+    // can cause items in the previously dragged group to be in completely wrong places.
+    flushSync(() => {
+      this.handleItemClick(
+        id,
+        event.activatorEvent as unknown as React.MouseEvent<HTMLElement>,
+        true
+      );
+      // Always add the dragged item back to selected in case the user ctrl+dragged on an already
+      // selected item. The handleItemClick would deselect it, but we want to keep it selected.
+      this.addColumnToSelected([id], isAddingToSelection);
+    });
   }
 
   handleDragEnd(
@@ -847,7 +847,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
-    // this.scrollAndFocusColumnOnUpdate = from.id; // Focus the dragged item after the move
+    this.scrollAndFocusColumnOnUpdate = from.id; // Focus the dragged item after the move
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
@@ -1288,6 +1288,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     } else {
       const { showHiddenColumns, selectedColumns } = this.state;
       const { onColumnVisibilityChanged } = this.props;
+      // Make sure all selected columns are visible when closing the search modal
       if (!showHiddenColumns) {
         const modelIndexesToShow =
           this.getSelectedItemModelIndexes(selectedColumns);
@@ -1364,7 +1365,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
               items={flattenedItems}
               onModalOpenChange={this.handleSearchModalOpenChange}
               onClick={this.handleSearchItemClicked}
-              onDragStart={this.handleSearchDragStart}
               setSelection={this.handleSearchSelect}
             />
 

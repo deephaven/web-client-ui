@@ -90,7 +90,7 @@ export function SearchWithModal({
   );
 
   useDndMonitor({
-    onDragStart: handleDragStart,
+    onDragStart: isModalOpen ? handleDragStart : undefined,
   });
 
   const handleClick = useCallback(
