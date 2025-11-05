@@ -29,11 +29,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { flattenTree, getChildCount, getProjection } from './utilities';
-import type { FlattenedItem, SensorContext, TreeItem } from './types';
+import type {
+  FlattenedItem,
+  SensorContext,
+  TreeItem as TreeItemType,
+} from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import PointerSensorWithInteraction from './PointerSensorWithInteraction';
-import { SortableTreeItem } from './SortableTreeItem';
-import { type TreeItemRenderFn } from './TreeItem';
+import { TreeItem, type TreeItemRenderFn } from './TreeItem';
 
 const MEASURING = {
   droppable: {
@@ -123,7 +126,7 @@ function adjustToCursor(args: Parameters<Modifier>[0]): {
 adjustToCursor.offsetY = null as number | null;
 
 type Props<T> = React.PropsWithChildren<{
-  items: TreeItem<T>[];
+  items: TreeItemType<T>[];
   indentationWidth?: number;
   onDragStart?: (id: string, event: DragStartEvent) => void;
   onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
@@ -281,12 +284,11 @@ export default function SortableTreeDndContext<T>({
         {createPortal(
           <DragOverlay
             dropAnimation={dropAnimationConfig}
-            // modifiers={[adjustToCursor]}
+            modifiers={[adjustToCursor]}
             className="visibility-ordering-list"
           >
             {activeId != null && activeItem ? (
-              <SortableTreeItem
-                id={activeId}
+              <TreeItem
                 depth={activeItem.depth}
                 clone
                 childCount={getChildCount(items, activeId) + 1}
