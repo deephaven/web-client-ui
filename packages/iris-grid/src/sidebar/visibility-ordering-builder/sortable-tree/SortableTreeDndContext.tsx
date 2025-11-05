@@ -48,15 +48,20 @@ const CONSTRAINT = {
 };
 
 const dropAnimationConfig: DropAnimation = {
-  keyframes({ transform }) {
+  keyframes({ dragOverlay, transform }) {
     return [
       { opacity: 1, transform: CSS.Transform.toString(transform.initial) },
       {
         opacity: 0,
         transform: CSS.Transform.toString({
           ...transform.final,
-          x: transform.final.x + 5,
-          y: transform.final.y + 5,
+          // Round initial.y to nearest increment of dragOverlay height
+          // Something is off with timing when the list is measured in React 18
+          // Before React 18 we transformed to 0, but it is now transforming back
+          // to the original spot and not the dropped spot
+          y:
+            dragOverlay.rect.height *
+            Math.round(transform.initial.y / dragOverlay.rect.height),
         }),
       },
     ];
@@ -66,6 +71,7 @@ const dropAnimationConfig: DropAnimation = {
     active.node.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: defaultDropAnimation.duration,
       easing: defaultDropAnimation.easing,
+      fill: 'forwards',
     });
   },
 };
@@ -275,7 +281,7 @@ export default function SortableTreeDndContext<T>({
         {createPortal(
           <DragOverlay
             dropAnimation={dropAnimationConfig}
-            modifiers={[adjustToCursor]}
+            // modifiers={[adjustToCursor]}
             className="visibility-ordering-list"
           >
             {activeId != null && activeItem ? (

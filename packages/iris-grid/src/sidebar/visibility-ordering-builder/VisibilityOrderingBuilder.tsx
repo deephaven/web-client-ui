@@ -228,6 +228,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   wrapperRef = React.createRef<HTMLDivElement>();
 
+  /**
+   * Used to track the last focused item index to maintain focus on updates.
+   * Cannot use name because it may change or be deleted when undoing or redoing.
+   */
   lastFocusedItemIndex: number | null = null;
 
   list: HTMLDivElement | null;
@@ -847,7 +851,8 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
-    this.scrollAndFocusColumnOnUpdate = from.id; // Focus the dragged item after the move
+    // Focus the dragged item after the move. Should not scroll since it's already in view
+    this.scrollAndFocusColumnOnUpdate = from.id;
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
