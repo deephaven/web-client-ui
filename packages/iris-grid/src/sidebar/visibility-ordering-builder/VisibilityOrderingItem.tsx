@@ -121,8 +121,12 @@ const VisibilityOrderingItem = forwardRef<
         {clone && childCount > 1 && (
           <span className="item-count">{childCount}</span>
         )}
-        <Tooltip>Drag to re-order</Tooltip>
-        <FontAwesomeIcon icon={vsGripper} />
+        {!clone && (
+          <>
+            <Tooltip>Drag to re-order</Tooltip>
+            <FontAwesomeIcon icon={vsGripper} />
+          </>
+        )}
       </div>
     </div>
   );

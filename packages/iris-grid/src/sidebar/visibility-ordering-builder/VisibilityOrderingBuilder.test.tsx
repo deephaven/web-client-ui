@@ -57,6 +57,28 @@ const NESTED_COLUMN_HEADER_GROUPS = [
 window.HTMLElement.prototype.scroll = jest.fn();
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+jest.mock<typeof import('@tanstack/react-virtual')>(
+  '@tanstack/react-virtual',
+  () => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    const actual = jest.requireActual<typeof import('@tanstack/react-virtual')>(
+      '@tanstack/react-virtual'
+    );
+    return {
+      ...actual,
+      useVirtualizer(options) {
+        return actual.useVirtualizer({
+          ...options,
+          observeElementRect: (instance, callback) => {
+            if (instance.scrollElement) callback({ width: 300, height: 1000 });
+          },
+        });
+      },
+    };
+  }
+);
+
 function Builder({
   model = makeModel(),
   hiddenColumns = [],

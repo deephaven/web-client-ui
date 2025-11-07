@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import classNames from 'classnames';
 import { useDndContext } from '@dnd-kit/core';
+import {
+  defaultRangeExtractor,
+  type Range,
+  useVirtualizer,
+} from '@tanstack/react-virtual';
 import { flattenTree, getProjection } from './utilities';
 import { SortableTreeItem } from './SortableTreeItem';
 import { TreeItem, type TreeItemRenderFn } from './TreeItem';
@@ -41,6 +46,43 @@ export default function SortableTree<T>({
     return flattenedTree;
   }, [activeId, items]);
 
+  const activeIndex = useMemo(
+    () => flattenedItems.findIndex(({ id }) => id === activeId),
+    [activeId, flattenedItems]
+  );
+
+  // Add the active index to the range so it is always rendered
+  const rangeExtractor = useCallback(
+    (range: Range) => {
+      const extractedRange = defaultRangeExtractor(range);
+      if (
+        activeIndex >= 0 &&
+        (activeIndex < extractedRange[0] ||
+          activeIndex > extractedRange[extractedRange.length - 1])
+      ) {
+        extractedRange.push(activeIndex);
+      }
+      return extractedRange;
+    },
+    [activeIndex]
+  );
+
+  const getScrollElement = useCallback(
+    () => containerRef.current?.parentElement ?? null,
+    []
+  );
+
+  const estimateSize = useCallback(() => 30, []);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: flattenedItems.length,
+    getScrollElement,
+    estimateSize,
+    rangeExtractor,
+    overscan: 10,
+  });
+
   const context = useDndContext();
   const contextRef = useRef(context);
 
@@ -79,8 +121,14 @@ export default function SortableTree<T>({
         'tree-container',
         activeId != null && 'marching-ants'
       )}
+      style={{
+        height: `${virtualizer.getTotalSize()}px`,
+        position: 'relative',
+      }}
+      ref={containerRef}
     >
-      {flattenedItems.map(item => {
+      {virtualizer.getVirtualItems().map(({ index, start }) => {
+        const item = flattenedItems[index];
         const { id, depth } = item;
         return isDraggable ? (
           <SortableTreeItem
@@ -90,7 +138,9 @@ export default function SortableTree<T>({
             depth={id === activeId && projected ? projected.depth : depth}
             item={item}
             renderItem={renderItem}
-            withDepthMarkers={withDepthMarkers}
+            top={start}
+            // This allows the group items to expand when editing the name and shift the list correctly
+            measureElement={virtualizer.measureElement}
           />
         ) : (
           <TreeItem
@@ -99,7 +149,8 @@ export default function SortableTree<T>({
             depth={depth}
             item={item}
             renderItem={renderItem}
-            withDepthMarkers={withDepthMarkers}
+            top={start}
+            wrapperRef={virtualizer.measureElement}
           />
         );
       })}

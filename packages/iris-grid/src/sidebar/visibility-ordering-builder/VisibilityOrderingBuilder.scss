@@ -30,6 +30,7 @@
   .visibility-ordering-list {
     overflow-y: auto;
     flex-grow: 1;
+    padding: $spacer-1;
 
     .btn {
       height: 28px;
@@ -71,9 +72,5 @@
     padding-right: $spacer-1;
     margin-left: $spacer-1;
     height: 1rem;
-  }
-
-  .tree-container {
-    padding: $spacer-1;
   }
 }

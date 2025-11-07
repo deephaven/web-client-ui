@@ -121,6 +121,10 @@ interface VisibilityOrderingBuilderInnerState {
    * the original position of the element.
    */
   movedColumns: readonly MoveOperation[];
+  /**
+   * This is used for the same reason as movedColumns above, but for dragging in/out of groups.
+   */
+  columnHeaderGroups: readonly ColumnHeaderGroup[];
 }
 
 class VisibilityOrderingBuilderInner extends PureComponent<
@@ -166,6 +170,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       showHiddenColumns: true,
       isSearchModalOpen: false,
       movedColumns: props.movedColumns,
+      columnHeaderGroups: props.columnHeaderGroups,
     };
 
     this.list = null;
@@ -191,9 +196,12 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
     // If we change because of undo/redo or reorders in the grid, update internal state
-    const { movedColumns } = this.props;
+    const { movedColumns, columnHeaderGroups } = this.props;
     if (prevProps.movedColumns !== movedColumns) {
       this.setState({ movedColumns });
+    }
+    if (prevProps.columnHeaderGroups !== columnHeaderGroups) {
+      this.setState({ columnHeaderGroups });
     }
 
     // Scroll to the item when it's available
@@ -869,7 +877,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     // the render which changes the prop. As a result, the drop animations go to the
     // original location because of that render with stale items. I could not find any
     // other way to fix this (removing memoization, removing keys, etc.)
-    this.setState({ movedColumns: newMoves });
+    this.setState({ movedColumns: newMoves, columnHeaderGroups: newGroups });
     // Focus the dragged item after the move. Should not scroll since it's already in view
     this.scrollAndFocusColumnOnUpdate = from.id;
   }
@@ -1129,9 +1137,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
    * @returns The movable tree items in order
    */
   getTreeItems(showHiddenColumns?: boolean): readonly IrisGridTreeItem[] {
-    const { model, hiddenColumns, columnHeaderGroups } = this.props;
+    const { model, hiddenColumns } = this.props;
     const {
       movedColumns,
+      columnHeaderGroups,
       selectedColumns,
       showHiddenColumns: showHiddenColumnsState,
     } = this.state;
@@ -1548,15 +1557,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
             />
           </div>
 
-          <div role="menu" className={classNames('visibility-ordering-list')}>
-            <div
-              className="column-list"
-              ref={list => {
-                this.list = list;
-              }}
-            >
-              {visibilityOrderingList}
-            </div>
+          <div
+            role="menu"
+            ref={list => {
+              this.list = list;
+            }}
+            className={classNames('visibility-ordering-list')}
+          >
+            {visibilityOrderingList}
           </div>
         </div>
       </SortableTreeDndContext>
