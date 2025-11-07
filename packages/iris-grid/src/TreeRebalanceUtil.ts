@@ -8,7 +8,7 @@ export interface TreeNode {
 }
 
 /**
- * Rebalance a tree according to the following rules:
+ * Helper function to rebalance a tree according to the following rules:
  * - Each node value must equal the sum of its immediate children with adjustments
  * - Can only add to nodes, no subtraction
  * - Excess value from parents is distributed evenly among all children

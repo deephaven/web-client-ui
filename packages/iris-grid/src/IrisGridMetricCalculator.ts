@@ -48,8 +48,8 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
-   * Builds a TreeNode from the model header groups and columns for rebalancing
-   * @param name The name of the node to build to build the tree for
+   * Builds a TreeNode from the model header groups and columns for padding calculation
+   * @param name The name of the root node to build the tree for
    * @param model The IrisGridModel containing columns and header groups
    * @param getLeafValue Function to get the value for leaf nodes (columns)
    * @param getGroupValue Function to get the value for group nodes (header groups)
@@ -92,7 +92,8 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
-   * Gets the header padding for a specific column based on the widths of its group tree
+   * Gets the header padding for a specific column based on the widths of its group tree nodes.
+   * We only adjust paddings on the column, because the group widths are automatically sized to fit their children.
    * @param state The current IrisGridMetricState
    * @param modelColumn The column index to get the padding for
    * @param maxColumnWidth Maximum allowed column width, applies only to leaf nodes
