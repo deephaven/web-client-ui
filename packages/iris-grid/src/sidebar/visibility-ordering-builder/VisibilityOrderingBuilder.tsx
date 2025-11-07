@@ -114,6 +114,13 @@ interface VisibilityOrderingBuilderInnerState {
   lastSelectedColumn: string;
   isSearchModalOpen: boolean;
   showHiddenColumns: boolean;
+  /**
+   * This is used only for drag end. In React 18, it seems our rendering is causing
+   * 1 render with just the children of this component, then updating to render with the
+   * updated movedColumns prop. That is causing the drop animation to animate back to
+   * the original position of the element.
+   */
+  movedColumns: readonly MoveOperation[];
 }
 
 class VisibilityOrderingBuilderInner extends PureComponent<
@@ -158,6 +165,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       lastSelectedColumn: '',
       showHiddenColumns: true,
       isSearchModalOpen: false,
+      movedColumns: props.movedColumns,
     };
 
     this.list = null;
@@ -181,7 +189,13 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     });
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
+    // If we change because of undo/redo or reorders in the grid, update internal state
+    const { movedColumns } = this.props;
+    if (prevProps.movedColumns !== movedColumns) {
+      this.setState({ movedColumns });
+    }
+
     // Scroll to the item when it's available
     if (this.scrollAndFocusColumnOnUpdate != null) {
       const itemElement = this.list?.querySelector(
@@ -851,6 +865,11 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
+    // Without tracking the state here, React 18 is rendering the child separately from
+    // the render which changes the prop. As a result, the drop animations go to the
+    // original location because of that render with stale items. I could not find any
+    // other way to fix this (removing memoization, removing keys, etc.)
+    this.setState({ movedColumns: newMoves });
     // Focus the dragged item after the move. Should not scroll since it's already in view
     this.scrollAndFocusColumnOnUpdate = from.id;
   }
@@ -1106,10 +1125,12 @@ class VisibilityOrderingBuilderInner extends PureComponent<
    * @returns The movable tree items in order
    */
   getTreeItems(showHiddenColumns?: boolean): readonly IrisGridTreeItem[] {
-    const { model, movedColumns, hiddenColumns, columnHeaderGroups } =
-      this.props;
-    const { selectedColumns, showHiddenColumns: showHiddenColumnsState } =
-      this.state;
+    const { model, hiddenColumns, columnHeaderGroups } = this.props;
+    const {
+      movedColumns,
+      selectedColumns,
+      showHiddenColumns: showHiddenColumnsState,
+    } = this.state;
 
     return this.memoizedGetTreeItems(
       model.columns,

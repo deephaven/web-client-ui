@@ -50,23 +50,14 @@ const CONSTRAINT = {
   },
 };
 
+// Disabling pointer events allows us to use scroll wheel while dragging
+const DRAG_OVERLAY_STYLE = { pointerEvents: 'none' } as const;
+
 const dropAnimationConfig: DropAnimation = {
-  keyframes({ dragOverlay, transform }) {
+  keyframes({ transform }) {
     return [
       { opacity: 1, transform: CSS.Transform.toString(transform.initial) },
-      {
-        opacity: 0,
-        transform: CSS.Transform.toString({
-          ...transform.final,
-          // Round initial.y to nearest increment of dragOverlay height
-          // Something is off with timing when the list is measured in React 18
-          // Before React 18 we transformed to 0, but it is now transforming back
-          // to the original spot and not the dropped spot
-          y:
-            dragOverlay.rect.height *
-            Math.round(transform.initial.y / dragOverlay.rect.height),
-        }),
-      },
+      { opacity: 0, transform: CSS.Transform.toString(transform.final) },
     ];
   },
   easing: 'ease-out',
@@ -74,7 +65,6 @@ const dropAnimationConfig: DropAnimation = {
     active.node.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: defaultDropAnimation.duration,
       easing: defaultDropAnimation.easing,
-      fill: 'forwards',
     });
   },
 };
@@ -241,8 +231,6 @@ export default function SortableTreeDndContext<T>({
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
-      resetState();
-
       if (projected && over) {
         const { depth, parentId } = projected;
 
@@ -260,6 +248,7 @@ export default function SortableTreeDndContext<T>({
           parentId: projected.parentId,
         });
       }
+      resetState();
     },
     [items, onDragEnd, projected, resetState]
   );
@@ -286,6 +275,7 @@ export default function SortableTreeDndContext<T>({
             dropAnimation={dropAnimationConfig}
             modifiers={[adjustToCursor]}
             className="visibility-ordering-list"
+            style={DRAG_OVERLAY_STYLE}
           >
             {activeId != null && activeItem ? (
               <TreeItem
