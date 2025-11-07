@@ -47,6 +47,7 @@ import {
   type PartitionConfig,
   type IrisGridRenderer,
   type MouseHandlersProp,
+  GetMetricCalculatorType,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
