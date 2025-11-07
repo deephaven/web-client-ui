@@ -158,7 +158,10 @@ export interface OwnProps extends DashboardPanelProps {
   theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
 
   mouseHandlers?: MouseHandlersProp;
+
   renderer?: IrisGridRenderer;
+
+  getMetricCalculator?: GetMetricCalculatorType;
 }
 
 interface StateProps {
@@ -1145,6 +1148,7 @@ export class IrisGridPanel extends PureComponent<
       user,
       renderer,
       settings,
+      getMetricCalculator,
       theme,
     } = this.props;
     const {
@@ -1281,6 +1285,7 @@ export class IrisGridPanel extends PureComponent<
             frozenColumns={frozenColumns}
             theme={theme}
             columnHeaderGroups={columnHeaderGroups}
+            getMetricCalculator={getMetricCalculator}
           >
             {childrenContent}
           </IrisGrid>
