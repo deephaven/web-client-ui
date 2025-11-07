@@ -18,6 +18,7 @@ interface NavTabProps {
   index: number;
   isDraggable: boolean;
   contextActions?: ResolvableContextAction | ResolvableContextAction[];
+  renderTabSlot?: (tab: NavTabItem) => React.ReactNode;
 }
 
 const NavTab = memo(
@@ -30,6 +31,7 @@ const NavTab = memo(
     index,
     isDraggable,
     contextActions,
+    renderTabSlot,
   }: NavTabProps) => {
     const { key, isClosable = onClose != null, title, icon } = tab;
 
@@ -98,6 +100,7 @@ const NavTab = memo(
                 {title}
                 <Tooltip>{title}</Tooltip>
               </span>
+              {renderTabSlot?.(tab)}
               {isClosable && (
                 <Button
                   kind="ghost"
