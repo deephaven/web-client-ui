@@ -899,6 +899,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       newGroups.splice(parentIndex, 1, newParent);
     }
 
+    // The group will be a new item, so focus it after the update
+    // otherwise we may lose focus entirely
+    this.scrollAndFocusColumnOnUpdate = newName;
+
     onColumnHeaderGroupChanged(newGroups);
     endUndoGroup();
   }
