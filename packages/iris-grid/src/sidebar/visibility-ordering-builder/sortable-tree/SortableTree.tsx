@@ -72,7 +72,7 @@ export default function SortableTree<T>({
     []
   );
 
-  const estimateSize = useCallback(() => 30, []);
+  const estimateSize = useCallback(() => 31, []); // 30 height + 1 margin-bottom
 
   const containerRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
