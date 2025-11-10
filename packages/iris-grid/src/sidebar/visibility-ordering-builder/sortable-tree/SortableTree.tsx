@@ -72,7 +72,7 @@ export default function SortableTree<T>({
     []
   );
 
-  const estimateSize = useCallback(() => 31, []); // 30 height + 1 margin-bottom
+  const estimateSize = useCallback(() => 30, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -81,6 +81,7 @@ export default function SortableTree<T>({
     estimateSize,
     rangeExtractor,
     overscan: 10,
+    gap: 1, // We set a 1px bottom margin before we virtualized this list
   });
 
   const context = useDndContext();
