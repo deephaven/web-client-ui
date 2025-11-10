@@ -1,7 +1,11 @@
 import { useContext } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
-import { isExternalThemeEnabled, ThemeProvider } from '@deephaven/components';
+import {
+  isExternalThemeEnabled,
+  LoadingOverlay,
+  ThemeProvider,
+} from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { PluginsContext, useCustomThemes } from '@deephaven/plugin';
@@ -24,7 +28,11 @@ export function ThemeBootstrap({
   const waitForActivation = isExternalThemeEnabled();
 
   return (
-    <ThemeProvider themes={themes} waitForActivation={waitForActivation}>
+    <ThemeProvider
+      themes={themes}
+      waitForActivation={waitForActivation}
+      loadingElement={<LoadingOverlay data-testid="theme-provider-loading" />}
+    >
       <ChartThemeProvider>
         <MonacoThemeProvider>
           <IrisGridThemeProvider density={settings.gridDensity}>

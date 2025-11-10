@@ -49,12 +49,14 @@ export interface ThemeProviderProps {
   waitForActivation?: boolean;
   defaultPreloadValues?: Record<string, string>;
   children: ReactNode;
+  loadingElement?: ReactNode | null;
 }
 
 export function ThemeProvider({
   themes: customThemes,
   waitForActivation = false,
   defaultPreloadValues = DEFAULT_PRELOAD_DATA_VARIABLES,
+  loadingElement = null,
   children,
 }: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
@@ -121,7 +123,8 @@ export function ThemeProvider({
   }, [activeThemes, selectedThemeKey, themes]);
 
   if (waitForActivation && activeThemes == null) {
-    return null;
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <>{loadingElement}</>;
   }
 
   return (
@@ -135,7 +138,9 @@ export function ThemeProvider({
           ))}
         </>
       )}
-      {value == null ? null : (
+      {value == null ? (
+        loadingElement
+      ) : (
         <ThemeContext.Provider value={value}>
           <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
         </ThemeContext.Provider>
