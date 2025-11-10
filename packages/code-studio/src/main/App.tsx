@@ -4,7 +4,7 @@ import AppMainContainer from './AppMainContainer';
 
 function App(): ReactElement {
   return (
-    <div className="app">
+    <div className="app" data-testid="app-loaded">
       <AppMainContainer />
       <ToastContainer />
     </div>
