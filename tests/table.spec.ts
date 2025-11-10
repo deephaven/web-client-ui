@@ -1,5 +1,10 @@
-import { test, expect, Page } from '@playwright/test';
-import { gotoPage, openTable } from './utils';
+import { test, expect, type Page } from '@playwright/test';
+import {
+  gotoPage,
+  openTable,
+  getColumnSeparatorPosition,
+  dragColumnSeparator,
+} from './utils';
 
 async function waitForLoadingDone(page: Page) {
   await expect(
@@ -231,5 +236,43 @@ test.describe('tests simple table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+});
+
+test.describe('column separators', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
+    await openTable(page, 'simple_table');
+    await waitForLoadingDone(page);
+  });
+
+  test('change color on hover', async ({ page }) => {
+    // Get the position of the first column separator
+    const separatorPos = await getColumnSeparatorPosition(page, 0);
+
+    // Move mouse to separator position to test basic interaction
+    await page.mouse.move(separatorPos.x, separatorPos.y);
+
+    // Wait a bit for any cursor updates
+    await page.waitForTimeout(100);
+
+    // Take a screenshot to verify interaction
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-separator-hover.png'
+    );
+  });
+
+  test('resize column on mouse drag', async ({ page }) => {
+    // Perform drag operation to resize column
+    await dragColumnSeparator(page, 0, 50);
+
+    // Verify the drag completed without errors
+    // In a real implementation, this would trigger actual column resizing
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify any visual changes
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-resized-after-drag.png'
+    );
   });
 });
