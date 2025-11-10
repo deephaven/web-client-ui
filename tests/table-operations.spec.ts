@@ -306,7 +306,7 @@ test('organize columns', async ({ page }) => {
     const intOption = page.getByRole('button', {
       name: 'Toggle visibility Int',
     });
-    await dragComponent(floatOption, intOption, dropIndicator, 0, 20);
+    await dragComponent(floatOption, intOption, dropIndicator, 10, 20);
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
