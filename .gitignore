@@ -42,4 +42,5 @@ packages/*/package-lock.json
 /tests/*-snapshots/*
 !/tests/*-snapshots/*-linux*
 vite.config.local.ts
-docker-compose.override.yml.nx/
+docker-compose.override.yml
+.nx/
