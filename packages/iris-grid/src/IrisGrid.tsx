@@ -283,6 +283,10 @@ export type MouseHandlersProp = readonly (
   | ((irisGrid: IrisGrid) => GridMouseHandler)
 )[];
 
+export type GetMetricCalculatorType = (
+  ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
+) => IrisGridMetricCalculator;
+
 export interface IrisGridProps {
   children?: React.ReactNode;
   advancedFilters: ReadonlyAdvancedFilterMap;
@@ -372,6 +376,8 @@ export interface IrisGridProps {
   renderer?: IrisGridRenderer;
 
   density?: 'compact' | 'regular' | 'spacious';
+
+  getMetricCalculator: GetMetricCalculatorType;
 }
 
 export interface IrisGridState {
@@ -553,6 +559,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
+    getMetricCalculator: (
+      ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
+    ): IrisGridMetricCalculator => new IrisGridMetricCalculator(...args),
   } satisfies Partial<IrisGridProps>;
 
   constructor(props: IrisGridProps) {
@@ -746,9 +755,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       canCopy,
       frozenColumns,
       columnHeaderGroups,
+      getMetricCalculator,
     } = props;
-
-    const { mouseHandlers: mouseHandlersProp } = props;
 
     const { dh } = model;
     const keyHandlers: KeyHandler[] = [
@@ -768,7 +776,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
       new IrisGridPartitionedTableMouseHandler(this),
-      ...mouseHandlersProp,
       ...(canCopy ? [new IrisGridCopyCellMouseHandler(this)] : []),
     ];
     if (canCopy) {
@@ -781,7 +788,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const movedRows =
       movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
-    const metricCalculator = new IrisGridMetricCalculator({
+    const metricCalculator = getMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
       movedColumns,
