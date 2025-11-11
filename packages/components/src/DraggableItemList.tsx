@@ -384,7 +384,7 @@ class DraggableItemList<T> extends PureComponent<
               rowHeight={rowHeight}
               selectedRanges={selectedRanges}
             />
-            {hasPlaceholder && provided.placeholder}
+            {hasPlaceholder === true && provided.placeholder}
           </div>
         )}
       </Droppable>
