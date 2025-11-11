@@ -2654,12 +2654,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       modelIndexes.forEach(modelIndex => {
         const defaultWidth =
           metricCalculator.initialColumnWidths.get(modelIndex);
-        const calculatedWidth = getOrThrow(
-          metrics.calculatedColumnWidths,
-          modelIndex
-        );
+        const calculatedWidth = metrics.calculatedColumnWidths.get(modelIndex);
 
-        if (defaultWidth !== calculatedWidth) {
+        // If we haven't scrolled to the column, the calculated width will be undefined.
+        // This means the function was triggered by the visibility ordering menu,
+        // so just reset the column width to default.
+        if (defaultWidth !== calculatedWidth && calculatedWidth != null) {
           metricCalculator.setColumnWidth(modelIndex, calculatedWidth);
         } else {
           metricCalculator.resetColumnWidth(modelIndex);

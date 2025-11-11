@@ -1,18 +1,17 @@
 import React, {
   memo,
-  type ChangeEvent,
   PureComponent,
   useCallback,
   useEffect,
   useRef,
   type ReactElement,
 } from 'react';
+import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import {
   GridUtils,
   type ModelIndex,
   type MoveOperation,
-  type VisibleIndex,
 } from '@deephaven/grid';
 import { TextUtils, assertNotNull, DbNameValidator } from '@deephaven/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -35,7 +34,7 @@ import {
 } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
-import debounce from 'lodash.debounce';
+import { type DragStartEvent } from '@dnd-kit/core';
 import type { Key } from '@react-types/shared';
 import {
   ActionButton,
@@ -45,7 +44,6 @@ import {
   Item,
   Keyboard,
   MenuTrigger,
-  SearchInput,
   Section,
   SpectrumMenu,
   Text,
@@ -65,23 +63,19 @@ import {
   flattenTree,
   getTreeItems,
   type IrisGridTreeItem,
+  type IrisGridTreeItemData,
 } from './sortable-tree/utilities';
 import SortableTree from './sortable-tree/SortableTree';
-import { type TreeItemRenderFn } from './sortable-tree/TreeItem';
+import { type TreeItemRenderFnProps } from './sortable-tree/TreeItem';
 import {
   moveItemsFromDrop,
   moveToGroup,
 } from './VisibilityOrderingBuilderUtils';
 import IrisGridUtils from '../../IrisGridUtils';
+import SearchWithModal from './SearchWithModal';
+import SortableTreeDndContext from './sortable-tree/SortableTreeDndContext';
 
 const log = Log.module('VisibilityOrderingBuilder');
-
-const DEBOUNCE_SEARCH_COLUMN = 150;
-
-interface IndexRange {
-  prevIndex: number;
-  nextIndex: number;
-}
 
 export interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
@@ -89,7 +83,7 @@ export interface VisibilityOrderingBuilderProps {
   hiddenColumns: readonly ModelIndex[];
   columnHeaderGroups: readonly ColumnHeaderGroup[];
   onColumnVisibilityChanged: (
-    columns: readonly VisibleIndex[],
+    columns: readonly ModelIndex[],
     isVisible: boolean
   ) => void;
   onReset: () => void;
@@ -117,12 +111,16 @@ interface VisibilityOrderingBuilderInnerProps
 
 interface VisibilityOrderingBuilderInnerState {
   selectedColumns: Set<string>;
-  queriedColumnIndex: number | undefined;
-  queriedColumnRange: IndexRange | undefined;
-  prevQueriedColumns: Record<number, string> | undefined;
   lastSelectedColumn: string;
-  searchFilter: string;
+  isSearchModalOpen: boolean;
   showHiddenColumns: boolean;
+  /**
+   * This is used only for drag end. In React 18, it seems our rendering is causing
+   * 1 render with just the children of this component, then updating to render with the
+   * updated movedColumns prop. That is causing the drop animation to animate back to
+   * the original position of the element.
+   */
+  movedColumns: readonly MoveOperation[];
 }
 
 class VisibilityOrderingBuilderInner extends PureComponent<
@@ -146,8 +144,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   constructor(props: VisibilityOrderingBuilderInnerProps) {
     super(props);
 
-    this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
-    this.searchColumns = this.searchColumns.bind(this);
     this.handleItemClick = this.handleItemClick.bind(this);
     this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleGroupDelete = this.handleGroupDelete.bind(this);
@@ -158,15 +154,18 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleOverflowAction = this.handleOverflowAction.bind(this);
     this.handleKeyboardShortcut = this.handleKeyboardShortcut.bind(this);
+    this.handleSearchModalOpenChange =
+      this.handleSearchModalOpenChange.bind(this);
+    this.handleSearchSelect = this.handleSearchSelect.bind(this);
+    this.handleSearchItemClicked = this.handleSearchItemClicked.bind(this);
+    this.renderItem = this.renderItem.bind(this);
 
     this.state = {
       selectedColumns: new Set(),
-      queriedColumnIndex: undefined,
-      queriedColumnRange: undefined,
-      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
-      searchFilter: '',
       showHiddenColumns: true,
+      isSearchModalOpen: false,
+      movedColumns: props.movedColumns,
     };
 
     this.list = null;
@@ -191,39 +190,48 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   }
 
   componentDidUpdate(prevProps: VisibilityOrderingBuilderInnerProps): void {
+    // If we change because of undo/redo or reorders in the grid, update internal state
     const { movedColumns } = this.props;
-    if (movedColumns !== prevProps.movedColumns) {
-      const { searchFilter } = this.state;
-      this.searchColumns(searchFilter, false);
+    if (prevProps.movedColumns !== movedColumns) {
+      this.setState({ movedColumns });
+    }
+
+    // Scroll to the item when it's available
+    if (this.scrollAndFocusColumnOnUpdate != null) {
+      const itemElement = this.list?.querySelector(
+        `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"] .tree-item`
+      );
+      if (itemElement instanceof HTMLElement) {
+        itemElement.scrollIntoView({ block: 'nearest' });
+        itemElement.focus();
+        this.scrollAndFocusColumnOnUpdate = null;
+      }
     }
 
     // document.activeElement is either body or html when nothing is focused.
     // If there is no focused element, then we probably deleted or renamed a group
     // resulting in focus loss. Try to re-establish focus.
-    // Cannot use focusout event for this because it doesn't fire when the focused element is deleted
+    // Cannot rely on focusout event for this because it doesn't fire when the focused element is deleted
     // (except in Chrome which is against the spec here).
     if (
       (document.activeElement === document.body ||
         document.activeElement === document.documentElement) &&
-      this.lastFocusedItemIndex != null
+      this.lastFocusedItemIndex !== null
     ) {
       const itemToFocus = this.list?.querySelector(
         `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
       );
 
-      if (itemToFocus == null || !(itemToFocus instanceof HTMLElement)) {
+      if (itemToFocus != null && itemToFocus instanceof HTMLElement) {
+        itemToFocus.focus();
+      } else {
         log.warn('Could not maintain focus');
         this.lastFocusedItemIndex = null;
-        return;
       }
-
-      itemToFocus.focus();
     }
   }
 
   componentWillUnmount(): void {
-    this.debouncedSearchColumns.cancel();
-
     const { columnHeaderGroups, onColumnHeaderGroupChanged } = this.props;
     // Clean up unnamed groups on unmount
     const filteredGroups = columnHeaderGroups.filter(group => !group.isNew);
@@ -234,11 +242,19 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   wrapperRef = React.createRef<HTMLDivElement>();
 
+  /**
+   * Used to track the last focused item index to maintain focus on updates.
+   * Cannot use name because it may change or be deleted when undoing or redoing.
+   */
   lastFocusedItemIndex: number | null = null;
 
   list: HTMLDivElement | null;
 
-  debouncedSearchColumns = debounce(this.searchColumns, DEBOUNCE_SEARCH_COLUMN);
+  /**
+   * This is set by the search modal handlers since a column could be hidden
+   * and not displayed in the list. We need to wait until the update to scroll to it.
+   */
+  scrollAndFocusColumnOnUpdate: string | null = null;
 
   resetVisibilityOrdering(): void {
     const {
@@ -250,11 +266,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     this.setState({
       selectedColumns: new Set(),
-      queriedColumnIndex: undefined,
-      queriedColumnRange: undefined,
-      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
-      searchFilter: '',
     });
 
     onReset();
@@ -266,174 +278,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     this.setState({
       selectedColumns: new Set(),
       lastSelectedColumn: '',
-    });
-  }
-
-  handleSearchInputChange(event: ChangeEvent<HTMLInputElement>): void {
-    const searchFilter = event.target.value;
-    this.setState({ searchFilter });
-    if (!searchFilter) {
-      this.debouncedSearchColumns.cancel();
-      this.resetSelection();
-      return;
-    }
-    this.debouncedSearchColumns(searchFilter);
-  }
-
-  searchColumns(searchFilter: string, updateQuery = true): void {
-    const flattenedItems = flattenTree(this.getTreeItems());
-    const itemsMatch = flattenedItems.filter(
-      ({ id, data }) =>
-        !(data.group?.isNew ?? false) &&
-        id.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-
-    const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
-      (acc, { id }) => {
-        const originalIndex = flattenedItems.findIndex(item => item.id === id);
-        return { ...acc, [originalIndex]: id };
-      },
-      {}
-    );
-
-    if (!updateQuery) {
-      this.setState({
-        prevQueriedColumns: columnsMatchMap,
-      });
-      return;
-    }
-
-    const columnIds: string[] = itemsMatch.map(({ id }) => id);
-    this.addColumnToSelected(columnIds, false);
-
-    if (columnIds.length > 0) {
-      const visibleIndexToFocus = flattenedItems.findIndex(({ id }) =>
-        id.toLowerCase().includes(searchFilter.toLowerCase())
-      );
-      const columnItemToFocus =
-        this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
-      columnItemToFocus?.scrollIntoView({ block: 'center' });
-    }
-
-    this.setState({
-      prevQueriedColumns: columnsMatchMap,
-      queriedColumnIndex: undefined,
-    });
-  }
-
-  /**
-   * Change the selected column to the next or previous column that matches the search criteria.
-   *
-   * queriedColumnRange stores the closes options in the case that the user clicks on an option that didn't fulfill the search criteria.
-   * On click of the forward/back button, queriedColumnIndex is updated to either the upper or lower index in queriedColumnRange
-   *
-   * queriedColumnIndex is the current index within prevQueriedColumns. Not their actual index in the tree.
-   *
-   * @param direction The direction to move the selection
-   */
-
-  changeSelectedColumn(direction: 'forward' | 'back'): void {
-    const { queriedColumnIndex, queriedColumnRange, prevQueriedColumns } =
-      this.state;
-    let newQueriedColumnIndex = queriedColumnIndex;
-
-    if (prevQueriedColumns === undefined) return;
-
-    const queriedColumnsLength = Object.keys(prevQueriedColumns).length;
-
-    if (direction === 'forward') {
-      if (queriedColumnRange !== undefined) {
-        newQueriedColumnIndex = queriedColumnRange.nextIndex;
-      } else if (
-        newQueriedColumnIndex === undefined ||
-        newQueriedColumnIndex >= queriedColumnsLength - 1
-      ) {
-        newQueriedColumnIndex = 0;
-      } else {
-        newQueriedColumnIndex += 1;
-      }
-    } else if (direction === 'back') {
-      if (queriedColumnRange !== undefined) {
-        newQueriedColumnIndex = queriedColumnRange.prevIndex;
-      } else if (
-        newQueriedColumnIndex === undefined ||
-        newQueriedColumnIndex <= 0
-      ) {
-        newQueriedColumnIndex = queriedColumnsLength - 1;
-      } else {
-        newQueriedColumnIndex -= 1;
-      }
-    }
-
-    this.addColumnToSelected(
-      [Object.values(prevQueriedColumns)[newQueriedColumnIndex as number]],
-      false
-    );
-
-    const actualColumnIndex: number = parseInt(
-      Object.keys(prevQueriedColumns)[newQueriedColumnIndex as number],
-      10
-    );
-
-    const columnItemToFocus =
-      this.list?.querySelectorAll('.item-wrapper')[actualColumnIndex];
-    columnItemToFocus?.scrollIntoView({ block: 'center' });
-
-    this.setState({
-      queriedColumnIndex: newQueriedColumnIndex,
-      queriedColumnRange: undefined,
-    });
-  }
-
-  /**
-   * Handles changing the queriedColumnIndex on user click.
-   *
-   * If the option clicked matches the search criteria the index is updated immediately.
-   *
-   * If the option clicked doesn't meet the search criteria, the two closest options that fulfill the criteria are stored.
-   * On click of the forward/back button the selection will change to one of those options. (Think of VS Code search functionality)
-   *
-   * @param name the name of the clicked column
-   */
-  adjustQueriedIndex(name: string): void {
-    const { prevQueriedColumns } = this.state;
-
-    if (prevQueriedColumns === undefined) return;
-
-    if (name in Object.values(prevQueriedColumns)) {
-      const newQueriedColumnIndex =
-        Object.values(prevQueriedColumns).indexOf(name);
-
-      this.setState({
-        queriedColumnIndex: newQueriedColumnIndex,
-        queriedColumnRange: undefined,
-      });
-      return;
-    }
-
-    const flattenedItems = flattenTree(this.getTreeItems());
-    const clickedIndex = flattenedItems.findIndex(item => item.id === name);
-
-    const queriedColumnsIndexes = Object.keys(prevQueriedColumns).map(idx =>
-      parseInt(idx, 10)
-    );
-
-    let prevIndex = queriedColumnsIndexes.length - 1;
-    let nextIndex = 0;
-
-    for (let i = 0; i < queriedColumnsIndexes.length; i += 1) {
-      const index = queriedColumnsIndexes[i];
-
-      if (index < clickedIndex) {
-        prevIndex = i;
-      } else if (index > clickedIndex) {
-        nextIndex = i;
-        break;
-      }
-    }
-
-    this.setState({
-      queriedColumnRange: { prevIndex, nextIndex },
     });
   }
 
@@ -766,10 +610,21 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     onMovedColumnsChanged(newMoves);
   }
 
+  /**
+   * Handles clicking on an item in the visibility ordering list.
+   * Adds and removes to selection as necessary based on modifier and shift keys.
+   * Returns the columns to be added to the selection, if any.
+   *
+   * @param name The name of the column clicked
+   * @param event The click event
+   * @param showHiddenColumns If hidden columns should be included in the selection
+   * @returns The columns to be added to the selection, if any`
+   */
   handleItemClick(
     name: string,
-    event: React.MouseEvent<HTMLElement, MouseEvent>
-  ): void {
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    showHiddenColumns = false
+  ): string[] {
     event.stopPropagation();
 
     // Click was triggered by an interactive element. Ignore select
@@ -777,10 +632,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       event.target instanceof HTMLElement &&
       (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT')
     ) {
-      return;
+      return [];
     }
 
-    event.currentTarget.focus();
+    event.currentTarget?.focus();
 
     const { selectedColumns, lastSelectedColumn } = this.state;
     const isModifierKeyDown = GridUtils.isModifierKeyDown(event);
@@ -790,10 +645,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     if (isSelected && isModifierKeyDown) {
       this.removeColumnFromSelected(name);
-      return;
+      return [];
     }
 
-    const movableItems = flattenTree(this.getTreeItems());
+    const movableItems = flattenTree(this.getTreeItems(showHiddenColumns));
 
     if (isSelected && !isShiftKeyDown && lastSelectedColumn === name) {
       const selectedItem = movableItems.find(({ id }) => id === name);
@@ -802,7 +657,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       // If clicking on an item and it's the only thing selected, deselect it
       if (childCount + 1 === selectedColumns.size) {
         this.resetSelection();
-        return;
+        return [];
       }
     }
 
@@ -827,11 +682,57 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       isModifierKeyDown || isShiftKeyDown
     );
 
-    this.adjustQueriedIndex(name);
-
     this.setState({
       lastSelectedColumn: name,
     });
+
+    return columnsToBeAdded;
+  }
+
+  handleSearchItemClicked(
+    name: string,
+    event: React.MouseEvent<HTMLElement>
+  ): void {
+    const columnsToAdd = this.handleItemClick(name, event, true);
+    const { showHiddenColumns } = this.state;
+    const { onColumnVisibilityChanged } = this.props;
+
+    if (columnsToAdd.length === 0) {
+      return;
+    }
+
+    const modelIndexesToShow = this.getSelectedItemModelIndexes(
+      new Set(columnsToAdd)
+    );
+
+    if (!showHiddenColumns) {
+      onColumnVisibilityChanged(modelIndexesToShow, true);
+    }
+
+    if (event.shiftKey || GridUtils.isModifierKeyDown(event)) {
+      return;
+    }
+
+    this.scrollAndFocusColumnOnUpdate = name;
+  }
+
+  handleSearchSelect(names: string[]): void {
+    if (names.length === 0) {
+      return;
+    }
+    const { showHiddenColumns } = this.state;
+    const { onColumnVisibilityChanged } = this.props;
+
+    if (!showHiddenColumns) {
+      const modelIndexesToShow = this.getSelectedItemModelIndexes(
+        new Set(names)
+      );
+      onColumnVisibilityChanged(modelIndexesToShow, true);
+    }
+
+    const [firstItem] = names;
+    this.scrollAndFocusColumnOnUpdate = firstItem;
+    this.addColumnToSelected(names, false);
   }
 
   /**
@@ -906,11 +807,30 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     });
   }
 
-  handleDragStart(id: string): void {
+  handleDragStart(id: string, event: DragStartEvent): void {
     const { selectedColumns } = this.state;
-    if (!selectedColumns.has(id)) {
-      this.addColumnToSelected([id], false);
+    if (selectedColumns.has(id)) {
+      return;
     }
+
+    const dragEvent =
+      event.activatorEvent as unknown as React.MouseEvent<HTMLElement>;
+    const isAddingToSelection =
+      GridUtils.isModifierKeyDown(dragEvent) || dragEvent.shiftKey;
+    // For some reason, flushSync is needed here to prevent issues when
+    // dragging multiple items, dropping, then immediately dragging a single item
+    // over the previously dragged group. Without flushSync, the item being dragged
+    // can cause items in the previously dragged group to be in completely wrong places.
+    flushSync(() => {
+      this.handleItemClick(
+        id,
+        event.activatorEvent as unknown as React.MouseEvent<HTMLElement>,
+        true
+      );
+      // Always add the dragged item back to selected in case the user ctrl+dragged on an already
+      // selected item. The handleItemClick would deselect it, but we want to keep it selected.
+      this.addColumnToSelected([id], isAddingToSelection);
+    });
   }
 
   handleDragEnd(
@@ -945,6 +865,13 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
+    // Without tracking the state here, React 18 is rendering the child separately from
+    // the render which changes the prop. As a result, the drop animations go to the
+    // original location because of that render with stale items. I could not find any
+    // other way to fix this (removing memoization, removing keys, etc.)
+    this.setState({ movedColumns: newMoves });
+    // Focus the dragged item after the move. Should not scroll since it's already in view
+    this.scrollAndFocusColumnOnUpdate = from.id;
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
@@ -971,6 +898,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       newParent.addChildren([newName]);
       newGroups.splice(parentIndex, 1, newParent);
     }
+
+    // The group will be a new item, so focus it after the update
+    // otherwise we may lose focus entirely
+    this.scrollAndFocusColumnOnUpdate = newName;
 
     onColumnHeaderGroupChanged(newGroups);
     endUndoGroup();
@@ -1073,41 +1004,45 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     return '';
   }
 
-  renderItem = memoize<TreeItemRenderFn<IrisGridTreeItem>>(
-    ({ value, clone, item, ref, handleProps }) => {
-      const { onColumnVisibilityChanged } = this.props;
-      const { selectedColumns } = this.state;
+  renderItem({
+    value,
+    clone,
+    item,
+    ref,
+    handleProps,
+  }: TreeItemRenderFnProps<IrisGridTreeItemData>): JSX.Element {
+    const { onColumnVisibilityChanged } = this.props;
+    const { selectedColumns, showHiddenColumns } = this.state;
 
-      let displayString = value;
+    let displayString = value;
 
-      // The cloned drag overlay we want to show the items being dragged
-      if (clone) {
-        const selectedItemNames = this.getSelectedParentItems().map(
-          ({ id }) => id
-        );
-        displayString = selectedItemNames.join(', ');
-      }
-
-      return (
-        <VisibilityOrderingItem
-          key={item.id}
-          ref={ref}
-          value={displayString}
-          clone={clone}
-          item={item}
-          childCount={selectedColumns.size}
-          onVisibilityChange={onColumnVisibilityChanged}
-          onClick={this.handleItemClick}
-          onGroupDelete={this.handleGroupDelete}
-          onGroupColorChange={this.handleGroupColorChange}
-          onGroupNameChange={this.handleGroupNameChange}
-          validateGroupName={this.validateGroupName}
-          handleProps={handleProps}
-        />
+    // The cloned drag overlay we want to show the items being dragged
+    if (clone) {
+      const selectedItemNames = this.getSelectedParentItems().map(
+        ({ id }) => id
       );
-    },
-    { max: 1000 }
-  );
+      displayString = selectedItemNames.join(', ');
+    }
+
+    return (
+      <VisibilityOrderingItem
+        key={item.id}
+        ref={ref}
+        value={displayString}
+        clone={clone}
+        item={item}
+        childCount={selectedColumns.size}
+        onVisibilityChange={onColumnVisibilityChanged}
+        visibilityClickAndDrag={showHiddenColumns}
+        onClick={this.handleItemClick}
+        onGroupDelete={this.handleGroupDelete}
+        onGroupColorChange={this.handleGroupColorChange}
+        onGroupNameChange={this.handleGroupNameChange}
+        validateGroupName={this.validateGroupName}
+        handleProps={handleProps}
+      />
+    );
+  }
 
   getMemoizedFirstMovableIndex = memoize(
     (
@@ -1190,12 +1125,16 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   /**
    * Gets the tree of movable items in order. Memoized for efficiency
    * Use flattenItems(this.getTreeItems()) if a flat list is needed
+   * @param showHiddenColumns Whether to show hidden columns in the tree. Defaults to the current state value.
    * @returns The movable tree items in order
    */
-  getTreeItems(): readonly IrisGridTreeItem[] {
-    const { model, movedColumns, hiddenColumns, columnHeaderGroups } =
-      this.props;
-    const { selectedColumns, showHiddenColumns } = this.state;
+  getTreeItems(showHiddenColumns?: boolean): readonly IrisGridTreeItem[] {
+    const { model, hiddenColumns, columnHeaderGroups } = this.props;
+    const {
+      movedColumns,
+      selectedColumns,
+      showHiddenColumns: showHiddenColumnsState,
+    } = this.state;
 
     return this.memoizedGetTreeItems(
       model.columns,
@@ -1203,8 +1142,16 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       columnHeaderGroups,
       hiddenColumns,
       selectedColumns,
-      showHiddenColumns
+      showHiddenColumns ?? showHiddenColumnsState
     );
+  }
+
+  getSelectedItemModelIndexes(columnNames: Set<string>): ModelIndex[] {
+    const { model } = this.props;
+    return [...columnNames.values()]
+      .map(name => model.getColumnIndexByName(name))
+      .filter(i => i != null)
+      .flat();
   }
 
   /**
@@ -1228,7 +1175,8 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     (
       columns: readonly DisplayColumn[],
       treeItems: readonly IrisGridTreeItem[],
-      showHiddenColumns: boolean
+      showHiddenColumns: boolean,
+      isDraggable: boolean
     ) => {
       const { movedColumns } = this.props;
 
@@ -1299,8 +1247,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
           key="movable-items"
           items={movableItems}
           renderItem={this.renderItem}
-          onDragStart={this.handleDragStart}
-          onDragEnd={this.handleDragEnd}
+          isDraggable={isDraggable}
         />
       );
 
@@ -1346,7 +1293,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
         redo();
         break;
       case 'showHidden':
-        this.setState(prev => ({ showHiddenColumns: !prev.showHiddenColumns }));
+        this.setState(prev => ({
+          showHiddenColumns: !prev.showHiddenColumns,
+          selectedColumns: new Set(),
+        }));
         break;
     }
   }
@@ -1362,6 +1312,22 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     }
   }
 
+  handleSearchModalOpenChange(isOpen: boolean): void {
+    if (isOpen) {
+      this.resetSelection();
+    } else {
+      const { showHiddenColumns, selectedColumns } = this.state;
+      const { onColumnVisibilityChanged } = this.props;
+      // Make sure all selected columns are visible when closing the search modal
+      if (!showHiddenColumns) {
+        const modelIndexesToShow =
+          this.getSelectedItemModelIndexes(selectedColumns);
+        onColumnVisibilityChanged(modelIndexesToShow, true);
+      }
+    }
+    this.setState({ isSearchModalOpen: isOpen });
+  }
+
   render(): ReactElement {
     const {
       model,
@@ -1370,31 +1336,17 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       canUndo,
       canRedo,
     } = this.props;
-    const {
-      selectedColumns,
-      searchFilter,
-      prevQueriedColumns,
-      queriedColumnIndex,
-      showHiddenColumns,
-    } = this.state;
+    const { selectedColumns, showHiddenColumns, isSearchModalOpen } =
+      this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
-    const nameToIndexes = new Map(
-      flattenTree(treeItems).map(item => [item.id, item.data.modelIndex])
-    );
+    const flattenedItems = flattenTree(treeItems);
     const hiddenColumnsSet = new Set(hiddenColumns);
 
-    const columnsToToggle = [
-      // Pass through Set to dedupe model indexes
-      ...new Set(
-        hasSelection
-          ? [...selectedColumns.values()]
-              .map(name => nameToIndexes.get(name))
-              .filter((i): i is number | number[] => i != null)
-              .flat()
-          : treeItems.map(item => item.data.modelIndex).flat()
-      ),
-    ];
+    const columnsToToggle = hasSelection
+      ? this.getSelectedItemModelIndexes(selectedColumns)
+      : treeItems.map(item => item.data.modelIndex).flat();
+
     const areSomeVisible = columnsToToggle.some(
       column => !hiddenColumnsSet.has(column)
     );
@@ -1408,202 +1360,206 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     const visibilityOrderingList = this.makeVisibilityOrderingList(
       model.columns,
       treeItems,
-      showHiddenColumns
+      showHiddenColumns,
+      !isSearchModalOpen
     );
 
-    const cursor = {
-      index: queriedColumnIndex,
-      next: (direction: 'forward' | 'back') =>
-        this.changeSelectedColumn(direction),
-    };
-
-    const matchCount = Object.keys(prevQueriedColumns ?? {}).length;
-
     return (
-      <div
-        role="menu"
-        ref={this.wrapperRef}
-        className="visibility-ordering-builder"
-        tabIndex={0}
-        onKeyUp={this.handleKeyboardShortcut}
+      <SortableTreeDndContext
+        items={flattenedItems}
+        onDragStart={this.handleDragStart}
+        onDragEnd={this.handleDragEnd}
+        renderItem={this.renderItem}
       >
-        <div className="top-menu">
-          <Button
-            kind="ghost"
-            className="toggle-visibility-btn"
-            onClick={() => {
-              onColumnVisibilityChanged(columnsToToggle, !areSomeVisible);
-            }}
-            icon={areSomeVisible ? dhEye : dhEyeSlash}
-            tooltip="Toggle column visibility"
-          >
-            {!hasSelection ? allToggleText : selectedToggleText}
-          </Button>
-
-          <SearchInput
-            className="visibility-search"
-            value={searchFilter}
-            matchCount={searchFilter ? matchCount : undefined}
-            onChange={this.handleSearchInputChange}
-            cursor={cursor}
-          />
-          <MenuTrigger closeOnSelect={false}>
-            <ActionButton isQuiet aria-label="More options">
-              <FontAwesomeIcon icon={vsKebabVertical} />
-            </ActionButton>
-            <SpectrumMenu
-              onAction={this.handleOverflowAction}
-              disabledKeys={[!canUndo && 'undo', !canRedo && 'redo'].filter(
-                k => typeof k === 'string'
-              )}
+        <div
+          role="menu"
+          ref={this.wrapperRef}
+          className="visibility-ordering-builder"
+          tabIndex={0}
+          onKeyUp={this.handleKeyboardShortcut}
+        >
+          <div className="top-menu">
+            <Button
+              kind="ghost"
+              className="toggle-visibility-btn"
+              onClick={() => {
+                onColumnVisibilityChanged(columnsToToggle, !areSomeVisible);
+              }}
+              icon={areSomeVisible ? dhEye : dhEyeSlash}
+              tooltip="Toggle column visibility"
             >
-              <Section aria-label="Undo and Redo">
-                <Item key="undo" textValue="Undo">
-                  <Icon>
-                    <FontAwesomeIcon icon={vsBlank} />
-                  </Icon>
-                  <Text>Undo</Text>
-                  <Keyboard>{GLOBAL_SHORTCUTS.UNDO.getDisplayText()}</Keyboard>
-                </Item>
-                <Item key="redo" textValue="Redo">
-                  <Icon>
-                    <FontAwesomeIcon icon={vsBlank} />
-                  </Icon>
-                  <Text>Redo</Text>
-                  <Keyboard>{GLOBAL_SHORTCUTS.REDO.getDisplayText()}</Keyboard>
-                </Item>
-              </Section>
-              <Section aria-label="More actions">
-                <Item key="showHidden" textValue="Show hidden columns">
-                  <Icon>
-                    <FontAwesomeIcon
-                      icon={showHiddenColumns ? vsCheck : vsBlank}
-                    />
-                  </Icon>
-                  <Text>Show hidden columns</Text>
-                </Item>
-              </Section>
-            </SpectrumMenu>
-          </MenuTrigger>
-        </div>
-        <div className="top-menu">
-          <Button
-            kind="ghost"
-            icon={vsRefresh}
-            className="px-1"
-            tooltip="Reset to default"
-            onClick={() => {
-              this.resetVisibilityOrdering();
-            }}
-          >
-            Reset
-          </Button>
-          <span className="vertical-divider" />
-          <Button
-            kind="ghost"
-            icon={dhSortAlphaDown}
-            className="px-1"
-            tooltip="Sort ascending"
-            onClick={() => {
-              this.handleSortColumns(
-                VisibilityOrderingBuilderInner.SORTING_OPTIONS.ASC
-              );
-            }}
-          />
-          <Button
-            kind="ghost"
-            icon={dhSortAlphaUp}
-            className="px-1"
-            tooltip="Sort descending"
-            onClick={() => {
-              this.handleSortColumns(
-                VisibilityOrderingBuilderInner.SORTING_OPTIONS.DSC
-              );
-            }}
-          />
-          <span className="vertical-divider" />
-          <Button
-            kind="ghost"
-            className="px-1"
-            tooltip="Create group from selection"
-            disabled={!hasSelection}
-            onClick={this.handleGroupCreate}
-          >
-            <span className="fa-layers">
-              <FontAwesomeIcon
-                mask={vsSymbolStructure}
-                icon={vsCircleLargeFilled}
-                transform="right-7 down-5 shrink-6"
-              />
-              <FontAwesomeIcon
-                icon={vsAdd}
-                transform="right-8 down-6 shrink-8"
-              />
-            </span>
-            Group
-          </Button>
-          <span className="vertical-divider" />
-          <Button
-            kind="ghost"
-            icon={vsChevronUp}
-            className="px-1"
-            tooltip="Move selection up"
-            onClick={() => {
-              this.handleMoveColumns(
-                VisibilityOrderingBuilderInner.MOVE_OPTIONS.UP
-              );
-            }}
-            disabled={!hasSelection}
-          />
-          <Button
-            kind="ghost"
-            icon={vsChevronDown}
-            className="px-1"
-            tooltip="Move selection down"
-            onClick={() => {
-              this.handleMoveColumns(
-                VisibilityOrderingBuilderInner.MOVE_OPTIONS.DOWN
-              );
-            }}
-            disabled={!hasSelection}
-          />
-          <Button
-            kind="ghost"
-            icon={dhArrowToTop}
-            className="px-1"
-            tooltip="Move selection to top"
-            onClick={() => {
-              this.handleMoveColumns(
-                VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP
-              );
-            }}
-            disabled={!hasSelection}
-          />
-          <Button
-            kind="ghost"
-            icon={dhArrowToBottom}
-            className="px-1"
-            tooltip="Move selection to bottom"
-            onClick={() => {
-              this.handleMoveColumns(
-                VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM
-              );
-            }}
-            disabled={!hasSelection}
-          />
-        </div>
+              {!hasSelection ? allToggleText : selectedToggleText}
+            </Button>
 
-        <div role="menu" className={classNames('visibility-ordering-list')}>
-          <div
-            className="column-list"
-            ref={list => {
-              this.list = list;
-            }}
-          >
-            {visibilityOrderingList}
+            <SearchWithModal
+              items={flattenedItems}
+              onModalOpenChange={this.handleSearchModalOpenChange}
+              onClick={this.handleSearchItemClicked}
+              setSelection={this.handleSearchSelect}
+            />
+
+            <MenuTrigger closeOnSelect={false}>
+              <ActionButton isQuiet aria-label="More options">
+                <FontAwesomeIcon icon={vsKebabVertical} />
+              </ActionButton>
+              <SpectrumMenu
+                onAction={this.handleOverflowAction}
+                disabledKeys={[!canUndo && 'undo', !canRedo && 'redo'].filter(
+                  k => typeof k === 'string'
+                )}
+              >
+                <Section aria-label="Undo and Redo">
+                  <Item key="undo" textValue="Undo">
+                    <Icon>
+                      <FontAwesomeIcon icon={vsBlank} />
+                    </Icon>
+                    <Text>Undo</Text>
+                    <Keyboard>
+                      {GLOBAL_SHORTCUTS.UNDO.getDisplayText()}
+                    </Keyboard>
+                  </Item>
+                  <Item key="redo" textValue="Redo">
+                    <Icon>
+                      <FontAwesomeIcon icon={vsBlank} />
+                    </Icon>
+                    <Text>Redo</Text>
+                    <Keyboard>
+                      {GLOBAL_SHORTCUTS.REDO.getDisplayText()}
+                    </Keyboard>
+                  </Item>
+                </Section>
+                <Section aria-label="More actions">
+                  <Item key="showHidden" textValue="Show hidden columns">
+                    <Icon>
+                      <FontAwesomeIcon
+                        icon={showHiddenColumns ? vsCheck : vsBlank}
+                      />
+                    </Icon>
+                    <Text>Show hidden columns</Text>
+                  </Item>
+                </Section>
+              </SpectrumMenu>
+            </MenuTrigger>
+          </div>
+          <div className="top-menu">
+            <Button
+              kind="ghost"
+              icon={vsRefresh}
+              className="px-1"
+              tooltip="Reset to default"
+              onClick={() => {
+                this.resetVisibilityOrdering();
+              }}
+            >
+              Reset
+            </Button>
+            <span className="vertical-divider" />
+            <Button
+              kind="ghost"
+              icon={dhSortAlphaDown}
+              className="px-1"
+              tooltip="Sort ascending"
+              onClick={() => {
+                this.handleSortColumns(
+                  VisibilityOrderingBuilderInner.SORTING_OPTIONS.ASC
+                );
+              }}
+            />
+            <Button
+              kind="ghost"
+              icon={dhSortAlphaUp}
+              className="px-1"
+              tooltip="Sort descending"
+              onClick={() => {
+                this.handleSortColumns(
+                  VisibilityOrderingBuilderInner.SORTING_OPTIONS.DSC
+                );
+              }}
+            />
+            <span className="vertical-divider" />
+            <Button
+              kind="ghost"
+              className="px-1"
+              tooltip="Create group from selection"
+              disabled={!hasSelection}
+              onClick={this.handleGroupCreate}
+            >
+              <span className="fa-layers">
+                <FontAwesomeIcon
+                  mask={vsSymbolStructure}
+                  icon={vsCircleLargeFilled}
+                  transform="right-7 down-5 shrink-6"
+                />
+                <FontAwesomeIcon
+                  icon={vsAdd}
+                  transform="right-8 down-6 shrink-8"
+                />
+              </span>
+              Group
+            </Button>
+            <span className="vertical-divider" />
+            <Button
+              kind="ghost"
+              icon={vsChevronUp}
+              className="px-1"
+              tooltip="Move selection up"
+              onClick={() => {
+                this.handleMoveColumns(
+                  VisibilityOrderingBuilderInner.MOVE_OPTIONS.UP
+                );
+              }}
+              disabled={!hasSelection}
+            />
+            <Button
+              kind="ghost"
+              icon={vsChevronDown}
+              className="px-1"
+              tooltip="Move selection down"
+              onClick={() => {
+                this.handleMoveColumns(
+                  VisibilityOrderingBuilderInner.MOVE_OPTIONS.DOWN
+                );
+              }}
+              disabled={!hasSelection}
+            />
+            <Button
+              kind="ghost"
+              icon={dhArrowToTop}
+              className="px-1"
+              tooltip="Move selection to top"
+              onClick={() => {
+                this.handleMoveColumns(
+                  VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP
+                );
+              }}
+              disabled={!hasSelection}
+            />
+            <Button
+              kind="ghost"
+              icon={dhArrowToBottom}
+              className="px-1"
+              tooltip="Move selection to bottom"
+              onClick={() => {
+                this.handleMoveColumns(
+                  VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM
+                );
+              }}
+              disabled={!hasSelection}
+            />
+          </div>
+
+          <div role="menu" className={classNames('visibility-ordering-list')}>
+            <div
+              className="column-list"
+              ref={list => {
+                this.list = list;
+              }}
+            >
+              {visibilityOrderingList}
+            </div>
           </div>
         </div>
-      </div>
+      </SortableTreeDndContext>
     );
   }
 }
@@ -1692,12 +1648,14 @@ const VisibilityOrderingBuilder = memo(
 
     const handleColumnHeaderGroupChanged = useCallback(
       (groups: readonly (dh.ColumnGroup | ColumnHeaderGroup)[]) => {
-        onColumnHeaderGroupChanged(
-          // Updates which model indexes are in the groups if items were added/removed
-          IrisGridUtils.parseColumnHeaderGroups(props.model, groups).groups
-        );
+        if (groups !== columnHeaderGroups) {
+          onColumnHeaderGroupChanged(
+            // Updates which model indexes are in the groups if items were added/removed
+            IrisGridUtils.parseColumnHeaderGroups(props.model, groups).groups
+          );
+        }
       },
-      [onColumnHeaderGroupChanged, props.model]
+      [columnHeaderGroups, onColumnHeaderGroupChanged, props.model]
     );
 
     const handleUndo = useCallback(() => {
