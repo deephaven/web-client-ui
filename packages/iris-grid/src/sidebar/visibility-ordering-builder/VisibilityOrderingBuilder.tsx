@@ -211,12 +211,17 @@ class VisibilityOrderingBuilderInner extends PureComponent<
         this.scrollAndFocusColumnOnUpdate
       );
 
+      // Need to wait for the paint after the scroll so the item exists in the DOM
       window.requestAnimationFrame(() => {
         const itemElement = this.list?.querySelector(
           `.item-wrapper .tree-item[data-index="${this.scrollAndFocusColumnOnUpdate}"]`
         );
         if (itemElement instanceof HTMLElement) {
           itemElement.focus();
+        } else {
+          log.warn(
+            `Could not focus item at index ${this.scrollAndFocusColumnOnUpdate} after scroll`
+          );
         }
         this.scrollAndFocusColumnOnUpdate = null;
       });
