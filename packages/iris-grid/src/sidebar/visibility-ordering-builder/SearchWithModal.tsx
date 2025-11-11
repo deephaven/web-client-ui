@@ -16,9 +16,12 @@ import MemoizedSearchItem from './SearchItem';
 interface SearchWithModalProps {
   items: FlattenedIrisGridTreeItem[];
   onModalOpenChange: (isOpen: boolean) => void;
-  onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
+  onClick: (
+    item: FlattenedIrisGridTreeItem,
+    event: React.MouseEvent<HTMLElement>
+  ) => void;
   onDragStart?: (event: DragStartEvent) => void;
-  setSelection: (columnNames: string[]) => void;
+  setSelection: (items: FlattenedIrisGridTreeItem[]) => void;
 }
 
 export function SearchWithModal({
@@ -94,8 +97,8 @@ export function SearchWithModal({
   });
 
   const handleClick = useCallback(
-    (name: string, event: React.MouseEvent<HTMLElement>) => {
-      onClick(name, event);
+    (item: FlattenedIrisGridTreeItem, event: React.MouseEvent<HTMLElement>) => {
+      onClick(item, event);
       if (!event.shiftKey && !GridUtils.isModifierKeyDown(event)) {
         handleModalClose();
       }
@@ -104,13 +107,16 @@ export function SearchWithModal({
   );
 
   const handleItemKeyDown = useCallback(
-    (name: string, event: React.KeyboardEvent<HTMLElement>) => {
+    (
+      item: FlattenedIrisGridTreeItem,
+      event: React.KeyboardEvent<HTMLElement>
+    ) => {
       const { key } = event;
       if (key === 'Enter') {
         // Select item and close modal
         event.preventDefault();
         event.stopPropagation();
-        setSelection([name]);
+        setSelection([item]);
         handleModalClose();
       } else if (key === 'ArrowDown') {
         // Move focus to the next item
@@ -191,7 +197,7 @@ export function SearchWithModal({
         e.preventDefault();
         // Select the first item in the list
         const firstItem = filteredItems[0];
-        setSelection([firstItem.id]);
+        setSelection([firstItem]);
         handleModalClose();
       }
 
@@ -208,8 +214,7 @@ export function SearchWithModal({
   );
 
   const handleSelectMatching = useCallback(() => {
-    const matchingNames = filteredItems.map(item => item.id);
-    setSelection(matchingNames);
+    setSelection(filteredItems);
     handleModalClose();
   }, [filteredItems, setSelection, handleModalClose]);
 
@@ -266,11 +271,13 @@ export function SearchWithModal({
             <div className="no-results">No matching columns</div>
           ) : (
             <>
-              <SortableTree
-                items={filteredItems}
-                withDepthMarkers={false}
-                renderItem={renderItem}
-              />
+              <div className="search-tree-container">
+                <SortableTree
+                  items={filteredItems}
+                  withDepthMarkers={false}
+                  renderItem={renderItem}
+                />
+              </div>
               {showFooterButtons && (
                 <div className="footer-buttons">
                   {hasMultipleSelection && (

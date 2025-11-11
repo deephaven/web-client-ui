@@ -1,4 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
+import memoize from 'memoizee';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   GridUtils,
@@ -36,7 +37,7 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  columns: readonly dh.Column[],
+  columns: Map<string, number>,
   movedColumns: readonly MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
@@ -44,8 +45,8 @@ function getTreeItem(
   selectedItems: Set<string>,
   showHiddenColumns: boolean
 ): IrisGridTreeItem {
-  const modelIndex = columns.findIndex(col => col.name === name);
-  if (modelIndex === -1) {
+  const modelIndex = columns.get(name);
+  if (modelIndex === undefined) {
     const group = columnHeaderGroupMap.get(name);
 
     if (group == null) {
@@ -118,6 +119,10 @@ export function getTreeItems(
   );
   const hiddenColumnSet = new Set(hiddenColumns);
 
+  const columnIndexSet = new Map<string, number>(
+    columns.map((col, i) => [col.name, i])
+  );
+
   let visibleIndex = 0;
   while (visibleIndex < columns.length) {
     const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
@@ -131,7 +136,7 @@ export function getTreeItems(
     }
 
     const item = getTreeItem(
-      columns,
+      columnIndexSet,
       movedColumns,
       groupMap,
       group ? group.name : columnName,
@@ -275,15 +280,16 @@ function flatten<T>(
  * @param items The tree items to flatten
  * @returns The flattened tree items list
  */
-export function flattenTree<T>(
-  items: ReadonlyTreeItems<T>
-): FlattenedItem<T>[] {
-  // Should help prevent double flattening since FlattenedItems are valid TreeItems
-  if (items.every(isFlattenedTreeItem)) {
-    return [...items];
-  }
-  return flatten(items);
-}
+export const flattenTree = memoize(
+  <T>(items: ReadonlyTreeItems<T>): FlattenedItem<T>[] => {
+    // Should help prevent double flattening since FlattenedItems are valid TreeItems
+    if (items.every(isFlattenedTreeItem)) {
+      return [...items];
+    }
+    return flatten(items);
+  },
+  { max: 10 }
+);
 
 /**
  * Recursively checks for the item in a list of items.

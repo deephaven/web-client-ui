@@ -22,6 +22,7 @@ import {
   type DropAnimation,
   defaultDropAnimation,
   type Modifier,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -114,6 +115,30 @@ function adjustToCursor(args: Parameters<Modifier>[0]): {
 // but avoids a singleton state or needing hooks to maintain this.
 // The logic came from the dnd-kit example.
 adjustToCursor.offsetY = null as number | null;
+
+// From https://github.com/clauderic/dnd-kit/pull/334
+const fixCursorSnapOffset: CollisionDetection = args => {
+  // Bail out if keyboard activated
+  if (!args.pointerCoordinates) {
+    return closestCenter(args);
+  }
+  const { x, y } = args.pointerCoordinates;
+  const { width, height } = args.collisionRect;
+  const updated = {
+    ...args,
+    // The collision rectangle is broken when using adjustToCursor. Reset
+    // the collision rectangle based on pointer location and overlay size.
+    collisionRect: {
+      width,
+      height,
+      bottom: y + height / 2,
+      left: x - width / 2,
+      right: x + width / 2,
+      top: y - height / 2,
+    },
+  };
+  return closestCenter(updated);
+};
 
 type Props<T> = React.PropsWithChildren<{
   items: TreeItemType<T>[];
@@ -260,7 +285,7 @@ export default function SortableTreeDndContext<T>({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={fixCursorSnapOffset}
       measuring={MEASURING}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}

@@ -36,6 +36,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
 import { type DragStartEvent } from '@dnd-kit/core';
 import type { Key } from '@react-types/shared';
+import { type Virtualizer } from '@tanstack/react-virtual';
 import {
   ActionButton,
   Button,
@@ -206,14 +207,19 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     // Scroll to the item when it's available
     if (this.scrollAndFocusColumnOnUpdate != null) {
-      const itemElement = this.list?.querySelector(
-        `.item-wrapper[data-id="${this.scrollAndFocusColumnOnUpdate}"] .tree-item`
+      this.virtualizerRef.current?.scrollToIndex(
+        this.scrollAndFocusColumnOnUpdate
       );
-      if (itemElement instanceof HTMLElement) {
-        itemElement.scrollIntoView({ block: 'nearest' });
-        itemElement.focus();
+
+      window.requestAnimationFrame(() => {
+        const itemElement = this.list?.querySelector(
+          `.item-wrapper .tree-item[data-index="${this.scrollAndFocusColumnOnUpdate}"]`
+        );
+        if (itemElement instanceof HTMLElement) {
+          itemElement.focus();
+        }
         this.scrollAndFocusColumnOnUpdate = null;
-      }
+      });
     }
 
     // document.activeElement is either body or html when nothing is focused.
@@ -227,7 +233,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       this.lastFocusedItemIndex !== null
     ) {
       const itemToFocus = this.list?.querySelector(
-        `.item-wrapper:nth-child(${this.lastFocusedItemIndex + 1}) .tree-item`
+        `.item-wrapper .tree-item[data-index="${this.lastFocusedItemIndex}"]`
       );
 
       if (itemToFocus != null && itemToFocus instanceof HTMLElement) {
@@ -258,11 +264,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   list: HTMLDivElement | null;
 
+  virtualizerRef: React.RefObject<Virtualizer<HTMLElement, Element>> =
+    React.createRef();
+
   /**
    * This is set by the search modal handlers since a column could be hidden
    * and not displayed in the list. We need to wait until the update to scroll to it.
    */
-  scrollAndFocusColumnOnUpdate: string | null = null;
+  scrollAndFocusColumnOnUpdate: number | null = null;
 
   resetVisibilityOrdering(): void {
     const {
@@ -503,14 +512,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
     if (option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.TOP) {
       scrollListAfterMove = () => {
-        this.list?.parentElement?.scroll({ top: 0 });
+        this.virtualizerRef.current?.scrollToOffset(0);
       };
     }
     if (option === VisibilityOrderingBuilderInner.MOVE_OPTIONS.BOTTOM) {
       scrollListAfterMove = () => {
-        this.list?.parentElement?.scroll({
-          top: this.list.parentElement.scrollHeight,
-        });
+        this.virtualizerRef.current?.scrollBy(
+          this.virtualizerRef.current.getTotalSize()
+        );
       };
     }
 
@@ -698,10 +707,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
   }
 
   handleSearchItemClicked(
-    name: string,
+    item: FlattenedIrisGridTreeItem,
     event: React.MouseEvent<HTMLElement>
   ): void {
-    const columnsToAdd = this.handleItemClick(name, event, true);
+    const columnsToAdd = this.handleItemClick(item.id, event, true);
     const { showHiddenColumns } = this.state;
     const { onColumnVisibilityChanged } = this.props;
 
@@ -721,26 +730,28 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       return;
     }
 
-    this.scrollAndFocusColumnOnUpdate = name;
+    this.scrollAndFocusColumnOnUpdate = item.index;
   }
 
-  handleSearchSelect(names: string[]): void {
-    if (names.length === 0) {
+  handleSearchSelect(items: FlattenedIrisGridTreeItem[]): void {
+    if (items.length === 0) {
       return;
     }
     const { showHiddenColumns } = this.state;
     const { onColumnVisibilityChanged } = this.props;
 
     if (!showHiddenColumns) {
-      const modelIndexesToShow = this.getSelectedItemModelIndexes(
-        new Set(names)
-      );
+      const modelIndexesToShow = [
+        ...new Set(items.map(item => item.data.modelIndex).flat()),
+      ];
       onColumnVisibilityChanged(modelIndexesToShow, true);
     }
 
-    const [firstItem] = names;
-    this.scrollAndFocusColumnOnUpdate = firstItem;
-    this.addColumnToSelected(names, false);
+    this.scrollAndFocusColumnOnUpdate = items[0].index;
+    this.addColumnToSelected(
+      items.map(item => item.id),
+      false
+    );
   }
 
   /**
@@ -879,7 +890,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     // other way to fix this (removing memoization, removing keys, etc.)
     this.setState({ movedColumns: newMoves, columnHeaderGroups: newGroups });
     // Focus the dragged item after the move. Should not scroll since it's already in view
-    this.scrollAndFocusColumnOnUpdate = from.id;
+    this.scrollAndFocusColumnOnUpdate = to.index;
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
@@ -907,9 +918,16 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       newGroups.splice(parentIndex, 1, newParent);
     }
 
-    // The group will be a new item, so focus it after the update
-    // otherwise we may lose focus entirely
-    this.scrollAndFocusColumnOnUpdate = newName;
+    const oldElement = this.list?.querySelector(
+      `.item-wrapper[data-id="${oldName}"]`
+    );
+    if (oldElement != null) {
+      // The group will be a new item, so focus it after the update
+      // otherwise we may lose focus entirely
+      const indexAttr = oldElement.getAttribute('data-index');
+      this.scrollAndFocusColumnOnUpdate =
+        indexAttr != null ? parseInt(indexAttr, 10) : null;
+    }
 
     onColumnHeaderGroupChanged(newGroups);
     endUndoGroup();
@@ -983,7 +1001,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     startUndoGroup();
 
     onMovedColumnsChanged(movedColumns.concat(newMoves), () => {
-      this.list?.parentElement?.scroll({ top: 0 });
+      this.virtualizerRef.current?.scrollElement?.scrollTo({ top: 0 });
     });
     onColumnHeaderGroupChanged(newGroups.concat([newGroup]));
     this.resetSelection();
@@ -1127,7 +1145,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
         [...selectedColumns.values()],
         showHiddenColumns
       ),
-    { max: 1000 }
+    { max: 10 }
   );
 
   /**
@@ -1257,6 +1275,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
           items={movableItems}
           renderItem={this.renderItem}
           isDraggable={isDraggable}
+          virtualizerRef={this.virtualizerRef}
         />
       );
 

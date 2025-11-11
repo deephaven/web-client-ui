@@ -1,10 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from 'react';
 import classNames from 'classnames';
 import { useDndContext } from '@dnd-kit/core';
 import {
   defaultRangeExtractor,
   type Range,
   useVirtualizer,
+  type Virtualizer,
 } from '@tanstack/react-virtual';
 import { flattenTree, getProjection } from './utilities';
 import { SortableTreeItem } from './SortableTreeItem';
@@ -17,6 +24,7 @@ interface Props<T> {
   renderItem: TreeItemRenderFn<T>;
   isDraggable?: boolean;
   withDepthMarkers?: boolean;
+  virtualizerRef?: React.Ref<Virtualizer<HTMLElement, Element>>;
 }
 
 export default function SortableTree<T>({
@@ -25,6 +33,7 @@ export default function SortableTree<T>({
   renderItem,
   isDraggable = true,
   withDepthMarkers = true,
+  virtualizerRef,
 }: Props<T>): JSX.Element {
   const dndContext = useDndContext();
   const activeId = (dndContext.active?.id as string) ?? null;
@@ -84,6 +93,9 @@ export default function SortableTree<T>({
     gap: 1, // We set a 1px bottom margin before we virtualized this list
   });
 
+  // Expose the virtualizer via ref
+  useImperativeHandle(virtualizerRef, () => virtualizer, [virtualizer]);
+
   const context = useDndContext();
   const contextRef = useRef(context);
 
@@ -139,6 +151,7 @@ export default function SortableTree<T>({
             depth={id === activeId && projected ? projected.depth : depth}
             item={item}
             renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
             top={start}
             // This allows the group items to expand when editing the name and shift the list correctly
             measureElement={virtualizer.measureElement}
@@ -150,6 +163,7 @@ export default function SortableTree<T>({
             depth={depth}
             item={item}
             renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
             top={start}
             wrapperRef={virtualizer.measureElement}
           />
