@@ -20,7 +20,7 @@ const config: PlaywrightTestConfig = {
   ],
 
   // Applies to the npm command and CI, but CI will get overwritten in the CI config
-  reporter: [['github'], ['html']],
+  reporter: [['github'], ['html', { host: '0.0.0.0', port: 9323 }]],
 };
 
 export default config;
