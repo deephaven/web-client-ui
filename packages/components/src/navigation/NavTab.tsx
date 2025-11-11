@@ -18,6 +18,12 @@ interface NavTabProps {
   index: number;
   isDraggable: boolean;
   contextActions?: ResolvableContextAction | ResolvableContextAction[];
+  /**
+   * Optional render function to render content after the tab title.
+   *
+   * @param tab The tab to render content for
+   * @returns The content to render after the tab title
+   */
   renderTabSlot?: (tab: NavTabItem) => React.ReactNode;
 }
 
