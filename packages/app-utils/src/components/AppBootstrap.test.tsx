@@ -165,6 +165,7 @@ it('should log in automatically when the anonymous handler is supported', async 
   expectMockChild().toBeNull();
   expect(mockLogin).toHaveBeenCalled();
   expect(screen.queryByTestId('auth-base-loading')).not.toBeNull();
+  expect(screen.queryByTestId('auth-base-loading-spinner')).not.toBeNull();
 
   // Wait for login to complete
   await act(async () => {
@@ -173,6 +174,9 @@ it('should log in automatically when the anonymous handler is supported', async 
 
   expect(screen.queryByTestId('auth-base-loading')).toBeNull();
   expect(screen.queryByTestId('connection-bootstrap-loading')).not.toBeNull();
+  expect(
+    screen.queryByTestId('connection-bootstrap-loading-spinner')
+  ).not.toBeNull();
   expect(screen.queryByText(mockChildText)).toBeNull();
   expect(mockChannel.postMessage).toHaveBeenCalledWith(
     expect.objectContaining({
