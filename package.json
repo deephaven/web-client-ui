@@ -9,6 +9,11 @@
     "node": ">=16",
     "npm": ">=8"
   },
+  "overrides": {
+    "nx": {
+      "@parcel/watcher": "2.4.1"
+    }
+  },
   "scripts": {
     "postinstall": "node ./skip.js || run-s build:necessary",
     "clean:build": "rimraf packages/*/dist packages/*/build",
