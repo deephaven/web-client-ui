@@ -67,7 +67,10 @@
 
     .draggable-item-list {
       flex-grow: 1;
-      transition: height $transition;
+      // group-list-height assigned from JS
+      min-height: calc(
+        var(--group-list-height) + var(--placeholder-height, 0px)
+      );
     }
 
     .btn-delete-grouping {
@@ -81,6 +84,7 @@
       padding: $spacer-3;
       text-align: center;
       border: dashed 1px;
+      text-wrap: pretty;
     }
   }
 
@@ -98,11 +102,29 @@
     .rollup-rows-group-by {
       .placeholder {
         border: dashed 1px transparent;
+
         @include ants-base($foreground, $background);
+
+        &.is-dragging-over {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
       }
 
       .item-list-scroll-pane {
         @include ants-base($foreground, $background);
+      }
+
+      .draggable-item-list.is-dragging-over {
+        .item-list-scroll-pane {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
+
+        &:not(.is-dragging-from-this) {
+          // placeholder doesn't add height with current AutoSizer
+          // so add the height of the placeholder manaully
+          // rowHeight variable assigned from JS
+          --placeholder-height: var(--row-height);
+        }
       }
     }
 
@@ -110,6 +132,12 @@
       .draggable-item-list:not(.is-dragging-from-this) {
       .item-list-scroll-pane {
         @include ants-base($foreground, $background);
+      }
+
+      &.is-dragging-over {
+        .item-list-scroll-pane {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
       }
     }
   }

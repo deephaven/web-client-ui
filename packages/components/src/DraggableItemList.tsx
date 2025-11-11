@@ -33,6 +33,8 @@ type DraggableItemListProps<T> = Omit<
   className: string;
   draggingItemClassName: string;
   isDropDisabled: boolean;
+  // Whether to include the droppable provided.placeholder in the DOM
+  hasPlaceholder?: boolean;
   // Whether to allow dragging items from this list
   isDragDisabled: boolean;
 
@@ -73,6 +75,7 @@ class DraggableItemList<T> extends PureComponent<
     isDeselectOnClick: true,
     isDoubleClickSelect: true,
     isDropDisabled: false,
+    hasPlaceholder: false,
     isDragDisabled: false,
     isMultiSelect: false,
     isStickyBottom: false,
@@ -316,6 +319,7 @@ class DraggableItemList<T> extends PureComponent<
       isDoubleClickSelect,
       isDragDisabled,
       isDropDisabled,
+      hasPlaceholder,
       isMultiSelect,
       isStickyBottom,
       itemCount,
@@ -380,6 +384,7 @@ class DraggableItemList<T> extends PureComponent<
               rowHeight={rowHeight}
               selectedRanges={selectedRanges}
             />
+            {hasPlaceholder !== false && provided.placeholder}
           </div>
         )}
       </Droppable>

@@ -486,10 +486,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     } = this.state;
 
     const ungroupedColumns = this.getSortedUngroupedColumns();
-    let groupListHeight = columns.length * DraggableItemList.DEFAULT_ROW_HEIGHT;
-    if (dragSource?.droppableId === UNGROUPED_LIST_ID) {
-      groupListHeight += DraggableItemList.DEFAULT_ROW_HEIGHT;
-    }
+    const groupListHeight =
+      columns.length * DraggableItemList.DEFAULT_ROW_HEIGHT;
     const ungroupMaxListHeight =
       ungroupedColumns.length * DraggableItemList.DEFAULT_ROW_HEIGHT + 10;
     const ungroupMinListHeight = Math.min(
@@ -542,8 +540,14 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
                 ref={this.groupedList}
                 renderItem={this.renderGroupedItem}
                 selectedRanges={groupedSelectedRanges}
-                style={{ height: groupListHeight }}
+                style={
+                  {
+                    '--group-list-height': `${groupListHeight}px`,
+                    '--row-height': `${DraggableItemList.DEFAULT_ROW_HEIGHT}px`,
+                  } as React.CSSProperties
+                }
                 isMultiSelect
+                hasPlaceholder
               />
             )}
           </div>
