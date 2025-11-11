@@ -13,12 +13,10 @@ function makeTabs(count = 3): NavTabItem[] {
 }
 
 // JSDOM doesn't implement scrollIntoView; stub to avoid errors triggered by effect
-beforeAll(() => {
-  window.HTMLElement.prototype.scrollIntoView = jest.fn();
-});
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-describe('NavTabList renderTabSlot', () => {
-  it('renders slot content for each tab when renderTabSlot provided', async () => {
+describe('NavTabList renderAfterTabContent', () => {
+  it('renders content after tab title when renderAfterTabContent provided', async () => {
     const tabs = makeTabs(3);
     const user = userEvent.setup();
     const onSelect = jest.fn();
@@ -28,26 +26,17 @@ describe('NavTabList renderTabSlot', () => {
         activeKey={tabs[0].key}
         tabs={tabs}
         onSelect={onSelect}
-        renderTabSlot={tab => <span>{`${tab.title}-slot`}</span>}
+        renderAfterTabContent={tab => <span>{`${tab.title}-slot`}</span>}
       />
     );
 
-    // Assert each tab's slot is rendered
+    // Assert each tab's content is rendered
     tabs.forEach(tab => {
       expect(screen.getByText(`${tab.title}-slot`)).toBeInTheDocument();
     });
 
-    // Selecting a tab still works with slot present
+    // Selecting a tab still works with content present
     await user.click(screen.getByText('Tab 2'));
     expect(onSelect).toHaveBeenCalledWith('TAB_2');
-  });
-
-  it('does not render slot content when renderTabSlot is omitted', () => {
-    const tabs = makeTabs(2);
-    render(
-      <NavTabList activeKey={tabs[0].key} tabs={tabs} onSelect={jest.fn()} />
-    );
-
-    expect(screen.getByText('Tab 1')).toBeInTheDocument();
   });
 });

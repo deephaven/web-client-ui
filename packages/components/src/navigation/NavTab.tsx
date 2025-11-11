@@ -24,7 +24,7 @@ interface NavTabProps {
    * @param tab The tab to render content for
    * @returns The content to render after the tab title
    */
-  renderTabSlot?: (tab: NavTabItem) => React.ReactNode;
+  renderAfterTabContent?: (tab: NavTabItem) => React.ReactNode;
 }
 
 const NavTab = memo(
@@ -37,7 +37,7 @@ const NavTab = memo(
     index,
     isDraggable,
     contextActions,
-    renderTabSlot,
+    renderAfterTabContent,
   }: NavTabProps) => {
     const { key, isClosable = onClose != null, title, icon } = tab;
 
@@ -106,7 +106,7 @@ const NavTab = memo(
                 {title}
                 <Tooltip>{title}</Tooltip>
               </span>
-              {renderTabSlot?.(tab)}
+              {renderAfterTabContent?.(tab)}
               {isClosable && (
                 <Button
                   kind="ghost"
