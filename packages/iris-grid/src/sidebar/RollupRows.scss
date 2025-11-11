@@ -121,7 +121,7 @@
 
         &:not(.is-dragging-from-this) {
           // placeholder doesn't add height with current AutoSizer
-          // so add the height of the placeholder manaully
+          // so add the height of the placeholder manually
           // rowHeight variable assigned from JS
           --placeholder-height: var(--row-height);
         }
