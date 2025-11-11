@@ -206,7 +206,7 @@ export function ConnectionBootstrap({
     return (
       <LoadingOverlay
         data-testid="connection-bootstrap-loading"
-        isLoading={false}
+        isLoading={error == null}
         errorMessage={error != null ? `${error}` : undefined}
       />
     );
