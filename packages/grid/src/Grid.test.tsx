@@ -175,6 +175,25 @@ function mouseMove(
   );
 }
 
+function mouseHover(
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
+) {
+  mouseEvent(
+    column,
+    row,
+    component.handleMouseMove,
+    'mousemove',
+    extraMouseArgs,
+    clientX,
+    clientY
+  );
+}
+
 function mouseUp(
   column: VisibleIndex,
   row: VisibleIndex,
@@ -1061,11 +1080,11 @@ describe('column separators', () => {
       const headerY = getColumnHeaderY();
 
       // Move mouse to the middle of the column header
-      mouseMove(0, 0, component, {}, separatorX - columnWidth / 2, headerY);
+      mouseHover(0, 0, component, {}, separatorX - columnWidth / 2, headerY);
       expect(component.state.cursor).toBeNull();
 
       // Move mouse over the column separator
-      mouseMove(0, 0, component, {}, separatorX, headerY);
+      mouseHover(0, 0, component, {}, separatorX, headerY);
 
       // Check that the grid recognizes we're over a separator
       // The cursor should change to indicate resize capability
@@ -1079,7 +1098,7 @@ describe('column separators', () => {
       const headerY = getColumnHeaderY();
 
       // Move mouse to where separator would be
-      mouseMove(0, 0, component, {}, separatorX, headerY);
+      mouseHover(0, 0, component, {}, separatorX, headerY);
 
       // Should not detect separator when resize is disabled
       expect(component.state.draggingColumnSeparator).toBeNull();
@@ -1111,10 +1130,7 @@ describe('column separators', () => {
 
       // Drag to resize
       const newX = separatorX + 50; // Drag 50px to the right
-      fireEvent.mouseMove(component.canvas!, {
-        clientX: newX,
-        clientY: headerY,
-      });
+      mouseMove(0, 0, component, {}, newX, headerY);
 
       // Should be in drag state
       expect(component.state.isDragging).toBe(true);
@@ -1131,10 +1147,7 @@ describe('column separators', () => {
 
       // Drag to resize
       const newX = separatorX + 50;
-      fireEvent.mouseMove(component.canvas!, {
-        clientX: newX,
-        clientY: headerY,
-      });
+      mouseMove(0, 0, component, {}, newX, headerY);
 
       // End drag
       mouseUp(0, 0, component, {}, newX, headerY);
