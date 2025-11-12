@@ -4,6 +4,7 @@ import {
   openTable,
   getColumnSeparatorPosition,
   dragColumnSeparator,
+  markerAtCoordinates,
 } from './utils';
 
 async function waitForLoadingDone(page: Page) {
@@ -269,6 +270,51 @@ test.describe('column separators', () => {
     // Take screenshot to verify any visual changes
     await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
       'column-resized-after-drag.png'
+    );
+  });
+});
+
+test.describe('column group separators', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
+    // Open table with column groups for group separator testing
+    await openTable(page, 'simple_table_header_group');
+  });
+
+  test('change color on hover on level 0', async ({ page }) => {
+    // Test hover on the parent of the column "X" (column 0, depth 1)
+    const separatorPos = await getColumnSeparatorPosition(page, 0, 1);
+
+    // Move mouse to separator position to test hover interaction
+    await page.mouse.move(separatorPos.x, separatorPos.y);
+    await markerAtCoordinates(page, separatorPos.x, separatorPos.y);
+    await page.waitForTimeout(100);
+
+    // Take a screenshot to verify hover state
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-group-separator-hover.png'
+    );
+  });
+
+  test('resize column group on mouse drag', async ({ page }) => {
+    // Perform drag operation to resize "All" group (last column = 2, depth = 0)
+    await dragColumnSeparator(page, 2, 50, 0);
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify visual changes
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-group-resized-after-drag.png'
+    );
+  });
+
+  test('resize nested column groups at depth 1', async ({ page }) => {
+    // Perform resize of "YandZ" group (last column = 2, depth = 1)
+    await dragColumnSeparator(page, 2, -20, 1);
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify depth 1 resize
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'nested-group-separator-depth-1-resized.png'
     );
   });
 });
