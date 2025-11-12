@@ -6,6 +6,7 @@ import {
   ModelIndex,
   ModelSizeMap,
   trimMap,
+  isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
@@ -17,6 +18,8 @@ import {
   ReadonlyAdvancedFilterMap,
   ReadonlyQuickFilterMap,
 } from './CommonTypes';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import { rebalanceTree, type TreeNode } from './TreeRebalanceUtil';
 
 export interface IrisGridMetricState extends GridMetricState {
   model: IrisGridModel;
@@ -35,8 +38,132 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   // Cached model column names to detect when the column width map update is necessary
   private cachedModelColumnNames: readonly ColumnName[] | undefined;
 
+  private cachedHeaderGroupNames: readonly string[] | undefined;
+
+  // Cached padding maps for column header groups
+  private cachedPaddingMaps: Map<string, Map<string, number>> = new Map();
+
+  static getModelColumnRoot(
+    model: IrisGridModel,
+    modelColumn: ModelIndex
+  ): ColumnHeaderGroup | undefined {
+    let depth = 0;
+    let current = model.getColumnHeaderParentGroup(modelColumn, depth);
+    let root = current;
+
+    while (current != null) {
+      root = current;
+      depth += 1;
+      current = model.getColumnHeaderParentGroup(modelColumn, depth);
+    }
+
+    return root;
+  }
+
+  /**
+   * Builds a TreeNode from the model header groups and columns for padding calculation
+   * @param name The name of the root node to build the tree for
+   * @param model The IrisGridModel containing columns and header groups
+   * @param getLeafValue Function to get the value for leaf nodes (columns)
+   * @param getGroupValue Function to get the value for group nodes (header groups)
+   * @returns The TreeNode structure
+   */
+  private static buildNode(
+    name: string,
+    model: IrisGridModel,
+    getLeafValue: (name: string) => number,
+    getGroupValue: (name: string) => number
+  ): TreeNode {
+    const headerGroup = model.columnHeaderGroupMap.get(name);
+
+    if (headerGroup) {
+      const value = getGroupValue(name);
+
+      const children = headerGroup.children.map(childName =>
+        IrisGridMetricCalculator.buildNode(
+          childName,
+          model,
+          getLeafValue,
+          getGroupValue
+        )
+      );
+
+      // Group node
+      return {
+        name,
+        children,
+        value,
+      };
+    }
+
+    // Leaf node
+    return {
+      name,
+      children: [],
+      value: getLeafValue(name) ?? 0,
+    };
+  }
+
+  /**
+   * Gets the header padding for a specific column based on the widths of its group tree nodes.
+   * We only adjust paddings on the column, because the group widths are automatically sized to fit their children.
+   * @param state The current IrisGridMetricState
+   * @param modelColumn The column index to get the padding for
+   * @param maxColumnWidth Maximum allowed column width, applies only to leaf nodes
+   * @returns The calculated header padding for the column
+   */
+  private getHeaderPadding(
+    state: IrisGridMetricState,
+    modelColumn: ModelIndex,
+    maxColumnWidth: number
+  ): number {
+    const { model } = state;
+    const root = IrisGridMetricCalculator.getModelColumnRoot(
+      model,
+      modelColumn
+    );
+    if (root == null) {
+      return 0;
+    }
+    const cachedMap = this.cachedPaddingMaps.get(root.name);
+    if (cachedMap != null) {
+      return cachedMap.get(model.columns[modelColumn].name) ?? 0;
+    }
+    const groupTree = IrisGridMetricCalculator.buildNode(
+      root.name,
+      model,
+      name => {
+        const columnIndex = model.getColumnIndexByName(name);
+        assertNotNull(columnIndex, `${name} not found in model columns`);
+        return super.calculateColumnHeaderWidth(
+          columnIndex,
+          state,
+          maxColumnWidth
+        );
+      },
+      name => {
+        const group = model.columnHeaderGroupMap.get(name);
+        assertNotNull(group, `${name} not found in columnHeaderGroupMap`);
+        return this.getColumnHeaderGroupWidth(
+          group.childIndexes[0],
+          group.depth,
+          state,
+          maxColumnWidth
+        );
+      }
+    );
+    const paddingMap = rebalanceTree(groupTree);
+    this.cachedPaddingMaps.set(root.name, paddingMap);
+    return paddingMap.get(model.columns[modelColumn].name) ?? 0;
+  }
+
   private getCachedCurrentModelColumnNames = memoizeOne(
     (columns: readonly dh.Column[]) => columns.map(col => col.name)
+  );
+
+  private getCachedCurrentHeaderGroupNames = memoizeOne(
+    (columnHeaderGroups: readonly ColumnHeaderGroup[]) =>
+      columnHeaderGroups.map(group => group.name)
   );
 
   private updateCalculatedColumnWidths(model: IrisGridModel): void {
@@ -79,18 +206,33 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   private updateColumnWidthsIfNecessary(model: IrisGridModel): void {
     // Comparing model.columns references wouldn't work here because
     // the reference can change in the model without the actual column definitions changing
+    const modelColumnNames = this.getCachedCurrentModelColumnNames(
+      model.columns
+    );
     if (
       this.cachedModelColumnNames != null &&
-      !deepEqual(
-        this.getCachedCurrentModelColumnNames(model.columns),
-        this.cachedModelColumnNames
-      )
+      this.cachedModelColumnNames !== modelColumnNames &&
+      !deepEqual(modelColumnNames, this.cachedModelColumnNames)
     ) {
       // Preserve column widths when possible to minimize visual shifts in the grid layout
       this.updateCalculatedColumnWidths(model);
       this.updateUserColumnWidths(model);
+      this.cachedPaddingMaps.clear();
     }
-    this.cachedModelColumnNames = model.columns.map(col => col.name);
+    this.cachedModelColumnNames = modelColumnNames;
+
+    const headerGroupNames = this.getCachedCurrentHeaderGroupNames(
+      model.columnHeaderGroups
+    );
+    if (
+      this.cachedHeaderGroupNames != null &&
+      this.cachedHeaderGroupNames !== headerGroupNames &&
+      !deepEqual(headerGroupNames, this.cachedHeaderGroupNames)
+    ) {
+      this.resetCalculatedColumnWidths();
+      this.cachedPaddingMaps.clear();
+    }
+    this.cachedHeaderGroupNames = headerGroupNames;
   }
 
   getGridY(state: IrisGridMetricState): number {
@@ -182,6 +324,85 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   getUserColumnWidths(): ModelSizeMap {
     // This might return stale data if getMetrics hasn't been called
     return this.userColumnWidths;
+  }
+
+  getCalculatedColumnWidths(): ModelSizeMap {
+    return this.calculatedColumnWidths;
+  }
+
+  /**
+   * Calculate the width of the specified column's header
+   * @param modelColumn ModelIndex of the column to get the header width for
+   * @param state The grid metric state
+   * @param maxColumnWidth Maximum allowed column width, applies only to leaf nodes
+   * @returns The calculated width of the column header
+   */
+  calculateColumnHeaderWidth(
+    modelColumn: ModelIndex,
+    state: IrisGridMetricState,
+    maxColumnWidth: number
+  ): number {
+    const { model } = state;
+
+    const parent = model.getColumnHeaderParentGroup(modelColumn, 0);
+
+    const baseHeaderWidth = super.calculateColumnHeaderWidth(
+      modelColumn,
+      state,
+      maxColumnWidth
+    );
+
+    // Column header with no grouping, use base implementation
+    if (parent == null) {
+      return baseHeaderWidth;
+    }
+
+    const headerPadding = this.getHeaderPadding(
+      state,
+      modelColumn,
+      maxColumnWidth
+    );
+
+    return baseHeaderWidth + headerPadding;
+  }
+
+  // Original width of column header group content, including title, padding, icons, etc.
+  // Does not include any rebalancing adjustments
+  getColumnHeaderGroupWidth(
+    modelColumn: ModelIndex,
+    depth: number,
+    state: IrisGridMetricState,
+    maxColumnWidth: number
+  ): number {
+    const { model, theme, context } = state;
+    const { headerHorizontalPadding, headerFont } = theme;
+    this.calculateLowerFontWidth(headerFont, context);
+    this.calculateUpperFontWidth(headerFont, context);
+
+    const padding = headerHorizontalPadding * 2;
+
+    const headerText = model.textForColumnHeader(modelColumn, depth);
+
+    const isColumnExpandable =
+      isExpandableColumnGridModel(model) &&
+      model.isColumnExpandable(modelColumn);
+
+    const expandCollapseIconWidth = isColumnExpandable ? theme.iconSize : 0;
+
+    if (headerText !== undefined && headerText !== '') {
+      return (
+        this.calculateTextWidth(
+          context,
+          headerFont,
+          headerText,
+          maxColumnWidth - padding
+        ) +
+        padding +
+        expandCollapseIconWidth
+      );
+    }
+
+    return padding + expandCollapseIconWidth;
   }
 }
 
