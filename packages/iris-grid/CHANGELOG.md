@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+- DH-20594: Prevent joined columns from being edited ([#2551](https://github.com/deephaven/web-client-ui/issues/2551)) ([774c4cc](https://github.com/deephaven/web-client-ui/commit/774c4cc3f7d7885d9fd3eabe630b45d2101f6228))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+### Bug Fixes
+
+- DH-20734: Datetime tooltip shown on wrong column when column is moved ([#2554](https://github.com/deephaven/web-client-ui/issues/2554)) ([afdb592](https://github.com/deephaven/web-client-ui/commit/afdb59250ba16654c0c3f6a457e39eef3bc82f66))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

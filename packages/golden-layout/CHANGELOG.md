@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- Add .lm_dragging to .lm_root and style nested dragging, also style default empty dashboard ([#2560](https://github.com/deephaven/web-client-ui/issues/2560)) ([e076af5](https://github.com/deephaven/web-client-ui/commit/e076af5beddd8c89e545be425c134fc78a7e9c72))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

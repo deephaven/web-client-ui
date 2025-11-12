@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+
+### Bug Fixes
+
+- allow overflow scroll for widget list and dashboard overlow list. ([#2558](https://github.com/deephaven/web-client-ui/issues/2558)) ([4d955b4](https://github.com/deephaven/web-client-ui/commit/4d955b46cb838e0ce251ea2718d36958956be33f))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

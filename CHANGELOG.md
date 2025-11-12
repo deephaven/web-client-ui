@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- Add .lm_dragging to .lm_root and style nested dragging, also style default empty dashboard ([#2560](https://github.com/deephaven/web-client-ui/issues/2560)) ([e076af5](https://github.com/deephaven/web-client-ui/commit/e076af5beddd8c89e545be425c134fc78a7e9c72))
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-18780: Resizable column header groups ([#2567](https://github.com/deephaven/web-client-ui/issues/2567)) ([b64a49c](https://github.com/deephaven/web-client-ui/commit/b64a49cb180fe8da2f7febe25da472d5c5fc1d48))
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+- DH-20594: Prevent joined columns from being edited ([#2551](https://github.com/deephaven/web-client-ui/issues/2551)) ([774c4cc](https://github.com/deephaven/web-client-ui/commit/774c4cc3f7d7885d9fd3eabe630b45d2101f6228))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+### Bug Fixes
+
+- allow overflow scroll for widget list and dashboard overlow list. ([#2558](https://github.com/deephaven/web-client-ui/issues/2558)) ([4d955b4](https://github.com/deephaven/web-client-ui/commit/4d955b46cb838e0ce251ea2718d36958956be33f))
+- DH-20734: Datetime tooltip shown on wrong column when column is moved ([#2554](https://github.com/deephaven/web-client-ui/issues/2554)) ([afdb592](https://github.com/deephaven/web-client-ui/commit/afdb59250ba16654c0c3f6a457e39eef3bc82f66))
+- keyboard navigation to last row/column enables sticky scrolling ([#2562](https://github.com/deephaven/web-client-ui/issues/2562)) ([f3eb538](https://github.com/deephaven/web-client-ui/commit/f3eb5389531d00888d8846c12fc9f11aaed1f691)), closes [#2361](https://github.com/deephaven/web-client-ui/issues/2361)
+- Loading spinner would flash sometimes on startup ([#2569](https://github.com/deephaven/web-client-ui/issues/2569)) ([35b3bf2](https://github.com/deephaven/web-client-ui/commit/35b3bf2d1b0a47b6aeb5afc9cc26b440c2d853ba))
+- Update browser title in embed-widget to show widget name ([#2559](https://github.com/deephaven/web-client-ui/issues/2559)) ([6a3c025](https://github.com/deephaven/web-client-ui/commit/6a3c025a15228c83354cdec46571a561f5008865))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

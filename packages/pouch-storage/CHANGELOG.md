@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+**Note:** Version bump only for package @deephaven/pouch-storage
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 **Note:** Version bump only for package @deephaven/pouch-storage
