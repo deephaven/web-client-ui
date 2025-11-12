@@ -474,6 +474,40 @@ export async function dragColumnSeparator(
   await page.waitForTimeout(100);
 }
 
+/**
+ * Creating a visible element at the specified coordinates.
+ * Useful for debugging tests that involve mouse movement.
+ * @param page Test page
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param size Size of the marker circle
+ */
+export async function markerAtCoordinates(
+  page: Page,
+  x: number,
+  y: number,
+  color = 'red',
+  size = 4
+): Promise<void> {
+  await page.evaluate(
+    ({ x, y, color, size }) => {
+      const marker = document.createElement('div');
+      Object.assign(marker.style, {
+        position: 'fixed',
+        top: `${y - size / 2}px`,
+        left: `${x - size / 2}px`,
+        pointerEvents: 'none',
+        backgroundColor: color,
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+      });
+      document.body.appendChild(marker);
+    },
+    { x, y, color, size }
+  );
+}
+
 export default {
   gotoPage,
   generateVarName,
