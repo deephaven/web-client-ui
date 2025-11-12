@@ -4,6 +4,7 @@ import {
   openTable,
   getColumnSeparatorPosition,
   dragColumnSeparator,
+  markerAtCoordinates,
 } from './utils';
 
 async function waitForLoadingDone(page: Page) {
@@ -290,6 +291,7 @@ test.describe('column group separators', () => {
 
     // Move mouse to separator position to test hover interaction
     await page.mouse.move(separatorPos.x, separatorPos.y);
+    await markerAtCoordinates(page, separatorPos.x, separatorPos.y);
     await page.waitForTimeout(100);
 
     // Take a screenshot to verify hover state
@@ -311,7 +313,7 @@ test.describe('column group separators', () => {
 
   test('resize nested column groups at depth 1', async ({ page }) => {
     // Perform resize of "YandZ" group (last column = 2, depth = 1)
-    await dragColumnSeparator(page, 2, 40, 1);
+    await dragColumnSeparator(page, 2, -20, 1);
     await page.waitForTimeout(200);
 
     // Take screenshot to verify depth 1 resize
