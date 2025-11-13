@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-18780: Resizable column header groups ([#2567](https://github.com/deephaven/web-client-ui/issues/2567)) ([b64a49c](https://github.com/deephaven/web-client-ui/commit/b64a49cb180fe8da2f7febe25da472d5c5fc1d48))
+
+### Bug Fixes
+
+- keyboard navigation to last row/column enables sticky scrolling ([#2562](https://github.com/deephaven/web-client-ui/issues/2562)) ([f3eb538](https://github.com/deephaven/web-client-ui/commit/f3eb5389531d00888d8846c12fc9f11aaed1f691)), closes [#2361](https://github.com/deephaven/web-client-ui/issues/2361)
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

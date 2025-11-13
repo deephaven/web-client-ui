@@ -232,11 +232,13 @@ test('organize columns', async ({ page }) => {
   await openTableOption(page, 'Organize Columns');
 
   await test.step('Search', async () => {
-    await page.getByPlaceholder('Search').click();
+    await page.getByLabel('Search columns').click();
 
     // changed so the word "string" doesn't show up on screen due to a kerning issue
     // https://github.com/microsoft/playwright/issues/20203
     await page.keyboard.type('bigd');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
 
     await expect(
       page.locator('.visibility-ordering-builder')

@@ -1,5 +1,11 @@
-import { test, expect, Page } from '@playwright/test';
-import { gotoPage, openTable } from './utils';
+import { test, expect, type Page } from '@playwright/test';
+import {
+  gotoPage,
+  openTable,
+  getColumnSeparatorPosition,
+  dragColumnSeparator,
+  markerAtCoordinates,
+} from './utils';
 
 async function waitForLoadingDone(page: Page) {
   await expect(
@@ -231,5 +237,88 @@ test.describe('tests simple table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+});
+
+test.describe('column separators', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
+    await openTable(page, 'simple_table');
+    await waitForLoadingDone(page);
+  });
+
+  test('change color on hover', async ({ page }) => {
+    // Get the position of the first column separator
+    const separatorPos = await getColumnSeparatorPosition(page, 0);
+
+    // Move mouse to separator position to test basic interaction
+    await page.mouse.move(separatorPos.x, separatorPos.y);
+
+    // Wait a bit for any cursor updates
+    await page.waitForTimeout(100);
+
+    // Take a screenshot to verify interaction
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-separator-hover.png'
+    );
+  });
+
+  test('resize column on mouse drag', async ({ page }) => {
+    // Perform drag operation to resize column
+    await dragColumnSeparator(page, 0, 50);
+
+    // Verify the drag completed without errors
+    // In a real implementation, this would trigger actual column resizing
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify any visual changes
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-resized-after-drag.png'
+    );
+  });
+});
+
+test.describe('column group separators', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
+    // Open table with column groups for group separator testing
+    await openTable(page, 'simple_table_header_group');
+  });
+
+  test('change color on hover on level 0', async ({ page }) => {
+    // Test hover on the parent of the column "X" (column 0, depth 1)
+    const separatorPos = await getColumnSeparatorPosition(page, 0, 1);
+
+    // Move mouse to separator position to test hover interaction
+    await page.mouse.move(separatorPos.x, separatorPos.y);
+    await markerAtCoordinates(page, separatorPos.x, separatorPos.y);
+    await page.waitForTimeout(100);
+
+    // Take a screenshot to verify hover state
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-group-separator-hover.png'
+    );
+  });
+
+  test('resize column group on mouse drag', async ({ page }) => {
+    // Perform drag operation to resize "All" group (last column = 2, depth = 0)
+    await dragColumnSeparator(page, 2, 50, 0);
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify visual changes
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-group-resized-after-drag.png'
+    );
+  });
+
+  test('resize nested column groups at depth 1', async ({ page }) => {
+    // Perform resize of "YandZ" group (last column = 2, depth = 1)
+    await dragColumnSeparator(page, 2, -20, 1);
+    await page.waitForTimeout(200);
+
+    // Take screenshot to verify depth 1 resize
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'nested-group-separator-depth-1-resized.png'
+    );
   });
 });

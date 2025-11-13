@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Features

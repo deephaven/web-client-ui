@@ -47,6 +47,9 @@ describe('IrisGridMetricCalculator', () => {
         const index = columns.findIndex(col => col.name === name);
         return index !== -1 ? index : undefined;
       },
+      get columnHeaderGroups() {
+        return [];
+      },
     });
     calculator = new IrisGridMetricCalculator();
     state = makeGridMetricState(model);
