@@ -5,7 +5,6 @@ import type { FlattenedItem } from './types';
 import './TreeItem.scss';
 
 export interface TreeItemProps<T> {
-  childCount?: number;
   clone?: boolean;
   depth: number;
   withDepthMarkers?: boolean;
@@ -27,7 +26,6 @@ export interface TreeItemProps<T> {
 export type TreeItemRenderFnProps<T> = {
   ref: React.Ref<HTMLDivElement> | null;
   clone: boolean;
-  childCount?: number;
   value: string;
   item: FlattenedItem<T>;
   handleProps?: Record<string, unknown>;
@@ -50,7 +48,6 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
     wrapperRef = null,
     renderItem,
     item,
-    childCount,
     style,
     top,
   } = props;
@@ -78,10 +75,9 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
       clone,
       value,
       item,
-      childCount,
       handleProps,
     }),
-    [dragRef, clone, value, item, childCount, handleProps]
+    [dragRef, clone, value, item, handleProps]
   );
 
   const wrapperStyle = useMemo(

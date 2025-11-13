@@ -28,12 +28,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { flattenTree, getChildCount, getProjection } from './utilities';
-import type {
-  FlattenedItem,
-  SensorContext,
-  TreeItem as TreeItemType,
-} from './types';
+import { getProjection } from './utilities';
+import type { FlattenedItem, SensorContext } from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import PointerSensorWithInteraction from './PointerSensorWithInteraction';
 import { TreeItem, type TreeItemRenderFn } from './TreeItem';
@@ -140,7 +136,7 @@ const fixCursorSnapOffset: CollisionDetection = args => {
 };
 
 type Props<T> = React.PropsWithChildren<{
-  items: TreeItemType<T>[];
+  items: readonly FlattenedItem<T>[];
   indentationWidth?: number;
   onDragStart?: (id: string, event: DragStartEvent) => void;
   onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
@@ -158,23 +154,11 @@ export default function SortableTreeDndContext<T>({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
-  const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
-
-    if (activeId != null) {
-      return flattenedTree.filter(
-        ({ id, selected }) => id === activeId || !selected
-      );
-    }
-
-    return flattenedTree;
-  }, [activeId, items]);
-
   const activeItem =
-    activeId != null ? flattenedItems.find(({ id }) => id === activeId) : null;
+    activeId != null ? items.find(({ id }) => id === activeId) : null;
 
   const sensorContext: SensorContext = useRef({
-    items: flattenedItems,
+    items,
     offset: offsetLeft,
   });
   const keyboardOptions = useMemo(
@@ -200,17 +184,14 @@ export default function SortableTreeDndContext<T>({
     useSensor(KeyboardSensor, keyboardOptions)
   );
 
-  const sortedIds = useMemo(
-    () => flattenedItems.map(({ id }) => id),
-    [flattenedItems]
-  );
+  const sortedIds = useMemo(() => items.map(({ id }) => id), [items]);
 
   useEffect(() => {
     sensorContext.current = {
-      items: flattenedItems,
+      items,
       offset: offsetLeft,
     };
-  }, [flattenedItems, offsetLeft]);
+  }, [items, offsetLeft]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -241,7 +222,7 @@ export default function SortableTreeDndContext<T>({
       const projected =
         active.id != null && over?.id != null
           ? getProjection(
-              flattenedItems,
+              items,
               active.id as string,
               over.id as string,
               (active.rect.current.translated?.left ?? 0) -
@@ -253,7 +234,7 @@ export default function SortableTreeDndContext<T>({
         const { depth, parentId } = projected;
 
         const clonedItems: FlattenedItem<T>[] = JSON.parse(
-          JSON.stringify(flattenedItems)
+          JSON.stringify(items)
         );
         const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
         const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -268,7 +249,7 @@ export default function SortableTreeDndContext<T>({
       }
       resetState();
     },
-    [flattenedItems, indentationWidth, onDragEnd, resetState]
+    [items, indentationWidth, onDragEnd, resetState]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -298,8 +279,7 @@ export default function SortableTreeDndContext<T>({
               <TreeItem
                 depth={activeItem.depth}
                 clone
-                childCount={getChildCount(items, activeId) + 1}
-                value={activeId.toString()}
+                value={activeId}
                 renderItem={renderItem}
                 item={activeItem}
               />

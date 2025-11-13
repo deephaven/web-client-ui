@@ -27,6 +27,6 @@ export function isFlattenedTreeItem<T>(
 }
 
 export type SensorContext = MutableRefObject<{
-  items: FlattenedItem[];
+  items: readonly FlattenedItem[];
   offset: number;
 }>;

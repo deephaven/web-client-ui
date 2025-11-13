@@ -1,5 +1,4 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import memoize from 'memoizee';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   GridUtils,
@@ -169,7 +168,7 @@ export function getTreeItems(
  *          Null if the projection could not be calculated.
  */
 export function getProjection(
-  items: FlattenedItem[],
+  items: readonly FlattenedItem[],
   activeId: string,
   overId: string,
   dragOffset: number,
@@ -186,7 +185,11 @@ export function getProjection(
     return null;
   }
   const activeItem = items[activeItemIndex];
-  const newItems = arrayMove(items, activeItemIndex, overItemIndex);
+  const newItems = arrayMove(
+    items as FlattenedItem[],
+    activeItemIndex,
+    overItemIndex
+  );
   const previousItem: FlattenedItem | undefined = newItems[overItemIndex - 1];
   const nextItem = newItems[overItemIndex + 1];
   const dragDepth = getDragDepth(dragOffset, indentationWidth);
@@ -280,16 +283,15 @@ function flatten<T>(
  * @param items The tree items to flatten
  * @returns The flattened tree items list
  */
-export const flattenTree = memoize(
-  <T>(items: ReadonlyTreeItems<T>): FlattenedItem<T>[] => {
-    // Should help prevent double flattening since FlattenedItems are valid TreeItems
-    if (items.every(isFlattenedTreeItem)) {
-      return [...items];
-    }
-    return flatten(items);
-  },
-  { max: 10 }
-);
+export function flattenTree<T>(
+  items: ReadonlyTreeItems<T>
+): FlattenedItem<T>[] {
+  // Should help prevent double flattening since FlattenedItems are valid TreeItems
+  if (items.every(isFlattenedTreeItem)) {
+    return [...items];
+  }
+  return flatten(items);
+}
 
 /**
  * Recursively checks for the item in a list of items.

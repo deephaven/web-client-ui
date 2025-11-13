@@ -14,14 +14,14 @@ import './SearchWithModal.scss';
 import MemoizedSearchItem from './SearchItem';
 
 interface SearchWithModalProps {
-  items: FlattenedIrisGridTreeItem[];
+  items: readonly FlattenedIrisGridTreeItem[];
   onModalOpenChange: (isOpen: boolean) => void;
   onClick: (
     item: FlattenedIrisGridTreeItem,
     event: React.MouseEvent<HTMLElement>
   ) => void;
   onDragStart?: (event: DragStartEvent) => void;
-  setSelection: (items: FlattenedIrisGridTreeItem[]) => void;
+  setSelection: (items: readonly FlattenedIrisGridTreeItem[]) => void;
 }
 
 export function SearchWithModal({

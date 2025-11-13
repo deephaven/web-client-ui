@@ -13,13 +13,13 @@ import {
   useVirtualizer,
   type Virtualizer,
 } from '@tanstack/react-virtual';
-import { flattenTree, getProjection } from './utilities';
+import { getProjection } from './utilities';
 import { SortableTreeItem } from './SortableTreeItem';
 import { TreeItem, type TreeItemRenderFn } from './TreeItem';
-import type { TreeItem as TreeItemType } from './types';
+import type { FlattenedItem } from './types';
 
 interface Props<T> {
-  items: TreeItemType<T>[];
+  items: readonly FlattenedItem<T>[];
   indentationWidth?: number;
   renderItem: TreeItemRenderFn<T>;
   isDraggable?: boolean;
@@ -43,21 +43,17 @@ export default function SortableTree<T>({
       (dndContext.active.rect.current.initial?.left ?? 0)
     : 0;
 
-  const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
-
+  const filteredItems = useMemo(() => {
     if (activeId != null) {
-      return flattenedTree.filter(
-        ({ id, selected }) => id === activeId || !selected
-      );
+      return items.filter(({ id, selected }) => id === activeId || !selected);
     }
 
-    return flattenedTree;
+    return items;
   }, [activeId, items]);
 
   const activeIndex = useMemo(
-    () => flattenedItems.findIndex(({ id }) => id === activeId),
-    [activeId, flattenedItems]
+    () => filteredItems.findIndex(({ id }) => id === activeId),
+    [activeId, filteredItems]
   );
 
   // Add the active index to the range so it is always rendered
@@ -85,7 +81,7 @@ export default function SortableTree<T>({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
-    count: flattenedItems.length,
+    count: filteredItems.length,
     getScrollElement,
     estimateSize,
     rangeExtractor,
@@ -105,16 +101,16 @@ export default function SortableTree<T>({
   useEffect(
     function remeasureContainers() {
       measureDroppableContainers(
-        virtualizedItems.map(({ index }) => flattenedItems[index].id)
+        virtualizedItems.map(({ index }) => filteredItems[index].id)
       );
     },
-    [flattenedItems, measureDroppableContainers, virtualizedItems]
+    [filteredItems, measureDroppableContainers, virtualizedItems]
   );
 
   const projected =
     isDraggable && activeId != null && overId != null
       ? getProjection(
-          flattenedItems,
+          filteredItems,
           activeId,
           overId,
           offsetLeft,
@@ -135,7 +131,7 @@ export default function SortableTree<T>({
       ref={containerRef}
     >
       {virtualizer.getVirtualItems().map(({ index, start }) => {
-        const item = flattenedItems[index];
+        const item = filteredItems[index];
         const { id, depth } = item;
         return isDraggable ? (
           <SortableTreeItem
