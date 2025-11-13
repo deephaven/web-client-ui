@@ -106,6 +106,15 @@ type NavTabListProps<T extends NavTabItem = NavTabItem> = {
    * @returns Additional context items for the tab
    */
   makeContextActions?: (tab: T) => ContextAction | ContextAction[];
+
+  /**
+   * Optional render function to render content after each tab's title.
+   * Should be wrapped in useCallback to avoid unnecessary re-renders.
+   *
+   * @param tab The tab to render content for
+   * @returns The content to render after the tab title
+   */
+  renderAfterTabContent?: (tab: T) => React.ReactNode;
 };
 
 function isScrolledLeft(element: HTMLElement): boolean {
@@ -181,6 +190,7 @@ function NavTabList({
   onReorder,
   onClose,
   makeContextActions,
+  renderAfterTabContent,
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
   const [isOverflowing, setIsOverflowing] = useState(true);
@@ -431,6 +441,7 @@ function NavTabList({
         onClose={onClose}
         isDraggable={onReorder != null}
         contextActions={tabContextActionMap.get(key)}
+        renderAfterTabContent={renderAfterTabContent}
       />
     );
   });
