@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import type { ColumnGroup } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
   moveItemsFromDrop,
@@ -16,14 +16,14 @@ const irisGridTestUtils = new IrisGridTestUtils(dh);
 const COLUMN_PREFIX = 'TestColumn';
 const GROUP_PREFIX = 'TestGroup';
 const COLUMNS = irisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
-const SINGLE_HEADER_GROUPS: ColumnGroup[] = [
+const SINGLE_HEADER_GROUPS = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
     children: [COLUMNS[1].name, COLUMNS[3].name],
   },
-];
+] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
 
-const COLUMN_HEADER_GROUPS: ColumnGroup[] = [
+const COLUMN_HEADER_GROUPS = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
     children: [COLUMNS[1].name, COLUMNS[3].name],
@@ -33,9 +33,9 @@ const COLUMN_HEADER_GROUPS: ColumnGroup[] = [
     children: [COLUMNS[2].name, COLUMNS[4].name],
     color: '#ffffff',
   },
-];
+] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
 
-const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
+const NESTED_COLUMN_HEADER_GROUPS = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
     children: [COLUMNS[1].name, COLUMNS[3].name, `${GROUP_PREFIX}TwoAndFour`],
@@ -45,13 +45,15 @@ const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
     children: [COLUMNS[2].name, COLUMNS[4].name],
     color: '#ffffff',
   },
-];
+] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
 
-function makeTreeItems(groups: ColumnGroup[] = []) {
+function makeTreeItems(
+  groups: (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[] = []
+) {
   const model = irisGridTestUtils.makeModel(
     irisGridTestUtils.makeTable({
       columns: COLUMNS,
-      layoutHints: { columnGroups: groups },
+      layoutHints: { columnGroups: groups as DhType.ColumnGroup[] },
     })
   );
 
@@ -59,8 +61,9 @@ function makeTreeItems(groups: ColumnGroup[] = []) {
     COLUMNS,
     model.initialMovedColumns,
     model.initialColumnHeaderGroups,
-    new Map(),
-    []
+    [],
+    [],
+    true
   );
 
   return {
@@ -91,7 +94,7 @@ function getProjectedItem(
 ) {
   return {
     ...getItem(items, overId),
-    parentId: getProjection(items, activeId, overId, depth * 30, 30).parentId,
+    parentId: getProjection(items, activeId, overId, depth * 30, 30)!.parentId,
   };
 }
 
@@ -225,7 +228,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -239,7 +241,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem, fromItem2],
         0,
         COLUMNS.length - 1
@@ -262,7 +263,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -294,7 +294,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -327,7 +326,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -361,7 +359,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -389,7 +386,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -422,7 +418,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -456,7 +451,6 @@ describe('Move items from drop', () => {
         toItem,
         movedColumns,
         groups,
-        flattenedItems,
         [fromItem],
         0,
         COLUMNS.length - 1
@@ -487,7 +481,6 @@ describe('Move items from drop', () => {
         getProjectedItem(flattenedItems, fromItemOne.id, COLUMNS[7].name),
         movedColumns,
         groups,
-        flattenedItems,
         [fromItemOne, fromItemTwo],
         0,
         COLUMNS.length - 1
@@ -507,7 +500,6 @@ describe('Move items from drop', () => {
         getProjectedItem(flattenedItems, fromItemTwo.id, COLUMNS[7].name),
         movedColumns,
         groups,
-        flattenedItems,
         [fromItemOne, fromItemTwo],
         0,
         COLUMNS.length - 1
@@ -531,7 +523,6 @@ describe('Move items from drop', () => {
         getProjectedItem(flattenedItems, fromItemOne.id, COLUMNS[2].name),
         movedColumns,
         groups,
-        flattenedItems,
         [fromItemOne, fromItemTwo],
         0,
         COLUMNS.length - 1
@@ -560,7 +551,6 @@ describe('Move items from drop', () => {
         getProjectedItem(flattenedItems, fromItemTwo.id, COLUMNS[4].name),
         movedColumns,
         groups,
-        flattenedItems,
         [fromItemOne, fromItemTwo],
         0,
         COLUMNS.length - 1
@@ -591,7 +581,6 @@ describe('Move items from drop', () => {
         getProjectedItem(flattenedItems, fromItemOne.id, COLUMNS[7].name),
         movedColumns,
         groups,
-        flattenedItems,
         [fromItemOne, fromItemTwo],
         0,
         COLUMNS.length - 1

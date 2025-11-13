@@ -863,7 +863,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     } = this.props;
 
     const selectedParentItems = this.getSelectedParentItems();
-    const flattenedItems = this.getFlattenedTree();
     const firstMovableIndex = this.getFirstMovableIndex();
     const lastMovableIndex = this.getLastMovableIndex();
 
@@ -876,7 +875,6 @@ class VisibilityOrderingBuilderInner extends PureComponent<
         to,
         movedColumns,
         columnHeaderGroups,
-        flattenedItems,
         selectedParentItems,
         firstMovableIndex,
         lastMovableIndex

@@ -1,10 +1,13 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import type { dh } from '@deephaven/jsapi-types';
 import {
+  GridRange,
   GridUtils,
+  type VisibleIndex,
   type ModelIndex,
   type MoveOperation,
 } from '@deephaven/grid';
+import { assertNotNull } from '@deephaven/utils';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import {
   isFlattenedTreeItem,
@@ -36,7 +39,10 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  columns: Map<string, number>,
+  nameToIndexes: Map<
+    string,
+    { visibleIndex: VisibleIndex; modelIndex: ModelIndex }
+  >,
   movedColumns: readonly MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
@@ -44,8 +50,8 @@ function getTreeItem(
   selectedItems: Set<string>,
   showHiddenColumns: boolean
 ): IrisGridTreeItem {
-  const modelIndex = columns.get(name);
-  if (modelIndex === undefined) {
+  const { modelIndex, visibleIndex } = nameToIndexes.get(name) ?? {};
+  if (modelIndex === undefined || visibleIndex === undefined) {
     const group = columnHeaderGroupMap.get(name);
 
     if (group == null) {
@@ -64,7 +70,7 @@ function getTreeItem(
         )
         .map(childName =>
           getTreeItem(
-            columns,
+            nameToIndexes,
             movedColumns,
             columnHeaderGroupMap,
             childName,
@@ -97,7 +103,7 @@ function getTreeItem(
     selected: selectedItems.has(name),
     data: {
       modelIndex,
-      visibleIndex: GridUtils.getVisibleIndex(modelIndex, movedColumns),
+      visibleIndex,
       isVisible: !hiddenColumnSet.has(modelIndex),
     },
   };
@@ -118,13 +124,39 @@ export function getTreeItems(
   );
   const hiddenColumnSet = new Set(hiddenColumns);
 
-  const columnIndexSet = new Map<string, number>(
-    columns.map((col, i) => [col.name, i])
+  let visibleIndex = 0;
+  const modelRanges = GridRange.boundedRanges(
+    GridUtils.getModelRange(
+      GridRange.makeNormalized(0, 0, columns.length - 1, 0),
+      movedColumns
+    ),
+    columns.length,
+    1
+  );
+  const mapEntries = modelRanges.flatMap(range => {
+    const { startColumn, endColumn } = range;
+    const rangeLength = endColumn - startColumn + 1;
+    const entries = new Array(rangeLength)
+      .fill(0)
+      .map((_, i) => [visibleIndex + i, startColumn + i] as const);
+    visibleIndex += rangeLength;
+    return entries;
+  });
+  const visibleToModelMap = new Map<VisibleIndex, ModelIndex>(mapEntries);
+
+  const nameToIndexes = new Map<
+    string,
+    { visibleIndex: VisibleIndex; modelIndex: ModelIndex }
+  >(
+    visibleToModelMap
+      .entries()
+      .map(([v, m]) => [columns[m].name, { visibleIndex: v, modelIndex: m }])
   );
 
-  let visibleIndex = 0;
+  visibleIndex = 0;
   while (visibleIndex < columns.length) {
-    const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+    const modelIndex = visibleToModelMap.get(visibleIndex);
+    assertNotNull(modelIndex);
     const columnName = columns[modelIndex].name;
 
     let group = columnHeaderGroups.find(({ children }) =>
@@ -135,7 +167,7 @@ export function getTreeItems(
     }
 
     const item = getTreeItem(
-      columnIndexSet,
+      nameToIndexes,
       movedColumns,
       groupMap,
       group ? group.name : columnName,

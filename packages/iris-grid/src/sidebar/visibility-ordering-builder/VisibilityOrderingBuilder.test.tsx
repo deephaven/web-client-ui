@@ -1771,10 +1771,10 @@ describe('Search', () => {
     HTMLElement.prototype.scrollTo = mockScrollTo;
 
     // Click the search item
-    await user.click(screen.getAllByText(COLUMNS.at(-1)!.name)[1]);
+    await user.click(screen.getAllByText(COLUMNS[COLUMNS.length - 1].name)[1]);
 
     await waitFor(() => {
-      const item = screen.getByText(COLUMNS.at(-1)!.name);
+      const item = screen.getByText(COLUMNS[COLUMNS.length - 1].name);
       expect(mockScrollTo).toHaveBeenCalledTimes(1);
       expect(item.closest('.tree-item')).toHaveFocus();
     });
