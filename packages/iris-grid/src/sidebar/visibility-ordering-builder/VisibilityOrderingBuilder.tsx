@@ -6,7 +6,6 @@ import React, {
   useRef,
   type ReactElement,
 } from 'react';
-import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import {
   GridUtils,
@@ -213,6 +212,9 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
       // Need to wait for the paint after the scroll so the item exists in the DOM
       window.requestAnimationFrame(() => {
+        if (this.scrollAndFocusColumnOnUpdate == null) {
+          return;
+        }
         const itemElement = this.list?.querySelector(
           `.item-wrapper .tree-item[data-index="${this.scrollAndFocusColumnOnUpdate}"]`
         );
@@ -841,20 +843,14 @@ class VisibilityOrderingBuilderInner extends PureComponent<
       event.activatorEvent as unknown as React.MouseEvent<HTMLElement>;
     const isAddingToSelection =
       GridUtils.isModifierKeyDown(dragEvent) || dragEvent.shiftKey;
-    // For some reason, flushSync is needed here to prevent issues when
-    // dragging multiple items, dropping, then immediately dragging a single item
-    // over the previously dragged group. Without flushSync, the item being dragged
-    // can cause items in the previously dragged group to be in completely wrong places.
-    flushSync(() => {
-      this.handleItemClick(
-        id,
-        event.activatorEvent as unknown as React.MouseEvent<HTMLElement>,
-        true
-      );
-      // Always add the dragged item back to selected in case the user ctrl+dragged on an already
-      // selected item. The handleItemClick would deselect it, but we want to keep it selected.
-      this.addColumnToSelected([id], isAddingToSelection);
-    });
+    this.handleItemClick(
+      id,
+      event.activatorEvent as unknown as React.MouseEvent<HTMLElement>,
+      true
+    );
+    // Always add the dragged item back to selected in case the user ctrl+dragged on an already
+    // selected item. The handleItemClick would deselect it, but we want to keep it selected.
+    this.addColumnToSelected([id], isAddingToSelection);
   }
 
   handleDragEnd(
@@ -893,7 +889,10 @@ class VisibilityOrderingBuilderInner extends PureComponent<
     // the render which changes the prop. As a result, the drop animations go to the
     // original location because of that render with stale items. I could not find any
     // other way to fix this (removing memoization, removing keys, etc.)
-    this.setState({ movedColumns: newMoves, columnHeaderGroups: newGroups });
+    this.setState({
+      movedColumns: newMoves,
+      columnHeaderGroups: newGroups,
+    });
     // Focus the dragged item after the move. Should not scroll since it's already in view
     this.scrollAndFocusColumnOnUpdate = to.index;
   }

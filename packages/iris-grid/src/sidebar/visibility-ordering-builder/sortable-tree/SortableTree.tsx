@@ -96,25 +96,19 @@ export default function SortableTree<T>({
   // Expose the virtualizer via ref
   useImperativeHandle(virtualizerRef, () => virtualizer, [virtualizer]);
 
-  const context = useDndContext();
-  const contextRef = useRef(context);
+  const virtualizedItems = virtualizer.getVirtualItems();
 
-  useEffect(
-    function updateContextRef() {
-      contextRef.current = context;
-    },
-    [context]
-  );
+  const { measureDroppableContainers } = useDndContext();
 
   // Without this, animations are funky when using the move/sort buttons
   // dnd-kit only remeasures on drag/drop by default
-  // The context object changes while dragging (items don't)
-  // Using the context ref allows this to trigger properly on only items changes
   useEffect(
     function remeasureContainers() {
-      contextRef.current.measureDroppableContainers(items.map(({ id }) => id));
+      measureDroppableContainers(
+        virtualizedItems.map(({ index }) => flattenedItems[index].id)
+      );
     },
-    [items]
+    [flattenedItems, measureDroppableContainers, virtualizedItems]
   );
 
   const projected =

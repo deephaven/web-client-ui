@@ -16,7 +16,6 @@ import {
   type DragStartEvent,
   type DragMoveEvent,
   type DragEndEvent,
-  type DragOverEvent,
   MeasuringStrategy,
   DragOverlay,
   type DropAnimation,
@@ -157,7 +156,6 @@ export default function SortableTreeDndContext<T>({
   renderItem,
 }: Props<T>): JSX.Element {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
   const flattenedItems = useMemo(() => {
@@ -175,16 +173,6 @@ export default function SortableTreeDndContext<T>({
   const activeItem =
     activeId != null ? flattenedItems.find(({ id }) => id === activeId) : null;
 
-  const projected =
-    activeId != null && overId != null
-      ? getProjection(
-          flattenedItems,
-          activeId,
-          overId,
-          offsetLeft,
-          indentationWidth
-        )
-      : null;
   const sensorContext: SensorContext = useRef({
     items: flattenedItems,
     offset: offsetLeft,
@@ -230,7 +218,6 @@ export default function SortableTreeDndContext<T>({
         active: { id: newActiveId },
       } = event;
       setActiveId(newActiveId as string);
-      setOverId(newActiveId as string);
       onDragStart?.(newActiveId as string, event);
 
       document.body.style.setProperty('cursor', 'grabbing');
@@ -242,12 +229,7 @@ export default function SortableTreeDndContext<T>({
     setOffsetLeft(delta.x);
   }, []);
 
-  const handleDragOver = useCallback(({ over }: DragOverEvent) => {
-    setOverId((over?.id as string) ?? null);
-  }, []);
-
   const resetState = useCallback(() => {
-    setOverId(null);
     setActiveId(null);
     setOffsetLeft(0);
 
@@ -256,11 +238,22 @@ export default function SortableTreeDndContext<T>({
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
+      const projected =
+        active.id != null && over?.id != null
+          ? getProjection(
+              flattenedItems,
+              active.id as string,
+              over.id as string,
+              (active.rect.current.translated?.left ?? 0) -
+                (active.rect.current.initial?.left ?? 0),
+              indentationWidth
+            )
+          : null;
       if (projected && over) {
         const { depth, parentId } = projected;
 
         const clonedItems: FlattenedItem<T>[] = JSON.parse(
-          JSON.stringify(flattenTree(items))
+          JSON.stringify(flattenedItems)
         );
         const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
         const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -275,7 +268,7 @@ export default function SortableTreeDndContext<T>({
       }
       resetState();
     },
-    [items, onDragEnd, projected, resetState]
+    [flattenedItems, indentationWidth, onDragEnd, resetState]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -289,7 +282,6 @@ export default function SortableTreeDndContext<T>({
       measuring={MEASURING}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
