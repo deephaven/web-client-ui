@@ -25,7 +25,12 @@
   max-height: inherit;
 
   .search-tree-container {
-    max-height: inherit;
+    /**
+     * Prevents the virtualized list from rendering all items
+     * and then popper limiting the height to a reasonable amount
+     * since popper needs to know the internal height to limit the container after
+     */
+    max-height: 100vh;
     padding: $spacer-1;
     overflow: auto;
     flex-grow: 1;
