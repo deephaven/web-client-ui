@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.37](https://github.com/deephaven/web-client-ui/compare/v0.85.36...v0.85.37) (2025-11-14)
+
+### Features
+
+- Cherry-pick DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([#2574](https://github.com/deephaven/web-client-ui/issues/2574)) ([09658d1](https://github.com/deephaven/web-client-ui/commit/09658d177a26c597f5a99e4a2ba7de2f944cdab0))
+
 ## [0.85.36](https://github.com/deephaven/web-client-ui/compare/v0.85.35...v0.85.36) (2025-10-14)
 
 ### Bug Fixes
