@@ -148,9 +148,10 @@ export function getTreeItems(
     string,
     { visibleIndex: VisibleIndex; modelIndex: ModelIndex }
   >(
-    visibleToModelMap
-      .entries()
-      .map(([v, m]) => [columns[m].name, { visibleIndex: v, modelIndex: m }])
+    [...visibleToModelMap.entries()].map(([v, m]) => [
+      columns[m].name,
+      { visibleIndex: v, modelIndex: m },
+    ])
   );
 
   visibleIndex = 0;
