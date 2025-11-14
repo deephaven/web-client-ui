@@ -55,7 +55,30 @@ const NESTED_COLUMN_HEADER_GROUPS = [
 ] satisfies (Omit<DhType.ColumnGroup, 'color'> & { color?: string | null })[];
 
 window.HTMLElement.prototype.scroll = jest.fn();
+window.HTMLElement.prototype.scrollTo = jest.fn();
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+jest.mock<typeof import('@tanstack/react-virtual')>(
+  '@tanstack/react-virtual',
+  () => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    const actual = jest.requireActual<typeof import('@tanstack/react-virtual')>(
+      '@tanstack/react-virtual'
+    );
+    return {
+      ...actual,
+      useVirtualizer(options) {
+        return actual.useVirtualizer({
+          ...options,
+          observeElementRect: (instance, callback) => {
+            if (instance.scrollElement) callback({ width: 300, height: 1000 });
+          },
+        });
+      },
+    };
+  }
+);
 
 function Builder({
   model = makeModel(),
@@ -1743,15 +1766,16 @@ describe('Search', () => {
       ).toBe(2 * COLUMNS.length)
     );
 
-    // Globally mocked scrollIntoView for this test file
-    jest.mocked(window.HTMLElement.prototype.scrollIntoView).mockClear();
+    // Virtualizer calls scrollTo on the container element
+    const mockScrollTo = jest.fn();
+    HTMLElement.prototype.scrollTo = mockScrollTo;
 
     // Click the search item
-    await user.click(screen.getAllByText(COLUMNS.at(-1)!.name)[1]);
+    await user.click(screen.getAllByText(COLUMNS[COLUMNS.length - 1].name)[1]);
 
     await waitFor(() => {
-      const item = screen.getByText(COLUMNS.at(-1)!.name);
-      expect(item.scrollIntoView).toHaveBeenCalledTimes(1);
+      const item = screen.getByText(COLUMNS[COLUMNS.length - 1].name);
+      expect(mockScrollTo).toHaveBeenCalledTimes(1);
       expect(item.closest('.tree-item')).toHaveFocus();
     });
   });

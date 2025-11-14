@@ -54,6 +54,7 @@ $depth-margin: calc(
       flex-shrink: 1;
       overflow-x: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .item-count {

@@ -16,24 +16,20 @@ import {
   type DragStartEvent,
   type DragMoveEvent,
   type DragEndEvent,
-  type DragOverEvent,
   MeasuringStrategy,
   DragOverlay,
   type DropAnimation,
   defaultDropAnimation,
   type Modifier,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { flattenTree, getChildCount, getProjection } from './utilities';
-import type {
-  FlattenedItem,
-  SensorContext,
-  TreeItem as TreeItemType,
-} from './types';
+import { getProjection } from './utilities';
+import type { FlattenedItem, SensorContext } from './types';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import PointerSensorWithInteraction from './PointerSensorWithInteraction';
 import { TreeItem, type TreeItemRenderFn } from './TreeItem';
@@ -115,8 +111,32 @@ function adjustToCursor(args: Parameters<Modifier>[0]): {
 // The logic came from the dnd-kit example.
 adjustToCursor.offsetY = null as number | null;
 
+// From https://github.com/clauderic/dnd-kit/pull/334
+const fixCursorSnapOffset: CollisionDetection = args => {
+  // Bail out if keyboard activated
+  if (!args.pointerCoordinates) {
+    return closestCenter(args);
+  }
+  const { x, y } = args.pointerCoordinates;
+  const { width, height } = args.collisionRect;
+  const updated = {
+    ...args,
+    // The collision rectangle is broken when using adjustToCursor. Reset
+    // the collision rectangle based on pointer location and overlay size.
+    collisionRect: {
+      width,
+      height,
+      bottom: y + height / 2,
+      left: x - width / 2,
+      right: x + width / 2,
+      top: y - height / 2,
+    },
+  };
+  return closestCenter(updated);
+};
+
 type Props<T> = React.PropsWithChildren<{
-  items: TreeItemType<T>[];
+  items: readonly FlattenedItem<T>[];
   indentationWidth?: number;
   onDragStart?: (id: string, event: DragStartEvent) => void;
   onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
@@ -132,36 +152,13 @@ export default function SortableTreeDndContext<T>({
   renderItem,
 }: Props<T>): JSX.Element {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
-  const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
-
-    if (activeId != null) {
-      return flattenedTree.filter(
-        ({ id, selected }) => id === activeId || !selected
-      );
-    }
-
-    return flattenedTree;
-  }, [activeId, items]);
-
   const activeItem =
-    activeId != null ? flattenedItems.find(({ id }) => id === activeId) : null;
+    activeId != null ? items.find(({ id }) => id === activeId) : null;
 
-  const projected =
-    activeId != null && overId != null
-      ? getProjection(
-          flattenedItems,
-          activeId,
-          overId,
-          offsetLeft,
-          indentationWidth
-        )
-      : null;
   const sensorContext: SensorContext = useRef({
-    items: flattenedItems,
+    items,
     offset: offsetLeft,
   });
   const keyboardOptions = useMemo(
@@ -187,17 +184,14 @@ export default function SortableTreeDndContext<T>({
     useSensor(KeyboardSensor, keyboardOptions)
   );
 
-  const sortedIds = useMemo(
-    () => flattenedItems.map(({ id }) => id),
-    [flattenedItems]
-  );
+  const sortedIds = useMemo(() => items.map(({ id }) => id), [items]);
 
   useEffect(() => {
     sensorContext.current = {
-      items: flattenedItems,
+      items,
       offset: offsetLeft,
     };
-  }, [flattenedItems, offsetLeft]);
+  }, [items, offsetLeft]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -205,7 +199,6 @@ export default function SortableTreeDndContext<T>({
         active: { id: newActiveId },
       } = event;
       setActiveId(newActiveId as string);
-      setOverId(newActiveId as string);
       onDragStart?.(newActiveId as string, event);
 
       document.body.style.setProperty('cursor', 'grabbing');
@@ -217,12 +210,7 @@ export default function SortableTreeDndContext<T>({
     setOffsetLeft(delta.x);
   }, []);
 
-  const handleDragOver = useCallback(({ over }: DragOverEvent) => {
-    setOverId((over?.id as string) ?? null);
-  }, []);
-
   const resetState = useCallback(() => {
-    setOverId(null);
     setActiveId(null);
     setOffsetLeft(0);
 
@@ -231,11 +219,22 @@ export default function SortableTreeDndContext<T>({
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
+      const projected =
+        active.id != null && over?.id != null
+          ? getProjection(
+              items,
+              active.id as string,
+              over.id as string,
+              (active.rect.current.translated?.left ?? 0) -
+                (active.rect.current.initial?.left ?? 0),
+              indentationWidth
+            )
+          : null;
       if (projected && over) {
         const { depth, parentId } = projected;
 
         const clonedItems: FlattenedItem<T>[] = JSON.parse(
-          JSON.stringify(flattenTree(items))
+          JSON.stringify(items)
         );
         const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
         const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -250,7 +249,7 @@ export default function SortableTreeDndContext<T>({
       }
       resetState();
     },
-    [items, onDragEnd, projected, resetState]
+    [items, indentationWidth, onDragEnd, resetState]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -260,11 +259,10 @@ export default function SortableTreeDndContext<T>({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={fixCursorSnapOffset}
       measuring={MEASURING}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
@@ -281,8 +279,7 @@ export default function SortableTreeDndContext<T>({
               <TreeItem
                 depth={activeItem.depth}
                 clone
-                childCount={getChildCount(items, activeId) + 1}
-                value={activeId.toString()}
+                value={activeId}
                 renderItem={renderItem}
                 item={activeItem}
               />

@@ -5,7 +5,6 @@ import type { FlattenedItem } from './types';
 import './TreeItem.scss';
 
 export interface TreeItemProps<T> {
-  childCount?: number;
   clone?: boolean;
   depth: number;
   withDepthMarkers?: boolean;
@@ -21,12 +20,12 @@ export interface TreeItemProps<T> {
    * Styles from dnd-kit to transform the depth lines
    */
   style?: React.CSSProperties;
+  top?: number;
 }
 
 export type TreeItemRenderFnProps<T> = {
   ref: React.Ref<HTMLDivElement> | null;
   clone: boolean;
-  childCount?: number;
   value: string;
   item: FlattenedItem<T>;
   handleProps?: Record<string, unknown>;
@@ -49,8 +48,8 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
     wrapperRef = null,
     renderItem,
     item,
-    childCount,
     style,
+    top,
   } = props;
 
   const depthMarkers = useMemo(
@@ -76,10 +75,14 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
       clone,
       value,
       item,
-      childCount,
       handleProps,
     }),
-    [dragRef, clone, value, item, childCount, handleProps]
+    [dragRef, clone, value, item, handleProps]
+  );
+
+  const wrapperStyle = useMemo(
+    () => ({ top, position: 'absolute' as const }),
+    [top]
   );
 
   return (
@@ -91,7 +94,9 @@ export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
         disableInteraction,
       })}
       data-id={item.id}
+      data-index={item.index}
       ref={wrapperRef}
+      style={wrapperStyle}
     >
       {!clone && withDepthMarkers && depthMarkers}
       {renderItem(renderItemProps)}

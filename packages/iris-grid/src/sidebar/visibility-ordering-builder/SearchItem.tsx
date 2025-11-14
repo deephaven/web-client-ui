@@ -8,8 +8,14 @@ import { type FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
 type SearchItemProps = {
   value: string;
   item: FlattenedIrisGridTreeItem;
-  onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
-  onKeyDown: (name: string, event: React.KeyboardEvent<HTMLElement>) => void;
+  onClick: (
+    item: FlattenedIrisGridTreeItem,
+    event: React.MouseEvent<HTMLElement>
+  ) => void;
+  onKeyDown: (
+    item: FlattenedIrisGridTreeItem,
+    event: React.KeyboardEvent<HTMLElement>
+  ) => void;
   handleProps?: Record<string, unknown>;
 };
 
@@ -19,16 +25,16 @@ const SearchItem = forwardRef<HTMLDivElement, SearchItemProps>(
 
     const handleClick = useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
-        onClick(value, event);
+        onClick(item, event);
       },
-      [onClick, value]
+      [onClick, item]
     );
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLElement>) => {
-        onKeyDown(value, event);
+        onKeyDown(item, event);
       },
-      [onKeyDown, value]
+      [onKeyDown, item]
     );
 
     return (

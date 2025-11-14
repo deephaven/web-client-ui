@@ -306,6 +306,8 @@ test('organize columns', async ({ page }) => {
     const intOption = page.getByRole('button', {
       name: 'Toggle visibility Int',
     });
+    await floatOption.click();
+    await page.mouse.wheel(0, -1000); // Scroll to top of the menu so webkit doesn't auto scroll and drop incorrectly
     await dragComponent(floatOption, intOption, dropIndicator, 0, 20);
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

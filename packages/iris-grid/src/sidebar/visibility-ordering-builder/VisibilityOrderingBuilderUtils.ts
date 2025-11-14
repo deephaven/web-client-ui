@@ -25,7 +25,6 @@ export function moveItemsFromDrop(
   to: FlattenedIrisGridTreeItem,
   movedColumns: readonly MoveOperation[],
   columnHeaderGroups: readonly ColumnHeaderGroup[],
-  flattenedItems: readonly FlattenedIrisGridTreeItem[],
   selectedParentItems: readonly FlattenedIrisGridTreeItem[],
   firstMovableIndex: number,
   lastMovableIndex: number
@@ -33,18 +32,13 @@ export function moveItemsFromDrop(
   groups: readonly ColumnHeaderGroup[];
   movedColumns: readonly MoveOperation[];
 } {
-  const treeItems = flattenedItems.map((item, i) => ({
-    ...item,
-    index: i,
-  }));
-
   let newMoves = [] as MoveOperation[];
   let newGroups = columnHeaderGroups;
 
   const firstVisibleIndex = selectedParentItems[0].data.visibleIndex;
 
-  const fromItemIndex = treeItems.findIndex(({ id }) => id === from.id);
-  const toItemIndex = treeItems.findIndex(({ id }) => id === to.id);
+  const fromItemIndex = from.index;
+  const toItemIndex = to.index;
 
   let toIndex = Array.isArray(firstVisibleIndex)
     ? firstVisibleIndex[1] + 1
