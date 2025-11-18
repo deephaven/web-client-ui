@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, type DropdownActions } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
@@ -57,8 +57,8 @@ it('dropdown menu disappears on toggle', async () => {
   let dropdown: HTMLElement | null = screen.getByText(title);
   expect(dropdown).toBeTruthy();
   await user.click(dropdown);
-  expect(mockClick).toBeCalled();
-  jest.runAllTimers();
+  expect(mockClick).toHaveBeenCalled();
+  act(() => jest.runAllTimers());
   dropdown = screen.queryByText(title);
   expect(dropdown).toBeFalsy();
 });

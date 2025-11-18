@@ -12,7 +12,9 @@ export function PandasWidgetPlugin({
   const fetchResult = useIrisGridModel(fetch);
 
   if (fetchResult.status === 'loading') {
-    return <LoadingOverlay isLoading />;
+    return (
+      <LoadingOverlay isLoading data-testid="pandas-widget-plugin-loading" />
+    );
   }
 
   if (fetchResult.status === 'error') {
@@ -20,6 +22,7 @@ export function PandasWidgetPlugin({
       <LoadingOverlay
         errorMessage={getErrorMessage(fetchResult.error)}
         isLoading={false}
+        data-testid="pandas-widget-plugin-loading-error"
       />
     );
   }

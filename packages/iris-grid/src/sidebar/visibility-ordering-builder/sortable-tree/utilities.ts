@@ -1,13 +1,20 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import type { dh } from '@deephaven/jsapi-types';
 import {
+  GridRange,
   GridUtils,
+  type VisibleIndex,
   type ModelIndex,
   type MoveOperation,
 } from '@deephaven/grid';
+import { assertNotNull } from '@deephaven/utils';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
-import { isFlattenedTreeItem, type ReadonlyTreeItems } from './types';
-import type { FlattenedItem, TreeItem } from './types';
+import {
+  isFlattenedTreeItem,
+  type ReadonlyTreeItems,
+  type FlattenedItem,
+  type TreeItem,
+} from './types';
 
 /**
  * Gets the depth of an item dragged with a given x-axis offset
@@ -20,7 +27,7 @@ function getDragDepth(offset: number, indentationWidth: number): number {
   return Math.round(offset / indentationWidth);
 }
 
-interface IrisGridTreeItemData {
+export interface IrisGridTreeItemData {
   modelIndex: number | number[];
   visibleIndex: number | [number, number];
   isVisible: boolean;
@@ -32,15 +39,19 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  columns: readonly dh.Column[],
+  nameToIndexes: Map<
+    string,
+    { visibleIndex: VisibleIndex; modelIndex: ModelIndex }
+  >,
   movedColumns: readonly MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
   hiddenColumnSet: Set<ModelIndex>,
-  selectedItems: Set<string>
+  selectedItems: Set<string>,
+  showHiddenColumns: boolean
 ): IrisGridTreeItem {
-  const modelIndex = columns.findIndex(col => col.name === name);
-  if (modelIndex === -1) {
+  const { modelIndex, visibleIndex } = nameToIndexes.get(name) ?? {};
+  if (modelIndex === undefined || visibleIndex === undefined) {
     const group = columnHeaderGroupMap.get(name);
 
     if (group == null) {
@@ -53,14 +64,19 @@ function getTreeItem(
       id: name,
       selected: selectedItems.has(name),
       children: group.children
+        .filter(
+          (_, i) =>
+            showHiddenColumns || !hiddenColumnSet.has(group.childIndexes[i])
+        )
         .map(childName =>
           getTreeItem(
-            columns,
+            nameToIndexes,
             movedColumns,
             columnHeaderGroupMap,
             childName,
             hiddenColumnSet,
-            selectedItems
+            selectedItems,
+            showHiddenColumns
           )
         )
         .sort((a, b) => {
@@ -87,7 +103,7 @@ function getTreeItem(
     selected: selectedItems.has(name),
     data: {
       modelIndex,
-      visibleIndex: GridUtils.getVisibleIndex(modelIndex, movedColumns),
+      visibleIndex,
       isVisible: !hiddenColumnSet.has(modelIndex),
     },
   };
@@ -98,7 +114,8 @@ export function getTreeItems(
   movedColumns: readonly MoveOperation[],
   columnHeaderGroups: readonly ColumnHeaderGroup[],
   hiddenColumns: readonly ModelIndex[],
-  selectedItems: readonly string[]
+  selectedItems: readonly string[],
+  showHiddenColumns: boolean
 ): IrisGridTreeItem[] {
   const items: IrisGridTreeItem[] = [];
   const selectedItemsSet = new Set(selectedItems);
@@ -108,8 +125,39 @@ export function getTreeItems(
   const hiddenColumnSet = new Set(hiddenColumns);
 
   let visibleIndex = 0;
+  const modelRanges = GridRange.boundedRanges(
+    GridUtils.getModelRange(
+      GridRange.makeNormalized(0, 0, columns.length - 1, 0),
+      movedColumns
+    ),
+    columns.length,
+    1
+  );
+  const mapEntries = modelRanges.flatMap(range => {
+    const { startColumn, endColumn } = range;
+    const rangeLength = endColumn - startColumn + 1;
+    const entries = new Array(rangeLength)
+      .fill(0)
+      .map((_, i) => [visibleIndex + i, startColumn + i] as const);
+    visibleIndex += rangeLength;
+    return entries;
+  });
+  const visibleToModelMap = new Map<VisibleIndex, ModelIndex>(mapEntries);
+
+  const nameToIndexes = new Map<
+    string,
+    { visibleIndex: VisibleIndex; modelIndex: ModelIndex }
+  >(
+    [...visibleToModelMap.entries()].map(([v, m]) => [
+      columns[m].name,
+      { visibleIndex: v, modelIndex: m },
+    ])
+  );
+
+  visibleIndex = 0;
   while (visibleIndex < columns.length) {
-    const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+    const modelIndex = visibleToModelMap.get(visibleIndex);
+    assertNotNull(modelIndex);
     const columnName = columns[modelIndex].name;
 
     let group = columnHeaderGroups.find(({ children }) =>
@@ -120,12 +168,13 @@ export function getTreeItems(
     }
 
     const item = getTreeItem(
-      columns,
+      nameToIndexes,
       movedColumns,
       groupMap,
       group ? group.name : columnName,
       hiddenColumnSet,
-      selectedItemsSet
+      selectedItemsSet,
+      showHiddenColumns
     );
 
     items.push(item);
@@ -148,10 +197,11 @@ export function getTreeItems(
  * @param overId ID of the item currently being dragged over
  * @param dragOffset The x-axis offset of the dragged item
  * @param indentationWidth The width for each level of the tree
- * @returns The projected position and depth if the item were to be dropped
+ * @returns The projected position and depth if the item were to be dropped.
+ *          Null if the projection could not be calculated.
  */
 export function getProjection(
-  items: FlattenedItem[],
+  items: readonly FlattenedItem[],
   activeId: string,
   overId: string,
   dragOffset: number,
@@ -161,11 +211,18 @@ export function getProjection(
   maxDepth: number;
   minDepth: number;
   parentId: string | null;
-} {
+} | null {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
+  if (overItemIndex === -1 || activeItemIndex === -1) {
+    return null;
+  }
   const activeItem = items[activeItemIndex];
-  const newItems = arrayMove(items, activeItemIndex, overItemIndex);
+  const newItems = arrayMove(
+    items as FlattenedItem[],
+    activeItemIndex,
+    overItemIndex
+  );
   const previousItem: FlattenedItem | undefined = newItems[overItemIndex - 1];
   const nextItem = newItems[overItemIndex + 1];
   const dragDepth = getDragDepth(dragOffset, indentationWidth);
@@ -242,14 +299,16 @@ function flatten<T>(
   parentId: string | null = null,
   depth = 0
 ): FlattenedItem<T>[] {
-  return items.reduce<FlattenedItem<T>[]>(
-    (acc, item, index) => [
-      ...acc,
-      { ...item, parentId, depth, index },
-      ...flatten(item.children, item.id, depth + 1),
-    ],
-    []
-  );
+  return items
+    .reduce<FlattenedItem<T>[]>(
+      (acc, item) => [
+        ...acc,
+        { ...item, parentId, depth, index: 0 }, // Index will be recalculated after
+        ...flatten(item.children, item.id, depth + 1),
+      ],
+      []
+    )
+    .map((item, index) => ({ ...item, index })); // Recalculate indexes to be sequential
 }
 
 /**

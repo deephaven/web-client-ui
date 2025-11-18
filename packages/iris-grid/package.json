@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "1.5.1",
+  "version": "1.9.0",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -37,16 +37,19 @@
     "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "^1.0.0-dev0.39.4",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.40.4",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "@dnd-kit/core": "^6.1.0",
-    "@dnd-kit/sortable": "^7.0.2",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@tanstack/react-virtual": "^3.13.12",
     "classnames": "^2.3.1",
     "fast-deep-equal": "^3.1.3",
     "lodash.clamp": "^4.0.3",
@@ -56,13 +59,11 @@
     "memoizee": "^0.4.15",
     "monaco-editor": "^0.43.0",
     "nanoid": "^5.0.7",
-    "prop-types": "^15.7.2",
-    "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^4.4.2"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",

@@ -156,6 +156,7 @@ function AppInit(): JSX.Element {
     <>
       {isLoaded && <App />}
       <LoadingOverlay
+        data-testid="app-init-loading"
         isLoading={isLoading && errorMessage == null}
         isLoaded={isLoaded}
         errorMessage={errorMessage}

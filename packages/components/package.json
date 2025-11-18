@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "1.5.1",
+  "version": "1.9.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,8 +29,11 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
+    "@fontsource/fira-mono": "5.0.13",
+    "@fontsource/fira-sans": "5.0.20",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@hello-pangea/dnd": "^18.0.1",
     "@internationalized/date": "^3.5.5",
     "@react-spectrum/theme-default": "^3.5.1",
     "@react-spectrum/toast": "^3.0.0-beta.16",
@@ -48,12 +51,10 @@
     "memoizee": "^0.4.15",
     "nanoid": "^5.0.7",
     "popper.js": "^1.16.1",
-    "prop-types": "^15.7.2",
-    "react-beautiful-dnd": "^13.1.0",
     "react-reverse-portal": "^2.3.0",
     "react-transition-group": "^4.4.2",
-    "react-virtualized-auto-sizer": "1.0.6",
-    "react-window": "^1.8.6"
+    "react-virtualized-auto-sizer": "1.0.7",
+    "react-window": "^1.8.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -63,7 +64,7 @@
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/test-utils": "file:../test-utils",
-    "react-redux": "^7.2.4"
+    "react-redux": "^7.2.7"
   },
   "files": [
     "dist",

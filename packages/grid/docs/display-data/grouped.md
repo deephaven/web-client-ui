@@ -4,7 +4,7 @@ Some data can be displayed as a tree. This example uses [MockTreeGridModel](http
 
 ```jsx live
 function Example() {
-  const [model] = useState(() => new MockTreeGridModel());
+  const model = useMemo(() => new MockTreeGridModel(), []);
 
   return <Grid model={model} />;
 }

@@ -25,7 +25,6 @@ export function moveItemsFromDrop(
   to: FlattenedIrisGridTreeItem,
   movedColumns: readonly MoveOperation[],
   columnHeaderGroups: readonly ColumnHeaderGroup[],
-  flattenedItems: readonly FlattenedIrisGridTreeItem[],
   selectedParentItems: readonly FlattenedIrisGridTreeItem[],
   firstMovableIndex: number,
   lastMovableIndex: number
@@ -33,18 +32,13 @@ export function moveItemsFromDrop(
   groups: readonly ColumnHeaderGroup[];
   movedColumns: readonly MoveOperation[];
 } {
-  const treeItems = flattenedItems.map((item, i) => ({
-    ...item,
-    index: i,
-  }));
-
-  let newMoves: MoveOperation[] = [];
+  let newMoves = [] as MoveOperation[];
   let newGroups = columnHeaderGroups;
 
   const firstVisibleIndex = selectedParentItems[0].data.visibleIndex;
 
-  const fromItemIndex = treeItems.findIndex(({ id }) => id === from.id);
-  const toItemIndex = treeItems.findIndex(({ id }) => id === to.id);
+  const fromItemIndex = from.index;
+  const toItemIndex = to.index;
 
   let toIndex = Array.isArray(firstVisibleIndex)
     ? firstVisibleIndex[1] + 1
@@ -104,17 +98,21 @@ export function moveItemsFromDrop(
     newMoves
   );
 
-  return { groups: newGroups, movedColumns: movedColumns.concat(newMoves) };
+  return {
+    groups: newGroups,
+    movedColumns:
+      newMoves.length > 0 ? movedColumns.concat(newMoves) : movedColumns,
+  };
 }
 
 export function moveToGroup<T>(
   item: FlattenedItem<T>,
   toName: string | null,
   columnGroups: readonly ColumnHeaderGroup[]
-): ColumnHeaderGroup[] {
+): readonly ColumnHeaderGroup[] {
   if (item.parentId === toName) {
     // Don't need to move an item if it is already in the group
-    return [...columnGroups];
+    return columnGroups;
   }
 
   let newGroups = columnGroups.map(group => new ColumnHeaderGroup(group));

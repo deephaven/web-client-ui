@@ -14,7 +14,7 @@ Log.setLogLevel(logLevel);
 
 // disable annoying dnd-react warnings
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-window['__react-beautiful-dnd-disable-dev-warnings'] = true;
+window['__@hello-pangea/dnd-disable-dev-warnings'] = true;
 
 // Define the matchMedia property so we can mock out monaco properly
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom

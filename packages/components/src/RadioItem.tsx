@@ -87,16 +87,4 @@ const RadioItem = React.forwardRef<HTMLInputElement, RadioItemProps>(
 
 RadioItem.displayName = 'RadioItem';
 
-RadioItem.defaultProps = {
-  checked: undefined,
-  className: '',
-  disabled: false,
-  inputClassName: '',
-  isInvalid: false,
-  labelClassName: '',
-  name: undefined,
-  onChange: undefined,
-  'data-testid': undefined,
-};
-
 export default RadioItem;

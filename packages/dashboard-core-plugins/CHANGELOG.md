@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- DH-20500: Links without operators not working ([#2541](https://github.com/deephaven/web-client-ui/issues/2541)) ([cbb4fc5](https://github.com/deephaven/web-client-ui/commit/cbb4fc56d621bb337c5ff5449de5396b79edbff6))
+- Pass optional expandDescendants arg to setColumnExpanded ([#2540](https://github.com/deephaven/web-client-ui/issues/2540)) ([a19bc11](https://github.com/deephaven/web-client-ui/commit/a19bc11446da4328bc5c216064ec810b24ee0312))
+
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [1.7.0](https://github.com/deephaven/web-client-ui/compare/v1.6.0...v1.7.0) (2025-09-24)
+
+### Features
+
+- DH-13515: Expandable columns support ([#2537](https://github.com/deephaven/web-client-ui/issues/2537)) ([6938c47](https://github.com/deephaven/web-client-ui/commit/6938c477a03f4d747851f10c43549dbdae69b648))
+
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-18648: Ensure grid panel doesn't crash when Pandas query restarted ([#2528](https://github.com/deephaven/web-client-ui/issues/2528)) ([9c969f0](https://github.com/deephaven/web-client-ui/commit/9c969f03fe27daff543c9dac920a69e7c949331c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

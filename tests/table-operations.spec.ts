@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   makeTableCommand,
   pasteInMonaco,
@@ -113,6 +113,9 @@ test.beforeEach(async ({ page }) => {
       throw new Error(msg.text());
     }
   });
+  page.on('pageerror', error => {
+    throw error;
+  });
 
   await openTable(page, 'all_types');
 
@@ -137,7 +140,7 @@ test('select distinct values', async ({ page }) => {
 });
 
 test('search', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Search Bar').click();
+  await page.getByText('Search Bar').click();
 
   const searchBar = page.getByTestId('cross-column-search');
   await expect(searchBar).toHaveCount(1);
@@ -229,11 +232,13 @@ test('organize columns', async ({ page }) => {
   await openTableOption(page, 'Organize Columns');
 
   await test.step('Search', async () => {
-    await page.getByPlaceholder('Search').click();
+    await page.getByLabel('Search columns').click();
 
     // changed so the word "string" doesn't show up on screen due to a kerning issue
     // https://github.com/microsoft/playwright/issues/20203
     await page.keyboard.type('bigd');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
 
     await expect(
       page.locator('.visibility-ordering-builder')
@@ -241,9 +246,8 @@ test('organize columns', async ({ page }) => {
   });
 
   await test.step('Move Selection Down', async () => {
-    await page
-      .getByRole('button', { name: 'Move selection down' })
-      .click({ clickCount: 2 });
+    await page.getByRole('button', { name: 'Move selection down' }).click();
+    await page.getByRole('button', { name: 'Move selection down' }).click();
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
@@ -299,10 +303,12 @@ test('organize columns', async ({ page }) => {
     const floatOption = page.getByRole('button', {
       name: 'Toggle visibility Float',
     });
-    const stringOption = page.getByRole('button', {
-      name: 'Toggle visibility String',
+    const intOption = page.getByRole('button', {
+      name: 'Toggle visibility Int',
     });
-    await dragComponent(floatOption, stringOption, dropIndicator, 20);
+    await floatOption.click();
+    await page.mouse.wheel(0, -1000); // Scroll to top of the menu so webkit doesn't auto scroll and drop incorrectly
+    await dragComponent(floatOption, intOption, dropIndicator, 0, 20);
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
@@ -429,13 +435,11 @@ test('custom column', async ({ page, browserName }) => {
 
     await waitForLoadingDone(page);
 
-    // TODO: This is disabled due to test failing in CI but not locally. Should
-    // be fixed and re-enabled in #1553.
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
 
-test('rollup rows and aggregrate columns', async ({ page }) => {
+test('rollup rows and aggregate columns', async ({ page }) => {
   await openTableOption(page, 'Rollup Rows');
 
   const stringColumn = page.getByRole('button', { name: 'String' });
@@ -456,7 +460,7 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
   });
 
   await test.step('Toggle non-aggregated columns', async () => {
-    await page.getByText('Non-Aggregated Columns').click();
+    await page.getByText('Non-Aggregated Columns').click({ delay: 200 });
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -480,10 +484,14 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     expect(intColumn).toBeTruthy();
+    // Move mousee off the grid and ensure the hover state gets removed
+    // This is a workaround for React 18 Chrome e2e failing here with the row still hovered after clicking in the side panel
+    await page.mouse.move(300, 0, { steps: 10 });
     await intColumn.dblclick();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await page.pause();
   });
 
   await test.step('Rollup a double column', async () => {
@@ -522,7 +530,14 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
     await page
       .getByRole('button', { name: 'Edit Columns', exact: true })
       .click();
-    await page.getByText('Double', { exact: true }).click();
+
+    const locator = page.getByText('Double', { exact: true });
+    // Sometimes this becomes flaky presumably because of the animation
+    // or some React inner workings causing 2 elements to briefly exist.
+    // They are identical except their label ID assigned by the component we use.
+    // Waiting for only 1 to exist should hopefully fix flakiness.
+    await expect(locator).toHaveCount(1);
+    await locator.click();
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
@@ -633,8 +648,8 @@ test('advanced settings', async ({ page }) => {
 
     await openTableOption(page, 'Advanced Settings');
     await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from a control'
+      .getByText(
+        'Clear current table filters before applying new filters from a control'
       )
       .click();
     await page.getByTestId('btn-page-close').click();
@@ -676,8 +691,8 @@ test('advanced settings', async ({ page }) => {
 
     await openTableOption(page, 'Advanced Settings');
     await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from an incoming link filter'
+      .getByText(
+        'Clear current table filters before applying new filters from an incoming link filter'
       )
       .click();
     await page.getByTestId('btn-page-close').click();

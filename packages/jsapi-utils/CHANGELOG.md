@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- Accept all HasEventHandling types when creating event Promise ([#2550](https://github.com/deephaven/web-client-ui/issues/2550)) ([e9774ad](https://github.com/deephaven/web-client-ui/commit/e9774ad0242183903bbdaf3d2cf05c2f18350bca))
+
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/jsapi-utils
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+**Note:** Version bump only for package @deephaven/jsapi-utils
+
 ## [1.4.0](https://github.com/deephaven/web-client-ui/compare/v1.3.0...v1.4.0) (2025-07-29)
 
 ### Features

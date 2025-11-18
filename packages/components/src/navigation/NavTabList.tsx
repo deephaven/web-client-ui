@@ -11,7 +11,7 @@ import {
   DragDropContext,
   Droppable,
   type OnDragEndResponder,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { vsChevronRight, vsChevronLeft, vsChevronDown } from '@deephaven/icons';
@@ -106,6 +106,15 @@ type NavTabListProps<T extends NavTabItem = NavTabItem> = {
    * @returns Additional context items for the tab
    */
   makeContextActions?: (tab: T) => ContextAction | ContextAction[];
+
+  /**
+   * Optional render function to render content after each tab's title.
+   * Should be wrapped in useCallback to avoid unnecessary re-renders.
+   *
+   * @param tab The tab to render content for
+   * @returns The content to render after the tab title
+   */
+  renderAfterTabContent?: (tab: T) => React.ReactNode;
 };
 
 function isScrolledLeft(element: HTMLElement): boolean {
@@ -181,6 +190,7 @@ function NavTabList({
   onReorder,
   onClose,
   makeContextActions,
+  renderAfterTabContent,
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
   const [isOverflowing, setIsOverflowing] = useState(true);
@@ -277,9 +287,9 @@ function NavTabList({
     const { children } = containerRef.current;
     for (let i = 0; i < children.length; i += 1) {
       const child = children[i] as HTMLElement;
-      // Add 5px to right edge to account for rounding of offset values
+      // Subtract 5px from right edge to account for rounding of offset values
       if (
-        child.offsetLeft + 5 >
+        child.offsetLeft + child.offsetWidth - 5 >
         containerRef.current.scrollLeft + containerRef.current.offsetWidth
       ) {
         child.scrollIntoView({
@@ -431,6 +441,7 @@ function NavTabList({
         onClose={onClose}
         isDraggable={onReorder != null}
         contextActions={tabContextActionMap.get(key)}
+        renderAfterTabContent={renderAfterTabContent}
       />
     );
   });

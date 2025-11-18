@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { vsClose } from '@deephaven/icons';
@@ -8,7 +8,7 @@ import './ToastNotification.scss';
 import { FadeTransition } from './transitions';
 
 type ToastNotificationProps = {
-  buttons?: (typeof Button)[];
+  buttons?: React.ReactNode[];
   classNames?: string;
   isShown?: boolean;
   message?: string;
@@ -31,6 +31,7 @@ function ToastNotification({
   onDismiss,
   'data-testid': dataTestId,
 }: ToastNotificationProps): JSX.Element {
+  const nodeRef = useRef<HTMLDivElement>(null);
   const hasButtons = buttons && buttons.length !== 0;
 
   return (
@@ -40,8 +41,10 @@ function ToastNotification({
       classNames="toast-notification-slide-up"
       mountOnEnter
       unmountOnExit
+      nodeRef={nodeRef}
     >
       <div
+        ref={nodeRef}
         className={classNames('toast-notification', classNamesProp, type)}
         role="presentation"
         onClick={onClick}

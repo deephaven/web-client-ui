@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import useWidgetClose from './useWidgetClose';

@@ -60,16 +60,19 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
   const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
 
   const handleSelectionChange = useCallback(
-    newSelectedItems => {
+    (newSelectedItems: FileStorageItem[]) => {
       setSelectedItems(newSelectedItems);
       onSelectionChange?.(newSelectedItems);
     },
     [onSelectionChange]
   );
 
-  const handleFocusChange = useCallback(newFocusedItem => {
-    setFocusedItem(newFocusedItem);
-  }, []);
+  const handleFocusChange = useCallback(
+    (newFocusedItem: FileStorageItem | undefined) => {
+      setFocusedItem(newFocusedItem);
+    },
+    []
+  );
 
   const handleCopyAction = useCallback(() => {
     if (focusedItem) {

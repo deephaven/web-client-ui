@@ -14,6 +14,15 @@ export function isColumnHeaderGroup(x: unknown): x is ColumnHeaderGroup {
   return x instanceof ColumnHeaderGroup;
 }
 
+export type ColumnHeaderGroupConfig = {
+  name: string;
+  children: string[];
+  color?: string | null;
+  depth: number;
+  childIndexes: ModelIndex[];
+  parent?: string;
+};
+
 export default class ColumnHeaderGroup implements IColumnHeaderGroup {
   static NEW_GROUP_PREFIX = ':newGroup';
 
@@ -36,14 +45,7 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
     depth,
     childIndexes,
     parent,
-  }: {
-    name: string;
-    children: string[];
-    color?: string | null;
-    depth: number;
-    childIndexes: ModelIndex[];
-    parent?: string;
-  }) {
+  }: ColumnHeaderGroupConfig) {
     this.name = name;
     this.children = children;
     this.color = color ?? undefined;
@@ -88,5 +90,14 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
 
   get isNew(): boolean {
     return this.name.startsWith(ColumnHeaderGroup.NEW_GROUP_PREFIX);
+  }
+
+  /**
+   * Checks if a group is valid.
+   * An invalid group needs to be re-parsed with the corresponding model.
+   * @returns true if the group is valid (all children have indexes)
+   */
+  isValid(): boolean {
+    return this.children.length === this.childIndexes.length;
   }
 }

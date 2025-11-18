@@ -5,9 +5,10 @@ import React, { Component } from 'react';
 import Log from '@deephaven/log';
 import ContextActionUtils, {
   type ResolvableContextAction,
+  type ContextAction,
+  type ContextActionEvent,
   isPromise,
 } from './ContextActionUtils';
-import type { ContextAction, ContextActionEvent } from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
 import './ContextActions.scss';
 

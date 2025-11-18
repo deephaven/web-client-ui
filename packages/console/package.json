@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "1.5.1",
+  "version": "1.9.0",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -28,7 +28,7 @@
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-types": "^1.0.0-dev0.39.4",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.40.4",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
@@ -45,7 +45,6 @@
     "nanoid": "^5.0.7",
     "papaparse": "5.3.2",
     "popper.js": "^1.16.1",
-    "prop-types": "^15.7.2",
     "shell-quote": "^1.7.2"
   },
   "peerDependencies": {

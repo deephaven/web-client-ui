@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+- DH-20594: Prevent joined columns from being edited ([#2551](https://github.com/deephaven/web-client-ui/issues/2551)) ([774c4cc](https://github.com/deephaven/web-client-ui/commit/774c4cc3f7d7885d9fd3eabe630b45d2101f6228))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+### Bug Fixes
+
+- DH-20734: Datetime tooltip shown on wrong column when column is moved ([#2554](https://github.com/deephaven/web-client-ui/issues/2554)) ([afdb592](https://github.com/deephaven/web-client-ui/commit/afdb59250ba16654c0c3f6a457e39eef3bc82f66))
+
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Column organization overflow and undo/redo ([#2546](https://github.com/deephaven/web-client-ui/issues/2546)) ([5ef19c2](https://github.com/deephaven/web-client-ui/commit/5ef19c2976576b6a604d305bf0df7c4040616f81))
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- Add explicit refs to react-transition-group for React 19 support ([#2534](https://github.com/deephaven/web-client-ui/issues/2534)) ([eaa583e](https://github.com/deephaven/web-client-ui/commit/eaa583efb0b0d0a44ef5ddc72a7835fb2174d8f2))
+- DH-20500: Links without operators not working ([#2541](https://github.com/deephaven/web-client-ui/issues/2541)) ([cbb4fc5](https://github.com/deephaven/web-client-ui/commit/cbb4fc56d621bb337c5ff5449de5396b79edbff6))
+- Pass optional expandDescendants arg to setColumnExpanded ([#2540](https://github.com/deephaven/web-client-ui/issues/2540)) ([a19bc11](https://github.com/deephaven/web-client-ui/commit/a19bc11446da4328bc5c216064ec810b24ee0312))
+
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [1.7.0](https://github.com/deephaven/web-client-ui/compare/v1.6.0...v1.7.0) (2025-09-24)
+
+### Features
+
+- DH-13515: Expandable columns support ([#2537](https://github.com/deephaven/web-client-ui/issues/2537)) ([6938c47](https://github.com/deephaven/web-client-ui/commit/6938c477a03f4d747851f10c43549dbdae69b648))
+
+### Bug Fixes
+
+- DH-20229: Value is null or undefined when scrolling rollup ([#2538](https://github.com/deephaven/web-client-ui/issues/2538)) ([7b752ae](https://github.com/deephaven/web-client-ui/commit/7b752aec56a797d0adc545a2bbbd32df6bed09fa))
+
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Bug Fixes
+
+- IrisGridModelUpdater causes "cannot update during an existing state transition" warning ([#2536](https://github.com/deephaven/web-client-ui/issues/2536)) ([ee2ba42](https://github.com/deephaven/web-client-ui/commit/ee2ba42573f76fb8373dd6c0d1de290e3a5990b4))
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 ### Bug Fixes

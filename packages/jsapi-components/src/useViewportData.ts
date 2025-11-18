@@ -33,6 +33,7 @@ export interface UseViewportDataProps<
   viewportPadding?: number;
   viewportSize?: number;
   deserializeRow?: RowDeserializer<TItem>;
+  viewportSubscriptionOptions?: dh.ViewportSubscriptionOptions | null;
 }
 
 export interface UseViewportDataResult<
@@ -68,7 +69,8 @@ export interface UseViewportDataResult<
  * @param viewportPadding The number of items to fetch at start and end of the viewport.
  * @param deserializeRow A function to deserialize a row from the Table.
  * @param reuseItemsOnTableResize If true, existing items will be re-used when
- * the table size changes.
+ * @param viewportSubscriptionOptions The viewport subscription options to use. If provided and
+ * the table is not a `TreeTable`, the data will be requested using a `TableViewportSubscription`.
  * @returns An object for managing Table viewport state.
  */
 export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
@@ -79,6 +81,7 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
   reuseItemsOnTableResize = false,
+  viewportSubscriptionOptions = null,
 }: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
   const currentViewportFirstRowRef = useRef<number>(0);
 
@@ -90,7 +93,8 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   const setPaddedViewport = useSetPaddedViewportCallback(
     table,
     viewportSize,
-    viewportPadding
+    viewportPadding,
+    viewportSubscriptionOptions
   );
 
   const setViewport = useCallback(

@@ -16,7 +16,7 @@ function AdvancedSectionContent(): JSX.Element {
   const webglEditable = useAppSelector(getWebGLEditable);
 
   const handleWebglChange = useCallback(
-    newValue => {
+    (newValue: boolean) => {
       dispatch(updateSettings({ webgl: newValue }));
     },
     [dispatch]

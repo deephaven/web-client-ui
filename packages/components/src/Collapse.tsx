@@ -1,7 +1,6 @@
 // Port of https://github.com/react-bootstrap/react-bootstrap/blob/master/src/Collapse.js
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { CSSTransition } from 'react-transition-group';
 
 interface CollapseProps {
@@ -13,39 +12,11 @@ interface CollapseProps {
 }
 
 class Collapse extends Component<CollapseProps> {
-  static propTypes = {
-    className: PropTypes.string,
-    in: PropTypes.bool.isRequired,
-    children: PropTypes.node.isRequired,
-    autoFocusOnShow: PropTypes.bool,
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     className: '',
     autoFocusOnShow: false,
     'data-testid': undefined,
   };
-
-  static handleEnter(elemParam: HTMLElement): void {
-    const elem = elemParam;
-    elem.style.height = '0';
-  }
-
-  static handleEntering(elemParam: HTMLElement): void {
-    const elem = elemParam;
-    elem.style.height = `${Collapse.getHeight(elem)}px`;
-  }
-
-  static handleExiting(elemParam: HTMLElement): void {
-    const elem = elemParam;
-    elem.style.height = '0';
-  }
-
-  static handleExit(elemParam: HTMLElement): void {
-    const elem = elemParam;
-    elem.style.height = `${Collapse.getHeight(elem)}px`;
-  }
 
   static getHeight(elem: HTMLElement): number {
     const scrollBarWidth = elem.scrollWidth - elem.clientWidth;
@@ -58,8 +29,13 @@ class Collapse extends Component<CollapseProps> {
     this.handleEntered = this.handleEntered.bind(this);
   }
 
-  handleEntered(elemParam: HTMLElement): void {
-    const elem = elemParam;
+  nodeRef = React.createRef<HTMLDivElement>();
+
+  handleEntered(): void {
+    const elem = this.nodeRef.current;
+    if (!elem) {
+      return;
+    }
     elem.style.height = '';
 
     const { autoFocusOnShow } = this.props;
@@ -72,6 +48,38 @@ class Collapse extends Component<CollapseProps> {
         input.focus();
       }
     }
+  }
+
+  handleEnter(): void {
+    const elem = this.nodeRef.current;
+    if (!elem) {
+      return;
+    }
+    elem.style.height = '0';
+  }
+
+  handleEntering(): void {
+    const elem = this.nodeRef.current;
+    if (!elem) {
+      return;
+    }
+    elem.style.height = `${Collapse.getHeight(elem)}px`;
+  }
+
+  handleExiting(): void {
+    const elem = this.nodeRef.current;
+    if (!elem) {
+      return;
+    }
+    elem.style.height = '0';
+  }
+
+  handleExit(): void {
+    const elem = this.nodeRef.current;
+    if (!elem) {
+      return;
+    }
+    elem.style.height = `${Collapse.getHeight(elem)}px`;
   }
 
   render(): JSX.Element {
@@ -90,15 +98,17 @@ class Collapse extends Component<CollapseProps> {
           exitActive: 'collapsing',
           exitDone: 'collapse',
         }}
-        onEnter={Collapse.handleEnter}
-        onEntering={Collapse.handleEntering}
+        onEnter={this.handleEnter}
+        onEntering={this.handleEntering}
         onEntered={this.handleEntered}
-        onExit={Collapse.handleExit}
-        onExiting={Collapse.handleExiting}
+        onExit={this.handleExit}
+        onExiting={this.handleExiting}
         timeout={350}
+        nodeRef={this.nodeRef}
       >
         {state => (
           <div
+            ref={this.nodeRef}
             className={classNames({ collapse: state === 'exited' }, className)}
             data-testid={dataTestId}
           >

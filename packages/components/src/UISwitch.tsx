@@ -22,6 +22,7 @@ function UISwitch({
   'data-testid': dataTestId,
 }: UISwitchProps): JSX.Element {
   return (
+    // eslint-disable-next-line jsx-a11y/control-has-associated-label
     <button
       type="button"
       className={classNames(

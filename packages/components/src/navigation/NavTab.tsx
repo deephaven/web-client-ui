@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import classNames from 'classnames';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { type IconDefinition, vsClose } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { NavTabItem } from './NavTabList';
@@ -18,6 +18,13 @@ interface NavTabProps {
   index: number;
   isDraggable: boolean;
   contextActions?: ResolvableContextAction | ResolvableContextAction[];
+  /**
+   * Optional render function to render content after the tab title.
+   *
+   * @param tab The tab to render content for
+   * @returns The content to render after the tab title
+   */
+  renderAfterTabContent?: (tab: NavTabItem) => React.ReactNode;
 }
 
 const NavTab = memo(
@@ -30,6 +37,7 @@ const NavTab = memo(
     index,
     isDraggable,
     contextActions,
+    renderAfterTabContent,
   }: NavTabProps) => {
     const { key, isClosable = onClose != null, title, icon } = tab;
 
@@ -98,6 +106,7 @@ const NavTab = memo(
                 {title}
                 <Tooltip>{title}</Tooltip>
               </span>
+              {renderAfterTabContent?.(tab)}
               {isClosable && (
                 <Button
                   kind="ghost"

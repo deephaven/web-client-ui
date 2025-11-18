@@ -1,13 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
-import type { FlattenedItem, TreeItem as TreeItemType } from './types';
+import type { FlattenedItem } from './types';
 import './TreeItem.scss';
 
-export interface Props<T> {
-  childCount?: number;
+export interface TreeItemProps<T> {
   clone?: boolean;
   depth: number;
+  withDepthMarkers?: boolean;
   disableInteraction?: boolean;
   ghost?: boolean;
   handleProps?: Record<string, unknown>;
@@ -15,29 +15,31 @@ export interface Props<T> {
   item: FlattenedItem<T>;
   dragRef?: React.Ref<HTMLDivElement> | null;
   wrapperRef?: React.Ref<HTMLLIElement> | null;
-  renderItem: (props: {
-    ref: React.Ref<HTMLDivElement> | null;
-    clone: boolean;
-    childCount?: number;
-    value: string;
-    item: FlattenedItem<T>;
-    handleProps?: Record<string, unknown>;
-  }) => JSX.Element;
+  renderItem: TreeItemRenderFn<T>;
+  /**
+   * Styles from dnd-kit to transform the depth lines
+   */
+  style?: React.CSSProperties;
+  top?: number;
 }
 
-export type TreeItemRenderFn<T> = (props: {
+export type TreeItemRenderFnProps<T> = {
   ref: React.Ref<HTMLDivElement> | null;
   clone: boolean;
-  childCount?: number;
   value: string;
-  item: T extends TreeItemType<infer D> ? FlattenedItem<D> : FlattenedItem<T>;
+  item: FlattenedItem<T>;
   handleProps?: Record<string, unknown>;
-}) => JSX.Element;
+};
 
-export function TreeItem<T>(props: Props<T>): JSX.Element {
+export type TreeItemRenderFn<T> = (
+  props: TreeItemRenderFnProps<T>
+) => JSX.Element;
+
+export function TreeItem<T>(props: TreeItemProps<T>): JSX.Element {
   const {
     clone = false,
     depth,
+    withDepthMarkers = true,
     disableInteraction = false,
     ghost = false,
     handleProps,
@@ -46,16 +48,25 @@ export function TreeItem<T>(props: Props<T>): JSX.Element {
     wrapperRef = null,
     renderItem,
     item,
-    childCount,
+    style,
+    top,
   } = props;
 
   const depthMarkers = useMemo(
     () =>
-      Array(depth)
-        .fill(0)
-        // eslint-disable-next-line react/no-array-index-key
-        .map((_, i) => <span key={`depth-line-${i}`} className="depth-line" />),
-    [depth]
+      withDepthMarkers
+        ? Array(depth)
+            .fill(0)
+            .map((_, i) => (
+              <span
+                // eslint-disable-next-line react/no-array-index-key
+                key={`depth-line-${i}`}
+                className="depth-line"
+                style={style}
+              />
+            ))
+        : null,
+    [depth, style, withDepthMarkers]
   );
 
   const renderItemProps = useMemo(
@@ -64,10 +75,14 @@ export function TreeItem<T>(props: Props<T>): JSX.Element {
       clone,
       value,
       item,
-      childCount,
       handleProps,
     }),
-    [dragRef, clone, value, item, childCount, handleProps]
+    [dragRef, clone, value, item, handleProps]
+  );
+
+  const wrapperStyle = useMemo(
+    () => ({ top, position: 'absolute' as const }),
+    [top]
   );
 
   return (
@@ -78,9 +93,12 @@ export function TreeItem<T>(props: Props<T>): JSX.Element {
         ghost,
         disableInteraction,
       })}
+      data-id={item.id}
+      data-index={item.index}
       ref={wrapperRef}
+      style={wrapperStyle}
     >
-      {!clone && depthMarkers}
+      {!clone && withDepthMarkers && depthMarkers}
       {renderItem(renderItemProps)}
     </li>
   );

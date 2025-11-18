@@ -1435,7 +1435,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             </>
           )}
           {isMarkdown && (
-            <Suspense fallback={<LoadingOverlay />}>
+            <Suspense
+              fallback={<LoadingOverlay data-testid="notebook-panel-loading" />}
+            >
               <MarkdownNotebook
                 content={settings.value ?? ''}
                 onLinkClick={this.handleLinkClick}

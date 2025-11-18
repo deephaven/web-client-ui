@@ -3,6 +3,80 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- Add .lm_dragging to .lm_root and style nested dragging, also style default empty dashboard ([#2560](https://github.com/deephaven/web-client-ui/issues/2560)) ([e076af5](https://github.com/deephaven/web-client-ui/commit/e076af5beddd8c89e545be425c134fc78a7e9c72))
+- DH-18779: Auto-resize column header groups ([#2566](https://github.com/deephaven/web-client-ui/issues/2566)) ([0160356](https://github.com/deephaven/web-client-ui/commit/01603561342b96dc14d429701737e2bfd5df4c0c))
+- DH-18780: Resizable column header groups ([#2567](https://github.com/deephaven/web-client-ui/issues/2567)) ([b64a49c](https://github.com/deephaven/web-client-ui/commit/b64a49cb180fe8da2f7febe25da472d5c5fc1d48))
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+- DH-20594: Prevent joined columns from being edited ([#2551](https://github.com/deephaven/web-client-ui/issues/2551)) ([774c4cc](https://github.com/deephaven/web-client-ui/commit/774c4cc3f7d7885d9fd3eabe630b45d2101f6228))
+- DH-20769: Use new JS API in useViewportData to retrieve data ([#2557](https://github.com/deephaven/web-client-ui/issues/2557)) ([4d7c106](https://github.com/deephaven/web-client-ui/commit/4d7c106b018ba5f16b4f127170d65ed7b69129ca))
+
+### Bug Fixes
+
+- allow overflow scroll for widget list and dashboard overlow list. ([#2558](https://github.com/deephaven/web-client-ui/issues/2558)) ([4d955b4](https://github.com/deephaven/web-client-ui/commit/4d955b46cb838e0ce251ea2718d36958956be33f))
+- DH-20734: Datetime tooltip shown on wrong column when column is moved ([#2554](https://github.com/deephaven/web-client-ui/issues/2554)) ([afdb592](https://github.com/deephaven/web-client-ui/commit/afdb59250ba16654c0c3f6a457e39eef3bc82f66))
+- keyboard navigation to last row/column enables sticky scrolling ([#2562](https://github.com/deephaven/web-client-ui/issues/2562)) ([f3eb538](https://github.com/deephaven/web-client-ui/commit/f3eb5389531d00888d8846c12fc9f11aaed1f691)), closes [#2361](https://github.com/deephaven/web-client-ui/issues/2361)
+- Loading spinner would flash sometimes on startup ([#2569](https://github.com/deephaven/web-client-ui/issues/2569)) ([35b3bf2](https://github.com/deephaven/web-client-ui/commit/35b3bf2d1b0a47b6aeb5afc9cc26b440c2d853ba))
+- Update browser title in embed-widget to show widget name ([#2559](https://github.com/deephaven/web-client-ui/issues/2559)) ([6a3c025](https://github.com/deephaven/web-client-ui/commit/6a3c025a15228c83354cdec46571a561f5008865))
+
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Column organization overflow and undo/redo ([#2546](https://github.com/deephaven/web-client-ui/issues/2546)) ([5ef19c2](https://github.com/deephaven/web-client-ui/commit/5ef19c2976576b6a604d305bf0df7c4040616f81))
+- DH-16956: Move fontbootstrap from app-utils to components so it can be consumed in DHE ([#2545](https://github.com/deephaven/web-client-ui/issues/2545)) ([c0084cf](https://github.com/deephaven/web-client-ui/commit/c0084cf65bb4d6ba4af1db356b3e1c144aa7bc29)), closes [#1944](https://github.com/deephaven/web-client-ui/issues/1944)
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- Accept all HasEventHandling types when creating event Promise ([#2550](https://github.com/deephaven/web-client-ui/issues/2550)) ([e9774ad](https://github.com/deephaven/web-client-ui/commit/e9774ad0242183903bbdaf3d2cf05c2f18350bca))
+- Add explicit refs to react-transition-group for React 19 support ([#2534](https://github.com/deephaven/web-client-ui/issues/2534)) ([eaa583e](https://github.com/deephaven/web-client-ui/commit/eaa583efb0b0d0a44ef5ddc72a7835fb2174d8f2))
+- DH-20255 Limit maximum depth to serialize redux log data ([#2544](https://github.com/deephaven/web-client-ui/issues/2544)) ([9cd6593](https://github.com/deephaven/web-client-ui/commit/9cd6593745de96f7f0a04541161fda3ad1c76925))
+- DH-20319: Stuck to bottom of table not sticking ([#2547](https://github.com/deephaven/web-client-ui/issues/2547)) ([5216008](https://github.com/deephaven/web-client-ui/commit/5216008b108461ed7c73d1e6f3431a3305ce2ffe))
+- DH-20500: Links without operators not working ([#2541](https://github.com/deephaven/web-client-ui/issues/2541)) ([cbb4fc5](https://github.com/deephaven/web-client-ui/commit/cbb4fc56d621bb337c5ff5449de5396b79edbff6))
+- Pass optional expandDescendants arg to setColumnExpanded ([#2540](https://github.com/deephaven/web-client-ui/issues/2540)) ([a19bc11](https://github.com/deephaven/web-client-ui/commit/a19bc11446da4328bc5c216064ec810b24ee0312))
+
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/web-client-ui
+
+## [1.7.0](https://github.com/deephaven/web-client-ui/compare/v1.6.0...v1.7.0) (2025-09-24)
+
+### Features
+
+- DH-13515: Expandable columns support ([#2537](https://github.com/deephaven/web-client-ui/issues/2537)) ([6938c47](https://github.com/deephaven/web-client-ui/commit/6938c477a03f4d747851f10c43549dbdae69b648))
+
+### Bug Fixes
+
+- DH-20229: Value is null or undefined when scrolling rollup ([#2538](https://github.com/deephaven/web-client-ui/issues/2538)) ([7b752ae](https://github.com/deephaven/web-client-ui/commit/7b752aec56a797d0adc545a2bbbd32df6bed09fa))
+
+## [1.6.0](https://github.com/deephaven/web-client-ui/compare/v1.5.3...v1.6.0) (2025-09-18)
+
+### Features
+
+- close maximized panels with escape key ([#2533](https://github.com/deephaven/web-client-ui/issues/2533)) ([b90d540](https://github.com/deephaven/web-client-ui/commit/b90d5406a57afca220ae41bad195490f0cbdea46)), closes [#1165](https://github.com/deephaven/web-client-ui/issues/1165)
+
+### Bug Fixes
+
+- DH-20388: VITE_MODULE_PLUGINS_URL path should be relative ([#2535](https://github.com/deephaven/web-client-ui/issues/2535)) ([1e1b473](https://github.com/deephaven/web-client-ui/commit/1e1b4731fc2f8597308c1b2977f162d0f12c2602))
+- IrisGridModelUpdater causes "cannot update during an existing state transition" warning ([#2536](https://github.com/deephaven/web-client-ui/issues/2536)) ([ee2ba42](https://github.com/deephaven/web-client-ui/commit/ee2ba42573f76fb8373dd6c0d1de290e3a5990b4))
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-18648: Ensure grid panel doesn't crash when Pandas query restarted ([#2528](https://github.com/deephaven/web-client-ui/issues/2528)) ([9c969f0](https://github.com/deephaven/web-client-ui/commit/9c969f03fe27daff543c9dac920a69e7c949331c))
+- DH-19948: increase max dashboard tab title width ([#2532](https://github.com/deephaven/web-client-ui/issues/2532)) ([ceda82b](https://github.com/deephaven/web-client-ui/commit/ceda82bca9a998e9565babb8ab435cc90f13c513))
+- Export support logs is not working ([#2531](https://github.com/deephaven/web-client-ui/issues/2531)) ([f2d2317](https://github.com/deephaven/web-client-ui/commit/f2d2317d8c88f82d2ea45bde09b789e2a79ced20))
+- reduce spectrum popover excessive padding ([#2530](https://github.com/deephaven/web-client-ui/issues/2530)) ([53c4d26](https://github.com/deephaven/web-client-ui/commit/53c4d26045c3237b58aaffb8cb069f332b62120c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/web-client-ui
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 ### Bug Fixes

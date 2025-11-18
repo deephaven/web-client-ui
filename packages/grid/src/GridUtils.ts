@@ -13,8 +13,8 @@ import {
   type ModelSizeMap,
   type MoveOperation,
   type SizeMap,
+  type GridMetrics,
 } from './GridMetrics';
-import type { GridMetrics } from './GridMetrics';
 import { type GridTheme } from './GridTheme';
 import { type GridWheelEvent } from './GridMouseHandler';
 import {
@@ -753,18 +753,31 @@ export class GridUtils {
    * @param from The visible index to move from
    * @param to The visible index to move the item to
    * @param oldMovedItems The old reordered items
-   * @returns The new reordered items
+   * @returns The new reordered items. The original array if the operation is a no-op.
    */
   static moveItem(
     from: VisibleIndex,
     to: VisibleIndex,
+    oldMovedItems: MoveOperation[]
+  ): MoveOperation[];
+
+  static moveItem(
+    from: VisibleIndex,
+    to: VisibleIndex,
     oldMovedItems: readonly MoveOperation[]
-  ): MoveOperation[] {
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveItem(
+    from: VisibleIndex,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[]
+  ): MoveOperation[] | readonly MoveOperation[] {
     if (from === to) {
-      return [...oldMovedItems];
+      return oldMovedItems;
     }
 
-    const movedItems: MoveOperation[] = [...oldMovedItems];
+    const movedItems = [...oldMovedItems];
     const lastMovedItem = movedItems[movedItems.length - 1];
 
     // Check if we should combine with the previous move
@@ -806,14 +819,29 @@ export class GridUtils {
    *                    E.g. Move range [0, 2] 1 item down (after element 3)
    *                    The move is [0, 2] -> 1 if this is false. [0, 2] -> 3 if this is true
    *                    Both will result in [0, 2] -> 1
-   * @returns The new reordered items
+   * @returns The new reordered items. The original array if the operation is a no-op.
    */
+  static moveRange(
+    from: BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[],
+    isPreMoveTo?: boolean
+  ): MoveOperation[];
+
   static moveRange(
     from: BoundedAxisRange,
     toParam: VisibleIndex,
     oldMovedItems: readonly MoveOperation[],
+    isPreMoveTo?: boolean
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveRange(
+    from: BoundedAxisRange,
+    toParam: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[],
     isPreMoveTo = false
-  ): MoveOperation[] {
+  ): MoveOperation[] | readonly MoveOperation[] {
     if (from[0] === from[1]) {
       return GridUtils.moveItem(from[0], toParam, oldMovedItems);
     }
@@ -825,7 +853,7 @@ export class GridUtils {
     }
 
     if (from[0] === to) {
-      return [...oldMovedItems];
+      return oldMovedItems;
     }
 
     const movedItems: MoveOperation[] = [...oldMovedItems];
@@ -863,8 +891,23 @@ export class GridUtils {
     from: VisibleIndex | BoundedAxisRange,
     to: VisibleIndex,
     oldMovedItems: MoveOperation[],
+    isPreMoveTo?: boolean
+  ): MoveOperation[];
+
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: readonly MoveOperation[],
+    isPreMoveTo?: boolean
+  ): readonly MoveOperation[];
+
+  // The overloads are so we can return the original array if the operation is a no-op
+  static moveItemOrRange(
+    from: VisibleIndex | BoundedAxisRange,
+    to: VisibleIndex,
+    oldMovedItems: MoveOperation[] | readonly MoveOperation[],
     isPreMoveTo = false
-  ): MoveOperation[] {
+  ): MoveOperation[] | readonly MoveOperation[] {
     return Array.isArray(from)
       ? GridUtils.moveRange(from, to, oldMovedItems, isPreMoveTo)
       : GridUtils.moveItem(from, to, oldMovedItems);

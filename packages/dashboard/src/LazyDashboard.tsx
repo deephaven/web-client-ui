@@ -42,7 +42,7 @@ export function LazyDashboard({
   }
 
   if (!isLoaded) {
-    return <LoadingOverlay />;
+    return <LoadingOverlay data-testid="lazy-dashboard-loading" />;
   }
 
   return (

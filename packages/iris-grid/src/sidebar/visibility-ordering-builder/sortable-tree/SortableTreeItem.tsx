@@ -1,11 +1,18 @@
 /* eslint-disable import/prefer-default-export */
-import React, { type CSSProperties, useMemo } from 'react';
+import React, { type CSSProperties, useCallback, useMemo } from 'react';
 import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TreeItem, type Props as TreeItemProps } from './TreeItem';
+import { TreeItem, type TreeItemProps } from './TreeItem';
 
-export interface Props<T> extends Omit<TreeItemProps<T>, 'style'> {
+interface SortableTreeItemProps<T> extends Omit<TreeItemProps<T>, 'style'> {
   id: string;
+  top?: number;
+  /**
+   * Used by @tanstack/virtual to measure the size of the item if it changes.
+   * Group items may change size when the name is being edited.
+   * @param element The HTMLElement to measure
+   */
+  measureElement?: (element: HTMLElement | null) => void;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({
@@ -16,8 +23,10 @@ const animateLayoutChanges: AnimateLayoutChanges = ({
 export function SortableTreeItem<T>({
   id,
   depth,
+  top,
+  measureElement,
   ...props
-}: Props<T>): JSX.Element {
+}: SortableTreeItemProps<T>): JSX.Element {
   const {
     attributes,
     isDragging,
@@ -51,14 +60,24 @@ export function SortableTreeItem<T>({
     [attributes, listeners, style]
   );
 
+  const wrapperRef = useCallback(
+    (node: HTMLElement | null) => {
+      setDroppableNodeRef(node);
+      measureElement?.(node);
+    },
+    [setDroppableNodeRef, measureElement]
+  );
+
   return (
     <TreeItem
       dragRef={setDraggableNodeRef}
-      wrapperRef={setDroppableNodeRef}
+      wrapperRef={wrapperRef}
       depth={depth}
       ghost={isDragging}
       disableInteraction={isSorting}
       handleProps={handleProps}
+      style={style}
+      top={top}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     />

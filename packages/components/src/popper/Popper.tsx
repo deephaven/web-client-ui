@@ -16,26 +16,58 @@
  */
 
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
-import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 const POPPER_CLASS_NAME = 'popper';
 
+const KEEP_IN_PARENT_OPTIONS: PopperOptions = {
+  placement: 'bottom-end',
+  modifiers: {
+    preventOverflow: {
+      boundariesElement: 'scrollParent',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fn: (data, options: any) => {
+        const modified = PopperJs.Defaults.modifiers?.preventOverflow?.fn?.(
+          data,
+          options
+        );
+
+        if (modified == null) {
+          return data;
+        }
+
+        modified.styles.maxHeight = `${
+          document.documentElement.clientHeight -
+          data.offsets.popper.top -
+          2 * options.padding // Double padding because there is top and bottom to account for
+        }px`;
+        return modified ?? data;
+      },
+    },
+    flip: {
+      enabled: false,
+    },
+  },
+};
+
 interface PopperProps {
+  children: React.ReactNode;
   options: PopperOptions;
   className: string;
   timeout: number;
   onEntered: () => void;
   onExited: () => void;
+  onBlur: (e: React.FocusEvent) => void;
   isShown: boolean;
   closeOnBlur: boolean;
   interactive: boolean;
+  keepInParent: boolean;
   referenceObject: ReferenceObject | null;
   'data-testid'?: string;
 }
@@ -46,20 +78,6 @@ interface PopperState {
 }
 
 class Popper extends Component<PopperProps, PopperState> {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-    options: PropTypes.shape({}),
-    className: PropTypes.string,
-    timeout: PropTypes.number,
-    onEntered: PropTypes.func,
-    onExited: PropTypes.func,
-    isShown: PropTypes.bool,
-    closeOnBlur: PropTypes.bool,
-    interactive: PropTypes.bool,
-    referenceObject: PropTypes.shape({}),
-    'data-testid': PropTypes.string,
-  };
-
   static defaultProps = {
     options: {},
     className: '',
@@ -70,9 +88,13 @@ class Popper extends Component<PopperProps, PopperState> {
     onExited(): void {
       // no-op
     },
+    onBlur(): void {
+      // no-op
+    },
     isShown: false,
     interactive: false,
     closeOnBlur: false,
+    keepInParent: false,
     referenceObject: null,
     'data-testid': undefined,
   };
@@ -101,16 +123,21 @@ class Popper extends Component<PopperProps, PopperState> {
 
   componentDidUpdate(prevProps: PopperProps): void {
     const { isShown } = this.props;
+    const { popper } = this.state;
 
     if (prevProps.isShown !== isShown) {
-      if (isShown) {
-        cancelAnimationFrame(this.rAF);
-        this.rAF = window.requestAnimationFrame(() => {
+      cancelAnimationFrame(this.rAF);
+      this.rAF = window.requestAnimationFrame(() => {
+        if (isShown) {
           this.show();
-        });
-      } else {
-        this.hide();
-      }
+        } else {
+          this.hide();
+        }
+      });
+    }
+
+    if (popper) {
+      popper.scheduleUpdate();
     }
   }
 
@@ -121,6 +148,8 @@ class Popper extends Component<PopperProps, PopperState> {
   element: HTMLDivElement;
 
   container: React.RefObject<HTMLDivElement>;
+
+  nodeRef = React.createRef<HTMLDivElement>();
 
   // This is the request animation frame handle number
   rAF: number;
@@ -139,10 +168,10 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   initPopper(): void {
-    let { popper } = this.state;
+    const { popper: statePopper } = this.state;
     const { closeOnBlur, referenceObject } = this.props;
 
-    if (popper) {
+    if (statePopper) {
       return;
     }
 
@@ -150,12 +179,27 @@ class Popper extends Component<PopperProps, PopperState> {
       return;
     }
 
-    let { options } = this.props;
-    options = {
-      placement: 'auto',
-      modifiers: { preventOverflow: { boundariesElement: 'viewport' } },
-      ...options,
-    };
+    const { options: optionsProp, keepInParent } = this.props;
+    const defaultOptions = keepInParent
+      ? KEEP_IN_PARENT_OPTIONS
+      : ({
+          placement: 'auto',
+          modifiers: { preventOverflow: { boundariesElement: 'viewport' } },
+        } satisfies PopperOptions);
+
+    const options = {
+      ...defaultOptions,
+      ...optionsProp,
+      modifiers: {
+        ...defaultOptions.modifiers,
+        ...optionsProp.modifiers,
+        preventOverflow: {
+          ...defaultOptions.modifiers?.preventOverflow,
+          ...optionsProp.modifiers?.preventOverflow,
+        },
+      },
+    } satisfies PopperOptions;
+
     document.body.appendChild(this.element);
 
     let parent = this.getVisibleElement(this.container.current);
@@ -163,7 +207,11 @@ class Popper extends Component<PopperProps, PopperState> {
       parent = this.container.current;
     }
 
-    popper = new PopperJs(referenceObject || parent, this.element, options);
+    const popper = new PopperJs(
+      referenceObject || parent,
+      this.element,
+      options
+    );
     popper.scheduleUpdate();
 
     // delayed due to scheduleUpdate
@@ -184,7 +232,10 @@ class Popper extends Component<PopperProps, PopperState> {
       }
     });
 
-    this.setState({ popper });
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ popper });
+    });
   }
 
   destroyPopper(updateState = true): void {
@@ -211,7 +262,11 @@ class Popper extends Component<PopperProps, PopperState> {
 
   show(): void {
     this.initPopper();
-    this.setState({ show: true });
+
+    // Needed to make the animation work
+    flushSync(() => {
+      this.setState({ show: true });
+    });
   }
 
   hide(): void {
@@ -224,11 +279,15 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   handleBlur(e: React.FocusEvent): void {
+    const { closeOnBlur, onBlur } = this.props;
     if (!(e.relatedTarget instanceof HTMLElement)) {
       return;
     }
     if (!this.element.contains(e.relatedTarget)) {
-      this.hide();
+      onBlur?.(e);
+      if (closeOnBlur) {
+        this.hide();
+      }
     }
   }
 
@@ -259,8 +318,10 @@ class Popper extends Component<PopperProps, PopperState> {
           classNames="popper-transition"
           onEntered={this.handleEnter}
           onExited={this.handleExit}
+          nodeRef={this.nodeRef}
         >
           <div
+            ref={this.nodeRef}
             onClick={e => {
               // stop click events from escaping popper
               e.stopPropagation();
@@ -273,7 +334,7 @@ class Popper extends Component<PopperProps, PopperState> {
               { interactive },
               className
             )}
-            onBlur={closeOnBlur ? this.handleBlur : undefined}
+            onBlur={this.handleBlur}
             tabIndex={closeOnBlur ? -1 : undefined}
             role="presentation"
           >

@@ -1,0 +1,16 @@
+// Override Bootstrap for Spectrum Menu items with keyboard shortcuts which we just re-export
+// Override for spectrum menu with keyboard shortcuts displayed
+[class*='spectrum-Menu'] {
+  kbd {
+    // Unsetting bootstrap overrides
+    padding: unset;
+    font-size: unset;
+    color: unset;
+    background-color: unset;
+    border-radius: unset;
+
+    // From Spectrum styles to match the label
+    padding-inline-start: var(--spectrum-global-dimension-size-125);
+    line-height: var(--spectrum-global-font-line-height-small, 1.3);
+  }
+}

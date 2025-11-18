@@ -9,7 +9,6 @@ $widget-list-owner-hover-color: $gray-200;
 
 .widget-list-container {
   height: 25.6rem;
-  padding: 0 0.5rem;
   text-align: left;
   width: 23rem;
 
@@ -22,11 +21,21 @@ $widget-list-owner-hover-color: $gray-200;
     outline: none;
   }
 
+  .widget-list-header {
+    padding: $spacer-2 $spacer-2 $spacer $spacer-2;
+  }
+
+  .widget-list-footer {
+    padding: $spacer-2;
+  }
+
   .widget-list {
-    margin: 0.5rem -0.5rem 0;
+    display: grid;
+    align-content: start;
     padding: 0;
-    text-align: left;
+    margin: 0;
     overflow: auto;
+
     li {
       list-style: none;
       padding: 0;
@@ -35,12 +44,15 @@ $widget-list-owner-hover-color: $gray-200;
     .btn {
       border: none;
       border-radius: 0;
-      display: block;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
       text-align: left;
       margin: 0;
       padding: 0.35rem 0.5rem;
       width: 100%;
       color: $widget-list-color;
+
       &:hover,
       &:focus {
         color: $widget-list-hover-color;
@@ -51,16 +63,6 @@ $widget-list-owner-hover-color: $gray-200;
 
     .widget-list-message {
       padding: 0 $spacer-2;
-    }
-  }
-
-  .widget-list-header,
-  .widget-list-footer {
-    padding-top: $spacer-2;
-    padding-bottom: $spacer-2;
-
-    .btn .fa-md {
-      margin-right: $spacer-2;
     }
   }
 }

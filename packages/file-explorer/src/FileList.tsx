@@ -1,4 +1,8 @@
-import { ItemList, type Range } from '@deephaven/components';
+import {
+  ItemList,
+  type Range,
+  type RenderItemProps,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
 import { RangeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
@@ -83,7 +87,7 @@ export function FileList(props: FileListProps): JSX.Element {
   const [dropTargetItem, setDropTargetItem] = useState<FileStorageItem>();
   const [draggedItems, setDraggedItems] = useState<FileStorageItem[]>();
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
-  const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
+  const [selectedRanges, setSelectedRanges] = useState([] as readonly Range[]);
 
   const focusedIndex = useRef<number | null>();
 
@@ -91,7 +95,7 @@ export function FileList(props: FileListProps): JSX.Element {
   const fileList = useRef<HTMLDivElement>(null);
 
   const getItems = useCallback(
-    (ranges: Range[]): FileStorageItem[] => {
+    (ranges: readonly Range[]): FileStorageItem[] => {
       if (ranges.length === 0 || loadedViewport == null) {
         return [];
       }
@@ -288,7 +292,7 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const handleSelectionChange = useCallback(
-    (newSelectedRanges, force = false) => {
+    (newSelectedRanges: readonly Range[], force = false) => {
       log.debug2('handleSelectionChange', newSelectedRanges);
       if (force === true || newSelectedRanges !== selectedRanges) {
         setSelectedRanges(newSelectedRanges);
@@ -300,7 +304,7 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const handleFocusChange = useCallback(
-    focusIndex => {
+    (focusIndex: number | null) => {
       log.debug2('handleFocusChange', focusIndex);
       if (focusIndex != null) {
         const [focusedItem] = getItems([[focusIndex, focusIndex]]);
@@ -418,7 +422,7 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const renderWrapper = useCallback(
-    itemProps =>
+    (itemProps: RenderItemProps<FileStorageItem>) =>
       renderItem({
         ...itemProps,
         isDragInProgress: draggedItems != null,

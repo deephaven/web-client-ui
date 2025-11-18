@@ -1,204 +1,164 @@
 import React, {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react';
+import classNames from 'classnames';
+import { useDndContext } from '@dnd-kit/core';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-  type DragStartEvent,
-  type DragMoveEvent,
-  type DragEndEvent,
-  type DragOverEvent,
-  MeasuringStrategy,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { flattenTree, getProjection } from './utilities';
-import type { FlattenedItem, SensorContext, TreeItem } from './types';
-import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
-import PointerSensorWithInteraction from './PointerSensorWithInteraction';
-import SortableTreeInner from './SortableTreeInner';
-
-const MEASURING = {
-  droppable: {
-    strategy: MeasuringStrategy.Always,
-  },
-};
-
-const CONSTRAINT = {
-  activationConstraint: {
-    distance: 5,
-  },
-};
+  defaultRangeExtractor,
+  type Range,
+  useVirtualizer,
+  type Virtualizer,
+} from '@tanstack/react-virtual';
+import { getProjection } from './utilities';
+import { SortableTreeItem } from './SortableTreeItem';
+import { TreeItem, type TreeItemRenderFn } from './TreeItem';
+import type { FlattenedItem } from './types';
 
 interface Props<T> {
-  items: TreeItem<T>[];
+  items: readonly FlattenedItem<T>[];
   indentationWidth?: number;
-  indicator?: boolean;
-  onDragStart?: (id: string) => void;
-  onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
-  renderItem: (props: {
-    clone: boolean;
-    childCount?: number;
-    value: string;
-    item: FlattenedItem<T>;
-    ref: React.Ref<HTMLDivElement>;
-    handleProps?: Record<string, unknown>;
-  }) => JSX.Element;
+  renderItem: TreeItemRenderFn<T>;
+  isDraggable?: boolean;
+  withDepthMarkers?: boolean;
+  virtualizerRef?: React.Ref<Virtualizer<HTMLElement, Element>>;
 }
 
 export default function SortableTree<T>({
   items,
-  indicator = false,
   indentationWidth = 30,
-  onDragStart,
-  onDragEnd,
   renderItem,
+  isDraggable = true,
+  withDepthMarkers = true,
+  virtualizerRef,
 }: Props<T>): JSX.Element {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
-  const [offsetLeft, setOffsetLeft] = useState(0);
+  const dndContext = useDndContext();
+  const activeId = (dndContext.active?.id as string) ?? null;
+  const overId = (dndContext.over?.id as string) ?? null;
+  const offsetLeft = dndContext.active
+    ? (dndContext.active.rect.current.translated?.left ?? 0) -
+      (dndContext.active.rect.current.initial?.left ?? 0)
+    : 0;
 
-  const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
-
+  const filteredItems = useMemo(() => {
     if (activeId != null) {
-      return flattenedTree.filter(
-        ({ id, selected }) => id === activeId || !selected
-      );
+      return items.filter(({ id, selected }) => id === activeId || !selected);
     }
 
-    return flattenedTree;
+    return items;
   }, [activeId, items]);
 
+  const activeIndex = useMemo(
+    () => filteredItems.findIndex(({ id }) => id === activeId),
+    [activeId, filteredItems]
+  );
+
+  // Add the active index to the range so it is always rendered
+  const rangeExtractor = useCallback(
+    (range: Range) => {
+      const extractedRange = defaultRangeExtractor(range);
+      if (
+        activeIndex >= 0 &&
+        (activeIndex < extractedRange[0] ||
+          activeIndex > extractedRange[extractedRange.length - 1])
+      ) {
+        extractedRange.push(activeIndex);
+      }
+      return extractedRange;
+    },
+    [activeIndex]
+  );
+
+  const getScrollElement = useCallback(
+    () => containerRef.current?.parentElement ?? null,
+    []
+  );
+
+  const estimateSize = useCallback(() => 30, []);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: filteredItems.length,
+    getScrollElement,
+    estimateSize,
+    rangeExtractor,
+    overscan: 10,
+    gap: 1, // We set a 1px bottom margin before we virtualized this list
+  });
+
+  // Expose the virtualizer via ref
+  useImperativeHandle(virtualizerRef, () => virtualizer, [virtualizer]);
+
+  const virtualizedItems = virtualizer.getVirtualItems();
+
+  const { measureDroppableContainers } = useDndContext();
+
+  // Without this, animations are funky when using the move/sort buttons
+  // dnd-kit only remeasures on drag/drop by default
+  useEffect(
+    function remeasureContainers() {
+      measureDroppableContainers(
+        virtualizedItems.map(({ index }) => filteredItems[index].id)
+      );
+    },
+    [filteredItems, measureDroppableContainers, virtualizedItems]
+  );
+
   const projected =
-    activeId != null && overId != null
+    isDraggable && activeId != null && overId != null
       ? getProjection(
-          flattenedItems,
+          filteredItems,
           activeId,
           overId,
           offsetLeft,
           indentationWidth
         )
       : null;
-  const sensorContext: SensorContext = useRef({
-    items: flattenedItems,
-    offset: offsetLeft,
-  });
-  const keyboardOptions = useMemo(
-    () => ({
-      coordinateGetter: sortableTreeKeyboardCoordinates(
-        sensorContext,
-        indicator,
-        indentationWidth
-      ),
-    }),
-    [indentationWidth, indicator]
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensorWithInteraction, CONSTRAINT),
-    useSensor(KeyboardSensor, keyboardOptions)
-  );
-
-  const sortedIds = useMemo(
-    () => flattenedItems.map(({ id }) => id),
-    [flattenedItems]
-  );
-
-  useEffect(() => {
-    sensorContext.current = {
-      items: flattenedItems,
-      offset: offsetLeft,
-    };
-  }, [flattenedItems, offsetLeft]);
-
-  const handleDragStart = useCallback(
-    ({ active: { id: newActiveId } }: DragStartEvent) => {
-      setActiveId(newActiveId as string);
-      setOverId(newActiveId as string);
-      onDragStart?.(newActiveId as string);
-
-      document.body.style.setProperty('cursor', 'grabbing');
-    },
-    [onDragStart]
-  );
-
-  const handleDragMove = useCallback(({ delta }: DragMoveEvent) => {
-    setOffsetLeft(delta.x);
-  }, []);
-
-  const handleDragOver = useCallback(({ over }: DragOverEvent) => {
-    setOverId((over?.id as string) ?? null);
-  }, []);
-
-  const resetState = useCallback(() => {
-    setOverId(null);
-    setActiveId(null);
-    setOffsetLeft(0);
-
-    document.body.style.setProperty('cursor', '');
-  }, []);
-
-  const handleDragEnd = useCallback(
-    ({ active, over }: DragEndEvent) => {
-      resetState();
-
-      if (projected && over) {
-        const { depth, parentId } = projected;
-
-        const clonedItems: FlattenedItem<T>[] = JSON.parse(
-          JSON.stringify(flattenTree(items))
-        );
-        const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
-        const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-        const activeTreeItem = clonedItems[activeIndex];
-
-        clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
-
-        onDragEnd?.(activeTreeItem, {
-          ...clonedItems[overIndex],
-          parentId: projected.parentId,
-        });
-      }
-    },
-    [items, onDragEnd, projected, resetState]
-  );
-
-  const handleDragCancel = useCallback(() => {
-    resetState();
-  }, [resetState]);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      measuring={MEASURING}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
+    <div
+      className={classNames(
+        'tree-container',
+        activeId != null && 'marching-ants'
+      )}
+      style={{
+        height: `${virtualizer.getTotalSize()}px`,
+        position: 'relative',
+      }}
+      ref={containerRef}
     >
-      <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <SortableTreeInner
-          items={flattenedItems}
-          renderItem={renderItem}
-          indicator={indicator}
-          indentationWidth={indentationWidth}
-          activeId={activeId}
-          overId={overId}
-          offsetLeft={offsetLeft}
-        />
-      </SortableContext>
-    </DndContext>
+      {virtualizer.getVirtualItems().map(({ index, start }) => {
+        const item = filteredItems[index];
+        const { id, depth } = item;
+        return isDraggable ? (
+          <SortableTreeItem
+            key={id}
+            id={id}
+            value={id}
+            depth={id === activeId && projected ? projected.depth : depth}
+            item={item}
+            renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
+            top={start}
+            // This allows the group items to expand when editing the name and shift the list correctly
+            measureElement={virtualizer.measureElement}
+          />
+        ) : (
+          <TreeItem
+            key={id}
+            value={id}
+            depth={depth}
+            item={item}
+            renderItem={renderItem}
+            withDepthMarkers={withDepthMarkers}
+            top={start}
+            wrapperRef={virtualizer.measureElement}
+          />
+        );
+      })}
+    </div>
   );
 }

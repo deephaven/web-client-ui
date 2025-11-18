@@ -1,5 +1,5 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { assertInstanceOf } from '@deephaven/utils';
+import { assertInstanceOf, EMPTY_ARRAY } from '@deephaven/utils';
 import TableUtils, { type DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
@@ -28,7 +28,7 @@ export class Formatter {
    * @returns Map of columnName-to-format Maps indexed by normalized dataType
    */
   static makeColumnFormatMap(
-    columnFormattingRules: FormattingRule[]
+    columnFormattingRules: readonly FormattingRule[]
   ): Map<DataType, Map<ColumnName, TableColumnFormat>> {
     if (columnFormattingRules == null) {
       return new Map();
@@ -76,7 +76,7 @@ export class Formatter {
    */
   constructor(
     dh: typeof DhType,
-    columnFormattingRules: FormattingRule[] = [],
+    columnFormattingRules: readonly FormattingRule[] = EMPTY_ARRAY,
     dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[1],
     decimalFormatOptions?: ConstructorParameters<
       typeof DecimalColumnFormatter

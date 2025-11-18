@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
+
+### Features
+
+- DH-18960: Improve column selection functionality for large tables ([#2555](https://github.com/deephaven/web-client-ui/issues/2555)) ([e1c2dc4](https://github.com/deephaven/web-client-ui/commit/e1c2dc475e9303f4ffda5373de403f3a07520baa))
+
+### Bug Fixes
+
+- allow overflow scroll for widget list and dashboard overlow list. ([#2558](https://github.com/deephaven/web-client-ui/issues/2558)) ([4d955b4](https://github.com/deephaven/web-client-ui/commit/4d955b46cb838e0ce251ea2718d36958956be33f))
+
+## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
+
+### Features
+
+- Column organization overflow and undo/redo ([#2546](https://github.com/deephaven/web-client-ui/issues/2546)) ([5ef19c2](https://github.com/deephaven/web-client-ui/commit/5ef19c2976576b6a604d305bf0df7c4040616f81))
+- DH-16956: Move fontbootstrap from app-utils to components so it can be consumed in DHE ([#2545](https://github.com/deephaven/web-client-ui/issues/2545)) ([c0084cf](https://github.com/deephaven/web-client-ui/commit/c0084cf65bb4d6ba4af1db356b3e1c144aa7bc29)), closes [#1944](https://github.com/deephaven/web-client-ui/issues/1944)
+- Upgrade to React 18 ([#2527](https://github.com/deephaven/web-client-ui/issues/2527)) ([b369a51](https://github.com/deephaven/web-client-ui/commit/b369a51ee94d212641a14c6ce1f19fcc85168339))
+
+### Bug Fixes
+
+- Add explicit refs to react-transition-group for React 19 support ([#2534](https://github.com/deephaven/web-client-ui/issues/2534)) ([eaa583e](https://github.com/deephaven/web-client-ui/commit/eaa583efb0b0d0a44ef5ddc72a7835fb2174d8f2))
+
+## [1.7.1](https://github.com/deephaven/web-client-ui/compare/v1.7.0...v1.7.1) (2025-10-02)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [1.5.3](https://github.com/deephaven/web-client-ui/compare/v1.5.2...v1.5.3) (2025-09-10)
+
+### Bug Fixes
+
+- DH-19948: increase max dashboard tab title width ([#2532](https://github.com/deephaven/web-client-ui/issues/2532)) ([ceda82b](https://github.com/deephaven/web-client-ui/commit/ceda82bca9a998e9565babb8ab435cc90f13c513))
+- reduce spectrum popover excessive padding ([#2530](https://github.com/deephaven/web-client-ui/issues/2530)) ([53c4d26](https://github.com/deephaven/web-client-ui/commit/53c4d26045c3237b58aaffb8cb069f332b62120c))
+
+## [1.5.2](https://github.com/deephaven/web-client-ui/compare/v1.5.1...v1.5.2) (2025-09-03)
+
+**Note:** Version bump only for package @deephaven/components
+
 ## [1.5.1](https://github.com/deephaven/web-client-ui/compare/v1.5.0...v1.5.1) (2025-08-06)
 
 ### Bug Fixes

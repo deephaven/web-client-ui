@@ -38,7 +38,7 @@ $tab-control-btn-offset: -8px;
     .btn-nav-tab {
       line-height: $tab-height - $tab-drag-border-width * 2; // subtract top and bottom borders, and focus border
       width: auto;
-      max-width: 200px;
+      max-width: max(200px, 40vw);
       overflow: hidden;
       padding: 0 $tab-link-side-padding;
       position: relative;
@@ -159,10 +159,12 @@ $tab-control-btn-offset: -8px;
   }
 
   .tab-controls-btn-left {
+    background-image: linear-gradient(270deg, transparent 0%, $background 25%);
     margin-right: $tab-control-btn-offset;
   }
 
   .tab-controls-btn-right {
+    background-image: linear-gradient(90deg, transparent 0%, $background 25%);
     margin-left: $tab-control-btn-offset;
   }
 }

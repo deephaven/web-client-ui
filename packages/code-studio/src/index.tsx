@@ -1,11 +1,12 @@
+import { createRoot } from 'react-dom/client';
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss'; // Do NOT move any lower. This needs to be imported before any other styles
 import { Provider } from 'react-redux';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import { store } from '@deephaven/redux';
 import { logInit } from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
 
 logInit(
   parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10),
@@ -65,9 +66,15 @@ async function getCorePlugins() {
   ];
 }
 
-ReactDOM.render(
+const rootElement = document.getElementById('root');
+assertNotNull(rootElement);
+const root = createRoot(rootElement);
+
+root.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
-    <Suspense fallback={<LoadingOverlay />}>
+    <Suspense
+      fallback={<LoadingOverlay data-testid="code-studio-index-loading" />}
+    >
       <Provider store={store}>
         <AppBootstrap
           getCorePlugins={getCorePlugins}
@@ -79,6 +86,5 @@ ReactDOM.render(
         </AppBootstrap>
       </Provider>
     </Suspense>
-  </ApiBootstrap>,
-  document.getElementById('root')
+  </ApiBootstrap>
 );

@@ -1,5 +1,4 @@
-/* eslint-disable react/prop-types */
-import React, { forwardRef, useCallback, useRef } from 'react';
+import React, { forwardRef, memo, useCallback, useRef } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhEye, dhEyeSlash, vsGripper } from '@deephaven/icons';
@@ -14,6 +13,11 @@ type VisibilityOrderingItemProps = {
   childCount: number;
   item: FlattenedIrisGridTreeItem;
   onVisibilityChange: (modelIndexes: number[], isVisible: boolean) => void;
+  /**
+   * If true, allows changing visibility by clicking and dragging over multiple item
+   * visibility buttons.
+   */
+  visibilityClickAndDrag: boolean;
   onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
   onGroupDelete: (group: ColumnHeaderGroup) => void;
   onGroupColorChange: (
@@ -39,6 +43,7 @@ const VisibilityOrderingItem = forwardRef<
     childCount,
     item,
     onVisibilityChange,
+    visibilityClickAndDrag,
     onClick,
     onGroupDelete,
     onGroupColorChange,
@@ -76,21 +81,29 @@ const VisibilityOrderingItem = forwardRef<
         'multiple-dragged': childCount > 2,
       })}
       onClick={handleClick}
+      data-index={item.index}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleProps}
     >
-      <Button
-        ref={buttonRef}
-        kind="ghost"
-        className="px-1"
-        // We PropType validate onClick for Button
-        onClick={emptyOnClick}
-        onMouseDown={handleVisibilityChange}
-        onMouseEnter={handleVisibilityChange}
-        icon={isVisible ? dhEye : dhEyeSlash}
-        tooltip="Toggle visibility"
-      />
-      <span className={classNames('column-name', group && 'column-group')}>
+      {!clone && (
+        <Button
+          ref={buttonRef}
+          kind="ghost"
+          className="px-1"
+          // We PropType validate onClick for Button
+          onClick={emptyOnClick}
+          onMouseDown={handleVisibilityChange}
+          onMouseEnter={
+            visibilityClickAndDrag ? handleVisibilityChange : undefined
+          }
+          icon={isVisible ? dhEye : dhEyeSlash}
+          tooltip="Toggle visibility"
+        />
+      )}
+      <span
+        title={value}
+        className={classNames('column-name', group && 'column-group')}
+      >
         {/* Display a normal item if this is the drag overlay clone, even if it's a group */}
         {group && !clone ? (
           <VisibilityOrderingGroup
@@ -108,11 +121,17 @@ const VisibilityOrderingItem = forwardRef<
         {clone && childCount > 1 && (
           <span className="item-count">{childCount}</span>
         )}
-        <Tooltip>Drag to re-order</Tooltip>
-        <FontAwesomeIcon icon={vsGripper} />
+        {!clone && (
+          <>
+            <Tooltip>Drag to re-order</Tooltip>
+            <FontAwesomeIcon icon={vsGripper} />
+          </>
+        )}
       </div>
     </div>
   );
 });
 
-export default VisibilityOrderingItem;
+const MemoizedVisibilityOrderingItem = memo(VisibilityOrderingItem);
+
+export default MemoizedVisibilityOrderingItem;

@@ -7,7 +7,6 @@ import {
   type GridCell,
   GridModel,
   type GridRange,
-  type GridRangeIndex,
   type GridThemeType,
   type ModelIndex,
   type MoveOperation,
@@ -351,6 +350,13 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @returns Names of value columns
+   */
+  get valueColumnSet(): Set<ColumnName> {
+    return EMPTY_SET;
+  }
+
+  /**
    * @returns Names of columns which should be frozen to the front and floating
    */
   get frozenColumns(): readonly ColumnName[] {
@@ -637,7 +643,7 @@ abstract class IrisGridModel<
     throw new Error('Method not implemented.');
   }
 
-  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
+  tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     return null;
   }
 }

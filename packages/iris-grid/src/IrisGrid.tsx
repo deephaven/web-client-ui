@@ -8,7 +8,6 @@ import React, {
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import PropTypes from 'prop-types';
 import deepEqual from 'fast-deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -34,7 +33,6 @@ import {
   type GridMouseHandler,
   GridRange,
   type GridRangeIndex,
-  type GridThemeType,
   GridUtils,
   type KeyHandler,
   type ModelIndex,
@@ -46,6 +44,7 @@ import {
   type BoundedAxisRange,
   isExpandableGridModel,
   isDeletableGridModel,
+  isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -125,7 +124,9 @@ import {
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
-import IrisGridMetricCalculator from './IrisGridMetricCalculator';
+import IrisGridMetricCalculator, {
+  type IrisGridMetricState,
+} from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
 import {
@@ -181,6 +182,7 @@ import {
   type AdvancedFilterOptions,
   type ColumnName,
   type InputFilter,
+  type IrisGridStateOverride,
   type OperationMap,
   type OptionItem,
   type PendingDataErrorMap,
@@ -195,6 +197,7 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
+import { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGrid');
 
@@ -250,7 +253,7 @@ function isEmptyConfig({
 }
 
 export type FilterData = {
-  operator: FilterTypeValue;
+  operator?: FilterTypeValue; // Default behavior treats no operator as equals
   text: string;
   value: unknown;
   startColumnIndex: number;
@@ -275,21 +278,30 @@ export interface IrisGridContextMenuData {
   modelColumn: GridRangeIndex;
 }
 
+export type MouseHandlersProp = readonly (
+  | GridMouseHandler
+  | ((irisGrid: IrisGrid) => GridMouseHandler)
+)[];
+
+export type GetMetricCalculatorType = (
+  ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
+) => IrisGridMetricCalculator;
+
 export interface IrisGridProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   advancedFilters: ReadonlyAdvancedFilterMap;
-  advancedSettings: Map<AdvancedSettingsType, boolean>;
+  advancedSettings: ReadonlyMap<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
   isFilterBarShown: boolean;
   applyInputFiltersOnInit: boolean;
   conditionalFormats: readonly SidebarFormattingRule[];
-  customColumnFormatMap: Map<ColumnName, FormattingRule>;
-  columnAlignmentMap: Map<string, CanvasTextAlign>;
+  customColumnFormatMap: ReadonlyMap<ColumnName, FormattingRule>;
+  columnAlignmentMap: ReadonlyMap<string, CanvasTextAlign>;
+  model: IrisGridModel;
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
   customFilters: readonly DhType.FilterCondition[];
-  model: IrisGridModel;
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
   onColumnSelected: (column: DhType.Column) => void;
   onError: (error: unknown) => void;
@@ -309,8 +321,8 @@ export interface IrisGridProps {
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
   settings?: Settings;
-  userColumnWidths: ModelSizeMap;
-  userRowHeights: ModelSizeMap;
+  userColumnWidths: ReadonlyMap<ModelIndex, number>;
+  userRowHeights: ReadonlyMap<ModelIndex, number>;
   onSelectionChanged: (gridRanges: readonly GridRange[]) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
@@ -321,7 +333,7 @@ export interface IrisGridProps {
   isStuckToRight: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  columnSelectionValidator: (value: DhType.Column | null) => boolean;
+  columnSelectionValidator?: (value: DhType.Column | null) => boolean;
   columnAllowedCursor: string;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -334,7 +346,7 @@ export interface IrisGridProps {
 
   showSearchBar: boolean;
   searchValue: string;
-  selectedSearchColumns: readonly ColumnName[];
+  selectedSearchColumns?: readonly ColumnName[];
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -350,7 +362,7 @@ export interface IrisGridProps {
   frozenColumns: readonly ColumnName[];
 
   // Theme override for IrisGridTheme
-  theme: GridThemeType;
+  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
 
   canToggleSearch: boolean;
 
@@ -358,12 +370,14 @@ export interface IrisGridProps {
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
-  mouseHandlers: readonly GridMouseHandler[];
+  mouseHandlers: MouseHandlersProp;
 
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
 
   density?: 'compact' | 'regular' | 'spacious';
+
+  getMetricCalculator: GetMetricCalculatorType;
 }
 
 export interface IrisGridState {
@@ -481,7 +495,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static loadingSpinnerDelay = 800;
 
   static defaultProps = {
-    children: null,
     advancedFilters: EMPTY_MAP,
     advancedSettings: EMPTY_MAP,
     alwaysFetchColumns: EMPTY_ARRAY,
@@ -516,7 +529,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     isSelectingPartition: false,
     isStuckToBottom: false,
     isStuckToRight: false,
-    columnSelectionValidator: null,
     columnAllowedCursor: 'linker',
     columnNotAllowedCursor: 'linker-not-allowed',
     copyCursor: 'copy',
@@ -524,7 +536,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onlyFetchVisibleColumns: true,
     showSearchBar: false,
     searchValue: '',
-    selectedSearchColumns: null,
     invertSearchColumns: true,
     onContextMenu: (): readonly ResolvableContextAction[] => EMPTY_ARRAY,
     pendingDataMap: EMPTY_MAP,
@@ -539,23 +550,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showNullStrings: true,
       showExtraGroupColumn: true,
       formatter: EMPTY_ARRAY,
-      decimalFormatOptions: PropTypes.shape({
-        defaultFormatString: PropTypes.string,
-      }),
-      integerFormatOptions: PropTypes.shape({
-        defaultFormatString: PropTypes.string,
-      }),
     },
     canCopy: true,
     canDownloadCsv: true,
-    frozenColumns: null,
-    theme: null,
+    frozenColumns: EMPTY_ARRAY,
     // Do not set a default density prop since we need to know if it overrides the global density setting
     density: undefined,
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
-  };
+    getMetricCalculator: (
+      ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
+    ): IrisGridMetricCalculator => new IrisGridMetricCalculator(...args),
+  } satisfies Partial<IrisGridProps>;
 
   constructor(props: IrisGridProps) {
     super(props);
@@ -648,6 +655,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleViewportUpdated = this.handleViewportUpdated.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
     this.setFilterMap = this.setFilterMap.bind(this);
+    this.handleFrozenColumnsChanged =
+      this.handleFrozenColumnsChanged.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
@@ -746,6 +755,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       canCopy,
       frozenColumns,
       columnHeaderGroups,
+      getMetricCalculator,
     } = props;
 
     const { dh } = model;
@@ -754,7 +764,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    const mouseHandlers: GridMouseHandler[] = [
+    const mouseHandlers: MouseHandlersProp = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -766,10 +776,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
       new IrisGridPartitionedTableMouseHandler(this),
+      ...(canCopy ? [new IrisGridCopyCellMouseHandler(this)] : []),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
-      mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
     }
     const movedColumns =
       movedColumnsProp.length > 0
@@ -778,7 +788,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const movedRows =
       movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
-    const metricCalculator = new IrisGridMetricCalculator({
+    const metricCalculator = getMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userRowHeights: new Map(userRowHeights),
       movedColumns,
@@ -1092,7 +1102,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   keyHandlers: readonly KeyHandler[];
 
-  mouseHandlers: readonly GridMouseHandler[];
+  mouseHandlers: MouseHandlersProp;
+
+  slideTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
+
+  bottomTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   get gridWrapper(): HTMLDivElement | null {
     return this.grid?.canvasWrapper.current ?? null;
@@ -1399,6 +1413,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedStateOverride = memoize(
     (
+      model: IrisGridModel,
+      theme: IrisGridThemeType,
       hoverSelectColumn: GridRangeIndex,
       isFilterBarShown: boolean,
       isSelectingColumn: boolean,
@@ -1409,7 +1425,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
-    ): Partial<IrisGridState & IrisGridProps> => ({
+    ): IrisGridStateOverride => ({
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
@@ -1442,7 +1460,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedTheme = memoize(
     (
       contextTheme: IrisGridThemeType | null,
-      theme: Partial<IrisGridThemeType> | null,
+      theme: Partial<IrisGridThemeType> | undefined,
       isEditable: boolean,
       floatingRowCount: number,
       density: 'compact' | 'regular' | 'spacious'
@@ -1492,10 +1510,49 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return this.getCachedKeyHandlers(keyHandlers);
   }
 
+  getMetricState(): IrisGridMetricState | undefined {
+    const gridMetricState = this.grid?.getMetricState();
+    if (gridMetricState == null) {
+      return undefined;
+    }
+    const {
+      advancedFilters,
+      hoverSelectColumn,
+      isFilterBarShown,
+      isMenuShown,
+      loadingScrimProgress,
+      quickFilters,
+      sorts,
+      reverse,
+      rollupConfig,
+    } = this.state;
+
+    const { model, isSelectingColumn } = this.props;
+
+    return {
+      ...gridMetricState,
+      ...this.getCachedStateOverride(
+        model,
+        this.getTheme(),
+        hoverSelectColumn,
+        isFilterBarShown,
+        isSelectingColumn,
+        loadingScrimProgress,
+        quickFilters,
+        advancedFilters,
+        sorts,
+        reverse,
+        rollupConfig,
+        isMenuShown
+      ),
+    };
+  }
+
   getCachedMouseHandlers = memoize(
-    (
-      mouseHandlers: readonly GridMouseHandler[]
-    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers],
+    (mouseHandlers: MouseHandlersProp): readonly GridMouseHandler[] =>
+      [...mouseHandlers, ...this.mouseHandlers].map(handler =>
+        typeof handler === 'function' ? handler(this) : handler
+      ),
     { max: 1 }
   );
 
@@ -1860,6 +1917,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   rebuildFilters(): void {
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
+
+    if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      log.debug('No filters to rebuild');
+      return;
+    }
+
     const { columns, formatter } = model;
 
     log.debug('Rebuilding filters');
@@ -2453,7 +2516,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
-      const metricState = this.grid?.getMetricState();
+      const metricState = this.getMetricState();
       assertNotNull(metricState);
       const newLeft = metricCalculator.getLastLeft(
         metricState,
@@ -2535,6 +2598,52 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  /**
+   * Updates the entire list of frozen columns.
+   * Used by VisibilityOrderingBuilder.
+   * @param frozenColumns The new list of frozen columns
+   */
+  handleFrozenColumnsChanged(frozenColumns: readonly ColumnName[]): void {
+    this.setState({ frozenColumns });
+  }
+
+  toggleExpandColumn(
+    modelIndex: ModelIndex,
+    expandDescendants?: boolean
+  ): void {
+    log.debug2('Toggle expand column', modelIndex);
+    const { model } = this.props;
+    if (isExpandableColumnGridModel(model) && model.hasExpandableColumns) {
+      model.setColumnExpanded(
+        modelIndex,
+        !model.isColumnExpanded(modelIndex),
+        expandDescendants
+      );
+    }
+  }
+
+  expandAllColumns(): void {
+    log.debug2('Expand all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.expandAllColumns();
+    }
+  }
+
+  collapseAllColumns(): void {
+    log.debug2('Collapse all columns');
+    const { model } = this.props;
+    if (
+      isExpandableColumnGridModel(model) &&
+      model.isExpandAllColumnsAvailable
+    ) {
+      model.collapseAllColumns();
+    }
+  }
+
   handleColumnVisibilityChanged(
     modelIndexes: readonly ModelIndex[],
     isVisible: boolean
@@ -2545,12 +2654,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       modelIndexes.forEach(modelIndex => {
         const defaultWidth =
           metricCalculator.initialColumnWidths.get(modelIndex);
-        const calculatedWidth = getOrThrow(
-          metrics.calculatedColumnWidths,
-          modelIndex
-        );
+        const calculatedWidth = metrics.calculatedColumnWidths.get(modelIndex);
 
-        if (defaultWidth !== calculatedWidth) {
+        // If we haven't scrolled to the column, the calculated width will be undefined.
+        // This means the function was triggered by the visibility ordering menu,
+        // so just reset the column width to default.
+        if (defaultWidth !== calculatedWidth && calculatedWidth != null) {
           metricCalculator.setColumnWidth(modelIndex, calculatedWidth);
         } else {
           metricCalculator.resetColumnWidth(modelIndex);
@@ -2565,16 +2674,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleColumnVisibilityReset(): void {
-    const { metricCalculator, metrics } = this.state;
+    const { metricCalculator } = this.state;
     const { model } = this.props;
-    assertNotNull(metrics);
-    for (let i = 0; i < metrics.columnCount; i += 1) {
-      metricCalculator.resetColumnWidth(i);
-    }
+    metricCalculator.resetAllColumnWidths();
     this.handleMovedColumnsChanged(model.initialMovedColumns);
     this.handleHeaderGroupsChanged(model.initialColumnHeaderGroups);
     this.setState({
-      frozenColumns: model.layoutHints?.frozenColumns ?? [],
+      frozenColumns: model.layoutHints?.frozenColumns ?? EMPTY_ARRAY,
     });
   }
 
@@ -2703,6 +2809,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
     this.grid?.forceUpdate();
+  }
+
+  /**
+   * Updates grid metrics after model columns have changed
+   * to keep Grid and IrisGrid metrics in sync since metrics are stored in both places.
+   */
+  updateMetrics(): void {
+    this.setState({
+      metrics: this.grid?.updateMetrics(),
+    });
   }
 
   toggleSort(columnIndex: VisibleIndex, addToExisting: boolean): void {
@@ -3283,8 +3399,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
-    if (this.grid?.state.cursorRow != null) {
-      this.setState({ gotoRow: `${this.grid.state.cursorRow + 1}` });
+
+    // We get 2 identical ranges here,
+    // but consolidating in `Grid#moveSelection` causes
+    // deselection to break, so just consolidate here.
+    // This will only update the goto row input for row index
+    if (
+      GridRange.rowCount(GridRange.consolidate(selectedRanges)) === 1 &&
+      selectedRanges[0].startRow != null
+    ) {
+      this.setState({ gotoRow: `${selectedRanges[0].startRow + 1}` });
     }
     onSelectionChanged(selectedRanges);
   }
@@ -3300,12 +3424,22 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnHeaderGroups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[]
   ): void {
     const { model } = this.props;
+    const { columnHeaderGroups: prevColumnHeaderGroups } = this.state;
+    if (prevColumnHeaderGroups === columnHeaderGroups) {
+      return;
+    }
+
     this.setState(
       {
-        columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
-          model,
-          columnHeaderGroups
-        ).groups,
+        // undo/redo will pass already parsed groups
+        // Parsing them again causes a loop with undo/redo that makes it unusable
+        columnHeaderGroups: columnHeaderGroups.every(
+          (group): group is ColumnHeaderGroup =>
+            isColumnHeaderGroup(group) && group.isValid()
+        )
+          ? columnHeaderGroups
+          : IrisGridUtils.parseColumnHeaderGroups(model, columnHeaderGroups)
+              .groups,
       },
       () => this.grid?.forceUpdate()
     );
@@ -3479,11 +3613,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleCustomColumnsChanged(): void {
-    log.debug('custom columns changed');
+    log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.updateMetrics();
+
+      // Make sure stopLoading() is called after the updateMetrics call,
+      // otherwise IrisGridModelUpdater queues an extra setViewport based on old metrics.
       this.stopLoading();
-      this.grid?.forceUpdate();
     } else {
       this.loadTableState();
     }
@@ -3659,11 +3796,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // when selectDistinctModel is cleared and the rollupConfig is set on the model.
     this.setState({
       rollupConfig,
-      movedColumns: [],
-      frozenColumns: [],
-      sorts: [],
+      movedColumns: EMPTY_ARRAY,
+      frozenColumns: EMPTY_ARRAY,
+      sorts: EMPTY_ARRAY,
       reverse: false,
-      selectDistinctColumns: [],
+      selectDistinctColumns: EMPTY_ARRAY,
     });
   }
 
@@ -4476,6 +4613,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const userColumnWidths = metricCalculator.getUserColumnWidths();
     const stateOverride = this.getCachedStateOverride(
+      model,
+      theme,
       hoverSelectColumn,
       isFilterBarShown,
       isSelectingColumn,
@@ -4816,6 +4955,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onReset={this.handleColumnVisibilityReset}
               onMovedColumnsChanged={this.handleMovedColumnsChanged}
               onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
+              onFrozenColumnsChanged={this.handleFrozenColumnsChanged}
               key={OptionType.VISIBILITY_ORDERING_BUILDER}
             />
           );
@@ -4940,8 +5080,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
             mountOnEnter
             unmountOnExit
+            nodeRef={this.slideTransitionRef}
           >
-            <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
+            <div
+              ref={this.slideTransitionRef}
+              className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary"
+            >
               {isPartitionedGridModel(model) && model.isPartitionRequired && (
                 <IrisGridPartitionSelector
                   model={model}
@@ -4961,8 +5105,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
             mountOnEnter
             unmountOnExit
+            nodeRef={this.bottomTransitionRef}
           >
-            <div className="iris-grid-bar">
+            <div ref={this.bottomTransitionRef} className="iris-grid-bar">
               <CrossColumnSearch
                 value={searchValue}
                 selectedColumns={selectedSearchColumns}

@@ -5,7 +5,7 @@ import {
   Draggable,
   Droppable,
   type DraggableChildrenFn,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGripper } from '@deephaven/icons';
 import { RangeUtils, type Range } from '@deephaven/utils';
@@ -33,6 +33,8 @@ type DraggableItemListProps<T> = Omit<
   className: string;
   draggingItemClassName: string;
   isDropDisabled: boolean;
+  // Whether to include the droppable provided.placeholder in the DOM
+  hasPlaceholder: boolean;
   // Whether to allow dragging items from this list
   isDragDisabled: boolean;
 
@@ -53,10 +55,10 @@ type DraggableItemListState = {
 
 /**
  * Show a draggable item list. It _must_ be used within a `DragDropContext`.
- * This implementation uses react-beautiful-dnd for handling dragging and dropping of items.
- * We use ItemList to handle selection for multi drag and drop (not built in to react-beautiful-dnd).
- * One caveat with the use of react-beautiful-dnd is that it doesn't allow a drag to be initiated while
- * using a modifier key: https://github.com/atlassian/react-beautiful-dnd/issues/1678
+ * This implementation uses @hello-pangea/dnd for handling dragging and dropping of items.
+ * We use ItemList to handle selection for multi drag and drop (not built in to @hello-pangea/dnd).
+ * One caveat with the use of @hello-pangea/dnd is that it doesn't allow a drag to be initiated while
+ * using a modifier key: https://github.com/atlassian/@hello-pangea/dnd/issues/1678
  */
 class DraggableItemList<T> extends PureComponent<
   DraggableItemListProps<T>,
@@ -73,6 +75,7 @@ class DraggableItemList<T> extends PureComponent<
     isDeselectOnClick: true,
     isDoubleClickSelect: true,
     isDropDisabled: false,
+    hasPlaceholder: false,
     isDragDisabled: false,
     isMultiSelect: false,
     isStickyBottom: false,
@@ -316,6 +319,7 @@ class DraggableItemList<T> extends PureComponent<
       isDoubleClickSelect,
       isDragDisabled,
       isDropDisabled,
+      hasPlaceholder,
       isMultiSelect,
       isStickyBottom,
       itemCount,
@@ -380,6 +384,7 @@ class DraggableItemList<T> extends PureComponent<
               rowHeight={rowHeight}
               selectedRanges={selectedRanges}
             />
+            {hasPlaceholder && provided.placeholder}
           </div>
         )}
       </Droppable>

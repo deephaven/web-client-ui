@@ -1,0 +1,52 @@
+@import '../../IrisGrid.scss';
+
+.visibility-search-list {
+  width: 0.75 * $table-sidebar-max-width;
+  border: 1px solid var(--dh-color-popover-border);
+
+  .popper-arrow {
+    display: none;
+  }
+
+  .tree-item {
+    padding: $spacer-1;
+  }
+
+  .no-results {
+    padding: $spacer-1;
+    margin: auto;
+    color: var(--dh-color-text-disabled);
+  }
+}
+
+.visibility-search-list-inner {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+
+  .search-tree-container {
+    /**
+     * Prevents the virtualized list from rendering all items
+     * and then popper limiting the height to a reasonable amount
+     * since popper needs to know the internal height to limit the container after
+     */
+    max-height: 100vh;
+    padding: $spacer-1;
+    overflow: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  .footer-buttons {
+    border-top: 1px solid var(--dh-color-popover-border);
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    & > * {
+      flex-grow: 1;
+    }
+  }
+}

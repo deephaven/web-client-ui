@@ -1,7 +1,7 @@
 import {
-  Locator,
+  type Locator,
   expect,
-  Page,
+  type Page,
   chromium,
   firefox,
   webkit,
@@ -401,10 +401,111 @@ export async function openTableOption(
   tableOption: string
 ): Promise<void> {
   await expect(page.getByText('Table Options')).toHaveCount(1);
-  await page.locator(`data-testid=menu-item-${tableOption}`).click();
+  await page.getByText(tableOption).click();
 
   // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible
   await expect(page.getByText('Table Options')).toHaveCount(0);
+}
+
+/**
+ * Get the position of a column separator boundary in table headers
+ * @param page Test page
+ * @param columnIndex 0-based index of the column (separator is on the right edge)
+ * @param depthFromRoot Depth of the header from the root (0 = top level header, opposite of headerGroup depth)
+ * @returns x, y coordinates of the column separator center
+ */
+export async function getColumnSeparatorPosition(
+  page: Page,
+  columnIndex: number,
+  depthFromRoot = 0
+): Promise<{ x: number; y: number }> {
+  const headerHeight = 30; // Based on default in IrisGridTheme
+  const gridBox = await page.locator('.iris-grid .grid-wrapper').boundingBox();
+  if (!gridBox) throw new Error('Grid not found');
+  // Use the bounding box of the advanced filter menu element to determine the separator position
+  // Each visible column has a hidden advanced filter menu element, even non-filterable columns
+  // This is dependent on the implementation of advanced filter menu
+  const advancedMenuBox = await page
+    .locator('.advanced-filter-menu-container')
+    .nth(columnIndex)
+    .boundingBox();
+  if (!advancedMenuBox) throw new Error('Advanced filter menu not found');
+
+  return {
+    x: advancedMenuBox.x + advancedMenuBox.width,
+    // advancedMenuBox.y changes depending on filter bar state
+    // Use the grid coordinate and the header height to calculate the offset
+    y: gridBox.y + headerHeight * depthFromRoot + headerHeight / 2,
+  };
+}
+
+/**
+ * Drag a column separator to resize the column width
+ * @param page Test page
+ * @param columnIndex 0-based index of the column to resize
+ * @param deltaX Number of pixels to move the separator (positive = wider, negative = narrower)
+ * @param depthFromRoot Depth of the header from the root (0 = top level header, opposite of headerGroup depth)
+ * @param steps Number of intermediate steps for the drag operation
+ */
+export async function dragColumnSeparator(
+  page: Page,
+  columnIndex: number,
+  deltaX: number,
+  depthFromRoot = 0,
+  steps = 50
+): Promise<void> {
+  const separatorPos = await getColumnSeparatorPosition(
+    page,
+    columnIndex,
+    depthFromRoot
+  );
+
+  // Move to separator position and start drag
+  await page.mouse.move(separatorPos.x, separatorPos.y);
+  await page.mouse.down();
+
+  // Drag to new position
+  await page.mouse.move(separatorPos.x + deltaX, separatorPos.y, { steps });
+
+  // Release mouse
+  await page.mouse.up();
+
+  // Wait for any layout updates
+  await page.waitForTimeout(100);
+}
+
+/**
+ * Creating a visible element at the specified coordinates.
+ * Useful for debugging tests that involve mouse movement.
+ * @param page Test page
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param size Size of the marker circle
+ */
+export async function markerAtCoordinates(
+  page: Page,
+  x: number,
+  y: number,
+  color = 'red',
+  size = 4
+): Promise<void> {
+  await page.evaluate(
+    ({ x, y, color, size }) => {
+      const marker = document.createElement('div');
+      Object.assign(marker.style, {
+        position: 'fixed',
+        top: `${y - size / 2}px`,
+        left: `${x - size / 2}px`,
+        pointerEvents: 'none',
+        backgroundColor: color,
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+      });
+      document.body.appendChild(marker);
+    },
+    { x, y, color, size }
+  );
 }
 
 export default {
@@ -418,4 +519,6 @@ export default {
   expectContextMenus,
   dragComponent,
   openTableOption,
+  getColumnSeparatorPosition,
+  dragColumnSeparator,
 };

@@ -7,7 +7,6 @@ import {
   type EditableGridModel,
   type EditOperation,
   GridRange,
-  type GridRangeIndex,
   GridUtils,
   memoizeClear,
   type ModelIndex,
@@ -685,8 +684,7 @@ class IrisGridTableModelTemplate<
     return null;
   }
 
-  tooltipForCell(column: GridRangeIndex, row: GridRangeIndex): string | null {
-    if (column === null || row === null) return null;
+  tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     if (TableUtils.isDateType(this.columns[column].type)) {
       return this.displayString(
         this.valueForCell(column, row),
@@ -1648,6 +1646,10 @@ class IrisGridTableModelTemplate<
     return this.keyColumnSet.has(this.columns[x].name);
   }
 
+  isValueColumn(x: ModelIndex): boolean {
+    return this.valueColumnSet.has(this.columns[x].name);
+  }
+
   isRowMovable(): boolean {
     return false;
   }
@@ -1674,7 +1676,14 @@ class IrisGridTableModelTemplate<
     // Check if any of the columns in grid range are key columns
     const bound = range.endColumn ?? this.table.size;
     for (let column = range.startColumn; column <= bound; column += 1) {
-      if (this.isKeyColumn(column)) {
+      const isKey = this.isKeyColumn(column);
+      const isValue = this.isValueColumn(column);
+
+      if (!isKey && !isValue) {
+        // If any column is not a key or value column, range is not editable
+        return false;
+      }
+      if (isKey) {
         isKeyColumnInRange = true;
         break;
       }
@@ -1761,7 +1770,7 @@ class IrisGridTableModelTemplate<
     text: string
   ): Promise<void> {
     if (!this.isEditableRanges(ranges as GridRange[])) {
-      throw new Error(`Uneditable ranges ${ranges}`);
+      throw new Error(`Edits contain uneditable ranges`);
     }
 
     try {
@@ -1906,7 +1915,7 @@ class IrisGridTableModelTemplate<
         )
       )
     ) {
-      throw new Error(`Uneditable ranges ${edits}`);
+      throw new Error(`Edits contain uneditable ranges`);
     }
 
     try {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
   defaultTheme,
   Item,
@@ -37,7 +38,8 @@ function OnMountUnmount({
 }
 
 describe('TabPanels', () => {
-  it('should not persist panel state by default when switching tabs', () => {
+  it('should not persist panel state by default when switching tabs', async () => {
+    const user = userEvent.setup();
     render(
       <Provider theme={defaultTheme}>
         <Tabs aria-label="test">
@@ -57,20 +59,21 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    await user.click(screen.getByRole('button', { name: /foo/ }));
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 2', { selector: 'span' }));
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 1', { selector: 'span' }));
     expect(screen.getByText('foo: 0')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });
 
-  it('should persist panel state when keepMounted is true', () => {
+  it('should persist panel state when keepMounted is true', async () => {
+    const user = userEvent.setup();
     render(
       <Provider theme={defaultTheme}>
         <Tabs aria-label="test">
@@ -90,20 +93,21 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    await user.click(screen.getByRole('button', { name: /foo/ }));
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 2', { selector: 'span' }));
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 1', { selector: 'span' }));
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });
 
-  it('should not persist panel state when using a render function', () => {
+  it('should not persist panel state when using a render function', async () => {
+    const user = userEvent.setup();
     const tabs = [
       {
         id: '1',
@@ -128,15 +132,15 @@ describe('TabPanels', () => {
       </Provider>
     );
 
-    screen.getByRole('button', { name: /foo/ }).click();
+    await user.click(screen.getByRole('button', { name: /foo/ }));
     expect(screen.getByText('foo: 1')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
 
-    screen.getByText('Tab 2', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 2', { selector: 'span' }));
     expect(screen.queryByText(/foo/)).not.toBeInTheDocument();
     expect(screen.queryByText('bar: 0')).toBeInTheDocument();
 
-    screen.getByText('Tab 1', { selector: 'span' }).click();
+    await user.click(screen.getByText('Tab 1', { selector: 'span' }));
     expect(screen.getByText('foo: 0')).toBeInTheDocument();
     expect(screen.queryByText(/bar/)).not.toBeInTheDocument();
   });

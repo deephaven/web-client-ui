@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import {
   DashboardUtils,
-  type DehydratedDashboardPanelProps,
+  type DehydratedPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
 import { useObjectFetcher } from '@deephaven/jsapi-bootstrap';
@@ -33,12 +33,12 @@ export function AppDashboards({
   onLayoutInitialized,
   onGoldenLayoutChange,
   plugins,
-  emptyDashboard = <LoadingOverlay />,
+  emptyDashboard = <LoadingOverlay data-testid="app-dashboards-loading" />,
 }: AppDashboardsProps): JSX.Element {
   const fetchObject = useObjectFetcher();
 
   const hydratePanel = useCallback(
-    (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
+    (hydrateProps: DehydratedPanelProps, id: string) => {
       const { metadata } = hydrateProps;
       try {
         if (metadata != null) {

@@ -4,16 +4,18 @@ It's easy to display a static array of data using [StaticDataGridModel](https://
 
 ```jsx live
 function Example() {
-  const [model] = useState(
-    new StaticDataGridModel(
-      [
-        ['Matthew Austins', 'Toronto', 35, 22],
-        ['Doug Millgore', 'Toronto', 14, 33],
-        ['Bart Marchant', 'Boston', 20, 14],
-        ['Luigi Dabest', 'Pittsburgh', 66, 33],
-      ],
-      ['Name', 'Team', 'Goals', 'Assists']
-    )
+  const model = useMemo(
+    () =>
+      new StaticDataGridModel(
+        [
+          ['Matthew Austins', 'Toronto', 35, 22],
+          ['Doug Millgore', 'Toronto', 14, 33],
+          ['Bart Marchant', 'Boston', 20, 14],
+          ['Luigi Dabest', 'Pittsburgh', 66, 33],
+        ],
+        ['Name', 'Team', 'Goals', 'Assists']
+      ),
+    []
   );
 
   return <Grid model={model} />;

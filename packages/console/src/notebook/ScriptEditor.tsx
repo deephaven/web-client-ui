@@ -370,6 +370,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
         {(error || isLoading) && (
           <div className="h-100 w-100 position-relative">
             <LoadingOverlay
+              data-testid="script-editor-loading"
               errorMessage={errorMessage}
               isLoading={isLoading}
               isLoaded={isLoaded}

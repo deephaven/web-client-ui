@@ -34,7 +34,7 @@ export type FilterMap = Map<string, unknown>;
 
 export interface ChartModelSettings {
   hiddenSeries?: string[];
-  type?: keyof DhType.plot.SeriesPlotStyle;
+  type?: keyof typeof DhType.plot.SeriesPlotStyle;
   series?: string[];
   xAxis?: string;
   title?: string;
