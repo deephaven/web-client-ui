@@ -10,7 +10,7 @@ export interface CommandHistoryStorageData {
   command: string;
   startTime: string;
   endTime?: string;
-  result?: { error?: string };
+  result?: { error?: string; serverStartTime?: number; serverEndTime?: number };
 }
 
 export interface CommandHistoryStorageItem extends StorageItem {

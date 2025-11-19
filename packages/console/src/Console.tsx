@@ -347,6 +347,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         error?: string;
         changes: DhType.ide.VariableChanges;
         cancel: () => unknown;
+        startTimestamp?: DhType.LongWrapper;
+        endTimestamp?: DhType.LongWrapper;
       };
     }>
   ): void {
@@ -400,16 +402,22 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
           message: string;
           error?: string;
           changes: DhType.ide.VariableChanges;
+          startTimestamp?: DhType.LongWrapper;
+          endTimestamp?: DhType.LongWrapper;
         }
       | undefined,
     historyItem: ConsoleHistoryActionItem,
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
+    const serverStartTime = result?.startTimestamp?.asNumber();
+    const serverEndTime = result?.endTimestamp?.asNumber();
     const newHistoryItem = {
       ...historyItem,
       wrappedResult: undefined,
       cancelResult: undefined,
       result: result ?? historyItem.result,
+      serverStartTime,
+      serverEndTime,
     };
 
     this.setState(({ consoleHistory }) => {
@@ -432,7 +440,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.updateHistory(result, newHistoryItem);
     this.updateKnownObjects(newHistoryItem);
     this.updateWorkspaceHistoryItem(
-      { error: result.error },
+      {
+        error: result.error,
+        serverStartTime,
+        serverEndTime,
+      },
       workspaceItemPromise
     );
 
@@ -655,11 +667,16 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   /**
    * Updates an existing workspace CommandHistoryItem
-   * @param result The result to store with the history item. Could be empty object for success
+   * @param result The result to store with the history item.
+   * Possibly contains an error message if there was a failure, server start time, and server end time.
    * @param workspaceItemPromise The workspace data row promise for the workspace item to be updated
    */
   updateWorkspaceHistoryItem(
-    result: { error?: string },
+    result: {
+      error?: string;
+      serverStartTime?: number;
+      serverEndTime?: number;
+    },
     workspaceItemPromise: Promise<CommandHistoryStorageItem>
   ): void {
     const promise = this.pending.add(workspaceItemPromise);
@@ -1107,6 +1124,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 supportsType={supportsType}
                 iconForType={iconForType}
                 ref={this.consoleHistoryContent}
+                onCommandSubmit={this.handleCommandSubmit}
               />
               {historyChildren}
             </div>

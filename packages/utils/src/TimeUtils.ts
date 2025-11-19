@@ -4,6 +4,18 @@ export type TimeString = `${string}:${string}:${string}`;
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
+  static MILLIS_PER_SECOND = 1000;
+
+  static NANOS_PER_SECOND = 1e9;
+
+  static NANOS_PER_MIN = 60 * TimeUtils.NANOS_PER_SECOND;
+
+  static NANOS_PER_HOUR = 60 * TimeUtils.NANOS_PER_MIN;
+
+  static MILLIS_PER_MIN = 60 * TimeUtils.MILLIS_PER_SECOND;
+
+  static MILLIS_PER_HOUR = 60 * TimeUtils.MILLIS_PER_MIN;
+
   static TIME_ZONES = Object.freeze([
     { label: 'Tokyo UTC+9 No DST', value: 'Asia/Tokyo' },
     { label: 'Seoul UTC+9 No DST', value: 'Asia/Seoul' },
@@ -105,6 +117,69 @@ class TimeUtils {
       Number(components[1]) * 60 +
       Number(components[2])
     );
+  }
+
+  /**
+   * Converts a time difference in seconds to a human-readable string.
+   * @param time The time difference in seconds.
+   * @returns A string representing the time difference.
+   */
+  static formatDuration(time: number): string {
+    const hours = Math.floor(time / 3600);
+    const mins = Math.floor((time % 3600) / 60);
+    const seconds = time % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${mins}m ${seconds}s`;
+    }
+    if (mins > 0) {
+      return `${mins}m ${seconds.toFixed(1)}s`;
+    }
+    return `${seconds.toFixed(2)}s`;
+  }
+
+  /**
+   * Gets a human-readable time string for the difference between two times.
+   * Generally meant for informational tooltips.
+   * @param startTime The start time in milliseconds or nanoseconds.
+   * @param endTime The end time in milliseconds or nanoseconds.
+   * @param conversion The conversion type ('ms' or 'ns')
+   * @returns A string representing the time difference, or null if invalid.
+   */
+  static formatConvertedDuration(
+    startTime: string | number | undefined,
+    endTime: string | number | undefined,
+    conversion = 'ms'
+  ): string | null {
+    if (
+      startTime == null ||
+      endTime === '' ||
+      endTime === 0 ||
+      endTime == null
+    ) {
+      return null;
+    }
+
+    let conversionFactor = 1;
+    let start = null;
+    let end = null;
+    if (conversion === 'ms') {
+      conversionFactor = 1000;
+      start = new Date(startTime).valueOf();
+      end = new Date(endTime).valueOf();
+    } else if (conversion === 'ns') {
+      // can only handle dates that are already nanosecond epochs
+      conversionFactor = 1e9;
+      start = Number(startTime);
+      end = Number(endTime);
+    } else {
+      // can only handle dates that are milliseconds or nanoseconds
+      return null;
+    }
+
+    const deltaTime = (end - start) / conversionFactor;
+
+    return this.formatDuration(deltaTime);
   }
 }
 
