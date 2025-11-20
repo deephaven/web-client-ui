@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
+
+### Features
+
+- adds a render slot to NavTabList after content ([#2565](https://github.com/deephaven/web-client-ui/issues/2565)) ([6981b5a](https://github.com/deephaven/web-client-ui/commit/6981b5a5c40dfd3749f6c7d728fafd3182afa8df))
+
+### Bug Fixes
+
+- rollup rows dropzone area in table sidebar ([#2572](https://github.com/deephaven/web-client-ui/issues/2572)) ([2d5f930](https://github.com/deephaven/web-client-ui/commit/2d5f9301153fb92641fe610d4c9791c99395c5e0))
+
 ## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
 
 ### Features

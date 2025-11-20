@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
+
+### Features
+
+- adds a render slot to NavTabList after content ([#2565](https://github.com/deephaven/web-client-ui/issues/2565)) ([6981b5a](https://github.com/deephaven/web-client-ui/commit/6981b5a5c40dfd3749f6c7d728fafd3182afa8df))
+- DH-19382: Add actions and timing info on console history hover ([#2526](https://github.com/deephaven/web-client-ui/issues/2526)) ([17af14c](https://github.com/deephaven/web-client-ui/commit/17af14cbbe3b762fc31a435f5cbf1bffc08ce760))
+- Virtualize column organization lists ([#2568](https://github.com/deephaven/web-client-ui/issues/2568)) ([089eabd](https://github.com/deephaven/web-client-ui/commit/089eabd5a652c0486f37ea3dfcbe6b48f9e5ca5e)), closes [#1650](https://github.com/deephaven/web-client-ui/issues/1650)
+
+### Bug Fixes
+
+- rollup rows dropzone area in table sidebar ([#2572](https://github.com/deephaven/web-client-ui/issues/2572)) ([2d5f930](https://github.com/deephaven/web-client-ui/commit/2d5f9301153fb92641fe610d4c9791c99395c5e0))
+
 ## [1.9.0](https://github.com/deephaven/web-client-ui/compare/v1.8.0...v1.9.0) (2025-11-12)
 
 ### Features
