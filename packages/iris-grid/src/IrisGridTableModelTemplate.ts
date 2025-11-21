@@ -21,7 +21,12 @@ import {
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
-import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
+import {
+  TableUtils,
+  Formatter,
+  FormatterUtils,
+  SortDescriptor,
+} from '@deephaven/jsapi-utils';
 import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -1211,13 +1216,13 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get sort(): DhType.Sort[] {
+  get sort(): readonly SortDescriptor[] {
     return this.table.sort;
   }
 
-  set sort(sort: DhType.Sort[]) {
+  set sort(sort: readonly SortDescriptor[]) {
     this.closeSubscription();
-    this.table.applySort(sort);
+    this.table.applySort(this.irisGridUtils.hydrateDhSort(this.columns, sort));
     this.applyViewport();
   }
 

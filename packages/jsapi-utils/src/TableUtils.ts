@@ -36,6 +36,16 @@ export interface FilterItem {
   value: string;
 }
 
+// Sort descriptor loosely matching the shape of dh.Sort
+export interface SortDescriptor {
+  column: {
+    name: ColumnName;
+    type: string;
+  };
+  isAbs: boolean;
+  direction: string;
+}
+
 export type AdvancedFilterOptions = {
   filterItems: FilterItem[];
   filterOperators: FilterOperatorValue[];
@@ -154,7 +164,7 @@ export class TableUtils {
   };
 
   static getSortIndex(
-    sort: readonly DhType.Sort[],
+    sort: readonly SortDescriptor[],
     columnName: ColumnName
   ): number | null {
     for (let i = 0; i < sort.length; i += 1) {
@@ -173,9 +183,9 @@ export class TableUtils {
    * @returns The sort for the column, or null if it's not sorted
    */
   static getSortForColumn(
-    tableSort: readonly DhType.Sort[],
+    tableSort: readonly SortDescriptor[],
     columnName: ColumnName
-  ): DhType.Sort | null {
+  ): SortDescriptor | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     if (sortIndex != null) {
       return tableSort[sortIndex];
@@ -226,19 +236,29 @@ export class TableUtils {
 
   static getNextSort(
     columns: readonly DhType.Column[],
-    sorts: readonly DhType.Sort[],
+    sorts: readonly SortDescriptor[],
     columnIndex: number
-  ): DhType.Sort | null {
-    if (columnIndex < 0 || columnIndex >= columns.length) {
+  ): SortDescriptor | null {
+    const column = columns[columnIndex];
+    if (column == null) {
       return null;
     }
-
-    const sort = TableUtils.getSortForColumn(sorts, columns[columnIndex].name);
+    const sort = TableUtils.getSortForColumn(sorts, column.name);
     if (sort === null) {
-      return columns[columnIndex].sort().asc();
+      return this.makeColumnSort(
+        columns,
+        columnIndex,
+        TableUtils.sortDirection.ascending,
+        false
+      );
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return sort.desc();
+      return this.makeColumnSort(
+        columns,
+        columnIndex,
+        TableUtils.sortDirection.descending,
+        false
+      );
     }
     return null;
   }
@@ -248,8 +268,9 @@ export class TableUtils {
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean
-  ): DhType.Sort | null {
-    if (columnIndex < 0 || columnIndex >= columns.length) {
+  ): SortDescriptor | null {
+    const column = columns[columnIndex];
+    if (column == null) {
       return null;
     }
 
@@ -257,22 +278,14 @@ export class TableUtils {
       return null;
     }
 
-    let sort = columns[columnIndex].sort();
-
-    switch (direction) {
-      case TableUtils.sortDirection.ascending:
-        sort = sort.asc();
-        break;
-      case TableUtils.sortDirection.descending:
-        sort = sort.desc();
-        break;
-      default:
-        break;
-    }
-    if (isAbs) {
-      sort = sort.abs();
-    }
-    return sort;
+    return {
+      column: {
+        name: column.name,
+        type: column.type,
+      },
+      isAbs,
+      direction,
+    };
   }
 
   /**
@@ -283,12 +296,12 @@ export class TableUtils {
    * @param addToExisting Add this sort to the existing sort
    */
   static toggleSortForColumn(
-    sorts: readonly DhType.Sort[],
+    sorts: readonly SortDescriptor[],
     columns: readonly DhType.Column[],
     columnIndex: number,
     addToExisting = false
-  ): DhType.Sort[] {
-    if (columnIndex < 0 || columnIndex >= columns.length) {
+  ): SortDescriptor[] {
+    if (columns[columnIndex] == null) {
       return [];
     }
 
@@ -303,13 +316,13 @@ export class TableUtils {
   }
 
   static sortColumn(
-    sorts: readonly DhType.Sort[],
+    sorts: readonly SortDescriptor[],
     columns: readonly DhType.Column[],
     modelColumn: number,
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
-  ): DhType.Sort[] {
+  ): SortDescriptor[] {
     if (modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
@@ -338,13 +351,13 @@ export class TableUtils {
    * @returns Returns the modified array of sorts - removing reverses
    */
   static setSortForColumn(
-    tableSort: readonly DhType.Sort[],
+    tableSort: readonly SortDescriptor[],
     columnName: ColumnName,
-    sort: DhType.Sort | null,
+    sort: SortDescriptor | null,
     addToExisting = false
-  ): DhType.Sort[] {
+  ): SortDescriptor[] {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
-    let sorts: DhType.Sort[] = [];
+    let sorts: SortDescriptor[] = [];
     if (addToExisting) {
       sorts = sorts.concat(
         tableSort.filter(
