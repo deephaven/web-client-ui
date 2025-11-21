@@ -1653,6 +1653,10 @@ class IrisGridUtils {
             return dh.Table.reverse();
           }
 
+          if (columnObjectOrIndexOrName == null) {
+            return null;
+          }
+
           const columnIndexOrName =
             typeof columnObjectOrIndexOrName === 'object' &&
             'name' in columnObjectOrIndexOrName

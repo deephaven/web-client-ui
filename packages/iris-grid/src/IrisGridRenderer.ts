@@ -10,7 +10,6 @@ import {
   GridUtils,
   VisibleIndex,
 } from '@deephaven/grid';
-import type { dh } from '@deephaven/jsapi-types';
 import { SortDescriptor, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
