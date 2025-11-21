@@ -53,6 +53,7 @@ import {
   type RowDataMap,
   type AdvancedFilterOptions,
   type FormattingRule,
+  SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -196,7 +197,7 @@ interface IrisGridPanelState {
   customColumnFormatMap: Map<string, FormattingRule>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly dh.Sort[];
+  sorts: readonly SortDescriptor[];
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;
   reverse: boolean;

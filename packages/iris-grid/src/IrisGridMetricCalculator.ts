@@ -10,6 +10,7 @@ import {
 } from '@deephaven/grid';
 import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
+import { SortDescriptor } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import type IrisGridModel from './IrisGridModel';
 import { IrisGridThemeType } from './IrisGridTheme';
@@ -27,7 +28,7 @@ export interface IrisGridMetricState extends GridMetricState {
   isFilterBarShown: boolean;
   advancedFilters: ReadonlyAdvancedFilterMap;
   quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly dh.Sort[];
+  sorts: readonly SortDescriptor[];
   reverse: boolean;
 }
 

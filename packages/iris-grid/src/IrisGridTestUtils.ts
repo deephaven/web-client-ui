@@ -1,7 +1,8 @@
 import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { Formatter, SortDescriptor } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
+import IrisGridUtils from './IrisGridUtils';
 
 class IrisGridTestUtils {
   static DEFAULT_TYPE = 'java.lang.String';
@@ -20,8 +21,11 @@ class IrisGridTestUtils {
 
   private dh: typeof DhType;
 
+  private irisGridUtils: IrisGridUtils;
+
   constructor(dh: typeof DhType) {
     this.dh = dh;
+    this.irisGridUtils = new IrisGridUtils(dh);
   }
 
   makeColumn(
@@ -77,6 +81,13 @@ class IrisGridTestUtils {
     return new (this.dh as any).Sort();
   }
 
+  hydrateSort(
+    sortDescriptor: readonly SortDescriptor[],
+    columns: DhType.Column[]
+  ): DhType.Sort[] {
+    return this.irisGridUtils.hydrateDhSort(columns, sortDescriptor);
+  }
+
   makeTable({
     columns = this.makeColumns(),
     size = 1000000000,
@@ -85,7 +96,7 @@ class IrisGridTestUtils {
   }: {
     columns?: DhType.Column[];
     size?: number;
-    sort?: readonly DhType.Sort[];
+    sort?: readonly SortDescriptor[];
     layoutHints?: Partial<DhType.LayoutHints>;
   } = {}): DhType.Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

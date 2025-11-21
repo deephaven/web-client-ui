@@ -185,12 +185,16 @@ describe('sort exporting/importing', () => {
 
       expect(importedSort).toEqual([
         expect.objectContaining({
-          column: columns[3],
+          column: expect.objectContaining({
+            name: columns[3].name,
+          }),
           isAbs: false,
           direction: 'ASC',
         }),
         expect.objectContaining({
-          column: columns[7],
+          column: expect.objectContaining({
+            name: columns[7].name,
+          }),
           isAbs: true,
           direction: 'DESC',
         }),
