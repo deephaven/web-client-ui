@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.38](https://github.com/deephaven/web-client-ui/compare/v0.85.37...v0.85.38) (2025-11-24)
+
+### Bug Fixes
+
+- Cherry-pick DH-20319: Stuck to bottom of table not sticking ([#2547](https://github.com/deephaven/web-client-ui/issues/2547)) ([#2578](https://github.com/deephaven/web-client-ui/issues/2578)) ([903938a](https://github.com/deephaven/web-client-ui/commit/903938a871ce43303099426799597d8dc8c270ac))
+
 ## [0.85.37](https://github.com/deephaven/web-client-ui/compare/v0.85.36...v0.85.37) (2025-11-14)
 
 ### Features
