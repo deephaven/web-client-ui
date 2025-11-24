@@ -14,3 +14,10 @@
   border-right: 1px solid $gray-500;
   min-width: 400px;
 }
+
+// Container for widgets to fill available panel space
+.widget-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
