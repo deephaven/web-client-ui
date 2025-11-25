@@ -13,7 +13,7 @@ import {
   type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { type Formatter } from '@deephaven/jsapi-utils';
+import { type Formatter, type SortDescriptor } from '@deephaven/jsapi-utils';
 import {
   type ColumnName,
   type UITotalsTableConfig,
@@ -274,12 +274,12 @@ abstract class IrisGridModel<
   /**
    * @returns The sorts used on this model
    */
-  abstract get sort(): readonly DhType.Sort[];
+  abstract get sort(): readonly SortDescriptor[];
 
   /**
    * @param sort The sorts to use on this model
    */
-  abstract set sort(sort: readonly DhType.Sort[]);
+  abstract set sort(sort: readonly SortDescriptor[]);
 
   /**
   /**

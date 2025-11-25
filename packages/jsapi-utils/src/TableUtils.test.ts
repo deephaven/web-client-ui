@@ -8,7 +8,11 @@ import {
 } from '@deephaven/filters';
 import { getAllMethodNames } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
-import TableUtils, { type DataType, type SortDirection } from './TableUtils';
+import TableUtils, {
+  type DataType,
+  type SortDirection,
+  type SortDescriptor,
+} from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
@@ -842,47 +846,77 @@ describe('toggleSortForColumn', () => {
     const columns = makeColumns();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table: Table = new (dh as any).Table({ columns });
-    let tableSorts: Sort[] = [];
+    let sortDescriptors: SortDescriptor[] = [];
 
     expect(table).not.toBe(null);
     expect(table.sort.length).toBe(0);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      0,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
     expect(table.sort.length).toBe(1);
     expect(table.sort[0].column).toBe(columns[0]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      3,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
     expect(table.sort.length).toBe(2);
     expect(table.sort[0].column).toBe(columns[0]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
     expect(table.sort[1].column).toBe(columns[3]);
     expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      0,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
     expect(table.sort.length).toBe(2);
     expect(table.sort[0].column).toBe(columns[3]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
     expect(table.sort[1].column).toBe(columns[0]);
     expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      0,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
     expect(table.sort.length).toBe(1);
     expect(table.sort[0].column).toBe(columns[3]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      3,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
     expect(table.sort.length).toBe(1);
     expect(table.sort[0].column).toBe(columns[3]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
 
-    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-    table.applySort(tableSorts);
+    sortDescriptors = TableUtils.toggleSortForColumn(
+      sortDescriptors,
+      columns,
+      3,
+      true
+    );
+    table.applySort(irisGridTestUtils.hydrateSort(sortDescriptors, columns));
 
     expect(table.sort.length).toBe(0);
   });
@@ -890,6 +924,43 @@ describe('toggleSortForColumn', () => {
   it('should return an empty array if columnIndex is out of range', () => {
     const columns = makeColumns();
     expect(TableUtils.toggleSortForColumn([], columns, -1)).toEqual([]);
+  });
+
+  it('handles negative columnIndex correctly', () => {
+    const columns = makeColumns();
+    const colBySources = makeColumns();
+    colBySources.forEach((col, index) => {
+      columns[-index - 1] = col;
+    });
+
+    expect(columns[-1]).toEqual(colBySources[0]);
+
+    let sorts: SortDescriptor[] = [];
+    sorts = TableUtils.toggleSortForColumn(sorts, columns, -1);
+
+    expect(sorts).toEqual([
+      expect.objectContaining({
+        column: {
+          name: colBySources[0].name,
+          type: colBySources[0].type,
+        },
+        direction: 'ASC',
+      }),
+    ]);
+
+    sorts = TableUtils.toggleSortForColumn(sorts, columns, -1);
+    expect(sorts).toEqual([
+      expect.objectContaining({
+        column: {
+          name: colBySources[0].name,
+          type: colBySources[0].type,
+        },
+        direction: 'DESC',
+      }),
+    ]);
+
+    sorts = TableUtils.toggleSortForColumn(sorts, columns, -1);
+    expect(sorts).toEqual([]);
   });
 });
 
@@ -3290,7 +3361,7 @@ describe('makeColumnSort', () => {
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean,
-    expectedValue: Partial<Sort> | null
+    expectedValue: SortDescriptor | null
   ) => {
     expect(
       TableUtils.makeColumnSort(columns, columnIndex, direction, isAbs)
@@ -3310,8 +3381,10 @@ describe('makeColumnSort', () => {
 
   it('should return an ascending sort if direction is ASC', () => {
     const columns = makeColumns();
-    const expectedValue: Partial<Sort> = {
-      column: columns[0],
+    const expectedValue: SortDescriptor = {
+      column: expect.objectContaining({
+        name: columns[0].name,
+      }),
       direction: 'ASC',
       isAbs: true,
     };
@@ -3320,8 +3393,10 @@ describe('makeColumnSort', () => {
 
   it('should return an descending sort if direction is DESC', () => {
     const columns = makeColumns();
-    const expectedValue: Partial<Sort> = {
-      column: columns[1],
+    const expectedValue: SortDescriptor = {
+      column: expect.objectContaining({
+        name: columns[1].name,
+      }),
       direction: 'DESC',
       isAbs: false,
     };
@@ -3330,9 +3405,11 @@ describe('makeColumnSort', () => {
 
   it('should return the default sort if direction is REVERSE', () => {
     const columns = makeColumns();
-    const expectedValue: Partial<Sort> = {
-      column: columns[2],
-      direction: 'ASC',
+    const expectedValue: SortDescriptor = {
+      column: expect.objectContaining({
+        name: columns[2].name,
+      }),
+      direction: 'REVERSE',
       isAbs: true,
     };
     testMakeColumnSort(columns, 2, 'REVERSE', true, expectedValue);
@@ -3403,7 +3480,7 @@ describe('sortColumn', () => {
     const columns = makeColumns();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table: Table = new (dh as any).Table({ columns });
-    let tableSorts: Sort[] = [];
+    let tableSorts: SortDescriptor[] = [];
 
     expect(table).not.toBe(null);
     expect(table.sort.length).toBe(0);
@@ -3416,7 +3493,7 @@ describe('sortColumn', () => {
       true,
       true
     );
-    table.applySort(tableSorts);
+    table.applySort(irisGridTestUtils.hydrateSort(tableSorts, columns));
     expect(table.sort.length).toBe(1);
     expect(table.sort[0].column).toBe(columns[0]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
@@ -3430,7 +3507,7 @@ describe('sortColumn', () => {
       false,
       true
     );
-    table.applySort(tableSorts);
+    table.applySort(irisGridTestUtils.hydrateSort(tableSorts, columns));
     expect(table.sort.length).toBe(2);
     expect(table.sort[0].column).toBe(columns[0]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
@@ -3447,7 +3524,7 @@ describe('sortColumn', () => {
       false,
       true
     );
-    table.applySort(tableSorts);
+    table.applySort(irisGridTestUtils.hydrateSort(tableSorts, columns));
     expect(table.sort.length).toBe(2);
     expect(table.sort[0].column).toBe(columns[3]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
@@ -3464,7 +3541,7 @@ describe('sortColumn', () => {
       false,
       false
     );
-    table.applySort(tableSorts);
+    table.applySort(irisGridTestUtils.hydrateSort(tableSorts, columns));
     expect(table.sort.length).toBe(1);
     expect(table.sort[0].column).toBe(columns[3]);
     expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);

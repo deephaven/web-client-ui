@@ -26,8 +26,10 @@ import {
   Formatter,
   FormatterUtils,
   DateUtils,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
@@ -1251,13 +1253,13 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get sort(): DhType.Sort[] {
+  get sort(): readonly SortDescriptor[] {
     return this.table.sort;
   }
 
-  set sort(sort: DhType.Sort[]) {
+  set sort(sort: readonly SortDescriptor[]) {
     this.closeSubscription();
-    this.table.applySort(sort);
+    this.table.applySort(this.irisGridUtils.hydrateDhSort(this.columns, sort));
     this.applyViewport();
   }
 

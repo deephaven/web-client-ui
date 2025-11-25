@@ -1,4 +1,7 @@
-import { type AdvancedFilterOptions } from '@deephaven/jsapi-utils';
+import {
+  type AdvancedFilterOptions,
+  type SortDescriptor,
+} from '@deephaven/jsapi-utils';
 import { type GridRangeIndex, type ModelIndex } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { type Shortcut } from '@deephaven/components';
@@ -97,7 +100,7 @@ export interface IrisGridStateOverride extends Record<string, unknown> {
   loadingScrimProgress: number | null;
   advancedFilters: ReadonlyAdvancedFilterMap;
   quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly dh.Sort[];
+  sorts: readonly SortDescriptor[];
   reverse: boolean;
   rollupConfig: UIRollupConfig | undefined;
 }
