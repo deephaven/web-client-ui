@@ -9,8 +9,7 @@ import {
   GridUtils,
   type VisibleIndex,
 } from '@deephaven/grid';
-import type { dh } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { SortDescriptor, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
   type AdvancedFilter,
@@ -52,7 +51,7 @@ export class IrisGridRenderer extends GridRenderer {
 
   protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
-  getSortIcon(sort: dh.Sort | null, size: number): Path2D | null {
+  getSortIcon(sort: SortDescriptor | null, size: number): Path2D | null {
     if (!sort) {
       return null;
     }

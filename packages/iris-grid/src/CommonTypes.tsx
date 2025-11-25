@@ -97,7 +97,7 @@ export interface IrisGridStateOverride extends Record<string, unknown> {
   loadingScrimProgress: number | null;
   advancedFilters: ReadonlyAdvancedFilterMap;
   quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly dh.Sort[];
+  sorts: readonly SortDescriptor[];
   reverse: boolean;
   rollupConfig: UIRollupConfig | undefined;
 }

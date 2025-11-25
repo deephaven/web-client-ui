@@ -14,6 +14,7 @@ import {
   type ReverseType,
   type SortDirection,
   type FormattingRule,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -21,6 +22,7 @@ import {
   bindAllMethods,
   EMPTY_ARRAY,
   EMPTY_MAP,
+  isNotNullOrUndefined,
 } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -380,7 +382,7 @@ class IrisGridUtils {
    * @param  sorts The table sorts
    * @returns The dehydrated sorts
    */
-  static dehydrateSort(sorts: readonly DhType.Sort[]): DehydratedSort[] {
+  static dehydrateSort(sorts: readonly SortDescriptor[]): DehydratedSort[] {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
       return {
@@ -484,9 +486,9 @@ class IrisGridUtils {
   }
 
   static removeSortsInColumns(
-    sorts: readonly DhType.Sort[],
+    sorts: readonly SortDescriptor[],
     columnNames: readonly string[]
-  ): DhType.Sort[] {
+  ): SortDescriptor[] {
     return sorts.filter(sort => !columnNames.includes(sort.column.name));
   }
 
@@ -924,7 +926,10 @@ class IrisGridUtils {
     columns: readonly DhType.Column[],
     columnName: ColumnName
   ): DhType.Column | undefined {
-    const column = columns.find(({ name }) => name === columnName);
+    // Columns can contain ColumnBy sources with negative indexes
+    const column = Object.values(columns).find(
+      ({ name }) => name === columnName
+    );
     if (column == null) {
       log.error(
         'Unable to retrieve column by name',
@@ -1052,7 +1057,10 @@ class IrisGridUtils {
 
       assertNotNull(name, 'Column header group has no name');
 
-      if (model.getColumnIndexByName(name) != null) {
+      const columnIndex = model.getColumnIndexByName(name);
+      // Groups cannot have names matching columns to avoid parent-child collision
+      // unless they refer to ColumnBy sources with negative indexes
+      if (columnIndex != null && columnIndex >= 0) {
         throw new Error(`Column header group has same name as column: ${name}`);
       }
 
@@ -1306,7 +1314,7 @@ class IrisGridUtils {
         quickFilters,
         formatter.timeZone
       ),
-      sorts: this.hydrateSort(columns, sorts),
+      sorts: this.hydrateSort(columns, sorts, true),
       userColumnWidths: new Map(
         userColumnWidths
           .map(
@@ -1641,16 +1649,11 @@ class IrisGridUtils {
     return value != null ? this.dh.LongWrapper.ofString(value) : null;
   }
 
-  /**
-   * Import the saved sorts to apply to the table. Does not actually apply the sort.
-   * @param  columns The columns the sorts will be applied to
-   * @param  sorts Exported sort definitions
-   * @returns The sorts to apply to the table
-   */
   hydrateSort(
     columns: readonly DhType.Column[],
-    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
-  ): DhType.Sort[] {
+    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[],
+    dropReverse = false
+  ): SortDescriptor[] {
     const { dh } = this;
     return (
       sorts
@@ -1664,6 +1667,51 @@ class IrisGridUtils {
             typeof columnIndexOrName === 'string'
               ? IrisGridUtils.getColumnByName(columns, columnIndexOrName)
               : IrisGridUtils.getColumn(columns, columnIndexOrName);
+
+          if (column != null) {
+            return {
+              column: {
+                name: column.name,
+                type: column.type,
+              },
+              isAbs,
+              direction,
+            };
+          }
+          return null;
+        })
+        // If we can't find the column any more, it's null, filter it out
+        // If the item is a reverse sort item, and dropReverse is true, filter it out
+        // - it will get applied with the `reverse` property
+        // This should only happen when loading a legacy dashboard
+        .filter(
+          item =>
+            item != null &&
+            (item.direction !== TableUtils.sortDirection.reverse ||
+              !dropReverse)
+        ) as SortDescriptor[]
+    );
+  }
+
+  hydrateDhSort(
+    columns: readonly DhType.Column[],
+    sorts: readonly SortDescriptor[]
+  ): DhType.Sort[] {
+    const { dh } = this;
+    return (
+      sorts
+        .map(sortDescriptor => {
+          const {
+            column: { name },
+            isAbs,
+            direction,
+          } = sortDescriptor;
+
+          if (direction === TableUtils.sortDirection.reverse) {
+            return dh.Table.reverse();
+          }
+
+          const column = IrisGridUtils.getColumnByName(columns, name);
 
           if (column != null) {
             let columnSort = column.sort();
@@ -1681,12 +1729,7 @@ class IrisGridUtils {
           return null;
         })
         // If we can't find the column any more, it's null, filter it out
-        // If the item is a reverse sort item, filter it out - it will get applied with the `reverse` property
-        // This should only happen when loading a legacy dashboard
-        .filter(
-          item =>
-            item != null && item.direction !== TableUtils.sortDirection.reverse
-        ) as DhType.Sort[]
+        .filter(isNotNullOrUndefined) as DhType.Sort[]
     );
   }
 
@@ -1728,7 +1771,10 @@ class IrisGridUtils {
 
     let sorts: DhType.Sort[] = [];
     if (tableSettings.sorts) {
-      sorts = this.hydrateSort(columns, tableSettings.sorts);
+      sorts = this.hydrateDhSort(
+        columns,
+        this.hydrateSort(columns, tableSettings.sorts)
+      );
     }
 
     let filters = [...quickFilters, ...advancedFilters];
