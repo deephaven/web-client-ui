@@ -1649,6 +1649,12 @@ class IrisGridUtils {
     return value != null ? this.dh.LongWrapper.ofString(value) : null;
   }
 
+  /**
+   * Import the saved sorts to apply to the model. Does not actually apply the sort.
+   * @param  columns The columns the sorts will be applied to
+   * @param  sorts Exported sort definitions
+   * @returns The sort descriptors to apply to the model
+   */
   hydrateSort(
     columns: readonly DhType.Column[],
     sorts: readonly (DehydratedSort | LegacyDehydratedSort)[],
