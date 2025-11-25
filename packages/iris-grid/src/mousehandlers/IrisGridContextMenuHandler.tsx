@@ -38,6 +38,7 @@ import {
   type TableColumnFormat,
   type IntegerColumnFormat,
   type SortDirection,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';

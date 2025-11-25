@@ -53,7 +53,7 @@ import {
   type RowDataMap,
   type AdvancedFilterOptions,
   type FormattingRule,
-  SortDescriptor,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {

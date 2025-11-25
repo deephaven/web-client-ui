@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
-import { SortDescriptor, type Formatter } from '@deephaven/jsapi-utils';
+import { type SortDescriptor, type Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import { useOnChange } from '@deephaven/react-hooks';
 import IrisGridUtils from './IrisGridUtils';
