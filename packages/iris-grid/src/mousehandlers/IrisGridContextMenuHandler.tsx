@@ -38,6 +38,7 @@ import {
   TableColumnFormat,
   IntegerColumnFormat,
   SortDirection,
+  SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
@@ -1971,7 +1972,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   sortByActions(
     column: DhType.Column,
     modelColumn: ModelIndex,
-    columnSort: DhType.Sort | null
+    columnSort: SortDescriptor | null
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
@@ -2147,7 +2148,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   checkColumnSort(
-    columnSort?: DhType.Sort | null,
+    columnSort?: SortDescriptor | null,
     direction: SortDirection = null,
     isAbs = false
   ): boolean {

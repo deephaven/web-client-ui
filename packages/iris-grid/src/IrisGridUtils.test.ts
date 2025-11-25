@@ -185,12 +185,16 @@ describe('sort exporting/importing', () => {
 
       expect(importedSort).toEqual([
         expect.objectContaining({
-          column: columns[3],
+          column: expect.objectContaining({
+            name: columns[3].name,
+          }),
           isAbs: false,
           direction: 'ASC',
         }),
         expect.objectContaining({
-          column: columns[7],
+          column: expect.objectContaining({
+            name: columns[7].name,
+          }),
           isAbs: true,
           direction: 'DESC',
         }),
@@ -372,6 +376,15 @@ describe('remove columns in moved columns', () => {
     let expectMovedColumns = GridUtils.moveItem(2, 1, []);
     expectMovedColumns = GridUtils.moveItem(3, 4, expectMovedColumns);
     expect(newMovedColumns).toEqual(expectMovedColumns);
+  });
+});
+
+describe('removeSortsInColumns', () => {
+  it('removes sort for the given column names', () => {
+    const table = makeTable();
+    const sort = [table.columns[2].sort(), table.columns[5].sort().desc()];
+    const newSort = IrisGridUtils.removeSortsInColumns(sort, ['name_2']);
+    expect(newSort).toEqual([table.columns[5].sort().desc()]);
   });
 });
 
