@@ -488,7 +488,7 @@ class IrisGridUtils {
   static removeSortsInColumns(
     sorts: readonly SortDescriptor[],
     columnNames: readonly string[]
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     return sorts.filter(sort => !columnNames.includes(sort.column.name));
   }
 
@@ -1653,7 +1653,7 @@ class IrisGridUtils {
     columns: readonly DhType.Column[],
     sorts: readonly (DehydratedSort | LegacyDehydratedSort)[],
     dropReverse = false
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     const { dh } = this;
     return (
       sorts

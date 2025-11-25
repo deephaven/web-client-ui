@@ -300,7 +300,7 @@ export class TableUtils {
     columns: readonly DhType.Column[],
     columnIndex: number,
     addToExisting = false
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     if (columns[columnIndex] == null) {
       return [];
     }
@@ -322,7 +322,7 @@ export class TableUtils {
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     if (modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
@@ -355,7 +355,7 @@ export class TableUtils {
     columnName: ColumnName,
     sort: SortDescriptor | null,
     addToExisting = false
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     let sorts: SortDescriptor[] = [];
     if (addToExisting) {
