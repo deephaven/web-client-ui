@@ -8,9 +8,9 @@ import {
 } from '@deephaven/filters';
 import { getAllMethodNames, TestUtils } from '@deephaven/utils';
 import TableUtils, {
-  DataType,
-  SortDescriptor,
-  SortDirection,
+  type DataType,
+  type SortDirection,
+  type SortDescriptor,
 } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages

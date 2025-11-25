@@ -25,9 +25,10 @@ import {
   TableUtils,
   Formatter,
   FormatterUtils,
-  SortDescriptor,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
-import IrisGridModel, { DisplayColumn } from './IrisGridModel';
+import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';

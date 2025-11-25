@@ -13,7 +13,7 @@ import {
   VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter, SortDescriptor } from '@deephaven/jsapi-utils';
+import { type Formatter, type SortDescriptor } from '@deephaven/jsapi-utils';
 import {
   ColumnName,
   UITotalsTableConfig,

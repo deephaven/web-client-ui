@@ -1,6 +1,6 @@
-import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
+import { type GridRangeIndex, type ModelSizeMap } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter, SortDescriptor } from '@deephaven/jsapi-utils';
+import { Formatter, type SortDescriptor } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridUtils from './IrisGridUtils';
 

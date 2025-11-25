@@ -78,7 +78,7 @@ import {
   TableColumnFormat,
   Settings,
   isSortDirection,
-  SortDescriptor,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,

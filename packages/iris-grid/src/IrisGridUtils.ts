@@ -11,10 +11,10 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateUtils,
   TableUtils,
-  ReverseType,
-  SortDirection,
-  FormattingRule,
-  SortDescriptor,
+  type ReverseType,
+  type SortDirection,
+  type FormattingRule,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -484,7 +484,7 @@ class IrisGridUtils {
   static removeSortsInColumns(
     sorts: readonly SortDescriptor[],
     columnNames: readonly string[]
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     return sorts.filter(sort => !columnNames.includes(sort.column.name));
   }
 
@@ -1641,11 +1641,18 @@ class IrisGridUtils {
     return value != null ? this.dh.LongWrapper.ofString(value) : null;
   }
 
+  /**
+   * Import the saved sorts to apply to the model. Does not actually apply the sort.
+   * @param columns The columns the sorts will be applied to
+   * @param sorts Exported sort definitions
+   * @param dropReverse If true, drop reverse sort descriptors from the result
+   * @returns The sort descriptors to apply to the model
+   */
   hydrateSort(
     columns: readonly DhType.Column[],
     sorts: readonly (DehydratedSort | LegacyDehydratedSort)[],
     dropReverse = false
-  ): SortDescriptor[] {
+  ): readonly SortDescriptor[] {
     const { dh } = this;
     return (
       sorts
