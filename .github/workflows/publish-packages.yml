@@ -1,11 +1,23 @@
+# This workflow publishes packages to npm using trusted publishing
+# It triggers on release creation to publish production packages
+# It can also be manually triggered to publish alpha/canary packages
 name: Publish Packages
 on:
-  workflow_dispatch:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      preid:
+        description: 'Preid used to publish package. Must be unique per branch.'
+        required: true
+        default: 'alpha'
+      ref:
+        description: 'Commit to deploy from. Defaults to branch used for workflow_dispatch action.'
+        required: false
+        default: ''
 jobs:
   publish-packages:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -14,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event.inputs.ref }}
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -24,13 +36,14 @@ jobs:
         run: npm ci
       - name: Build production
         run: npm run build
-      # Need the --no-verify-access access flag since we use an automation token. Otherwise publish step fails
-      # https://github.com/lerna/lerna/issues/2788
-      - name: Publish packages
-        run: ./node_modules/.bin/lerna publish --no-verify-access from-package --yes
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.DEEPHAVENBOT_NPM_TOKEN }}
+      - name: Publish canary packages
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: ./node_modules/.bin/lerna publish --canary --force-publish=\* --preid ${{ github.event.inputs.preid }} --dist-tag canary --yes
+      - name: Publish production packages
+        if: ${{ github.event_name == 'release' }}
+        run: ./node_modules/.bin/lerna publish from-package --yes
       - name: Update deephaven-core
+        if: ${{ github.event_name == 'release' }}
         run: |
           curl -L \
           -H "Accept: application/vnd.github+json" \
