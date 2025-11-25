@@ -1651,8 +1651,9 @@ class IrisGridUtils {
 
   /**
    * Import the saved sorts to apply to the model. Does not actually apply the sort.
-   * @param  columns The columns the sorts will be applied to
-   * @param  sorts Exported sort definitions
+   * @param columns The columns the sorts will be applied to
+   * @param sorts Exported sort definitions
+   * @param dropReverse If true, drop reverse sort descriptors from the result
    * @returns The sort descriptors to apply to the model
    */
   hydrateSort(
