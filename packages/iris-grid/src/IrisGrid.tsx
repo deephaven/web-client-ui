@@ -78,6 +78,7 @@ import {
   TableColumnFormat,
   Settings,
   isSortDirection,
+  type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
@@ -231,7 +232,7 @@ function isEmptyConfig({
   rollupConfig?: UIRollupConfig;
   searchFilter?: DhType.FilterCondition;
   selectDistinctColumns: readonly ColumnName[];
-  sorts: readonly DhType.Sort[];
+  sorts: readonly SortDescriptor[];
 }): boolean {
   return (
     advancedFilters.size === 0 &&
@@ -305,7 +306,7 @@ export interface IrisGridProps {
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
-  sorts: readonly DhType.Sort[];
+  sorts: readonly SortDescriptor[];
 
   /** @deprecated use `reverse` instead */
   reverseType?: ReverseType;
@@ -389,7 +390,7 @@ export interface IrisGridState {
   shownAdvancedFilter: number | null;
   hoverAdvancedFilter: number | null;
 
-  sorts: readonly DhType.Sort[];
+  sorts: readonly SortDescriptor[];
   reverse: boolean;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
@@ -1388,7 +1389,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingScrimProgress: number | null,
       quickFilters: ReadonlyQuickFilterMap,
       advancedFilters: ReadonlyAdvancedFilterMap,
-      sorts: readonly DhType.Sort[],
+      sorts: readonly SortDescriptor[],
       reverse: boolean,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
@@ -1548,12 +1549,22 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return '';
   }
 
+  /**
+   * Get the model column index for the provided visible index
+   * @param columnIndex Visible column index
+   * @returns Model column index, or null if not found
+   */
   getModelColumn(columnIndex: GridRangeIndex): ModelIndex | null | undefined {
     const { metrics } = this.state;
     assertNotNull(metrics);
     const { modelColumns } = metrics;
     if (modelColumns == null) {
       return null;
+    }
+
+    if (columnIndex != null && columnIndex < 0) {
+      // ColumnBy sources aren't movable, so just return the index directly
+      return columnIndex;
     }
 
     return columnIndex != null ? modelColumns.get(columnIndex) : null;
@@ -2767,7 +2778,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  updateSorts(sorts: readonly DhType.Sort[]): void {
+  updateSorts(sorts: readonly SortDescriptor[]): void {
     this.startLoading('Sorting...');
     this.setState({ sorts });
     this.grid?.forceUpdate();

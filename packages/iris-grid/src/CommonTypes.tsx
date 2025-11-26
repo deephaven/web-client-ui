@@ -1,5 +1,5 @@
-import { AdvancedFilterOptions } from '@deephaven/jsapi-utils';
-import { ModelIndex } from '@deephaven/grid';
+import { type AdvancedFilterOptions } from '@deephaven/jsapi-utils';
+import { type ModelIndex } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { Shortcut } from '@deephaven/components';
 import { IconDefinition } from '@deephaven/icons';

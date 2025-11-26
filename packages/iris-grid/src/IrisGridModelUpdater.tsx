@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { type ModelIndex, type MoveOperation } from '@deephaven/grid';
-import { type Formatter } from '@deephaven/jsapi-utils';
+import { type SortDescriptor, type Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
@@ -24,7 +24,7 @@ interface IrisGridModelUpdaterProps {
   left: number | null;
   right: number | null;
   filter: readonly dh.FilterCondition[];
-  sorts: readonly dh.Sort[];
+  sorts: readonly SortDescriptor[];
   reverse?: boolean;
   customColumns: readonly ColumnName[];
   movedColumns: readonly MoveOperation[];
