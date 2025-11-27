@@ -1,20 +1,4 @@
 {
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": [
-          "build",
-          "build:babel",
-          "build:sass",
-          "svgo-dh",
-          "svgo-vs",
-          "build:icons",
-          "build:js"
-        ]
-      }
-    }
-  },
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
@@ -34,7 +18,8 @@
     "build": {
       "inputs": ["build", "^build", "{workspaceRoot}/babel.config.js"],
       "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/build", "{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/build", "{projectRoot}/dist"],
+      "cache": true
     },
     "build:babel": {
       "inputs": [
@@ -45,7 +30,8 @@
       "outputs": [
         "{projectRoot}/dist/**/*.js",
         "{projectRoot}/dist/**/*.js.map"
-      ]
+      ],
+      "cache": true
     },
     "build:sass": {
       "inputs": ["{projectRoot}/**/*.scss"],
@@ -53,19 +39,24 @@
         "{projectRoot}/css",
         "{projectRoot}/dist/**/*.css",
         "{projectRoot}/dist/**/*.css.map"
-      ]
+      ],
+      "cache": true
     },
     "svgo-dh": {
-      "outputs": ["{projectRoot}/dist/svg/dh"]
+      "outputs": ["{projectRoot}/dist/svg/dh"],
+      "cache": true
     },
     "svgo-vs": {
-      "outputs": ["{projectRoot}/dist/svg/vs"]
+      "outputs": ["{projectRoot}/dist/svg/vs"],
+      "cache": true
     },
     "build:icons": {
-      "outputs": ["{projectRoot}/dist/svg"]
+      "outputs": ["{projectRoot}/dist/svg"],
+      "cache": true
     },
     "build:js": {
-      "outputs": ["{projectRoot}/dist", "!{projectRoot}/dist/svg"]
+      "outputs": ["{projectRoot}/dist", "!{projectRoot}/dist/svg"],
+      "cache": true
     }
   }
 }
