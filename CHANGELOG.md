@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/deephaven/web-client-ui/compare/v1.10.0...v1.10.1) (2025-11-27)
+
+### Bug Fixes
+
+- Add css for widget-container in WidgetPanel ([#2581](https://github.com/deephaven/web-client-ui/issues/2581)) ([89dc832](https://github.com/deephaven/web-client-ui/commit/89dc832da45328f5434f61e0bbfbb68d86cc2c31))
+
 ## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
 
 ### Features
