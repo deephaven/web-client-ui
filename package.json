@@ -6,8 +6,8 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=16",
-    "npm": ">=8"
+    "node": ">=24",
+    "npm": ">=11"
   },
   "scripts": {
     "postinstall": "node ./skip.js || run-s build:necessary",
