@@ -15,7 +15,6 @@
     }
   },
   "scripts": {
-    "postinstall": "node ./skip.js || run-s build:necessary",
     "clean:build": "rimraf packages/*/dist packages/*/build",
     "postclean:build": "npm run clean:types",
     "clean:cache": "run-s clean:cache:*",
@@ -41,7 +40,7 @@
     "preview:app": "lerna run --scope=@deephaven/code-studio preview --stream",
     "preview:embed-widget": "lerna run --scope=@deephaven/embed-widget preview --stream",
     "prestart": "npm run build:necessary",
-    "start": "run-p watch:types start:*",
+    "start": "npm run build:necessary && run-p watch:types start:*",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-widget": "lerna run start --scope=@deephaven/embed-widget --stream",
     "pretest": "npm run build:necessary",
