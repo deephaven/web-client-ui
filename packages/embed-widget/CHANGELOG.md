@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.39](https://github.com/deephaven/web-client-ui/compare/v0.85.38...v0.85.39) (2025-12-01)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
 ## [0.85.38](https://github.com/deephaven/web-client-ui/compare/v0.85.37...v0.85.38) (2025-11-24)
 
 **Note:** Version bump only for package @deephaven/embed-widget
