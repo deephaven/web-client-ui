@@ -6,7 +6,7 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import set from 'lodash.set';
+import { set } from 'lodash';
 import type {
   Layout,
   PlotData,
