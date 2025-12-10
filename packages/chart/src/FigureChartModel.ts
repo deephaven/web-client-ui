@@ -1,7 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoizee';
-import debounce from 'lodash.debounce';
-import set from 'lodash.set';
+import { debounce, set } from 'lodash';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { type Range } from '@deephaven/utils';
