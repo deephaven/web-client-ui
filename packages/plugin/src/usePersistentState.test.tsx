@@ -2,7 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
-import { PersistentStateProvider } from './PersistentStateContext';
+import {
+  type PersistentState,
+  PersistentStateProvider,
+} from './PersistentStateContext';
 import usePersistentState, {
   type PersistentStateMigration,
 } from './usePersistentState';
@@ -53,8 +56,8 @@ function createWrapper({
   initialState = [],
   onChange = jest.fn(),
 }: {
-  initialState?: unknown[];
-  onChange?: (state: unknown[]) => void;
+  initialState?: PersistentState[];
+  onChange?: (state: PersistentState[]) => void;
 }) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -172,7 +175,7 @@ describe('usePersistentState', () => {
       </>
     );
 
-    expect(mockOnChange).toHaveBeenCalledWith([
+    expect(mockOnChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ state: 'updated-foo' }),
       expect.objectContaining({ state: 'default-baz' }),
     ]);

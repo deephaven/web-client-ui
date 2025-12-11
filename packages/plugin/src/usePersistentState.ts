@@ -84,16 +84,10 @@ export function usePersistentState<S>(
   // Otherwise, usePersistentState might be called twice by the same component in the same render cycle before flushing in the provider.
   const [id] = useState(() => nanoid());
   const context = useContext(PersistentStateContext);
-  const { value: persistedData, done } = context?.getInitialState<S>(id) ?? {
-    value: undefined,
-    done: true,
-  };
+  const persistedData = context?.getInitialState<S>(id);
 
-  // If not done, then we can use the persisted state
-  // Otherwise, we have exhausted the persisted state
-  // By checking done, we are able to explicitly save undefined as a state value
   const [state, setState] = useState<S>(() => {
-    if (persistedData == null || done) {
+    if (persistedData == null) {
       return typeof initialState === 'function'
         ? (initialState as () => S)()
         : initialState;
@@ -124,23 +118,25 @@ export function usePersistentState<S>(
 
   context?.addState(id, stateWithConfig);
 
+  const scheduleStateUpdate = context?.scheduleStateUpdate;
+
   // This won't cause unnecessary renders on initial mount because the state is already tracking,
   // so calls to scheduleStateUpdate will be no-ops since tracking finishes in an effect at the provider after this effect.
   // When a component mounts after the parents have already rendered, this will trigger a re-render to track the new state immediately.
   useEffect(
     function scheduleUpdateOnMountAndChange() {
-      context?.scheduleStateUpdate();
+      scheduleStateUpdate?.();
     },
-    [context, state]
+    [scheduleStateUpdate, state]
   );
 
   useEffect(
     function scheduleUpdateOnUnmount() {
       return () => {
-        context?.scheduleStateUpdate();
+        scheduleStateUpdate?.();
       };
     },
-    [context]
+    [scheduleStateUpdate]
   );
 
   return [state, setState];
