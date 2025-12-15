@@ -80,4 +80,26 @@
   /* Links */
   --dh-color-editor-link-foreground: var(--dh-color-accent-1000);
   --dh-color-editor-link-active-fg: var(--dh-color-accent-1100);
+
+  /* Diff */
+  --dh-color-editor-diff-inserted-text-bg: color-mix(
+    in srgb,
+    var(--dh-color-positive) 35%,
+    transparent
+  );
+  --dh-color-editor-diff-removed-text-bg: color-mix(
+    in srgb,
+    var(--dh-color-negative) 35%,
+    transparent
+  );
+  --dh-color-editor-diff-inserted-line-bg: color-mix(
+    in srgb,
+    var(--dh-color-positive) 20%,
+    transparent
+  );
+  --dh-color-editor-diff-removed-line-bg: color-mix(
+    in srgb,
+    var(--dh-color-negative) 20%,
+    transparent
+  );
 }
