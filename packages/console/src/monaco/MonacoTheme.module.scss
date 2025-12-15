@@ -103,4 +103,18 @@
   text-link-foreground: var(--dh-color-editor-link-foreground);
   text-link-active-foreground: var(--dh-color-editor-link-active-fg);
   editor-link-active-foreground: var(--dh-color-editor-link-active-fg);
+
+  // diff editor
+  diff-editor-inserted-text-background: var(
+    --dh-color-editor-diff-inserted-text-bg
+  );
+  diff-editor-removed-text-background: var(
+    --dh-color-editor-diff-removed-text-bg
+  );
+  diff-editor-inserted-line-background: var(
+    --dh-color-editor-diff-inserted-line-bg
+  );
+  diff-editor-removed-line-background: var(
+    --dh-color-editor-diff-removed-line-bg
+  );
 }
