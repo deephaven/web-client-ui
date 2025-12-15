@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
+    "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",

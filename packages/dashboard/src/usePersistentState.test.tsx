@@ -9,19 +9,23 @@ import {
 import usePersistentState, {
   type PersistentStateMigration,
 } from './usePersistentState';
+import { FiberProvider } from './useFiber';
+import { PanelIdContext } from './usePanelId';
 
 function BasicTestComponent({
   label,
   useInitializerFunction = false,
-  type = 'test',
+  type = `test-${label}`,
   version = 1,
   migrations,
+  deleteOnUnmount,
 }: {
   label: string;
   useInitializerFunction?: boolean;
   type?: string;
   version?: number;
   migrations?: PersistentStateMigration[];
+  deleteOnUnmount?: boolean;
 }) {
   const [state, setState] = usePersistentState(
     useInitializerFunction ? () => `default-${label}` : `default-${label}`,
@@ -29,6 +33,7 @@ function BasicTestComponent({
       type,
       version,
       migrations,
+      deleteOnUnmount,
     }
   );
   return (
@@ -56,14 +61,21 @@ function createWrapper({
   initialState = [],
   onChange = jest.fn(),
 }: {
-  initialState?: PersistentState[];
-  onChange?: (state: PersistentState[]) => void;
+  initialState?: [string, PersistentState][];
+  onChange?: (state: [string, PersistentState][]) => void;
 }) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <PersistentStateProvider initialState={initialState} onChange={onChange}>
-        {children}
-      </PersistentStateProvider>
+      <FiberProvider>
+        <PanelIdContext.Provider value="test-panel">
+          <PersistentStateProvider
+            initialState={initialState}
+            onChange={onChange}
+          >
+            {children}
+          </PersistentStateProvider>
+        </PanelIdContext.Provider>
+      </FiberProvider>
     );
   };
 }
@@ -80,9 +92,18 @@ describe('usePersistentState', () => {
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'default-foo' }),
-      expect.objectContaining({ state: 'default-bar' }),
-      expect.objectContaining({ state: 'default-baz' }),
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'default-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
     ]);
   });
 
@@ -104,9 +125,18 @@ describe('usePersistentState', () => {
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'default-foo' }),
-      expect.objectContaining({ state: 'default-bar' }),
-      expect.objectContaining({ state: 'default-baz' }),
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'default-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
     ]);
   });
 
@@ -121,9 +151,18 @@ describe('usePersistentState', () => {
 
     expect(screen.getByText('updated-bar')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'default-foo' }),
-      expect.objectContaining({ state: 'updated-bar' }),
-      expect.objectContaining({ state: 'default-baz' }),
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
     ]);
   });
 
@@ -131,8 +170,14 @@ describe('usePersistentState', () => {
     render(FooBarBaz, {
       wrapper: createWrapper({
         initialState: [
-          { type: 'test', version: 1, state: 'persisted-foo' },
-          { type: 'test', version: 1, state: 'persisted-bar' },
+          [
+            'test-panel::test-foo',
+            { type: 'test-foo', version: 1, state: 'persisted-foo' },
+          ],
+          [
+            'test-panel::test-bar',
+            { type: 'test-bar', version: 1, state: 'persisted-bar' },
+          ],
         ],
       }),
     });
@@ -146,8 +191,14 @@ describe('usePersistentState', () => {
     render(FooBarBaz, {
       wrapper: createWrapper({
         initialState: [
-          { type: 'test', version: 1, state: undefined },
-          { type: 'test', version: 1, state: 'persisted-bar' },
+          [
+            'test-panel::test-foo',
+            { type: 'test-foo', version: 1, state: undefined },
+          ],
+          [
+            'test-panel::test-bar',
+            { type: 'test-bar', version: 1, state: 'persisted-bar' },
+          ],
         ],
       }),
     });
@@ -169,15 +220,24 @@ describe('usePersistentState', () => {
     rerender(
       <>
         <BasicTestComponent label="foo" />
+        <span>FizzBuzz</span>
         <div>
           <BasicTestComponent label="baz" />
         </div>
       </>
     );
 
+    expect(screen.queryByText('default-baz')).toBeInTheDocument();
+
     expect(mockOnChange).toHaveBeenLastCalledWith([
-      expect.objectContaining({ state: 'updated-foo' }),
-      expect.objectContaining({ state: 'default-baz' }),
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'updated-foo' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
     ]);
   });
 
@@ -203,14 +263,23 @@ describe('usePersistentState', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
 
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'default-foo' }),
-      expect.objectContaining({ state: 'updated-bar' }),
-      expect.objectContaining({ state: 'default-baz' }),
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
     ]);
   });
 
   it('should behave as normal useState if no context', async () => {
-    render(FooBarBaz);
+    render(<FiberProvider>{FooBarBaz}</FiberProvider>);
     expect(screen.getByText('default-foo')).toBeInTheDocument();
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
@@ -223,7 +292,7 @@ describe('usePersistentState', () => {
   it('should handle a component that conditionally calls setState in its render function', () => {
     function ConditionalSetStateComponent() {
       const [state, setState] = usePersistentState('default', {
-        type: 'test',
+        type: 'test-foo',
         version: 1,
       });
       if (state === 'default') {
@@ -239,26 +308,76 @@ describe('usePersistentState', () => {
 
     expect(screen.getByText('updated')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'updated' }),
+      ['test-panel::test-foo', expect.objectContaining({ state: 'updated' })],
     ]);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
   });
 
-  it('should throw if the types do not match', () => {
+  it('should throw if multiple hooks register the same state type for the same panel', () => {
     TestUtils.disableConsoleOutput('error');
 
+    expect(() =>
+      render(
+        <>
+          <BasicTestComponent label="foo" type="foo" />
+          <BasicTestComponent label="bar" type="foo" />
+        </>,
+        { wrapper: createWrapper({}) }
+      )
+    ).toThrow(/Detected multiple persistent states of type foo/);
+  });
+
+  it('should persist state on unmount with deleteOnUnmount false', async () => {
     const mockOnChange = jest.fn();
 
-    expect(() =>
-      render(<BasicTestComponent label="foo" type="test2" />, {
-        wrapper: createWrapper({
-          initialState: [{ type: 'test', version: 1, state: 'persisted-foo' }],
-          onChange: mockOnChange,
-        }),
-      })
-    ).toThrowError(/type mismatch/);
+    const { rerender } = render(
+      <>
+        <BasicTestComponent label="foo" deleteOnUnmount={false} />
+        <BasicTestComponent label="bar" />
+      </>,
+      {
+        wrapper: createWrapper({ onChange: mockOnChange }),
+      }
+    );
 
-    expect(mockOnChange).not.toHaveBeenCalled();
+    mockOnChange.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'Update foo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
+
+    expect(mockOnChange).toHaveBeenCalledTimes(2);
+
+    mockOnChange.mockClear();
+    rerender(<div>Nothing</div>);
+    expect(screen.getByText('Nothing')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'updated-foo' }),
+      ],
+    ]);
+    expect(mockOnChange).toHaveBeenCalledTimes(1);
+
+    mockOnChange.mockClear();
+    rerender(
+      <>
+        <BasicTestComponent label="foo" deleteOnUnmount={false} />
+        <BasicTestComponent label="bar" />
+      </>
+    );
+
+    expect(screen.getByText('updated-foo')).toBeInTheDocument();
+    expect(screen.getByText('default-bar')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenCalledTimes(2);
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'updated-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'default-bar' }),
+      ],
+    ]);
   });
 });
 
@@ -267,12 +386,15 @@ describe('usePersistentState migrations', () => {
     const mockOnChange = jest.fn();
 
     const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 1,
+          state: 'v1',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     const migrations = [
       {
@@ -290,7 +412,7 @@ describe('usePersistentState migrations', () => {
 
     expect(screen.getByText('v2')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'v2' }),
+      ['test-panel::test-foo', expect.objectContaining({ state: 'v2' })],
     ]);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
   });
@@ -299,12 +421,15 @@ describe('usePersistentState migrations', () => {
     const mockOnChange = jest.fn();
 
     const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 1,
+          state: 'v1',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     const migrations = [
       {
@@ -326,7 +451,7 @@ describe('usePersistentState migrations', () => {
 
     expect(screen.getByText('v3')).toBeInTheDocument();
     expect(mockOnChange).toHaveBeenCalledWith([
-      expect.objectContaining({ state: 'v3' }),
+      ['test-panel::test-foo', expect.objectContaining({ state: 'v3' })],
     ]);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
   });
@@ -335,12 +460,15 @@ describe('usePersistentState migrations', () => {
     TestUtils.disableConsoleOutput('error');
     const mockOnChange = jest.fn();
     const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 1,
+          state: 'v1',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     const migrations = [
       {
@@ -356,7 +484,7 @@ describe('usePersistentState migrations', () => {
           wrapper: createWrapper({ initialState, onChange: mockOnChange }),
         }
       )
-    ).toThrowError(/No migration found/);
+    ).toThrow(/No migration found/);
 
     expect(mockOnChange).not.toHaveBeenCalled();
   });
@@ -365,12 +493,15 @@ describe('usePersistentState migrations', () => {
     TestUtils.disableConsoleOutput('error');
     const mockOnChange = jest.fn();
     const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 1,
+          state: 'v1',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     const migrations = [
       {
@@ -390,7 +521,7 @@ describe('usePersistentState migrations', () => {
           wrapper: createWrapper({ initialState, onChange: mockOnChange }),
         }
       )
-    ).toThrowError(/Multiple migrations/);
+    ).toThrow(/Multiple migrations/);
 
     expect(mockOnChange).not.toHaveBeenCalled();
   });
@@ -399,12 +530,15 @@ describe('usePersistentState migrations', () => {
     TestUtils.disableConsoleOutput('error');
     const mockOnChange = jest.fn();
     const initialState = [
-      {
-        type: 'test',
-        version: 1,
-        state: 'v1',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 1,
+          state: 'v1',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     const migrations = [
       {
@@ -422,7 +556,7 @@ describe('usePersistentState migrations', () => {
           wrapper: createWrapper({ initialState, onChange: mockOnChange }),
         }
       )
-    ).toThrowError(/Error migrating persisted state/);
+    ).toThrow(/Error migrating persisted state/);
 
     expect(mockOnChange).not.toHaveBeenCalled();
   });
@@ -431,19 +565,55 @@ describe('usePersistentState migrations', () => {
     TestUtils.disableConsoleOutput('error');
     const mockOnChange = jest.fn();
     const initialState = [
-      {
-        type: 'test',
-        version: 2,
-        state: 'v2',
-      },
-    ];
+      [
+        'test-panel::test-foo',
+        {
+          type: 'test-foo',
+          version: 2,
+          state: 'v2',
+        },
+      ],
+    ] satisfies [string, PersistentState][];
 
     expect(() =>
       render(<BasicTestComponent label="foo" version={1} />, {
         wrapper: createWrapper({ initialState, onChange: mockOnChange }),
       })
-    ).toThrowError(/newer version/);
+    ).toThrow(/newer version/);
 
     expect(mockOnChange).not.toHaveBeenCalled();
+  });
+
+  test('migrates from render-order based initial state to map-based', () => {
+    const mockOnChange = jest.fn();
+
+    // Intentional cast so we can enforce all other tests use the new format
+    const initialState = [
+      { type: 'test-foo', version: 1, state: 'persisted-foo' },
+      { type: 'test-bar', version: 1, state: 'persisted-bar' },
+    ] as unknown as [string, PersistentState][];
+
+    render(FooBarBaz, {
+      wrapper: createWrapper({ initialState, onChange: mockOnChange }),
+    });
+
+    expect(screen.getByText('persisted-foo')).toBeInTheDocument();
+    expect(screen.getByText('persisted-bar')).toBeInTheDocument();
+    expect(screen.getByText('default-baz')).toBeInTheDocument();
+
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'persisted-foo' }),
+      ],
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'persisted-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
+    ]);
   });
 });
