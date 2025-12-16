@@ -239,6 +239,14 @@ class MonacoUtils {
         MonacoTheme['editor-bracket-foreground6'],
       'editorBracketHighlight.unexpectedBracket.foreground':
         MonacoTheme['editor-unexpected-bracket-foreground'],
+      'diffEditor.insertedTextBackground':
+        MonacoTheme['diff-editor-inserted-text-background'],
+      'diffEditor.removedTextBackground':
+        MonacoTheme['diff-editor-removed-text-background'],
+      'diffEditor.insertedLineBackground':
+        MonacoTheme['diff-editor-inserted-line-background'],
+      'diffEditor.removedLineBackground':
+        MonacoTheme['diff-editor-removed-line-background'],
     };
 
     monaco.editor.defineTheme('dh-dark', {
