@@ -91,7 +91,7 @@ describe('usePersistentState', () => {
     expect(screen.getByText('default-foo')).toBeInTheDocument();
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
-    expect(mockOnChange).toHaveBeenCalledWith([
+    expect(mockOnChange).toHaveBeenLastCalledWith([
       [
         'test-panel::test-foo',
         expect.objectContaining({ state: 'default-foo' }),
@@ -124,7 +124,7 @@ describe('usePersistentState', () => {
     expect(screen.getByText('default-foo')).toBeInTheDocument();
     expect(screen.getByText('default-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
-    expect(mockOnChange).toHaveBeenCalledWith([
+    expect(mockOnChange).toHaveBeenLastCalledWith([
       [
         'test-panel::test-foo',
         expect.objectContaining({ state: 'default-foo' }),
@@ -150,7 +150,7 @@ describe('usePersistentState', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
 
     expect(screen.getByText('updated-bar')).toBeInTheDocument();
-    expect(mockOnChange).toHaveBeenCalledWith([
+    expect(mockOnChange).toHaveBeenLastCalledWith([
       [
         'test-panel::test-foo',
         expect.objectContaining({ state: 'default-foo' }),
@@ -185,6 +185,21 @@ describe('usePersistentState', () => {
     expect(screen.getByText('persisted-foo')).toBeInTheDocument();
     expect(screen.getByText('persisted-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
+  });
+
+  it('should only call onChange if state changes', async () => {
+    const mockOnChange = jest.fn();
+
+    render(FooBarBaz, {
+      wrapper: createWrapper({ onChange: mockOnChange }),
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update foo' }));
+
+    mockOnChange.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'Update foo' }));
+
+    expect(mockOnChange).not.toHaveBeenCalled();
   });
 
   it('should persist explicit undefined', () => {
