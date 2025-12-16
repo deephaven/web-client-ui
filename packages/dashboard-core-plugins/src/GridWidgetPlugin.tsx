@@ -1,8 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  type WidgetComponentProps,
-  usePersistentState,
-} from '@deephaven/plugin';
+import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import {
   type DehydratedGridState,
@@ -17,7 +14,11 @@ import {
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
-import { useLayoutManager, useListener } from '@deephaven/dashboard';
+import {
+  useLayoutManager,
+  useListener,
+  usePersistentState,
+} from '@deephaven/dashboard';
 import { assertNotNull, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type GridRange, type GridState } from '@deephaven/grid';
