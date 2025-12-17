@@ -1,6 +1,8 @@
 import type { UndoPartial } from '@deephaven/utils';
 import { memoize } from 'proxy-memoize';
 import type { RootState, WorkspaceSettings } from './store';
+import { dhPython } from 'packages/icons/dist';
+import { set } from 'node_modules/@types/lodash';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -55,6 +57,38 @@ export const getWorkspace = <State extends RootState>(
   return workspace;
 };
 
+/**
+ * Helpter function to replace settings values
+ * Any nested objects under workspace settings need to be handled here
+ * @param key the key of the setting to replace
+ * @param settings current settings object
+ * @param customizedSettings customized settings to apply
+ */
+const replaceSettings = (
+  key: keyof WorkspaceSettings,
+  settings: WorkspaceSettings,
+  customizedSettings: UndoPartial<WorkspaceSettings>
+): void => {
+  let newSettings = customizedSettings[key];
+  if (key === 'notebookSettings') {
+    const customizedLinter =
+      customizedSettings.notebookSettings?.python?.linter;
+    const settingsLinter = settings.notebookSettings?.python?.linter;
+    newSettings = {
+      ...settings.notebookSettings,
+      ...customizedSettings.notebookSettings,
+      python: {
+        linter: {
+          isEnabled: customizedLinter?.isEnabled ?? settingsLinter?.isEnabled,
+          config: customizedLinter?.config ?? settingsLinter?.config,
+        },
+      },
+    };
+  }
+  // @ts-expect-error assign non-undefined customized settings to settings
+  settings[key] = newSettings;
+};
+
 // Settings
 export const getSettings = memoize(
   <State extends RootState>(
@@ -67,8 +101,11 @@ export const getSettings = memoize(
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       if (customizedSettings[key] !== undefined) {
-        // @ts-expect-error assign non-undefined customized settings to settings
-        settings[key] = customizedSettings[key];
+        replaceSettings(
+          key,
+          settings,
+          customizedSettings as UndoPartial<WorkspaceSettings>
+        );
       }
     }
     return settings as UndoPartial<State['workspace']['data']['settings']>;
