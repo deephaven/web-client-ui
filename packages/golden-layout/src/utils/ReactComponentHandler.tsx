@@ -21,7 +21,7 @@ export type GLPanelProps = {
 export default class ReactComponentHandler {
   private _container: ItemContainer<ReactComponentConfig>;
 
-  private _reactComponent: React.Component | null = null;
+  private _reactComponent: React.ReactInstance | null = null;
   private _portalComponent: React.ReactPortal | null = null;
   private _originalComponentWillUpdate: Function | null = null;
   private _initialState: unknown;
@@ -87,18 +87,24 @@ export default class ReactComponentHandler {
    *
    * @param component The component instance created by the `ReactDOM.render` call in the `_render` method.
    */
-  _gotReactComponent(component: React.Component) {
+  _gotReactComponent(component: React.ReactInstance) {
     if (!component) {
       return;
     }
 
     this._reactComponent = component;
-    this._originalComponentWillUpdate =
-      this._reactComponent.componentWillUpdate || function () {};
-    this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
-    const state = this._container.getState();
-    if (state) {
-      this._reactComponent.setState(state);
+    // Class components manipulate the lifecycle to hook into state changes
+    if (
+      'componentWillUpdate' in this._reactComponent &&
+      this._reactComponent.componentWillUpdate != null
+    ) {
+      this._originalComponentWillUpdate =
+        this._reactComponent.componentWillUpdate;
+      this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
+      const state = this._container.getState();
+      if (state) {
+        this._reactComponent.setState(state);
+      }
     }
   }
 

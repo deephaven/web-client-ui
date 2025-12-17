@@ -26,7 +26,10 @@ export default class ItemContainer<
   tab?: Tab;
 
   // This type is to make TS happy and allow ReactComponentConfig passed to container generic
-  _config: C & { componentState: Record<string, unknown> };
+  _config: C & {
+    componentState: Record<string, unknown>;
+    persistedState?: unknown;
+  };
 
   isHidden = false;
 
@@ -192,21 +195,23 @@ export default class ItemContainer<
   }
 
   /**
-   * Merges the provided state into the current one
-   *
-   * @param state
-   */
-  extendState(state: string) {
-    this.setState($.extend(true, this.getState(), state));
-  }
-
-  /**
    * Notifies the layout manager of a stateupdate
    *
    * @param state
    */
   setState(state: Record<string, unknown>) {
     this._config.componentState = state;
+    this.parent.emitBubblingEvent('stateChanged');
+  }
+
+  /**
+   * Sets persisted state for functional components
+   * which do not have lifecycle methods to hook into.
+   *
+   * @param state The state to persist
+   */
+  setPersistedState(state: unknown) {
+    this._config.persistedState = state;
     this.parent.emitBubblingEvent('stateChanged');
   }
 

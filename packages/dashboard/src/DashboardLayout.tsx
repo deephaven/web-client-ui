@@ -73,7 +73,7 @@ type DashboardLayoutProps = React.PropsWithChildren<{
   emptyDashboard?: React.ReactNode;
 
   /** Component to wrap each panel with */
-  panelWrapper?: ComponentType<React.PropsWithChildren<DehydratedPanelProps>>;
+  panelWrapper?: ComponentType<React.PropsWithChildren<PanelProps>>;
 }>;
 
 /**
@@ -89,7 +89,7 @@ export function DashboardLayout({
   onLayoutInitialized = DEFAULT_CALLBACK,
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
-  panelWrapper = DashboardPanelWrapper,
+  panelWrapper,
 }: DashboardLayoutProps): JSX.Element {
   const dispatch = useDispatch();
   const data =
@@ -141,6 +141,14 @@ export function DashboardLayout({
          */
         const hasRef = canHaveRef(CType);
 
+        const innerElem = hasRef ? (
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          <CType {...props} ref={ref} />
+        ) : (
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          <CType {...props} />
+        );
+
         // Props supplied by GoldenLayout
         const { glContainer, glEventHub } = props;
         const panelId = LayoutUtils.getIdFromContainer(glContainer);
@@ -148,15 +156,14 @@ export function DashboardLayout({
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             <PanelIdContext.Provider value={panelId as string | null}>
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-              <PanelWrapperType {...props}>
-                {hasRef ? (
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  <CType {...props} ref={ref} />
+              <DashboardPanelWrapper {...props}>
+                {PanelWrapperType == null ? (
+                  innerElem
                 ) : (
                   // eslint-disable-next-line react/jsx-props-no-spreading
-                  <CType {...props} />
+                  <PanelWrapperType {...props}>{innerElem}</PanelWrapperType>
                 )}
-              </PanelWrapperType>
+              </DashboardPanelWrapper>
             </PanelIdContext.Provider>
           </PanelErrorBoundary>
         );
