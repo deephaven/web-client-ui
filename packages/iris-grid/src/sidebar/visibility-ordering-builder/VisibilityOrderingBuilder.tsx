@@ -1453,7 +1453,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
               setSelection={this.handleSearchSelect}
             />
 
-            <MenuTrigger closeOnSelect={false}>
+            <MenuTrigger closeOnSelect>
               <ActionButton isQuiet aria-label="More options">
                 <FontAwesomeIcon icon={vsKebabVertical} />
               </ActionButton>
