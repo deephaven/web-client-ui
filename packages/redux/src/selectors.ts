@@ -1,8 +1,6 @@
 import type { UndoPartial } from '@deephaven/utils';
 import { memoize } from 'proxy-memoize';
 import type { RootState, WorkspaceSettings } from './store';
-import { dhPython } from 'packages/icons/dist';
-import { set } from 'node_modules/@types/lodash';
 
 const EMPTY_OBJECT = Object.freeze({});
 
