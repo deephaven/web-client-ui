@@ -1,7 +1,7 @@
 import type { UndoPartial } from '@deephaven/utils';
 import { memoize } from 'proxy-memoize';
+import mergeWith from 'lodash.mergewith';
 import type { RootState } from './store';
-import _ from 'lodash';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -62,18 +62,31 @@ export const getSettings = memoize(
     store: State
   ): UndoPartial<State['workspace']['data']['settings']> => {
     const customizedSettings = getWorkspace(store)?.data.settings ?? {};
+    const defaultSettings = getDefaultWorkspaceSettings(store);
 
-    return _.mergeWith(
+    // Preserve the whole linter config object as it should not be merged field by field
+    const defaultLinterConfig =
+      defaultSettings?.notebookSettings?.python?.linter?.config;
+    const customizedLinterConfig =
+      customizedSettings?.notebookSettings?.python?.linter?.config;
+    const newConfig = customizedLinterConfig ?? defaultLinterConfig;
+
+    const newSettings = mergeWith(
       {},
-      getDefaultWorkspaceSettings(store),
+      defaultSettings,
       customizedSettings,
-      (objValue, srcValue) => {
+      (objValue: any, srcValue: any) => {
         if (Array.isArray(objValue) && Array.isArray(srcValue)) {
           return srcValue;
         }
         return undefined;
       }
     ) as UndoPartial<State['workspace']['data']['settings']>;
+
+    if (newSettings.notebookSettings?.python?.linter) {
+      newSettings.notebookSettings.python.linter.config = newConfig;
+    }
+    return newSettings;
   }
 );
 
