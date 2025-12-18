@@ -75,7 +75,6 @@ export const getSettings = memoize(
       {},
       defaultSettings,
       customizedSettings,
-      // @ts-ignore
       (objValue: unknown, srcValue: unknown) => {
         if (Array.isArray(objValue) && Array.isArray(srcValue)) {
           return srcValue;
