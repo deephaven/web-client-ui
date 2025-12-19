@@ -1,6 +1,7 @@
 import type { UndoPartial } from '@deephaven/utils';
 import { memoize } from 'proxy-memoize';
-import type { RootState, WorkspaceSettings } from './store';
+import mergeWith from 'lodash.mergewith';
+import type { RootState } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -61,17 +62,22 @@ export const getSettings = memoize(
     store: State
   ): UndoPartial<State['workspace']['data']['settings']> => {
     const customizedSettings = getWorkspace(store)?.data.settings ?? {};
+    const defaultSettings = getDefaultWorkspaceSettings(store);
 
-    const settings = { ...getDefaultWorkspaceSettings(store) };
-    const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
-    for (let i = 0; i < keys.length; i += 1) {
-      const key = keys[i];
-      if (customizedSettings[key] !== undefined) {
-        // @ts-expect-error assign non-undefined customized settings to settings
-        settings[key] = customizedSettings[key];
+    // Deep merge settings but replace arrays instead of merging them
+    const newSettings = mergeWith(
+      {},
+      defaultSettings,
+      customizedSettings,
+      (objValue: unknown, srcValue: unknown) => {
+        if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+          return srcValue;
+        }
+        return undefined;
       }
-    }
-    return settings as UndoPartial<State['workspace']['data']['settings']>;
+    ) as UndoPartial<State['workspace']['data']['settings']>;
+
+    return newSettings;
   }
 );
 
