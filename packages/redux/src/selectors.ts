@@ -71,6 +71,7 @@ export const getSettings = memoize(
       customizedSettings?.notebookSettings?.python?.linter?.config;
     const newConfig = customizedLinterConfig ?? defaultLinterConfig;
 
+    // Deep merge settings but replace arrays instead of merging them
     const newSettings = mergeWith(
       {},
       defaultSettings,
