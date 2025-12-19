@@ -64,13 +64,6 @@ export const getSettings = memoize(
     const customizedSettings = getWorkspace(store)?.data.settings ?? {};
     const defaultSettings = getDefaultWorkspaceSettings(store);
 
-    // Preserve the whole linter config object as it should not be merged field by field
-    const defaultLinterConfig =
-      defaultSettings?.notebookSettings?.python?.linter?.config;
-    const customizedLinterConfig =
-      customizedSettings?.notebookSettings?.python?.linter?.config;
-    const newConfig = customizedLinterConfig ?? defaultLinterConfig;
-
     // Deep merge settings but replace arrays instead of merging them
     const newSettings = mergeWith(
       {},
@@ -84,9 +77,6 @@ export const getSettings = memoize(
       }
     ) as UndoPartial<State['workspace']['data']['settings']>;
 
-    if (newSettings.notebookSettings?.python?.linter) {
-      newSettings.notebookSettings.python.linter.config = newConfig;
-    }
     return newSettings;
   }
 );
