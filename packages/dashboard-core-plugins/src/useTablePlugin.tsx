@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { usePersistentState, type TablePluginElement } from '@deephaven/plugin';
+import { usePersistentState } from '@deephaven/dashboard';
+import { type TablePluginElement } from '@deephaven/plugin';
 import {
   type InputFilter,
   type IrisGridModel,

@@ -25,7 +25,6 @@
     "@deephaven/jsapi-types": "^1.0.0-dev0.40.4",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
-    "@deephaven/plugin": "file:../plugin",
     "fast-deep-equal": "^3.1.3",
     "lodash.mergewith": "^4.6.2",
     "proxy-memoize": "^3.0.0",

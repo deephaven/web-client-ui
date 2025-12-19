@@ -15,6 +15,7 @@ jest.mock('@deephaven/dashboard', () => ({
   useLayoutManager: jest.fn(() => mockGoldenLayout),
   useDashboardId: jest.fn(() => 'test'),
   useDhId: jest.fn(() => ({})),
+  usePersistentState: jest.fn(initialValue => [initialValue, jest.fn()]),
 }));
 
 const MockIrisGrid: React.FC & jest.Mock = jest.fn(() => (

@@ -3,7 +3,6 @@ import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
-import type { PluginModuleMap } from '@deephaven/plugin';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';
@@ -97,6 +96,31 @@ export interface Workspace {
 export type PluginData = unknown;
 
 export type PluginDataMap<TData = PluginData> = Record<string, TData>;
+
+// These are mostly copied from @deephaven/plugin so we can avoid a circular dependency
+export type PluginModule =
+  | {
+      name: string;
+      type:
+        | 'AuthPlugin'
+        | 'DashboardPlugin'
+        | 'WidgetPlugin'
+        | 'TablePlugin'
+        | 'ThemePlugin'
+        | 'ElementPlugin';
+    }
+  | {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DashboardPlugin: any;
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { AuthPlugin: any }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { TablePlugin: any };
+
+export type VersionedPluginModule = PluginModule & { version?: string };
+
+export type PluginModuleMap = Map<string, VersionedPluginModule>;
 
 export type DashboardData<TPluginData = PluginData> = Record<
   string,

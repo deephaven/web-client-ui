@@ -6,6 +6,10 @@ export * from './useCustomThemes';
 export * from './useDashboardPlugins';
 export * from './usePlugins';
 export * from './WidgetView';
-export * from './PersistentStateContext';
-export * from './usePersistentState';
+export {
+  /** @deprecated Import from '@deephaven/dashboard' */
+  PersistentStateProvider,
+  /** @deprecated Import from '@deephaven/dashboard' */
+  usePersistentState,
+} from '@deephaven/dashboard';
 export * from './usePluginsElementMap';
