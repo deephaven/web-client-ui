@@ -4,7 +4,7 @@
 FROM alpine AS copy-packages
 WORKDIR /work/
 COPY . /tmp/web-client-ui
-COPY package.json package-lock.json skip.js ./
+COPY package.json package-lock.json ./
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
 RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 
@@ -50,9 +50,8 @@ COPY --from=copy-packages /work/ .
 # Confirm node version is correct for debugging
 RUN node --version
 
-# Disable the postinstall script, or npm ci will try and build and the files won't be there
-# We don't need the postinstall since we're going to rebuild right after
-RUN SKIP_POSTINSTALL=1 npm ci
+# Install npm packages
+RUN npm ci
 
 # Copy the web-client-ui src folder to the docker image
 # We do this last because the source files are the most likely to change
