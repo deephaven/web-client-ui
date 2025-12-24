@@ -1,6 +1,7 @@
 import { type AxisRange, type BoundedAxisRange } from './GridAxisRange';
 import { type ModelIndex, type MoveOperation } from './GridMetrics';
 import type GridMetrics from './GridMetrics';
+import GridModel from './GridModel';
 import GridRange, { type GridRangeIndex } from './GridRange';
 import GridUtils, { type Token, type TokenBox } from './GridUtils';
 
@@ -1065,5 +1066,194 @@ describe('translateTokenBox', () => {
     };
 
     expect(GridUtils.translateTokenBox(input, metrics)).toEqual(expectedValue);
+  });
+});
+
+describe('getColumnSeparatorIndex', () => {
+  const mockTheme = {
+    ...GridTheme,
+    allowColumnResize: true,
+    headerSeparatorHandleSize: 10,
+    columnHeaderHeight: 30,
+  };
+
+  const createMockMetrics = (
+    columnHeaderMaxDepth = 1
+  ): Partial<GridMetrics> => ({
+    rowHeaderWidth: 50,
+    columnHeaderHeight: 30,
+    columnHeaderMaxDepth,
+    floatingColumns: [],
+    floatingLeftWidth: 0,
+    visibleColumns: [0, 1, 2, 3],
+    allColumnXs: new Map([
+      [0, 0],
+      [1, 100],
+      [2, 200],
+      [3, 300],
+    ]),
+    allColumnWidths: new Map([
+      [0, 100],
+      [1, 100],
+      [2, 100],
+      [3, 100],
+    ]),
+    modelColumns: new Map([
+      [0, 0],
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+    // Additional properties needed for getRowAtY (called by getColumnHeaderDepthAtY)
+    gridY: 30,
+    floatingTopRowCount: 0,
+    floatingBottomRowCount: 0,
+    rowCount: 100,
+    visibleRows: [],
+    allRowYs: new Map(),
+    allRowHeights: new Map(),
+  });
+
+  class MockGroupedGridModel extends GridModel {
+    private headerGroups: Map<number, Map<number, string>>;
+
+    constructor(headerGroups: Map<number, Map<number, string>>) {
+      super();
+      this.headerGroups = headerGroups;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    get rowCount(): number {
+      return 100;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    get columnCount(): number {
+      return 4;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    get columnHeaderMaxDepth(): number {
+      return 2;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    textForCell(column: ModelIndex, row: ModelIndex): string {
+      return `${column},${row}`;
+    }
+
+    textForColumnHeader(column: ModelIndex, depth = 0): string | undefined {
+      return this.headerGroups.get(depth)?.get(column);
+    }
+  }
+
+  it('detects separator at column boundary', () => {
+    const metrics = createMockMetrics() as GridMetrics;
+    const x = 150; // At boundary between column 0 and 1 (100 + 50)
+    const y = 15; // In header area
+
+    const headerGroups = new Map([
+      [
+        0,
+        new Map([
+          [0, 'A'],
+          [1, 'B'],
+          [2, 'C'],
+          [3, 'D'],
+        ]),
+      ],
+    ]);
+    const model = new MockGroupedGridModel(headerGroups);
+
+    const result = GridUtils.getColumnSeparatorIndex(
+      x,
+      y,
+      metrics,
+      mockTheme,
+      model
+    );
+
+    expect(result).toBe(0);
+  });
+
+  it('should return null at depth 1 when no separator exists (columns in same group)', () => {
+    // Depth 0 (base columns): A, B, C, D
+    // Depth 1 (groups): Group1, Group1, Group2, Group2
+    // This is the core bug fix: hovering at group level where separator doesn't exist
+    const headerGroups = new Map([
+      [
+        0,
+        new Map([
+          [0, 'A'],
+          [1, 'B'],
+          [2, 'C'],
+          [3, 'D'],
+        ]),
+      ],
+      [
+        1,
+        new Map([
+          [0, 'Group1'],
+          [1, 'Group1'],
+          [2, 'Group2'],
+          [3, 'Group2'],
+        ]),
+      ],
+    ]);
+    const model = new MockGroupedGridModel(headerGroups);
+    const metrics = createMockMetrics(2) as GridMetrics;
+
+    const x = 150; // Between column 0 and 1
+    const y = 15; // At depth 1 (0 + 15)
+
+    const result = GridUtils.getColumnSeparatorIndex(
+      x,
+      y,
+      metrics,
+      mockTheme,
+      model
+    );
+
+    expect(result).toBeNull(); // No separator at depth 1 (both in Group1)
+  });
+
+  it('should detect separator at depth 1 when groups differ', () => {
+    // Depth 0 (base columns): A, B, C, D
+    // Depth 1 (groups): Group1, Group1, Group2, Group2
+    const headerGroups = new Map([
+      [
+        0,
+        new Map([
+          [0, 'A'],
+          [1, 'B'],
+          [2, 'C'],
+          [3, 'D'],
+        ]),
+      ],
+      [
+        1,
+        new Map([
+          [0, 'Group1'],
+          [1, 'Group1'],
+          [2, 'Group2'],
+          [3, 'Group2'],
+        ]),
+      ],
+    ]);
+    const model = new MockGroupedGridModel(headerGroups);
+    const metrics = createMockMetrics(2) as GridMetrics;
+
+    const x = 250; // Between column 1 (Group1) and 2 (Group2)
+    const y = 15; // At depth 1
+
+    const result = GridUtils.getColumnSeparatorIndex(
+      x,
+      y,
+      metrics,
+      mockTheme,
+      model
+    );
+
+    expect(result).toBe(1); // Separator exists at depth 1 (Group1 vs Group2)
   });
 });

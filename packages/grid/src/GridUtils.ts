@@ -25,6 +25,7 @@ import {
 } from './GridAxisRange';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { type GridRenderState } from './GridRendererTypes';
+import type GridModel from './GridModel';
 
 export type GridPoint = {
   x: Coordinate;
@@ -459,13 +460,15 @@ export class GridUtils {
    * @param y Mouse y coordinate
    * @param metrics The grid metrics
    * @param theme The grid theme with potential user overrides
+   * @param model The grid model
    * @returns Index of the column separator at the coordinates provided, or null if none match
    */
   static getColumnSeparatorIndex(
     x: Coordinate,
     y: Coordinate,
     metrics: GridMetrics,
-    theme: GridTheme
+    theme: GridTheme,
+    model: GridModel
   ): VisibleIndex | null {
     const {
       rowHeaderWidth,
@@ -476,6 +479,7 @@ export class GridUtils {
       allColumnXs,
       allColumnWidths,
       columnHeaderMaxDepth,
+      modelColumns,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
 
@@ -489,6 +493,27 @@ export class GridUtils {
 
     const gridX = x - rowHeaderWidth;
     const halfSeparatorSize = headerSeparatorHandleSize * 0.5;
+    const depth = GridUtils.getColumnHeaderDepthAtY(y, metrics);
+
+    // Helper function to check if a separator exists at the given column and depth
+    const hasSeparatorAtDepth = (column: VisibleIndex): boolean => {
+      if (depth == null) {
+        return true; // Can't determine, allow by default
+      }
+
+      const columnIndex = modelColumns.get(column);
+      const nextColumnIndex = modelColumns.get(column + 1);
+
+      if (columnIndex == null || nextColumnIndex == null) {
+        return false;
+      }
+
+      // A separator exists if adjacent columns have different header text at this depth
+      return (
+        model.textForColumnHeader(columnIndex, depth) !==
+        model.textForColumnHeader(nextColumnIndex, depth)
+      );
+    };
 
     // Iterate through the floating columns first since they're on top
     let isPreviousColumnHidden = false;
@@ -507,7 +532,7 @@ export class GridUtils {
 
         const minX = midX - halfSeparatorSize;
         const maxX = midX + halfSeparatorSize;
-        if (minX <= gridX && gridX <= maxX) {
+        if (minX <= gridX && gridX <= maxX && hasSeparatorAtDepth(column)) {
           return column;
         }
 
@@ -538,7 +563,7 @@ export class GridUtils {
 
         const minX = midX - halfSeparatorSize;
         const maxX = midX + halfSeparatorSize;
-        if (minX <= gridX && gridX <= maxX) {
+        if (minX <= gridX && gridX <= maxX && hasSeparatorAtDepth(column)) {
           return column;
         }
 
