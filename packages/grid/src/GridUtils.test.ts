@@ -1130,22 +1130,75 @@ describe('getColumnSeparatorIndex', () => {
         headerGroups.get(depth)?.get(column) ?? '',
     });
 
-  it('detects separator at column boundary', () => {
-    const metrics = createMockMetrics() as GridMetrics;
-    const x = 150; // At boundary between column 0 and 1 (100 + 50)
-    const y = 15; // In header area
+  const singleLevelHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'A'],
+        [1, 'B'],
+        [2, 'C'],
+        [3, 'D'],
+      ]),
+    ],
+  ]);
 
-    const headerGroups = new Map([
-      [
-        0,
-        new Map([
-          [0, 'A'],
-          [1, 'B'],
-          [2, 'C'],
-          [3, 'D'],
-        ]),
-      ],
-    ]);
+  const multiLevelHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'A'],
+        [1, 'B'],
+        [2, 'C'],
+        [3, 'D'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        [0, 'Group1'],
+        [1, 'Group1'],
+        [2, 'Group2'],
+        [3, 'Group2'],
+      ]),
+    ],
+  ]);
+
+  it.each([
+    {
+      description: 'detects separator at column boundary',
+      x: 150, // At boundary between column 0 and 1 (100 + 50)
+      y: 15, // Middle of the top header (maxDepth - 1)
+      headerGroups: singleLevelHeaderGroups,
+      maxDepth: 1,
+      expected: 0,
+    },
+    {
+      description: 'detects there is no separator within the column',
+      x: 120, // Within column 1
+      y: 15,
+      headerGroups: singleLevelHeaderGroups,
+      maxDepth: 1,
+      expected: null,
+    },
+    {
+      description:
+        'should return null at depth 1 when no separator exists (columns in same group)',
+      x: 150, // Between column 0 and 1
+      y: 15, // Middle of the top header (maxDepth - 1)
+      headerGroups: multiLevelHeaderGroups,
+      maxDepth: 2,
+      expected: null,
+    },
+    {
+      description: 'should detect separator at depth 1 when groups differ',
+      x: 250, // Between Group1 and Group2
+      y: 15,
+      headerGroups: multiLevelHeaderGroups,
+      maxDepth: 2,
+      expected: 1,
+    },
+  ])('$description', ({ x, y, headerGroups, maxDepth, expected }) => {
+    const metrics = createMockMetrics(maxDepth) as GridMetrics;
     const model = createMockGroupedGridModel(headerGroups);
 
     const result = GridUtils.getColumnSeparatorIndex(
@@ -1156,115 +1209,6 @@ describe('getColumnSeparatorIndex', () => {
       model
     );
 
-    expect(result).toBe(0);
-  });
-
-  it('detects there is no separator within the column', () => {
-    const metrics = createMockMetrics() as GridMetrics;
-    const x = 120; // Within column 1
-    const y = 15; // In header area
-
-    const headerGroups = new Map([
-      [
-        0,
-        new Map([
-          [0, 'A'],
-          [1, 'B'],
-          [2, 'C'],
-          [3, 'D'],
-        ]),
-      ],
-    ]);
-    const model = createMockGroupedGridModel(headerGroups);
-
-    const result = GridUtils.getColumnSeparatorIndex(
-      x,
-      y,
-      metrics,
-      mockTheme,
-      model
-    );
-
-    expect(result).toBe(null);
-  });
-
-  it('should return null at depth 1 when no separator exists (columns in same group)', () => {
-    // Depth 0 (base columns): A, B, C, D
-    // Depth 1 (groups): Group1, Group1, Group2, Group2
-    const headerGroups = new Map([
-      [
-        0,
-        new Map([
-          [0, 'A'],
-          [1, 'B'],
-          [2, 'C'],
-          [3, 'D'],
-        ]),
-      ],
-      [
-        1,
-        new Map([
-          [0, 'Group1'],
-          [1, 'Group1'],
-          [2, 'Group2'],
-          [3, 'Group2'],
-        ]),
-      ],
-    ]);
-    const model = createMockGroupedGridModel(headerGroups);
-    const metrics = createMockMetrics(2) as GridMetrics;
-
-    const x = 150; // Between column 0 and 1
-    const y = 15; // At depth 1 (0 + 15)
-
-    const result = GridUtils.getColumnSeparatorIndex(
-      x,
-      y,
-      metrics,
-      mockTheme,
-      model
-    );
-
-    expect(result).toBeNull();
-  });
-
-  it('should detect separator at depth 1 when groups differ', () => {
-    // Depth 0 (base columns): A, B, C, D
-    // Depth 1 (groups): Group1, Group1, Group2, Group2
-    const headerGroups = new Map([
-      [
-        0,
-        new Map([
-          [0, 'A'],
-          [1, 'B'],
-          [2, 'C'],
-          [3, 'D'],
-        ]),
-      ],
-      [
-        1,
-        new Map([
-          [0, 'Group1'],
-          [1, 'Group1'],
-          [2, 'Group2'],
-          [3, 'Group2'],
-        ]),
-      ],
-    ]);
-    const model = createMockGroupedGridModel(headerGroups);
-    const metrics = createMockMetrics(2) as GridMetrics;
-
-    const x = 250; // Between column 1 (Group1) and 2 (Group2)
-    const y = 15; // At depth 1
-
-    const result = GridUtils.getColumnSeparatorIndex(
-      x,
-      y,
-      metrics,
-      mockTheme,
-      model
-    );
-
-    expect(result).toBe(1);
+    expect(result).toBe(expected);
   });
 });

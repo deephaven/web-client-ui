@@ -474,7 +474,7 @@ export class GridUtils {
       return false;
     }
 
-    // Always show separator for last column
+    // Always show separator for the last column
     if (nextColumnIndex == null) {
       return true;
     }
