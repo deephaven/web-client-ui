@@ -461,7 +461,7 @@ export class GridUtils {
    * @param model The grid model
    * @param depth The header depth to check at
    * @param columnIndex The current model column index
-   * @param nextColumnIndex The next model column index
+   * @param nextColumnIndex The next model column index (undefined for last column)
    * @returns true if a separator should be shown, false otherwise
    */
   static hasColumnSeparatorAtDepth(
@@ -470,9 +470,15 @@ export class GridUtils {
     columnIndex: ModelIndex | undefined,
     nextColumnIndex: ModelIndex | undefined
   ): boolean {
-    if (depth == null || columnIndex == null || nextColumnIndex == null) {
+    if (depth == null || columnIndex == null) {
       return false;
     }
+
+    // Always show separator for last column
+    if (nextColumnIndex == null) {
+      return true;
+    }
+
     // A separator exists if adjacent columns have different header text at this depth
     return (
       model.textForColumnHeader(columnIndex, depth) !==
