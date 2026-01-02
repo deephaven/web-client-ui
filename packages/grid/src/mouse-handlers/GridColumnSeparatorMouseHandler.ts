@@ -28,7 +28,8 @@ class GridColumnSeparatorMouseHandler extends GridSeparatorMouseHandler {
       x,
       y,
       metrics,
-      theme
+      theme,
+      model
     );
 
     if (separatorIndex == null || depth == null) {
