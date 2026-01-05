@@ -16,6 +16,17 @@ export type PersistentStateMigration = {
   migrate: (state: unknown) => unknown;
 };
 
+/**
+ * Migrates persisted state to the provided version using the provided migrations.
+ *
+ * @param state The current state
+ * @param from The current version
+ * @param to The version to migrate to
+ * @param migrations The list of all migrations (may include those already applied)
+ * @param type The type of the state. Used for better error messages
+ * @returns The state at the new version
+ * @throws Error if trying to migrate backwards or no migration exists for the to version
+ */
 function migrateState(
   state: unknown,
   from: number,
