@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import type ItemContainer from '../container/ItemContainer';
@@ -23,14 +23,20 @@ export default class ReactComponentHandler {
 
   private _reactComponent: React.ReactInstance | null = null;
   private _portalComponent: React.ReactPortal | null = null;
-  private _originalComponentWillUpdate: Function | null = null;
+  private _originalComponentWillUpdate:
+    | ((
+        nextProps: Readonly<any>,
+        nextState: Readonly<{}>,
+        nextContext: any
+      ) => void)
+    | undefined = undefined;
   private _initialState: unknown;
   private _reactClass: React.ComponentClass;
 
   constructor(container: ItemContainer<ReactComponentConfig>, state?: unknown) {
     this._reactComponent = null;
     this._portalComponent = null;
-    this._originalComponentWillUpdate = null;
+    this._originalComponentWillUpdate = undefined;
     this._container = container;
     this._initialState = state;
     this._reactClass = this._getReactClass();
@@ -94,10 +100,8 @@ export default class ReactComponentHandler {
 
     this._reactComponent = component;
     // Class components manipulate the lifecycle to hook into state changes
-    if (
-      'componentWillUpdate' in this._reactComponent &&
-      this._reactComponent.componentWillUpdate != null
-    ) {
+    // Functional components can save data with the usePersistentState hook
+    if (this._reactComponent instanceof Component) {
       this._originalComponentWillUpdate =
         this._reactComponent.componentWillUpdate;
       this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
@@ -124,12 +128,13 @@ export default class ReactComponentHandler {
    * Hooks into React's state management and applies the componentstate
    * to GoldenLayout
    */
-  _onUpdate(nextProps: unknown, nextState: Record<string, unknown>) {
+  _onUpdate(nextProps: Readonly<unknown>, nextState: Record<string, unknown>) {
     this._container.setState(nextState);
     this._originalComponentWillUpdate?.call(
       this._reactComponent,
       nextProps,
-      nextState
+      nextState,
+      undefined
     );
   }
 
