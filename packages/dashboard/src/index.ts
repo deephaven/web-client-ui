@@ -27,3 +27,5 @@ export { default as TabEvent } from './TabEvent';
 export * from './useDashboardId';
 export * from './useDhId';
 export * from './usePanelId';
+export * from './usePersistentState';
+export * from './PersistentStateContext';

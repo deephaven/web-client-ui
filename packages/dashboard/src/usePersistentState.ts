@@ -2,18 +2,31 @@ import {
   useContext,
   useDebugValue,
   useEffect,
+  useMemo,
   useState,
   type Dispatch,
   type SetStateAction,
 } from 'react';
 import { nanoid } from 'nanoid';
 import { PersistentStateContext } from './PersistentStateContext';
+import { useDhId } from './useDhId';
 
 export type PersistentStateMigration = {
   from: number;
   migrate: (state: unknown) => unknown;
 };
 
+/**
+ * Migrates persisted state to the provided version using the provided migrations.
+ *
+ * @param state The current state
+ * @param from The current version
+ * @param to The version to migrate to
+ * @param migrations The list of all migrations (may include those already applied)
+ * @param type The type of the state. Used for better error messages
+ * @returns The state at the new version
+ * @throws Error if trying to migrate backwards or no migration exists for the to version
+ */
 function migrateState(
   state: unknown,
   from: number,
@@ -70,6 +83,8 @@ function migrateState(
  * @param config.migrations An array of migrations to apply to the state if the version of the persisted state is below the current version. Each migration increments the version by 1.
  * @param config.migrations.from The starting version of the migration. The migration will increment the version by 1.
  * @param config.migrations.migrate The function to call to migrate the state.
+ * @param config.deleteOnUnmount If true, the state will be deleted from the PersistentStateProvider when the component using this hook is unmounted. Defaults to true.
+ *                               May be useful to set to false for components which are conditionally rendered within a panel like console creator settings.
  * @returns [state, setState] tuple just like useState.
  */
 export function usePersistentState<S>(
@@ -78,69 +93,74 @@ export function usePersistentState<S>(
     type: string;
     version: number;
     migrations?: PersistentStateMigration[];
+    deleteOnUnmount?: boolean;
   }
 ): [state: S, setState: Dispatch<SetStateAction<S>>] {
-  // We use this id to track if the component re-renders due to calling setState in its render function.
-  // Otherwise, usePersistentState might be called twice by the same component in the same render cycle before flushing in the provider.
-  const [id] = useState(() => nanoid());
+  const panelId = useDhId();
+  const hookId = useMemo(() => nanoid(), []);
   const context = useContext(PersistentStateContext);
-  const { value: persistedData, done } = context?.getInitialState<S>(id) ?? {
-    value: undefined,
-    done: true,
-  };
+  const { type, version, migrations = [], deleteOnUnmount = true } = config;
 
-  // If not done, then we can use the persisted state
-  // Otherwise, we have exhausted the persisted state
-  // By checking done, we are able to explicitly save undefined as a state value
   const [state, setState] = useState<S>(() => {
-    if (persistedData == null || done) {
+    const persistedData =
+      panelId != null ? context?.getState<S>(panelId, type) : undefined;
+    if (persistedData == null) {
       return typeof initialState === 'function'
         ? (initialState as () => S)()
         : initialState;
     }
 
-    if (persistedData.type !== config.type) {
-      throw new Error(
-        `usePersistentState type mismatch. Expected ${config.type} but got ${persistedData.type}.`
-      );
-    }
-
-    if (persistedData.version !== config.version) {
+    if (persistedData.version !== version) {
       return migrateState(
         persistedData.state,
         persistedData.version,
-        config.version,
-        config.migrations ?? [],
-        config.type
+        version,
+        migrations,
+        type
       ) as S;
     }
 
     return persistedData.state;
   });
 
-  const stateWithConfig = { type: config.type, version: config.version, state };
+  const stateWithConfig = useMemo(
+    () => ({
+      type,
+      version,
+      state,
+    }),
+    [state, type, version]
+  );
 
   useDebugValue(stateWithConfig);
 
-  context?.addState(id, stateWithConfig);
-
-  // This won't cause unnecessary renders on initial mount because the state is already tracking,
-  // so calls to scheduleStateUpdate will be no-ops since tracking finishes in an effect at the provider after this effect.
-  // When a component mounts after the parents have already rendered, this will trigger a re-render to track the new state immediately.
   useEffect(
-    function scheduleUpdateOnMountAndChange() {
-      context?.scheduleStateUpdate();
+    function addState() {
+      if (panelId != null) {
+        context?.addState(hookId, panelId, stateWithConfig);
+      }
     },
-    [context, state]
+    [context, hookId, panelId, stateWithConfig]
   );
 
   useEffect(
-    function scheduleUpdateOnUnmount() {
+    function removeOnUnmount() {
       return () => {
-        context?.scheduleStateUpdate();
+        if (deleteOnUnmount && panelId != null) {
+          context?.removeState(hookId, panelId, type);
+        }
       };
     },
-    [context]
+    [context, deleteOnUnmount, hookId, panelId, type]
+  );
+
+  useEffect(
+    () => () => {
+      if (panelId != null) {
+        context?.deregisterHook(hookId, panelId, type);
+      }
+    },
+    [context, hookId, panelId, type]
   );
 
   return [state, setState];

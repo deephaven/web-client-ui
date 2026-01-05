@@ -3,7 +3,6 @@ import type { ThunkAction } from 'redux-thunk';
 import type { CommandHistoryStorage } from '@deephaven/console';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import type { PluginModuleMap } from '@deephaven/plugin';
 import {
   SET_PLUGINS,
   SET_USER,
@@ -18,6 +17,7 @@ import {
 } from './actionTypes';
 import type {
   CustomizableWorkspace,
+  PluginModuleMap,
   RootState,
   ServerConfigValues,
   User,
