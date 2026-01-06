@@ -47,7 +47,7 @@ export type DashboardProps = {
   dehydrate?: PanelDehydrateFunction;
 
   /** Component to wrap each panel with */
-  panelWrapper?: ComponentType;
+  panelWrapper?: ComponentType<React.PropsWithChildren<PanelProps>>;
 };
 
 export function Dashboard({

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import type ItemContainer from '../container/ItemContainer';
@@ -21,16 +21,22 @@ export type GLPanelProps = {
 export default class ReactComponentHandler {
   private _container: ItemContainer<ReactComponentConfig>;
 
-  private _reactComponent: React.Component | null = null;
+  private _reactComponent: React.ReactInstance | null = null;
   private _portalComponent: React.ReactPortal | null = null;
-  private _originalComponentWillUpdate: Function | null = null;
+  private _originalComponentWillUpdate:
+    | ((
+        nextProps: Readonly<any>,
+        nextState: Readonly<{}>,
+        nextContext: any
+      ) => void)
+    | undefined = undefined;
   private _initialState: unknown;
   private _reactClass: React.ComponentClass;
 
   constructor(container: ItemContainer<ReactComponentConfig>, state?: unknown) {
     this._reactComponent = null;
     this._portalComponent = null;
-    this._originalComponentWillUpdate = null;
+    this._originalComponentWillUpdate = undefined;
     this._container = container;
     this._initialState = state;
     this._reactClass = this._getReactClass();
@@ -87,18 +93,22 @@ export default class ReactComponentHandler {
    *
    * @param component The component instance created by the `ReactDOM.render` call in the `_render` method.
    */
-  _gotReactComponent(component: React.Component) {
+  _gotReactComponent(component: React.ReactInstance) {
     if (!component) {
       return;
     }
 
     this._reactComponent = component;
-    this._originalComponentWillUpdate =
-      this._reactComponent.componentWillUpdate || function () {};
-    this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
-    const state = this._container.getState();
-    if (state) {
-      this._reactComponent.setState(state);
+    // Class components manipulate the lifecycle to hook into state changes
+    // Functional components can save data with the usePersistentState hook
+    if (this._reactComponent instanceof Component) {
+      this._originalComponentWillUpdate =
+        this._reactComponent.componentWillUpdate;
+      this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
+      const state = this._container.getState();
+      if (state) {
+        this._reactComponent.setState(state);
+      }
     }
   }
 
@@ -118,12 +128,13 @@ export default class ReactComponentHandler {
    * Hooks into React's state management and applies the componentstate
    * to GoldenLayout
    */
-  _onUpdate(nextProps: unknown, nextState: Record<string, unknown>) {
+  _onUpdate(nextProps: Readonly<unknown>, nextState: Record<string, unknown>) {
     this._container.setState(nextState);
     this._originalComponentWillUpdate?.call(
       this._reactComponent,
       nextProps,
-      nextState
+      nextState,
+      undefined
     );
   }
 
