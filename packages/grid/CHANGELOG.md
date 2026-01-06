@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
+
+### ⚠ BREAKING CHANGES
+
+- `getColumnSeparatorIndex` now requires a `model`
+  argument.
+
+### Bug Fixes
+
+- DH-21258: Fix column group separators ([#2597](https://github.com/deephaven/web-client-ui/issues/2597)) ([f2d6ced](https://github.com/deephaven/web-client-ui/commit/f2d6cedd0da38fb38a85a9e1a1fff4cb157bca20))
+
 ## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
 
 **Note:** Version bump only for package @deephaven/grid

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
+
+### Features
+
+- DH-21093: Make usePersistentState available to all panels ([#2595](https://github.com/deephaven/web-client-ui/issues/2595)) ([652c1a1](https://github.com/deephaven/web-client-ui/commit/652c1a176c963f7af627fcdad7194481a00073ff))
+
+### Bug Fixes
+
+- DH-21144: usePersistentState flaky with React 18 ([#2590](https://github.com/deephaven/web-client-ui/issues/2590)) ([656c090](https://github.com/deephaven/web-client-ui/commit/656c090171aa5caafe5ccb4367aeabc8d9b437f3))
+
 ## [1.10.3](https://github.com/deephaven/web-client-ui/compare/v1.10.2...v1.10.3) (2025-12-11)
 
 **Note:** Version bump only for package @deephaven/dashboard

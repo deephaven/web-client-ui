@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
+
+### Bug Fixes
+
+- DH-21048: Organize columns overflow menu not closing on selection ([#2594](https://github.com/deephaven/web-client-ui/issues/2594)) ([59c8b25](https://github.com/deephaven/web-client-ui/commit/59c8b25ad33489fe336f812f8350f083e871cf4c))
+
 ## [1.10.3](https://github.com/deephaven/web-client-ui/compare/v1.10.2...v1.10.3) (2025-12-11)
 
 **Note:** Version bump only for package @deephaven/iris-grid

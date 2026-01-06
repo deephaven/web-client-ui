@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
+
+### ⚠ BREAKING CHANGES
+
+- `getColumnSeparatorIndex` now requires a `model`
+  argument.
+
+### Features
+
+- DH-21093: Make usePersistentState available to all panels ([#2595](https://github.com/deephaven/web-client-ui/issues/2595)) ([652c1a1](https://github.com/deephaven/web-client-ui/commit/652c1a176c963f7af627fcdad7194481a00073ff))
+
+### Bug Fixes
+
+- DH-20243: improved notebook settings merging ([#2593](https://github.com/deephaven/web-client-ui/issues/2593)) ([fa61b3b](https://github.com/deephaven/web-client-ui/commit/fa61b3b81a8dcae0e5bd485f12dcc7afce94cbf6))
+- DH-21048: Organize columns overflow menu not closing on selection ([#2594](https://github.com/deephaven/web-client-ui/issues/2594)) ([59c8b25](https://github.com/deephaven/web-client-ui/commit/59c8b25ad33489fe336f812f8350f083e871cf4c))
+- DH-21144: usePersistentState flaky with React 18 ([#2590](https://github.com/deephaven/web-client-ui/issues/2590)) ([656c090](https://github.com/deephaven/web-client-ui/commit/656c090171aa5caafe5ccb4367aeabc8d9b437f3))
+- DH-21258: Fix column group separators ([#2597](https://github.com/deephaven/web-client-ui/issues/2597)) ([f2d6ced](https://github.com/deephaven/web-client-ui/commit/f2d6cedd0da38fb38a85a9e1a1fff4cb157bca20))
+
 ## [1.10.3](https://github.com/deephaven/web-client-ui/compare/v1.10.2...v1.10.3) (2025-12-11)
 
 **Note:** Version bump only for package @deephaven/web-client-ui
