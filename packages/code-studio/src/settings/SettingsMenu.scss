@@ -4,7 +4,7 @@ $settings-menu-width: 400px;
 $settings-menu-header-min-height: 60px;
 $settings-menu-padding: $spacer-3;
 $settings-menu-header-user-image-size: 40px;
-$settings-menu-header-color: var(--dh-color-fg);
+$settings-menu-header-color: var(--dh-color-accent-contrast);
 
 $settings-menu-collapse-trigger-color: var(--dh-color-fg);
 
@@ -69,7 +69,7 @@ $settings-menu-z-index: $zindex-modal;
   color: $settings-menu-header-color;
 
   .btn-close-settings-menu {
-    color: var(--dh-color-fg);
+    color: var(--dh-color-accent-contrast);
     font-size: 18px;
     // we want the close button to occupy at least
     // as much space as the triggering button below
@@ -80,7 +80,7 @@ $settings-menu-z-index: $zindex-modal;
     &:focus {
       &::after {
         background: $btn-focus-bg;
-        border: 1px solid var(--dh-color-fg);
+        border: 1px solid var(--dh-color-accent-contrast);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
     }
@@ -148,7 +148,7 @@ $settings-menu-z-index: $zindex-modal;
 
       &:focus {
         background: $btn-focus-bg;
-        border: 1px solid var(--dh-color-fg);
+        border: 1px solid var(--dh-color-accent-contrast);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
 
