@@ -166,10 +166,10 @@ describe('IrisGridMetricCalculator', () => {
         allColumnWidths: new Map([[0, 150]]),
         filterBarHeight: undefined,
         expected: {
-          x: 110, // gridX (10) + columnX (100)
-          y: 50, // gridY (50) - 0
-          width: 151, // columnWidth (150) + 1
-          height: -1, // 0 - 1
+          x: 110,
+          y: 50,
+          width: 151,
+          height: 0,
         },
       },
     ])(

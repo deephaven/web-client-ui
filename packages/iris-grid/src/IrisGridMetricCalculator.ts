@@ -428,7 +428,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
       x: gridX + columnX,
       y: gridY + columnY,
       width: columnWidth + 1, // cover right border
-      height: (theme.filterBarHeight ?? 0) - 1, // remove bottom border
+      height: (theme.filterBarHeight ?? 1) - 1, // remove bottom border
     };
   }
 }
