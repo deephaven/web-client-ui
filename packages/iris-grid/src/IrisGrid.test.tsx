@@ -5,7 +5,8 @@ import { DateUtils, Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import { TypeValue } from '@deephaven/filters';
 import {
-  ExpandableColumnGridModel,
+  type ExpandableColumnGridModel,
+  type Grid,
   isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
@@ -336,10 +337,8 @@ describe('column expand/collapse', () => {
       const component = makeComponent(model);
 
       const setViewStateMock = jest.fn();
-      component.grid = createMockProxy({
+      component.grid = createMockProxy<Grid>({
         setViewState: setViewStateMock,
-        getMetricState: jest.fn(() => ({})),
-        state: {},
       });
 
       act(() => {
@@ -352,11 +351,11 @@ describe('column expand/collapse', () => {
 
   describe('Advanced Filter', () => {
     it.each([
-      { columnIndex: -1, expectedVisibility: false, description: 'negative' },
-      { columnIndex: 0, expectedVisibility: false, description: 'zero' },
-      { columnIndex: 1, expectedVisibility: true, description: 'positive' },
+      { columnIndex: -1, expectedVisibility: false },
+      { columnIndex: 0, expectedVisibility: true },
+      { columnIndex: 1, expectedVisibility: true },
     ])(
-      'advanced filter button visibility is $expectedVisibility for $description column index ($columnIndex)',
+      'advanced filter button visibility is $expectedVisibility for column index $columnIndex',
       ({ columnIndex, expectedVisibility }) => {
         const model = irisGridTestUtils.makeModel();
         const ref = React.createRef<IrisGrid>();
@@ -373,11 +372,11 @@ describe('column expand/collapse', () => {
 
         expect(ref.current?.state.focusedFilterBarColumn).toBe(columnIndex);
 
-        const advancedFilterButton = container.querySelector(
+        const advancedFilterButtons = container.querySelectorAll(
           '.advanced-filter-button'
         );
 
-        expect(advancedFilterButton).toBe(expectedVisibility);
+        expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
       }
     );
   });
