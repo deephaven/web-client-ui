@@ -452,21 +452,34 @@ describe('handleResizeAllColumns', () => {
   });
 
   describe('Advanced Filter', () => {
-    it('advanced filters are hidden for negative column indexes', () => {
-      const model = irisGridTestUtils.makeModel();
-      const component = makeComponent(model);
+    it.each([
+      { columnIndex: -1, expectedVisibility: false, description: 'negative' },
+      { columnIndex: 0, expectedVisibility: false, description: 'zero' },
+      { columnIndex: 1, expectedVisibility: true, description: 'positive' },
+    ])(
+      'advanced filter button visibility is $expectedVisibility for $description column index ($columnIndex)',
+      ({ columnIndex, expectedVisibility }) => {
+        const model = irisGridTestUtils.makeModel();
+        const ref = React.createRef<IrisGrid>();
+        const { container } = render(
+          <IrisGrid ref={ref} model={model} settings={DEFAULT_SETTINGS} />
+        );
 
-      // Set up the component state to render the filter bar
-      act(() => {
-        component.setState({
-          focusedFilterBarColumn: -1,
-          isFilterBarShown: true,
+        act(() => {
+          ref.current?.setState({
+            focusedFilterBarColumn: columnIndex,
+            isFilterBarShown: true,
+          });
         });
-      });
 
-      // The FilterInputField should be rendered with showAdvancedFilterButton=false
-      // when focusedFilterBarColumn is -1 (negative)
-      expect(component.state.focusedFilterBarColumn).toBe(-1);
-    });
+        expect(ref.current?.state.focusedFilterBarColumn).toBe(columnIndex);
+
+        const advancedFilterButton = container.querySelector(
+          '.advanced-filter-button'
+        );
+
+        expect(advancedFilterButton).toBe(expectedVisibility);
+      }
+    );
   });
 });
