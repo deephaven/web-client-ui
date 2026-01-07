@@ -309,6 +309,44 @@ describe('column expand/collapse', () => {
     expect(model.collapseAllColumns).not.toHaveBeenCalled();
   });
 
+  describe('rebuildFilters', () => {
+    it('updates state if filters not empty', () => {
+      const component = makeComponent(undefined, undefined, {
+        quickFilters: [
+          [
+            '2',
+            {
+              columnType: IrisGridTestUtils.DEFAULT_TYPE,
+              filterList: [
+                {
+                  operator: 'eq',
+                  text: 'null',
+                  value: null,
+                  startColumnIndex: 0,
+                },
+              ],
+            },
+          ],
+        ],
+      });
+      jest.spyOn(component, 'setState');
+      expect(component.setState).not.toBeCalled();
+      act(() => {
+        component.rebuildFilters();
+      });
+      expect(component.setState).toBeCalled();
+    });
+
+    it('does not update state for empty filters', () => {
+      const component = makeComponent();
+      jest.spyOn(component, 'setState');
+      act(() => {
+        component.rebuildFilters();
+      });
+      expect(component.setState).not.toBeCalled();
+    });
+  });
+
   it('calls expandAllColumns if model supports expandable columns and expand all', () => {
     asMock(isExpandableColumnGridModel).mockReturnValue(true);
     model.isExpandAllColumnsAvailable = true;
