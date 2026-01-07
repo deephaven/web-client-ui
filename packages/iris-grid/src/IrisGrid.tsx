@@ -2456,25 +2456,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const { metricCalculator, metrics } = this.state;
     assertNotNull(metrics);
-    const { left, rightVisible, lastLeft } = metrics;
-    if (column < 0) {
-      // ColumnBy filter focused - scroll to the left
-      this.grid?.setViewState({ left: 0 }, true);
-    } else if (column < left) {
-      this.grid?.setViewState({ left: column }, true);
-    } else if (rightVisible < column) {
-      const metricState = this.getMetricState();
-      assertNotNull(metricState);
-      const newLeft = metricCalculator.getLastLeft(
-        metricState,
-        column,
-        metricCalculator.getVisibleWidth(metricState)
-      );
-      this.grid?.setViewState(
-        { left: Math.min(newLeft, lastLeft), leftOffset: 0 },
-        true
-      );
+    const metricState = this.getMetricState();
+    assertNotNull(metricState);
+
+    const scrollColumn = metricCalculator.getScrollLeftForColumn(
+      column,
+      metricState,
+      metrics
+    );
+
+    if (scrollColumn != null) {
+      this.grid?.setViewState({ left: scrollColumn, leftOffset: 0 }, true);
     }
+
     this.lastFocusedFilterBarColumn = column;
     this.setState({ focusedFilterBarColumn: column, isFilterBarShown: true });
   }
