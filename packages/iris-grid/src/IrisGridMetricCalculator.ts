@@ -7,6 +7,7 @@ import {
   ModelSizeMap,
   trimMap,
   isExpandableColumnGridModel,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
