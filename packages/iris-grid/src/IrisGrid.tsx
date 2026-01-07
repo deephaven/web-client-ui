@@ -2447,7 +2447,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     if (
       column == null ||
-      column < 0 ||
       columnCount <= column ||
       !model.isFilterable(modelColumn)
     ) {
@@ -2458,7 +2457,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { metricCalculator, metrics } = this.state;
     assertNotNull(metrics);
     const { left, rightVisible, lastLeft } = metrics;
-    if (column < left) {
+    if (column < 0) {
+      // ColumnBy filter focused - scroll to the left
+      this.grid?.setViewState({ left: 0 }, true);
+    } else if (column < left) {
       this.grid?.setViewState({ left: column }, true);
     } else if (rightVisible < column) {
       const metricState = this.getMetricState();
@@ -4476,14 +4478,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const { gridX, gridY, allColumnXs, allColumnWidths, width } = metrics;
-      const columnX = allColumnXs.get(focusedFilterBarColumn);
-      const columnWidth = allColumnWidths.get(focusedFilterBarColumn);
-      if (columnX != null && columnWidth != null) {
-        const x = gridX + columnX;
-        const y = gridY - (theme.filterBarHeight ?? 0);
-        const fieldWidth = columnWidth + 1; // cover right border
-        const fieldHeight = (theme.filterBarHeight ?? 0) - 1; // remove bottom border
+      const metricState = this.getMetricState();
+      const filterBoxCoordinates = metricState
+        ? metricCalculator.getFilterBoxCoordinates(
+            focusedFilterBarColumn,
+            metricState,
+            metrics
+          )
+        : null;
+
+      if (filterBoxCoordinates != null) {
+        const {
+          x,
+          y,
+          width: fieldWidth,
+          height: fieldHeight,
+        } = filterBoxCoordinates;
+        const { width } = metrics;
         const style = {
           top: y,
           left: x,
@@ -4511,6 +4522,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               active: value !== '' || advancedFilter != null,
               'iris-grid-has-filter': isBarFiltered,
             })}
+            showAdvancedFilterButton={focusedFilterBarColumn >= 0}
             isAdvancedFilterSet={advancedFilter != null}
             onAdvancedFiltersTriggered={() => {
               this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
