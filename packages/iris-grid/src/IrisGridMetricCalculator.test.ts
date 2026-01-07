@@ -1,4 +1,4 @@
-import { GridMetricCalculator } from '@deephaven/grid';
+import { GridMetricCalculator, type GridMetrics } from '@deephaven/grid';
 import { type dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import {
@@ -6,6 +6,7 @@ import {
   type IrisGridMetricState,
 } from './IrisGridMetricCalculator';
 import type IrisGridModel from './IrisGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
 
 const { createMockProxy } = TestUtils;
 
@@ -178,7 +179,7 @@ describe('IrisGridMetricCalculator', () => {
         filterBarHeight,
         expected,
       }) => {
-        const metrics = createMockProxy({
+        const metrics = createMockProxy<GridMetrics>({
           gridX,
           gridY,
           allColumnXs,
@@ -186,7 +187,7 @@ describe('IrisGridMetricCalculator', () => {
         });
         const stateWithTheme = createMockProxy<IrisGridMetricState>({
           ...state,
-          theme: filterBarHeight !== undefined ? { filterBarHeight } : {},
+          theme: { filterBarHeight } as IrisGridThemeType,
         });
 
         const result = calculator.getFilterBoxCoordinates(
@@ -200,7 +201,7 @@ describe('IrisGridMetricCalculator', () => {
     );
 
     it('works with multiple columns', () => {
-      const metrics = createMockProxy({
+      const metrics = createMockProxy<GridMetrics>({
         gridX: 20,
         gridY: 100,
         allColumnXs: new Map([
@@ -216,7 +217,7 @@ describe('IrisGridMetricCalculator', () => {
       });
       const stateWithTheme = createMockProxy<IrisGridMetricState>({
         ...state,
-        theme: { filterBarHeight: 40 },
+        theme: { filterBarHeight: 40 } as IrisGridThemeType,
       });
 
       const testCases = [
@@ -336,7 +337,7 @@ describe('IrisGridMetricCalculator', () => {
         filterBarHeight,
         expected,
       }) => {
-        const metrics = createMockProxy({
+        const metrics = createMockProxy<GridMetrics>({
           gridX,
           gridY,
           allColumnXs,
@@ -344,7 +345,7 @@ describe('IrisGridMetricCalculator', () => {
         });
         const stateWithTheme = createMockProxy<IrisGridMetricState>({
           ...state,
-          theme: filterBarHeight !== undefined ? { filterBarHeight } : {},
+          theme: { filterBarHeight } as IrisGridThemeType,
         });
 
         const result = calculator.getAdvancedFilterButtonCoordinates(
@@ -358,7 +359,7 @@ describe('IrisGridMetricCalculator', () => {
     );
 
     it('works with multiple columns', () => {
-      const metrics = createMockProxy({
+      const metrics = createMockProxy<GridMetrics>({
         gridX: 20,
         gridY: 100,
         allColumnXs: new Map([
@@ -374,7 +375,7 @@ describe('IrisGridMetricCalculator', () => {
       });
       const stateWithTheme = createMockProxy<IrisGridMetricState>({
         ...state,
-        theme: { filterBarHeight: 40 },
+        theme: { filterBarHeight: 40 } as IrisGridThemeType,
       });
 
       const testCases = [
@@ -409,6 +410,70 @@ describe('IrisGridMetricCalculator', () => {
         );
         expect(result).toEqual(expected);
       });
+    });
+  });
+
+  describe('getScrollLeftForColumn', () => {
+    it.each([
+      {
+        description: 'returns null for negative column index',
+        column: -1,
+        left: 5,
+        rightVisible: 10,
+        lastLeft: 50,
+        expected: null,
+      },
+      {
+        description: 'returns column when column < left',
+        column: 3,
+        left: 5,
+        rightVisible: 10,
+        lastLeft: 50,
+        expected: 3,
+      },
+      {
+        description: 'returns null when column is in visible range',
+        column: 7,
+        left: 5,
+        rightVisible: 10,
+        lastLeft: 50,
+        expected: null,
+      },
+      {
+        description: 'calculates new left when column > rightVisible',
+        column: 15,
+        left: 5,
+        rightVisible: 10,
+        lastLeft: 50,
+        expected: expect.any(Number),
+      },
+    ])('$description', ({ column, left, rightVisible, lastLeft, expected }) => {
+      const metrics = createMockProxy<GridMetrics>({
+        left,
+        rightVisible,
+        lastLeft,
+      });
+
+      const result = calculator.getScrollLeftForColumn(column, state, metrics);
+      if (expected === expect.any(Number)) {
+        expect(result).toBeGreaterThanOrEqual(0);
+        expect(result).toBeLessThanOrEqual(lastLeft);
+      } else {
+        expect(result).toEqual(expected);
+      }
+    });
+
+    it('returns min of calculated left and lastLeft when scrolling right', () => {
+      const metrics = createMockProxy<GridMetrics>({
+        left: 0,
+        rightVisible: 5,
+        lastLeft: 10,
+      });
+
+      const result = calculator.getScrollLeftForColumn(15, state, metrics);
+
+      expect(result).not.toBeNull();
+      expect(result).toBeLessThanOrEqual(10); // Should not exceed lastLeft
     });
   });
 });

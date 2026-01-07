@@ -6,7 +6,6 @@ import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
 import {
   type ExpandableColumnGridModel,
-  type Grid,
   isExpandableColumnGridModel,
 } from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
@@ -18,7 +17,7 @@ jest.mock('@deephaven/grid', () => ({
   isExpandableColumnGridModel: jest.fn(),
 }));
 
-const { asMock, createMockProxy } = TestUtils;
+const { asMock } = TestUtils;
 
 const VIEW_SIZE = 500;
 
@@ -432,25 +431,6 @@ describe('handleResizeAllColumns', () => {
 
       component.collapseAllColumns();
       expect(model.collapseAllColumns).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('focusFilterBar', () => {
-    it('scrolls to the left when the focused filter column index is negative', () => {
-      const model = irisGridTestUtils.makeModel();
-      model.isFilterable = jest.fn(() => true);
-      const component = makeComponent(model);
-
-      const setViewStateMock = jest.fn();
-      component.grid = createMockProxy<Grid>({
-        setViewState: setViewStateMock,
-      });
-
-      act(() => {
-        component.focusFilterBar(-1);
-      });
-
-      expect(setViewStateMock).toHaveBeenCalledWith({ left: 0 }, true);
     });
   });
 

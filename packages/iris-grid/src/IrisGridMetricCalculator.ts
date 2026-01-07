@@ -439,6 +439,43 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
+   * Calculate the new left index to bring the given column into view.
+   * @param column The column the should be scrolled into view
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns The left column index to scroll to, or null if no scroll is needed
+   */
+  getScrollLeftForColumn(
+    column: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): VisibleIndex | null {
+    const { left, rightVisible, lastLeft } = metrics;
+
+    if (column < 0) {
+      return null;
+    }
+
+    if (column < left) {
+      // Column is to the left of visible area
+      return column;
+    }
+
+    if (rightVisible < column) {
+      // Column is to the right of visible area
+      const newLeft = this.getLastLeft(
+        state,
+        column,
+        this.getVisibleWidth(state)
+      );
+      return Math.min(newLeft, lastLeft);
+    }
+
+    // Column is already visible, no scroll needed
+    return null;
+  }
+
+  /**
    * Get the coordinates for the advanced filter button positioned in the filter bar.
    * @param index The column index
    * @param state The current IrisGridMetricState
