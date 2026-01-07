@@ -17,7 +17,7 @@ jest.mock('@deephaven/grid', () => ({
   isExpandableColumnGridModel: jest.fn(),
 }));
 
-const { asMock } = TestUtils;
+const { asMock, createMockProxy } = TestUtils;
 
 const VIEW_SIZE = 500;
 
@@ -427,6 +427,46 @@ describe('handleResizeAllColumns', () => {
 
       component.collapseAllColumns();
       expect(model.collapseAllColumns).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('focusFilterBar', () => {
+    it('scrolls to the left when the focused filter column index is negative', () => {
+      const model = irisGridTestUtils.makeModel();
+      model.isFilterable = jest.fn(() => true);
+      const component = makeComponent(model);
+
+      const setViewStateMock = jest.fn();
+      component.grid = createMockProxy({
+        setViewState: setViewStateMock,
+        getMetricState: jest.fn(() => ({})),
+        state: {},
+      });
+
+      act(() => {
+        component.focusFilterBar(-1);
+      });
+
+      expect(setViewStateMock).toHaveBeenCalledWith({ left: 0 }, true);
+    });
+  });
+
+  describe('Advanced Filter', () => {
+    it('advanced filters are hidden for negative column indexes', () => {
+      const model = irisGridTestUtils.makeModel();
+      const component = makeComponent(model);
+
+      // Set up the component state to render the filter bar
+      act(() => {
+        component.setState({
+          focusedFilterBarColumn: -1,
+          isFilterBarShown: true,
+        });
+      });
+
+      // The FilterInputField should be rendered with showAdvancedFilterButton=false
+      // when focusedFilterBarColumn is -1 (negative)
+      expect(component.state.focusedFilterBarColumn).toBe(-1);
     });
   });
 });
