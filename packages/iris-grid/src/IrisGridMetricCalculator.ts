@@ -399,7 +399,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
    * @param index The visible index of the column to get the filter box coordinates for
    * @param state The current IrisGridMetricState
    * @param metrics The grid metrics
-   * @returns Positioning metrics for the filter bar input field, or null if positioning cannot be determined
+   * @returns Coordinates for the filter input field, or null if positioning cannot be calculated
    */
   // eslint-disable-next-line class-methods-use-this
   getFilterBoxCoordinates(
@@ -414,21 +414,57 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     }
 
     const { theme } = state;
+    const { filterBarHeight = 0 } = theme;
     const { gridX, gridY, allColumnXs, allColumnWidths } = metrics;
 
     const columnX = allColumnXs.get(index);
     const columnWidth = allColumnWidths.get(index);
-    const columnY = -(theme.filterBarHeight ?? 0);
 
-    if (columnX == null || columnWidth == null) {
+    if (
+      columnX == null ||
+      columnWidth == null ||
+      // Don't show the filter box for invisible columns
+      columnWidth === 0 ||
+      filterBarHeight === 0
+    ) {
       return null;
     }
 
     return {
       x: gridX + columnX,
-      y: gridY + columnY,
+      y: gridY - filterBarHeight,
       width: columnWidth + 1, // cover right border
-      height: (theme.filterBarHeight ?? 1) - 1, // remove bottom border
+      height: filterBarHeight - 1, // remove bottom border
+    };
+  }
+
+  /**
+   * Get the coordinates for the advanced filter button positioned in the filter bar.
+   * @param index The column index
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns Coordinates for the advanced filter button, or null if it should not be shown
+   */
+  getAdvancedFilterButtonCoordinates(
+    index: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): { x: number; y: number } | null {
+    const filterBoxCoordinates = this.getFilterBoxCoordinates(
+      index,
+      state,
+      metrics
+    );
+
+    if (filterBoxCoordinates == null) {
+      return null;
+    }
+
+    const { x, y, width } = filterBoxCoordinates;
+
+    return {
+      x: x + width - 25, // Right edge of filter box (24px button + 1px for border)
+      y: y + 2, // 2px top margin for the button
     };
   }
 }
