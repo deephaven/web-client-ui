@@ -360,14 +360,18 @@ describe('handleResizeAllColumns', () => {
       });
       jest.spyOn(component, 'setState');
       expect(component.setState).not.toBeCalled();
-      component.rebuildFilters();
+      act(() => {
+        component.rebuildFilters();
+      });
       expect(component.setState).toBeCalled();
     });
 
     it('does not update state for empty filters', () => {
       const component = makeComponent();
       jest.spyOn(component, 'setState');
-      component.rebuildFilters();
+      act(() => {
+        component.rebuildFilters();
+      });
       expect(component.setState).not.toBeCalled();
     });
   });
