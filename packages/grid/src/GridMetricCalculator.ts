@@ -604,7 +604,7 @@ export class GridMetricCalculator {
       visibleRows,
       visibleColumns,
 
-      // Map of the height/width of visible rows/columns
+      // Map of the height/width of columns in the viewport (excluding floating columns)
       visibleRowHeights,
       visibleColumnWidths,
 
@@ -616,7 +616,7 @@ export class GridMetricCalculator {
       allRows,
       allColumns,
 
-      // Map of the height/width of visible rows/columns
+      // Map of the height/width of all rendered columns (visible + floating + dragging)
       allRowHeights,
       allColumnWidths,
 

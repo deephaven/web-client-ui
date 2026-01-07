@@ -5,6 +5,7 @@ import {
   GridMetrics,
   ModelIndex,
   ModelSizeMap,
+  VisibleIndex,
   trimMap,
   isExpandableColumnGridModel,
 } from '@deephaven/grid';
@@ -404,6 +405,44 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     }
 
     return padding + expandCollapseIconWidth;
+  }
+
+  /**
+   * Get metrics for positioning the filter bar input field.
+   * @param index The visible index of the column to get the filter box coordinates for
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns Positioning metrics for the filter bar input field, or null if positioning cannot be determined
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getFilterBoxCoordinates(
+    index: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): { x: number; y: number; width: number; height: number } | null {
+    // Only handle standard columns (>= 0) in the base implementation
+    // Plugins can override to handle special columns (e.g., negative indices)
+    if (index < 0) {
+      return null;
+    }
+
+    const { theme } = state;
+    const { gridX, gridY, allColumnXs, allColumnWidths } = metrics;
+
+    const columnX = allColumnXs.get(index);
+    const columnWidth = allColumnWidths.get(index);
+    const columnY = -(theme.filterBarHeight ?? 0);
+
+    if (columnX == null || columnWidth == null) {
+      return null;
+    }
+
+    return {
+      x: gridX + columnX,
+      y: gridY + columnY,
+      width: columnWidth + 1, // cover right border
+      height: (theme.filterBarHeight ?? 0) - 1, // remove bottom border
+    };
   }
 }
 
