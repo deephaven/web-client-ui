@@ -109,4 +109,159 @@ describe('IrisGridMetricCalculator', () => {
     calculator.setColumnWidth(model.getColumnIndexByName('Column1'), 150);
     expect(calculator.getUserColumnWidths().get(0)).toBe(150);
   });
+
+  describe('getFilterBoxCoordinates', () => {
+    it.each([
+      {
+        description: 'returns null for negative column index',
+        index: -1,
+        gridX: 10,
+        gridY: 50,
+        allColumnXs: new Map([[0, 100]]),
+        allColumnWidths: new Map([[0, 150]]),
+        filterBarHeight: 30,
+        expected: null,
+      },
+      {
+        description: 'returns null when columnX is not found',
+        index: 0,
+        gridX: 10,
+        gridY: 50,
+        allColumnXs: new Map(), // Empty map
+        allColumnWidths: new Map([[0, 150]]),
+        filterBarHeight: 30,
+        expected: null,
+      },
+      {
+        description: 'returns null when columnWidth is not found',
+        index: 0,
+        gridX: 10,
+        gridY: 50,
+        allColumnXs: new Map([[0, 100]]),
+        allColumnWidths: new Map(), // Empty map
+        filterBarHeight: 30,
+        expected: null,
+      },
+      {
+        description: 'returns correct coordinates for valid column',
+        index: 0,
+        gridX: 10,
+        gridY: 50,
+        allColumnXs: new Map([[0, 100]]),
+        allColumnWidths: new Map([[0, 150]]),
+        filterBarHeight: 30,
+        expected: {
+          x: 110, // gridX (10) + columnX (100)
+          y: 20, // gridY (50) - filterBarHeight (30)
+          width: 151, // columnWidth (150) + 1
+          height: 29, // filterBarHeight (30) - 1
+        },
+      },
+      {
+        description: 'handles undefined filterBarHeight as 0',
+        index: 0,
+        gridX: 10,
+        gridY: 50,
+        allColumnXs: new Map([[0, 100]]),
+        allColumnWidths: new Map([[0, 150]]),
+        filterBarHeight: undefined,
+        expected: {
+          x: 110, // gridX (10) + columnX (100)
+          y: 50, // gridY (50) - 0
+          width: 151, // columnWidth (150) + 1
+          height: -1, // 0 - 1
+        },
+      },
+    ])(
+      '$description',
+      ({
+        index,
+        gridX,
+        gridY,
+        allColumnXs,
+        allColumnWidths,
+        filterBarHeight,
+        expected,
+      }) => {
+        const metrics = createMockProxy({
+          gridX,
+          gridY,
+          allColumnXs,
+          allColumnWidths,
+        });
+        const stateWithTheme = createMockProxy<IrisGridMetricState>({
+          ...state,
+          theme: filterBarHeight !== undefined ? { filterBarHeight } : {},
+        });
+
+        const result = calculator.getFilterBoxCoordinates(
+          index,
+          stateWithTheme,
+          metrics
+        );
+
+        expect(result).toEqual(expected);
+      }
+    );
+
+    it('works with multiple columns', () => {
+      const metrics = createMockProxy({
+        gridX: 20,
+        gridY: 100,
+        allColumnXs: new Map([
+          [0, 0],
+          [1, 100],
+          [2, 250],
+        ]),
+        allColumnWidths: new Map([
+          [0, 100],
+          [1, 150],
+          [2, 200],
+        ]),
+      });
+      const stateWithTheme = createMockProxy<IrisGridMetricState>({
+        ...state,
+        theme: { filterBarHeight: 40 },
+      });
+
+      const testCases = [
+        {
+          index: 0,
+          expected: {
+            x: 20, // gridX (20) + columnX (0)
+            y: 60, // gridY (100) - filterBarHeight (40)
+            width: 101,
+            height: 39,
+          },
+        },
+        {
+          index: 1,
+          expected: {
+            x: 120, // gridX (20) + columnX (100)
+            y: 60,
+            width: 151,
+            height: 39,
+          },
+        },
+        {
+          index: 2,
+          expected: {
+            x: 270, // gridX (20) + columnX (250)
+            y: 60,
+            width: 201,
+            height: 39,
+          },
+        },
+      ];
+
+      testCases.forEach(({ index, expected }) => {
+        const result = calculator.getFilterBoxCoordinates(
+          index,
+          stateWithTheme,
+          metrics
+        );
+        expect(result).toEqual(expected);
+      });
+    });
+  });
 });
