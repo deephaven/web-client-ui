@@ -4468,77 +4468,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       metrics != null && metrics.width > 0 && metrics.height > 0;
     const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
 
-    let focusField = null;
-
-    const debounceMs = metrics
-      ? Math.min(
-          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
-          IrisGrid.maxDebounce
-        )
-      : IrisGrid.maxDebounce;
-
-    if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
-      const metricState = this.getMetricState();
-      const filterBoxCoordinates = metricState
-        ? metricCalculator.getFilterBoxCoordinates(
-            focusedFilterBarColumn,
-            metricState,
-            metrics
-          )
-        : null;
-
-      if (filterBoxCoordinates != null) {
-        const {
-          x,
-          y,
-          width: fieldWidth,
-          height: fieldHeight,
-        } = filterBoxCoordinates;
-        const { width } = metrics;
-        const style = {
-          top: y,
-          left: x,
-          minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
-          height: fieldHeight,
-        };
-        let value = '';
-        let isValid = true;
-        const modelColumn = this.getModelColumn(focusedFilterBarColumn);
-        assertNotNull(modelColumn);
-        const quickFilter = quickFilters.get(modelColumn);
-        const advancedFilter = advancedFilters.get(modelColumn);
-        if (quickFilter != null) {
-          value = quickFilter.text;
-          isValid = quickFilter.filter != null;
-        }
-        const isBarFiltered =
-          quickFilters.size !== 0 || advancedFilters.size !== 0;
-        focusField = (
-          <FilterInputField
-            ref={this.filterInputRef}
-            style={style}
-            className={classNames({
-              error: !isValid,
-              active: value !== '' || advancedFilter != null,
-              'iris-grid-has-filter': isBarFiltered,
-            })}
-            showAdvancedFilterButton={focusedFilterBarColumn >= 0}
-            isAdvancedFilterSet={advancedFilter != null}
-            onAdvancedFiltersTriggered={() => {
-              this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
-            }}
-            key={focusedFilterBarColumn}
-            onChange={this.handleFilterBarChange}
-            onDone={this.handleFilterBarDone}
-            onTab={this.handleFilterBarTab}
-            onContextMenu={this.grid?.handleContextMenu}
-            debounceMs={debounceMs}
-            value={value}
-          />
-        );
-      }
-    }
-
     let loadingElement = null;
     if (loadingText != null) {
       const loadingStatus = (
@@ -4580,28 +4509,100 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.tooltip?.update();
     }
 
+    let focusField = null;
     const filterBar = [];
     if (metrics && isFilterBarShown) {
-      const { gridX, gridY, visibleColumns, allColumnXs, allColumnWidths } =
-        metrics;
-      const { filterBarHeight } = theme;
+      const metricState = this.getMetricState();
+
+      if (metricState != null && focusedFilterBarColumn != null) {
+        const debounceMs = Math.min(
+          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
+          IrisGrid.maxDebounce
+        );
+
+        const filterBoxCoordinates = metricCalculator.getFilterBoxCoordinates(
+          focusedFilterBarColumn,
+          metricState,
+          metrics
+        );
+
+        if (filterBoxCoordinates != null) {
+          const {
+            x,
+            y,
+            width: fieldWidth,
+            height: fieldHeight,
+          } = filterBoxCoordinates;
+          const { width } = metrics;
+          const style = {
+            top: y,
+            left: x,
+            minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
+            height: fieldHeight,
+          };
+          let value = '';
+          let isValid = true;
+          const modelColumn = this.getModelColumn(focusedFilterBarColumn);
+          assertNotNull(modelColumn);
+          const quickFilter = quickFilters.get(modelColumn);
+          const advancedFilter = advancedFilters.get(modelColumn);
+          if (quickFilter != null) {
+            value = quickFilter.text;
+            isValid = quickFilter.filter != null;
+          }
+          const isBarFiltered =
+            quickFilters.size !== 0 || advancedFilters.size !== 0;
+          const showAdvancedFilterButton =
+            metricCalculator.getAdvancedFilterButtonCoordinates(
+              focusedFilterBarColumn,
+              metricState,
+              metrics
+            ) != null;
+          focusField = (
+            <FilterInputField
+              ref={this.filterInputRef}
+              style={style}
+              className={classNames({
+                error: !isValid,
+                active: value !== '' || advancedFilter != null,
+                'iris-grid-has-filter': isBarFiltered,
+              })}
+              showAdvancedFilterButton={showAdvancedFilterButton}
+              isAdvancedFilterSet={advancedFilter != null}
+              onAdvancedFiltersTriggered={() => {
+                this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
+              }}
+              key={focusedFilterBarColumn}
+              onChange={this.handleFilterBarChange}
+              onDone={this.handleFilterBarDone}
+              onTab={this.handleFilterBarTab}
+              onContextMenu={this.grid?.handleContextMenu}
+              debounceMs={debounceMs}
+              value={value}
+            />
+          );
+        }
+      }
+
+      // Advanced Filter buttons
+      const { visibleColumns } = metrics;
 
       for (let i = 0; i < visibleColumns.length; i += 1) {
         const columnIndex = visibleColumns[i];
-
-        const columnX = allColumnXs.get(columnIndex);
-        const columnWidth = allColumnWidths.get(columnIndex);
         const modelColumn = this.getModelColumn(columnIndex);
+
         if (modelColumn != null) {
           const isFilterable = model.isFilterable(modelColumn);
-          if (
-            isFilterable &&
-            columnX != null &&
-            columnWidth != null &&
-            columnWidth > 0
-          ) {
-            const x = gridX + columnX + columnWidth - 24;
-            const y = gridY - (filterBarHeight ?? 0) + 2; // 2 acts as top margin for the button
+          const buttonCoordinates =
+            isFilterable && metricState
+              ? metricCalculator.getAdvancedFilterButtonCoordinates(
+                  columnIndex,
+                  metricState,
+                  metrics
+                )
+              : null;
+          if (buttonCoordinates != null) {
+            const { x, y } = buttonCoordinates;
             const style: CSSProperties = {
               position: 'absolute',
               top: y,
