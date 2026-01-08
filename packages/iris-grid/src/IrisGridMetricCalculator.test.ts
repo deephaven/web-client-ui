@@ -111,7 +111,7 @@ describe('IrisGridMetricCalculator', () => {
     expect(calculator.getUserColumnWidths().get(0)).toBe(150);
   });
 
-  describe('getFilterBoxCoordinates', () => {
+  describe('getFilterInputCoordinates', () => {
     it.each([
       {
         description: 'returns null for negative column index',

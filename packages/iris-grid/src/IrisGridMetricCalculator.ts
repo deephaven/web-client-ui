@@ -415,7 +415,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
    * @returns Coordinates for the filter input field, or null if positioning cannot be calculated
    */
   // eslint-disable-next-line class-methods-use-this
-  getFilterBoxCoordinates(
+  getFilterInputCoordinates(
     index: VisibleIndex,
     state: IrisGridMetricState,
     metrics: GridMetrics
@@ -500,7 +500,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     state: IrisGridMetricState,
     metrics: GridMetrics
   ): { x: number; y: number } | null {
-    const filterBoxCoordinates = this.getFilterBoxCoordinates(
+    const filterBoxCoordinates = this.getFilterInputCoordinates(
       index,
       state,
       metrics

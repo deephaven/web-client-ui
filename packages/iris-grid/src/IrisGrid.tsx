@@ -4350,7 +4350,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return null;
     }
 
-    const filterBoxCoordinates = metricCalculator.getFilterBoxCoordinates(
+    const filterBoxCoordinates = metricCalculator.getFilterInputCoordinates(
       focusedFilterBarColumn,
       metricState,
       metrics
