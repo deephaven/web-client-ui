@@ -4334,6 +4334,90 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.seekRow(gotoValue, isBackwards);
   }
 
+  getFilterBarInput(
+    metrics: GridMetrics | undefined,
+    metricCalculator: IrisGridMetricCalculator,
+    focusedFilterBarColumn: VisibleIndex | null,
+    quickFilters: ReadonlyQuickFilterMap,
+    advancedFilters: ReadonlyAdvancedFilterMap
+  ): ReactElement | null {
+    if (metrics == null || focusedFilterBarColumn == null) {
+      return null;
+    }
+
+    const metricState = this.getMetricState();
+    if (metricState == null) {
+      return null;
+    }
+
+    const filterBoxCoordinates = metricCalculator.getFilterBoxCoordinates(
+      focusedFilterBarColumn,
+      metricState,
+      metrics
+    );
+    if (filterBoxCoordinates == null) {
+      return null;
+    }
+
+    const debounceMs = Math.min(
+      Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
+      IrisGrid.maxDebounce
+    );
+    const {
+      x,
+      y,
+      width: fieldWidth,
+      height: fieldHeight,
+    } = filterBoxCoordinates;
+    const { width } = metrics;
+    const style = {
+      top: y,
+      left: x,
+      minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
+      height: fieldHeight,
+    };
+    let value = '';
+    let isValid = true;
+    const modelColumn = this.getModelColumn(focusedFilterBarColumn);
+    assertNotNull(modelColumn);
+    const quickFilter = quickFilters.get(modelColumn);
+    const advancedFilter = advancedFilters.get(modelColumn);
+    if (quickFilter != null) {
+      value = quickFilter.text;
+      isValid = quickFilter.filter != null;
+    }
+    const isBarFiltered = quickFilters.size !== 0 || advancedFilters.size !== 0;
+    const showAdvancedFilterButton =
+      metricCalculator.getAdvancedFilterButtonCoordinates(
+        focusedFilterBarColumn,
+        metricState,
+        metrics
+      ) != null;
+    return (
+      <FilterInputField
+        ref={this.filterInputRef}
+        style={style}
+        className={classNames({
+          error: !isValid,
+          active: value !== '' || advancedFilter != null,
+          'iris-grid-has-filter': isBarFiltered,
+        })}
+        showAdvancedFilterButton={showAdvancedFilterButton}
+        isAdvancedFilterSet={advancedFilter != null}
+        onAdvancedFiltersTriggered={() => {
+          this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
+        }}
+        key={focusedFilterBarColumn}
+        onChange={this.handleFilterBarChange}
+        onDone={this.handleFilterBarDone}
+        onTab={this.handleFilterBarTab}
+        onContextMenu={this.grid?.handleContextMenu}
+        debounceMs={debounceMs}
+        value={value}
+      />
+    );
+  }
+
   render(): ReactElement | null {
     const {
       children,
@@ -4462,6 +4546,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       metrics != null && metrics.width > 0 && metrics.height > 0;
     const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
 
+    const focusField = isFilterBarShown
+      ? this.getFilterBarInput(
+          metrics,
+          metricCalculator,
+          focusedFilterBarColumn,
+          quickFilters,
+          advancedFilters
+        )
+      : null;
+
     let loadingElement = null;
     if (loadingText != null) {
       const loadingStatus = (
@@ -4503,80 +4597,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.tooltip?.update();
     }
 
-    let focusField = null;
     const filterBar = [];
     if (metrics && isFilterBarShown) {
       const metricState = this.getMetricState();
-
-      if (metricState != null && focusedFilterBarColumn != null) {
-        const debounceMs = Math.min(
-          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
-          IrisGrid.maxDebounce
-        );
-
-        const filterBoxCoordinates = metricCalculator.getFilterBoxCoordinates(
-          focusedFilterBarColumn,
-          metricState,
-          metrics
-        );
-
-        if (filterBoxCoordinates != null) {
-          const {
-            x,
-            y,
-            width: fieldWidth,
-            height: fieldHeight,
-          } = filterBoxCoordinates;
-          const { width } = metrics;
-          const style = {
-            top: y,
-            left: x,
-            minWidth: Math.min(fieldWidth, width - x), // Don't cause overflow
-            height: fieldHeight,
-          };
-          let value = '';
-          let isValid = true;
-          const modelColumn = this.getModelColumn(focusedFilterBarColumn);
-          assertNotNull(modelColumn);
-          const quickFilter = quickFilters.get(modelColumn);
-          const advancedFilter = advancedFilters.get(modelColumn);
-          if (quickFilter != null) {
-            value = quickFilter.text;
-            isValid = quickFilter.filter != null;
-          }
-          const isBarFiltered =
-            quickFilters.size !== 0 || advancedFilters.size !== 0;
-          const showAdvancedFilterButton =
-            metricCalculator.getAdvancedFilterButtonCoordinates(
-              focusedFilterBarColumn,
-              metricState,
-              metrics
-            ) != null;
-          focusField = (
-            <FilterInputField
-              ref={this.filterInputRef}
-              style={style}
-              className={classNames({
-                error: !isValid,
-                active: value !== '' || advancedFilter != null,
-                'iris-grid-has-filter': isBarFiltered,
-              })}
-              showAdvancedFilterButton={showAdvancedFilterButton}
-              isAdvancedFilterSet={advancedFilter != null}
-              onAdvancedFiltersTriggered={() => {
-                this.setState({ shownAdvancedFilter: focusedFilterBarColumn });
-              }}
-              key={focusedFilterBarColumn}
-              onChange={this.handleFilterBarChange}
-              onDone={this.handleFilterBarDone}
-              onTab={this.handleFilterBarTab}
-              onContextMenu={this.grid?.handleContextMenu}
-              debounceMs={debounceMs}
-              value={value}
-            />
-          );
-        }
-      }
 
       // Advanced Filter buttons
       const { visibleColumns } = metrics;

@@ -453,7 +453,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
 
   /**
    * Calculate the new left index to bring the given column into view.
-   * @param column The column the should be scrolled into view
+   * @param column The column that should be scrolled into view
    * @param state The current IrisGridMetricState
    * @param metrics The grid metrics
    * @returns The left column index to scroll to, or null if no scroll is needed
