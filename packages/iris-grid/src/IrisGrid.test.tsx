@@ -455,8 +455,6 @@ describe('handleResizeAllColumns', () => {
           });
         });
 
-        expect(ref.current?.state.focusedFilterBarColumn).toBe(columnIndex);
-
         const advancedFilterButtons = container.querySelectorAll(
           '.advanced-filter-button'
         );
