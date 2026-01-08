@@ -1,6 +1,6 @@
 import { GridMetricCalculator, type GridMetrics } from '@deephaven/grid';
 import { type dh } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/test-utils';
+import { TestUtils } from '@deephaven/utils';
 import {
   IrisGridMetricCalculator,
   type IrisGridMetricState,
