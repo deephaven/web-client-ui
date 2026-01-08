@@ -190,7 +190,7 @@ describe('IrisGridMetricCalculator', () => {
           theme: { filterBarHeight } as IrisGridThemeType,
         });
 
-        const result = calculator.getFilterBoxCoordinates(
+        const result = calculator.getFilterInputCoordinates(
           index,
           stateWithTheme,
           metrics
@@ -251,7 +251,7 @@ describe('IrisGridMetricCalculator', () => {
       ];
 
       testCases.forEach(({ index, expected }) => {
-        const result = calculator.getFilterBoxCoordinates(
+        const result = calculator.getFilterInputCoordinates(
           index,
           stateWithTheme,
           metrics
