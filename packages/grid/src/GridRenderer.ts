@@ -1392,7 +1392,7 @@ export class GridRenderer {
       let columnIndex = startIndex;
 
       while (columnIndex <= endIndex) {
-        const { columnCount } = metrics;
+        const { columnCount, calculatedColumnWidths } = metrics;
         const modelColumn = getOrThrow(modelColumns, columnIndex);
         const columnGroupName = model.textForColumnHeader(modelColumn, depth);
         const columnGroupColor = model.colorForColumnHeader(modelColumn, depth);
@@ -1425,6 +1425,7 @@ export class GridRenderer {
             const prevColumnWidth =
               userColumnWidths.get(prevModelIndex) ??
               allColumnWidths.get(prevColumnIndex) ??
+              calculatedColumnWidths.get(prevModelIndex) ??
               columnWidth;
 
             columnGroupLeft -= prevColumnWidth;
