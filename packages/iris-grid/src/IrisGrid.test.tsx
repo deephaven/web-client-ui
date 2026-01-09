@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { assertNotNull, TestUtils } from '@deephaven/utils';
 import { TypeValue } from '@deephaven/filters';
 import {
   type ExpandableColumnGridModel,
@@ -11,6 +11,7 @@ import {
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridProxyModel from './IrisGridProxyModel';
+import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this
@@ -308,44 +309,6 @@ describe('column expand/collapse', () => {
     expect(model.collapseAllColumns).not.toHaveBeenCalled();
   });
 
-  describe('rebuildFilters', () => {
-    it('updates state if filters not empty', () => {
-      const component = makeComponent(undefined, undefined, {
-        quickFilters: [
-          [
-            '2',
-            {
-              columnType: IrisGridTestUtils.DEFAULT_TYPE,
-              filterList: [
-                {
-                  operator: 'eq',
-                  text: 'null',
-                  value: null,
-                  startColumnIndex: 0,
-                },
-              ],
-            },
-          ],
-        ],
-      });
-      jest.spyOn(component, 'setState');
-      expect(component.setState).not.toBeCalled();
-      act(() => {
-        component.rebuildFilters();
-      });
-      expect(component.setState).toBeCalled();
-    });
-
-    it('does not update state for empty filters', () => {
-      const component = makeComponent();
-      jest.spyOn(component, 'setState');
-      act(() => {
-        component.rebuildFilters();
-      });
-      expect(component.setState).not.toBeCalled();
-    });
-  });
-
   it('calls expandAllColumns if model supports expandable columns and expand all', () => {
     asMock(isExpandableColumnGridModel).mockReturnValue(true);
     model.isExpandAllColumnsAvailable = true;
@@ -366,34 +329,73 @@ describe('column expand/collapse', () => {
     component.collapseAllColumns();
     expect(model.collapseAllColumns).not.toHaveBeenCalled();
   });
+});
 
-  describe('Advanced Filter', () => {
-    it.each([
-      { columnIndex: -1, expectedVisibility: false },
-      { columnIndex: 0, expectedVisibility: true },
-      { columnIndex: 1, expectedVisibility: true },
-    ])(
-      'advanced filter button visibility is $expectedVisibility for column index $columnIndex',
-      ({ columnIndex, expectedVisibility }) => {
-        const model = irisGridTestUtils.makeModel();
-        const ref = React.createRef<IrisGrid>();
-        const { container } = render(
-          <IrisGrid ref={ref} model={model} settings={DEFAULT_SETTINGS} />
-        );
-
-        act(() => {
-          ref.current?.setState({
-            focusedFilterBarColumn: columnIndex,
-            isFilterBarShown: true,
-          });
-        });
-
-        const advancedFilterButtons = container.querySelectorAll(
-          '.advanced-filter-button'
-        );
-
-        expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
-      }
-    );
+describe('rebuildFilters', () => {
+  it('updates state if filters not empty', () => {
+    const testComponent = makeComponent(undefined, undefined, {
+      quickFilters: [
+        [
+          '2',
+          {
+            columnType: IrisGridTestUtils.DEFAULT_TYPE,
+            filterList: [
+              {
+                operator: 'eq',
+                text: 'null',
+                value: null,
+                startColumnIndex: 0,
+              },
+            ],
+          },
+        ],
+      ],
+    });
+    jest.spyOn(testComponent, 'setState');
+    expect(testComponent.setState).not.toBeCalled();
+    act(() => {
+      testComponent.rebuildFilters();
+    });
+    expect(testComponent.setState).toBeCalled();
   });
+
+  it('does not update state for empty filters', () => {
+    const testComponent = makeComponent();
+    jest.spyOn(testComponent, 'setState');
+    testComponent.rebuildFilters();
+    expect(testComponent.setState).not.toBeCalled();
+  });
+});
+
+describe('Advanced Filter', () => {
+  it.each([
+    { columnIndex: -1, expectedVisibility: false },
+    { columnIndex: 0, expectedVisibility: true },
+    { columnIndex: 1, expectedVisibility: true },
+  ])(
+    'advanced filter button for column index $columnIndex should be rendered: $expectedVisibility',
+    ({ columnIndex, expectedVisibility }) => {
+      const metricCalculator = new IrisGridMetricCalculator();
+      const testModel = irisGridTestUtils.makeModel();
+      const testRenderer = TestRenderer.create(
+        <IrisGrid model={testModel} settings={DEFAULT_SETTINGS} />,
+        {
+          createNodeMock,
+        }
+      );
+      const testComponent =
+        testRenderer.getInstance() as TestRenderer.ReactTestInstance & IrisGrid;
+      assertNotNull(testComponent.grid);
+      testComponent.grid.metricCalculator = metricCalculator;
+      testComponent.setState({
+        isFilterBarShown: true,
+        hoverAdvancedFilter: columnIndex,
+      });
+      const advancedFilterButtons = testRenderer.root.findAll(
+        el => el.props?.className?.includes('advanced-filter-button') === true
+      );
+
+      expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
+    }
+  );
 });
