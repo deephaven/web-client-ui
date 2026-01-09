@@ -4334,6 +4334,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.seekRow(gotoValue, isBackwards);
   }
 
+  /**
+   * Render the input field for the focused filter
+   * @param metrics Grid metrics
+   * @param metricCalculator Metric calculator
+   * @param focusedFilterBarColumn Column index for the focused filter
+   * @param quickFilters Quick filters map
+   * @param advancedFilters Advanced filters map
+   * @returns The filter input field element or null if not applicable
+   */
   getFilterBarInput(
     metrics: GridMetrics | undefined,
     metricCalculator: IrisGridMetricCalculator,
