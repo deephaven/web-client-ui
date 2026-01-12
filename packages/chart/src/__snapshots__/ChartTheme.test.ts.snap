@@ -13,6 +13,7 @@ exports[`defaultChartTheme should create the default chart theme 1`] = `
   "land_color": "chartTheme['land-color']",
   "legend_color": "chartTheme['legend-color']",
   "linecolor": "chartTheme['linecolor']",
+  "map_style": "chartTheme['map-style']",
   "ocean_color": "chartTheme['ocean-color']",
   "ohlc_decreasing": "chartTheme['ohlc-decreasing']",
   "ohlc_increasing": "chartTheme['ohlc-increasing']",
