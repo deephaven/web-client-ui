@@ -104,6 +104,9 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
         "color": "ChartTheme['title_color']",
       },
     },
+    "map": {
+      "style": "ChartTheme['map_style']",
+    },
     "margin": {
       "b": 60,
       "l": 60,

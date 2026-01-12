@@ -2142,6 +2142,7 @@ class ChartUtils {
       ocean_color,
       lake_color,
       river_color,
+      map_style,
       /* eslint-disable camelcase */
     } = theme;
 
@@ -2195,6 +2196,9 @@ class ChartUtils {
         oceancolor: ocean_color,
         lakecolor: lake_color,
         rivercolor: river_color,
+      },
+      map: {
+        style: map_style,
       },
     };
     layout.datarevision = 0;
