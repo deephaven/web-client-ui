@@ -52,4 +52,7 @@
   --dh-color-chart-indicator-increase: var(--dh-color-visual-green);
   --dh-color-chart-indicator-decrease: var(--dh-color-visual-red);
   --dh-color-chart-indicator-gauge: var(--dh-color-green-1000);
+
+  /* Map */
+  --dh-color-chart-map-style: dark;
 }

@@ -33,6 +33,9 @@ export interface ChartTheme {
   indicator_increasing: string;
   indicator_decreasing: string;
   indicator_gauge: string;
+
+  // Map
+  map_style: string;
 }
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
@@ -74,6 +77,8 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     indicator_increasing: chartTheme['indicator-increasing'],
     indicator_decreasing: chartTheme['indicator-decreasing'],
     indicator_gauge: chartTheme['indicator-gauge'],
+    // Map
+    map_style: chartTheme['map-style'],
   });
 }
 

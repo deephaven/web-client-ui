@@ -189,6 +189,11 @@ export function buildColorGroups(
 
       group = groupRemap[group] ?? group;
 
+      // Skip maps as there is no swatch to show currently
+      if (group === 'map') {
+        return acc;
+      }
+
       if (acc[group] == null) {
         acc[group] = [];
       }
