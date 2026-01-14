@@ -226,15 +226,15 @@ describe('pendingDataMap hydration/dehydration', () => {
         1,
         {
           data: new Map([
-            [3, 'Foo'],
-            [4, 'Bar'],
+            [3, { value: 'Foo' }],
+            [4, { value: 'Bar' }],
           ]),
         },
       ],
       [
         10,
         {
-          data: new Map([[7, 'Baz']]),
+          data: new Map([[7, { value: 'Baz' }]]),
         },
       ],
     ]);
@@ -267,10 +267,16 @@ describe('pendingDataMap hydration/dehydration', () => {
     );
     expect(hydratedMap.size).toBe(2);
     expect(hydratedMap.get(1)?.data.size).toBe(2);
-    expect(hydratedMap.get(1)?.data.get(3)).toEqual('Foo');
-    expect(hydratedMap.get(1)?.data.get(4)).toEqual('Bar');
+    expect(hydratedMap.get(1)?.data.get(3)).toEqual(
+      expect.objectContaining({ value: 'Foo' })
+    );
+    expect(hydratedMap.get(1)?.data.get(4)).toEqual(
+      expect.objectContaining({ value: 'Bar' })
+    );
     expect(hydratedMap.get(10)?.data.size).toBe(1);
-    expect(hydratedMap.get(10)?.data.get(7)).toEqual('Baz');
+    expect(hydratedMap.get(10)?.data.get(7)).toEqual(
+      expect.objectContaining({ value: 'Baz' })
+    );
   });
 });
 
