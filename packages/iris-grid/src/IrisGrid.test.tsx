@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
-import { assertNotNull, TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import { TypeValue } from '@deephaven/filters';
 import {
   type ExpandableColumnGridModel,
@@ -11,7 +11,6 @@ import {
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridProxyModel from './IrisGridProxyModel';
-import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 
 class MockPath2D {
   // eslint-disable-next-line class-methods-use-this
@@ -93,9 +92,13 @@ function makeComponent(
     IrisGrid;
 }
 
-function keyDown(key, component, extraArgs?) {
+function keyDown(
+  key: string,
+  component: IrisGrid,
+  extraArgs?: KeyboardEventInit
+): void {
   const args = { key, ...extraArgs };
-  component.grid.notifyKeyboardHandlers(
+  component.grid?.notifyKeyboardHandlers(
     'onDown',
     new KeyboardEvent('keydown', args)
   );
@@ -375,24 +378,25 @@ describe('Advanced Filter', () => {
   ])(
     'advanced filter button for column index $columnIndex should be rendered: $expectedVisibility',
     ({ columnIndex, expectedVisibility }) => {
-      const metricCalculator = new IrisGridMetricCalculator();
-      const testModel = irisGridTestUtils.makeModel();
+      const model = irisGridTestUtils.makeModel();
       const testRenderer = TestRenderer.create(
-        <IrisGrid model={testModel} settings={DEFAULT_SETTINGS} />,
-        {
-          createNodeMock,
-        }
+        <IrisGrid model={model} settings={DEFAULT_SETTINGS} />,
+        { createNodeMock }
       );
-      const testComponent =
+      const component =
         testRenderer.getInstance() as TestRenderer.ReactTestInstance & IrisGrid;
-      assertNotNull(testComponent.grid);
-      testComponent.grid.metricCalculator = metricCalculator;
-      testComponent.setState({
-        isFilterBarShown: true,
-        hoverAdvancedFilter: columnIndex,
+
+      act(() => {
+        component.setState({
+          hoverAdvancedFilter: columnIndex,
+          isFilterBarShown: true,
+        });
       });
+
       const advancedFilterButtons = testRenderer.root.findAll(
-        el => el.props?.className?.includes('advanced-filter-button') === true
+        el =>
+          el.props?.className?.includes('advanced-filter-button') === true &&
+          el.props?.className?.includes('container') !== true
       );
 
       expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
