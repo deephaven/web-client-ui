@@ -15,6 +15,7 @@ interface FilterInputFieldProps {
   className: string;
   style: React.CSSProperties;
   value: string;
+  showAdvancedFilterButton: boolean;
   isAdvancedFilterSet: boolean;
   onAdvancedFiltersTriggered: React.MouseEventHandler<HTMLButtonElement>;
   onChange: (value: string) => void;
@@ -39,6 +40,7 @@ class FilterInputField extends PureComponent<
     style: {},
     className: '',
     value: '',
+    showAdvancedFilterButton: false,
     isAdvancedFilterSet: false,
     onAdvancedFiltersTriggered: (): void => undefined,
     onChange: (): void => undefined,
@@ -207,6 +209,7 @@ class FilterInputField extends PureComponent<
     const {
       className,
       style,
+      showAdvancedFilterButton,
       isAdvancedFilterSet,
       onAdvancedFiltersTriggered,
     } = this.props;
@@ -234,21 +237,26 @@ class FilterInputField extends PureComponent<
           autoCapitalize="off"
           spellCheck="false"
         />
-        <div className="advanced-filter-button-container">
-          <Button
-            kind="ghost"
-            className={classNames('btn-link-icon advanced-filter-button', {
-              'filter-set': isAdvancedFilterSet,
-            })}
-            onClick={onAdvancedFiltersTriggered}
-            onContextMenu={this.handleContextMenu}
-          >
-            <div className="fa-layers ">
-              <FontAwesomeIcon icon={dhFilterFilled} className="filter-solid" />
-              <FontAwesomeIcon icon={vsFilter} className="filter-light" />
-            </div>
-          </Button>
-        </div>
+        {showAdvancedFilterButton && (
+          <div className="advanced-filter-button-container">
+            <Button
+              kind="ghost"
+              className={classNames('btn-link-icon advanced-filter-button', {
+                'filter-set': isAdvancedFilterSet,
+              })}
+              onClick={onAdvancedFiltersTriggered}
+              onContextMenu={this.handleContextMenu}
+            >
+              <div className="fa-layers ">
+                <FontAwesomeIcon
+                  icon={dhFilterFilled}
+                  className="filter-solid"
+                />
+                <FontAwesomeIcon icon={vsFilter} className="filter-light" />
+              </div>
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

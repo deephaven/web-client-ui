@@ -359,14 +359,18 @@ describe('handleResizeAllColumns', () => {
       });
       jest.spyOn(component, 'setState');
       expect(component.setState).not.toBeCalled();
-      component.rebuildFilters();
+      act(() => {
+        component.rebuildFilters();
+      });
       expect(component.setState).toBeCalled();
     });
 
     it('does not update state for empty filters', () => {
       const component = makeComponent();
       jest.spyOn(component, 'setState');
-      component.rebuildFilters();
+      act(() => {
+        component.rebuildFilters();
+      });
       expect(component.setState).not.toBeCalled();
     });
   });
@@ -429,4 +433,34 @@ describe('handleResizeAllColumns', () => {
       expect(model.collapseAllColumns).not.toHaveBeenCalled();
     });
   });
+});
+
+describe('Advanced Filter', () => {
+  it.each([
+    { columnIndex: -1, expectedVisibility: false },
+    { columnIndex: 0, expectedVisibility: true },
+    { columnIndex: 1, expectedVisibility: true },
+  ])(
+    'advanced filter button visibility is $expectedVisibility for column index $columnIndex',
+    ({ columnIndex, expectedVisibility }) => {
+      const model = irisGridTestUtils.makeModel();
+      const ref = React.createRef<IrisGrid>();
+      const { container } = render(
+        <IrisGrid ref={ref} model={model} settings={DEFAULT_SETTINGS} />
+      );
+
+      act(() => {
+        ref.current?.setState({
+          focusedFilterBarColumn: columnIndex,
+          isFilterBarShown: true,
+        });
+      });
+
+      const advancedFilterButtons = container.querySelectorAll(
+        '.advanced-filter-button'
+      );
+
+      expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
+    }
+  );
 });
