@@ -7,6 +7,7 @@ import {
   ModelSizeMap,
   trimMap,
   isExpandableColumnGridModel,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { GridMetricState } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
@@ -404,6 +405,117 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     }
 
     return padding + expandCollapseIconWidth;
+  }
+
+  /**
+   * Get metrics for positioning the filter bar input field.
+   * @param index The visible index of the column to get the filter box coordinates for
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns Coordinates for the filter input field, or null if positioning cannot be calculated
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getFilterInputCoordinates(
+    index: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): { x: number; y: number; width: number; height: number } | null {
+    // Only handle standard columns (>= 0) in the base implementation
+    // Plugins can override to handle special columns (e.g., negative indices)
+    if (index < 0) {
+      return null;
+    }
+
+    const { theme } = state;
+    const { filterBarHeight = 0 } = theme;
+    const { gridX, gridY, allColumnXs, allColumnWidths } = metrics;
+
+    const columnX = allColumnXs.get(index);
+    const columnWidth = allColumnWidths.get(index);
+
+    if (
+      columnX == null ||
+      columnWidth == null ||
+      // Don't show the filter box for invisible columns
+      columnWidth === 0 ||
+      filterBarHeight === 0
+    ) {
+      return null;
+    }
+
+    return {
+      x: gridX + columnX,
+      y: gridY - filterBarHeight,
+      width: columnWidth + 1, // cover right border
+      height: filterBarHeight - 1, // remove bottom border
+    };
+  }
+
+  /**
+   * Calculate the new left index to bring the given column into view.
+   * @param column The column that should be scrolled into view
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns The left column index to scroll to, or null if no scroll is needed
+   */
+  getScrollLeftForColumn(
+    column: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): VisibleIndex | null {
+    const { left, rightVisible, lastLeft } = metrics;
+
+    if (column < 0) {
+      return null;
+    }
+
+    if (column < left) {
+      // Column is to the left of visible area
+      return column;
+    }
+
+    if (rightVisible < column) {
+      // Column is to the right of visible area
+      const newLeft = this.getLastLeft(
+        state,
+        column,
+        this.getVisibleWidth(state)
+      );
+      return Math.min(newLeft, lastLeft);
+    }
+
+    // Column is already visible, no scroll needed
+    return null;
+  }
+
+  /**
+   * Get the coordinates for the advanced filter button positioned in the filter bar.
+   * @param index The column index
+   * @param state The current IrisGridMetricState
+   * @param metrics The grid metrics
+   * @returns Coordinates for the advanced filter button, or null if it should not be shown
+   */
+  getAdvancedFilterButtonCoordinates(
+    index: VisibleIndex,
+    state: IrisGridMetricState,
+    metrics: GridMetrics
+  ): { x: number; y: number } | null {
+    const filterBoxCoordinates = this.getFilterInputCoordinates(
+      index,
+      state,
+      metrics
+    );
+
+    if (filterBoxCoordinates == null) {
+      return null;
+    }
+
+    const { x, y, width } = filterBoxCoordinates;
+
+    return {
+      x: x + width - 25, // Right edge of filter box (24px button + 1px for border)
+      y: y + 2, // 2px top margin for the button
+    };
   }
 }
 
