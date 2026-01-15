@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
+
+**Note:** Version bump only for package @deephaven/golden-layout
+
 ## [0.85.35](https://github.com/deephaven/web-client-ui/compare/v0.85.34...v0.85.35) (2025-09-22)
 
 **Note:** Version bump only for package @deephaven/golden-layout

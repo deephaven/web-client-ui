@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
+
+### ⚠ BREAKING CHANGES
+
+- getColumnSeparatorIndex now requires a model argument.
+
+### Features
+
+- Cherry-pick DH-20363: Pivot filter support [#2602](https://github.com/deephaven/web-client-ui/issues/2602) ([#2608](https://github.com/deephaven/web-client-ui/issues/2608)) ([190f688](https://github.com/deephaven/web-client-ui/commit/190f6880aa44b09b917d1861d7021a5fbfd7b9a9))
+
+### Bug Fixes
+
+- Cherry-pick DH-21258: Fix column group separators ([#2599](https://github.com/deephaven/web-client-ui/issues/2599)) ([44edc02](https://github.com/deephaven/web-client-ui/commit/44edc02d6f91e83ca6acdd5a6d39d7b964648225)), closes [#2597](https://github.com/deephaven/web-client-ui/issues/2597)
+- Cherry-pick DH-21367: Fix shifting header group text ([#2604](https://github.com/deephaven/web-client-ui/issues/2604)) ([549e4e9](https://github.com/deephaven/web-client-ui/commit/549e4e93c7dc799698c409eab09eaf84d35ac3e9)), closes [#2603](https://github.com/deephaven/web-client-ui/issues/2603)
+
 ## [0.85.40](https://github.com/deephaven/web-client-ui/compare/v0.85.39...v0.85.40) (2025-12-11)
 
 **Note:** Version bump only for package @deephaven/web-client-ui

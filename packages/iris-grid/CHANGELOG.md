@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
+
+### Features
+
+- Cherry-pick DH-20363: Pivot filter support [#2602](https://github.com/deephaven/web-client-ui/issues/2602) ([#2608](https://github.com/deephaven/web-client-ui/issues/2608)) ([190f688](https://github.com/deephaven/web-client-ui/commit/190f6880aa44b09b917d1861d7021a5fbfd7b9a9))
+
 ## [0.85.40](https://github.com/deephaven/web-client-ui/compare/v0.85.39...v0.85.40) (2025-12-11)
 
 **Note:** Version bump only for package @deephaven/iris-grid
