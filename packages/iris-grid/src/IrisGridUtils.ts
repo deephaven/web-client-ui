@@ -144,7 +144,7 @@ export interface DehydratedIrisGridState {
   selectDistinctColumns: readonly ColumnName[];
   selectedSearchColumns: readonly ColumnName[];
   invertSearchColumns: boolean;
-  pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
+  pendingDataMap: DehydratedPendingDataMap<unknown>;
   frozenColumns: readonly ColumnName[];
   columnHeaderGroups?: readonly DhType.ColumnGroup[];
   partitionConfig?: DehydratedPartitionConfig;
@@ -1487,21 +1487,16 @@ class IrisGridUtils {
 
   dehydratePendingDataMap(
     columns: readonly DhType.Column[],
-    pendingDataMap: ReadonlyMap<
-      ModelIndex,
-      {
-        data: Map<ModelIndex | ColumnName, CellData | string>;
-      }
-    >
-  ): DehydratedPendingDataMap<CellData | string | null> {
+    pendingDataMap: PendingDataMap
+  ): DehydratedPendingDataMap<unknown> {
     return [...pendingDataMap].map(([rowIndex, { data }]) => [
       rowIndex,
       {
         data: [...data]
           .filter(([c]) => typeof c === 'number')
-          .map(([c, value]) => [
+          .map(([c, cellData]) => [
             columns[c as number].name,
-            this.dehydrateValue(value, columns[c as number].type),
+            this.dehydrateValue(cellData.value, columns[c as number].type),
           ]),
       },
     ]);
@@ -1509,14 +1504,11 @@ class IrisGridUtils {
 
   hydratePendingDataMap(
     columns: readonly DhType.Column[],
-    pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
+    pendingDataMap: DehydratedPendingDataMap<unknown>
   ): Map<
     number,
     {
-      data: Map<
-        ModelIndex | null,
-        string | CellData | DhType.LongWrapper | null
-      >;
+      data: Map<ModelIndex | null, CellData>;
     }
   > {
     const columnMap = new Map<ColumnName, number>();
@@ -1532,10 +1524,7 @@ class IrisGridUtils {
 
     return new Map(
       pendingDataMap.map(
-        ([rowIndex, { data }]: [
-          number,
-          { data: [string, CellData | string | null][] },
-        ]) => [
+        ([rowIndex, { data }]: [number, { data: [string, unknown][] }]) => [
           rowIndex,
           {
             data: new Map(
@@ -1544,7 +1533,7 @@ class IrisGridUtils {
                 assertNotNull(index);
                 return [
                   getColumnIndex(columnName) ?? null,
-                  this.hydrateValue(value, columns[index].type),
+                  { value: this.hydrateValue(value, columns[index].type) },
                 ];
               })
             ),
