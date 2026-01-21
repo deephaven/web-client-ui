@@ -169,20 +169,4 @@ describe('The layout can be manipulated at runtime', () => {
     stack.contentItems[0].remove();
     expect(stack.contentItems.length).toBe(0);
   });
-
-  // Note: Original test has 7 tests but test 7 "Destroys..." seems to be test 6
-  // Adding an explicit destroy test for completeness
-  it('destroys the layout cleanly', async () => {
-    myLayout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    myLayout.destroy();
-    expect(myLayout.root.contentItems.length).toBe(0);
-  });
 });

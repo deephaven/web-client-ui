@@ -194,18 +194,4 @@ describe('content items are abled to to emit events that bubble up the tree', ()
     expect(invocations[1]).toBe('stackBottom');
     expect(invocations[2]).toBe('column');
   });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

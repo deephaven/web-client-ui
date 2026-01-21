@@ -73,18 +73,4 @@ describe('tabs apply their configuration', () => {
       (header.tabs[1] as unknown as { _dragListener: unknown })._dragListener
     ).not.toBeDefined();
   });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

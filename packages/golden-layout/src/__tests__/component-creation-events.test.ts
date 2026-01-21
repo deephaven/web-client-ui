@@ -87,28 +87,4 @@ describe('emits events when components are created', () => {
     expect(eventListener.show).toHaveBeenCalledTimes(1);
     expect(eventListener.shown).toHaveBeenCalledTimes(1);
   });
-
-  it('destroys the layout', async () => {
-    layout = createTestLayout(
-      {
-        content: [
-          {
-            type: 'component',
-            componentName: 'testComponent',
-          },
-        ],
-      },
-      class {
-        constructor(cont: ItemContainer) {
-          cont.getElement().html('that worked');
-        }
-      }
-    );
-
-    layout.init();
-    await waitForLayoutInit(layout);
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

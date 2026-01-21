@@ -120,19 +120,4 @@ describe("Sets and retrieves a component's state", () => {
 
     expect(getComponentState(myLayout).testValue).toBe('updated');
   });
-
-  it('Destroys the layout', async () => {
-    myLayout = createTestLayout(
-      statefulConfig,
-      class {
-        constructor(cont: ItemContainer) {
-          cont.getElement().html('that worked');
-        }
-      }
-    );
-    await initLayout(myLayout);
-
-    myLayout.destroy();
-    expect(myLayout.root.contentItems.length).toBe(0);
-  });
 });

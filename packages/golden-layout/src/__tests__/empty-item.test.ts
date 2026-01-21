@@ -110,28 +110,4 @@ describe('The layout can handle empty stacks', () => {
 
     expect(stack.contentItems.length).toBe(1);
   });
-
-  it('destroys the layout', async () => {
-    myLayout = await createLayout({
-      content: [
-        {
-          type: 'row',
-          content: [
-            {
-              type: 'component',
-              componentName: 'testComponent',
-            },
-            {
-              isClosable: false,
-              type: 'stack',
-              content: [],
-            },
-          ],
-        },
-      ],
-    });
-
-    myLayout.destroy();
-    expect(myLayout.root.contentItems.length).toBe(0);
-  });
 });

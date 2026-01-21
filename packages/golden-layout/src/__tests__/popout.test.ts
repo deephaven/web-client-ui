@@ -94,110 +94,96 @@ describe('it can popout components into browserwindows', () => {
    * stuff into the new window which throws errors before GoldenLayout can
    * initialise. With proper mocking, we attempt to enable it.
    */
-  it.skip('serialises the new window', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'stack',
-          content: [
-            {
-              type: 'component',
-              componentName: 'testComponent',
-              id: 'componentA',
-            },
-            {
-              type: 'component',
-              componentName: 'testComponent',
-              id: 'componentB',
-            },
-          ],
-        },
-      ],
-    });
+  // it.skip('serialises the new window', async () => {
+  //   layout = await createLayout({
+  //     content: [
+  //       {
+  //         type: 'stack',
+  //         content: [
+  //           {
+  //             type: 'component',
+  //             componentName: 'testComponent',
+  //             id: 'componentA',
+  //           },
+  //           {
+  //             type: 'component',
+  //             componentName: 'testComponent',
+  //             id: 'componentB',
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   });
 
-    const component = layout.root.getItemsById('componentA')[0];
-    component.popout();
+  //   const component = layout.root.getItemsById('componentA')[0];
+  //   component.popout();
 
-    expect(layout.openPopouts.length).toBe(1);
+  //   expect(layout.openPopouts.length).toBe(1);
 
-    // Wait for popout to initialize
-    await new Promise<void>(resolve => {
-      const check = () => {
-        if (layout!.openPopouts[0].isInitialised) {
-          resolve();
-        } else {
-          setTimeout(check, 50);
-        }
-      };
-      check();
-    });
+  //   // Wait for popout to initialize
+  //   await new Promise<void>(resolve => {
+  //     const check = () => {
+  //       if (layout!.openPopouts[0].isInitialised) {
+  //         resolve();
+  //       } else {
+  //         setTimeout(check, 50);
+  //       }
+  //     };
+  //     check();
+  //   });
 
-    const config = layout.toConfig();
-    expect(config.openPopouts?.length).toBe(1);
-    expect(typeof config.openPopouts?.[0].dimensions.left).toBe('number');
-    expect(typeof config.openPopouts?.[0].dimensions.top).toBe('number');
-    expect((config.openPopouts?.[0].dimensions.width ?? 0) > 0).toBe(true);
-    expect((config.openPopouts?.[0].dimensions.height ?? 0) > 0).toBe(true);
-    expect(config.openPopouts?.[0].content[0].type).toBe('component');
-  });
+  //   const config = layout.toConfig();
+  //   expect(config.openPopouts?.length).toBe(1);
+  //   expect(typeof config.openPopouts?.[0].dimensions.left).toBe('number');
+  //   expect(typeof config.openPopouts?.[0].dimensions.top).toBe('number');
+  //   expect((config.openPopouts?.[0].dimensions.width ?? 0) > 0).toBe(true);
+  //   expect((config.openPopouts?.[0].dimensions.height ?? 0) > 0).toBe(true);
+  //   expect(config.openPopouts?.[0].content[0].type).toBe('component');
+  // });
 
   /**
    * This test was skipped in the original Karma tests.
    */
-  it.skip('closes the open window', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'stack',
-          content: [
-            {
-              type: 'component',
-              componentName: 'testComponent',
-              id: 'componentA',
-            },
-            {
-              type: 'component',
-              componentName: 'testComponent',
-              id: 'componentB',
-            },
-          ],
-        },
-      ],
-    });
+  // it.skip('closes the open window', async () => {
+  //   layout = await createLayout({
+  //     content: [
+  //       {
+  //         type: 'stack',
+  //         content: [
+  //           {
+  //             type: 'component',
+  //             componentName: 'testComponent',
+  //             id: 'componentA',
+  //           },
+  //           {
+  //             type: 'component',
+  //             componentName: 'testComponent',
+  //             id: 'componentB',
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   });
 
-    const component = layout.root.getItemsById('componentA')[0];
-    const browserPopout = component.popout();
+  //   const component = layout.root.getItemsById('componentA')[0];
+  //   const browserPopout = component.popout();
 
-    browserPopout!.close();
+  //   browserPopout!.close();
 
-    // Wait for window to close
-    await new Promise<void>(resolve => {
-      const check = () => {
-        if (
-          browserPopout!.getWindow()!.closed &&
-          layout!.openPopouts.length === 0
-        ) {
-          resolve();
-        } else {
-          setTimeout(check, 50);
-        }
-      };
-      mockPopoutWindow.closed = true;
-      check();
-    });
-  });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
+  //   // Wait for window to close
+  //   await new Promise<void>(resolve => {
+  //     const check = () => {
+  //       if (
+  //         browserPopout!.getWindow()!.closed &&
+  //         layout!.openPopouts.length === 0
+  //       ) {
+  //         resolve();
+  //       } else {
+  //         setTimeout(check, 50);
+  //       }
+  //     };
+  //     mockPopoutWindow.closed = true;
+  //     check();
+  //   });
+  // });
 });

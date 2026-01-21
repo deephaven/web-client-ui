@@ -229,18 +229,4 @@ describe('supports drag creation with deferred content', () => {
       restoreMocks();
     }
   });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

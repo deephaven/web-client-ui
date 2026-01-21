@@ -132,18 +132,4 @@ describe('selection is disabled by default', () => {
     expect(selectionChangedSpy).toHaveBeenCalledTimes(0);
     expect(layout.selectedItem).toBe(null);
   });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

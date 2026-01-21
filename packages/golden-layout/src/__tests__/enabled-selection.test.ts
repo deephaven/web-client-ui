@@ -258,21 +258,4 @@ describe('selection works when enabled', () => {
     expect(stackA.element.hasClass('lm_selected')).toBe(true);
     expect(stackB.element.hasClass('lm_selected')).toBe(false);
   });
-
-  it('destroys the layout', async () => {
-    layout = await createLayout({
-      settings: {
-        selectionEnabled: true,
-      },
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

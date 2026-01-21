@@ -54,13 +54,4 @@ describe('Can initialise the layoutmanager', () => {
     expect($('.lm_goldenlayout').length).toBe(1);
     verifyPath('stack.0.component', myLayout);
   });
-
-  it('Destroys the layout', async () => {
-    myLayout = createTestLayout(simpleConfig);
-    myLayout.init();
-    await waitForLayoutInit(myLayout);
-
-    myLayout.destroy();
-    expect(myLayout.root.contentItems.length).toBe(0);
-  });
 });

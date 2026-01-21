@@ -122,20 +122,4 @@ describe('emits events when items are created', () => {
     expect(columnCalls[columnCalls.length - 1][0].type).toEqual('column');
     expect(rowCalls[rowCalls.length - 1][0].type).toEqual('row');
   });
-
-  it('destroys the layout', async () => {
-    layout = createTestLayout({
-      content: [
-        {
-          type: 'component',
-          componentName: 'testComponent',
-        },
-      ],
-    });
-    layout.init();
-    await waitForLayoutInit(layout);
-
-    layout.destroy();
-    expect(layout.root.contentItems.length).toBe(0);
-  });
 });

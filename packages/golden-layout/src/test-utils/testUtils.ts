@@ -101,15 +101,14 @@ export function verifyPath(path: string, layout: LayoutManager): any | null {
 
 /**
  * Cleans up the layout and DOM after a test.
+ * Verifies that destruction succeeds when the layout was initialized and not already destroyed.
  * @param layout The layout to destroy
  */
 export function cleanupLayout(layout: LayoutManager | null | undefined): void {
-  try {
-    if (layout?.isInitialised) {
-      layout.destroy();
-    }
-  } catch {
-    // Ignore errors during cleanup - layout may already be destroyed
+  if (layout?.isInitialised && layout.root.contentItems.length > 0) {
+    // Layout is initialized and has content - destroy it and verify
+    layout.destroy();
+    expect(layout.root.contentItems.length).toBe(0);
   }
   // Clear all layout containers from body
   document.body.innerHTML = '';
