@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.0](https://github.com/deephaven/web-client-ui/compare/v1.11.0...v1.12.0) (2026-01-21)
+
+### Features
+
+- DH-20363: Pivot filter support ([#2602](https://github.com/deephaven/web-client-ui/issues/2602)) ([ec1192b](https://github.com/deephaven/web-client-ui/commit/ec1192b5777de2a343452f5855cd46ff2a8b2d0a))
+
+### Bug Fixes
+
+- DH-21407: Dehydrate/hydrate pending data correctly ([#2606](https://github.com/deephaven/web-client-ui/issues/2606)) ([11df934](https://github.com/deephaven/web-client-ui/commit/11df934c510da8e6a61680391775a059132ac938))
+
 ## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
 
 ### Bug Fixes
