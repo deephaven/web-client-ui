@@ -1852,7 +1852,7 @@ export class TableUtils {
    */
   async applyFilter<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    filters: DhType.FilterCondition[],
+    filters: readonly DhType.FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
@@ -1875,7 +1875,7 @@ export class TableUtils {
    */
   async applySort<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    sorts: DhType.Sort[],
+    sorts: readonly DhType.Sort[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
