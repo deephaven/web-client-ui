@@ -1,4 +1,4 @@
-import type { Config } from '../config';
+import type { Config, InputConfig } from '../config';
 
 /**
  * Minifies and unminifies configs by replacing frequent keys
@@ -64,7 +64,7 @@ const _values = [
  *
  * @returns minified config
  */
-export function minifyConfig(config: Partial<Config>) {
+export function minifyConfig(config: Partial<Config> | InputConfig) {
   if (_keys.length > 36) {
     throw new Error('Too many keys in config minifier map');
   }

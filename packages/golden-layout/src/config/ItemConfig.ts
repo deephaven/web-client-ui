@@ -97,8 +97,9 @@ export interface ComponentConfig extends ItemConfigAttributes {
   /**
    * A serialisable object. Will be passed to the component constructor function and will be the value returned by
    * container.getState().
+   * Default: {}
    */
-  componentState: Record<string, unknown>;
+  componentState?: Record<string, unknown>;
 }
 
 export interface ReactComponentConfig extends ItemConfigAttributes {

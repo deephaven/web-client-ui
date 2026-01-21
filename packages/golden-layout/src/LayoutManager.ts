@@ -12,6 +12,7 @@ import {
 import type {
   ItemConfig,
   Config,
+  InputConfig,
   ComponentConfig,
   ReactComponentConfig,
 } from './config';
@@ -49,6 +50,15 @@ export type ComponentConstructor<
 > = {
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
+
+/**
+ * A simpler function type for components that don't use class constructors.
+ * This is commonly used in tests and legacy code.
+ */
+export type ComponentFunction = (
+  container: ItemContainer,
+  state?: unknown
+) => void;
 
 /**
  * Item configuration types that are supported inside of `createContentItem` to
@@ -105,7 +115,7 @@ export class LayoutManager extends EventEmitter {
    * @param config A GoldenLayout config object
    * @returns minified config
    */
-  static minifyConfig(config: Config): Record<string, unknown> {
+  static minifyConfig(config: Config | InputConfig): Record<string, unknown> {
     return minifyConfig(config);
   }
 
@@ -128,6 +138,7 @@ export class LayoutManager extends EventEmitter {
     [name: string]:
       | ComponentConstructor
       | ComponentConstructor<ReactComponentConfig>
+      | ComponentFunction
       | React.Component
       | React.ComponentType;
   } = { 'lm-react-component': ReactComponentHandler };
@@ -161,7 +172,7 @@ export class LayoutManager extends EventEmitter {
   tabDropPlaceholder = $('<div class="lm_drop_tab_placeholder"></div>');
 
   constructor(
-    config: Config,
+    config: InputConfig,
     container: JQuery<HTMLElement> | HTMLElement | undefined
   ) {
     super();
@@ -201,6 +212,7 @@ export class LayoutManager extends EventEmitter {
     name: string,
     constructor:
       | ComponentConstructor
+      | ComponentFunction
       | React.Component
       | React.ComponentType<any>
   ) {
@@ -1081,17 +1093,18 @@ export class LayoutManager extends EventEmitter {
    * @param config
    * @returns config
    */
-  _createConfig(config: Config): Config {
+  _createConfig(inputConfig: InputConfig): Config {
     var windowConfigKey = getQueryStringParam('gl-window');
 
     if (windowConfigKey) {
       this.isSubWindow = true;
-      config = JSON.parse(localStorage.getItem(windowConfigKey) || '{}');
-      config = unminifyConfig(config);
+      inputConfig = JSON.parse(localStorage.getItem(windowConfigKey) || '{}');
+      inputConfig = unminifyConfig(inputConfig);
       localStorage.removeItem(windowConfigKey);
     }
 
-    config = $.extend(true, {}, defaultConfig, config);
+    // Merge with defaults - after this, config has all required fields
+    const config: Config = $.extend(true, {}, defaultConfig, inputConfig);
 
     var nextNode = function (node: Record<string, unknown>) {
       for (var key in node) {
