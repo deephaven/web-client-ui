@@ -1,6 +1,6 @@
 import LayoutManager from '../LayoutManager';
 import type { ItemContainer } from '../container';
-import type { StackItemConfig, ComponentConfig, InputConfig } from '../config';
+import type { StackItemConfig, ComponentConfig, PartialConfig } from '../config';
 import { cleanupLayout, waitForLayoutInit } from '../test-utils/testUtils';
 
 interface TestState {
@@ -22,7 +22,7 @@ describe("Sets and retrieves a component's state", () => {
     myComponent = null;
   });
 
-  const statefulConfig: InputConfig = {
+  const statefulConfig: PartialConfig = {
     content: [
       {
         type: 'component',
@@ -44,7 +44,7 @@ describe("Sets and retrieves a component's state", () => {
     };
 
   const createTestLayout = (
-    config: InputConfig,
+    config: PartialConfig,
     component: new (cont: ItemContainer, state?: unknown) => unknown
   ): LayoutManager => {
     const container = document.createElement('div');

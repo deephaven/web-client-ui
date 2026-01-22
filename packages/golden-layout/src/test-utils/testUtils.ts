@@ -1,4 +1,4 @@
-import type { InputConfig } from '../config';
+import type { PartialConfig } from '../config';
 import type { ItemContainer } from '../container';
 import LayoutManager from '../LayoutManager';
 
@@ -25,7 +25,7 @@ export class TestComponent {
  * @returns A promise that resolves to the initialized layout
  */
 export async function createLayout(
-  config: InputConfig
+  config: PartialConfig
 ): Promise<LayoutManager> {
   const container = document.createElement('div');
   container.style.width = '800px';

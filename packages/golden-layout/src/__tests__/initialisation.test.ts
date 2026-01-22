@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import LayoutManager from '../LayoutManager';
 import type { ItemContainer } from '../container';
-import type { InputConfig } from '../config';
+import type { PartialConfig } from '../config';
 import {
   cleanupLayout,
   verifyPath,
@@ -22,7 +22,7 @@ describe('Can initialise the layoutmanager', () => {
     myLayout = null;
   });
 
-  const simpleConfig: InputConfig = {
+  const simpleConfig: PartialConfig = {
     content: [
       {
         type: 'component',
@@ -31,7 +31,7 @@ describe('Can initialise the layoutmanager', () => {
     ],
   };
 
-  const createTestLayout = (config: InputConfig): LayoutManager => {
+  const createTestLayout = (config: PartialConfig): LayoutManager => {
     const container = document.createElement('div');
     container.style.width = '800px';
     container.style.height = '600px';

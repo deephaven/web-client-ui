@@ -1,5 +1,5 @@
 import LayoutManager from '../LayoutManager';
-import type { InputConfig } from '../config';
+import type { PartialConfig } from '../config';
 import {
   TestComponent,
   cleanupLayout,
@@ -31,7 +31,7 @@ describe('emits events when items are created', () => {
     layout = null;
   });
 
-  const nestedConfig: InputConfig = {
+  const nestedConfig: PartialConfig = {
     content: [
       {
         type: 'stack',
@@ -53,7 +53,7 @@ describe('emits events when items are created', () => {
     ],
   };
 
-  const createTestLayout = (config: InputConfig): LayoutManager => {
+  const createTestLayout = (config: PartialConfig): LayoutManager => {
     const container = document.createElement('div');
     container.style.width = '800px';
     container.style.height = '600px';
