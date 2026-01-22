@@ -110,31 +110,31 @@ TBD:
 ## Development Plan
 
 ### Phase 1: 
-- Investigate if plugin chains are possible on the same widget type (2-3 hours)
-- Investigate Widget vs Panel plugins, support for core plugins in Enterprise (1 day)
-- Research Adobe Spectrum menu components (1-2 hours)
+- Investigate if plugin chains are possible on the same widget type
+- Investigate Widget vs Panel plugins, support for core plugins in Enterprise
+- Research Adobe Spectrum menu components
 
 
 ### Phase 2:
-- If chains are not possible, update the plugin registration mechanism. Introduce plugin priority/order of execution (2-3 days)
-- Implement a plugin wrapping the core GridPanel or GridWidget (1 day)
-- Define IrisGrid state access/update interface for built-in options (1-2 days)
-- Convert built-in Table Options to use the interface for updates (4-6 hours)
-- Define the interface for built-in Table Options menu items (2-3 hours)
-- Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements (2-3 days)
+- If chains are not possible, update the plugin registration mechanism. Introduce plugin priority/order of execution
+- Implement a plugin wrapping the core GridPanel or GridWidget
+- Define IrisGrid state access/update interface for built-in options
+- Convert built-in Table Options to use the interface for updates
+- Define the interface for built-in Table Options menu items
+- Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements
 
 
 ### Phase 3:
-- Convert the menu items to Spectrum components (4-6 hours)
-- Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system. Pass the built-in menu to the modifier function if defined, and render the result (4 hours)
-- Test show/hide/re-order/add functionality for menu options with a sample plugin (1 day)
+- Convert the menu items to Spectrum components
+- Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system. Pass the built-in menu to the modifier function if defined, and render the result
+- Test show/hide/re-order/add functionality for menu options with a sample plugin
 
 ### Phase 3:
-- Clean up the example plugin, add tests (2-3 days)
-- Add examples based on different Spectrum menu components (1 day)
-- Add persistence example (1 day)
-- Add another plugin to demonstrate chaining with configurable order of execution (1 days)
-- Write documentation for the new extensible Table Options menu architecture (4-6 hours)
+- Clean up the example plugin, add tests
+- Add examples based on different Spectrum menu components
+- Add persistence example
+- Add another plugin to demonstrate chaining with configurable order of execution
+- Write documentation for the new extensible Table Options menu architecture
 
 ---
 
