@@ -94,17 +94,8 @@ describe("Sets and retrieves a component's state", () => {
 
     myComponent!.container.setState({ testValue: 'updated' });
 
-    // Wait for state change
-    await new Promise<void>(resolve => {
-      const checkStateChange = () => {
-        if (stateChanges !== 0) {
-          resolve();
-        } else {
-          setTimeout(checkStateChange, 10);
-        }
-      };
-      checkStateChange();
-    });
+    // Wait for next animation frame (stateChanged is throttled via animFrame)
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     expect(stateChanges).toBe(1);
   });
@@ -115,8 +106,8 @@ describe("Sets and retrieves a component's state", () => {
 
     myComponent!.container.setState({ testValue: 'updated' });
 
-    // Wait a tick for state to propagate
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Wait for next animation frame (stateChanged is throttled via animFrame)
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     expect(getComponentState(myLayout).testValue).toBe('updated');
   });
