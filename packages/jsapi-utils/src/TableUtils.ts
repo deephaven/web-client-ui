@@ -1857,7 +1857,8 @@ export class TableUtils {
   ): Promise<T | null> {
     const { dh } = this;
     return TableUtils.executeAndWaitForEvent(
-      t => t?.applyFilter(filters),
+      // TODO: Update JS API to accept readonly arrays
+      t => t?.applyFilter(filters as DhType.FilterCondition[]),
       table,
       dh.Table.EVENT_FILTERCHANGED,
       timeout
@@ -1880,7 +1881,8 @@ export class TableUtils {
   ): Promise<T | null> {
     const { dh } = this;
     return TableUtils.executeAndWaitForEvent(
-      t => t?.applySort(sorts),
+      // TODO: Update JS API to accept readonly arrays
+      t => t?.applySort(sorts as DhType.Sort[]),
       table,
       dh.Table.EVENT_SORTCHANGED,
       timeout
