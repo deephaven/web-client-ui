@@ -1,12 +1,12 @@
 import LayoutManager from '../LayoutManager';
 import type { ItemContainer } from '../container';
-import type { InputConfig } from '../config';
+import type { PartialConfig } from '../config';
 import { cleanupLayout } from '../test-utils/testUtils';
 
 describe('Creates the right structure based on the provided config', () => {
   let layout: LayoutManager | null = null;
 
-  const createLayout = (config: InputConfig): LayoutManager => {
+  const createLayout = (config: PartialConfig): LayoutManager => {
     const container = document.createElement('div');
     container.style.width = '800px';
     container.style.height = '600px';

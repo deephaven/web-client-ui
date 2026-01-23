@@ -1,5 +1,5 @@
 import LayoutManager from '../LayoutManager';
-import type { Config, InputConfig } from '../config';
+import type { Config, PartialConfig } from '../config';
 
 describe('Can minify and unminify configuration objects', () => {
   it('has minification methods', () => {
@@ -9,14 +9,14 @@ describe('Can minify and unminify configuration objects', () => {
 
   it("doesn't manipulate the original config", () => {
     const minifiedTestConfig = LayoutManager.minifyConfig(
-      testConfig as InputConfig
+      testConfig as PartialConfig
     );
     expect(typeof minifiedTestConfig).toBe('object');
     expect(minifiedTestConfig === testConfig).toBe(false);
   });
 
   it('minifies and unminifies the config directly', () => {
-    const min = LayoutManager.minifyConfig(testConfig as InputConfig);
+    const min = LayoutManager.minifyConfig(testConfig as PartialConfig);
     const max = LayoutManager.unminifyConfig(min);
 
     expect(JSON.stringify(max)).toBe(JSON.stringify(testConfig));

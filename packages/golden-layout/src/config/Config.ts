@@ -18,7 +18,7 @@ export type Config = {
  * Users can provide any subset of the configuration, and defaults will be applied.
  * This is the type accepted by the LayoutManager constructor.
  */
-export type InputConfig = {
+export type PartialConfig = {
   settings?: Partial<Settings>;
   dimensions?: Partial<Dimensions>;
   labels?: Partial<Labels>;

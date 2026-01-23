@@ -1,6 +1,6 @@
 import LayoutManager from '../LayoutManager';
 import type { ItemContainer } from '../container';
-import type { StackItemConfig, ComponentConfig, InputConfig } from '../config';
+import type { StackItemConfig, ComponentConfig, PartialConfig } from '../config';
 import { cleanupLayout, waitForLayoutInit } from '../test-utils/testUtils';
 
 interface TestState {
@@ -22,7 +22,7 @@ describe("Sets and retrieves a component's state", () => {
     myComponent = null;
   });
 
-  const statefulConfig: InputConfig = {
+  const statefulConfig: PartialConfig = {
     content: [
       {
         type: 'component',
@@ -44,7 +44,7 @@ describe("Sets and retrieves a component's state", () => {
     };
 
   const createTestLayout = (
-    config: InputConfig,
+    config: PartialConfig,
     component: new (cont: ItemContainer, state?: unknown) => unknown
   ): LayoutManager => {
     const container = document.createElement('div');
@@ -94,17 +94,8 @@ describe("Sets and retrieves a component's state", () => {
 
     myComponent!.container.setState({ testValue: 'updated' });
 
-    // Wait for state change
-    await new Promise<void>(resolve => {
-      const checkStateChange = () => {
-        if (stateChanges !== 0) {
-          resolve();
-        } else {
-          setTimeout(checkStateChange, 10);
-        }
-      };
-      checkStateChange();
-    });
+    // Wait for next animation frame (stateChanged is throttled via animFrame)
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     expect(stateChanges).toBe(1);
   });
@@ -115,8 +106,8 @@ describe("Sets and retrieves a component's state", () => {
 
     myComponent!.container.setState({ testValue: 'updated' });
 
-    // Wait a tick for state to propagate
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Wait for next animation frame (stateChanged is throttled via animFrame)
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     expect(getComponentState(myLayout).testValue).toBe('updated');
   });

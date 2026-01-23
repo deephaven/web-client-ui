@@ -12,7 +12,7 @@ import {
 import type {
   ItemConfig,
   Config,
-  InputConfig,
+  PartialConfig,
   ComponentConfig,
   ReactComponentConfig,
 } from './config';
@@ -115,7 +115,7 @@ export class LayoutManager extends EventEmitter {
    * @param config A GoldenLayout config object
    * @returns minified config
    */
-  static minifyConfig(config: Config | InputConfig): Record<string, unknown> {
+  static minifyConfig(config: Config | PartialConfig): Record<string, unknown> {
     return minifyConfig(config);
   }
 
@@ -172,7 +172,7 @@ export class LayoutManager extends EventEmitter {
   tabDropPlaceholder = $('<div class="lm_drop_tab_placeholder"></div>');
 
   constructor(
-    config: InputConfig,
+    config: PartialConfig,
     container: JQuery<HTMLElement> | HTMLElement | undefined
   ) {
     super();
@@ -1093,7 +1093,7 @@ export class LayoutManager extends EventEmitter {
    * @param config
    * @returns config
    */
-  _createConfig(inputConfig: InputConfig): Config {
+  _createConfig(inputConfig: PartialConfig): Config {
     var windowConfigKey = getQueryStringParam('gl-window');
 
     if (windowConfigKey) {
