@@ -225,7 +225,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    */
   replaceChild(
     oldChild: AbstractContentItem,
-    newChild: AbstractContentItem,
+    newChild: AbstractContentItem | ItemConfig,
     _$destroyOldChild = false
   ) {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
@@ -254,10 +254,10 @@ export default abstract class AbstractContentItem extends EventEmitter {
     newChild.parent = this;
 
     /*
-     * Update tab reference
+     * Update tab reference - use setContentItem to properly transfer event listeners
      */
     if (isStack(this)) {
-      this.header.tabs[index].contentItem = newChild;
+      this.header.tabs[index].setContentItem(newChild);
     }
 
     //TODO This doesn't update the config... refactor to leave item nodes untouched after creation

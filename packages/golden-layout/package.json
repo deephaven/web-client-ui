@@ -21,11 +21,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:sass": "sass --embed-sources --load-path=../../node_modules --style=compressed ./src:./dist ./scss:./css",
-    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward",
-    "test": "run-s build test-start",
-    "test-start": "karma start karma.conf.cjs",
-    "test:ci": "run-s build test:ci-start",
-    "test:ci-start": "karma start karma.conf.cjs --single-run"
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward"
   },
   "repository": {
     "type": "git",
@@ -50,10 +46,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "babelify": "^10.0.0",
-    "browserify": "^17.0.0",
-    "karma-browserify": "^8.1.0",
-    "watchify": "^4.0.0"
-  }
+  "devDependencies": {}
 }
