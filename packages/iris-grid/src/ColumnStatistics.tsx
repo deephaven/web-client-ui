@@ -200,11 +200,7 @@ class ColumnStatistics extends Component<
         <div className="column-statistics-title">
           {column.displayName ?? column.name}
           <span className="column-statistics-type">&nbsp;({columnType})</span>
-          <CopyButton
-            className="column-statistics-copy"
-            tooltip="Copy column name"
-            copy={column.name}
-          />
+          <CopyButton tooltip="Copy column name" copy={column.name} isQuiet />
         </div>
         {description != null && (
           <div className="column-statistics-description">{description}</div>

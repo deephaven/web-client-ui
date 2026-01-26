@@ -10,7 +10,7 @@ export * from './context-actions';
 export { default as Collapse } from './Collapse';
 export { default as Checkbox } from './Checkbox';
 export * from './ComponentUtils';
-export { default as CopyButton } from './CopyButton';
+export { default as CopyButton, type CopyButtonProps } from './CopyButton';
 export { default as CustomTimeSelect } from './CustomTimeSelect';
 export * from './DateTimeInput';
 export { default as DateInput } from './DateInput';

@@ -17,9 +17,10 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
       <div className="tab-tooltip-name-wrapper">
         <span className="tab-tooltip-name">{name}</span>
         <CopyButton
-          className="tab-tooltip-copy"
+          UNSAFE_className="tab-tooltip-copy"
           tooltip="Copy name"
           copy={name}
+          isQuiet
         />
       </div>
       {name !== displayName && Boolean(displayName) && (
