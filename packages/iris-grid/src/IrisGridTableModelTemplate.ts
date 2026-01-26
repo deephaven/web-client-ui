@@ -1901,6 +1901,8 @@ class IrisGridTableModelTemplate<
       });
     } catch (err) {
       log.error('Unable to set ranges', ranges, text, err);
+      // Rethrow the error so it can be displayed by the UI
+      throw err;
     } finally {
       GridRange.forEachCell(ranges, (x, y) => {
         this.clearPendingValue(x, y);
