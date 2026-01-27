@@ -136,7 +136,12 @@ export function ThemeColors(): JSX.Element {
                         {name.endsWith('-hue') || note != null ? (
                           <span>{note ?? value}</span>
                         ) : null}
-                        <CopyButton copy={name} isQuiet />
+                        <CopyButton
+                          copy={name}
+                          isQuiet
+                          // copy button changed size, but don't want to update e2e tests
+                          UNSAFE_style={{ minWidth: 0, width: '30px' }}
+                        />
                       </div>
                     )
                   )}
