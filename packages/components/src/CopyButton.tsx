@@ -41,6 +41,7 @@ function CopyButton({
         <FontAwesomeIcon icon={copied ? vsPassFilled : vsCopy} />
       </Icon>
       {children != null && <Text>{children}</Text>}
+      {/* Assumes children means button has a label, and no longer needs a tooltip */}
       {(children == null || tooltip !== 'Copy') && (
         <Tooltip>{currentTooltip}</Tooltip>
       )}
