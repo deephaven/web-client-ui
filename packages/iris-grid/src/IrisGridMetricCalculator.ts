@@ -232,9 +232,17 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
       !deepEqual(headerGroupNames, this.cachedHeaderGroupNames)
     ) {
       this.resetCalculatedColumnWidths();
-      this.cachedPaddingMaps.clear();
     }
     this.cachedHeaderGroupNames = headerGroupNames;
+  }
+
+  resetCalculatedHeaderGroupWidths(): void {
+    this.cachedPaddingMaps.clear();
+  }
+
+  resetCalculatedColumnWidths(): void {
+    super.resetCalculatedColumnWidths();
+    this.resetCalculatedHeaderGroupWidths();
   }
 
   getGridY(state: IrisGridMetricState): number {
