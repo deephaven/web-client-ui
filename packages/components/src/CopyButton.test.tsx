@@ -81,6 +81,14 @@ it('hides tooltip when children are provided and tooltip is default', () => {
   expect(container.querySelector('[class*="Tooltip"]')).toBeNull();
 });
 
+it('shows "Copied" tooltip when children are provided and copied is true', () => {
+  mockCopied = true;
+  makeCopyButton({ children: 'Copy Label' });
+
+  // "Copied" tooltip should show even with children because it differs from default
+  expect(screen.getByRole('button', { name: 'Copied' })).toBeInTheDocument();
+});
+
 it('shows tooltip when children are provided but tooltip is custom', () => {
   makeCopyButton({ children: 'Copy Label', tooltip: 'Custom tooltip' });
 

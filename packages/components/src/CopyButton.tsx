@@ -5,6 +5,8 @@ import { useCopyToClipboard } from '@deephaven/react-hooks';
 import { ActionButton, Icon, Text, type ActionButtonProps } from './spectrum';
 import { Tooltip } from './popper';
 
+const DEFAULT_TOOLTIP = 'Copy';
+
 export interface CopyButtonProps
   extends Omit<ActionButtonProps, 'aria-label' | 'onPress'> {
   /** The value to copy when clicked, accepts string or function returning a string. */
@@ -18,7 +20,7 @@ export interface CopyButtonProps
  */
 function CopyButton({
   copy,
-  tooltip = 'Copy',
+  tooltip = DEFAULT_TOOLTIP,
   children,
   ...rest
 }: CopyButtonProps): JSX.Element {
@@ -42,7 +44,7 @@ function CopyButton({
       </Icon>
       {children != null && <Text>{children}</Text>}
       {/* Assumes children means button has a label, and no longer needs a tooltip */}
-      {(children == null || tooltip !== 'Copy') && (
+      {(children == null || currentTooltip !== DEFAULT_TOOLTIP) && (
         <Tooltip>{currentTooltip}</Tooltip>
       )}
     </ActionButton>
