@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.42](https://github.com/deephaven/web-client-ui/compare/v0.85.41...v0.85.42) (2026-01-29)
+
+**Note:** Version bump only for package @deephaven/plugin
+
 ## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
 
 **Note:** Version bump only for package @deephaven/plugin

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.42](https://github.com/deephaven/web-client-ui/compare/v0.85.41...v0.85.42) (2026-01-29)
+
+### Bug Fixes
+
+- DH-21407: Dehydrate/hydrate pending data correctly ([#2606](https://github.com/deephaven/web-client-ui/issues/2606)) ([#2609](https://github.com/deephaven/web-client-ui/issues/2609)) ([06638d4](https://github.com/deephaven/web-client-ui/commit/06638d4e2a911c7458b98f6b94aad632563ebcf0))
+
 ## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
 
 ### ⚠ BREAKING CHANGES
