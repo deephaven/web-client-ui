@@ -1,53 +1,56 @@
-import React from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsPassFilled, vsCopy } from '@deephaven/icons';
 import { useCopyToClipboard } from '@deephaven/react-hooks';
-import Button, { type ButtonKind } from './Button';
+import { ActionButton, Icon, Text, type ActionButtonProps } from './spectrum';
+import { Tooltip } from './popper';
 
-type CopyButtonProps = {
+const DEFAULT_TOOLTIP = 'Copy';
+
+export interface CopyButtonProps
+  extends Omit<ActionButtonProps, 'aria-label' | 'onPress'> {
   /** The value to copy when clicked, accepts string or function returning a string. */
   copy: string | (() => string);
-  /** The kind of button */
-  kind?: ButtonKind;
-  /** Optional tooltip label ex. 'Copy column name' */
+  /** Optional tooltip label ex. 'Copy column name'. Defaults to 'Copy'. */
   tooltip?: string;
-  /** Optional extra classname */
-  className?: string;
-  /** Optional extra styles */
-  style?: React.CSSProperties;
-  /** Optional extra testid */
-  'data-testid'?: string;
-  /** Optional button children */
-  children?: React.ReactNode;
-};
+}
 
 /**
  * Button that has a copy icon, and copies text to a clipboard when clicked.
  */
 function CopyButton({
   copy,
-  kind = 'ghost',
-  tooltip = 'Copy',
-  className,
-  style,
-  'data-testid': dataTestId,
+  tooltip = DEFAULT_TOOLTIP,
   children,
+  ...rest
 }: CopyButtonProps): JSX.Element {
   const [copied, copyToClipboard] = useCopyToClipboard();
+  const currentTooltip = copied ? 'Copied' : tooltip;
+
   return (
-    <Button
-      kind={kind}
-      className={className}
-      style={style}
-      data-testid={dataTestId}
-      icon={copied ? vsPassFilled : vsCopy}
-      tooltip={copied ? 'Copied' : tooltip}
-      onClick={() => {
+    <ActionButton
+      {...rest}
+      aria-label={currentTooltip}
+      onPress={() => {
         copyToClipboard(typeof copy === 'function' ? copy() : copy);
       }}
     >
-      {children}
-    </Button>
+      <Icon
+        UNSAFE_className={
+          children == null ? 'action-button-icon-with-tooltip' : undefined
+        }
+      >
+        <FontAwesomeIcon icon={copied ? vsPassFilled : vsCopy} />
+      </Icon>
+      {children != null && <Text>{children}</Text>}
+      {/* Assumes children means button has a label, and no longer needs a tooltip */}
+      {(children == null || currentTooltip !== DEFAULT_TOOLTIP) && (
+        <Tooltip>{currentTooltip}</Tooltip>
+      )}
+    </ActionButton>
   );
 }
+
+CopyButton.displayName = 'CopyButton';
 
 export default CopyButton;

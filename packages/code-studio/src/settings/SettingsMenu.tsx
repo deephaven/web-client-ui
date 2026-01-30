@@ -394,8 +394,6 @@ export class SettingsMenu extends Component<
                         )}
                       </div>
                       <CopyButton
-                        kind="inline"
-                        tooltip="Copy version numbers"
                         copy={Object.entries({
                           ...versionInfo,
                           ...pluginInfo,
@@ -403,7 +401,7 @@ export class SettingsMenu extends Component<
                           .map(([key, value]) => `${key}: ${value}`)
                           .join('\n')}
                       >
-                        Copy Versions
+                        Copy Versions{' '}
                         <small className="text-muted">({copyShortcut})</small>
                       </CopyButton>
                     </Content>

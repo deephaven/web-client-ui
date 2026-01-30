@@ -39,7 +39,7 @@ const ConsoleHistoryItemActions = memo(
 
     return (
       <div className={classNames('console-history-actions', actionBarClass)}>
-        <CopyButton copy={item.command ?? ''} kind="inline" />
+        {item.command != null && <CopyButton copy={item.command} />}
         <Button
           icon={vsDebugRerun}
           kind="inline"

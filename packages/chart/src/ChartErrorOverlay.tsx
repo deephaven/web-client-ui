@@ -25,7 +25,11 @@ function ChartErrorOverlay({
       <div className="chart-panel-overlay-content chart-error-overlay-content">
         <div className="info-message" data-testid={messageTestId}>
           {errorMessage}
-          <CopyButton copy={errorMessage} style={{ margin: '0' }} />
+          <CopyButton
+            copy={errorMessage}
+            UNSAFE_style={{ margin: '0' }}
+            isQuiet
+          />
         </div>
         <div>
           {onCancel && (

@@ -78,7 +78,7 @@ export function ThemeColors(): JSX.Element {
                         <Tooltip interactive>
                           <TooltipContent name={name} value={value} />
                         </Tooltip>
-                        {name && <CopyButton copy={name} />}
+                        {name && <CopyButton copy={name} isQuiet />}
                       </div>
                     ))}
                   </Fragment>
@@ -136,7 +136,7 @@ export function ThemeColors(): JSX.Element {
                         {name.endsWith('-hue') || note != null ? (
                           <span>{note ?? value}</span>
                         ) : null}
-                        <CopyButton copy={name} />
+                        <CopyButton copy={name} isQuiet />
                       </div>
                     )
                   )}
