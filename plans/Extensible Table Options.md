@@ -29,7 +29,7 @@ This prevents plugins from providing their own table transformation options.
 
 ### Desired State
 
-At a minimum, we want to enable plugins to register custom Table Options menu items for `IrisGrid` at runtime without modifying the `IrisGrid` code. Same custom menu configuration should be usable with `UI.Table` component.
+At a minimum, we want to enable plugins to register custom Table Options menu items for `IrisGrid` at runtime without modifying the `IrisGrid` code. Same custom menu configuration should be usable with `ui.table` component.  
 
 Table Options menu consists of the menu screen (potentially nested), and an optional configuration UI rendered when an item is selected. See if we can use Adobe Spectrum menu components for the menu screen.
 
@@ -59,7 +59,7 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 
    - Convert the existing built-in Table Options menu to use the new extensible architecture
 
-   - TBD: Could the plugins wrap the `IrisGrid` component and pass options via props? See if multiple plugins can handle the same widget type and create a chain of modification of the options list.
+   - The plugins should implement the Middleware pattern. Currently, we only allow one plugin per widget type and ignore any subsequent plugins of the same type. Update the WidgetLoaderPlugin to check if the subsequent plugins define the middleware interface and chain them together if so. The order of execution should be defined by the plugin registration order.
 
    - Pass the built-in options to the plugins so they can extend/modify/hide them if needed; return the original list by default
 
@@ -77,9 +77,11 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 ### Risks
 
 ### Out of Scope / Limitations
-1. **Pivot Builder** - Future work to make it a plugin using the new architecture.Focus on the extensible architecture for now.
+1. **Convert Table Options** to use Spectrum menu components - Future work.
 
-2. **UI.Table support** - Future work.
+2. **Pivot Builder** - Future work to make it a plugin using the new architecture.Focus on the extensible architecture for now.
+
+3. **UI.Table support** - Future work.
 
 
 ---
@@ -87,8 +89,8 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 ## Technical Design
 
 ### Architecture Overview
+  - Plugin chaining mechanism - middleware pattern
 TBD:
-  - Plugin chaining mechanism
   - State access/update interface
   - `OptionItem` interface - menu item renderer, configuration UI, behavior
   - `OptionsMenuModifier` function signature
@@ -110,9 +112,12 @@ TBD:
 ## Development Plan
 
 ### Phase 1: 
-- Investigate if plugin chains are possible on the same widget type
-- Investigate Widget vs Panel plugins, support for core plugins in Enterprise
-- Research Adobe Spectrum menu components
+- [x] Investigate if plugin chains are possible on the same widget type
+  - Yes, we can chain plugins implementing a middleware interface. The order of execution is determined by the registration order.
+- [x] Investigate Widget vs Panel plugins, support for core plugins in Enterprise
+  - Enterprise supports widget plugins via WidgetPluginLoader in GrizzlyPlus. Grizzly does not have a similar mechanism for panel plugins, support for panel plugins is out of scope for now.
+- [x] Research Adobe Spectrum menu components
+  - Skipping conversion for now.
 
 
 ### Phase 2:
