@@ -7,6 +7,8 @@ import {
 } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { vsGear, vsInfo } from '@deephaven/icons';
+import { OptionType, type OptionItem } from '@deephaven/iris-grid';
 
 const log = Log.module('GridMiddlewarePlugin');
 
@@ -87,7 +89,37 @@ function GridPanelMiddleware({
     };
   }, [Component, props]);
 
-  // Example: You could add context providers, additional state, or UI elements here
+  // Example: Additional menu options injected by middleware
+  const additionalMenuOptions = useMemo<OptionItem[]>(
+    () => [
+      {
+        type: OptionType.CUSTOM_COLUMN_BUILDER, // Reuse existing type for demo
+        title: 'Middleware Option 1',
+        subtitle: 'Added by middleware plugin',
+        icon: vsGear,
+        onChange: () => {
+          log.info('Middleware Option 1 clicked!');
+        },
+      },
+      {
+        type: OptionType.CUSTOM_COLUMN_BUILDER,
+        title: 'Middleware Option 2',
+        subtitle: 'Another middleware option',
+        icon: vsInfo,
+        onChange: () => {
+          log.info('Middleware Option 2 clicked!');
+        },
+      },
+    ],
+    []
+  );
+
+  // Cast Component to accept additionalMenuOptions since we know
+  // it will be IrisGridPanel which supports this prop
+  const EnhancedComponent = Component as React.ComponentType<
+    typeof props & { additionalMenuOptions?: OptionItem[] }
+  >;
+
   const middlewareStyle = useMemo(
     () => ({
       display: 'flex',
@@ -108,8 +140,11 @@ function GridPanelMiddleware({
   return (
     <div style={middlewareStyle} data-testid="grid-middleware-wrapper">
       <div style={middlewareMessageStyle}>Middleware plugin wrapping panel</div>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-      <Component {...props} />
+      <EnhancedComponent
+        /* eslint-disable-next-line react/jsx-props-no-spreading */
+        {...props}
+        additionalMenuOptions={additionalMenuOptions}
+      />
     </div>
   );
 }

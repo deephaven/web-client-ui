@@ -48,6 +48,7 @@ import {
   type IrisGridRenderer,
   type MouseHandlersProp,
   type GetMetricCalculatorType,
+  type OptionItem,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -164,6 +165,9 @@ export interface OwnProps extends DashboardPanelProps {
   renderer?: IrisGridRenderer;
 
   getMetricCalculator?: GetMetricCalculatorType;
+
+  /** Additional menu options to append to the Table Options menu */
+  additionalMenuOptions?: readonly OptionItem[];
 }
 
 interface StateProps {
@@ -1152,6 +1156,7 @@ export class IrisGridPanel extends PureComponent<
       settings,
       getMetricCalculator,
       theme,
+      additionalMenuOptions,
     } = this.props;
     const {
       advancedFilters,
@@ -1288,6 +1293,7 @@ export class IrisGridPanel extends PureComponent<
             theme={theme}
             columnHeaderGroups={columnHeaderGroups}
             getMetricCalculator={getMetricCalculator}
+            additionalMenuOptions={additionalMenuOptions}
           >
             {childrenContent}
           </IrisGrid>
