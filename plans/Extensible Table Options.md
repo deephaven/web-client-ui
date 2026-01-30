@@ -118,6 +118,19 @@ TBD:
   - Enterprise supports widget plugins via WidgetPluginLoader in GrizzlyPlus. Grizzly does not have a similar mechanism for panel plugins, support for panel plugins is out of scope for now.
 - [x] Research Adobe Spectrum menu components
   - Skipping conversion for now.
+- [x] Implement middleware interface in WidgetPlugin type
+  - Added `WidgetMiddlewarePlugin` interface with `isMiddleware: true` marker
+  - Added `WidgetMiddlewareComponentProps` and `WidgetMiddlewarePanelProps` for middleware components
+  - Added `isWidgetMiddlewarePlugin()` type guard
+- [x] Implement plugin chain support in WidgetLoaderPlugin
+  - Updated `supportedTypes` logic to collect middleware plugins instead of replacing
+  - Added `createChainedComponent()` and `createChainedPanelComponent()` helper functions
+  - Middleware is chained in registration order (first registered = outermost wrapper)
+  - Middleware registered before or after base plugin is correctly applied
+  - Middleware-only registrations (no base plugin) are gracefully ignored
+- [x] Add unit tests for middleware chaining
+  - Added type guard tests in `PluginTypes.test.ts`
+  - Added 5 middleware chaining tests in `WidgetLoaderPlugin.test.tsx`
 
 
 ### Phase 2:
