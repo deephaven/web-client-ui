@@ -568,6 +568,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   constructor(props: IrisGridProps) {
     super(props);
 
+    console.log('[0] IrisGrid props:', props);
+
     this.handleAdvancedFilterChange =
       this.handleAdvancedFilterChange.bind(this);
     this.handleAdvancedFilterSortChange =
