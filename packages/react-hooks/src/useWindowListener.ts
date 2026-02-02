@@ -17,9 +17,12 @@ export function useWindowListener(
     () => (typeof events === 'string' ? [events] : events),
     [events]
   );
+
   useEffect(() => {
     eventsArray.forEach(e => window.addEventListener(e, callback, options));
     return () =>
-      eventsArray.forEach(e => window.removeEventListener(e, callback));
+      eventsArray.forEach(e =>
+        window.removeEventListener(e, callback, options)
+      );
   }, [eventsArray, callback, options]);
 }

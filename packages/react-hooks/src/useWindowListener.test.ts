@@ -58,6 +58,37 @@ describe('useWindowListener', () => {
     );
   });
 
+  it('should pass options to removeEventListener on unmount', () => {
+    const options = { passive: true, capture: false };
+    const { unmount } = renderHook(() =>
+      useWindowListener('scroll', mockCallback, options)
+    );
+
+    jest.clearAllMocks();
+    unmount();
+
+    expect(window.removeEventListener).toHaveBeenCalledWith(
+      'scroll',
+      mockCallback,
+      options
+    );
+  });
+
+  it('should pass boolean options to removeEventListener on unmount', () => {
+    const { unmount } = renderHook(() =>
+      useWindowListener('click', mockCallback, true)
+    );
+
+    jest.clearAllMocks();
+    unmount();
+
+    expect(window.removeEventListener).toHaveBeenCalledWith(
+      'click',
+      mockCallback,
+      true
+    );
+  });
+
   it('should remove event listener on unmount for single event', () => {
     const { unmount } = renderHook(() =>
       useWindowListener('resize', mockCallback)
@@ -68,7 +99,8 @@ describe('useWindowListener', () => {
 
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'resize',
-      mockCallback
+      mockCallback,
+      undefined
     );
   });
 
@@ -84,7 +116,8 @@ describe('useWindowListener', () => {
     events.forEach(event => {
       expect(window.removeEventListener).toHaveBeenCalledWith(
         event,
-        mockCallback
+        mockCallback,
+        undefined
       );
     });
   });
@@ -100,7 +133,8 @@ describe('useWindowListener', () => {
 
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'resize',
-      mockCallback
+      mockCallback,
+      undefined
     );
     expect(window.addEventListener).toHaveBeenCalledWith(
       'scroll',
@@ -120,7 +154,8 @@ describe('useWindowListener', () => {
 
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'resize',
-      mockCallback
+      mockCallback,
+      undefined
     );
     expect(window.addEventListener).toHaveBeenCalledWith(
       'scroll',
@@ -146,7 +181,8 @@ describe('useWindowListener', () => {
 
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'resize',
-      mockCallback
+      mockCallback,
+      undefined
     );
     expect(window.addEventListener).toHaveBeenCalledWith(
       'resize',
@@ -166,7 +202,8 @@ describe('useWindowListener', () => {
 
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'scroll',
-      mockCallback
+      mockCallback,
+      { passive: true }
     );
     expect(window.addEventListener).toHaveBeenCalledWith(
       'scroll',
@@ -210,7 +247,8 @@ describe('useWindowListener', () => {
     // Should re-register because events array reference changed
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'resize',
-      mockCallback
+      mockCallback,
+      undefined
     );
     expect(window.addEventListener).toHaveBeenCalledWith(
       'resize',
