@@ -8,7 +8,7 @@ import { useMemo, useEffect } from 'react';
  * @param callback Event handler function
  * @param options Options to pass to addEventListener
  */
-export function useWindowListener(
+export default function useWindowListener(
   events: string | readonly string[],
   callback: (e: Event) => void,
   options?: boolean | AddEventListenerOptions

@@ -38,4 +38,4 @@ export * from './useWindowedListData';
 export * from './useResizeObserver';
 export * from './useMergeRef';
 export * from './useUndoRedo';
-export * from './useWindowListener';
+export { default as useWindowListener } from './useWindowListener';
