@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useWindowListener } from './useWindowListener';
+import useWindowListener from './useWindowListener';
 
 const mockCallback = jest.fn();
 
