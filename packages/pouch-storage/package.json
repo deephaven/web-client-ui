@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/pouch-storage",
-  "version": "1.12.1",
+  "version": "1.13.0",
   "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
