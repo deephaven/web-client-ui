@@ -14,7 +14,7 @@ import { useResizeObserver } from '@deephaven/react-hooks';
 import './layout/GoldenLayout.scss';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
-import DashboardLayout from './DashboardLayout';
+import DashboardLayout, { type DashboardLayoutConfig } from './DashboardLayout';
 import {
   type PanelDehydrateFunction,
   type PanelHydrateFunction,
@@ -37,7 +37,7 @@ export type DashboardProps = {
   emptyDashboard?: React.ReactNode;
   layoutConfig?: ItemConfig[];
   layoutSettings?: Partial<Settings>;
-  onLayoutConfigChange?: () => void;
+  onLayoutConfigChange?: (dehydratedLayout: DashboardLayoutConfig) => void;
   onGoldenLayoutChange?: (goldenLayout: GoldenLayout) => void;
   onLayoutInitialized?: () => void;
   fallbackComponent?: ForwardRefExoticComponent<
