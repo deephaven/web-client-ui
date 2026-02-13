@@ -369,6 +369,9 @@ export interface IrisGridProps {
 
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
 
+  /** Additional menu options to append to the Table Options menu */
+  additionalMenuOptions?: readonly OptionItem[];
+
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
   mouseHandlers: MouseHandlersProp;
@@ -558,6 +561,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // Do not set a default density prop since we need to know if it overrides the global density setting
     density: undefined,
     canToggleSearch: true,
+    additionalMenuOptions: EMPTY_ARRAY,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
     getMetricCalculator: (
@@ -4958,7 +4962,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    const optionItems = this.getCachedOptionItems(
+    const baseOptionItems = this.getCachedOptionItems(
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
@@ -4977,6 +4981,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown,
       advancedSettings.size > 0
     );
+
+    const { additionalMenuOptions } = this.props;
+    const optionItems =
+      additionalMenuOptions != null && additionalMenuOptions.length > 0
+        ? [...baseOptionItems, ...additionalMenuOptions]
+        : baseOptionItems;
 
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
