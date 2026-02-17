@@ -9,7 +9,7 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
 
   // Convert PascalCase to Title Case
   // ex. PartitionedTable -> Partitioned Table
-  const formattedType = type.replace(/([a-z])([A-Z])/g, '$1 $2');
+  const formattedType = type?.replace(/([a-z])([A-Z])/g, '$1 $2') ?? '';
 
   return (
     <div className="tab-tooltip-grid-container">

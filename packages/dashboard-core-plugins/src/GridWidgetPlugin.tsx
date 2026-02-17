@@ -159,8 +159,6 @@ export function GridWidgetPlugin({
     );
   }
 
-  console.log('[0]');
-
   assertNotNull(model, 'Model should be defined when fetch is successful');
 
   return (
