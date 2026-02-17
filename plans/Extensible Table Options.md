@@ -111,48 +111,49 @@ TBD:
 
 ## Development Plan
 
-### Phase 1: 
+### Phase 1: Middleware Plugin Infrastructure ✅
 - [x] Investigate if plugin chains are possible on the same widget type
   - Yes, we can chain plugins implementing a middleware interface. The order of execution is determined by the registration order.
 - [x] Investigate Widget vs Panel plugins, support for core plugins in Enterprise
   - Enterprise supports widget plugins via WidgetPluginLoader in GrizzlyPlus. Grizzly does not have a similar mechanism for panel plugins, support for panel plugins is out of scope for now.
 - [x] Research Adobe Spectrum menu components
   - Skipping conversion for now.
-- [x] Implement middleware interface in WidgetPlugin type
+- [x] Implement middleware interface in WidgetPlugin type (`packages/plugin/src/PluginTypes.ts`)
   - Added `WidgetMiddlewarePlugin` interface with `isMiddleware: true` marker
   - Added `WidgetMiddlewareComponentProps` and `WidgetMiddlewarePanelProps` for middleware components
   - Added `isWidgetMiddlewarePlugin()` type guard
-- [x] Implement plugin chain support in WidgetLoaderPlugin
+- [x] Implement plugin chain support in WidgetLoaderPlugin (`packages/dashboard-core-plugins/src/WidgetLoaderPlugin.tsx`)
   - Updated `supportedTypes` logic to collect middleware plugins instead of replacing
   - Added `createChainedComponent()` and `createChainedPanelComponent()` helper functions
   - Middleware is chained in registration order (first registered = outermost wrapper)
   - Middleware registered before or after base plugin is correctly applied
   - Middleware-only registrations (no base plugin) are gracefully ignored
 - [x] Add unit tests for middleware chaining
-  - Added type guard tests in `PluginTypes.test.ts`
+  - Added 4 type guard tests in `PluginTypes.test.ts`
   - Added 5 middleware chaining tests in `WidgetLoaderPlugin.test.tsx`
+- [x] Create example middleware plugin (`packages/dashboard-core-plugins/src/GridMiddlewarePlugin.tsx`)
+  - Demonstrates component and panel middleware for Table/TreeTable/HierarchicalTable/PartitionedTable
+  - Shows how to inject `additionalMenuOptions` prop into wrapped panel
+  - Registered in `code-studio` and `embed-widget` for testing
 
 
-### Phase 2:
-- If chains are not possible, update the plugin registration mechanism. Introduce plugin priority/order of execution
-- Implement a plugin wrapping the core GridPanel or GridWidget
-- Define IrisGrid state access/update interface for built-in options
-- Convert built-in Table Options to use the interface for updates
-- Define the interface for built-in Table Options menu items
-- Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements
+### Phase 2: IrisGrid State Interface & Menu Options
+- [ ] Define IrisGrid state access/update interface for built-in options
+- [ ] Convert built-in Table Options to use the interface for updates
+- [ ] Define the interface for built-in Table Options menu items (`OptionItem` enhancements)
+- [ ] Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements
+- [ ] Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system
+- [ ] Pass the built-in menu to the modifier function if defined, and render the result
+- [ ] Test show/hide/re-order/add functionality for menu options with a sample plugin
 
 
-### Phase 3:
-- Convert the menu items to Spectrum components
-- Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system. Pass the built-in menu to the modifier function if defined, and render the result
-- Test show/hide/re-order/add functionality for menu options with a sample plugin
-
-### Phase 3:
-- Clean up the example plugin, add tests
-- Add examples based on different Spectrum menu components
-- Add persistence example
-- Add another plugin to demonstrate chaining with configurable order of execution
-- Write documentation for the new extensible Table Options menu architecture
+### Phase 3: Examples, Documentation & Polish
+- [ ] Clean up the example plugin (GridMiddlewarePlugin), add tests
+- [ ] Add examples based on different Spectrum menu components (optional)
+- [ ] Add persistence example using `usePersistentState`
+- [ ] Add another plugin to demonstrate chaining with configurable order of execution
+- [ ] Write documentation for the new extensible Table Options menu architecture
+- [ ] Convert the menu items to Spectrum components (optional, future work)
 
 ---
 
@@ -160,10 +161,11 @@ TBD:
 
 ### Deliverables
 
-| Phase | Deliverables | Timeline |
-|-------|--------------|----------|
-| 1 | Updated IrisGrid package. Tests. | Week 1-2 |
-| 2 | Documentation, example plugins. | Week 2 |
+| Phase | Deliverables | Status |
+|-------|--------------|--------|
+| 1 | Middleware plugin infrastructure, chaining, tests, example plugin | ✅ Complete |
+| 2 | IrisGrid state interface, menu options modifier, built-in options refactor | 🔲 Not started |
+| 3 | Documentation, additional examples, polish | 🔲 Not started |
 
 ### Testing Strategy
 
@@ -180,8 +182,8 @@ TBD:
 - [ ] Plugins can register custom options without code changes
 - [ ] Custom options appear in menu and render correctly
 - [ ] Custom options can modify IrisGrid state
-- [ ] Approach is generic and reusable
+- [x] Approach is generic and reusable (middleware pattern implemented)
 - [ ] All existing built-in options work unchanged
 - [ ] XX% test coverage
-- [ ] Minimal breaking changes
+- [x] Minimal breaking changes (Phase 1 introduces additive interfaces only)
 - [ ] Documentation complete with examples
