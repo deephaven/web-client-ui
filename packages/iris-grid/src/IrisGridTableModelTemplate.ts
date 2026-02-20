@@ -45,6 +45,7 @@ import {
 import { type IrisGridThemeType } from './IrisGridTheme';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
+import { GridCommitError } from './GridCommitError';
 
 const log = Log.module('IrisGridTableModelTemplate');
 
@@ -1901,6 +1902,12 @@ class IrisGridTableModelTemplate<
       });
     } catch (err) {
       log.error('Unable to set ranges', ranges, text, err);
+      // Rethrow the error so it can be displayed by the UI
+      throw new GridCommitError('Unable to set ranges', {
+        ranges,
+        text,
+        cause: err,
+      });
     } finally {
       GridRange.forEachCell(ranges, (x, y) => {
         this.clearPendingValue(x, y);

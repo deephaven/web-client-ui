@@ -63,6 +63,17 @@
 
       .error-view-copy-button {
         min-width: 3rem;
+        border-radius: 0;
+        color: var(--dh-color-contrast-dark);
+        opacity: 0.8;
+        padding: $spacer-1;
+
+        --spectrum-actionbutton-background-color: var(--dh-color-negative-bg);
+        --spectrum-actionbutton-background-color-hover: var(
+          --dh-color-negative-hover-bg
+        );
+        --spectrum-actionbutton-border-color: transparent;
+        --spectrum-actionbutton-border-color-hover: transparent;
       }
     }
   }

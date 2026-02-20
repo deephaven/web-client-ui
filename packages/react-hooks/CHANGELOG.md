@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.0](https://github.com/deephaven/web-client-ui/compare/v1.13.0...v1.14.0) (2026-02-13)
+
+### Features
+
+- DH-21211: Adding window listener hook ([#2620](https://github.com/deephaven/web-client-ui/issues/2620)) ([295322f](https://github.com/deephaven/web-client-ui/commit/295322fccfb4895c8e247bbb38de343a3ed49d75))
+
 ## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
 
 **Note:** Version bump only for package @deephaven/react-hooks

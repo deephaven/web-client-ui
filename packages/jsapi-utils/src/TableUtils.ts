@@ -1852,12 +1852,13 @@ export class TableUtils {
    */
   async applyFilter<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    filters: DhType.FilterCondition[],
+    filters: readonly DhType.FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
     return TableUtils.executeAndWaitForEvent(
-      t => t?.applyFilter(filters),
+      // TODO: #21450 Update JS API to accept readonly arrays
+      t => t?.applyFilter(filters as DhType.FilterCondition[]),
       table,
       dh.Table.EVENT_FILTERCHANGED,
       timeout
@@ -1875,12 +1876,13 @@ export class TableUtils {
    */
   async applySort<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    sorts: DhType.Sort[],
+    sorts: readonly DhType.Sort[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
     return TableUtils.executeAndWaitForEvent(
-      t => t?.applySort(sorts),
+      // TODO: #21450 Update JS API to accept readonly arrays
+      t => t?.applySort(sorts as DhType.Sort[]),
       table,
       dh.Table.EVENT_SORTCHANGED,
       timeout

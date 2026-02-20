@@ -18,12 +18,6 @@ Start watch server with `npm start`
 This will recompile the files to dist and css on change.
 The package must be consumed to see changes (such as in code-studio)
 
-## Testing
-
-`npm test` runs tests in a watch mode. The browser spawned by Karma might crash on some changes though.
-
-`npm run test:ci` runs tests onces and closes the test browser.
-
 ## Features
 
 - Native popup windows

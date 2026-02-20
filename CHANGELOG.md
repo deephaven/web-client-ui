@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.0](https://github.com/deephaven/web-client-ui/compare/v1.13.0...v1.14.0) (2026-02-13)
+
+### Features
+
+- DH-21211: Adding window listener hook ([#2620](https://github.com/deephaven/web-client-ui/issues/2620)) ([295322f](https://github.com/deephaven/web-client-ui/commit/295322fccfb4895c8e247bbb38de343a3ed49d75))
+
+### Bug Fixes
+
+- Typing for onLayoutConfigChange ([#2622](https://github.com/deephaven/web-client-ui/issues/2622)) ([83ae200](https://github.com/deephaven/web-client-ui/commit/83ae200bc91bd548b654b966dd16cdf7c17becc3))
+
+## [1.13.0](https://github.com/deephaven/web-client-ui/compare/v1.12.1...v1.13.0) (2026-02-03)
+
+### ⚠ BREAKING CHANGES
+
+- matching PR for enterprise is up as draft.
+- Copy buttons default styling is now the same as a
+  default ActionButton, add the isQuiet prop to match previous default
+  styling.
+
+### Features
+
+- DH-21234: Display Simple Input Table Errors ([#2615](https://github.com/deephaven/web-client-ui/issues/2615)) ([39bee3e](https://github.com/deephaven/web-client-ui/commit/39bee3e9aecc9ad1dc6309d75862704fd4e4a0db))
+- Migrate CopyButton to use ActionButton as base ([#2616](https://github.com/deephaven/web-client-ui/issues/2616)) ([24f4580](https://github.com/deephaven/web-client-ui/commit/24f4580b84dce07c300f4bfeab99b700d7a81476))
+
+## [1.12.1](https://github.com/deephaven/web-client-ui/compare/v1.12.0...v1.12.1) (2026-01-28)
+
+### Bug Fixes
+
+- readonly type changes ([#2610](https://github.com/deephaven/web-client-ui/issues/2610)) ([e5b4de0](https://github.com/deephaven/web-client-ui/commit/e5b4de0f53e6c2c576b0b78583ec1b9e9de00d50))
+
+## [1.12.0](https://github.com/deephaven/web-client-ui/compare/v1.11.0...v1.12.0) (2026-01-21)
+
+### Features
+
+- DH-20363: Pivot filter support ([#2602](https://github.com/deephaven/web-client-ui/issues/2602)) ([ec1192b](https://github.com/deephaven/web-client-ui/commit/ec1192b5777de2a343452f5855cd46ff2a8b2d0a))
+- DH-21259: Add map_style to theme ([#2605](https://github.com/deephaven/web-client-ui/issues/2605)) ([ff7b424](https://github.com/deephaven/web-client-ui/commit/ff7b4248f6b39550361ebb5d3c0295246c6f99b5))
+
+### Bug Fixes
+
+- DH-21027: Adjust setting menu header for proper contrast ([#2601](https://github.com/deephaven/web-client-ui/issues/2601)) ([1af8bc2](https://github.com/deephaven/web-client-ui/commit/1af8bc2fb9a8b1bc840f21c74c2539b60bbba8bc))
+- DH-21367: Fix shifting header group text ([#2603](https://github.com/deephaven/web-client-ui/issues/2603)) ([1b517d6](https://github.com/deephaven/web-client-ui/commit/1b517d6e1f0b03a3ee09d2694b9830263632f84c))
+- DH-21407: Dehydrate/hydrate pending data correctly ([#2606](https://github.com/deephaven/web-client-ui/issues/2606)) ([11df934](https://github.com/deephaven/web-client-ui/commit/11df934c510da8e6a61680391775a059132ac938))
+
 ## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
 
 ### ⚠ BREAKING CHANGES

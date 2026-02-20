@@ -63,9 +63,8 @@ function ErrorView({
         </div>
         <div className="error-view-buttons">
           <CopyButton
-            kind="danger"
-            className="error-view-copy-button"
-            tooltip="Copy exception contents"
+            UNSAFE_className="error-view-copy-button"
+            tooltip="Copy error contents"
             copy={`${type}: ${message}`.trim()}
           />
           {(isExpandable || isExpanded) && !isExpandedProp && (

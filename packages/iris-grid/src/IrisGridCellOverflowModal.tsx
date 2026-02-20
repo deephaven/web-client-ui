@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Editor } from '@deephaven/console';
 import type * as monaco from 'monaco-editor';
 import {
-  Button,
   CopyButton,
+  Icon,
   Modal,
   ModalBody,
   ModalHeader,
+  ToggleButton,
+  Tooltip,
 } from '@deephaven/components';
 import { vsJson, vsListOrdered } from '@deephaven/icons';
 import './IrisGridCellOverflowModal.scss';
@@ -137,25 +140,30 @@ export default function IrisGridCellOverflowModal({
       <ModalHeader toggle={onClose}>
         <h5 className="overflow-modal-title">Cell Contents</h5>
         <CopyButton
-          kind="inline"
           tooltip="Copy cell contents"
           copy={editorRef.current?.getValue() ?? text}
         />
-        <Button
-          kind="inline"
-          active={showLineNumbers}
-          icon={vsListOrdered}
-          tooltip="Toggle line numbers"
-          onClick={toggleLineNumbers}
-        />
+        <ToggleButton
+          isSelected={showLineNumbers}
+          aria-label="Toggle line numbers"
+          onChange={toggleLineNumbers}
+        >
+          <Icon UNSAFE_className="action-button-icon-with-tooltip">
+            <FontAwesomeIcon icon={vsListOrdered} />
+          </Icon>
+          <Tooltip>Toggle line numbers</Tooltip>
+        </ToggleButton>
         {canFormat && (
-          <Button
-            kind="inline"
-            icon={vsJson}
-            active={isFormatted}
-            tooltip="Format as JSON"
-            onClick={formatAsJSON}
-          />
+          <ToggleButton
+            isSelected={isFormatted}
+            aria-label="Format as JSON"
+            onChange={formatAsJSON}
+          >
+            <Icon UNSAFE_className="action-button-icon-with-tooltip">
+              <FontAwesomeIcon icon={vsJson} />
+            </Icon>
+            <Tooltip>Format as JSON</Tooltip>
+          </ToggleButton>
         )}
       </ModalHeader>
       <ModalBody style={{ height }}>

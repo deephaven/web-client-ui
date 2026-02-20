@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.0](https://github.com/deephaven/web-client-ui/compare/v1.13.0...v1.14.0) (2026-02-13)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [1.13.0](https://github.com/deephaven/web-client-ui/compare/v1.12.1...v1.13.0) (2026-02-03)
+
+### ⚠ BREAKING CHANGES
+
+- matching PR for enterprise is up as draft.
+- Copy buttons default styling is now the same as a
+  default ActionButton, add the isQuiet prop to match previous default
+  styling.
+
+### Features
+
+- Migrate CopyButton to use ActionButton as base ([#2616](https://github.com/deephaven/web-client-ui/issues/2616)) ([24f4580](https://github.com/deephaven/web-client-ui/commit/24f4580b84dce07c300f4bfeab99b700d7a81476))
+
+## [1.12.1](https://github.com/deephaven/web-client-ui/compare/v1.12.0...v1.12.1) (2026-01-28)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [1.12.0](https://github.com/deephaven/web-client-ui/compare/v1.11.0...v1.12.0) (2026-01-21)
+
+### Features
+
+- DH-21259: Add map_style to theme ([#2605](https://github.com/deephaven/web-client-ui/issues/2605)) ([ff7b424](https://github.com/deephaven/web-client-ui/commit/ff7b4248f6b39550361ebb5d3c0295246c6f99b5))
+
+### Bug Fixes
+
+- DH-21027: Adjust setting menu header for proper contrast ([#2601](https://github.com/deephaven/web-client-ui/issues/2601)) ([1af8bc2](https://github.com/deephaven/web-client-ui/commit/1af8bc2fb9a8b1bc840f21c74c2539b60bbba8bc))
+
 ## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
 
 **Note:** Version bump only for package @deephaven/code-studio

@@ -78,14 +78,12 @@ jobs:
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
           npm run test:lint -- --changedSince origin/${{ github.event.pull_request.base.ref }} --cacheDirectory $PWD/.jest-cache
-          npm run test:golden-layout
 
       - name: Unit Test (Push)
         if: ${{ github.event_name == 'push' }}
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
           npm run test:lint -- --lastCommit --cacheDirectory $PWD/.jest-cache
-          npm run test:golden-layout
 
       - name: Codecov report
         uses: codecov/codecov-action@v4

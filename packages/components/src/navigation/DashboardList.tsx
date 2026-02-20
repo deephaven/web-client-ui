@@ -17,7 +17,7 @@ import { GLOBAL_SHORTCUTS } from '../shortcuts';
 
 export interface DashboardListProps {
   onSelect: (tab: NavTabItem) => void;
-  tabs?: NavTabItem[];
+  tabs?: readonly NavTabItem[];
 }
 
 /**

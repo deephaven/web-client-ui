@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.0](https://github.com/deephaven/web-client-ui/compare/v1.12.1...v1.13.0) (2026-02-03)
+
+### Features
+
+- DH-21234: Display Simple Input Table Errors ([#2615](https://github.com/deephaven/web-client-ui/issues/2615)) ([39bee3e](https://github.com/deephaven/web-client-ui/commit/39bee3e9aecc9ad1dc6309d75862704fd4e4a0db))
+
+## [1.12.0](https://github.com/deephaven/web-client-ui/compare/v1.11.0...v1.12.0) (2026-01-21)
+
+### Features
+
+- DH-20363: Pivot filter support ([#2602](https://github.com/deephaven/web-client-ui/issues/2602)) ([ec1192b](https://github.com/deephaven/web-client-ui/commit/ec1192b5777de2a343452f5855cd46ff2a8b2d0a))
+
+### Bug Fixes
+
+- DH-21367: Fix shifting header group text ([#2603](https://github.com/deephaven/web-client-ui/issues/2603)) ([1b517d6](https://github.com/deephaven/web-client-ui/commit/1b517d6e1f0b03a3ee09d2694b9830263632f84c))
+
 ## [1.11.0](https://github.com/deephaven/web-client-ui/compare/v1.10.3...v1.11.0) (2026-01-06)
 
 ### ⚠ BREAKING CHANGES

@@ -217,11 +217,19 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
       )
     ) {
       this.resetCalculatedColumnWidths();
-      this.cachedPaddingMaps.clear();
     }
     this.cachedHeaderGroupNames = model.columnHeaderGroups.map(
       group => group.name
     );
+  }
+
+  resetCalculatedHeaderGroupWidths(): void {
+    this.cachedPaddingMaps.clear();
+  }
+
+  resetCalculatedColumnWidths(): void {
+    super.resetCalculatedColumnWidths();
+    this.resetCalculatedHeaderGroupWidths();
   }
 
   getGridY(state: IrisGridMetricState): number {

@@ -106,6 +106,40 @@ export default class Tab {
   }
 
   /**
+   * Updates the content item this tab is associated with.
+   * Properly transfers event listeners from the old content item to the new one.
+   * @param newContentItem The new content item
+   */
+  setContentItem(newContentItem: AbstractContentItem) {
+    const oldContentItem = this.contentItem;
+
+    // Transfer the 'destroy' listener if dragListener exists
+    if (this._dragListener) {
+      oldContentItem.off(
+        'destroy',
+        this._dragListener.destroy,
+        this._dragListener
+      );
+      newContentItem.on(
+        'destroy',
+        this._dragListener.destroy,
+        this._dragListener
+      );
+    }
+
+    // Transfer 'titleChanged' listener
+    oldContentItem.off('titleChanged', this.setTitle, this);
+    newContentItem.on('titleChanged', this.setTitle, this);
+
+    // Update the reference
+    this.contentItem = newContentItem;
+    newContentItem.tab = this;
+
+    // Update title
+    this.setTitle(newContentItem.config.title);
+  }
+
+  /**
    * Sets this tab's active state. To programmatically
    * switch tabs, use header.setActiveContentItem( item ) instead.
    * @param isActive

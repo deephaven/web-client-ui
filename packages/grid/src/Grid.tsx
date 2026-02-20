@@ -1632,13 +1632,15 @@ class Grid extends PureComponent<GridProps, GridState> {
     row: VisibleIndex,
     value: string
   ): boolean {
-    const { model } = this.props;
+    const { model, onError } = this.props;
     assertIsEditableGridModel(model);
 
     const modelColumn = this.getModelColumn(column);
     const modelRow = this.getModelRow(row);
     if (model.isValidForCell(modelColumn, modelRow, value)) {
-      model.setValueForCell(modelColumn, modelRow, value);
+      model.setValueForCell(modelColumn, modelRow, value).catch(err => {
+        onError(err instanceof Error ? err : new Error(`${err}`));
+      });
       return true;
     }
     return false;
@@ -1650,7 +1652,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param value The value to set on all the ranges
    */
   setValueForRanges(ranges: readonly GridRange[], value: string): void {
-    const { model } = this.props;
+    const { model, onError } = this.props;
     const { movedColumns, movedRows } = this.state;
 
     const modelRanges = GridUtils.getModelRanges(
@@ -1659,7 +1661,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       movedRows
     );
     if (isEditableGridModel(model)) {
-      model.setValueForRanges(modelRanges, value);
+      model.setValueForRanges(modelRanges, value).catch(err => {
+        onError(err instanceof Error ? err : new Error(`${err}`));
+      });
     }
   }
 

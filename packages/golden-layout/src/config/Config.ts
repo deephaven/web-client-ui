@@ -1,10 +1,28 @@
 import type { ItemConfig } from './ItemConfig';
 
+/**
+ * The resolved configuration type with all required fields populated.
+ * This is the type returned by `_createConfig` and used internally.
+ */
 export type Config = {
   settings: Partial<Settings>;
   dimensions: Dimensions;
   labels: Labels;
   content: ItemConfig[];
+  maximisedItemId?: string;
+  openPopouts?: PopoutConfig[];
+};
+
+/**
+ * Input configuration type that allows partial configs.
+ * Users can provide any subset of the configuration, and defaults will be applied.
+ * This is the type accepted by the LayoutManager constructor.
+ */
+export type PartialConfig = {
+  settings?: Partial<Settings>;
+  dimensions?: Partial<Dimensions>;
+  labels?: Partial<Labels>;
+  content?: ItemConfig[];
   maximisedItemId?: string;
   openPopouts?: PopoutConfig[];
 };
