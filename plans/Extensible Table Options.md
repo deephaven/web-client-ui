@@ -90,6 +90,14 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 
 ### Architecture Overview
   - Plugin chaining mechanism - middleware pattern
+  - Custom options use `render` prop on `OptionItem` to provide configuration panels
+  - Custom option types use string values to avoid enum conflicts
+
+### Key Files Changed
+- `packages/iris-grid/src/CommonTypes.tsx` - Extended `OptionItem` type with `render` prop
+- `packages/iris-grid/src/IrisGrid.tsx` - Added support for `render` prop in options switch
+- `packages/dashboard-core-plugins/src/GridMiddlewarePlugin.tsx` - Example middleware with custom config panel
+
 TBD:
   - State access/update interface
   - `OptionItem` interface - menu item renderer, configuration UI, behavior
@@ -137,14 +145,21 @@ TBD:
   - Registered in `code-studio` and `embed-widget` for testing
 
 
-### Phase 2: IrisGrid State Interface & Menu Options
+### Phase 2: IrisGrid State Interface & Menu Options 🔄
 - [ ] Define IrisGrid state access/update interface for built-in options
 - [ ] Convert built-in Table Options to use the interface for updates
-- [ ] Define the interface for built-in Table Options menu items (`OptionItem` enhancements)
+- [x] Define the interface for built-in Table Options menu items (`OptionItem` enhancements)
+  - Extended `OptionItem.type` to accept `OptionType | string` for custom option types
+  - Added optional `render?: () => React.ReactNode` property for custom configuration panels
+  - Updated `IrisGrid.tsx` default case to call `option.render()` when present
 - [ ] Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements
 - [ ] Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system
 - [ ] Pass the built-in menu to the modifier function if defined, and render the result
-- [ ] Test show/hide/re-order/add functionality for menu options with a sample plugin
+- [x] Test show/hide/re-order/add functionality for menu options with a sample plugin
+  - Updated `GridMiddlewarePlugin.tsx` with `MiddlewareConfigPanel` component
+  - Demonstrates SelectDistinct-like configuration panel with a sample button
+  - Uses custom option type `MIDDLEWARE_CUSTOM_OPTION` instead of reusing built-in enum
+  - Panel renders when option is selected and logs to console on button click
 
 
 ### Phase 3: Examples, Documentation & Polish
@@ -164,7 +179,7 @@ TBD:
 | Phase | Deliverables | Status |
 |-------|--------------|--------|
 | 1 | Middleware plugin infrastructure, chaining, tests, example plugin | ✅ Complete |
-| 2 | IrisGrid state interface, menu options modifier, built-in options refactor | 🔲 Not started |
+| 2 | IrisGrid state interface, menu options modifier, built-in options refactor | � In Progress |
 | 3 | Documentation, additional examples, polish | 🔲 Not started |
 
 ### Testing Strategy
@@ -179,8 +194,8 @@ TBD:
 
 ### Success Criteria
 
-- [ ] Plugins can register custom options without code changes
-- [ ] Custom options appear in menu and render correctly
+- [x] Plugins can register custom options without code changes
+- [x] Custom options appear in menu and render correctly
 - [ ] Custom options can modify IrisGrid state
 - [x] Approach is generic and reusable (middleware pattern implemented)
 - [ ] All existing built-in options work unchanged

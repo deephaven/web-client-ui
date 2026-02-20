@@ -1,3 +1,4 @@
+import type React from 'react';
 import {
   type AdvancedFilterOptions,
   type SortDescriptor,
@@ -43,13 +44,28 @@ export type Action = {
 };
 
 export type OptionItem = {
-  type: OptionType;
+  type: OptionType | string;
   title: string;
   subtitle?: string;
   icon?: IconDefinition;
   isOn?: boolean;
   onChange?: () => void;
+  /**
+   * Optional render function for custom option screens.
+   * When provided, this will be called to render the configuration panel
+   * when the option is selected from the menu.
+   */
+  render?: () => React.ReactNode;
 };
+
+/**
+ * Function type for modifying the Table Options menu items.
+ * Receives the current list of options and returns a modified list.
+ * Can be used to add, remove, reorder, or modify options.
+ */
+export type OptionItemsModifier = (
+  options: readonly OptionItem[]
+) => readonly OptionItem[];
 
 export interface UITotalsTableConfig extends dh.TotalsTableConfig {
   operationOrder: AggregationOperation[];
