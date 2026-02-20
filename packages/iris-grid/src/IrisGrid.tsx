@@ -1169,7 +1169,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const advancedFilter = advancedFilters.get(modelColumn);
     const { options: advancedFilterOptions } = advancedFilter || {};
     const sort = TableUtils.getSortForColumn(model.sort, column.name);
-    const sortDirection = sort ? sort.direction : null;
+    const sortDirection = sort ? sort.direction : TableUtils.sortDirection.none;
 
     if (!isSortDirection(sortDirection)) {
       throw new Error(`Invalid sort direction: ${sortDirection}`);
