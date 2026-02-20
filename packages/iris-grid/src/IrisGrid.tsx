@@ -186,6 +186,7 @@ import {
   type IrisGridStateOverride,
   type OperationMap,
   type OptionItem,
+  type OptionItemsModifier,
   type PendingDataErrorMap,
   type PendingDataMap,
   type QuickFilterMap,
@@ -371,6 +372,13 @@ export interface IrisGridProps {
 
   /** Additional menu options to append to the Table Options menu */
   additionalMenuOptions?: readonly OptionItem[];
+
+  /**
+   * Optional function to modify the Table Options menu items.
+   * Receives all options (built-in + additional) and returns a modified list.
+   * Use this to reorder, hide, or modify existing options.
+   */
+  optionsModifier?: OptionItemsModifier;
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
@@ -4982,11 +4990,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedSettings.size > 0
     );
 
-    const { additionalMenuOptions } = this.props;
-    const optionItems =
+    const { additionalMenuOptions, optionsModifier } = this.props;
+    const mergedOptions =
       additionalMenuOptions != null && additionalMenuOptions.length > 0
         ? [...baseOptionItems, ...additionalMenuOptions]
         : baseOptionItems;
+
+    // Apply the options modifier if provided
+    const optionItems =
+      optionsModifier != null ? optionsModifier(mergedOptions) : mergedOptions;
 
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
@@ -5122,6 +5134,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           );
 
         default:
+          // Check if the option has a custom render function
+          if (option.render != null) {
+            return (
+              <React.Fragment key={option.type}>
+                {option.render()}
+              </React.Fragment>
+            );
+          }
           throw Error(`Unexpected option type ${option.type}`);
       }
     });

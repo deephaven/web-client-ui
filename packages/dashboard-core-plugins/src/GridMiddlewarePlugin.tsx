@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   PluginType,
   type WidgetMiddlewarePlugin,
@@ -7,8 +7,12 @@ import {
 } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { vsGear, vsInfo } from '@deephaven/icons';
-import { OptionType, type OptionItem } from '@deephaven/iris-grid';
+import { Button } from '@deephaven/components';
+import { vsGear } from '@deephaven/icons';
+import {
+  type OptionItem,
+  type OptionItemsModifier,
+} from '@deephaven/iris-grid';
 
 const log = Log.module('GridMiddlewarePlugin');
 
@@ -26,48 +30,91 @@ function GridMiddleware({
   Component,
   ...props
 }: WidgetMiddlewareComponentProps<dh.Table>): JSX.Element {
-  // Log when middleware is mounted
+  // Log when middleware is mounted (for debugging)
   useEffect(() => {
-    log.info('GridMiddleware (component) mounted - wrapping table widget', {
-      componentName: Component.displayName ?? Component.name ?? 'Unknown',
-      props: Object.keys(props),
-    });
-
+    log.debug('GridMiddleware (component) mounted');
     return () => {
-      log.info('GridMiddleware (component) unmounted');
+      log.debug('GridMiddleware (component) unmounted');
     };
-  }, [Component, props]);
+  }, []);
 
-  // Example: You could add context providers, additional state, or UI elements here
-  const middlewareStyle = useMemo(
-    () => ({
-      display: 'flex',
-      flexDirection: 'column' as const,
-      height: '100%',
-      width: '100%',
-    }),
-    []
-  );
+  // Pass through to the wrapped component
+  // Middleware can add context providers, state, or modify props here
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  return <Component {...props} />;
+}
 
-  const middlewareMessageStyle = useMemo(
-    () => ({
-      padding: 10,
-    }),
-    []
-  );
+GridMiddleware.displayName = 'GridMiddleware';
+
+/**
+ * Custom option type for the middleware plugin.
+ * Using a unique string to avoid conflicts with built-in OptionType enum.
+ */
+const MIDDLEWARE_OPTION_TYPE = 'MIDDLEWARE_CUSTOM_OPTION';
+
+/**
+ * A sample configuration panel similar to SelectDistinctBuilder.
+ * Demonstrates how middleware plugins can render custom configuration screens.
+ */
+function MiddlewareConfigPanel(): JSX.Element {
+  const handleButtonClick = useCallback(() => {
+    log.info('MiddlewareConfigPanel button clicked!');
+    // eslint-disable-next-line no-console
+    console.log('MiddlewareConfigPanel: Sample button clicked!');
+  }, []);
 
   return (
-    <div style={middlewareStyle} data-testid="grid-middleware-wrapper">
-      <div style={middlewareMessageStyle}>
-        Middleware plugin wrapping widget
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        padding: 0,
+        overflow: 'auto',
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexFlow: 'column',
+      }}
+    >
+      <div
+        style={{
+          padding: '1rem',
+          fontWeight: 500,
+          textAlign: 'left',
+        }}
+      >
+        Middleware Custom Option
       </div>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-      <Component {...props} />
+
+      <div style={{ padding: '1rem' }}>
+        <Button kind="primary" onClick={handleButtonClick}>
+          Sample Action Button
+        </Button>
+      </div>
+
+      <div
+        style={{
+          margin: '1rem',
+          marginBottom: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          paddingBottom: '1rem',
+        }}
+      >
+        <div
+          style={{
+            color: 'var(--dh-color-text-muted)',
+            fontSize: 'smaller',
+          }}
+        >
+          This is a sample configuration panel added by the middleware plugin.
+          Click the button above to log a message to the browser console.
+        </div>
+      </div>
     </div>
   );
 }
 
-GridMiddleware.displayName = 'GridMiddleware';
+MiddlewareConfigPanel.displayName = 'MiddlewareConfigPanel';
 
 /**
  * Panel middleware that wraps the GridPanelPlugin.
@@ -77,75 +124,63 @@ function GridPanelMiddleware({
   Component,
   ...props
 }: WidgetMiddlewarePanelProps<dh.Table>): JSX.Element {
-  // Log when panel middleware is mounted
+  // Log when panel middleware is mounted (for debugging)
   useEffect(() => {
-    log.info('GridMiddleware (panel) mounted - wrapping table panel', {
-      componentName: Component.displayName ?? Component.name ?? 'Unknown',
-      props: Object.keys(props),
-    });
-
+    log.debug('GridMiddleware (panel) mounted');
     return () => {
-      log.info('GridMiddleware (panel) unmounted');
+      log.debug('GridMiddleware (panel) unmounted');
     };
-  }, [Component, props]);
+  }, []);
 
   // Example: Additional menu options injected by middleware
+  // This demonstrates a custom option with a render function that displays
+  // a configuration panel similar to SelectDistinctBuilder
   const additionalMenuOptions = useMemo<OptionItem[]>(
     () => [
       {
-        type: OptionType.CUSTOM_COLUMN_BUILDER, // Reuse existing type for demo
-        title: 'Middleware Option 1',
-        subtitle: 'Added by middleware plugin',
+        type: MIDDLEWARE_OPTION_TYPE,
+        title: 'Middleware Custom Option',
+        subtitle: 'Opens a configuration panel',
         icon: vsGear,
-        onChange: () => {
-          log.info('Middleware Option 1 clicked!');
-        },
-      },
-      {
-        type: OptionType.CUSTOM_COLUMN_BUILDER,
-        title: 'Middleware Option 2',
-        subtitle: 'Another middleware option',
-        icon: vsInfo,
-        onChange: () => {
-          log.info('Middleware Option 2 clicked!');
-        },
+        render: () => <MiddlewareConfigPanel />,
       },
     ],
     []
   );
 
+  // Example: Options modifier that moves the middleware option to the top
+  // and demonstrates how to reorder/filter options
+  const optionsModifier = useCallback<OptionItemsModifier>(options => {
+    // Find our custom option and move it to the top
+    const middlewareOption = options.find(
+      opt => opt.type === MIDDLEWARE_OPTION_TYPE
+    );
+    const otherOptions = options.filter(
+      opt => opt.type !== MIDDLEWARE_OPTION_TYPE
+    );
+
+    if (middlewareOption != null) {
+      return [middlewareOption, ...otherOptions];
+    }
+    return options;
+  }, []);
+
   // Cast Component to accept additionalMenuOptions since we know
   // it will be IrisGridPanel which supports this prop
   const EnhancedComponent = Component as React.ComponentType<
-    typeof props & { additionalMenuOptions?: OptionItem[] }
+    typeof props & {
+      additionalMenuOptions?: OptionItem[];
+      optionsModifier?: OptionItemsModifier;
+    }
   >;
 
-  const middlewareStyle = useMemo(
-    () => ({
-      display: 'flex',
-      flexDirection: 'column' as const,
-      height: '100%',
-      width: '100%',
-    }),
-    []
-  );
-
-  const middlewareMessageStyle = useMemo(
-    () => ({
-      padding: 10,
-    }),
-    []
-  );
-
   return (
-    <div style={middlewareStyle} data-testid="grid-middleware-wrapper">
-      <div style={middlewareMessageStyle}>Middleware plugin wrapping panel</div>
-      <EnhancedComponent
-        /* eslint-disable-next-line react/jsx-props-no-spreading */
-        {...props}
-        additionalMenuOptions={additionalMenuOptions}
-      />
-    </div>
+    <EnhancedComponent
+      /* eslint-disable-next-line react/jsx-props-no-spreading */
+      {...props}
+      additionalMenuOptions={additionalMenuOptions}
+      optionsModifier={optionsModifier}
+    />
   );
 }
 
