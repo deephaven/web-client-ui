@@ -211,18 +211,22 @@ TBD:
 | Bundle size | All options bundled | Could lazy-load options |
 
 **Migration Phases:**
-- **Phase A:** Create registry, types, and `TableOptionsHost` component
-- **Phase B:** Migrate low-complexity options (SelectDistinct, CustomColumn, RollupRows)
+- **Phase A:** Create registry, types, and `TableOptionsHost` component ✅
+- **Phase B:** Migrate low-complexity options (SelectDistinct, CustomColumn, RollupRows) ✅
 - **Phase C:** Migrate medium-complexity options (Aggregations, VisibilityOrdering)
 - **Phase D:** Migrate high-complexity options (TableExporter, ConditionalFormatting)
 - **Phase E:** Remove legacy switch statement
 
-**Files to Create:**
-- `packages/iris-grid/src/table-options/TableOption.ts` - Core interfaces
-- `packages/iris-grid/src/table-options/TableOptionsRegistry.ts` - Registry class
-- `packages/iris-grid/src/table-options/TableOptionsHost.tsx` - Host component with context
-- `packages/iris-grid/src/table-options/options/SelectDistinctOption.tsx` - Example option
-- `packages/iris-grid/src/table-options/index.ts` - Public exports
+**Files Created:**
+- `packages/iris-grid/src/table-options/TableOption.ts` - Core interfaces (GridStateSnapshot, GridAction, TableOption, etc.) ✅
+- `packages/iris-grid/src/table-options/TableOptionsRegistry.ts` - Registry class with register/unregister/modify/subscribe ✅
+- `packages/iris-grid/src/table-options/TableOptionsHostContext.ts` - Context with useTableOptionsHost() hook ✅
+- `packages/iris-grid/src/table-options/TableOptionsHost.tsx` - Host component with Stack/Page/Menu rendering ✅
+- `packages/iris-grid/src/table-options/options/SelectDistinctOption.tsx` - SelectDistinct option ✅
+- `packages/iris-grid/src/table-options/options/CustomColumnOption.tsx` - CustomColumn option ✅
+- `packages/iris-grid/src/table-options/options/RollupRowsOption.tsx` - RollupRows option ✅
+- `packages/iris-grid/src/table-options/options/index.ts` - Options index ✅
+- `packages/iris-grid/src/table-options/index.ts` - Public exports ✅
 
 - [x] Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system
   - Added `OptionItemsModifier` type: `(options: readonly OptionItem[]) => readonly OptionItem[]`
