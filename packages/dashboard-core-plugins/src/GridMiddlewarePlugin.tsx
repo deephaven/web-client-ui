@@ -12,6 +12,7 @@ import { vsGear } from '@deephaven/icons';
 import {
   type OptionItem,
   type OptionItemsModifier,
+  useTableOptions,
 } from '@deephaven/iris-grid';
 
 const log = Log.module('GridMiddlewarePlugin');
@@ -54,14 +55,34 @@ const MIDDLEWARE_OPTION_TYPE = 'MIDDLEWARE_CUSTOM_OPTION';
 
 /**
  * A sample configuration panel similar to SelectDistinctBuilder.
- * Demonstrates how middleware plugins can render custom configuration screens.
+ * Demonstrates how middleware plugins can use the useTableOptions hook
+ * to access and modify grid state.
  */
 function MiddlewareConfigPanel(): JSX.Element {
+  // Access the Table Options context for state and update methods
+  const {
+    model,
+    selectDistinctColumns,
+    customColumns,
+    setSelectDistinctColumns,
+    closeCurrentOption,
+  } = useTableOptions();
+
   const handleButtonClick = useCallback(() => {
     log.info('MiddlewareConfigPanel button clicked!');
     // eslint-disable-next-line no-console
     console.log('MiddlewareConfigPanel: Sample button clicked!');
-  }, []);
+    // eslint-disable-next-line no-console
+    console.log('Current selectDistinctColumns:', selectDistinctColumns);
+    // eslint-disable-next-line no-console
+    console.log('Current customColumns:', customColumns);
+  }, [selectDistinctColumns, customColumns]);
+
+  const handleClearSelectDistinct = useCallback(() => {
+    log.info('Clearing selectDistinctColumns');
+    setSelectDistinctColumns([]);
+    closeCurrentOption();
+  }, [setSelectDistinctColumns, closeCurrentOption]);
 
   return (
     <div
@@ -85,10 +106,51 @@ function MiddlewareConfigPanel(): JSX.Element {
         Middleware Custom Option
       </div>
 
-      <div style={{ padding: '1rem' }}>
+      <div
+        style={{
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+        }}
+      >
+        <div
+          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
+        >
+          Columns: {model.columns?.length ?? 0}
+        </div>
+        <div
+          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
+        >
+          Select Distinct:{' '}
+          {selectDistinctColumns.length > 0
+            ? selectDistinctColumns.join(', ')
+            : 'None'}
+        </div>
+        <div
+          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
+        >
+          Custom Columns:{' '}
+          {customColumns.length > 0 ? customColumns.join(', ') : 'None'}
+        </div>
+      </div>
+
+      <div
+        style={{
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+        }}
+      >
         <Button kind="primary" onClick={handleButtonClick}>
-          Sample Action Button
+          Log State to Console
         </Button>
+        {selectDistinctColumns.length > 0 && (
+          <Button kind="secondary" onClick={handleClearSelectDistinct}>
+            Clear Select Distinct
+          </Button>
+        )}
       </div>
 
       <div
@@ -106,8 +168,8 @@ function MiddlewareConfigPanel(): JSX.Element {
             fontSize: 'smaller',
           }}
         >
-          This is a sample configuration panel added by the middleware plugin.
-          Click the button above to log a message to the browser console.
+          This panel demonstrates using the useTableOptions hook to access and
+          modify grid state from a plugin.
         </div>
       </div>
     </div>

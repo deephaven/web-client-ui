@@ -197,6 +197,10 @@ import {
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
+import {
+  TableOptionsContext,
+  type TableOptionsContextValue,
+} from './TableOptionsContext';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -1266,6 +1270,51 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       return Object.freeze(optionItems);
     },
+    { max: 1 }
+  );
+
+  /**
+   * Creates the context value for TableOptionsContext.
+   * Provides state and update methods to Table Options panels.
+   */
+  getTableOptionsContextValue = memoize(
+    (
+      model: IrisGridModel,
+      customColumns: readonly ColumnName[],
+      selectDistinctColumns: readonly ColumnName[],
+      aggregationSettings: AggregationSettings,
+      rollupConfig: UIRollupConfig | undefined,
+      conditionalFormats: readonly SidebarFormattingRule[],
+      movedColumns: readonly MoveOperation[],
+      frozenColumns: readonly ColumnName[],
+      columnHeaderGroups: readonly ColumnHeaderGroup[]
+    ): TableOptionsContextValue => ({
+      model,
+      customColumns,
+      selectDistinctColumns,
+      aggregationSettings,
+      rollupConfig,
+      conditionalFormats,
+      movedColumns,
+      frozenColumns,
+      columnHeaderGroups,
+      setCustomColumns: this.handleUpdateCustomColumns,
+      setSelectDistinctColumns: this.handleSelectDistinctChanged,
+      setAggregationSettings: settings =>
+        this.handleAggregationsChange(settings),
+      setRollupConfig: config => {
+        if (config != null) {
+          this.handleRollupChange(config);
+        } else {
+          this.setState({ rollupConfig: undefined });
+        }
+      },
+      setConditionalFormats: this.handleConditionalFormatsChange,
+      setMovedColumns: this.handleMovedColumnsChanged,
+      setFrozenColumns: this.handleFrozenColumnsChanged,
+      setColumnHeaderGroups: this.handleHeaderGroupsChanged,
+      closeCurrentOption: this.handleMenuBack,
+    }),
     { max: 1 }
   );
 
@@ -5005,6 +5054,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       userColumnWidths
     );
 
+    // Create the table options context value for custom option panels
+    const tableOptionsContextValue = this.getTableOptionsContextValue(
+      model,
+      customColumns,
+      selectDistinctColumns,
+      aggregationSettings,
+      rollupConfig,
+      conditionalFormats,
+      movedColumns,
+      frozenColumns,
+      columnHeaderGroups
+    );
+
     const openOptionsStack = openOptions.map(option => {
       switch (option.type) {
         case OptionType.CHART_BUILDER:
@@ -5384,24 +5446,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           unmountOnExit
         >
           <div className="table-sidebar">
-            <Stack>
-              <Page title="Table Options" onClose={this.handleMenuClose}>
-                <Menu
-                  onSelect={i => this.handleMenuSelect(optionItems[i])}
-                  items={optionItems}
-                />
-              </Page>
-              {openOptionsStack.map((option, i) => (
-                <Page
-                  title={openOptions[i].title}
-                  onBack={this.handleMenuBack}
-                  onClose={this.handleMenuClose}
-                  key={openOptions[i].type}
-                >
-                  {option}
+            <TableOptionsContext.Provider value={tableOptionsContextValue}>
+              <Stack>
+                <Page title="Table Options" onClose={this.handleMenuClose}>
+                  <Menu
+                    onSelect={i => this.handleMenuSelect(optionItems[i])}
+                    items={optionItems}
+                  />
                 </Page>
-              ))}
-            </Stack>
+                {openOptionsStack.map((option, i) => (
+                  <Page
+                    title={openOptions[i].title}
+                    onBack={this.handleMenuBack}
+                    onClose={this.handleMenuClose}
+                    key={openOptions[i].type}
+                  >
+                    {option}
+                  </Page>
+                ))}
+              </Stack>
+            </TableOptionsContext.Provider>
           </div>
         </SlideTransition>
         <ContextActions actions={this.contextActions} />
