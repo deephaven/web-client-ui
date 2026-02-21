@@ -125,13 +125,26 @@ export function TableOptionsHost({
   // Build menu items for display
   const menuItems = useMemo(
     () =>
-      registryOptions.map(opt => ({
-        type: opt.type,
-        title: opt.menuItem.title,
-        subtitle: opt.menuItem.subtitle,
-        icon: opt.menuItem.icon,
-      })),
-    [registryOptions]
+      registryOptions.map(opt => {
+        const baseItem = {
+          type: opt.type,
+          title: opt.menuItem.title,
+          subtitle: opt.menuItem.subtitle,
+          icon: opt.menuItem.icon,
+        };
+
+        // Handle toggle options
+        if (opt.toggle != null) {
+          return {
+            ...baseItem,
+            isOn: opt.toggle.getValue(gridState),
+            // onChange is handled via handleMenuSelect
+          };
+        }
+
+        return baseItem;
+      }),
+    [registryOptions, gridState]
   );
 
   // Handle menu item selection
@@ -162,9 +175,13 @@ export function TableOptionsHost({
       }
 
       // If option is a toggle, dispatch the toggle action
-      // (handled by the menu component directly via toggle prop)
+      if (option.toggle != null) {
+        dispatch({ type: option.toggle.actionType } as Parameters<
+          typeof dispatch
+        >[0]);
+      }
     },
-    [registryOptions, legacyOnMenuSelect]
+    [registryOptions, legacyOnMenuSelect, dispatch]
   );
 
   // Handle back navigation

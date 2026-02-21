@@ -8,7 +8,9 @@ import type {
   AggregationSettings,
   UIRollupConfig,
   SidebarFormattingRule,
+  ChartBuilderSettings,
 } from '../sidebar';
+import type AdvancedSettingsType from '../sidebar/AdvancedSettingsType';
 
 // ============================================================================
 // Grid State Snapshot (Read-Only)
@@ -72,6 +74,34 @@ export interface GridStateSnapshot {
 
   /** Estimated download time */
   tableDownloadEstimatedTime?: number | null;
+
+  // ============================================================================
+  // Toggle UI State
+  // ============================================================================
+
+  /** Whether the filter bar is shown */
+  isFilterBarShown?: boolean;
+
+  /** Whether the search bar is shown */
+  showSearchBar?: boolean;
+
+  /** Whether the Go To row panel is shown */
+  isGotoShown?: boolean;
+
+  /** Whether search bar can be toggled */
+  canToggleSearch?: boolean;
+
+  /** Whether CSV download is available */
+  canDownloadCsv?: boolean;
+
+  /** Whether there are advanced settings to show */
+  hasAdvancedSettings?: boolean;
+
+  /** Advanced settings map */
+  advancedSettings?: ReadonlyMap<AdvancedSettingsType, boolean>;
+
+  /** Whether chart builder is available */
+  isChartBuilderAvailable?: boolean;
 }
 
 // ============================================================================
@@ -117,7 +147,13 @@ export type GridAction =
       includeColumnHeaders: boolean;
       useUnformattedValues: boolean;
     }
-  | { type: 'CANCEL_DOWNLOAD' };
+  | { type: 'CANCEL_DOWNLOAD' }
+  | { type: 'TOGGLE_FILTER_BAR' }
+  | { type: 'TOGGLE_SEARCH_BAR' }
+  | { type: 'TOGGLE_GOTO' }
+  | { type: 'SET_ADVANCED_SETTING'; key: AdvancedSettingsType; isOn: boolean }
+  | { type: 'CREATE_CHART'; settings: ChartBuilderSettings }
+  | { type: 'UPDATE_CHART_PREVIEW'; settings: ChartBuilderSettings };
 
 /**
  * Function to dispatch grid actions.
@@ -187,6 +223,9 @@ export interface TableOptionMenuItem {
 export interface TableOptionToggle {
   /** Get current toggle state */
   getValue: (gridState: GridStateSnapshot) => boolean;
+
+  /** Action type to dispatch when toggled */
+  actionType: GridAction['type'];
 
   /** Keyboard shortcut */
   shortcut?: Shortcut;

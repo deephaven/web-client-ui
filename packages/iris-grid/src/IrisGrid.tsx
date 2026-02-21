@@ -13,9 +13,6 @@ import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  Stack,
-  Menu,
-  Page,
   Popper,
   ThemeExport,
   Tooltip,
@@ -138,16 +135,10 @@ import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
-  Aggregations,
-  AggregationEdit,
   AggregationUtils,
-  ChartBuilder,
-  CustomColumnBuilder,
   OptionType,
-  RollupRows,
   TableCsvExporter,
   TableSaver,
-  VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
@@ -159,15 +150,11 @@ import {
   type PartitionedGridModel,
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
-import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
-import AdvancedSettingsMenu, {
+import {
   type AdvancedSettingsMenuCallback,
 } from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
-import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
-
-import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
 import GotoRow, { type GotoRowElement } from './GotoRow';
 import {
@@ -197,11 +184,16 @@ import {
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
-import {
-  TableOptionsContext,
-  type TableOptionsContextValue,
-} from './TableOptionsContext';
 import { TableOptionsWrapper } from './table-options/TableOptionsWrapper';
+import {
+  TableOptionsHostContext,
+  type TableOptionsHostContextValue,
+} from './table-options/TableOptionsHostContext';
+import type {
+  GridStateSnapshot,
+  GridDispatch,
+  GridAction,
+} from './table-options/TableOption';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -384,13 +376,6 @@ export interface IrisGridProps {
    * Use this to reorder, hide, or modify existing options.
    */
   optionsModifier?: OptionItemsModifier;
-
-  /**
-   * Enable the new Table Options Registry architecture.
-   * When true, uses TableOptionsWrapper instead of the legacy switch-based rendering.
-   * Default: false (uses legacy architecture for backward compatibility)
-   */
-  useRegistryOptions?: boolean;
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
@@ -582,7 +567,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     density: undefined,
     canToggleSearch: true,
     additionalMenuOptions: EMPTY_ARRAY,
-    useRegistryOptions: false,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
     getMetricCalculator: (
@@ -1283,10 +1267,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   /**
-   * Creates the context value for TableOptionsContext.
-   * Provides state and update methods to Table Options panels.
+   * Creates the GridStateSnapshot for TableOptionsHostContext.
    */
-  getTableOptionsContextValue = memoize(
+  getGridStateSnapshot = memoize(
     (
       model: IrisGridModel,
       customColumns: readonly ColumnName[],
@@ -1296,8 +1279,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats: readonly SidebarFormattingRule[],
       movedColumns: readonly MoveOperation[],
       frozenColumns: readonly ColumnName[],
-      columnHeaderGroups: readonly ColumnHeaderGroup[]
-    ): TableOptionsContextValue => ({
+      columnHeaderGroups: readonly ColumnHeaderGroup[],
+      hiddenColumns: readonly ModelIndex[],
+      isRollup: boolean,
+      name: string | undefined,
+      userColumnWidths: ModelSizeMap | undefined,
+      selectedRanges: readonly GridRange[] | undefined,
+      isTableDownloading: boolean,
+      tableDownloadStatus: string,
+      tableDownloadProgress: number,
+      tableDownloadEstimatedTime: number | null
+    ): GridStateSnapshot => ({
       model,
       customColumns,
       selectDistinctColumns,
@@ -1307,25 +1299,82 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       movedColumns,
       frozenColumns,
       columnHeaderGroups,
-      setCustomColumns: this.handleUpdateCustomColumns,
-      setSelectDistinctColumns: this.handleSelectDistinctChanged,
-      setAggregationSettings: settings =>
-        this.handleAggregationsChange(settings),
-      setRollupConfig: config => {
-        if (config != null) {
-          this.handleRollupChange(config);
-        } else {
-          this.setState({ rollupConfig: undefined });
-        }
-      },
-      setConditionalFormats: this.handleConditionalFormatsChange,
-      setMovedColumns: this.handleMovedColumnsChanged,
-      setFrozenColumns: this.handleFrozenColumnsChanged,
-      setColumnHeaderGroups: this.handleHeaderGroupsChanged,
-      closeCurrentOption: this.handleMenuBack,
+      hiddenColumns,
+      isRollup,
+      name,
+      userColumnWidths,
+      selectedRanges,
+      isTableDownloading,
+      tableDownloadStatus,
+      tableDownloadProgress,
+      tableDownloadEstimatedTime,
     }),
     { max: 1 }
   );
+
+  /**
+   * Creates the dispatch function for Table Options.
+   * Translates GridAction dispatches to the appropriate handler calls.
+   */
+  handleTableOptionsDispatch: GridDispatch = (action: GridAction): void => {
+    switch (action.type) {
+      case 'SET_CUSTOM_COLUMNS':
+        this.handleUpdateCustomColumns(action.columns);
+        break;
+      case 'SET_SELECT_DISTINCT_COLUMNS':
+        this.handleSelectDistinctChanged(action.columns);
+        break;
+      case 'SET_AGGREGATION_SETTINGS':
+        this.handleAggregationsChange(action.settings);
+        break;
+      case 'SET_ROLLUP_CONFIG':
+        if (action.config != null) {
+          this.handleRollupChange(action.config);
+        } else {
+          this.setState({ rollupConfig: undefined });
+        }
+        break;
+      case 'SET_CONDITIONAL_FORMATS':
+        this.handleConditionalFormatsChange(action.formats);
+        break;
+      case 'SET_MOVED_COLUMNS':
+        this.handleMovedColumnsChanged(action.columns, action.onChangeApplied);
+        break;
+      case 'SET_FROZEN_COLUMNS':
+        this.handleFrozenColumnsChanged(action.columns);
+        break;
+      case 'SET_COLUMN_HEADER_GROUPS':
+        this.handleHeaderGroupsChanged(action.groups);
+        break;
+      case 'SET_COLUMN_VISIBILITY':
+        this.handleColumnVisibilityChanged(action.columns, action.isVisible);
+        break;
+      case 'RESET_COLUMN_VISIBILITY':
+        this.handleColumnVisibilityReset();
+        break;
+      case 'START_DOWNLOAD':
+        this.handleDownloadTableStart();
+        break;
+      case 'DOWNLOAD_TABLE':
+        this.handleDownloadTable(
+          action.fileName,
+          action.frozenTable as DhType.Table,
+          action.tableSubscription as DhType.TableViewportSubscription,
+          action.snapshotRanges as readonly GridRange[],
+          action.modelRanges as readonly GridRange[],
+          action.includeColumnHeaders,
+          action.useUnformattedValues
+        );
+        break;
+      case 'CANCEL_DOWNLOAD':
+        this.handleCancelDownloadTable();
+        break;
+      default:
+        log.warn(
+          `Unknown TableOptions action type: ${(action as GridAction).type}`
+        );
+    }
+  };
 
   getCachedHiddenColumns = memoize(
     (
@@ -5048,8 +5097,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedSettings.size > 0
     );
 
-    const { additionalMenuOptions, optionsModifier, useRegistryOptions } =
-      this.props;
+    const { additionalMenuOptions, optionsModifier } = this.props;
     const mergedOptions =
       additionalMenuOptions != null && additionalMenuOptions.length > 0
         ? [...baseOptionItems, ...additionalMenuOptions]
@@ -5064,8 +5112,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       userColumnWidths
     );
 
-    // Create the table options context value for custom option panels
-    const tableOptionsContextValue = this.getTableOptionsContextValue(
+    // Create the grid state snapshot and context value for Table Options panels
+    const gridState = this.getGridStateSnapshot(
       model,
       customColumns,
       selectDistinctColumns,
@@ -5074,149 +5122,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats,
       movedColumns,
       frozenColumns,
-      columnHeaderGroups
+      columnHeaderGroups,
+      hiddenColumns,
+      isRollup,
+      name,
+      userColumnWidths,
+      selectedRanges,
+      isTableDownloading,
+      tableDownloadStatus,
+      tableDownloadProgress,
+      tableDownloadEstimatedTime
     );
-
-    const openOptionsStack = openOptions.map(option => {
-      switch (option.type) {
-        case OptionType.CHART_BUILDER:
-          return (
-            <ChartBuilder
-              model={model}
-              onChange={this.handleChartChange}
-              onSubmit={this.handleChartCreate}
-              key={OptionType.CHART_BUILDER}
-            />
-          );
-        case OptionType.VISIBILITY_ORDERING_BUILDER:
-          return (
-            <VisibilityOrderingBuilder
-              model={model}
-              movedColumns={movedColumns}
-              hiddenColumns={hiddenColumns}
-              columnHeaderGroups={columnHeaderGroups}
-              onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
-              onReset={this.handleColumnVisibilityReset}
-              onMovedColumnsChanged={this.handleMovedColumnsChanged}
-              onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
-              onFrozenColumnsChanged={this.handleFrozenColumnsChanged}
-              key={OptionType.VISIBILITY_ORDERING_BUILDER}
-            />
-          );
-        case OptionType.CONDITIONAL_FORMATTING:
-          return (
-            <ConditionalFormattingMenu
-              rules={conditionalFormats}
-              onChange={this.handleConditionalFormatsChange}
-              onCreate={this.handleConditionalFormatCreate}
-              onSelect={this.handleConditionalFormatEdit}
-            />
-          );
-        case OptionType.CONDITIONAL_FORMATTING_EDIT:
-          assertNotNull(model.columns);
-          assertNotNull(this.handleConditionalFormatEditorUpdate);
-          return (
-            <ConditionalFormatEditor
-              dh={model.dh}
-              columns={model.columns}
-              rule={conditionalFormatPreview}
-              onUpdate={this.handleConditionalFormatEditorUpdate}
-              onSave={this.handleConditionalFormatEditorSave}
-              onCancel={this.handleConditionalFormatEditorCancel}
-            />
-          );
-        case OptionType.CUSTOM_COLUMN_BUILDER:
-          return (
-            <CustomColumnBuilder
-              model={model}
-              customColumns={customColumns}
-              onSave={this.handleUpdateCustomColumns}
-              onCancel={this.handleMenuBack}
-              key={OptionType.CUSTOM_COLUMN_BUILDER}
-            />
-          );
-        case OptionType.ROLLUP_ROWS:
-          return (
-            <RollupRows
-              model={model}
-              onChange={this.handleRollupChange}
-              config={rollupConfig}
-              key={OptionType.ROLLUP_ROWS}
-            />
-          );
-        case OptionType.AGGREGATIONS:
-          return (
-            <Aggregations
-              settings={aggregationSettings}
-              isRollup={isRollup}
-              availablePlacements={
-                isEditableGridModel(model) && model.isEditable
-                  ? ['top']
-                  : ['top', 'bottom']
-              }
-              onChange={this.handleAggregationsChange}
-              onEdit={this.handleAggregationEdit}
-              dh={model.dh}
-            />
-          );
-        case OptionType.AGGREGATION_EDIT:
-          return (
-            selectedAggregation && (
-              <AggregationEdit
-                aggregation={selectedAggregation}
-                columns={model.originalColumns}
-                onChange={this.handleAggregationChange}
-              />
-            )
-          );
-        case OptionType.TABLE_EXPORTER:
-          return (
-            <TableCsvExporter
-              model={model}
-              name={name}
-              userColumnWidths={userColumnWidths}
-              movedColumns={movedColumns}
-              isDownloading={isTableDownloading}
-              tableDownloadStatus={tableDownloadStatus}
-              tableDownloadProgress={tableDownloadProgress}
-              tableDownloadEstimatedTime={
-                tableDownloadEstimatedTime ?? undefined
-              }
-              onDownload={this.handleDownloadTable}
-              onDownloadStart={this.handleDownloadTableStart}
-              onCancel={this.handleCancelDownloadTable}
-              selectedRanges={selectedRanges}
-              key={OptionType.TABLE_EXPORTER}
-            />
-          );
-        case OptionType.SELECT_DISTINCT:
-          return (
-            <SelectDistinctBuilder
-              model={model}
-              selectDistinctColumns={selectDistinctColumns}
-              onChange={this.handleSelectDistinctChanged}
-            />
-          );
-        case OptionType.ADVANCED_SETTINGS:
-          return (
-            <AdvancedSettingsMenu
-              items={advancedSettings}
-              onChange={onAdvancedSettingsChange}
-            />
-          );
-
-        default:
-          // Check if the option has a custom render function
-          if (option.render != null) {
-            return (
-              <React.Fragment key={option.type}>
-                {option.render()}
-              </React.Fragment>
-            );
-          }
-          throw Error(`Unexpected option type ${option.type}`);
-      }
-    });
 
     return (
       <div className="iris-grid" role="presentation">
@@ -5456,63 +5372,62 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           unmountOnExit
         >
           <div className="table-sidebar">
-            {useRegistryOptions === true ? (
-              <TableOptionsWrapper
-                model={model}
-                customColumns={customColumns}
-                selectDistinctColumns={selectDistinctColumns}
-                aggregationSettings={aggregationSettings}
-                rollupConfig={rollupConfig}
-                conditionalFormats={conditionalFormats}
-                movedColumns={movedColumns}
-                frozenColumns={frozenColumns}
-                columnHeaderGroups={columnHeaderGroups}
-                hiddenColumns={hiddenColumns}
-                isRollup={isRollup}
-                name={name}
-                userColumnWidths={userColumnWidths}
-                selectedRanges={selectedRanges}
-                isTableDownloading={isTableDownloading}
-                tableDownloadStatus={tableDownloadStatus}
-                tableDownloadProgress={tableDownloadProgress}
-                tableDownloadEstimatedTime={tableDownloadEstimatedTime}
-                onSetCustomColumns={this.handleUpdateCustomColumns}
-                onSetSelectDistinctColumns={this.handleSelectDistinctChanged}
-                onSetAggregationSettings={this.handleAggregationsChange}
-                onSetRollupConfig={this.handleRollupChange}
-                onSetConditionalFormats={this.handleConditionalFormatsChange}
-                onSetMovedColumns={this.handleMovedColumnsChanged}
-                onSetFrozenColumns={this.handleFrozenColumnsChanged}
-                onSetColumnHeaderGroups={this.handleHeaderGroupsChanged}
-                onSetColumnVisibility={this.handleColumnVisibilityChanged}
-                onResetColumnVisibility={this.handleColumnVisibilityReset}
-                onStartDownload={this.handleDownloadTableStart}
-                onDownloadTable={this.handleDownloadTable}
-                onCancelDownload={this.handleCancelDownloadTable}
-                onClose={this.handleMenuClose}
-              />
-            ) : (
-              <TableOptionsContext.Provider value={tableOptionsContextValue}>
-                <Stack>
-                  <Page title="Table Options" onClose={this.handleMenuClose}>
-                    <Menu
-                      onSelect={i => this.handleMenuSelect(optionItems[i])}
-                      items={optionItems}
-                    />
-                  </Page>
-                  {openOptionsStack.map((option, i) => (
-                    <Page
-                      title={openOptions[i].title}
-                      onBack={this.handleMenuBack}
-                      onClose={this.handleMenuClose}
-                      key={openOptions[i].type}
-                    >
-                      {option}
-                    </Page>
-                  ))}
-                </Stack>
-              </TableOptionsContext.Provider>
-            )}
+            <TableOptionsWrapper
+              model={model}
+              customColumns={customColumns}
+              selectDistinctColumns={selectDistinctColumns}
+              aggregationSettings={aggregationSettings}
+              rollupConfig={rollupConfig}
+              conditionalFormats={conditionalFormats}
+              movedColumns={movedColumns}
+              frozenColumns={frozenColumns}
+              columnHeaderGroups={columnHeaderGroups}
+              hiddenColumns={hiddenColumns}
+              isRollup={isRollup}
+              name={name}
+              userColumnWidths={userColumnWidths}
+              selectedRanges={selectedRanges}
+              isTableDownloading={isTableDownloading}
+              tableDownloadStatus={tableDownloadStatus}
+              tableDownloadProgress={tableDownloadProgress}
+              tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+              onSetCustomColumns={this.handleUpdateCustomColumns}
+              onSetSelectDistinctColumns={this.handleSelectDistinctChanged}
+              onSetAggregationSettings={this.handleAggregationsChange}
+              onSetRollupConfig={this.handleRollupChange}
+              onSetConditionalFormats={this.handleConditionalFormatsChange}
+              onSetMovedColumns={this.handleMovedColumnsChanged}
+              onSetFrozenColumns={this.handleFrozenColumnsChanged}
+              onSetColumnHeaderGroups={this.handleHeaderGroupsChanged}
+              onSetColumnVisibility={this.handleColumnVisibilityChanged}
+              onResetColumnVisibility={this.handleColumnVisibilityReset}
+              onStartDownload={this.handleDownloadTableStart}
+              onDownloadTable={this.handleDownloadTable}
+              onCancelDownload={this.handleCancelDownloadTable}
+              onToggleFilterBar={() => this.toggleFilterBar()}
+              onToggleSearchBar={() => this.toggleSearchBar()}
+              onToggleGoto={() => this.toggleGotoRow()}
+              isFilterBarShown={isFilterBarShown}
+              showSearchBar={showSearchBar}
+              isGotoShown={isGotoShown}
+              canToggleSearch={this.isTableSearchAvailable()}
+              canDownloadCsv={canDownloadCsv}
+              hasAdvancedSettings={advancedSettings.size > 0}
+              advancedSettings={advancedSettings}
+              onAdvancedSettingsChange={onAdvancedSettingsChange}
+              isChartBuilderAvailable={
+                onCreateChart !== undefined && model.isChartBuilderAvailable
+              }
+              onCreateChart={
+                onCreateChart
+                  ? settings => onCreateChart(settings, model)
+                  : undefined
+              }
+              onChartChange={() => {
+                // TODO: IDS-4242 Update Chart Preview
+              }}
+              onClose={this.handleMenuClose}
+            />
           </div>
         </SlideTransition>
         <ContextActions actions={this.contextActions} />

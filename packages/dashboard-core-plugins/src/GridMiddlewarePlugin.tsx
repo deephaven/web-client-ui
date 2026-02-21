@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   PluginType,
   type WidgetMiddlewarePlugin,
@@ -10,9 +10,10 @@ import Log from '@deephaven/log';
 import { Button } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
 import {
-  type OptionItem,
-  type OptionItemsModifier,
-  useTableOptions,
+  type TableOption,
+  type TableOptionPanelProps,
+  useTableOptionsHost,
+  defaultTableOptionsRegistry,
 } from '@deephaven/iris-grid';
 
 const log = Log.module('GridMiddlewarePlugin');
@@ -49,24 +50,19 @@ GridMiddleware.displayName = 'GridMiddleware';
 
 /**
  * Custom option type for the middleware plugin.
- * Using a unique string to avoid conflicts with built-in OptionType enum.
+ * Using a unique string to avoid conflicts with built-in option types.
  */
-const MIDDLEWARE_OPTION_TYPE = 'MIDDLEWARE_CUSTOM_OPTION';
+const MIDDLEWARE_OPTION_TYPE = 'middleware-custom-option';
 
 /**
  * A sample configuration panel similar to SelectDistinctBuilder.
- * Demonstrates how middleware plugins can use the useTableOptions hook
+ * Demonstrates how middleware plugins can use the useTableOptionsHost hook
  * to access and modify grid state.
  */
-function MiddlewareConfigPanel(): JSX.Element {
-  // Access the Table Options context for state and update methods
-  const {
-    model,
-    selectDistinctColumns,
-    customColumns,
-    setSelectDistinctColumns,
-    closeCurrentOption,
-  } = useTableOptions();
+function MiddlewareConfigPanel(_props: TableOptionPanelProps): JSX.Element {
+  // Access the Table Options context for state and dispatch
+  const { gridState, dispatch, closePanel } = useTableOptionsHost();
+  const { model, selectDistinctColumns, customColumns } = gridState;
 
   const handleButtonClick = useCallback(() => {
     log.info('MiddlewareConfigPanel button clicked!');
@@ -80,9 +76,9 @@ function MiddlewareConfigPanel(): JSX.Element {
 
   const handleClearSelectDistinct = useCallback(() => {
     log.info('Clearing selectDistinctColumns');
-    setSelectDistinctColumns([]);
-    closeCurrentOption();
-  }, [setSelectDistinctColumns, closeCurrentOption]);
+    dispatch({ type: 'SET_SELECT_DISTINCT_COLUMNS', columns: [] });
+    closePanel();
+  }, [dispatch, closePanel]);
 
   return (
     <div
@@ -168,8 +164,8 @@ function MiddlewareConfigPanel(): JSX.Element {
             fontSize: 'smaller',
           }}
         >
-          This panel demonstrates using the useTableOptions hook to access and
-          modify grid state from a plugin.
+          This panel demonstrates using the useTableOptionsHost hook to access
+          and modify grid state from a plugin.
         </div>
       </div>
     </div>
@@ -177,6 +173,29 @@ function MiddlewareConfigPanel(): JSX.Element {
 }
 
 MiddlewareConfigPanel.displayName = 'MiddlewareConfigPanel';
+
+/**
+ * Middleware custom option registered with the Table Options registry.
+ * This demonstrates how plugins can add custom options via the registry.
+ */
+const MiddlewareCustomOption: TableOption = {
+  type: MIDDLEWARE_OPTION_TYPE,
+
+  menuItem: {
+    title: 'Middleware Custom Option',
+    subtitle: 'Opens a configuration panel',
+    icon: vsGear,
+    // Show at top of menu
+    order: -100,
+    // Always available
+    isAvailable: () => true,
+  },
+
+  Panel: MiddlewareConfigPanel,
+};
+
+// Register the option with the default registry
+defaultTableOptionsRegistry.register(MiddlewareCustomOption);
 
 /**
  * Panel middleware that wraps the GridPanelPlugin.
@@ -194,56 +213,8 @@ function GridPanelMiddleware({
     };
   }, []);
 
-  // Example: Additional menu options injected by middleware
-  // This demonstrates a custom option with a render function that displays
-  // a configuration panel similar to SelectDistinctBuilder
-  const additionalMenuOptions = useMemo<OptionItem[]>(
-    () => [
-      {
-        type: MIDDLEWARE_OPTION_TYPE,
-        title: 'Middleware Custom Option',
-        subtitle: 'Opens a configuration panel',
-        icon: vsGear,
-        render: () => <MiddlewareConfigPanel />,
-      },
-    ],
-    []
-  );
-
-  // Example: Options modifier that moves the middleware option to the top
-  // and demonstrates how to reorder/filter options
-  const optionsModifier = useCallback<OptionItemsModifier>(options => {
-    // Find our custom option and move it to the top
-    const middlewareOption = options.find(
-      opt => opt.type === MIDDLEWARE_OPTION_TYPE
-    );
-    const otherOptions = options.filter(
-      opt => opt.type !== MIDDLEWARE_OPTION_TYPE
-    );
-
-    if (middlewareOption != null) {
-      return [middlewareOption, ...otherOptions];
-    }
-    return options;
-  }, []);
-
-  // Cast Component to accept additionalMenuOptions since we know
-  // it will be IrisGridPanel which supports this prop
-  const EnhancedComponent = Component as React.ComponentType<
-    typeof props & {
-      additionalMenuOptions?: OptionItem[];
-      optionsModifier?: OptionItemsModifier;
-    }
-  >;
-
-  return (
-    <EnhancedComponent
-      /* eslint-disable-next-line react/jsx-props-no-spreading */
-      {...props}
-      additionalMenuOptions={additionalMenuOptions}
-      optionsModifier={optionsModifier}
-    />
-  );
+  // Simply pass through - registry handles the option
+  return <Component /* eslint-disable-next-line react/jsx-props-no-spreading */ {...props} />;
 }
 
 GridPanelMiddleware.displayName = 'GridPanelMiddleware';
