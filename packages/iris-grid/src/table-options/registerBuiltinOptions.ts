@@ -10,6 +10,11 @@ import { VisibilityOrderingOption } from './options/VisibilityOrderingOption';
 import { AggregationsOption } from './options/AggregationsOption';
 import { TableExporterOption } from './options/TableExporterOption';
 import { ConditionalFormattingOption } from './options/ConditionalFormattingOption';
+import { ChartBuilderOption } from './options/ChartBuilderOption';
+import { AdvancedSettingsOption } from './options/AdvancedSettingsOption';
+import { QuickFiltersOption } from './options/QuickFiltersOption';
+import { SearchBarOption } from './options/SearchBarOption';
+import { GotoRowOption } from './options/GotoRowOption';
 
 /**
  * Register all built-in options with the default registry.
@@ -29,6 +34,13 @@ export function registerBuiltinOptions(): void {
     // Phase D: High-complexity options
     TableExporterOption,
     ConditionalFormattingOption,
+    ChartBuilderOption,
+    AdvancedSettingsOption,
+
+    // Toggle options
+    QuickFiltersOption,
+    SearchBarOption,
+    GotoRowOption,
   ]);
 }
 

@@ -12,3 +12,10 @@ export { AggregationsOption } from './AggregationsOption';
 // Phase D: High-complexity options
 export { TableExporterOption } from './TableExporterOption';
 export { ConditionalFormattingOption } from './ConditionalFormattingOption';
+export { ChartBuilderOption } from './ChartBuilderOption';
+export { AdvancedSettingsOption } from './AdvancedSettingsOption';
+
+// Toggle options
+export { QuickFiltersOption } from './QuickFiltersOption';
+export { SearchBarOption } from './SearchBarOption';
+export { GotoRowOption } from './GotoRowOption';

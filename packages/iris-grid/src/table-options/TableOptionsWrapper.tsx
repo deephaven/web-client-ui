@@ -22,7 +22,9 @@ import type {
   AggregationSettings,
   UIRollupConfig,
   SidebarFormattingRule,
+  ChartBuilderSettings,
 } from '../sidebar';
+import type AdvancedSettingsType from '../sidebar/AdvancedSettingsType';
 
 // Import to register built-in options
 import './registerBuiltinOptions';
@@ -58,6 +60,16 @@ export interface TableOptionsWrapperProps {
   tableDownloadProgress?: number;
   tableDownloadEstimatedTime?: number | null;
 
+  /** Toggle UI state */
+  isFilterBarShown?: boolean;
+  showSearchBar?: boolean;
+  isGotoShown?: boolean;
+  canToggleSearch?: boolean;
+  canDownloadCsv?: boolean;
+  hasAdvancedSettings?: boolean;
+  advancedSettings?: ReadonlyMap<AdvancedSettingsType, boolean>;
+  isChartBuilderAvailable?: boolean;
+
   /** Callbacks for grid actions */
   onSetCustomColumns: (columns: readonly ColumnName[]) => void;
   onSetSelectDistinctColumns: (columns: readonly ColumnName[]) => void;
@@ -86,6 +98,18 @@ export interface TableOptionsWrapperProps {
     useUnformattedValues: boolean
   ) => void;
   onCancelDownload: () => void;
+
+  /** Toggle callbacks */
+  onToggleFilterBar: () => void;
+  onToggleSearchBar: () => void;
+  onToggleGoto: () => void;
+
+  /** Advanced settings callback */
+  onAdvancedSettingsChange?: (key: AdvancedSettingsType, isOn: boolean) => void;
+
+  /** Chart builder callbacks */
+  onCreateChart?: (settings: ChartBuilderSettings) => void;
+  onChartChange?: (settings: ChartBuilderSettings) => void;
 
   /** Menu callbacks */
   onClose: () => void;
@@ -117,6 +141,14 @@ export function TableOptionsWrapper({
   tableDownloadStatus,
   tableDownloadProgress,
   tableDownloadEstimatedTime,
+  isFilterBarShown,
+  showSearchBar,
+  isGotoShown,
+  canToggleSearch,
+  canDownloadCsv,
+  hasAdvancedSettings,
+  advancedSettings,
+  isChartBuilderAvailable,
   onSetCustomColumns,
   onSetSelectDistinctColumns,
   onSetAggregationSettings,
@@ -130,6 +162,12 @@ export function TableOptionsWrapper({
   onStartDownload,
   onDownloadTable,
   onCancelDownload,
+  onToggleFilterBar,
+  onToggleSearchBar,
+  onToggleGoto,
+  onAdvancedSettingsChange,
+  onCreateChart,
+  onChartChange,
   onClose,
   registry = defaultTableOptionsRegistry,
 }: TableOptionsWrapperProps): JSX.Element {
@@ -154,6 +192,14 @@ export function TableOptionsWrapper({
       tableDownloadStatus,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
+      isFilterBarShown,
+      showSearchBar,
+      isGotoShown,
+      canToggleSearch,
+      canDownloadCsv,
+      hasAdvancedSettings,
+      advancedSettings,
+      isChartBuilderAvailable,
     }),
     [
       model,
@@ -174,6 +220,14 @@ export function TableOptionsWrapper({
       tableDownloadStatus,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
+      isFilterBarShown,
+      showSearchBar,
+      isGotoShown,
+      canToggleSearch,
+      canDownloadCsv,
+      hasAdvancedSettings,
+      advancedSettings,
+      isChartBuilderAvailable,
     ]
   );
 
@@ -231,6 +285,24 @@ export function TableOptionsWrapper({
         case 'CANCEL_DOWNLOAD':
           onCancelDownload();
           break;
+        case 'TOGGLE_FILTER_BAR':
+          onToggleFilterBar();
+          break;
+        case 'TOGGLE_SEARCH_BAR':
+          onToggleSearchBar();
+          break;
+        case 'TOGGLE_GOTO':
+          onToggleGoto();
+          break;
+        case 'SET_ADVANCED_SETTING':
+          onAdvancedSettingsChange?.(action.key, action.isOn);
+          break;
+        case 'CREATE_CHART':
+          onCreateChart?.(action.settings);
+          break;
+        case 'UPDATE_CHART_PREVIEW':
+          onChartChange?.(action.settings);
+          break;
         default:
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           log.warn(`Unknown action type: ${(action as any).type}`);
@@ -250,6 +322,12 @@ export function TableOptionsWrapper({
       onStartDownload,
       onDownloadTable,
       onCancelDownload,
+      onToggleFilterBar,
+      onToggleSearchBar,
+      onToggleGoto,
+      onAdvancedSettingsChange,
+      onCreateChart,
+      onChartChange,
     ]
   );
 
