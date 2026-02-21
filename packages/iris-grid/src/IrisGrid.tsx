@@ -201,6 +201,7 @@ import {
   TableOptionsContext,
   type TableOptionsContextValue,
 } from './TableOptionsContext';
+import { TableOptionsWrapper } from './table-options/TableOptionsWrapper';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -383,6 +384,13 @@ export interface IrisGridProps {
    * Use this to reorder, hide, or modify existing options.
    */
   optionsModifier?: OptionItemsModifier;
+
+  /**
+   * Enable the new Table Options Registry architecture.
+   * When true, uses TableOptionsWrapper instead of the legacy switch-based rendering.
+   * Default: false (uses legacy architecture for backward compatibility)
+   */
+  useRegistryOptions?: boolean;
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
@@ -574,6 +582,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     density: undefined,
     canToggleSearch: true,
     additionalMenuOptions: EMPTY_ARRAY,
+    useRegistryOptions: false,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
     getMetricCalculator: (
@@ -5039,7 +5048,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedSettings.size > 0
     );
 
-    const { additionalMenuOptions, optionsModifier } = this.props;
+    const { additionalMenuOptions, optionsModifier, useRegistryOptions } =
+      this.props;
     const mergedOptions =
       additionalMenuOptions != null && additionalMenuOptions.length > 0
         ? [...baseOptionItems, ...additionalMenuOptions]
@@ -5446,26 +5456,63 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           unmountOnExit
         >
           <div className="table-sidebar">
-            <TableOptionsContext.Provider value={tableOptionsContextValue}>
-              <Stack>
-                <Page title="Table Options" onClose={this.handleMenuClose}>
-                  <Menu
-                    onSelect={i => this.handleMenuSelect(optionItems[i])}
-                    items={optionItems}
-                  />
-                </Page>
-                {openOptionsStack.map((option, i) => (
-                  <Page
-                    title={openOptions[i].title}
-                    onBack={this.handleMenuBack}
-                    onClose={this.handleMenuClose}
-                    key={openOptions[i].type}
-                  >
-                    {option}
+            {useRegistryOptions === true ? (
+              <TableOptionsWrapper
+                model={model}
+                customColumns={customColumns}
+                selectDistinctColumns={selectDistinctColumns}
+                aggregationSettings={aggregationSettings}
+                rollupConfig={rollupConfig}
+                conditionalFormats={conditionalFormats}
+                movedColumns={movedColumns}
+                frozenColumns={frozenColumns}
+                columnHeaderGroups={columnHeaderGroups}
+                hiddenColumns={hiddenColumns}
+                isRollup={isRollup}
+                name={name}
+                userColumnWidths={userColumnWidths}
+                selectedRanges={selectedRanges}
+                isTableDownloading={isTableDownloading}
+                tableDownloadStatus={tableDownloadStatus}
+                tableDownloadProgress={tableDownloadProgress}
+                tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+                onSetCustomColumns={this.handleUpdateCustomColumns}
+                onSetSelectDistinctColumns={this.handleSelectDistinctChanged}
+                onSetAggregationSettings={this.handleAggregationsChange}
+                onSetRollupConfig={this.handleRollupChange}
+                onSetConditionalFormats={this.handleConditionalFormatsChange}
+                onSetMovedColumns={this.handleMovedColumnsChanged}
+                onSetFrozenColumns={this.handleFrozenColumnsChanged}
+                onSetColumnHeaderGroups={this.handleHeaderGroupsChanged}
+                onSetColumnVisibility={this.handleColumnVisibilityChanged}
+                onResetColumnVisibility={this.handleColumnVisibilityReset}
+                onStartDownload={this.handleDownloadTableStart}
+                onDownloadTable={this.handleDownloadTable}
+                onCancelDownload={this.handleCancelDownloadTable}
+                onClose={this.handleMenuClose}
+              />
+            ) : (
+              <TableOptionsContext.Provider value={tableOptionsContextValue}>
+                <Stack>
+                  <Page title="Table Options" onClose={this.handleMenuClose}>
+                    <Menu
+                      onSelect={i => this.handleMenuSelect(optionItems[i])}
+                      items={optionItems}
+                    />
                   </Page>
-                ))}
-              </Stack>
-            </TableOptionsContext.Provider>
+                  {openOptionsStack.map((option, i) => (
+                    <Page
+                      title={openOptions[i].title}
+                      onBack={this.handleMenuBack}
+                      onClose={this.handleMenuClose}
+                      key={openOptions[i].type}
+                    >
+                      {option}
+                    </Page>
+                  ))}
+                </Stack>
+              </TableOptionsContext.Provider>
+            )}
           </div>
         </SlideTransition>
         <ContextActions actions={this.contextActions} />

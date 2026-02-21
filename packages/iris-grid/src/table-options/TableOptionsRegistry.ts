@@ -1,12 +1,16 @@
 import type { TableOption, GridStateSnapshot } from './TableOption';
 
+// Use `any` generic defaults to accept options with any state/action types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyTableOption = TableOption<any, any>;
+
 /**
  * Registry for Table Options.
  * Manages the collection of available options and provides methods
  * for plugins to register, unregister, and modify options.
  */
 export class TableOptionsRegistry {
-  private options = new Map<string, TableOption>();
+  private options = new Map<string, AnyTableOption>();
 
   private listeners = new Set<() => void>();
 
@@ -14,7 +18,7 @@ export class TableOptionsRegistry {
    * Register a new table option.
    * @param option - The option to register
    */
-  register(option: TableOption): void {
+  register(option: AnyTableOption): void {
     this.options.set(option.type, option);
     this.notifyListeners();
   }
@@ -23,7 +27,7 @@ export class TableOptionsRegistry {
    * Register multiple options at once.
    * @param options - Array of options to register
    */
-  registerAll(options: TableOption[]): void {
+  registerAll(options: readonly AnyTableOption[]): void {
     options.forEach(option => {
       this.options.set(option.type, option);
     });
@@ -51,7 +55,7 @@ export class TableOptionsRegistry {
    * Get an option by type.
    * @param type - The option type
    */
-  get(type: string): TableOption | undefined {
+  get(type: string): AnyTableOption | undefined {
     return this.options.get(type);
   }
 
@@ -59,7 +63,7 @@ export class TableOptionsRegistry {
    * Get all registered options, sorted by order.
    * @param gridState - Current grid state (for filtering visibility)
    */
-  getOptions(gridState?: GridStateSnapshot): TableOption[] {
+  getOptions(gridState?: GridStateSnapshot): AnyTableOption[] {
     const allOptions = [...this.options.values()];
 
     // Filter by visibility if grid state is provided
@@ -84,7 +88,7 @@ export class TableOptionsRegistry {
    * @param type - The option type to modify
    * @param modifier - Function that receives the current option and returns modified version
    */
-  modify<T extends TableOption>(
+  modify<T extends AnyTableOption>(
     type: string,
     modifier: (option: T) => T
   ): void {
@@ -127,4 +131,5 @@ export class TableOptionsRegistry {
  */
 export const defaultTableOptionsRegistry = new TableOptionsRegistry();
 
+export type { AnyTableOption };
 export default TableOptionsRegistry;
