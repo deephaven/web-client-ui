@@ -1,5 +1,5 @@
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
-import type { MoveOperation, ModelIndex } from '@deephaven/grid';
+import type { MoveOperation, ModelIndex, ModelSizeMap } from '@deephaven/grid';
 import type { Shortcut } from '@deephaven/components';
 import type { ColumnName } from '../CommonTypes';
 import type ColumnHeaderGroup from '../ColumnHeaderGroup';
@@ -53,7 +53,7 @@ export interface GridStateSnapshot {
   isRollup: boolean;
 
   /** User column widths for download */
-  userColumnWidths?: Map<string, number>;
+  userColumnWidths?: ModelSizeMap;
 
   /** Table name for download */
   name?: string;

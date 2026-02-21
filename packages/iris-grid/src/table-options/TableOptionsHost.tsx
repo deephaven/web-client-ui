@@ -1,15 +1,14 @@
 import React, { useCallback, useMemo, useReducer, useState } from 'react';
 import { Menu, Stack, Page } from '@deephaven/components';
-import type {
-  GridStateSnapshot,
-  GridDispatch,
-  TableOption,
-} from './TableOption';
+import type { GridStateSnapshot, GridDispatch } from './TableOption';
 import { TableOptionsHostContext } from './TableOptionsHostContext';
-import type { TableOptionsRegistry } from './TableOptionsRegistry';
+import type {
+  TableOptionsRegistry,
+  AnyTableOption,
+} from './TableOptionsRegistry';
 
 interface OptionStackEntry {
-  option: TableOption;
+  option: AnyTableOption;
   state: unknown;
 }
 
@@ -183,7 +182,7 @@ export function TableOptionsHost({
   }, [optionStack, legacyOnMenuBack]);
 
   // Open a sub-panel
-  const openSubPanel = useCallback((option: TableOption) => {
+  const openSubPanel = useCallback((option: AnyTableOption) => {
     if (option.initialState !== undefined) {
       dispatchOptionStates({
         type: 'INIT_OPTION',
@@ -201,7 +200,7 @@ export function TableOptionsHost({
 
   // Create dispatch function for option-local actions
   const createOptionDispatch = useCallback(
-    (option: TableOption) => (action: unknown) => {
+    (option: AnyTableOption) => (action: unknown) => {
       if (option.reducer == null) return;
 
       const { reducer } = option;

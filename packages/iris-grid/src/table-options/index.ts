@@ -25,6 +25,13 @@ export {
 // Host component
 export { TableOptionsHost } from './TableOptionsHost';
 
+// Wrapper for class components
+export { TableOptionsWrapper } from './TableOptionsWrapper';
+export type { TableOptionsWrapperProps } from './TableOptionsWrapper';
+
+// Registration
+export { registerBuiltinOptions } from './registerBuiltinOptions';
+
 // Built-in options
 export { SelectDistinctOption } from './options/SelectDistinctOption';
 export { CustomColumnOption } from './options/CustomColumnOption';
