@@ -51,6 +51,27 @@ export interface GridStateSnapshot {
 
   /** Whether the table has a rollup applied */
   isRollup: boolean;
+
+  /** User column widths for download */
+  userColumnWidths?: Map<string, number>;
+
+  /** Table name for download */
+  name?: string;
+
+  /** Selected ranges for download */
+  selectedRanges?: readonly unknown[];
+
+  /** Download in progress */
+  isTableDownloading?: boolean;
+
+  /** Download status */
+  tableDownloadStatus?: string;
+
+  /** Download progress (0-1) */
+  tableDownloadProgress?: number;
+
+  /** Estimated download time */
+  tableDownloadEstimatedTime?: number | null;
 }
 
 // ============================================================================
@@ -78,7 +99,25 @@ export type GridAction =
   | {
       type: 'SET_COLUMN_HEADER_GROUPS';
       groups: readonly ColumnHeaderGroup[];
-    };
+    }
+  | {
+      type: 'SET_COLUMN_VISIBILITY';
+      columns: readonly ModelIndex[];
+      isVisible: boolean;
+    }
+  | { type: 'RESET_COLUMN_VISIBILITY' }
+  | { type: 'START_DOWNLOAD' }
+  | {
+      type: 'DOWNLOAD_TABLE';
+      fileName: string;
+      frozenTable: unknown;
+      tableSubscription: unknown;
+      snapshotRanges: unknown;
+      modelRanges: unknown;
+      includeColumnHeaders: boolean;
+      useUnformattedValues: boolean;
+    }
+  | { type: 'CANCEL_DOWNLOAD' };
 
 /**
  * Function to dispatch grid actions.
@@ -107,7 +146,8 @@ export interface TableOptionPanelProps<TOptionState = void> {
   dispatchOption: (action: unknown) => void;
 
   /** Open a sub-panel (e.g., AGGREGATION_EDIT from AGGREGATIONS) */
-  openSubPanel: (option: TableOption) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  openSubPanel: (option: TableOption<any, any>) => void;
 
   /** Close the current panel (go back) */
   closePanel: () => void;

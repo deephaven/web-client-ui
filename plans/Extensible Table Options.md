@@ -213,8 +213,8 @@ TBD:
 **Migration Phases:**
 - **Phase A:** Create registry, types, and `TableOptionsHost` component ✅
 - **Phase B:** Migrate low-complexity options (SelectDistinct, CustomColumn, RollupRows) ✅
-- **Phase C:** Migrate medium-complexity options (Aggregations, VisibilityOrdering)
-- **Phase D:** Migrate high-complexity options (TableExporter, ConditionalFormatting)
+- **Phase C:** Migrate medium-complexity options (Aggregations, VisibilityOrdering) ✅
+- **Phase D:** Migrate high-complexity options (TableExporter, ConditionalFormatting) ✅
 - **Phase E:** Remove legacy switch statement
 
 **Files Created:**
@@ -225,6 +225,10 @@ TBD:
 - `packages/iris-grid/src/table-options/options/SelectDistinctOption.tsx` - SelectDistinct option ✅
 - `packages/iris-grid/src/table-options/options/CustomColumnOption.tsx` - CustomColumn option ✅
 - `packages/iris-grid/src/table-options/options/RollupRowsOption.tsx` - RollupRows option ✅
+- `packages/iris-grid/src/table-options/options/VisibilityOrderingOption.tsx` - VisibilityOrdering option ✅
+- `packages/iris-grid/src/table-options/options/AggregationsOption.tsx` - Aggregations with sub-panel ✅
+- `packages/iris-grid/src/table-options/options/TableExporterOption.tsx` - TableExporter option ✅
+- `packages/iris-grid/src/table-options/options/ConditionalFormattingOption.tsx` - ConditionalFormatting with sub-panel ✅
 - `packages/iris-grid/src/table-options/options/index.ts` - Options index ✅
 - `packages/iris-grid/src/table-options/index.ts` - Public exports ✅
 

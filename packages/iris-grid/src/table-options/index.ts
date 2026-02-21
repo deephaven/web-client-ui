@@ -29,3 +29,7 @@ export { TableOptionsHost } from './TableOptionsHost';
 export { SelectDistinctOption } from './options/SelectDistinctOption';
 export { CustomColumnOption } from './options/CustomColumnOption';
 export { RollupRowsOption } from './options/RollupRowsOption';
+export { VisibilityOrderingOption } from './options/VisibilityOrderingOption';
+export { AggregationsOption } from './options/AggregationsOption';
+export { TableExporterOption } from './options/TableExporterOption';
+export { ConditionalFormattingOption } from './options/ConditionalFormattingOption';
