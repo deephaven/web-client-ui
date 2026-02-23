@@ -259,7 +259,7 @@ export class GridRenderer {
       floatingBottomRowCount,
       floatingRows,
       rowCount,
-      visibleColumns,
+      visibleNonHiddenColumns,
       allRowYs,
       allRowHeights,
     } = metrics;
@@ -284,7 +284,7 @@ export class GridRenderer {
     this.drawGridLinesForItems(
       context,
       state,
-      visibleColumns,
+      visibleNonHiddenColumns,
       floatingRows,
       theme.floatingGridColumnColor,
       theme.floatingGridRowColor
@@ -293,7 +293,7 @@ export class GridRenderer {
     this.drawCellBackgroundsForItems(
       context,
       state,
-      visibleColumns,
+      visibleNonHiddenColumns,
       floatingRows
     );
 
@@ -323,8 +323,8 @@ export class GridRenderer {
     }
 
     // Draw the cell content...
-    for (let c = 0; c < visibleColumns.length; c += 1) {
-      const column = visibleColumns[c];
+    for (let c = 0; c < visibleNonHiddenColumns.length; c += 1) {
+      const column = visibleNonHiddenColumns[c];
       for (let r = 0; r < floatingRows.length; r += 1) {
         const row = floatingRows[r];
         this.drawCellContent(context, state, column, row);
@@ -850,12 +850,12 @@ export class GridRenderer {
     state: GridRenderState
   ): void {
     const { metrics, theme } = state;
-    const { visibleColumns, visibleRows } = metrics;
+    const { visibleNonHiddenColumns, visibleRows } = metrics;
 
     this.drawGridLinesForItems(
       context,
       state,
-      visibleColumns,
+      visibleNonHiddenColumns,
       visibleRows,
       theme.gridColumnColor,
       theme.gridRowColor
@@ -927,11 +927,11 @@ export class GridRenderer {
     state: GridRenderState
   ): void {
     const { metrics } = state;
-    const { visibleColumns, visibleRows } = metrics;
+    const { visibleNonHiddenColumns, visibleRows } = metrics;
     this.drawCellBackgroundsForItems(
       context,
       state,
-      visibleColumns,
+      visibleNonHiddenColumns,
       visibleRows
     );
   }
@@ -1004,10 +1004,10 @@ export class GridRenderer {
     state: GridRenderState
   ): void {
     const { metrics } = state;
-    const { visibleColumns } = metrics;
+    const { visibleNonHiddenColumns } = metrics;
 
-    for (let i = 0; i < visibleColumns.length; i += 1) {
-      const column = visibleColumns[i];
+    for (let i = 0; i < visibleNonHiddenColumns.length; i += 1) {
+      const column = visibleNonHiddenColumns[i];
       this.drawColumnCellContents(context, state, column);
     }
   }

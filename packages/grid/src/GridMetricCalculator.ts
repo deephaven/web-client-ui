@@ -262,11 +262,8 @@ export class GridMetricCalculator {
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
     const visibleRowHeights = this.getVisibleRowHeights(state);
-    const visibleColumnWidths = this.getVisibleColumnWidths(
-      state,
-      firstColumn,
-      treePaddingX
-    );
+    const [visibleColumnWidths, visibleNonHiddenColumns] =
+      this.getVisibleColumnWidths(state, firstColumn, treePaddingX);
 
     // Calculate the metrics for the main grid
     const visibleRows = Array.from(visibleRowHeights.keys());
@@ -615,6 +612,9 @@ export class GridMetricCalculator {
       // Array of visible rows/columns, by grid index
       visibleRows,
       visibleColumns,
+
+      // Array of visible, non-hidden columns, by grid index
+      visibleNonHiddenColumns,
 
       // Map of the height/width of columns in the viewport (excluding floating columns)
       visibleRowHeights,
@@ -1060,18 +1060,19 @@ export class GridMetricCalculator {
   /**
    * Retrieve a map of the width of all the visible columns (non-floating)
    * @param state The grid metric state
-   * @returns The widths of all the visible columns
+   * @returns The widths of all the visible columns and an array of visible, non-hidden columns
    */
   getVisibleColumnWidths(
     state: GridMetricState,
     firstColumn: VisibleIndex = this.getFirstColumn(state),
     treePaddingX: number = this.calculateTreePaddingX(state)
-  ): SizeMap {
+  ): [SizeMap, VisibleIndex[]] {
     const { left, leftOffset, width, model } = state;
 
     let x = 0;
     let column = left;
     const columnWidths = new Map();
+    const visibleNonHiddenColumns: VisibleIndex[] = [];
     const { columnCount, floatingRightColumnCount } = model;
     while (
       x < width + leftOffset &&
@@ -1084,11 +1085,14 @@ export class GridMetricCalculator {
         treePaddingX
       );
       columnWidths.set(column, columnWidth);
+      if (columnWidth > 0) {
+        visibleNonHiddenColumns.push(column);
+      }
       x += columnWidth;
       column += 1;
     }
 
-    return columnWidths;
+    return [columnWidths, visibleNonHiddenColumns];
   }
 
   /**

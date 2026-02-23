@@ -133,6 +133,9 @@ export type GridMetrics = {
   visibleRows: readonly VisibleIndex[];
   visibleColumns: readonly VisibleIndex[];
 
+  // Array of visible, non-hidden columns, by grid index
+  visibleNonHiddenColumns: readonly VisibleIndex[];
+
   // Map of the height/width of visible rows/columns
   visibleRowHeights: SizeMap;
   visibleColumnWidths: SizeMap;
