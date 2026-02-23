@@ -43,23 +43,7 @@ import {
   isDeletableGridModel,
   isExpandableColumnGridModel,
 } from '@deephaven/grid';
-import {
-  dhEye,
-  dhFilterFilled,
-  dhGraphLineUp,
-  dhTriangleDownSquare,
-  vsClose,
-  vsCloudDownload,
-  vsEdit,
-  vsFilter,
-  vsMenu,
-  vsReply,
-  vsRuby,
-  vsSearch,
-  vsSplitHorizontal,
-  vsSymbolOperator,
-  vsTools,
-} from '@deephaven/icons';
+import { dhFilterFilled, vsClose, vsFilter, vsMenu } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateUtils,
@@ -151,9 +135,7 @@ import {
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
-import {
-  type AdvancedSettingsMenuCallback,
-} from './sidebar/AdvancedSettingsMenu';
+import { type AdvancedSettingsMenuCallback } from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
 import GotoRow, { type GotoRowElement } from './GotoRow';
@@ -173,7 +155,6 @@ import {
   type IrisGridStateOverride,
   type OperationMap,
   type OptionItem,
-  type OptionItemsModifier,
   type PendingDataErrorMap,
   type PendingDataMap,
   type QuickFilterMap,
@@ -185,10 +166,6 @@ import {
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
 import { TableOptionsWrapper } from './table-options/TableOptionsWrapper';
-import {
-  TableOptionsHostContext,
-  type TableOptionsHostContextValue,
-} from './table-options/TableOptionsHostContext';
 import type {
   GridStateSnapshot,
   GridDispatch,
@@ -366,16 +343,6 @@ export interface IrisGridProps {
   canToggleSearch: boolean;
 
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
-
-  /** Additional menu options to append to the Table Options menu */
-  additionalMenuOptions?: readonly OptionItem[];
-
-  /**
-   * Optional function to modify the Table Options menu items.
-   * Receives all options (built-in + additional) and returns a modified list.
-   * Use this to reorder, hide, or modify existing options.
-   */
-  optionsModifier?: OptionItemsModifier;
 
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
@@ -566,7 +533,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // Do not set a default density prop since we need to know if it overrides the global density setting
     density: undefined,
     canToggleSearch: true,
-    additionalMenuOptions: EMPTY_ARRAY,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
     getMetricCalculator: (
@@ -1148,122 +1114,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       />
     ),
     { max: 50 }
-  );
-
-  getCachedOptionItems = memoize(
-    (
-      isChartBuilderAvailable: boolean,
-      isCustomColumnsAvailable: boolean,
-      isFormatColumnsAvailable: boolean,
-      isOrganizeColumnsAvailable: boolean,
-      isRollupAvailable: boolean,
-      isTotalsAvailable: boolean,
-      isSelectDistinctAvailable: boolean,
-      isExportAvailable: boolean,
-      toggleFilterBarAction: Action,
-      toggleSearchBarAction: Action,
-      toggleGotoRowAction: Action,
-      isFilterBarShown: boolean,
-      showSearchBar: boolean,
-      canDownloadCsv: boolean,
-      canToggleSearch: boolean,
-      showGotoRow: boolean,
-      hasAdvancedSettings: boolean
-    ): readonly OptionItem[] => {
-      const optionItems: OptionItem[] = [];
-      if (isChartBuilderAvailable) {
-        optionItems.push({
-          type: OptionType.CHART_BUILDER,
-          title: 'Chart Builder',
-          icon: dhGraphLineUp,
-        });
-      }
-      if (isOrganizeColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.VISIBILITY_ORDERING_BUILDER,
-          title: 'Organize Columns',
-          icon: dhEye,
-        });
-      }
-      if (isFormatColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.CONDITIONAL_FORMATTING,
-          title: 'Conditional Formatting',
-          icon: vsEdit,
-        });
-      }
-      if (isCustomColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.CUSTOM_COLUMN_BUILDER,
-          title: 'Custom Columns',
-          icon: vsSplitHorizontal,
-        });
-      }
-      if (isRollupAvailable) {
-        optionItems.push({
-          type: OptionType.ROLLUP_ROWS,
-          title: 'Rollup Rows',
-          icon: dhTriangleDownSquare,
-        });
-      }
-      if (isTotalsAvailable) {
-        optionItems.push({
-          type: OptionType.AGGREGATIONS,
-          title: 'Aggregate Columns',
-          icon: vsSymbolOperator,
-        });
-      }
-      if (isSelectDistinctAvailable) {
-        optionItems.push({
-          type: OptionType.SELECT_DISTINCT,
-          title: 'Select Distinct Values',
-          icon: vsRuby,
-        });
-      }
-      if (isExportAvailable && canDownloadCsv) {
-        optionItems.push({
-          type: OptionType.TABLE_EXPORTER,
-          title: 'Download CSV',
-          icon: vsCloudDownload,
-        });
-      }
-      if (hasAdvancedSettings) {
-        optionItems.push({
-          type: OptionType.ADVANCED_SETTINGS,
-          title: 'Advanced Settings',
-          icon: vsTools,
-        });
-      }
-      optionItems.push({
-        type: OptionType.QUICK_FILTERS,
-        title: 'Quick Filters',
-        subtitle: toggleFilterBarAction.shortcut.getDisplayText(),
-        icon: vsFilter,
-        isOn: isFilterBarShown,
-        onChange: toggleFilterBarAction.action,
-      });
-      if (canToggleSearch) {
-        optionItems.push({
-          type: OptionType.SEARCH_BAR,
-          title: 'Search Bar',
-          subtitle: toggleSearchBarAction.shortcut.getDisplayText(),
-          icon: vsSearch,
-          isOn: showSearchBar,
-          onChange: toggleSearchBarAction.action,
-        });
-      }
-      optionItems.push({
-        type: OptionType.GOTO,
-        title: 'Go to',
-        subtitle: toggleGotoRowAction.shortcut.getDisplayText(),
-        icon: vsReply,
-        isOn: showGotoRow,
-        onChange: toggleGotoRowAction.action,
-      });
-
-      return Object.freeze(optionItems);
-    },
-    { max: 1 }
   );
 
   /**
@@ -5077,61 +4927,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    const baseOptionItems = this.getCachedOptionItems(
-      onCreateChart !== undefined && model.isChartBuilderAvailable,
-      model.isCustomColumnsAvailable,
-      model.isFormatColumnsAvailable,
-      model.isOrganizeColumnsAvailable,
-      model.isRollupAvailable,
-      model.isTotalsAvailable || isRollup,
-      model.isSelectDistinctAvailable,
-      model.isExportAvailable,
-      this.toggleFilterBarAction,
-      this.toggleSearchBarAction,
-      this.toggleGotoRowAction,
-      isFilterBarShown,
-      showSearchBar,
-      canDownloadCsv,
-      this.isTableSearchAvailable(),
-      isGotoShown,
-      advancedSettings.size > 0
-    );
-
-    const { additionalMenuOptions, optionsModifier } = this.props;
-    const mergedOptions =
-      additionalMenuOptions != null && additionalMenuOptions.length > 0
-        ? [...baseOptionItems, ...additionalMenuOptions]
-        : baseOptionItems;
-
-    // Apply the options modifier if provided
-    const optionItems =
-      optionsModifier != null ? optionsModifier(mergedOptions) : mergedOptions;
-
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
       userColumnWidths
-    );
-
-    // Create the grid state snapshot and context value for Table Options panels
-    const gridState = this.getGridStateSnapshot(
-      model,
-      customColumns,
-      selectDistinctColumns,
-      aggregationSettings,
-      rollupConfig,
-      conditionalFormats,
-      movedColumns,
-      frozenColumns,
-      columnHeaderGroups,
-      hiddenColumns,
-      isRollup,
-      name,
-      userColumnWidths,
-      selectedRanges,
-      isTableDownloading,
-      tableDownloadStatus,
-      tableDownloadProgress,
-      tableDownloadEstimatedTime
     );
 
     return (

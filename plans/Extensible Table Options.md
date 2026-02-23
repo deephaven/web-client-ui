@@ -79,7 +79,7 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 ### Out of Scope / Limitations
 1. **Convert Table Options** to use Spectrum menu components - Future work.
 
-2. **Pivot Builder** - Future work to make it a plugin using the new architecture.Focus on the extensible architecture for now.
+2. **Pivot Builder** - Future work to make it a plugin using the new architecture. Focus on the extensible architecture for now.
 
 3. **UI.Table support** - Future work.
 
@@ -90,19 +90,19 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 
 ### Architecture Overview
   - Plugin chaining mechanism - middleware pattern
-  - Custom options use `render` prop on `OptionItem` to provide configuration panels
-  - Custom option types use string values to avoid enum conflicts
+  - Registry-based architecture where options are self-contained modules
+  - Plugins register options via `defaultTableOptionsRegistry.register(option)`
+  - Options define their own menu item, Panel component, and toggle behavior
 
-### Key Files Changed
-- `packages/iris-grid/src/CommonTypes.tsx` - Extended `OptionItem` type with `render` prop, added `OptionItemsModifier` type
-- `packages/iris-grid/src/IrisGrid.tsx` - Added `optionsModifier` prop, `TableOptionsContext.Provider`, `getTableOptionsContextValue` method
-- `packages/iris-grid/src/TableOptionsContext.tsx` - New context for Table Options panels with state access and update methods
-- `packages/iris-grid/src/index.ts` - Exports for `TableOptionsContext`, `useTableOptions`, `OptionItemsModifier`
-- `packages/dashboard-core-plugins/src/GridMiddlewarePlugin.tsx` - Example middleware demonstrating `useTableOptions` hook usage
-- `packages/dashboard-core-plugins/src/panels/IrisGridPanel.tsx` - Added `optionsModifier` prop passthrough
-
-TBD:
-  - Refactor built-in options to use `useTableOptions` instead of direct props
+### Key Files Created
+- `packages/iris-grid/src/table-options/TableOption.ts` - Core interfaces (GridStateSnapshot, GridAction, TableOption, etc.)
+- `packages/iris-grid/src/table-options/TableOptionsRegistry.ts` - Registry class with register/unregister/modify/subscribe
+- `packages/iris-grid/src/table-options/TableOptionsHostContext.ts` - Context with useTableOptionsHost() hook
+- `packages/iris-grid/src/table-options/TableOptionsHost.tsx` - Host component with Stack/Page/Menu rendering
+- `packages/iris-grid/src/table-options/TableOptionsWrapper.tsx` - Bridge between IrisGrid class component and TableOptionsHost
+- `packages/iris-grid/src/table-options/registerBuiltinOptions.ts` - Registers all built-in options
+- `packages/iris-grid/src/table-options/options/*.tsx` - Individual option implementations
+- `packages/dashboard-core-plugins/src/GridMiddlewarePlugin.tsx` - Example middleware demonstrating registry usage
 
 
 ### Decisions
@@ -114,6 +114,8 @@ TBD:
 3. Provide a mechanism to enable/disable plugins, and define the order of execution for plugins
 
 4. Widget plugin/panel plugin distinction - ensure the architecture supports both use cases
+
+5. **Registry-based architecture**: Plugins register options via `defaultTableOptionsRegistry.register()` instead of using modifier props
 
 ---
 
@@ -141,36 +143,28 @@ TBD:
   - Added 5 middleware chaining tests in `WidgetLoaderPlugin.test.tsx`
 - [x] Create example middleware plugin (`packages/dashboard-core-plugins/src/GridMiddlewarePlugin.tsx`)
   - Demonstrates component and panel middleware for Table/TreeTable/HierarchicalTable/PartitionedTable
-  - Shows how to inject `additionalMenuOptions` prop into wrapped panel
+  - Shows how to register custom Table Options via registry
   - Registered in `code-studio` and `embed-widget` for testing
 
 
-### Phase 2: IrisGrid State Interface & Menu Options 🔄
+### Phase 2: IrisGrid State Interface & Table Options Registry ✅
 - [x] Define IrisGrid state access/update interface for built-in options
-  - Created `TableOptionsContext.tsx` with `TableOptionsContextValue` interface
-  - Interface provides: model, state values (customColumns, selectDistinctColumns, aggregationSettings, etc.)
-  - Interface provides: update methods (setCustomColumns, setSelectDistinctColumns, setAggregationSettings, etc.)
-  - Added `useTableOptions()` hook for functional components
-  - IrisGrid provides the context via `TableOptionsContext.Provider` wrapping the table-sidebar
+  - Created `TableOptionsHostContext.ts` with `TableOptionsHostContextValue` interface
+  - Interface provides: gridState (read-only snapshot), dispatch (action handlers), navigation
+  - Added `useTableOptionsHost()` hook for functional components
 - [x] Convert built-in Table Options to use the interface for updates
-  - Updated `GridMiddlewarePlugin` to demonstrate using `useTableOptions()` hook
-  - Config panel now accesses model, selectDistinctColumns, customColumns via context
-  - Config panel demonstrates calling `setSelectDistinctColumns()` and `closeCurrentOption()`
-- [x] Define the interface for built-in Table Options menu items (`OptionItem` enhancements)
-  - Extended `OptionItem.type` to accept `OptionType | string` for custom option types
-  - Added optional `render?: () => React.ReactNode` property for custom configuration panels
-  - Updated `IrisGrid.tsx` default case to call `option.render()` when present
-- [ ] Write the configuration for the existing built-in options and behaviors to replace the current implementation with switch statements
+  - All built-in options now use `useTableOptionsHost()` hook
+  - Panels call `dispatch({ type: 'SET_*', payload })` to update grid state
+- [x] Define the interface for built-in Table Options menu items
+  - `TableOption` interface with `type`, `menuItem`, `Panel`, optional `toggle`, optional `order`
+  - `TableOptionToggle` interface for toggle options with `getValue`, `actionType`, `shortcut`
+  - `TableOptionPanelProps` interface with `gridState`, `dispatch`, `onBack`, navigation helpers
+- [x] Write the configuration for the existing built-in options
+  - Created self-contained option files for all 15 built-in options
 
-#### Table Options Registry Architecture
+#### Table Options Registry Architecture ✅
 
 **Goal:** Fully decouple IrisGrid from Table Options by creating a registry-based architecture where options are self-contained modules.
-
-**Problems with Current Approach:**
-- IrisGrid has a 150+ line switch statement tightly coupled to all 11 option implementations
-- TableOptionsContext would need 30+ values to support all options
-- Sub-panel logic (AGGREGATION_EDIT, etc.) is hardcoded in IrisGrid
-- Option-specific state (download progress, format preview) is managed by IrisGrid but only used by one option
 
 **Architecture Overview:**
 ```
@@ -178,35 +172,34 @@ TBD:
 │                     TableOptionsRegistry                     │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐         │
 │  │SelectDistinct│ │  RollupRows  │ │ CustomColumn │  ...    │
-│  │    Option    │ │    Option    │ │    Option    │         │
 │  └──────────────┘ └──────────────┘ └──────────────┘         │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                         IrisGrid                             │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │ TableOptionsHost                                     │    │
-│  │  - Renders menu from registry                        │    │
-│  │  - Manages navigation stack                          │    │
-│  │  - Provides GridState + GridDispatch via context     │    │
-│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ TableOptionsHost                                        ││
+│  │  - Renders menu from registry                           ││
+│  │  - Manages navigation stack                             ││
+│  │  - Provides GridState + GridDispatch via context        ││
+│  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Core Interfaces:**
-- `TableOption<TOptionState>` - Self-contained option definition with menu item config, Panel component, optional local state reducer
+- `TableOption<TOptionState>` - Self-contained option definition with menu item config, Panel component, optional toggle config
 - `TableOptionPanelProps` - What panels receive: gridState (read-only), dispatch (actions), navigation
-- `GridStateSnapshot` - Read-only view of grid state (model, columns, settings)
-- `GridAction / GridDispatch` - Actions to modify grid state
+- `GridStateSnapshot` - Read-only view of grid state (model, columns, settings, toggle states)
+- `GridAction / GridDispatch` - Actions to modify grid state (SET_*, TOGGLE_*, CREATE_CHART, etc.)
 
 **Benefits:**
-| Aspect | Current | New Architecture |
-|--------|---------|------------------|
+| Aspect | Before | After |
+|--------|--------|-------|
 | Adding new option | Modify IrisGrid switch, add handler methods | Register single self-contained file |
 | Option-specific state | IrisGrid state | Local to option via reducer |
 | Sub-panels | Hardcoded in IrisGrid | Generic via `openSubPanel` |
-| Plugin override | optionsModifier function | Registry modify/unregister |
+| Plugin integration | optionsModifier function | Registry register/unregister |
 | Testing | Need full IrisGrid | Test option in isolation |
 | Bundle size | All options bundled | Could lazy-load options |
 
@@ -215,45 +208,65 @@ TBD:
 - **Phase B:** Migrate low-complexity options (SelectDistinct, CustomColumn, RollupRows) ✅
 - **Phase C:** Migrate medium-complexity options (Aggregations, VisibilityOrdering) ✅
 - **Phase D:** Migrate high-complexity options (TableExporter, ConditionalFormatting) ✅
-- **Phase E:** Remove legacy switch statement
+- **Phase E:** Remove legacy switch statement ✅
 
 **Files Created:**
-- `packages/iris-grid/src/table-options/TableOption.ts` - Core interfaces (GridStateSnapshot, GridAction, TableOption, etc.) ✅
-- `packages/iris-grid/src/table-options/TableOptionsRegistry.ts` - Registry class with register/unregister/modify/subscribe ✅
-- `packages/iris-grid/src/table-options/TableOptionsHostContext.ts` - Context with useTableOptionsHost() hook ✅
-- `packages/iris-grid/src/table-options/TableOptionsHost.tsx` - Host component with Stack/Page/Menu rendering ✅
-- `packages/iris-grid/src/table-options/options/SelectDistinctOption.tsx` - SelectDistinct option ✅
-- `packages/iris-grid/src/table-options/options/CustomColumnOption.tsx` - CustomColumn option ✅
-- `packages/iris-grid/src/table-options/options/RollupRowsOption.tsx` - RollupRows option ✅
-- `packages/iris-grid/src/table-options/options/VisibilityOrderingOption.tsx` - VisibilityOrdering option ✅
-- `packages/iris-grid/src/table-options/options/AggregationsOption.tsx` - Aggregations with sub-panel ✅
-- `packages/iris-grid/src/table-options/options/TableExporterOption.tsx` - TableExporter option ✅
-- `packages/iris-grid/src/table-options/options/ConditionalFormattingOption.tsx` - ConditionalFormatting with sub-panel ✅
-- `packages/iris-grid/src/table-options/options/index.ts` - Options index ✅
-- `packages/iris-grid/src/table-options/index.ts` - Public exports ✅
+- `packages/iris-grid/src/table-options/TableOption.ts` - Core interfaces ✅
+- `packages/iris-grid/src/table-options/TableOptionsRegistry.ts` - Registry class ✅
+- `packages/iris-grid/src/table-options/TableOptionsHostContext.ts` - Context + hook ✅
+- `packages/iris-grid/src/table-options/TableOptionsHost.tsx` - Host component ✅
+- `packages/iris-grid/src/table-options/TableOptionsWrapper.tsx` - Bridge component ✅
+- `packages/iris-grid/src/table-options/registerBuiltinOptions.ts` - Built-in registration ✅
+- `packages/iris-grid/src/table-options/options/SelectDistinctOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/CustomColumnOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/RollupRowsOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/VisibilityOrderingOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/AggregationsOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/TableExporterOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/ConditionalFormattingOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/QuickFiltersOption.ts` ✅
+- `packages/iris-grid/src/table-options/options/SearchBarOption.ts` ✅
+- `packages/iris-grid/src/table-options/options/GotoRowOption.ts` ✅
+- `packages/iris-grid/src/table-options/options/AdvancedSettingsOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/ChartBuilderOption.tsx` ✅
+- `packages/iris-grid/src/table-options/options/index.ts` ✅
+- `packages/iris-grid/src/table-options/index.ts` ✅
 
-- [x] Add a prop in IrisGrid/IrisGridPanel to accept Table Options modifier function from the plugin system
-  - Added `OptionItemsModifier` type: `(options: readonly OptionItem[]) => readonly OptionItem[]`
-  - Added `optionsModifier?: OptionItemsModifier` prop to `IrisGrid` and `IrisGridPanel`
-  - Exports `OptionItemsModifier` from `CommonTypes.tsx` and package index
-- [x] Pass the built-in menu to the modifier function if defined, and render the result
-  - In `IrisGrid.tsx`, applies modifier after merging options: `optionsModifier?.(mergedOptions) ?? mergedOptions`
-  - Allows plugins to reorder, hide, or add custom options to the menu
-- [x] Test show/hide/re-order/add functionality for menu options with a sample plugin
-  - Updated `GridMiddlewarePlugin.tsx` with `MiddlewareConfigPanel` component
-  - Demonstrates SelectDistinct-like configuration panel with a sample button
-  - Uses custom option type `MIDDLEWARE_CUSTOM_OPTION` instead of reusing built-in enum
-  - Panel renders when option is selected and logs to console on button click
-  - Uses `optionsModifier` to move custom option to top of menu, demonstrating reordering capability
+**Legacy Code Removed from IrisGrid.tsx:**
+- Removed `useRegistryOptions` prop (registry is now always used) ✅
+- Removed `additionalMenuOptions` prop (plugins use registry instead) ✅
+- Removed `optionsModifier` prop (plugins use registry instead) ✅
+- Removed `getCachedOptionItems` method (~100 lines) ✅
+- Removed `getTableOptionsHostContextValue` method ✅
+- Removed legacy switch statement (~140 lines) ✅
+- Removed dead code variables ✅
+- Removed 11 unused icon imports ✅
+- Removed unused type import `OptionItemsModifier` ✅
+
+**GridMiddlewarePlugin Updates:**
+- Updated to use `defaultTableOptionsRegistry.register()` ✅
+- Demonstrates proper plugin pattern for adding custom Table Options ✅
 
 
-### Phase 3: Examples, Documentation & Polish
+### Phase 3: Examples, Documentation & Polish 🔄
 - [ ] Clean up the example plugin (GridMiddlewarePlugin), add tests
-- [ ] Add examples based on different Spectrum menu components (optional)
 - [ ] Add persistence example using `usePersistentState`
 - [ ] Add another plugin to demonstrate chaining with configurable order of execution
 - [ ] Write documentation for the new extensible Table Options menu architecture
-- [ ] Convert the menu items to Spectrum components (optional, future work)
+- [ ] Add unit tests for new table-options components
+
+
+### Phase 4: Integration Testing & Verification 🔲
+- [ ] Test in code-studio with sample database
+- [ ] Verify Quick Filters toggle works
+- [ ] Verify Search Bar toggle works  
+- [ ] Verify Go To Row toggle works
+- [ ] Verify Chart Builder opens correctly
+- [ ] Verify Advanced Settings opens correctly
+- [ ] Verify all sidebar options (SelectDistinct, CustomColumn, etc.) work
+- [ ] Verify table download CSV works
+- [ ] Verify GridMiddlewarePlugin custom option appears and works
+- [ ] Test enterprise with custom plugins
 
 ---
 
@@ -264,13 +277,16 @@ TBD:
 | Phase | Deliverables | Status |
 |-------|--------------|--------|
 | 1 | Middleware plugin infrastructure, chaining, tests, example plugin | ✅ Complete |
-| 2 | IrisGrid state interface, menu options modifier, built-in options refactor | � In Progress |
-| 3 | Documentation, additional examples, polish | 🔲 Not started |
+| 2 | Registry architecture, built-in options refactor, legacy removal | ✅ Complete |
+| 3 | Documentation, additional examples, tests | 🔄 In Progress |
+| 4 | Integration testing and verification | 🔲 Not started |
 
 ### Testing Strategy
 
 - **Unit Tests**:
     - Helper functions
+    - Registry operations
+    - Individual option components (TBD)
 
 - **Integration and E2E Tests**:
     - Custom options render and work with IrisGrid
@@ -281,9 +297,45 @@ TBD:
 
 - [x] Plugins can register custom options without code changes
 - [x] Custom options appear in menu and render correctly
-- [x] Custom options can modify IrisGrid state (via `useTableOptions()` hook)
-- [x] Approach is generic and reusable (middleware pattern implemented)
+- [x] Custom options can modify IrisGrid state (via `useTableOptionsHost()` hook)
+- [x] Approach is generic and reusable (registry pattern implemented)
 - [ ] All existing built-in options work unchanged (needs verification)
 - [ ] XX% test coverage
-- [x] Minimal breaking changes (Phase 1 introduces additive interfaces only)
+- [x] Minimal breaking changes (removed deprecated props)
 - [ ] Documentation complete with examples
+
+---
+
+## API Changes
+
+### Breaking Changes
+The following props have been removed from `IrisGrid` and `IrisGridPanel`:
+- `additionalMenuOptions` - Use `defaultTableOptionsRegistry.register()` instead
+- `optionsModifier` - Use registry `modify()` or custom option registration instead
+- `useRegistryOptions` - Registry is now always used
+
+### Migration Guide
+**Before (deprecated):**
+```tsx
+<IrisGridPanel
+  additionalMenuOptions={[customOption]}
+  optionsModifier={opts => [...opts, myOption]}
+/>
+```
+
+**After:**
+```tsx
+import { defaultTableOptionsRegistry } from '@deephaven/iris-grid';
+
+// In plugin initialization
+defaultTableOptionsRegistry.register(MyCustomOption);
+```
+
+### New Public Exports from `@deephaven/iris-grid`
+- `TableOption` - Interface for custom options
+- `TableOptionPanelProps` - Props interface for Panel components
+- `GridStateSnapshot` - Read-only grid state interface
+- `GridAction` / `GridDispatch` - Action types and dispatcher
+- `useTableOptionsHost` - Hook for accessing grid state in panels
+- `defaultTableOptionsRegistry` - Registry singleton for option registration
+- `TableOptionsRegistry` - Registry class (for creating custom registries)

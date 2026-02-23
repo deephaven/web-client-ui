@@ -214,7 +214,11 @@ function GridPanelMiddleware({
   }, []);
 
   // Simply pass through - registry handles the option
-  return <Component /* eslint-disable-next-line react/jsx-props-no-spreading */ {...props} />;
+  return (
+    <Component
+      /* eslint-disable-next-line react/jsx-props-no-spreading */ {...props}
+    />
+  );
 }
 
 GridPanelMiddleware.displayName = 'GridPanelMiddleware';
