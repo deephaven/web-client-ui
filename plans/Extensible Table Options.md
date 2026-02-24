@@ -256,17 +256,19 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 - [ ] Add unit tests for new table-options components
 
 
-### Phase 4: Integration Testing & Verification 🔲
-- [ ] Test in code-studio with sample database
-- [ ] Verify Quick Filters toggle works
-- [ ] Verify Search Bar toggle works  
-- [ ] Verify Go To Row toggle works
-- [ ] Verify Chart Builder opens correctly
-- [ ] Verify Advanced Settings opens correctly
-- [ ] Verify all sidebar options (SelectDistinct, CustomColumn, etc.) work
-- [ ] Verify table download CSV works
-- [ ] Verify GridMiddlewarePlugin custom option appears and works
-- [ ] Test enterprise with custom plugins
+### Phase 4: Integration Testing & Verification ✅
+- [x] Test in code-studio with sample database
+- [x] Verify Quick Filters toggle works
+- [x] Verify Search Bar toggle works  
+- [x] Verify Go To Row toggle works
+- [x] Verify Chart Builder opens correctly
+- [x] Verify Advanced Settings opens correctly
+- [x] Verify all sidebar options (SelectDistinct, CustomColumn, etc.) work
+- [x] Verify table download CSV works
+- [x] Verify GridMiddlewarePlugin custom option appears and works
+- [x] Test enterprise with custom plugins (tested via `npm run start-community` which runs enterprise server with updated packages)
+
+**Bug Fixed:** Toggle switches were not working because `TableOptionsHost` created menu items with `isOn` but without `onChange`. `MenuItem` ignores `onSelect` when `isOn` is defined, expecting `onChange` instead. Fixed by adding `onChange` handler that dispatches the toggle action.
 
 ---
 
@@ -278,8 +280,8 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 |-------|--------------|--------|
 | 1 | Middleware plugin infrastructure, chaining, tests, example plugin | ✅ Complete |
 | 2 | Registry architecture, built-in options refactor, legacy removal | ✅ Complete |
-| 3 | Documentation, additional examples, tests | 🔄 In Progress |
-| 4 | Integration testing and verification | 🔲 Not started |
+| 3 | Documentation, additional examples, tests | � Not started |
+| 4 | Integration testing and verification | ✅ Complete |
 
 ### Testing Strategy
 
@@ -299,7 +301,7 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 - [x] Custom options appear in menu and render correctly
 - [x] Custom options can modify IrisGrid state (via `useTableOptionsHost()` hook)
 - [x] Approach is generic and reusable (registry pattern implemented)
-- [ ] All existing built-in options work unchanged (needs verification)
+- [x] All existing built-in options work unchanged
 - [ ] XX% test coverage
 - [x] Minimal breaking changes (removed deprecated props)
 - [ ] Documentation complete with examples
