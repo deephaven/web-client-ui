@@ -135,16 +135,21 @@ export function TableOptionsHost({
 
         // Handle toggle options
         if (opt.toggle != null) {
+          const { toggle } = opt;
           return {
             ...baseItem,
-            isOn: opt.toggle.getValue(gridState),
-            // onChange is handled via handleMenuSelect
+            isOn: toggle.getValue(gridState),
+            onChange: () => {
+              dispatch({ type: toggle.actionType } as Parameters<
+                typeof dispatch
+              >[0]);
+            },
           };
         }
 
         return baseItem;
       }),
-    [registryOptions, gridState]
+    [registryOptions, gridState, dispatch]
   );
 
   // Handle menu item selection
