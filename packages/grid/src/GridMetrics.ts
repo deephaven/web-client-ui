@@ -134,6 +134,8 @@ export type GridMetrics = {
   visibleColumns: readonly VisibleIndex[];
 
   // Array of visible, non-hidden columns, by grid index
+  // Hidden columns may be included in visibleColumns and visibleColumnWidths with a width of 0 because users can see them and adjust their width
+  // But we do not want the grid renderer to iterate over them, so we provide this separate array
   visibleNonHiddenColumns: readonly VisibleIndex[];
 
   // Map of the height/width of visible rows/columns
