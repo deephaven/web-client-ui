@@ -16,6 +16,7 @@ dist/
 !.vscode/tasks.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+*.local.code-workspace
 .DS_Store
 .env*local
 .project

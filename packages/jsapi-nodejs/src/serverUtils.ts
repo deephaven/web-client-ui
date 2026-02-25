@@ -89,7 +89,10 @@ export async function downloadFromURL(
 export async function hasStatusCode(
   url: URL,
   statusCodes: number[],
-  logger: { error: (...args: unknown[]) => void } = console
+  logger: {
+    debug: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+  } = console
 ): Promise<boolean> {
   return new Promise(resolve => {
     const transporter = url.protocol === 'http:' ? http : https;
@@ -101,9 +104,19 @@ export async function hasStatusCode(
         // use HEAD, but the response seems slightly smaller for OPTIONS.
         { method: 'OPTIONS', timeout: SERVER_STATUS_CHECK_TIMEOUT },
         res => {
-          removeListenersAndResolve(
-            statusCodes.includes(res.statusCode as number)
+          const includesStatusCode = statusCodes.includes(
+            res.statusCode as number
           );
+
+          if (!includesStatusCode) {
+            logger.debug(
+              `Received status code ${
+                res.statusCode
+              } from ${url}, expected one of ${statusCodes.join(', ')}`
+            );
+          }
+
+          removeListenersAndResolve(includesStatusCode);
         }
       )
       .on('timeout', () => {
