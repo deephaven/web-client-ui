@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.0](https://github.com/deephaven/web-client-ui/compare/v1.14.0...v1.15.0) (2026-02-25)
+
+### Features
+
+- DH-21726: Debug log hasStatusCode unexpected status code ([#2625](https://github.com/deephaven/web-client-ui/issues/2625)) ([932df8d](https://github.com/deephaven/web-client-ui/commit/932df8d49edfa2ff141803d569ce9629c8541bd4))
+
 ## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
 
 **Note:** Version bump only for package @deephaven/jsapi-nodejs

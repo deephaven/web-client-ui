@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.0](https://github.com/deephaven/web-client-ui/compare/v1.14.0...v1.15.0) (2026-02-25)
+
+### Features
+
+- Make hook viewportSubscriptionOptions in viewport hooks partial ([#2627](https://github.com/deephaven/web-client-ui/issues/2627)) ([8a94e8d](https://github.com/deephaven/web-client-ui/commit/8a94e8d4dbe5e6d09f44695ec3db50e59e141821))
+
 ## [1.14.0](https://github.com/deephaven/web-client-ui/compare/v1.13.0...v1.14.0) (2026-02-13)
 
 **Note:** Version bump only for package @deephaven/jsapi-components
