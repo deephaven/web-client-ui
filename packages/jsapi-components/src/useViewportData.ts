@@ -33,7 +33,7 @@ export interface UseViewportDataProps<
   viewportPadding?: number;
   viewportSize?: number;
   deserializeRow?: RowDeserializer<TItem>;
-  viewportSubscriptionOptions?: dh.ViewportSubscriptionOptions | null;
+  viewportSubscriptionOptions?: Partial<dh.ViewportSubscriptionOptions> | null;
 }
 
 export interface UseViewportDataResult<
@@ -71,6 +71,7 @@ export interface UseViewportDataResult<
  * @param reuseItemsOnTableResize If true, existing items will be re-used when
  * @param viewportSubscriptionOptions The viewport subscription options to use. If provided and
  * the table is not a `TreeTable`, the data will be requested using a `TableViewportSubscription`.
+ * Rows and columns are filled in when the subscription is created if they are missing.
  * @returns An object for managing Table viewport state.
  */
 export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({

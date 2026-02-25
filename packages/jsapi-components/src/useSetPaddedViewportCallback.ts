@@ -16,19 +16,19 @@ import {
  * @param viewportPadding The padding to add before and after the viewport.
  * @param viewportSubscriptionOptions The viewport subscription options to use. If provided and
  * the table is not a `TreeTable`, the data will be requested using a `TableViewportSubscription`.
+ * Rows and columns are filled in when the subscription is created if they are missing.
  * @returns A callback function for setting the viewport.
  */
 export function useSetPaddedViewportCallback(
   table: dh.Table | dh.TreeTable | null,
   viewportSize: number,
   viewportPadding: number,
-  viewportSubscriptionOptions: dh.ViewportSubscriptionOptions | null = null
+  viewportSubscriptionOptions: Partial<dh.ViewportSubscriptionOptions> | null = null
 ): (firstRow: number) => void {
   const subscriptionRef = useRef<dh.TableViewportSubscription | null>(null);
   const prevTableRef = useRef<dh.Table | dh.TreeTable | null>(null);
-  const prevViewportOptionsRef = useRef<dh.ViewportSubscriptionOptions | null>(
-    null
-  );
+  const prevViewportOptionsRef =
+    useRef<Partial<dh.ViewportSubscriptionOptions> | null>(null);
 
   const cleanupSubscription = () => {
     if (subscriptionRef.current) {
@@ -66,9 +66,14 @@ export function useSetPaddedViewportCallback(
         viewportSubscriptionOptions != null &&
         !TableUtils.isTreeTable(table)
       ) {
-        subscriptionRef.current = table.createViewportSubscription(
-          viewportSubscriptionOptions
-        );
+        const subscriptionOptions: dh.ViewportSubscriptionOptions = {
+          ...viewportSubscriptionOptions,
+          rows: viewportSubscriptionOptions.rows ?? { first, last },
+          columns: viewportSubscriptionOptions.columns ?? table.columns,
+        };
+
+        subscriptionRef.current =
+          table.createViewportSubscription(subscriptionOptions);
       }
 
       if (subscriptionRef.current == null) {
