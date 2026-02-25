@@ -5,6 +5,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 
 let table: dh.Table;
+let table2: dh.Table;
 let viewportOptions: dh.ViewportSubscriptionOptions;
 let viewportOptionsMissingRows: Partial<dh.ViewportSubscriptionOptions>;
 let viewportOptionsMissingColumns: Partial<dh.ViewportSubscriptionOptions>;
@@ -15,6 +16,7 @@ const viewportPadding = 4;
 beforeEach(() => {
   jest.clearAllMocks();
   table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
+  table2 = TestUtils.createMockProxy<dh.Table>({ size: 101 });
   viewportOptions = {
     rows: {
       first: 0,
@@ -23,7 +25,7 @@ beforeEach(() => {
     columns: table.columns,
   };
   viewportOptionsMissingRows = {
-    columns: table.columns,
+    columns: table2.columns,
   };
   viewportOptionsMissingColumns = {
     rows: {
@@ -134,7 +136,7 @@ it('should fill missing rows and columns when creating a subscription', () => {
   };
 
   expect(table.createViewportSubscription).toHaveBeenCalledWith({
-    columns: table.columns,
+    columns: viewportOptionsMissingRows.columns,
     rows: expectedRows,
   });
 
