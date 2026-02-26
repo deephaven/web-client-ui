@@ -146,15 +146,8 @@ class DataBarCellRenderer extends CellRenderer {
 
     context.save();
     context.textAlign = textAlign;
-    if (hasGradient) {
-      const color =
-        value >= 0 ? dataBarColor[dataBarColor.length - 1] : dataBarColor[0];
-      context.fillStyle = color;
-    } else {
-      context.fillStyle = Array.isArray(dataBarColor)
-        ? dataBarColor[0]
-        : dataBarColor;
-    }
+    context.fillStyle =
+      model.colorForCell(modelColumn, modelRow, theme) || theme.textColor;
     context.textBaseline = 'middle';
     context.font = theme.font;
 
@@ -230,6 +223,10 @@ class DataBarCellRenderer extends CellRenderer {
       context.restore(); // Restore gradient translate/scale
     } else {
       // Draw normal bar
+      const barColor = Array.isArray(dataBarColor)
+        ? dataBarColor[0]
+        : dataBarColor;
+      context.fillStyle = barColor;
       context.beginPath();
       context.roundRect(dataBarX, dataBarY, dataBarWidth, rowHeight, 1);
       context.fill();
