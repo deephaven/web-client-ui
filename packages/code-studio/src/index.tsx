@@ -47,6 +47,7 @@ async function getCorePlugins() {
   const {
     GridPluginConfig,
     GridMiddlewarePluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     ChartBuilderPluginConfig,
@@ -58,6 +59,7 @@ async function getCorePlugins() {
   return [
     GridPluginConfig,
     GridMiddlewarePluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     ChartBuilderPluginConfig,
