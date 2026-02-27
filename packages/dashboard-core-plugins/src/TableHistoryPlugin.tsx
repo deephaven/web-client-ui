@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   PluginType,
   type WidgetMiddlewarePlugin,
@@ -6,8 +6,14 @@ import {
   type WidgetMiddlewarePanelProps,
 } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
-import { Button } from '@deephaven/components';
-import { vsHistory, vsTrash } from '@deephaven/icons';
+import {
+  Button,
+  ConfirmationDialog,
+  DialogTrigger,
+  SpectrumButton,
+  Text,
+} from '@deephaven/components';
+import { vsEdit, vsHistory, vsTrash } from '@deephaven/icons';
 import { usePersistentState } from '@deephaven/dashboard';
 import { type MoveOperation } from '@deephaven/grid';
 import {
@@ -32,6 +38,8 @@ interface DehydratedStateSnapshot {
   id: string;
   /** When the snapshot was taken (ISO string for JSON serialization) */
   timestamp: string;
+  /** User-defined name for the snapshot (optional) */
+  name?: string;
   /** Quick filters state (dehydrated) */
   quickFilters: readonly DehydratedQuickFilter[];
   /** Advanced filters state (dehydrated) */
@@ -226,6 +234,78 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
     setState({ snapshots: [] });
   }, [setState]);
 
+  /**
+   * Reset the table to its initial state.
+   * Clears all filters, sorts, search, select distinct, custom columns,
+   * and column re-ordering, restoring the table to its default view.
+   */
+  const handleResetTable = useCallback(() => {
+    // Clear select distinct columns first (triggers handler that resets other state)
+    dispatch({
+      type: 'SET_SELECT_DISTINCT_COLUMNS',
+      columns: [],
+    });
+
+    // Clear custom columns
+    dispatch({
+      type: 'SET_CUSTOM_COLUMNS',
+      columns: [],
+    });
+
+    // Clear all filters
+    dispatch({
+      type: 'SET_QUICK_FILTERS',
+      filters: new Map(),
+    });
+    dispatch({
+      type: 'SET_ADVANCED_FILTERS',
+      filters: new Map(),
+    });
+
+    // Clear search
+    dispatch({
+      type: 'SET_CROSS_COLUMN_SEARCH',
+      searchValue: '',
+      selectedSearchColumns: [],
+      invertSearchColumns: false,
+    });
+
+    // Clear sorts and reverse
+    dispatch({ type: 'SET_SORTS', sorts: [] });
+    dispatch({ type: 'SET_REVERSE', reverse: false });
+
+    // Reset column order
+    dispatch({
+      type: 'SET_MOVED_COLUMNS',
+      columns: [],
+    });
+  }, [dispatch]);
+
+  // State for inline editing of snapshot names
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+
+  const handleStartEdit = useCallback((snapshot: DehydratedStateSnapshot) => {
+    setEditingId(snapshot.id);
+    setEditValue(snapshot.name ?? '');
+  }, []);
+
+  const handleSaveEdit = useCallback(() => {
+    if (editingId == null) return;
+    setState(prev => ({
+      snapshots: prev.snapshots.map(s =>
+        s.id === editingId ? { ...s, name: editValue.trim() || undefined } : s
+      ),
+    }));
+    setEditingId(null);
+    setEditValue('');
+  }, [editingId, editValue, setState]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditValue('');
+  }, []);
+
   // Compute what has changed since the last saved snapshot
   const changedProperties = useMemo(() => {
     const lastSnapshot = snapshots[snapshots.length - 1];
@@ -333,37 +413,103 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
       {snapshots.length > 0 && (
         <>
           <div className="mt-3">
-            <h6 className="text-muted mb-2">Saved Snapshots</h6>
+            <h6 className="text-muted mb-2">Saved Snapshots (newest first)</h6>
             <ul className="list-unstyled">
-              {snapshots.map(snapshot => (
+              {[...snapshots].reverse().map(snapshot => (
                 <li
                   key={snapshot.id}
                   className="d-flex align-items-center justify-content-between py-1"
                 >
-                  <button
-                    type="button"
-                    className="btn btn-link p-0 text-start"
-                    onClick={() => handleRestoreSnapshot(snapshot)}
-                    title="Click to restore this snapshot"
-                  >
-                    {formatTimestamp(snapshot.timestamp)}
-                  </button>
-                  <Button
-                    kind="ghost"
-                    icon={vsTrash}
-                    tooltip="Delete"
-                    aria-label="Delete snapshot"
-                    onClick={() => handleDeleteSnapshot(snapshot.id)}
-                  />
+                  {editingId === snapshot.id ? (
+                    <div className="d-flex align-items-center gap-1 flex-grow-1">
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleSaveEdit();
+                          if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                        placeholder={formatTimestamp(snapshot.timestamp)}
+                        autoFocus
+                      />
+                      <Button
+                        kind="primary"
+                        onClick={handleSaveEdit}
+                        style={{ padding: '2px 8px', fontSize: '12px' }}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        kind="secondary"
+                        onClick={handleCancelEdit}
+                        style={{ padding: '2px 8px', fontSize: '12px' }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start"
+                        onClick={() => handleRestoreSnapshot(snapshot)}
+                        title="Click to restore this snapshot"
+                      >
+                        {snapshot.name || formatTimestamp(snapshot.timestamp)}
+                        {snapshot.name && (
+                          <span className="text-muted small ms-1">
+                            ({formatTimestamp(snapshot.timestamp)})
+                          </span>
+                        )}
+                      </button>
+                      <div className="d-flex align-items-center">
+                        <Button
+                          kind="ghost"
+                          icon={vsEdit}
+                          tooltip="Rename"
+                          aria-label="Rename snapshot"
+                          onClick={() => handleStartEdit(snapshot)}
+                        />
+                        <Button
+                          kind="ghost"
+                          icon={vsTrash}
+                          tooltip="Delete"
+                          aria-label="Delete snapshot"
+                          onClick={() => handleDeleteSnapshot(snapshot.id)}
+                        />
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="mt-2">
-            <Button kind="secondary" onClick={handleClearAll}>
-              Clear All Snapshots
-            </Button>
+            <DialogTrigger>
+              <SpectrumButton variant="secondary">
+                Clear All Snapshots
+              </SpectrumButton>
+              {(close: () => void) => (
+                <ConfirmationDialog
+                  heading="Clear All Snapshots"
+                  confirmationButtonLabel="Clear All"
+                  onCancel={close}
+                  onConfirm={() => {
+                    close();
+                    handleClearAll();
+                  }}
+                >
+                  <Text>
+                    Are you sure you want to clear all {snapshots.length}{' '}
+                    snapshot{snapshots.length === 1 ? '' : 's'}? This action
+                    cannot be undone.
+                  </Text>
+                </ConfirmationDialog>
+              )}
+            </DialogTrigger>
           </div>
         </>
       )}
@@ -372,6 +518,32 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
         Save the current table state (filters, sorts, search) and restore it
         later by clicking on a timestamp.
       </p>
+
+      <div className="mt-4 pt-3 border-top">
+        <DialogTrigger>
+          <SpectrumButton variant="secondary">Reset Table</SpectrumButton>
+          {(close: () => void) => (
+            <ConfirmationDialog
+              heading="Reset Table"
+              confirmationButtonLabel="Reset"
+              onCancel={close}
+              onConfirm={() => {
+                close();
+                handleResetTable();
+              }}
+            >
+              <Text>
+                Reset the table to its initial state? This will clear all
+                filters, sorts, search, and column re-ordering.
+              </Text>
+            </ConfirmationDialog>
+          )}
+        </DialogTrigger>
+        <p className="text-muted small mt-2 mb-0">
+          Clear all filters, sorts, search, custom columns, and column
+          re-ordering to restore the table to its default state.
+        </p>
+      </div>
     </div>
   );
 }

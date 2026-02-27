@@ -125,7 +125,7 @@ import {
   TableSaver,
   DownloadServiceWorkerUtils,
 } from './sidebar';
-import IrisGridUtils from './IrisGridUtils';
+import IrisGridUtils, { type DehydratedIrisGridState } from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -2233,6 +2233,66 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchFilter,
     });
     this.initFormatter();
+  }
+
+  /**
+   * Get the current grid state as a JSON-serializable object.
+   * This can be used to save the state and restore it later with {@link restoreState}.
+   * @returns The dehydrated grid state
+   */
+  getState(): DehydratedIrisGridState {
+    const { model } = this.props;
+    const irisGridUtils = new IrisGridUtils(model.dh);
+    return irisGridUtils.dehydrateIrisGridState(model, this.state);
+  }
+
+  /**
+   * Restore the grid state from a previously saved state.
+   * This applies the state similarly to how loadTableState works for consistency.
+   * @param dehydratedState The state to restore, obtained from {@link getState}
+   */
+  restoreState(dehydratedState: DehydratedIrisGridState): void {
+    const { model } = this.props;
+    const irisGridUtils = new IrisGridUtils(model.dh);
+    const hydratedState = irisGridUtils.hydrateIrisGridState(
+      model,
+      dehydratedState
+    );
+
+    // Create search filter from search settings
+    const searchFilter = CrossColumnSearch.createSearchFilter(
+      model.dh,
+      hydratedState.searchValue,
+      hydratedState.selectedSearchColumns ?? [],
+      model.columns,
+      hydratedState.invertSearchColumns
+    );
+
+    // Apply the hydrated state
+    this.startLoading('Restoring state...', { resetRanges: true });
+    this.setState({
+      advancedFilters: hydratedState.advancedFilters,
+      aggregationSettings: hydratedState.aggregationSettings,
+      customColumnFormatMap: hydratedState.customColumnFormatMap,
+      columnAlignmentMap: hydratedState.columnAlignmentMap,
+      isFilterBarShown: hydratedState.isFilterBarShown,
+      quickFilters: hydratedState.quickFilters,
+      sorts: hydratedState.sorts,
+      customColumns: hydratedState.customColumns,
+      conditionalFormats: hydratedState.conditionalFormats,
+      reverse: hydratedState.reverse,
+      rollupConfig: hydratedState.rollupConfig,
+      showSearchBar: hydratedState.showSearchBar,
+      searchValue: hydratedState.searchValue,
+      searchFilter,
+      selectDistinctColumns: hydratedState.selectDistinctColumns,
+      selectedSearchColumns: hydratedState.selectedSearchColumns,
+      invertSearchColumns: hydratedState.invertSearchColumns,
+      pendingDataMap: hydratedState.pendingDataMap,
+      frozenColumns: hydratedState.frozenColumns,
+      columnHeaderGroups: hydratedState.columnHeaderGroups,
+      partitionConfig: hydratedState.partitionConfig,
+    });
   }
 
   async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
