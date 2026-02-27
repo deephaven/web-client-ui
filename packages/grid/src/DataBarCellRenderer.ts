@@ -146,6 +146,9 @@ class DataBarCellRenderer extends CellRenderer {
 
     context.save();
     context.textAlign = textAlign;
+
+    // Use explicit text color from model if set.
+    // Otherwise, fall back to the databar color for text.
     const textColor = model.colorForCell(modelColumn, modelRow, theme);
     if (textColor && textColor !== theme.textColor) {
       context.fillStyle = textColor;
