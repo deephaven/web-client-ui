@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import type { MoveOperation } from '@deephaven/grid';
-import type { ColumnName } from './CommonTypes';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import type { SortDescriptor } from '@deephaven/jsapi-utils';
+import type {
+  ColumnName,
+  ReadonlyQuickFilterMap,
+  ReadonlyAdvancedFilterMap,
+} from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import type IrisGridModel from './IrisGridModel';
 import type {
@@ -48,6 +54,32 @@ export interface TableOptionsContextValue {
   /** Column header grouping configuration */
   columnHeaderGroups: readonly ColumnHeaderGroup[];
 
+  // ===== Filters and Sorts =====
+
+  /** Quick filters applied to columns */
+  quickFilters: ReadonlyQuickFilterMap;
+
+  /** Advanced filters applied to columns */
+  advancedFilters: ReadonlyAdvancedFilterMap;
+
+  /** Search filter from the search bar */
+  searchFilter?: DhType.FilterCondition;
+
+  /** Current search bar text value */
+  searchValue: string;
+
+  /** Columns selected for cross-column search */
+  selectedSearchColumns: readonly ColumnName[];
+
+  /** Whether search column selection is inverted */
+  invertSearchColumns: boolean;
+
+  /** Current sort configuration */
+  sorts: readonly SortDescriptor[];
+
+  /** Whether sort order is reversed */
+  reverse: boolean;
+
   // ===== Update Methods =====
 
   /** Update custom columns */
@@ -76,6 +108,28 @@ export interface TableOptionsContextValue {
 
   /** Update column header groups */
   setColumnHeaderGroups: (groups: readonly ColumnHeaderGroup[]) => void;
+
+  /** Update quick filters */
+  setQuickFilters: (filters: ReadonlyQuickFilterMap) => void;
+
+  /** Update advanced filters */
+  setAdvancedFilters: (filters: ReadonlyAdvancedFilterMap) => void;
+
+  /** Update sorts */
+  setSorts: (sorts: readonly SortDescriptor[]) => void;
+
+  /** Update reverse sort */
+  setReverse: (reverse: boolean) => void;
+
+  /** Clear all filters (quick, advanced, and search) */
+  clearAllFilters: () => void;
+
+  /** Update cross-column search */
+  setCrossColumnSearch: (
+    searchValue: string,
+    selectedSearchColumns: readonly ColumnName[],
+    invertSearchColumns: boolean
+  ) => void;
 
   // ===== Navigation Methods =====
 
@@ -166,6 +220,54 @@ export function useTableOptions(): TableOptionsContextValue {
     [dispatch]
   );
 
+  const setQuickFilters = useCallback(
+    (filters: ReadonlyQuickFilterMap) => {
+      dispatch({ type: 'SET_QUICK_FILTERS', filters });
+    },
+    [dispatch]
+  );
+
+  const setAdvancedFilters = useCallback(
+    (filters: ReadonlyAdvancedFilterMap) => {
+      dispatch({ type: 'SET_ADVANCED_FILTERS', filters });
+    },
+    [dispatch]
+  );
+
+  const setSorts = useCallback(
+    (sorts: readonly SortDescriptor[]) => {
+      dispatch({ type: 'SET_SORTS', sorts });
+    },
+    [dispatch]
+  );
+
+  const setReverse = useCallback(
+    (reverse: boolean) => {
+      dispatch({ type: 'SET_REVERSE', reverse });
+    },
+    [dispatch]
+  );
+
+  const clearAllFilters = useCallback(() => {
+    dispatch({ type: 'CLEAR_ALL_FILTERS' });
+  }, [dispatch]);
+
+  const setCrossColumnSearch = useCallback(
+    (
+      searchValue: string,
+      selectedSearchColumns: readonly ColumnName[],
+      invertSearchColumns: boolean
+    ) => {
+      dispatch({
+        type: 'SET_CROSS_COLUMN_SEARCH',
+        searchValue,
+        selectedSearchColumns,
+        invertSearchColumns,
+      });
+    },
+    [dispatch]
+  );
+
   // Build the context value with memoization
   return useMemo<TableOptionsContextValue>(
     () => ({
@@ -178,6 +280,14 @@ export function useTableOptions(): TableOptionsContextValue {
       movedColumns: gridState.movedColumns,
       frozenColumns: gridState.frozenColumns,
       columnHeaderGroups: gridState.columnHeaderGroups,
+      quickFilters: gridState.quickFilters,
+      advancedFilters: gridState.advancedFilters,
+      searchFilter: gridState.searchFilter,
+      searchValue: gridState.searchValue,
+      selectedSearchColumns: gridState.selectedSearchColumns,
+      invertSearchColumns: gridState.invertSearchColumns,
+      sorts: gridState.sorts,
+      reverse: gridState.reverse,
       setCustomColumns,
       setSelectDistinctColumns,
       setAggregationSettings,
@@ -186,6 +296,12 @@ export function useTableOptions(): TableOptionsContextValue {
       setMovedColumns,
       setFrozenColumns,
       setColumnHeaderGroups,
+      setQuickFilters,
+      setAdvancedFilters,
+      setSorts,
+      setReverse,
+      clearAllFilters,
+      setCrossColumnSearch,
       closeCurrentOption: closePanel,
     }),
     [
@@ -198,6 +314,12 @@ export function useTableOptions(): TableOptionsContextValue {
       setMovedColumns,
       setFrozenColumns,
       setColumnHeaderGroups,
+      setQuickFilters,
+      setAdvancedFilters,
+      setSorts,
+      setReverse,
+      clearAllFilters,
+      setCrossColumnSearch,
       closePanel,
     ]
   );

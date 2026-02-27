@@ -633,6 +633,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setFilterMap = this.setFilterMap.bind(this);
     this.handleFrozenColumnsChanged =
       this.handleFrozenColumnsChanged.bind(this);
+    this.handleSetQuickFilters = this.handleSetQuickFilters.bind(this);
+    this.handleSetAdvancedFilters = this.handleSetAdvancedFilters.bind(this);
+    this.handleSetSorts = this.handleSetSorts.bind(this);
+    this.handleSetReverse = this.handleSetReverse.bind(this);
+    this.clearAllFilters = this.clearAllFilters.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
@@ -1138,7 +1143,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isTableDownloading: boolean,
       tableDownloadStatus: string,
       tableDownloadProgress: number,
-      tableDownloadEstimatedTime: number | null
+      tableDownloadEstimatedTime: number | null,
+      quickFilters: ReadonlyQuickFilterMap,
+      advancedFilters: ReadonlyAdvancedFilterMap,
+      searchFilter: DhType.FilterCondition | undefined,
+      searchValue: string,
+      selectedSearchColumns: readonly ColumnName[],
+      invertSearchColumns: boolean,
+      sorts: readonly SortDescriptor[],
+      reverse: boolean
     ): GridStateSnapshot => ({
       model,
       customColumns,
@@ -1158,6 +1171,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       tableDownloadStatus,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+      sorts,
+      reverse,
     }),
     { max: 1 }
   );
@@ -1218,6 +1239,28 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         break;
       case 'CANCEL_DOWNLOAD':
         this.handleCancelDownloadTable();
+        break;
+      case 'SET_QUICK_FILTERS':
+        this.handleSetQuickFilters(action.filters);
+        break;
+      case 'SET_ADVANCED_FILTERS':
+        this.handleSetAdvancedFilters(action.filters);
+        break;
+      case 'SET_SORTS':
+        this.handleSetSorts(action.sorts);
+        break;
+      case 'SET_REVERSE':
+        this.handleSetReverse(action.reverse);
+        break;
+      case 'CLEAR_ALL_FILTERS':
+        this.clearAllFilters();
+        break;
+      case 'SET_CROSS_COLUMN_SEARCH':
+        this.handleCrossColumnSearch(
+          action.searchValue,
+          action.selectedSearchColumns,
+          action.invertSearchColumns
+        );
         break;
       default:
         log.warn(
@@ -1868,6 +1911,42 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchValue: '',
       searchFilter: undefined,
     });
+  }
+
+  /**
+   * Handler for setting quick filters from table options.
+   */
+  handleSetQuickFilters(filters: ReadonlyQuickFilterMap): void {
+    log.debug('Setting quick filters', filters);
+    this.startLoading('Applying Filters...');
+    this.setState({ quickFilters: filters });
+  }
+
+  /**
+   * Handler for setting advanced filters from table options.
+   */
+  handleSetAdvancedFilters(filters: ReadonlyAdvancedFilterMap): void {
+    log.debug('Setting advanced filters', filters);
+    this.startLoading('Applying Filters...');
+    this.setState({ advancedFilters: filters });
+  }
+
+  /**
+   * Handler for setting sorts from table options.
+   */
+  handleSetSorts(newSorts: readonly SortDescriptor[]): void {
+    log.debug('Setting sorts', newSorts);
+    this.startLoading('Sorting...');
+    this.setState({ sorts: newSorts });
+  }
+
+  /**
+   * Handler for setting reverse sort from table options.
+   */
+  handleSetReverse(newReverse: boolean): void {
+    log.debug('Setting reverse', newReverse);
+    this.startLoading('Sorting...');
+    this.setState({ reverse: newReverse });
   }
 
   clearAllAggregations(): void {
@@ -5216,6 +5295,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               isChartBuilderAvailable={
                 onCreateChart !== undefined && model.isChartBuilderAvailable
               }
+              quickFilters={quickFilters}
+              advancedFilters={advancedFilters}
+              searchFilter={searchFilter}
+              searchValue={searchValue}
+              selectedSearchColumns={selectedSearchColumns}
+              invertSearchColumns={invertSearchColumns}
+              sorts={sorts}
+              reverse={reverse}
               onCreateChart={
                 onCreateChart
                   ? settings => onCreateChart(settings, model)
@@ -5224,6 +5311,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onChartChange={() => {
                 // TODO: IDS-4242 Update Chart Preview
               }}
+              onSetQuickFilters={this.handleSetQuickFilters}
+              onSetAdvancedFilters={this.handleSetAdvancedFilters}
+              onSetSorts={this.handleSetSorts}
+              onSetReverse={this.handleSetReverse}
+              onClearAllFilters={this.clearAllFilters}
+              onSetCrossColumnSearch={this.handleCrossColumnSearch}
               onClose={this.handleMenuClose}
             />
           </div>
