@@ -7,6 +7,7 @@ import type {
   ModelSizeMap,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
+import type { SortDescriptor } from '@deephaven/jsapi-utils';
 import type {
   GridStateSnapshot,
   GridAction,
@@ -17,7 +18,11 @@ import { defaultTableOptionsRegistry } from './TableOptionsRegistry';
 import { TableOptionsHost } from './TableOptionsHost';
 import type IrisGridModel from '../IrisGridModel';
 import type ColumnHeaderGroup from '../ColumnHeaderGroup';
-import type { ColumnName } from '../CommonTypes';
+import type {
+  ColumnName,
+  ReadonlyQuickFilterMap,
+  ReadonlyAdvancedFilterMap,
+} from '../CommonTypes';
 import type {
   AggregationSettings,
   UIRollupConfig,
@@ -70,6 +75,16 @@ export interface TableOptionsWrapperProps {
   advancedSettings?: ReadonlyMap<AdvancedSettingsType, boolean>;
   isChartBuilderAvailable?: boolean;
 
+  /** Filters and sorts */
+  quickFilters: ReadonlyQuickFilterMap;
+  advancedFilters: ReadonlyAdvancedFilterMap;
+  searchFilter?: DhType.FilterCondition;
+  searchValue: string;
+  selectedSearchColumns: readonly ColumnName[];
+  invertSearchColumns: boolean;
+  sorts: readonly SortDescriptor[];
+  reverse: boolean;
+
   /** Callbacks for grid actions */
   onSetCustomColumns: (columns: readonly ColumnName[]) => void;
   onSetSelectDistinctColumns: (columns: readonly ColumnName[]) => void;
@@ -111,6 +126,18 @@ export interface TableOptionsWrapperProps {
   onCreateChart?: (settings: ChartBuilderSettings) => void;
   onChartChange?: (settings: ChartBuilderSettings) => void;
 
+  /** Filter/sort callbacks */
+  onSetQuickFilters: (filters: ReadonlyQuickFilterMap) => void;
+  onSetAdvancedFilters: (filters: ReadonlyAdvancedFilterMap) => void;
+  onSetSorts: (sorts: readonly SortDescriptor[]) => void;
+  onSetReverse: (reverse: boolean) => void;
+  onClearAllFilters: () => void;
+  onSetCrossColumnSearch: (
+    searchValue: string,
+    selectedSearchColumns: readonly ColumnName[],
+    invertSearchColumns: boolean
+  ) => void;
+
   /** Menu callbacks */
   onClose: () => void;
 
@@ -149,6 +176,14 @@ export function TableOptionsWrapper({
   hasAdvancedSettings,
   advancedSettings,
   isChartBuilderAvailable,
+  quickFilters,
+  advancedFilters,
+  searchFilter,
+  searchValue,
+  selectedSearchColumns,
+  invertSearchColumns,
+  sorts,
+  reverse,
   onSetCustomColumns,
   onSetSelectDistinctColumns,
   onSetAggregationSettings,
@@ -168,6 +203,12 @@ export function TableOptionsWrapper({
   onAdvancedSettingsChange,
   onCreateChart,
   onChartChange,
+  onSetQuickFilters,
+  onSetAdvancedFilters,
+  onSetSorts,
+  onSetReverse,
+  onClearAllFilters,
+  onSetCrossColumnSearch,
   onClose,
   registry = defaultTableOptionsRegistry,
 }: TableOptionsWrapperProps): JSX.Element {
@@ -200,6 +241,14 @@ export function TableOptionsWrapper({
       hasAdvancedSettings,
       advancedSettings,
       isChartBuilderAvailable,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+      sorts,
+      reverse,
     }),
     [
       model,
@@ -228,6 +277,14 @@ export function TableOptionsWrapper({
       hasAdvancedSettings,
       advancedSettings,
       isChartBuilderAvailable,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+      sorts,
+      reverse,
     ]
   );
 
@@ -303,6 +360,28 @@ export function TableOptionsWrapper({
         case 'UPDATE_CHART_PREVIEW':
           onChartChange?.(action.settings);
           break;
+        case 'SET_QUICK_FILTERS':
+          onSetQuickFilters(action.filters);
+          break;
+        case 'SET_ADVANCED_FILTERS':
+          onSetAdvancedFilters(action.filters);
+          break;
+        case 'SET_SORTS':
+          onSetSorts(action.sorts);
+          break;
+        case 'SET_REVERSE':
+          onSetReverse(action.reverse);
+          break;
+        case 'CLEAR_ALL_FILTERS':
+          onClearAllFilters();
+          break;
+        case 'SET_CROSS_COLUMN_SEARCH':
+          onSetCrossColumnSearch(
+            action.searchValue,
+            action.selectedSearchColumns,
+            action.invertSearchColumns
+          );
+          break;
         default:
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           log.warn(`Unknown action type: ${(action as any).type}`);
@@ -328,6 +407,12 @@ export function TableOptionsWrapper({
       onAdvancedSettingsChange,
       onCreateChart,
       onChartChange,
+      onSetQuickFilters,
+      onSetAdvancedFilters,
+      onSetSorts,
+      onSetReverse,
+      onClearAllFilters,
+      onSetCrossColumnSearch,
     ]
   );
 

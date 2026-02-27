@@ -62,7 +62,17 @@ const MIDDLEWARE_OPTION_TYPE = 'middleware-custom-option';
 function MiddlewareConfigPanel(_props: TableOptionPanelProps): JSX.Element {
   // Access the Table Options context for state and dispatch
   const { gridState, dispatch, closePanel } = useTableOptionsHost();
-  const { model, selectDistinctColumns, customColumns } = gridState;
+  const {
+    model,
+    selectDistinctColumns,
+    customColumns,
+    quickFilters,
+    advancedFilters,
+    searchValue,
+    selectedSearchColumns,
+    sorts,
+    reverse,
+  } = gridState;
 
   const handleButtonClick = useCallback(() => {
     log.info('MiddlewareConfigPanel button clicked!');
@@ -72,7 +82,24 @@ function MiddlewareConfigPanel(_props: TableOptionPanelProps): JSX.Element {
     console.log('Current selectDistinctColumns:', selectDistinctColumns);
     // eslint-disable-next-line no-console
     console.log('Current customColumns:', customColumns);
-  }, [selectDistinctColumns, customColumns]);
+    // eslint-disable-next-line no-console
+    console.log('Current quickFilters:', quickFilters);
+    // eslint-disable-next-line no-console
+    console.log('Current advancedFilters:', advancedFilters);
+    // eslint-disable-next-line no-console
+    console.log('Current searchValue:', searchValue, 'columns:', selectedSearchColumns);
+    // eslint-disable-next-line no-console
+    console.log('Current sorts:', sorts, 'reverse:', reverse);
+  }, [
+    selectDistinctColumns,
+    customColumns,
+    quickFilters,
+    advancedFilters,
+    searchValue,
+    selectedSearchColumns,
+    sorts,
+    reverse,
+  ]);
 
   const handleClearSelectDistinct = useCallback(() => {
     log.info('Clearing selectDistinctColumns');
@@ -80,65 +107,51 @@ function MiddlewareConfigPanel(_props: TableOptionPanelProps): JSX.Element {
     closePanel();
   }, [dispatch, closePanel]);
 
+  const handleClearFilters = useCallback(() => {
+    log.info('Clearing all filters');
+    dispatch({ type: 'CLEAR_ALL_FILTERS' });
+    closePanel();
+  }, [dispatch, closePanel]);
+
+  const hasFilters =
+    quickFilters.size > 0 ||
+    advancedFilters.size > 0 ||
+    searchValue !== '' ||
+    sorts.length > 0;
+
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        padding: 0,
-        overflow: 'auto',
-        display: 'flex',
-        justifyContent: 'space-between',
-        flexFlow: 'column',
-      }}
-    >
-      <div
-        style={{
-          padding: '1rem',
-          fontWeight: 500,
-          textAlign: 'left',
-        }}
-      >
-        Middleware Custom Option
-      </div>
+    <div className="container mt-3">
+      <p className="text-muted small">Columns: {model.columns?.length ?? 0}</p>
+      <p className="text-muted small">
+        Select Distinct:{' '}
+        {selectDistinctColumns.length > 0
+          ? selectDistinctColumns.join(', ')
+          : 'None'}
+      </p>
+      <p className="text-muted small">
+        Custom Columns:{' '}
+        {customColumns.length > 0 ? customColumns.join(', ') : 'None'}
+      </p>
+      <p className="text-muted small">
+        Quick Filters: {quickFilters.size > 0 ? quickFilters.size : 'None'}
+      </p>
+      <p className="text-muted small">
+        Advanced Filters:{' '}
+        {advancedFilters.size > 0 ? advancedFilters.size : 'None'}
+      </p>
+      <p className="text-muted small">
+        Cross-Column Search:{' '}
+        {searchValue || 'None'}
+        {selectedSearchColumns.length > 0
+          ? ` (in ${selectedSearchColumns.join(', ')})`
+          : ''}
+      </p>
+      <p className="text-muted small">
+        Sorts: {sorts.length > 0 ? sorts.length : 'None'}
+        {reverse ? ' (reversed)' : ''}
+      </p>
 
-      <div
-        style={{
-          padding: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-        }}
-      >
-        <div
-          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
-        >
-          Columns: {model.columns?.length ?? 0}
-        </div>
-        <div
-          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
-        >
-          Select Distinct:{' '}
-          {selectDistinctColumns.length > 0
-            ? selectDistinctColumns.join(', ')
-            : 'None'}
-        </div>
-        <div
-          style={{ color: 'var(--dh-color-text-muted)', fontSize: 'smaller' }}
-        >
-          Custom Columns:{' '}
-          {customColumns.length > 0 ? customColumns.join(', ') : 'None'}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-        }}
-      >
+      <div className="d-flex flex-column gap-2 mt-3">
         <Button kind="primary" onClick={handleButtonClick}>
           Log State to Console
         </Button>
@@ -147,27 +160,17 @@ function MiddlewareConfigPanel(_props: TableOptionPanelProps): JSX.Element {
             Clear Select Distinct
           </Button>
         )}
+        {hasFilters && (
+          <Button kind="secondary" onClick={handleClearFilters}>
+            Clear All Filters &amp; Sorts
+          </Button>
+        )}
       </div>
 
-      <div
-        style={{
-          margin: '1rem',
-          marginBottom: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          paddingBottom: '1rem',
-        }}
-      >
-        <div
-          style={{
-            color: 'var(--dh-color-text-muted)',
-            fontSize: 'smaller',
-          }}
-        >
-          This panel demonstrates using the useTableOptionsHost hook to access
-          and modify grid state from a plugin.
-        </div>
-      </div>
+      <p className="text-muted small mt-3">
+        This panel demonstrates using the useTableOptionsHost hook to access and
+        modify grid state from a plugin.
+      </p>
     </div>
   );
 }
@@ -216,7 +219,8 @@ function GridPanelMiddleware({
   // Simply pass through - registry handles the option
   return (
     <Component
-      /* eslint-disable-next-line react/jsx-props-no-spreading */ {...props}
+      /* eslint-disable-next-line react/jsx-props-no-spreading */
+      {...props}
     />
   );
 }

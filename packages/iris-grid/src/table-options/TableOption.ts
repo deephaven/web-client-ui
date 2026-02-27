@@ -1,7 +1,13 @@
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { MoveOperation, ModelIndex, ModelSizeMap } from '@deephaven/grid';
 import type { Shortcut } from '@deephaven/components';
-import type { ColumnName } from '../CommonTypes';
+import type { SortDescriptor } from '@deephaven/jsapi-utils';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import type {
+  ColumnName,
+  ReadonlyQuickFilterMap,
+  ReadonlyAdvancedFilterMap,
+} from '../CommonTypes';
 import type ColumnHeaderGroup from '../ColumnHeaderGroup';
 import type IrisGridModel from '../IrisGridModel';
 import type {
@@ -102,6 +108,34 @@ export interface GridStateSnapshot {
 
   /** Whether chart builder is available */
   isChartBuilderAvailable?: boolean;
+
+  // ============================================================================
+  // Filters and Sorts
+  // ============================================================================
+
+  /** Quick filters applied to columns */
+  quickFilters: ReadonlyQuickFilterMap;
+
+  /** Advanced filters applied to columns */
+  advancedFilters: ReadonlyAdvancedFilterMap;
+
+  /** Search filter from the search bar */
+  searchFilter?: DhType.FilterCondition;
+
+  /** Current search bar text value */
+  searchValue: string;
+
+  /** Columns selected for cross-column search */
+  selectedSearchColumns: readonly ColumnName[];
+
+  /** Whether search column selection is inverted (search all except selected) */
+  invertSearchColumns: boolean;
+
+  /** Current sort configuration */
+  sorts: readonly SortDescriptor[];
+
+  /** Whether sort order is reversed */
+  reverse: boolean;
 }
 
 // ============================================================================
@@ -153,7 +187,18 @@ export type GridAction =
   | { type: 'TOGGLE_GOTO' }
   | { type: 'SET_ADVANCED_SETTING'; key: AdvancedSettingsType; isOn: boolean }
   | { type: 'CREATE_CHART'; settings: ChartBuilderSettings }
-  | { type: 'UPDATE_CHART_PREVIEW'; settings: ChartBuilderSettings };
+  | { type: 'UPDATE_CHART_PREVIEW'; settings: ChartBuilderSettings }
+  | { type: 'SET_QUICK_FILTERS'; filters: ReadonlyQuickFilterMap }
+  | { type: 'SET_ADVANCED_FILTERS'; filters: ReadonlyAdvancedFilterMap }
+  | { type: 'SET_SORTS'; sorts: readonly SortDescriptor[] }
+  | { type: 'SET_REVERSE'; reverse: boolean }
+  | { type: 'CLEAR_ALL_FILTERS' }
+  | {
+      type: 'SET_CROSS_COLUMN_SEARCH';
+      searchValue: string;
+      selectedSearchColumns: readonly ColumnName[];
+      invertSearchColumns: boolean;
+    };
 
 /**
  * Function to dispatch grid actions.
