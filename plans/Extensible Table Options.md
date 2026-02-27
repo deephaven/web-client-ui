@@ -248,7 +248,76 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 - Demonstrates proper plugin pattern for adding custom Table Options ✅
 
 
-### Phase 3: Examples, Documentation & Polish 🔄
+### Phase 3: Widget Replacement Architecture 🔲
+
+**Goal:** Enable Table Options to transform a table into a different widget type (e.g., table → pivot table) and seamlessly swap the panel content.
+
+**Current Architecture:**
+```
+Widget (type: "Table")
+    ↓
+WidgetLoaderPlugin.handlePanelOpen()
+    ↓ supportedTypes.get(type)
+WidgetTypeInfo { basePlugin: IrisGridPlugin }
+    ↓ registerComponent(basePlugin.name, ...)
+IrisGridPanel renders IrisGrid
+```
+
+**Problem:**
+When a plugin transforms a table (e.g., creates a pivot), the result may be a different widget type. Currently there's no mechanism for:
+1. The panel to detect the transformed type
+2. Swapping the renderer to the appropriate widget component
+3. Maintaining panel identity (same tab) while changing content
+
+**Research Questions:**
+- [ ] What widget types exist? (Table, TreeTable, HierarchicalTable, Figure, etc.)
+- [ ] How does IrisGridPanel currently handle model changes?
+- [ ] Can a middleware change the widget type dynamically?
+- [ ] Should widget replacement be handled at the Panel level or WidgetLoaderPlugin level?
+- [ ] What state needs to be preserved vs reset during widget swap?
+
+**Proposed Architecture Options:**
+
+**Option A: Panel-level widget swap**
+```
+IrisGridPanel
+  ├─ detects model type change
+  ├─ looks up new widget type from WidgetLoaderPlugin
+  └─ renders appropriate component (IrisGrid, PivotGrid, etc.)
+```
+- Pros: Panel identity preserved, simpler
+- Cons: IrisGridPanel becomes aware of other widget types
+
+**Option B: WidgetLoaderPlugin-level swap**
+```
+WidgetLoaderPlugin
+  ├─ middleware can dispatch "REPLACE_WIDGET" action
+  ├─ closes current panel, opens new panel with new type
+  └─ transfers relevant state
+```
+- Pros: Clean separation of concerns
+- Cons: Panel identity lost, state transfer complexity
+
+**Option C: Dynamic component registry**
+```
+Panel
+  ├─ subscribes to "currentWidgetType" state
+  ├─ components registered dynamically
+  └─ renders component matching currentWidgetType
+```
+- Pros: Most flexible, preserves panel identity
+- Cons: More complex state management
+
+**Tasks:**
+- [ ] Research current widget type handling in WidgetLoaderPlugin
+- [ ] Identify which transformations change widget type (pivot, rollup, etc.)
+- [ ] Design widget replacement API for middleware
+- [ ] Implement widget swap mechanism
+- [ ] Test with pivot/rollup transformations
+- [ ] Handle state preservation during swap
+
+
+### Phase 4: Examples, Documentation & Polish 🔲
 - [ ] Clean up the example plugin (GridMiddlewarePlugin), add tests
 - [ ] Add persistence example using `usePersistentState`
 - [ ] Add another plugin to demonstrate chaining with configurable order of execution
@@ -256,7 +325,7 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 - [ ] Add unit tests for new table-options components
 
 
-### Phase 4: Integration Testing & Verification ✅
+### Phase 5: Integration Testing & Verification ✅
 - [x] Test in code-studio with sample database
 - [x] Verify Quick Filters toggle works
 - [x] Verify Search Bar toggle works  
@@ -280,8 +349,9 @@ Changes made via the custom Table Options items should be persistent. `IrisGrid`
 |-------|--------------|--------|
 | 1 | Middleware plugin infrastructure, chaining, tests, example plugin | ✅ Complete |
 | 2 | Registry architecture, built-in options refactor, legacy removal | ✅ Complete |
-| 3 | Documentation, additional examples, tests | � Not started |
-| 4 | Integration testing and verification | ✅ Complete |
+| 3 | Widget replacement architecture (table → pivot swap) | 🔲 Not started |
+| 4 | Documentation, additional examples, tests | 🔲 Not started |
+| 5 | Integration testing and verification | ✅ Complete |
 
 ### Testing Strategy
 
