@@ -262,8 +262,11 @@ export class GridMetricCalculator {
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
     const visibleRowHeights = this.getVisibleRowHeights(state);
-    const [visibleColumnWidths, visibleNonHiddenColumns] =
-      this.getVisibleColumnWidths(state, firstColumn, treePaddingX);
+    const [visibleColumnWidths, columnsForRender] = this.getVisibleColumnWidths(
+      state,
+      firstColumn,
+      treePaddingX
+    );
 
     // Calculate the metrics for the main grid
     const visibleRows = Array.from(visibleRowHeights.keys());
@@ -614,7 +617,7 @@ export class GridMetricCalculator {
       visibleColumns,
 
       // Array of visible, non-hidden columns, by grid index
-      visibleNonHiddenColumns,
+      columnsForRender,
 
       // Map of the height/width of columns in the viewport (excluding floating columns)
       visibleRowHeights,
@@ -1072,7 +1075,7 @@ export class GridMetricCalculator {
     let x = 0;
     let column = left;
     const columnWidths = new Map();
-    const visibleNonHiddenColumns: VisibleIndex[] = [];
+    const columnsForRender: VisibleIndex[] = [];
     const { columnCount, floatingRightColumnCount } = model;
     while (
       x < width + leftOffset &&
@@ -1086,13 +1089,13 @@ export class GridMetricCalculator {
       );
       columnWidths.set(column, columnWidth);
       if (columnWidth > 0) {
-        visibleNonHiddenColumns.push(column);
+        columnsForRender.push(column);
       }
       x += columnWidth;
       column += 1;
     }
 
-    return [columnWidths, visibleNonHiddenColumns];
+    return [columnWidths, columnsForRender];
   }
 
   /**
