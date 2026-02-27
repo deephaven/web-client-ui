@@ -146,8 +146,18 @@ class DataBarCellRenderer extends CellRenderer {
 
     context.save();
     context.textAlign = textAlign;
-    context.fillStyle =
-      model.colorForCell(modelColumn, modelRow, theme) || theme.textColor;
+    const textColor = model.colorForCell(modelColumn, modelRow, theme);
+    if (textColor && textColor !== theme.textColor) {
+      context.fillStyle = textColor;
+    } else if (hasGradient) {
+      const color =
+        value >= 0 ? dataBarColor[dataBarColor.length - 1] : dataBarColor[0];
+      context.fillStyle = color;
+    } else {
+      context.fillStyle = Array.isArray(dataBarColor)
+        ? dataBarColor[0]
+        : dataBarColor;
+    }
     context.textBaseline = 'middle';
     context.font = theme.font;
 
