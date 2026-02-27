@@ -9,6 +9,7 @@ import { type dh } from '@deephaven/jsapi-types';
 import { Button } from '@deephaven/components';
 import { vsHistory, vsTrash } from '@deephaven/icons';
 import { usePersistentState } from '@deephaven/dashboard';
+import { type MoveOperation } from '@deephaven/grid';
 import {
   type TableOption,
   type TableOptionPanelProps,
@@ -49,6 +50,8 @@ interface DehydratedStateSnapshot {
   selectDistinctColumns: readonly ColumnName[];
   /** Custom columns */
   customColumns: readonly ColumnName[];
+  /** Re-arranged columns (move operations) */
+  movedColumns: readonly MoveOperation[];
 }
 
 /**
@@ -84,6 +87,7 @@ function dehydrateSnapshot(
     invertSearchColumns: gridState.invertSearchColumns,
     selectDistinctColumns: [...gridState.selectDistinctColumns],
     customColumns: [...gridState.customColumns],
+    movedColumns: [...gridState.movedColumns],
   };
 }
 
@@ -198,6 +202,12 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
       dispatch({ type: 'SET_SORTS', sorts: hydratedSorts });
       dispatch({ type: 'SET_REVERSE', reverse: snapshot.reverse });
 
+      // Restore moved columns (re-arranged column order)
+      dispatch({
+        type: 'SET_MOVED_COLUMNS',
+        columns: [...snapshot.movedColumns],
+      });
+
       // Stay on the Table History screen after restoring
     },
     [dispatch, model, irisGridUtils, gridState.selectDistinctColumns]
@@ -216,8 +226,104 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
     setState({ snapshots: [] });
   }, [setState]);
 
+  // Compute what has changed since the last saved snapshot
+  const changedProperties = useMemo(() => {
+    const lastSnapshot = snapshots[snapshots.length - 1];
+    if (lastSnapshot == null) {
+      return null; // No previous snapshot to compare against
+    }
+
+    const currentDehydrated = dehydrateSnapshot(gridState, irisGridUtils);
+    const changes: string[] = [];
+
+    // Compare sorts
+    const sortsChanged =
+      JSON.stringify(currentDehydrated.sorts) !==
+      JSON.stringify(lastSnapshot.sorts);
+    if (sortsChanged) {
+      changes.push(`Sorts: ${currentDehydrated.sorts.length} column(s)`);
+    }
+
+    // Compare quick filters
+    const quickFiltersChanged =
+      JSON.stringify(currentDehydrated.quickFilters) !==
+      JSON.stringify(lastSnapshot.quickFilters);
+    if (quickFiltersChanged) {
+      changes.push(
+        `Quick Filters: ${currentDehydrated.quickFilters.length} filter(s)`
+      );
+    }
+
+    // Compare advanced filters
+    const advancedFiltersChanged =
+      JSON.stringify(currentDehydrated.advancedFilters) !==
+      JSON.stringify(lastSnapshot.advancedFilters);
+    if (advancedFiltersChanged) {
+      changes.push(
+        `Advanced Filters: ${currentDehydrated.advancedFilters.length} filter(s)`
+      );
+    }
+
+    // Compare search
+    if (currentDehydrated.searchValue !== lastSnapshot.searchValue) {
+      changes.push(`Search: "${currentDehydrated.searchValue || '(empty)'}"`);
+    }
+
+    // Compare reverse
+    if (currentDehydrated.reverse !== lastSnapshot.reverse) {
+      changes.push(`Reverse: ${currentDehydrated.reverse}`);
+    }
+
+    // Compare select distinct
+    const selectDistinctChanged =
+      JSON.stringify(currentDehydrated.selectDistinctColumns) !==
+      JSON.stringify(lastSnapshot.selectDistinctColumns);
+    if (selectDistinctChanged) {
+      changes.push(
+        `Select Distinct: ${currentDehydrated.selectDistinctColumns.length} column(s)`
+      );
+    }
+
+    // Compare custom columns
+    const customColumnsChanged =
+      JSON.stringify(currentDehydrated.customColumns) !==
+      JSON.stringify(lastSnapshot.customColumns);
+    if (customColumnsChanged) {
+      changes.push(
+        `Custom Columns: ${currentDehydrated.customColumns.length} column(s)`
+      );
+    }
+
+    // Compare moved columns
+    const movedColumnsChanged =
+      JSON.stringify(currentDehydrated.movedColumns) !==
+      JSON.stringify(lastSnapshot.movedColumns);
+    if (movedColumnsChanged) {
+      changes.push(
+        `Column Order: ${currentDehydrated.movedColumns.length} move(s)`
+      );
+    }
+
+    return changes;
+  }, [snapshots, gridState, irisGridUtils]);
+
   return (
     <div className="container mt-3">
+      {/* Show changed properties since last snapshot */}
+      {changedProperties != null && changedProperties.length > 0 && (
+        <div className="mb-3">
+          <h6 className="text-muted mb-1">Changed since last snapshot:</h6>
+          <ul className="list-unstyled text-muted small mb-0">
+            {changedProperties.map(change => (
+              <li key={change}>• {change}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {changedProperties != null && changedProperties.length === 0 && (
+        <p className="text-muted small mb-3">No changes since last snapshot.</p>
+      )}
+
       <div className="d-flex flex-column gap-2">
         <Button kind="primary" onClick={handleSaveSnapshot}>
           Save Snapshot
@@ -280,7 +386,7 @@ const TableHistoryOption: TableOption = {
 
   menuItem: {
     title: 'Table History',
-    subtitle: 'Save and restore table state',
+    // subtitle: 'Save and restore table state',
     icon: vsHistory,
     order: -50,
     isAvailable: () => true,

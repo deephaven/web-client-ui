@@ -32,6 +32,14 @@ function GridMiddleware({
   Component,
   ...props
 }: WidgetMiddlewareComponentProps<dh.Table>): JSX.Element {
+  // Register the option when the middleware mounts (not as a module side effect)
+  useEffect(() => {
+    defaultTableOptionsRegistry.register(MiddlewareCustomOption);
+    return () => {
+      defaultTableOptionsRegistry.unregister(MIDDLEWARE_OPTION_TYPE);
+    };
+  }, []);
+
   // Log when middleware is mounted (for debugging)
   useEffect(() => {
     log.debug('GridMiddleware (component) mounted');
@@ -197,8 +205,8 @@ const MiddlewareCustomOption: TableOption = {
   Panel: MiddlewareConfigPanel,
 };
 
-// Register the option with the default registry
-defaultTableOptionsRegistry.register(MiddlewareCustomOption);
+// Note: Registration moved to GridMiddleware component to avoid side effects at module load time
+// defaultTableOptionsRegistry.register(MiddlewareCustomOption);
 
 /**
  * Panel middleware that wraps the GridPanelPlugin.
