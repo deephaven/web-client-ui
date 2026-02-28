@@ -84,17 +84,17 @@ test.describe('grid accessibility layer', () => {
     await expect(xHeader).toBeAttached();
   });
 
-  test('accessibility layer does not block canvas interactions', async ({
+  test('accessibility layer forwards clicks to canvas', async ({
     page,
   }) => {
     const grid = page.locator('.iris-grid-panel .iris-grid');
     const canvas = grid.locator('canvas.grid-canvas');
 
-    // Click on the grid - should select a cell
-    await grid.click({ position: { x: 50, y: 50 } });
+    // Click on an accessibility cell - it should forward the click to the canvas
+    const cell = page.getByTestId('grid-cell-0-0');
+    await cell.click();
 
-    // The canvas should receive focus, not blocked by the accessibility layer
-    // The accessibility layer has pointer-events: none
+    // The canvas should receive focus through the forwarded click
     await expect(canvas).toBeFocused();
   });
 
@@ -109,23 +109,15 @@ test.describe('grid accessibility layer', () => {
     await expect(rowHeader0).not.toBeAttached();
   });
 
-  test('can click on third row cell using accessibility layer position', async ({
+  test('can click on third row cell using accessibility layer', async ({
     page,
   }) => {
     // Get the cell in the third row (row index 2, zero-based)
     const thirdRowCell = page.getByTestId('grid-cell-0-2');
     await expect(thirdRowCell).toBeAttached();
 
-    // Get the bounding box of the accessibility element to find its position
-    const boundingBox = await thirdRowCell.boundingBox();
-    expect(boundingBox).not.toBeNull();
-    if (boundingBox === null) return;
-
-    // Click at the center of the cell position on the canvas
-    await page.mouse.click(
-      boundingBox.x + boundingBox.width / 2,
-      boundingBox.y + boundingBox.height / 2
-    );
+    // Click directly on the accessibility element - it forwards to the canvas
+    await thirdRowCell.click();
 
     // Take a screenshot to verify the third row is selected
     await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(

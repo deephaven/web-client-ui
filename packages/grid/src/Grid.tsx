@@ -2318,6 +2318,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       <GridAccessibilityLayer
         metrics={metrics}
         model={model}
+        canvasRef={this.canvas}
       />
     );
   }
@@ -2388,6 +2389,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>
+        {this.renderAccessibilityLayer()}
         <canvas
           className={classNames('grid-canvas', Grid.getCursorClassName(cursor))}
           ref={canvas => {
@@ -2406,7 +2408,6 @@ class Grid extends PureComponent<GridProps, GridState> {
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
         {this.renderInputField()}
-        {this.renderAccessibilityLayer()}
         {children}
       </div>
     );

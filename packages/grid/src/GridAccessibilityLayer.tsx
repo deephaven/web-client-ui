@@ -1,4 +1,4 @@
-import React, { type CSSProperties, memo } from 'react';
+import React, { type CSSProperties, memo, useCallback } from 'react';
 import type GridMetrics from './GridMetrics';
 import type GridModel from './GridModel';
 
@@ -7,6 +7,8 @@ export interface GridAccessibilityLayerProps {
   metrics: GridMetrics | null;
   /** The model providing cell data */
   model: GridModel;
+  /** Reference to the canvas element for dispatching click events */
+  canvasRef: HTMLCanvasElement | null;
 }
 
 const containerStyle: CSSProperties = {
@@ -20,7 +22,7 @@ const cellStyle: CSSProperties = {
   position: 'absolute',
   opacity: 0,
   overflow: 'hidden',
-  pointerEvents: 'none',
+  pointerEvents: 'auto',
 };
 
 /**
@@ -33,12 +35,77 @@ const cellStyle: CSSProperties = {
  * - Column headers with `data-testid="grid-column-header-{column}-{depth}"`
  * - Row headers with `data-testid="grid-row-header-{row}"`
  *
- * All elements have pointer-events: none so clicks pass through to the underlying canvas.
+ * Clicks on accessibility elements are forwarded to the underlying canvas at the
+ * corresponding coordinates, triggering normal grid mouse handling.
  */
 function GridAccessibilityLayer({
   metrics,
   model,
+  canvasRef,
 }: GridAccessibilityLayerProps): JSX.Element | null {
+  const forwardMouseEvent = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>, eventType: string) => {
+      if (!canvasRef) return;
+
+      // Get the center of the clicked element
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clientX = rect.left + rect.width / 2;
+      const clientY = rect.top + rect.height / 2;
+
+      // Dispatch a synthetic mouse event to the canvas at the cell's position
+      const syntheticEvent = new MouseEvent(eventType, {
+        bubbles: true,
+        cancelable: true,
+        clientX,
+        clientY,
+        button: event.button,
+        buttons: event.buttons,
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+        altKey: event.altKey,
+        metaKey: event.metaKey,
+      });
+
+      canvasRef.dispatchEvent(syntheticEvent);
+    },
+    [canvasRef]
+  );
+
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      forwardMouseEvent(event, 'click');
+    },
+    [forwardMouseEvent]
+  );
+
+  const handleDoubleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      forwardMouseEvent(event, 'dblclick');
+    },
+    [forwardMouseEvent]
+  );
+
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      forwardMouseEvent(event, 'contextmenu');
+    },
+    [forwardMouseEvent]
+  );
+
+  const handleMouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      forwardMouseEvent(event, 'mousedown');
+    },
+    [forwardMouseEvent]
+  );
+
+  const handleMouseUp = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      forwardMouseEvent(event, 'mouseup');
+    },
+    [forwardMouseEvent]
+  );
+
   if (!metrics) {
     return null;
   }
@@ -99,6 +166,11 @@ function GridAccessibilityLayer({
             width,
             height,
           }}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          onContextMenu={handleContextMenu}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         >
           {text}
         </div>
@@ -134,6 +206,11 @@ function GridAccessibilityLayer({
             width,
             height: columnHeaderHeight,
           }}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          onContextMenu={handleContextMenu}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         >
           {text ?? ''}
         </div>
@@ -167,6 +244,11 @@ function GridAccessibilityLayer({
             width: rowHeaderWidth,
             height,
           }}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          onContextMenu={handleContextMenu}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         >
           {text}
         </div>
