@@ -108,6 +108,30 @@ test.describe('grid accessibility layer', () => {
     // In simple_table, row headers should NOT be present since rowHeaderWidth is 0
     await expect(rowHeader0).not.toBeAttached();
   });
+
+  test('can click on third row cell using accessibility layer position', async ({
+    page,
+  }) => {
+    // Get the cell in the third row (row index 2, zero-based)
+    const thirdRowCell = page.getByTestId('grid-cell-0-2');
+    await expect(thirdRowCell).toBeAttached();
+
+    // Get the bounding box of the accessibility element to find its position
+    const boundingBox = await thirdRowCell.boundingBox();
+    expect(boundingBox).not.toBeNull();
+    if (boundingBox === null) return;
+
+    // Click at the center of the cell position on the canvas
+    await page.mouse.click(
+      boundingBox.x + boundingBox.width / 2,
+      boundingBox.y + boundingBox.height / 2
+    );
+
+    // Take a screenshot to verify the third row is selected
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'third-row-cell-selected.png'
+    );
+  });
 });
 
 test.describe('grid accessibility layer with column groups', () => {
