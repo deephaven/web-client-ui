@@ -79,6 +79,7 @@ import {
   type GridRenderState,
   type EditingCellTextSelectionRange,
 } from './GridRendererTypes';
+import GridAccessibilityLayer from './GridAccessibilityLayer';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -147,6 +148,9 @@ export type GridProps = typeof Grid.defaultProps & {
   stateOverride?: Record<string, unknown>;
 
   theme?: Partial<GridThemeType>;
+
+  // Whether to render an invisible accessibility layer for e2e testing and screen readers
+  enableAccessibilityLayer?: boolean;
 };
 
 export type GridState = {
@@ -2299,6 +2303,26 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
+   * Renders the accessibility layer for e2e testing and screen readers
+   * @returns The accessibility layer or null if disabled
+   */
+  renderAccessibilityLayer(): ReactNode {
+    const { enableAccessibilityLayer, model } = this.props;
+    const { metrics } = this;
+
+    if (!enableAccessibilityLayer) {
+      return null;
+    }
+
+    return (
+      <GridAccessibilityLayer
+        metrics={metrics}
+        model={model}
+      />
+    );
+  }
+
+  /**
    * Gets the render state
    * @returns The render state
    */
@@ -2382,6 +2406,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
         {this.renderInputField()}
+        {this.renderAccessibilityLayer()}
         {children}
       </div>
     );

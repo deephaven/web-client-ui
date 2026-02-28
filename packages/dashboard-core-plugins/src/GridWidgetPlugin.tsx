@@ -171,6 +171,7 @@ export function GridWidgetPlugin({
       onContextMenu={onContextMenu}
       inputFilters={inputFilters}
       customFilters={customFilters}
+      enableAccessibilityLayer
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}
