@@ -150,7 +150,6 @@ function renderAccessibilityLayer(
     <GridAccessibilityLayer
       metrics={metrics}
       model={model}
-      canvasRef={null}
       {...propsOverrides}
     />
   );
@@ -252,11 +251,11 @@ describe('GridAccessibilityLayer', () => {
     });
   });
 
-  it('cells have pointer-events: auto to receive clicks for forwarding', () => {
+  it('cells have pointer-events: none to allow clicks through to canvas', () => {
     renderAccessibilityLayer();
 
     const cell = screen.getByTestId('grid-cell-0-0');
-    expect(cell).toHaveStyle({ pointerEvents: 'auto' });
+    expect(cell).toHaveStyle({ pointerEvents: 'none' });
   });
 
   it('includes aria-rowcount and aria-colcount on the container', () => {
