@@ -2403,10 +2403,9 @@ class Grid extends PureComponent<GridProps, GridState> {
           onMouseLeave={this.handleMouseLeave}
           tabIndex={0}
         >
-          Your browser does not support HTML canvas. Update your browser?
+          {this.renderAccessibilityLayer()}
         </canvas>
         {this.renderInputField()}
-        {this.renderAccessibilityLayer()}
         {children}
       </div>
     );

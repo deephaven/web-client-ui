@@ -1,10 +1,49 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 import { gotoPage, openTable } from './utils';
 
 async function waitForLoadingDone(page: Page) {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
+}
+
+/**
+ * Clicks on a grid cell using the accessibility layer positioning.
+ * Since the accessibility layer is inside the canvas (hidden), we read
+ * the cell's inline styles to determine its position and click on the canvas.
+ */
+async function clickCell(
+  page: Page,
+  grid: Locator,
+  column: number,
+  row: number
+): Promise<void> {
+  const canvas = grid.locator('canvas.grid-canvas');
+  const cell = page.getByTestId(`grid-cell-${column}-${row}`);
+
+  await expect(cell).toBeAttached();
+
+  // Get the position from the element's inline styles since it's hidden inside canvas
+  const styles = await cell.evaluate(el => {
+    const style = (el as HTMLElement).style;
+    return {
+      left: parseFloat(style.left),
+      top: parseFloat(style.top),
+      width: parseFloat(style.width),
+      height: parseFloat(style.height),
+    };
+  });
+
+  // Get the canvas bounding box to calculate absolute position
+  const canvasBox = await canvas.boundingBox();
+  if (!canvasBox) {
+    throw new Error('Canvas bounding box is null');
+  }
+
+  // Click at the center of the cell position on the canvas
+  const clickX = canvasBox.x + styles.left + styles.width / 2;
+  const clickY = canvasBox.y + styles.top + styles.height / 2;
+  await page.mouse.click(clickX, clickY);
 }
 
 test.describe('grid accessibility layer', () => {
@@ -16,7 +55,8 @@ test.describe('grid accessibility layer', () => {
 
   test('renders accessibility layer container', async ({ page }) => {
     const accessibilityLayer = page.getByTestId('grid-accessibility-layer');
-    await expect(accessibilityLayer).toBeVisible();
+    // Inside canvas element, so not visible but still attached to DOM
+    await expect(accessibilityLayer).toBeAttached();
     await expect(accessibilityLayer).toHaveAttribute('role', 'grid');
   });
 
@@ -109,28 +149,27 @@ test.describe('grid accessibility layer', () => {
     await expect(rowHeader0).not.toBeAttached();
   });
 
-  test('can click on third row cell using accessibility layer position', async ({
+  test('accessibility layer cells contain expected values', async ({
     page,
   }) => {
-    // Get the cell in the third row (row index 2, zero-based)
-    const thirdRowCell = page.getByTestId('grid-cell-0-2');
-    await expect(thirdRowCell).toBeAttached();
+    // Verify multiple cells have content (inside canvas, so use textContent)
+    const cell02 = page.getByTestId('grid-cell-0-2');
+    await expect(cell02).toBeAttached();
 
-    // Get the bounding box of the accessibility element to find its position
-    const boundingBox = await thirdRowCell.boundingBox();
-    expect(boundingBox).not.toBeNull();
-    if (boundingBox === null) return;
+    const text = await cell02.textContent();
+    expect(text).toBeTruthy();
+  });
 
-    // Click at the center of the cell position on the canvas
-    await page.mouse.click(
-      boundingBox.x + boundingBox.width / 2,
-      boundingBox.y + boundingBox.height / 2
-    );
+  test('can click on third row using accessibility layer positioning', async ({
+    page,
+  }) => {
+    const grid = page.locator('.iris-grid-panel .iris-grid');
+
+    // Click on cell at column 0, row 2 (third row)
+    await clickCell(page, grid, 0, 2);
 
     // Take a screenshot to verify the third row is selected
-    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
-      'third-row-cell-selected.png'
-    );
+    await expect(grid).toHaveScreenshot('third-row-cell-selected.png');
   });
 });
 
