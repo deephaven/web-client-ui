@@ -21,7 +21,7 @@ export function ChartThemeProvider({
 }: ChartThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
-  const chartTheme = useMemo(defaultChartTheme, [activeThemes]);
+  const chartTheme = useMemo(() => defaultChartTheme(), [activeThemes]);
 
   return (
     <ChartThemeContext.Provider value={chartTheme}>
