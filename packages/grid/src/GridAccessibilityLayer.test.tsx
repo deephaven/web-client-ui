@@ -265,4 +265,61 @@ describe('GridAccessibilityLayer', () => {
     expect(layer).toHaveAttribute('aria-rowcount', '3');
     expect(layer).toHaveAttribute('aria-colcount', '3');
   });
+
+  it('follows WAI-ARIA grid pattern with rowgroups and rows', () => {
+    renderAccessibilityLayer();
+
+    const layer = screen.getByTestId('grid-accessibility-layer');
+
+    // Should have rowgroup elements
+    const rowGroups = layer.querySelectorAll('[role="rowgroup"]');
+    expect(rowGroups.length).toBeGreaterThanOrEqual(1);
+
+    // Should have row elements
+    const rows = layer.querySelectorAll('[role="row"]');
+    expect(rows.length).toBeGreaterThan(0);
+  });
+
+  it('places data cells inside row elements', () => {
+    renderAccessibilityLayer();
+
+    const cell = screen.getByTestId('grid-cell-0-0');
+    const parentRow = cell.closest('[role="row"]');
+    expect(parentRow).not.toBeNull();
+  });
+
+  it('places column headers inside row elements', () => {
+    renderAccessibilityLayer();
+
+    const header = screen.getByTestId('grid-column-header-0-0');
+    const parentRow = header.closest('[role="row"]');
+    expect(parentRow).not.toBeNull();
+  });
+
+  it('places row headers inside row elements with data cells', () => {
+    renderAccessibilityLayer();
+
+    const rowHeader = screen.getByTestId('grid-row-header-0');
+    const parentRow = rowHeader.closest('[role="row"]');
+    expect(parentRow).not.toBeNull();
+
+    // The row should also contain data cells
+    const cellInSameRow = parentRow?.querySelector(
+      '[data-testid="grid-cell-0-0"]'
+    );
+    expect(cellInSameRow).toBeInTheDocument();
+  });
+
+  it('adds aria-rowindex to row elements', () => {
+    renderAccessibilityLayer();
+
+    const rows = screen.getAllByRole('row');
+    // Filter to data rows (those with aria-rowindex)
+    const dataRows = rows.filter(row => row.hasAttribute('aria-rowindex'));
+    expect(dataRows.length).toBe(3); // 3 data rows
+
+    expect(dataRows[0]).toHaveAttribute('aria-rowindex', '1');
+    expect(dataRows[1]).toHaveAttribute('aria-rowindex', '2');
+    expect(dataRows[2]).toHaveAttribute('aria-rowindex', '3');
+  });
 });
