@@ -130,7 +130,19 @@ function logResults(
   console.log(`  Expected min FPS: ${expected.minFps}`);
 }
 
+/**
+ * Performance tests are skipped by default as they can be flaky in CI due to
+ * resource constraints. To run these tests explicitly:
+ *
+ *   RUN_PERF_TESTS=1 npx playwright test grid-performance.spec.ts
+ */
 test.describe('grid scroll performance benchmarks', () => {
+  // Skip by default - these tests are flaky in CI due to resource constraints
+  test.skip(
+    !process.env.RUN_PERF_TESTS,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
   // Run tests serially to avoid resource contention
   test.describe.configure({ mode: 'serial' });
 
@@ -304,6 +316,12 @@ test.describe('grid scroll performance benchmarks', () => {
 });
 
 test.describe('grid performance stress tests', () => {
+  // Skip by default - these tests are flaky in CI due to resource constraints
+  test.skip(
+    !process.env.RUN_PERF_TESTS,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
   // Run tests serially to avoid resource contention
   test.describe.configure({ mode: 'serial' });
 
