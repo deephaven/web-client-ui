@@ -2310,16 +2310,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { enableAccessibilityLayer, model } = this.props;
     const { metrics } = this;
 
-    if (!enableAccessibilityLayer) {
+    if (enableAccessibilityLayer !== true) {
       return null;
     }
 
-    return (
-      <GridAccessibilityLayer
-        metrics={metrics}
-        model={model}
-      />
-    );
+    return <GridAccessibilityLayer metrics={metrics} model={model} />;
   }
 
   /**

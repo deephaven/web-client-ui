@@ -45,11 +45,11 @@ const cellStyle: CSSProperties = {
  *
  * All elements have pointer-events: none so clicks pass through to the underlying canvas.
  */
-function GridAccessibilityLayer({
+function GridAccessibilityLayerComponent({
   metrics,
   model,
 }: GridAccessibilityLayerProps): JSX.Element | null {
-  if (!metrics) {
+  if (metrics == null) {
     return null;
   }
 
@@ -71,126 +71,136 @@ function GridAccessibilityLayer({
   const { columnHeaderMaxDepth } = model;
 
   // Build column header rows (one row per depth level)
-  const columnHeaderRows: JSX.Element[] = [];
-  for (let depth = 0; depth < columnHeaderMaxDepth; depth += 1) {
-    const headerY = depth * columnHeaderHeight;
-    const headerCells: JSX.Element[] = [];
+  const columnHeaderRows = Array.from(
+    { length: columnHeaderMaxDepth },
+    (_, depth) => {
+      const headerY = depth * columnHeaderHeight;
+      const headerCells = allColumns
+        .map(column => {
+          const x = allColumnXs.get(column);
+          const width = allColumnWidths.get(column);
+          const modelColumn = modelColumns.get(column);
 
-    for (const column of allColumns) {
-      const x = allColumnXs.get(column);
-      const width = allColumnWidths.get(column);
-      const modelColumn = modelColumns.get(column);
+          if (
+            x === undefined ||
+            width === undefined ||
+            modelColumn === undefined
+          ) {
+            return null;
+          }
 
-      if (x === undefined || width === undefined || modelColumn === undefined) {
-        continue;
-      }
+          const text = model.textForColumnHeader(modelColumn, depth);
 
-      const text = model.textForColumnHeader(modelColumn, depth);
+          return (
+            <div
+              key={`col-header-${column}-${depth}`}
+              data-testid={`grid-column-header-${column}-${depth}`}
+              role="columnheader"
+              aria-colindex={column + 1}
+              style={{
+                ...cellStyle,
+                left: gridX + x,
+                top: headerY,
+                width,
+                height: columnHeaderHeight,
+              }}
+            >
+              {text ?? ''}
+            </div>
+          );
+        })
+        .filter((cell): cell is JSX.Element => cell !== null);
 
-      headerCells.push(
-        <div
-          key={`col-header-${column}-${depth}`}
-          data-testid={`grid-column-header-${column}-${depth}`}
-          role="columnheader"
-          aria-colindex={column + 1}
-          style={{
-            ...cellStyle,
-            left: gridX + x,
-            top: headerY,
-            width,
-            height: columnHeaderHeight,
-          }}
-        >
-          {text ?? ''}
+      return (
+        <div key={`header-row-${depth}`} role="row" style={rowStyle}>
+          {headerCells}
         </div>
       );
     }
-
-    columnHeaderRows.push(
-      <div key={`header-row-${depth}`} role="row" style={rowStyle}>
-        {headerCells}
-      </div>
-    );
-  }
+  );
 
   // Build data rows (one row element per visible row)
-  const dataRows: JSX.Element[] = [];
-  for (const row of allRows) {
-    const y = allRowYs.get(row);
-    const height = allRowHeights.get(row);
-    const modelRow = modelRows.get(row);
+  const dataRows = allRows
+    .map(row => {
+      const y = allRowYs.get(row);
+      const height = allRowHeights.get(row);
+      const modelRow = modelRows.get(row);
 
-    if (y === undefined || height === undefined || modelRow === undefined) {
-      continue;
-    }
-
-    const rowCells: JSX.Element[] = [];
-
-    // Add row header if present
-    if (rowHeaderWidth > 0) {
-      const rowHeaderText = model.textForRowHeader(modelRow);
-      rowCells.push(
-        <div
-          key={`row-header-${row}`}
-          data-testid={`grid-row-header-${row}`}
-          role="rowheader"
-          aria-rowindex={row + 1}
-          style={{
-            ...cellStyle,
-            left: 0,
-            top: gridY + y,
-            width: rowHeaderWidth,
-            height,
-          }}
-        >
-          {rowHeaderText}
-        </div>
-      );
-    }
-
-    // Add data cells for this row
-    for (const column of allColumns) {
-      const x = allColumnXs.get(column);
-      const width = allColumnWidths.get(column);
-      const modelColumn = modelColumns.get(column);
-
-      if (x === undefined || width === undefined || modelColumn === undefined) {
-        continue;
+      if (y === undefined || height === undefined || modelRow === undefined) {
+        return null;
       }
 
-      const text = model.textForCell(modelColumn, modelRow);
+      // Add row header if present
+      const rowHeaderCell =
+        rowHeaderWidth > 0 ? (
+          <div
+            key={`row-header-${row}`}
+            data-testid={`grid-row-header-${row}`}
+            role="rowheader"
+            aria-rowindex={row + 1}
+            style={{
+              ...cellStyle,
+              left: 0,
+              top: gridY + y,
+              width: rowHeaderWidth,
+              height,
+            }}
+          >
+            {model.textForRowHeader(modelRow)}
+          </div>
+        ) : null;
 
-      rowCells.push(
+      // Add data cells for this row
+      const dataCells = allColumns
+        .map(column => {
+          const x = allColumnXs.get(column);
+          const width = allColumnWidths.get(column);
+          const modelColumn = modelColumns.get(column);
+
+          if (
+            x === undefined ||
+            width === undefined ||
+            modelColumn === undefined
+          ) {
+            return null;
+          }
+
+          const text = model.textForCell(modelColumn, modelRow);
+
+          return (
+            <div
+              key={`cell-${column}-${row}`}
+              data-testid={`grid-cell-${column}-${row}`}
+              role="gridcell"
+              aria-colindex={column + 1}
+              aria-rowindex={row + 1}
+              style={{
+                ...cellStyle,
+                left: gridX + x,
+                top: gridY + y,
+                width,
+                height,
+              }}
+            >
+              {text}
+            </div>
+          );
+        })
+        .filter((cell): cell is JSX.Element => cell !== null);
+
+      return (
         <div
-          key={`cell-${column}-${row}`}
-          data-testid={`grid-cell-${column}-${row}`}
-          role="gridcell"
-          aria-colindex={column + 1}
+          key={`row-${row}`}
+          role="row"
           aria-rowindex={row + 1}
-          style={{
-            ...cellStyle,
-            left: gridX + x,
-            top: gridY + y,
-            width,
-            height,
-          }}
+          style={rowStyle}
         >
-          {text}
+          {rowHeaderCell}
+          {dataCells}
         </div>
       );
-    }
-
-    dataRows.push(
-      <div
-        key={`row-${row}`}
-        role="row"
-        aria-rowindex={row + 1}
-        style={rowStyle}
-      >
-        {rowCells}
-      </div>
-    );
-  }
+    })
+    .filter((row): row is JSX.Element => row !== null);
 
   return (
     <div
@@ -208,4 +218,6 @@ function GridAccessibilityLayer({
   );
 }
 
-export default memo(GridAccessibilityLayer);
+const GridAccessibilityLayer = memo(GridAccessibilityLayerComponent);
+GridAccessibilityLayer.displayName = 'GridAccessibilityLayer';
+export default GridAccessibilityLayer;

@@ -150,6 +150,7 @@ function renderAccessibilityLayer(
     <GridAccessibilityLayer
       metrics={metrics}
       model={model}
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...propsOverrides}
     />
   );
