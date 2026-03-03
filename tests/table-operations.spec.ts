@@ -484,14 +484,13 @@ test('rollup rows and aggregate columns', async ({ page }) => {
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     expect(intColumn).toBeTruthy();
-    // Move mousee off the grid and ensure the hover state gets removed
+    // Move mouse off the grid and ensure the hover state gets removed
     // This is a workaround for React 18 Chrome e2e failing here with the row still hovered after clicking in the side panel
     await page.mouse.move(300, 0, { steps: 10 });
     await intColumn.dblclick();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-    await page.pause();
   });
 
   await test.step('Rollup a double column', async () => {
@@ -531,12 +530,9 @@ test('rollup rows and aggregate columns', async ({ page }) => {
       .getByRole('button', { name: 'Edit Columns', exact: true })
       .click();
 
-    const locator = page.getByText('Double', { exact: true });
-    // Sometimes this becomes flaky presumably because of the animation
-    // or some React inner workings causing 2 elements to briefly exist.
-    // They are identical except their label ID assigned by the component we use.
-    // Waiting for only 1 to exist should hopefully fix flakiness.
-    await expect(locator).toHaveCount(1);
+    const locator = page
+      .locator('.aggregation-edit')
+      .getByText('Double', { exact: true });
     await locator.click();
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
