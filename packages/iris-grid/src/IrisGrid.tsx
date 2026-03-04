@@ -1141,6 +1141,136 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 50 }
   );
 
+  /**
+   * Render an advanced filter menu element for a column
+   * @param columnIndex The visible column index (used as key and for handlers)
+   * @param modelColumn The model column index (used for filter/sort lookup)
+   * @param style CSS positioning for the menu container
+   * @param isShown Whether the menu is currently shown
+   * @returns The advanced filter menu element, or null if column not found
+   */
+  renderAdvancedFilterMenu(
+    columnIndex: VisibleIndex,
+    modelColumn: ModelIndex,
+    style: CSSProperties,
+    isShown: boolean
+  ): ReactElement | null {
+    const { model } = this.props;
+    const { advancedFilters, formatter } = this.state;
+
+    const column = model.columns[modelColumn];
+    if (column == null) {
+      log.warn(
+        `Column does not exist at index ${modelColumn} for column array of length ${model.columns.length}`
+      );
+      return null;
+    }
+
+    const advancedFilter = advancedFilters.get(modelColumn);
+    const { options: advancedFilterOptions } = advancedFilter || {};
+    const sort = TableUtils.getSortForColumn(model.sort, column.name);
+    const sortDirection = sort ? sort.direction : TableUtils.sortDirection.none;
+
+    if (!isSortDirection(sortDirection)) {
+      throw new Error(`Invalid sort direction: ${sortDirection}`);
+    }
+
+    return (
+      <div
+        key={columnIndex}
+        className="advanced-filter-menu-container"
+        style={style}
+      >
+        <Popper
+          className="advanced-filter-menu-popper"
+          onEntered={this.getAdvancedMenuOpenedHandler(columnIndex)}
+          onExited={() => {
+            this.handleAdvancedMenuClosed(columnIndex);
+          }}
+          isShown={isShown}
+          interactive
+          closeOnBlur
+          options={{
+            positionFixed: true,
+          }}
+        >
+          {this.getCachedAdvancedFilterMenuActions(
+            model,
+            column,
+            advancedFilterOptions,
+            sortDirection,
+            formatter
+          )}
+        </Popper>
+      </div>
+    );
+  }
+
+  /**
+   * Renders the advanced filter button for a column in the filter bar.
+   * @param columnIndex The visible column index
+   * @param modelColumn The model column index
+   * @param buttonCoordinates The x,y coordinates for the button
+   * @returns The filter button element or null if not visible
+   */
+  renderAdvancedFilterButton(
+    columnIndex: VisibleIndex,
+    modelColumn: ModelIndex,
+    buttonCoordinates: { x: number; y: number }
+  ): ReactElement | null {
+    const { advancedFilters, hoverAdvancedFilter, focusedFilterBarColumn } =
+      this.state;
+    const advancedFilter = advancedFilters.get(modelColumn);
+    const isFilterSet = advancedFilter != null;
+    const isFilterVisible =
+      columnIndex === hoverAdvancedFilter ||
+      columnIndex === focusedFilterBarColumn ||
+      isFilterSet;
+
+    if (!isFilterVisible) {
+      return null;
+    }
+
+    const { x, y } = buttonCoordinates;
+    const style: CSSProperties = {
+      position: 'absolute',
+      top: y,
+      left: x,
+    };
+
+    return (
+      <div
+        className="advanced-filter-button-container"
+        key={columnIndex}
+        style={style}
+      >
+        <Button
+          kind="ghost"
+          className={classNames('btn-link-icon advanced-filter-button', {
+            'filter-set': isFilterSet,
+          })}
+          onClick={() => {
+            this.setState({ shownAdvancedFilter: columnIndex });
+          }}
+          onContextMenu={event => {
+            this.grid?.handleContextMenu(event);
+          }}
+          onMouseEnter={() => {
+            this.setState({ hoverAdvancedFilter: columnIndex });
+          }}
+          onMouseLeave={() => {
+            this.setState({ hoverAdvancedFilter: null });
+          }}
+        >
+          <div className="fa-layers">
+            <FontAwesomeIcon icon={dhFilterFilled} className="filter-solid" />
+            <FontAwesomeIcon icon={vsFilter} className="filter-light" />
+          </div>
+        </Button>
+      </div>
+    );
+  }
+
   getCachedOptionItems = memoize(
     (
       isChartBuilderAvailable: boolean,
@@ -2506,16 +2636,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   focusFilterBar(column: VisibleIndex): void {
-    const { movedColumns } = this.state;
     const { model } = this.props;
     const { columnCount } = model;
-    const modelColumn = GridUtils.getModelIndex(column, movedColumns);
+    const modelColumn = this.getModelColumn(column);
 
-    if (
+    // Negative indexes are valid as long as they have a model column
+    const isOutOfBounds = column >= 0 && columnCount <= column;
+    const isInvalid =
       column == null ||
-      columnCount <= column ||
-      !model.isFilterable(modelColumn)
-    ) {
+      isOutOfBounds ||
+      modelColumn == null ||
+      !model.isFilterable(modelColumn);
+
+    if (isInvalid) {
       this.setState({ focusedFilterBarColumn: null });
       return;
     }
@@ -4636,7 +4769,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingCancelShown,
       loadingBlocksGrid,
       shownColumnTooltip,
-      hoverAdvancedFilter,
       shownAdvancedFilter,
       hoverSelectColumn,
       quickFilters,
@@ -4793,7 +4925,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (metrics && isFilterBarShown) {
       const metricState = this.getMetricState();
 
-      // Advanced Filter buttons
+      // Advanced Filter buttons for visible columns
       const { visibleColumns } = metrics;
 
       for (let i = 0; i < visibleColumns.length; i += 1) {
@@ -4811,64 +4943,35 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 )
               : null;
           if (buttonCoordinates != null) {
-            const { x, y } = buttonCoordinates;
-            const style: CSSProperties = {
-              position: 'absolute',
-              top: y,
-              left: x,
-            };
-            const advancedFilter = advancedFilters.get(modelColumn);
-            const isFilterSet = advancedFilter != null;
-            const isFilterVisible =
-              columnIndex === hoverAdvancedFilter ||
-              columnIndex === focusedFilterBarColumn ||
-              isFilterSet;
-            const element = (
-              <div
-                className={classNames('advanced-filter-button-container', {
-                  hidden: !isFilterVisible,
-                })}
-                key={columnIndex}
-                style={style}
-              >
-                {isFilterVisible && (
-                  <Button
-                    kind="ghost"
-                    className={classNames(
-                      'btn-link-icon advanced-filter-button',
-                      {
-                        'filter-set': isFilterSet,
-                      }
-                    )}
-                    onClick={() => {
-                      this.setState({ shownAdvancedFilter: columnIndex });
-                    }}
-                    onContextMenu={event => {
-                      this.grid?.handleContextMenu(event);
-                    }}
-                    onMouseEnter={() => {
-                      this.setState({ hoverAdvancedFilter: columnIndex });
-                    }}
-                    onMouseLeave={() => {
-                      this.setState({ hoverAdvancedFilter: null });
-                    }}
-                  >
-                    <div className="fa-layers">
-                      <FontAwesomeIcon
-                        icon={dhFilterFilled}
-                        className="filter-solid"
-                      />
-                      <FontAwesomeIcon
-                        icon={vsFilter}
-                        className="filter-light"
-                      />
-                    </div>
-                  </Button>
-                )}
-              </div>
+            filterBar.push(
+              this.renderAdvancedFilterButton(
+                columnIndex,
+                modelColumn,
+                buttonCoordinates
+              )
             );
-            filterBar.push(element);
           }
+        }
+      }
+
+      // Advanced filter buttons for columns at negative indexes
+      // Models can expose columns at negative indexes (e.g., model.columns[-1])
+      for (let i = -1; model.columns[i] != null; i -= 1) {
+        if (!model.isFilterable(i)) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+        const buttonCoordinates = metricState
+          ? metricCalculator.getAdvancedFilterButtonCoordinates(
+              i,
+              metricState,
+              metrics
+            )
+          : null;
+        if (buttonCoordinates != null) {
+          filterBar.push(
+            this.renderAdvancedFilterButton(i, i, buttonCoordinates)
+          );
         }
       }
     }
@@ -4905,53 +5008,51 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               };
           const modelColumn = this.getModelColumn(columnIndex);
           if (modelColumn != null) {
-            const column = model.columns[modelColumn];
-            if (column == null) {
-              // Grid metrics is likely out of sync with model
-              log.warn(
-                `Column does not exist at index ${modelColumn} for column array of length ${model.columns.length}`
-              );
-              // eslint-disable-next-line no-continue
-              continue;
-            }
-            const advancedFilter = advancedFilters.get(modelColumn);
-            const { options: advancedFilterOptions } = advancedFilter || {};
-            const sort = TableUtils.getSortForColumn(model.sort, column.name);
-
-            const sortDirection = sort ? sort.direction : null;
-            if (!isSortDirection(sortDirection)) {
-              throw new Error(`Invalid sort direction: ${sortDirection}`);
-            }
-
-            const element = (
-              <div
-                key={columnIndex}
-                className="advanced-filter-menu-container"
-                style={style}
-              >
-                <Popper
-                  className="advanced-filter-menu-popper"
-                  onEntered={this.getAdvancedMenuOpenedHandler(columnIndex)}
-                  onExited={() => {
-                    this.handleAdvancedMenuClosed(columnIndex);
-                  }}
-                  isShown={shownAdvancedFilter === columnIndex}
-                  interactive
-                  closeOnBlur
-                  options={{
-                    positionFixed: true,
-                  }}
-                >
-                  {this.getCachedAdvancedFilterMenuActions(
-                    model,
-                    column,
-                    advancedFilterOptions,
-                    sortDirection,
-                    formatter
-                  )}
-                </Popper>
-              </div>
+            const element = this.renderAdvancedFilterMenu(
+              columnIndex,
+              modelColumn,
+              style,
+              shownAdvancedFilter === columnIndex
             );
+            if (element != null) {
+              advancedFilterMenus.push(element);
+            }
+          }
+        }
+      }
+
+      // Handle advanced filter for column indexes not in visibleColumns
+      // Models can expose columns at negative indexes (e.g., model.columns[-1])
+      // We always render Poppers so they can transition from isShown=false to isShown=true
+      const metricState = this.getMetricState();
+      for (let i = -1; model.columns[i] != null; i -= 1) {
+        if (!model.isFilterable(i)) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+        const filterCoords =
+          metricState != null
+            ? metricCalculator.getFilterInputCoordinates(
+                i,
+                metricState,
+                metrics
+              )
+            : null;
+        if (filterCoords != null) {
+          const style: CSSProperties = {
+            position: 'absolute',
+            top: filterCoords.y,
+            left: filterCoords.x + filterCoords.width - 20,
+            width: 20,
+            height: filterCoords.height,
+          };
+          const element = this.renderAdvancedFilterMenu(
+            i,
+            i, // modelColumn is same as columnIndex for negative indexes
+            style,
+            shownAdvancedFilter === i
+          );
+          if (element != null) {
             advancedFilterMenus.push(element);
           }
         }
