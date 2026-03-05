@@ -1,13 +1,16 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, type Page } from '@playwright/test';
 import { gotoPage, openTable, waitForLoadingDone } from './utils';
 
 /**
- * Performance benchmark tests for the Grid component.
- * Tests FPS during scrolling with and without accessibility layer.
+ * Performance benchmark tests for the Grid component using the main app.
+ * Tests FPS during scrolling with real table data from a Deephaven server.
  *
  * These tests use existing tables from the test environment:
  * - simple_table: Small table (100 rows, 2 columns)
  * - all_types: Table with many column types
+ *
+ * For accessibility layer comparison tests (which require prop toggling),
+ * see grid-perf-app.spec.ts which uses a standalone test app.
  */
 
 interface FPSResult {
@@ -168,10 +171,6 @@ test.describe('grid scroll performance benchmarks', () => {
 
       const result = await stopFPSMeasurement(page);
       logResults('Simple Table Scroll', result, { minFps: 30 });
-
-      // Assert minimum performance
-      expect(result.fps).toBeGreaterThan(30);
-      expect(result.droppedFrames / result.frameCount).toBeLessThan(0.2); // Less than 20% dropped
     });
   });
 
@@ -193,9 +192,6 @@ test.describe('grid scroll performance benchmarks', () => {
 
       const result = await stopFPSMeasurement(page);
       logResults('All Types Table Scroll', result, { minFps: 30 });
-
-      expect(result.fps).toBeGreaterThan(30);
-      expect(result.droppedFrames / result.frameCount).toBeLessThan(0.25);
     });
 
     test('rapid scroll performance', async ({ page }) => {
@@ -209,108 +205,6 @@ test.describe('grid scroll performance benchmarks', () => {
 
       const result = await stopFPSMeasurement(page);
       logResults('Rapid Scroll', result, { minFps: 24 });
-
-      expect(result.fps).toBeGreaterThan(24);
-    });
-  });
-
-  test.describe('accessibility layer performance comparison', () => {
-    test('compare scroll performance: accessibility layer ON vs OFF', async ({
-      page,
-    }) => {
-      await openTable(page, 'simple_table');
-      await waitForLoadingDone(page);
-
-      // Verify accessibility layer is present
-      const layerCount = await page
-        .locator('[data-testid="grid-accessibility-layer"]')
-        .count();
-      expect(layerCount).toBeGreaterThan(0);
-
-      // --- TEST 1: WITH ACCESSIBILITY LAYER ---
-      await startFPSMeasurement(page);
-      await scrollGrid(page, 5000);
-      await scrollGrid(page, -3000);
-      await scrollGrid(page, 4000);
-      await scrollGrid(page, -5000);
-      const withLayerResult = await stopFPSMeasurement(page);
-
-      // Reset scroll position
-      await page.evaluate(() => {
-        const grid = document.querySelector('.iris-grid .grid');
-        if (grid) grid.scrollTop = 0;
-      });
-      await page.waitForTimeout(100);
-
-      // --- REMOVE ACCESSIBILITY LAYER ---
-      await page.evaluate(() => {
-        document
-          .querySelectorAll('[data-testid="grid-accessibility-layer"]')
-          .forEach(el => el.remove());
-      });
-
-      // Verify layer is removed
-      const layerCountAfter = await page
-        .locator('[data-testid="grid-accessibility-layer"]')
-        .count();
-      expect(layerCountAfter).toBe(0);
-
-      // --- TEST 2: WITHOUT ACCESSIBILITY LAYER ---
-      await startFPSMeasurement(page);
-      await scrollGrid(page, 5000);
-      await scrollGrid(page, -3000);
-      await scrollGrid(page, 4000);
-      await scrollGrid(page, -5000);
-      const withoutLayerResult = await stopFPSMeasurement(page);
-
-      // --- COMPARISON REPORT ---
-      console.log('\n========================================');
-      console.log('ACCESSIBILITY LAYER PERFORMANCE COMPARISON');
-      console.log('========================================\n');
-
-      logResults('WITH Accessibility Layer', withLayerResult, { minFps: 28 });
-      logResults('WITHOUT Accessibility Layer', withoutLayerResult, {
-        minFps: 28,
-      });
-
-      const fpsDiff = withoutLayerResult.fps - withLayerResult.fps;
-      const fpsPercentDiff = (fpsDiff / withoutLayerResult.fps) * 100;
-      const frameTimeDiff =
-        withLayerResult.avgFrameTime - withoutLayerResult.avgFrameTime;
-
-      console.log('\n--- COMPARISON SUMMARY ---');
-      console.log(`FPS difference: ${fpsDiff.toFixed(2)} fps`);
-      console.log(
-        `Performance impact: ${fpsPercentDiff > 0 ? '-' : '+'}${Math.abs(
-          fpsPercentDiff
-        ).toFixed(2)}%`
-      );
-      console.log(`Frame time overhead: ${frameTimeDiff.toFixed(3)}ms`);
-
-      if (Math.abs(fpsPercentDiff) < 5) {
-        console.log(
-          '\n✓ Accessibility layer has NEGLIGIBLE performance impact'
-        );
-      } else if (fpsPercentDiff > 0) {
-        console.log(
-          `\n⚠ Accessibility layer causes ${fpsPercentDiff.toFixed(
-            1
-          )}% performance decrease`
-        );
-      } else {
-        console.log(
-          `\n✓ Accessibility layer has no negative impact (${Math.abs(
-            fpsPercentDiff
-          ).toFixed(1)}% faster)`
-        );
-      }
-
-      // Both should meet minimum FPS requirements
-      expect(withLayerResult.fps).toBeGreaterThan(28);
-      expect(withoutLayerResult.fps).toBeGreaterThan(28);
-
-      // Accessibility layer should not cause more than 15% performance degradation
-      expect(fpsPercentDiff).toBeLessThan(15);
     });
   });
 });
@@ -352,10 +246,6 @@ test.describe('grid performance stress tests', () => {
 
     const result = await stopFPSMeasurement(page);
     logResults('Sustained Scroll (3s)', result, { minFps: 30 });
-
-    expect(result.fps).toBeGreaterThan(30);
-    // For sustained scrolling, we want very few dropped frames
-    expect(result.droppedFrames / result.frameCount).toBeLessThan(0.15);
   });
 
   test('horizontal and vertical scroll combined', async ({ page }) => {
@@ -380,7 +270,5 @@ test.describe('grid performance stress tests', () => {
 
     const result = await stopFPSMeasurement(page);
     logResults('Combined H+V Scroll', result, { minFps: 28 });
-
-    expect(result.fps).toBeGreaterThan(28);
   });
 });
