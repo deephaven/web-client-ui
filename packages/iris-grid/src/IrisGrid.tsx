@@ -13,9 +13,6 @@ import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  Stack,
-  Menu,
-  Page,
   Popper,
   ThemeExport,
   Tooltip,
@@ -46,23 +43,7 @@ import {
   isDeletableGridModel,
   isExpandableColumnGridModel,
 } from '@deephaven/grid';
-import {
-  dhEye,
-  dhFilterFilled,
-  dhGraphLineUp,
-  dhTriangleDownSquare,
-  vsClose,
-  vsCloudDownload,
-  vsEdit,
-  vsFilter,
-  vsMenu,
-  vsReply,
-  vsRuby,
-  vsSearch,
-  vsSplitHorizontal,
-  vsSymbolOperator,
-  vsTools,
-} from '@deephaven/icons';
+import { dhFilterFilled, vsClose, vsFilter, vsMenu } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateUtils,
@@ -138,16 +119,10 @@ import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
-  Aggregations,
-  AggregationEdit,
   AggregationUtils,
-  ChartBuilder,
-  CustomColumnBuilder,
   OptionType,
-  RollupRows,
   TableCsvExporter,
   TableSaver,
-  VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
@@ -159,15 +134,9 @@ import {
   type PartitionedGridModel,
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
-import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
-import AdvancedSettingsMenu, {
-  type AdvancedSettingsMenuCallback,
-} from './sidebar/AdvancedSettingsMenu';
+import { type AdvancedSettingsMenuCallback } from './sidebar/AdvancedSettingsMenu';
 import SHORTCUTS from './IrisGridShortcuts';
-import ConditionalFormattingMenu from './sidebar/conditional-formatting/ConditionalFormattingMenu';
-
-import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
 import GotoRow, { type GotoRowElement } from './GotoRow';
 import {
@@ -196,6 +165,12 @@ import {
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
+import { TableOptionsWrapper } from './table-options/TableOptionsWrapper';
+import type {
+  GridStateSnapshot,
+  GridDispatch,
+  GridAction,
+} from './table-options/TableOption';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -658,6 +633,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setFilterMap = this.setFilterMap.bind(this);
     this.handleFrozenColumnsChanged =
       this.handleFrozenColumnsChanged.bind(this);
+    this.handleSetQuickFilters = this.handleSetQuickFilters.bind(this);
+    this.handleSetAdvancedFilters = this.handleSetAdvancedFilters.bind(this);
+    this.handleSetSorts = this.handleSetSorts.bind(this);
+    this.handleSetReverse = this.handleSetReverse.bind(this);
+    this.clearAllFilters = this.clearAllFilters.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
@@ -1141,121 +1121,153 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 50 }
   );
 
-  getCachedOptionItems = memoize(
+  /**
+   * Creates the GridStateSnapshot for TableOptionsHostContext.
+   */
+  getGridStateSnapshot = memoize(
     (
-      isChartBuilderAvailable: boolean,
-      isCustomColumnsAvailable: boolean,
-      isFormatColumnsAvailable: boolean,
-      isOrganizeColumnsAvailable: boolean,
-      isRollupAvailable: boolean,
-      isTotalsAvailable: boolean,
-      isSelectDistinctAvailable: boolean,
-      isExportAvailable: boolean,
-      toggleFilterBarAction: Action,
-      toggleSearchBarAction: Action,
-      toggleGotoRowAction: Action,
-      isFilterBarShown: boolean,
-      showSearchBar: boolean,
-      canDownloadCsv: boolean,
-      canToggleSearch: boolean,
-      showGotoRow: boolean,
-      hasAdvancedSettings: boolean
-    ): readonly OptionItem[] => {
-      const optionItems: OptionItem[] = [];
-      if (isChartBuilderAvailable) {
-        optionItems.push({
-          type: OptionType.CHART_BUILDER,
-          title: 'Chart Builder',
-          icon: dhGraphLineUp,
-        });
-      }
-      if (isOrganizeColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.VISIBILITY_ORDERING_BUILDER,
-          title: 'Organize Columns',
-          icon: dhEye,
-        });
-      }
-      if (isFormatColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.CONDITIONAL_FORMATTING,
-          title: 'Conditional Formatting',
-          icon: vsEdit,
-        });
-      }
-      if (isCustomColumnsAvailable) {
-        optionItems.push({
-          type: OptionType.CUSTOM_COLUMN_BUILDER,
-          title: 'Custom Columns',
-          icon: vsSplitHorizontal,
-        });
-      }
-      if (isRollupAvailable) {
-        optionItems.push({
-          type: OptionType.ROLLUP_ROWS,
-          title: 'Rollup Rows',
-          icon: dhTriangleDownSquare,
-        });
-      }
-      if (isTotalsAvailable) {
-        optionItems.push({
-          type: OptionType.AGGREGATIONS,
-          title: 'Aggregate Columns',
-          icon: vsSymbolOperator,
-        });
-      }
-      if (isSelectDistinctAvailable) {
-        optionItems.push({
-          type: OptionType.SELECT_DISTINCT,
-          title: 'Select Distinct Values',
-          icon: vsRuby,
-        });
-      }
-      if (isExportAvailable && canDownloadCsv) {
-        optionItems.push({
-          type: OptionType.TABLE_EXPORTER,
-          title: 'Download CSV',
-          icon: vsCloudDownload,
-        });
-      }
-      if (hasAdvancedSettings) {
-        optionItems.push({
-          type: OptionType.ADVANCED_SETTINGS,
-          title: 'Advanced Settings',
-          icon: vsTools,
-        });
-      }
-      optionItems.push({
-        type: OptionType.QUICK_FILTERS,
-        title: 'Quick Filters',
-        subtitle: toggleFilterBarAction.shortcut.getDisplayText(),
-        icon: vsFilter,
-        isOn: isFilterBarShown,
-        onChange: toggleFilterBarAction.action,
-      });
-      if (canToggleSearch) {
-        optionItems.push({
-          type: OptionType.SEARCH_BAR,
-          title: 'Search Bar',
-          subtitle: toggleSearchBarAction.shortcut.getDisplayText(),
-          icon: vsSearch,
-          isOn: showSearchBar,
-          onChange: toggleSearchBarAction.action,
-        });
-      }
-      optionItems.push({
-        type: OptionType.GOTO,
-        title: 'Go to',
-        subtitle: toggleGotoRowAction.shortcut.getDisplayText(),
-        icon: vsReply,
-        isOn: showGotoRow,
-        onChange: toggleGotoRowAction.action,
-      });
-
-      return Object.freeze(optionItems);
-    },
+      model: IrisGridModel,
+      customColumns: readonly ColumnName[],
+      selectDistinctColumns: readonly ColumnName[],
+      aggregationSettings: AggregationSettings,
+      rollupConfig: UIRollupConfig | undefined,
+      conditionalFormats: readonly SidebarFormattingRule[],
+      movedColumns: readonly MoveOperation[],
+      frozenColumns: readonly ColumnName[],
+      columnHeaderGroups: readonly ColumnHeaderGroup[],
+      hiddenColumns: readonly ModelIndex[],
+      isRollup: boolean,
+      name: string | undefined,
+      userColumnWidths: ModelSizeMap | undefined,
+      selectedRanges: readonly GridRange[] | undefined,
+      isTableDownloading: boolean,
+      tableDownloadStatus: string,
+      tableDownloadProgress: number,
+      tableDownloadEstimatedTime: number | null,
+      quickFilters: ReadonlyQuickFilterMap,
+      advancedFilters: ReadonlyAdvancedFilterMap,
+      searchFilter: DhType.FilterCondition | undefined,
+      searchValue: string,
+      selectedSearchColumns: readonly ColumnName[],
+      invertSearchColumns: boolean,
+      sorts: readonly SortDescriptor[],
+      reverse: boolean
+    ): GridStateSnapshot => ({
+      model,
+      customColumns,
+      selectDistinctColumns,
+      aggregationSettings,
+      rollupConfig,
+      conditionalFormats,
+      movedColumns,
+      frozenColumns,
+      columnHeaderGroups,
+      hiddenColumns,
+      isRollup,
+      name,
+      userColumnWidths,
+      selectedRanges,
+      isTableDownloading,
+      tableDownloadStatus,
+      tableDownloadProgress,
+      tableDownloadEstimatedTime,
+      quickFilters,
+      advancedFilters,
+      searchFilter,
+      searchValue,
+      selectedSearchColumns,
+      invertSearchColumns,
+      sorts,
+      reverse,
+    }),
     { max: 1 }
   );
+
+  /**
+   * Creates the dispatch function for Table Options.
+   * Translates GridAction dispatches to the appropriate handler calls.
+   */
+  handleTableOptionsDispatch: GridDispatch = (action: GridAction): void => {
+    switch (action.type) {
+      case 'SET_CUSTOM_COLUMNS':
+        this.handleUpdateCustomColumns(action.columns);
+        break;
+      case 'SET_SELECT_DISTINCT_COLUMNS':
+        this.handleSelectDistinctChanged(action.columns);
+        break;
+      case 'SET_AGGREGATION_SETTINGS':
+        this.handleAggregationsChange(action.settings);
+        break;
+      case 'SET_ROLLUP_CONFIG':
+        if (action.config != null) {
+          this.handleRollupChange(action.config);
+        } else {
+          this.setState({ rollupConfig: undefined });
+        }
+        break;
+      case 'SET_CONDITIONAL_FORMATS':
+        this.handleConditionalFormatsChange(action.formats);
+        break;
+      case 'SET_MOVED_COLUMNS':
+        this.handleMovedColumnsChanged(action.columns, action.onChangeApplied);
+        break;
+      case 'SET_FROZEN_COLUMNS':
+        this.handleFrozenColumnsChanged(action.columns);
+        break;
+      case 'SET_COLUMN_HEADER_GROUPS':
+        this.handleHeaderGroupsChanged(action.groups);
+        break;
+      case 'SET_COLUMN_VISIBILITY':
+        this.handleColumnVisibilityChanged(action.columns, action.isVisible);
+        break;
+      case 'RESET_COLUMN_VISIBILITY':
+        this.handleColumnVisibilityReset();
+        break;
+      case 'START_DOWNLOAD':
+        this.handleDownloadTableStart();
+        break;
+      case 'DOWNLOAD_TABLE':
+        this.handleDownloadTable(
+          action.fileName,
+          action.frozenTable as DhType.Table,
+          action.tableSubscription as DhType.TableViewportSubscription,
+          action.snapshotRanges as readonly GridRange[],
+          action.modelRanges as readonly GridRange[],
+          action.includeColumnHeaders,
+          action.useUnformattedValues
+        );
+        break;
+      case 'CANCEL_DOWNLOAD':
+        this.handleCancelDownloadTable();
+        break;
+      case 'SET_QUICK_FILTERS':
+        this.handleSetQuickFilters(action.filters);
+        break;
+      case 'SET_ADVANCED_FILTERS':
+        this.handleSetAdvancedFilters(action.filters);
+        break;
+      case 'SET_SORTS':
+        this.handleSetSorts(action.sorts);
+        break;
+      case 'SET_REVERSE':
+        this.handleSetReverse(action.reverse);
+        break;
+      case 'CLEAR_ALL_FILTERS':
+        this.clearAllFilters();
+        break;
+      case 'SET_CROSS_COLUMN_SEARCH':
+        this.handleCrossColumnSearch(
+          action.searchValue,
+          action.selectedSearchColumns,
+          action.invertSearchColumns
+        );
+        break;
+      default:
+        log.warn(
+          `Unknown TableOptions action type: ${(action as GridAction).type}`
+        );
+    }
+  };
 
   getCachedHiddenColumns = memoize(
     (
@@ -1899,6 +1911,42 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchValue: '',
       searchFilter: undefined,
     });
+  }
+
+  /**
+   * Handler for setting quick filters from table options.
+   */
+  handleSetQuickFilters(filters: ReadonlyQuickFilterMap): void {
+    log.debug('Setting quick filters', filters);
+    this.startLoading('Applying Filters...');
+    this.setState({ quickFilters: filters });
+  }
+
+  /**
+   * Handler for setting advanced filters from table options.
+   */
+  handleSetAdvancedFilters(filters: ReadonlyAdvancedFilterMap): void {
+    log.debug('Setting advanced filters', filters);
+    this.startLoading('Applying Filters...');
+    this.setState({ advancedFilters: filters });
+  }
+
+  /**
+   * Handler for setting sorts from table options.
+   */
+  handleSetSorts(newSorts: readonly SortDescriptor[]): void {
+    log.debug('Setting sorts', newSorts);
+    this.startLoading('Sorting...');
+    this.setState({ sorts: newSorts });
+  }
+
+  /**
+   * Handler for setting reverse sort from table options.
+   */
+  handleSetReverse(newReverse: boolean): void {
+    log.debug('Setting reverse', newReverse);
+    this.startLoading('Sorting...');
+    this.setState({ reverse: newReverse });
   }
 
   clearAllAggregations(): void {
@@ -4958,163 +5006,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    const optionItems = this.getCachedOptionItems(
-      onCreateChart !== undefined && model.isChartBuilderAvailable,
-      model.isCustomColumnsAvailable,
-      model.isFormatColumnsAvailable,
-      model.isOrganizeColumnsAvailable,
-      model.isRollupAvailable,
-      model.isTotalsAvailable || isRollup,
-      model.isSelectDistinctAvailable,
-      model.isExportAvailable,
-      this.toggleFilterBarAction,
-      this.toggleSearchBarAction,
-      this.toggleGotoRowAction,
-      isFilterBarShown,
-      showSearchBar,
-      canDownloadCsv,
-      this.isTableSearchAvailable(),
-      isGotoShown,
-      advancedSettings.size > 0
-    );
-
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
       userColumnWidths
     );
-
-    const openOptionsStack = openOptions.map(option => {
-      switch (option.type) {
-        case OptionType.CHART_BUILDER:
-          return (
-            <ChartBuilder
-              model={model}
-              onChange={this.handleChartChange}
-              onSubmit={this.handleChartCreate}
-              key={OptionType.CHART_BUILDER}
-            />
-          );
-        case OptionType.VISIBILITY_ORDERING_BUILDER:
-          return (
-            <VisibilityOrderingBuilder
-              model={model}
-              movedColumns={movedColumns}
-              hiddenColumns={hiddenColumns}
-              columnHeaderGroups={columnHeaderGroups}
-              onColumnVisibilityChanged={this.handleColumnVisibilityChanged}
-              onReset={this.handleColumnVisibilityReset}
-              onMovedColumnsChanged={this.handleMovedColumnsChanged}
-              onColumnHeaderGroupChanged={this.handleHeaderGroupsChanged}
-              onFrozenColumnsChanged={this.handleFrozenColumnsChanged}
-              key={OptionType.VISIBILITY_ORDERING_BUILDER}
-            />
-          );
-        case OptionType.CONDITIONAL_FORMATTING:
-          return (
-            <ConditionalFormattingMenu
-              rules={conditionalFormats}
-              onChange={this.handleConditionalFormatsChange}
-              onCreate={this.handleConditionalFormatCreate}
-              onSelect={this.handleConditionalFormatEdit}
-            />
-          );
-        case OptionType.CONDITIONAL_FORMATTING_EDIT:
-          assertNotNull(model.columns);
-          assertNotNull(this.handleConditionalFormatEditorUpdate);
-          return (
-            <ConditionalFormatEditor
-              dh={model.dh}
-              columns={model.columns}
-              rule={conditionalFormatPreview}
-              onUpdate={this.handleConditionalFormatEditorUpdate}
-              onSave={this.handleConditionalFormatEditorSave}
-              onCancel={this.handleConditionalFormatEditorCancel}
-            />
-          );
-        case OptionType.CUSTOM_COLUMN_BUILDER:
-          return (
-            <CustomColumnBuilder
-              model={model}
-              customColumns={customColumns}
-              onSave={this.handleUpdateCustomColumns}
-              onCancel={this.handleMenuBack}
-              key={OptionType.CUSTOM_COLUMN_BUILDER}
-            />
-          );
-        case OptionType.ROLLUP_ROWS:
-          return (
-            <RollupRows
-              model={model}
-              onChange={this.handleRollupChange}
-              config={rollupConfig}
-              key={OptionType.ROLLUP_ROWS}
-            />
-          );
-        case OptionType.AGGREGATIONS:
-          return (
-            <Aggregations
-              settings={aggregationSettings}
-              isRollup={isRollup}
-              availablePlacements={
-                isEditableGridModel(model) && model.isEditable
-                  ? ['top']
-                  : ['top', 'bottom']
-              }
-              onChange={this.handleAggregationsChange}
-              onEdit={this.handleAggregationEdit}
-              dh={model.dh}
-            />
-          );
-        case OptionType.AGGREGATION_EDIT:
-          return (
-            selectedAggregation && (
-              <AggregationEdit
-                aggregation={selectedAggregation}
-                columns={model.originalColumns}
-                onChange={this.handleAggregationChange}
-              />
-            )
-          );
-        case OptionType.TABLE_EXPORTER:
-          return (
-            <TableCsvExporter
-              model={model}
-              name={name}
-              userColumnWidths={userColumnWidths}
-              movedColumns={movedColumns}
-              isDownloading={isTableDownloading}
-              tableDownloadStatus={tableDownloadStatus}
-              tableDownloadProgress={tableDownloadProgress}
-              tableDownloadEstimatedTime={
-                tableDownloadEstimatedTime ?? undefined
-              }
-              onDownload={this.handleDownloadTable}
-              onDownloadStart={this.handleDownloadTableStart}
-              onCancel={this.handleCancelDownloadTable}
-              selectedRanges={selectedRanges}
-              key={OptionType.TABLE_EXPORTER}
-            />
-          );
-        case OptionType.SELECT_DISTINCT:
-          return (
-            <SelectDistinctBuilder
-              model={model}
-              selectDistinctColumns={selectDistinctColumns}
-              onChange={this.handleSelectDistinctChanged}
-            />
-          );
-        case OptionType.ADVANCED_SETTINGS:
-          return (
-            <AdvancedSettingsMenu
-              items={advancedSettings}
-              onChange={onAdvancedSettingsChange}
-            />
-          );
-
-        default:
-          throw Error(`Unexpected option type ${option.type}`);
-      }
-    });
 
     return (
       <div className="iris-grid" role="presentation">
@@ -5354,24 +5249,76 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           unmountOnExit
         >
           <div className="table-sidebar">
-            <Stack>
-              <Page title="Table Options" onClose={this.handleMenuClose}>
-                <Menu
-                  onSelect={i => this.handleMenuSelect(optionItems[i])}
-                  items={optionItems}
-                />
-              </Page>
-              {openOptionsStack.map((option, i) => (
-                <Page
-                  title={openOptions[i].title}
-                  onBack={this.handleMenuBack}
-                  onClose={this.handleMenuClose}
-                  key={openOptions[i].type}
-                >
-                  {option}
-                </Page>
-              ))}
-            </Stack>
+            <TableOptionsWrapper
+              model={model}
+              customColumns={customColumns}
+              selectDistinctColumns={selectDistinctColumns}
+              aggregationSettings={aggregationSettings}
+              rollupConfig={rollupConfig}
+              conditionalFormats={conditionalFormats}
+              movedColumns={movedColumns}
+              frozenColumns={frozenColumns}
+              columnHeaderGroups={columnHeaderGroups}
+              hiddenColumns={hiddenColumns}
+              isRollup={isRollup}
+              name={name}
+              userColumnWidths={userColumnWidths}
+              selectedRanges={selectedRanges}
+              isTableDownloading={isTableDownloading}
+              tableDownloadStatus={tableDownloadStatus}
+              tableDownloadProgress={tableDownloadProgress}
+              tableDownloadEstimatedTime={tableDownloadEstimatedTime}
+              onSetCustomColumns={this.handleUpdateCustomColumns}
+              onSetSelectDistinctColumns={this.handleSelectDistinctChanged}
+              onSetAggregationSettings={this.handleAggregationsChange}
+              onSetRollupConfig={this.handleRollupChange}
+              onSetConditionalFormats={this.handleConditionalFormatsChange}
+              onSetMovedColumns={this.handleMovedColumnsChanged}
+              onSetFrozenColumns={this.handleFrozenColumnsChanged}
+              onSetColumnHeaderGroups={this.handleHeaderGroupsChanged}
+              onSetColumnVisibility={this.handleColumnVisibilityChanged}
+              onResetColumnVisibility={this.handleColumnVisibilityReset}
+              onStartDownload={this.handleDownloadTableStart}
+              onDownloadTable={this.handleDownloadTable}
+              onCancelDownload={this.handleCancelDownloadTable}
+              onToggleFilterBar={() => this.toggleFilterBar()}
+              onToggleSearchBar={() => this.toggleSearchBar()}
+              onToggleGoto={() => this.toggleGotoRow()}
+              isFilterBarShown={isFilterBarShown}
+              showSearchBar={showSearchBar}
+              isGotoShown={isGotoShown}
+              canToggleSearch={this.isTableSearchAvailable()}
+              canDownloadCsv={canDownloadCsv}
+              hasAdvancedSettings={advancedSettings.size > 0}
+              advancedSettings={advancedSettings}
+              onAdvancedSettingsChange={onAdvancedSettingsChange}
+              isChartBuilderAvailable={
+                onCreateChart !== undefined && model.isChartBuilderAvailable
+              }
+              quickFilters={quickFilters}
+              advancedFilters={advancedFilters}
+              searchFilter={searchFilter}
+              searchValue={searchValue}
+              selectedSearchColumns={selectedSearchColumns}
+              invertSearchColumns={invertSearchColumns}
+              sorts={sorts}
+              reverse={reverse}
+              onCreateChart={
+                onCreateChart
+                  ? settings => onCreateChart(settings, model)
+                  : undefined
+              }
+              onChartChange={() => {
+                // TODO: IDS-4242 Update Chart Preview
+              }}
+              onSetQuickFilters={this.handleSetQuickFilters}
+              onSetAdvancedFilters={this.handleSetAdvancedFilters}
+              onSetSorts={this.handleSetSorts}
+              onSetReverse={this.handleSetReverse}
+              onClearAllFilters={this.clearAllFilters}
+              onSetCrossColumnSearch={this.handleCrossColumnSearch}
+              onClose={this.handleMenuClose}
+            />
           </div>
         </SlideTransition>
         <ContextActions actions={this.contextActions} />
