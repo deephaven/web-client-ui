@@ -612,11 +612,11 @@ export class GridMetricCalculator {
       scrollableViewportWidth,
       scrollableViewportHeight,
 
-      // Array of visible rows/columns, by grid index
+      // Array of visible (i.e., in the viewport) rows/columns, by VisibleIndex
       visibleRows,
       visibleColumns,
 
-      // Array of visible, non-hidden columns, by grid index
+      // Array of visible, non-hidden columns, by VisibleIndex
       columnsForRender,
 
       // Map of the height/width of columns in the viewport (excluding floating columns)
