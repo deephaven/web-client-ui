@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.1](https://github.com/deephaven/web-client-ui/compare/v1.15.0...v1.15.1) (2026-03-05)
+
+### Bug Fixes
+
+- DH-21658: Fix grid rendering hidden columns ([#2626](https://github.com/deephaven/web-client-ui/issues/2626)) ([e54c0ac](https://github.com/deephaven/web-client-ui/commit/e54c0ac6c8a9a12a159731c358a72f259248f642))
+
 ## [1.15.0](https://github.com/deephaven/web-client-ui/compare/v1.14.0...v1.15.0) (2026-02-25)
 
 ### Features
