@@ -129,9 +129,13 @@ export type GridMetrics = {
   scrollableViewportWidth: number;
   scrollableViewportHeight: number;
 
-  // Array of visible rows/columns, by grid index
+  // Array of visible (i.e., in the viewport) rows/columns, by VisibleIndex
   visibleRows: readonly VisibleIndex[];
   visibleColumns: readonly VisibleIndex[];
+
+  // Renderer performance optimization - array of visible, non-hidden columns, by VisibleIndex
+  // Use visibleColumns if hidden columns should be included (e.g. rendering column headers)
+  columnsForRender: readonly VisibleIndex[];
 
   // Map of the height/width of visible rows/columns
   visibleRowHeights: SizeMap;

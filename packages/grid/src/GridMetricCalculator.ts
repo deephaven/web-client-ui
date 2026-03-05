@@ -262,7 +262,7 @@ export class GridMetricCalculator {
     const treePaddingY = 0; // We don't support trees on columns (at least not yet)
 
     const visibleRowHeights = this.getVisibleRowHeights(state);
-    const visibleColumnWidths = this.getVisibleColumnWidths(
+    const [visibleColumnWidths, columnsForRender] = this.getVisibleColumnWidths(
       state,
       firstColumn,
       treePaddingX
@@ -612,9 +612,12 @@ export class GridMetricCalculator {
       scrollableViewportWidth,
       scrollableViewportHeight,
 
-      // Array of visible rows/columns, by grid index
+      // Array of visible (i.e., in the viewport) rows/columns, by VisibleIndex
       visibleRows,
       visibleColumns,
+
+      // Array of visible, non-hidden columns, by VisibleIndex
+      columnsForRender,
 
       // Map of the height/width of columns in the viewport (excluding floating columns)
       visibleRowHeights,
@@ -1060,18 +1063,19 @@ export class GridMetricCalculator {
   /**
    * Retrieve a map of the width of all the visible columns (non-floating)
    * @param state The grid metric state
-   * @returns The widths of all the visible columns
+   * @returns The widths of all the visible columns and an array of visible, non-hidden columns
    */
   getVisibleColumnWidths(
     state: GridMetricState,
     firstColumn: VisibleIndex = this.getFirstColumn(state),
     treePaddingX: number = this.calculateTreePaddingX(state)
-  ): SizeMap {
+  ): [SizeMap, VisibleIndex[]] {
     const { left, leftOffset, width, model } = state;
 
     let x = 0;
     let column = left;
     const columnWidths = new Map();
+    const columnsForRender: VisibleIndex[] = [];
     const { columnCount, floatingRightColumnCount } = model;
     while (
       x < width + leftOffset &&
@@ -1084,11 +1088,14 @@ export class GridMetricCalculator {
         treePaddingX
       );
       columnWidths.set(column, columnWidth);
+      if (columnWidth > 0) {
+        columnsForRender.push(column);
+      }
       x += columnWidth;
       column += 1;
     }
 
-    return columnWidths;
+    return [columnWidths, columnsForRender];
   }
 
   /**
@@ -1706,6 +1713,13 @@ export class GridMetricCalculator {
       return columnWidth;
     }
 
+    const cachedValue = this.calculatedColumnWidths.get(modelColumn);
+
+    // Performance optimization: if the column is hidden and has a cached value, avoid recalculating until the column is shown again
+    if (cachedValue != null && this.isColumnHidden(modelColumn)) {
+      return cachedValue;
+    }
+
     const headerWidth = this.calculateColumnHeaderWidth(
       modelColumn,
       state,
@@ -1716,7 +1730,6 @@ export class GridMetricCalculator {
       state,
       maxColumnWidth
     );
-    const cachedValue = this.calculatedColumnWidths.get(modelColumn);
     let columnWidth = Math.ceil(Math.max(headerWidth, dataWidth));
     columnWidth = Math.max(minColumnWidth, columnWidth);
     columnWidth = Math.min(maxColumnWidth, columnWidth);
@@ -1735,6 +1748,21 @@ export class GridMetricCalculator {
     }
 
     return columnWidth;
+  }
+
+  /**
+   * Checks if a column is hidden either by a user setting the width to 0 or by initial width being 0
+   * @param modelIndex the model index of the column to check
+   * @returns true if the column is hidden, false otherwise
+   */
+  isColumnHidden(modelIndex: ModelIndex): boolean {
+    const userSetWidth = this.userColumnWidths.get(modelIndex);
+    // The column is hidden if the user set the width to 0 or if the initial width is 0 and the user hasn't set a width
+    return (
+      userSetWidth === 0 ||
+      (userSetWidth === undefined &&
+        this.initialColumnWidths.get(modelIndex) === 0)
+    );
   }
 
   /**
