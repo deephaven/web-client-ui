@@ -177,6 +177,48 @@ See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/aut
 - `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
 - `npm run e2e:codegen`: Runs Playwright in codegen mode which can help with creating tests. See [Playwright Codegen](https://playwright.dev/docs/codegen/) for more details.
 - `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
+- `npm run e2e:performance`: Runs grid performance benchmark tests against the main app (requires a Deephaven server). Skipped by default in CI due to resource constraints.
+
+### Grid Performance Testing
+
+For performance-sensitive changes to the Grid component, there are two ways to benchmark:
+
+**1. Main App Tests** (`grid-performance.spec.ts`)
+
+Tests scroll performance with real table data from a Deephaven server:
+
+```bash
+npm run e2e:performance
+```
+
+**2. Standalone Perf App** (`grid-perf-app.spec.ts`)
+
+A lightweight test app in `tests/grid-perf-app/` that uses mock data. This is useful for:
+
+- Testing without a Deephaven server
+- Comparing performance with different Grid props (e.g., accessibility layer on/off)
+- Iterating on Grid changes quickly
+
+To use the perf app:
+
+```bash
+# Install dependencies (one time)
+cd tests/grid-perf-app && npm install
+
+# Start the app
+npm run dev
+
+# In another terminal (from the repo root), run the perf app tests
+npm run e2e:grid-performance
+```
+
+The perf app supports query params to configure the grid:
+
+- `rows`: Number of rows (default: 1000000)
+- `cols`: Number of columns (default: 100)
+- `a11y`: Enable accessibility layer (default: true, set to "false" to disable)
+
+Example: `http://localhost:4020/?rows=100000&cols=50&a11y=false`
 
 ### Docker
 

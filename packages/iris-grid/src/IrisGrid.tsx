@@ -379,6 +379,9 @@ export interface IrisGridProps {
   density?: 'compact' | 'regular' | 'spacious';
 
   getMetricCalculator: GetMetricCalculatorType;
+
+  // Whether to render an invisible accessibility layer for e2e testing and screen readers
+  enableAccessibilityLayer?: boolean;
 }
 
 export interface IrisGridState {
@@ -4608,6 +4611,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       children,
       customFilters,
+      enableAccessibilityLayer,
       getDownloadWorker,
       isSelectingColumn,
       isStuckToBottom,
@@ -5188,6 +5192,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             renderer={this.renderer}
             stateOverride={stateOverride}
             theme={theme}
+            enableAccessibilityLayer={enableAccessibilityLayer}
           >
             <IrisGridCellOverflowModal
               isOpen={showOverflowModal}

@@ -50,6 +50,8 @@
     "e2e": "playwright test",
     "e2e:codegen": "playwright codegen http://localhost:4000",
     "e2e:headed": "playwright test --project=chromium --debug --ignore-snapshots",
+    "e2e:performance": "RUN_PERF_TESTS=1 playwright test grid-performance.spec.ts",
+    "e2e:grid-performance": "RUN_PERF_TESTS=1 playwright test grid-perf-app.spec.ts",
     "e2e:update-snapshots": "playwright test --update-snapshots=changed",
     "e2e:docker": "./tests/docker-scripts/run.sh web-ui-tests",
     "e2e:update-ci-snapshots": "./tests/docker-scripts/run.sh web-ui-update-snapshots"

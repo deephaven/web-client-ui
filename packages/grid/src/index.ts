@@ -5,6 +5,8 @@ export * from './ExpandableGridModel';
 export * from './ExpandableColumnGridModel';
 export { default as Grid } from './Grid';
 export * from './Grid';
+export { default as GridAccessibilityLayer } from './GridAccessibilityLayer';
+export * from './GridAccessibilityLayer';
 export * from './GridMetricCalculator';
 export * from './GridMetrics';
 export { default as GridModel } from './GridModel';
