@@ -9,6 +9,8 @@ export { default as FilterPluginConfig } from './FilterPluginConfig';
 export { default as GridPanelPlugin } from './GridPanelPlugin';
 export { default as GridWidgetPlugin } from './GridWidgetPlugin';
 export { default as GridPluginConfig } from './GridPluginConfig';
+export { default as GridMiddlewarePluginConfig } from './GridMiddlewarePlugin';
+export { GridMiddleware } from './GridMiddlewarePlugin';
 export { default as LinkerPlugin } from './LinkerPlugin';
 export { default as LinkerPluginConfig } from './LinkerPluginConfig';
 export { default as MarkdownPlugin } from './MarkdownPlugin';

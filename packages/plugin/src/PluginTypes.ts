@@ -129,6 +129,77 @@ export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
   glEventHub: EventEmitter;
 }
 
+/**
+ * Props passed to middleware components that wrap a base widget.
+ * Extends WidgetComponentProps with the wrapped component.
+ */
+export interface WidgetMiddlewareComponentProps<T = unknown>
+  extends WidgetComponentProps<T> {
+  /**
+   * The next component in the middleware chain.
+   * Middleware should render this component to continue the chain.
+   */
+  Component: React.ComponentType<WidgetComponentProps<T>>;
+}
+
+/**
+ * Props passed to middleware panel components that wrap a base panel.
+ * Extends WidgetPanelProps with the wrapped panel component.
+ */
+export interface WidgetMiddlewarePanelProps<T = unknown>
+  extends WidgetPanelProps<T> {
+  /**
+   * The next panel component in the middleware chain.
+   * Middleware should render this component to continue the chain.
+   */
+  Component: React.ComponentType<WidgetPanelProps<T>>;
+}
+
+/**
+ * A middleware plugin that can wrap and enhance another widget plugin.
+ * Middleware plugins are chained together in registration order,
+ * with each middleware wrapping the next in the chain.
+ *
+ * The middleware pattern allows plugins to:
+ * - Add additional UI elements around a widget
+ * - Intercept and modify props before they reach the wrapped component
+ * - Provide additional context or state to the wrapped component
+ * - Add menu items or other extensions to the widget
+ */
+export interface WidgetMiddlewarePlugin<T = unknown>
+  extends Omit<WidgetPlugin<T>, 'component' | 'panelComponent'> {
+  /**
+   * Marks this plugin as middleware that should be chained
+   * with other plugins of the same supportedTypes.
+   */
+  isMiddleware: true;
+
+  /**
+   * The middleware component that wraps the base widget component.
+   * Receives the wrapped component as a prop and should render it.
+   */
+  component: React.ComponentType<WidgetMiddlewareComponentProps<T>>;
+
+  /**
+   * The middleware panel component that wraps the base panel component.
+   * If omitted, only the component middleware will be applied.
+   */
+  panelComponent?: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+}
+
+/**
+ * Type guard to check if a plugin is a middleware plugin.
+ */
+export function isWidgetMiddlewarePlugin(
+  plugin: PluginModule
+): plugin is WidgetMiddlewarePlugin {
+  return (
+    isWidgetPlugin(plugin) &&
+    'isMiddleware' in plugin &&
+    plugin.isMiddleware === true
+  );
+}
+
 export interface WidgetPlugin<T = unknown> extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;
   /**
