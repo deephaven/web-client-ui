@@ -37,10 +37,12 @@ export function WrapWidgetPlugin(
     };
 
     const hasRef = canHaveRef(C);
+    const className = `widget-loader-${panelDescriptor.type}`;
 
     return (
       <WidgetPanel
         descriptor={panelDescriptor}
+        className={className}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       >

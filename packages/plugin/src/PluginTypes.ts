@@ -6,6 +6,7 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
+import { WidgetDescriptor } from 'packages/dashboard/src/PanelEvent';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
@@ -124,6 +125,11 @@ export interface WidgetComponentProps<T = unknown> {
    * @returns A promise that resolves to the widget data.
    */
   fetch: () => Promise<T>;
+
+  /**
+   * Descriptor of the widget, which may contain information such as the type and name of the widget.
+   */
+  metadata?: WidgetDescriptor;
   /**
    * A unique identifier for the widget.
    * dh.ui uses this to identify widgets within a dashboard or panel.
