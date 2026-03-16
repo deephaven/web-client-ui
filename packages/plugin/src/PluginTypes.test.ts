@@ -2,6 +2,8 @@ import {
   PluginType,
   isAuthPlugin,
   isDashboardPlugin,
+  isElementPlugin,
+  isMultiPlugin,
   isTablePlugin,
   isThemePlugin,
   isWidgetPlugin,
@@ -10,8 +12,10 @@ import {
 } from './PluginTypes';
 
 const pluginTypeToTypeGuardMap = [
-  [PluginType.DASHBOARD_PLUGIN, isDashboardPlugin],
   [PluginType.AUTH_PLUGIN, isAuthPlugin],
+  [PluginType.DASHBOARD_PLUGIN, isDashboardPlugin],
+  [PluginType.ELEMENT_PLUGIN, isElementPlugin],
+  [PluginType.MULTI_PLUGIN, isMultiPlugin],
   [PluginType.TABLE_PLUGIN, isTablePlugin],
   [PluginType.THEME_PLUGIN, isThemePlugin],
   [PluginType.WIDGET_PLUGIN, isWidgetPlugin],

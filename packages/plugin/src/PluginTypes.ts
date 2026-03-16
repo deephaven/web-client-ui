@@ -10,10 +10,11 @@ import type { TablePluginComponent } from './TablePlugin';
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
-  WIDGET_PLUGIN: 'WidgetPlugin',
+  ELEMENT_PLUGIN: 'ElementPlugin',
+  MULTI_PLUGIN: 'MultiPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
-  ELEMENT_PLUGIN: 'ElementPlugin',
+  WIDGET_PLUGIN: 'WidgetPlugin',
 });
 
 /**
@@ -22,7 +23,7 @@ export const PluginType = Object.freeze({
 export type LegacyDashboardPlugin = { DashboardPlugin: React.ComponentType };
 
 export function isLegacyDashboardPlugin(
-  plugin: PluginModule
+  plugin: PluginModuleExport
 ): plugin is LegacyDashboardPlugin {
   return 'DashboardPlugin' in plugin;
 }
@@ -38,12 +39,12 @@ export type LegacyAuthPlugin = {
 };
 
 export function isLegacyAuthPlugin(
-  plugin: PluginModule
+  plugin: PluginModuleExport
 ): plugin is LegacyAuthPlugin {
   return 'AuthPlugin' in plugin;
 }
 
-export type PluginModuleMap = Map<string, VersionedPluginModule>;
+export type PluginModuleMap = Map<string, VersionedPluginModuleExport>;
 
 /**
  * @deprecated Use TablePlugin instead
@@ -53,7 +54,7 @@ export type LegacyTablePlugin = {
 };
 
 export function isLegacyTablePlugin(
-  plugin: PluginModule
+  plugin: PluginModuleExport
 ): plugin is LegacyTablePlugin {
   return 'TablePlugin' in plugin;
 }
@@ -68,15 +69,23 @@ export type LegacyPlugin =
 
 export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
   return (
-    isLegacyDashboardPlugin(plugin as PluginModule) ||
-    isLegacyAuthPlugin(plugin as PluginModule) ||
-    isLegacyTablePlugin(plugin as PluginModule)
+    isLegacyDashboardPlugin(plugin as PluginModuleExport) ||
+    isLegacyAuthPlugin(plugin as PluginModuleExport) ||
+    isLegacyTablePlugin(plugin as PluginModuleExport)
   );
 }
 
-export type PluginModule = Plugin | LegacyPlugin;
+export type PluginModuleExport = Plugin | LegacyPlugin;
 
-export type VersionedPluginModule = PluginModule & { version?: string };
+/** @deprecated Use PluginModuleExport instead */
+export type PluginModule = PluginModuleExport;
+
+export type VersionedPluginModuleExport = PluginModuleExport & {
+  version?: string;
+};
+
+/** @deprecated Use VersionedPluginModuleExport instead */
+export type VersionedPluginModule = VersionedPluginModuleExport;
 
 export interface Plugin {
   /**
@@ -104,7 +113,7 @@ export interface DashboardPlugin extends Plugin {
 }
 
 export function isDashboardPlugin(
-  plugin: PluginModule
+  plugin: PluginModuleExport
 ): plugin is DashboardPlugin {
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
 }
@@ -173,7 +182,9 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
   icon?: IconDefinition | React.ReactElement<unknown>;
 }
 
-export function isWidgetPlugin(plugin: PluginModule): plugin is WidgetPlugin {
+export function isWidgetPlugin(
+  plugin: PluginModuleExport
+): plugin is WidgetPlugin {
   return 'type' in plugin && plugin.type === PluginType.WIDGET_PLUGIN;
 }
 
@@ -182,7 +193,9 @@ export interface TablePlugin extends Plugin {
   component: TablePluginComponent;
 }
 
-export function isTablePlugin(plugin: PluginModule): plugin is TablePlugin {
+export function isTablePlugin(
+  plugin: PluginModuleExport
+): plugin is TablePlugin {
   return 'type' in plugin && plugin.type === PluginType.TABLE_PLUGIN;
 }
 
@@ -219,7 +232,7 @@ export interface AuthPlugin extends Plugin {
   isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
 }
 
-export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
+export function isAuthPlugin(plugin: PluginModuleExport): plugin is AuthPlugin {
   return 'type' in plugin && plugin.type === PluginType.AUTH_PLUGIN;
 }
 
@@ -235,7 +248,9 @@ export interface ThemePlugin extends Plugin {
 }
 
 /** Type guard to check if given plugin is a `ThemePlugin` */
-export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
+export function isThemePlugin(
+  plugin: PluginModuleExport
+): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
 
@@ -263,17 +278,40 @@ export interface ElementPlugin extends Plugin {
   mapping: ElementPluginMappingDefinition;
 }
 
-export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
+export function isElementPlugin(
+  plugin: PluginModuleExport
+): plugin is ElementPlugin {
   return 'type' in plugin && plugin.type === PluginType.ELEMENT_PLUGIN;
+}
+
+/**
+ * A plugin that contains multiple plugins.
+ * When loaded, each plugin in the `plugins` array will be registered individually.
+ */
+export interface MultiPlugin extends Plugin {
+  type: typeof PluginType.MULTI_PLUGIN;
+  /**
+   * The plugins to register. Each plugin will be registered by its own name.
+   * Note: Nested MultiPlugins are not supported.
+   */
+  plugins: Plugin[];
+}
+
+/** Type guard to check if given plugin is a `MultiPlugin` */
+export function isMultiPlugin(
+  plugin: PluginModuleExport
+): plugin is MultiPlugin {
+  return 'type' in plugin && plugin.type === PluginType.MULTI_PLUGIN;
 }
 
 export function isPlugin(plugin: unknown): plugin is Plugin {
   return (
-    isDashboardPlugin(plugin as PluginModule) ||
-    isAuthPlugin(plugin as PluginModule) ||
-    isTablePlugin(plugin as PluginModule) ||
-    isThemePlugin(plugin as PluginModule) ||
-    isWidgetPlugin(plugin as PluginModule) ||
-    isElementPlugin(plugin as PluginModule)
+    isDashboardPlugin(plugin as PluginModuleExport) ||
+    isAuthPlugin(plugin as PluginModuleExport) ||
+    isElementPlugin(plugin as PluginModuleExport) ||
+    isMultiPlugin(plugin as PluginModuleExport) ||
+    isTablePlugin(plugin as PluginModuleExport) ||
+    isThemePlugin(plugin as PluginModuleExport) ||
+    isWidgetPlugin(plugin as PluginModuleExport)
   );
 }

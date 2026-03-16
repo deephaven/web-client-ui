@@ -1,4 +1,9 @@
-import { type LegacyPlugin, type Plugin, PluginType } from '@deephaven/plugin';
+import {
+  type LegacyPlugin,
+  type MultiPlugin,
+  type Plugin,
+  PluginType,
+} from '@deephaven/plugin';
 import { getPluginModuleValue } from './PluginUtils';
 
 describe('getPluginModuleValue', () => {
@@ -125,5 +130,37 @@ describe('getPluginModuleValue', () => {
   it('returns null if the module value is not a plugin', () => {
     const moduleValue = getPluginModuleValue({} as Plugin);
     expect(moduleValue).toBeNull();
+  });
+
+  describe('MultiPlugin', () => {
+    const multiPlugin: MultiPlugin = {
+      name: 'test-multi-plugin',
+      type: PluginType.MULTI_PLUGIN,
+      plugins: [
+        { name: 'widget-plugin', type: PluginType.WIDGET_PLUGIN },
+        { name: 'dashboard-plugin', type: PluginType.DASHBOARD_PLUGIN },
+        { name: 'theme-plugin', type: PluginType.THEME_PLUGIN },
+      ] as Plugin[],
+    };
+
+    it('supports MultiPlugin format', () => {
+      const moduleValue = getPluginModuleValue(multiPlugin);
+      expect(moduleValue).toBe(multiPlugin);
+    });
+
+    it('supports MultiPlugin with default export', () => {
+      const moduleWithDefault = { default: multiPlugin };
+      const moduleValue = getPluginModuleValue(moduleWithDefault);
+      expect(moduleValue).toBe(multiPlugin);
+    });
+
+    it('supports MultiPlugin with named exports', () => {
+      const moduleWithNamedExports = {
+        default: multiPlugin,
+        SomeNamedExport: 'value',
+      };
+      const moduleValue = getPluginModuleValue(moduleWithNamedExports);
+      expect(moduleValue).toBe(multiPlugin);
+    });
   });
 });

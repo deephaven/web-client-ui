@@ -12,6 +12,8 @@ import {
   isLegacyPlugin,
   type PluginModule,
   isPlugin,
+  isMultiPlugin,
+  type MultiPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -82,6 +84,27 @@ export function getPluginModuleValue(
 }
 
 /**
+ * Register a plugin in the plugin map, logging a warning if a plugin with the same name already exists.
+ * @param pluginMap The plugin map to register the plugin in
+ * @param name The name to register the plugin under
+ * @param plugin The plugin to register
+ * @param version Optional version to attach to the plugin
+ */
+function registerPlugin(
+  pluginMap: PluginModuleMap,
+  name: string,
+  plugin: PluginModule,
+  version?: string
+): void {
+  if (pluginMap.has(name)) {
+    log.warn(
+      `Plugin '${name}' is already registered. The existing plugin will be replaced.`
+    );
+  }
+  pluginMap.set(name, { ...plugin, version });
+}
+
+/**
  * Load all plugin modules available based on the manifest file at the provided base URL
  * @param modulePluginsUrl The base URL of the module plugins to load
  * @returns A map from the name of the plugin to the plugin module that was loaded
@@ -115,8 +138,16 @@ export async function loadModulePlugins(
         const moduleValue = getPluginModuleValue(module.value);
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
+        } else if (isMultiPlugin(moduleValue)) {
+          // Flatten MultiPlugin: register each inner plugin by its own name
+          log.debug(
+            `MultiPlugin '${name}' contains ${moduleValue.plugins.length} plugins`
+          );
+          for (const innerPlugin of moduleValue.plugins) {
+            registerPlugin(pluginMap, innerPlugin.name, innerPlugin, version);
+          }
         } else {
-          pluginMap.set(name, { ...moduleValue, version });
+          registerPlugin(pluginMap, name, moduleValue, version);
         }
       } else {
         log.error(`Unable to load plugin '${name}'`, module.reason);

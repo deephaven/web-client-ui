@@ -3,6 +3,8 @@ import {
   type Plugin,
   type PluginModuleMap,
   PluginsContext,
+  isMultiPlugin,
+  type MultiPlugin,
 } from '@deephaven/plugin';
 import { loadModulePlugins } from '../plugins';
 
@@ -12,8 +14,11 @@ export type PluginsBootstrapProps = {
    */
   pluginsUrl: string;
 
-  /** The core plugins to load. */
-  getCorePlugins?: () => Promise<Plugin[]>;
+  /**
+   * The core plugins to load.
+   * Can include MultiPlugin instances which will be flattened.
+   */
+  getCorePlugins?: () => Promise<(Plugin | MultiPlugin)[]>;
 
   /**
    * The children to render wrapped with the PluginsContext.
@@ -38,9 +43,15 @@ export function PluginsBootstrap({
         const corePlugins = (await getCorePlugins?.()) ?? [];
         const pluginModules = await loadModulePlugins(pluginsUrl);
         if (!isCanceled) {
-          const corePluginPairs = corePlugins.map(
-            plugin => [plugin.name, plugin] as const
-          );
+          // Flatten MultiPlugins in core plugins
+          const corePluginPairs = corePlugins.flatMap(plugin => {
+            if (isMultiPlugin(plugin)) {
+              return plugin.plugins.map(
+                innerPlugin => [innerPlugin.name, innerPlugin] as const
+              );
+            }
+            return [[plugin.name, plugin] as const];
+          });
           setPlugins(new Map([...corePluginPairs, ...pluginModules]));
         }
       }
