@@ -745,6 +745,16 @@ export function isDateConditionValid(
         return false;
       }
 
+      // The backend timestamp parsing does not support timezones that end with ST or DT (e.g. EST, EDT)
+      // Passing these to the backend will cause the table to fail.
+      if (
+        tzCode.toUpperCase().endsWith('ST') ||
+        tzCode.toUpperCase().endsWith('DT')
+      ) {
+        log.debug('Timezone ending with ST or DT not supported', tzCode);
+        return false;
+      }
+
       return true;
     }
   }
