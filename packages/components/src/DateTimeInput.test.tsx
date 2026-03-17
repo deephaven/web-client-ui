@@ -160,55 +160,42 @@ it('onSubmit works correctly', async () => {
 });
 
 describe('normalizeText', () => {
-  it('replaces T separator with space for ISO 8601 format', async () => {
+  it.each([
+    [
+      'replaces T separator with space for ISO 8601 format',
+      '2022-02-22T12:30:45.123456789',
+      '2022-02-22 12:30:45.123456789',
+    ],
+    [
+      'removes timezone information (Z)',
+      '2022-02-22T12:30:45.123456789Z',
+      '2022-02-22 12:30:45.123456789',
+    ],
+    [
+      'removes timezone information (offset)',
+      '2022-02-22T12:30:45.123456789+05:00',
+      '2022-02-22 12:30:45.123456789',
+    ],
+    [
+      'removes timezone information (named)',
+      '2022-02-22 12:30:45.123456789 EDT',
+      '2022-02-22 12:30:45.123456789',
+    ],
+    [
+      'handles datetime without fractional seconds',
+      '2022-02-22T12:30:45',
+      '2022-02-22 12:30:45.000000000',
+    ],
+  ])('%s', async (_, pastedText, expectedValue) => {
     const user = userEvent.setup();
     const onChange = jest.fn();
     const { unmount } = makeDateTimeInput({ onChange });
     const input: HTMLInputElement = screen.getByRole('textbox');
 
     input.focus();
-    await user.paste('2022-02-22T12:30:45.123456789');
+    await user.paste(pastedText);
 
-    expect(onChange).toHaveBeenCalledWith('2022-02-22 12:30:45.123456789');
-    unmount();
-  });
-
-  it('removes timezone information (Z)', async () => {
-    const user = userEvent.setup();
-    const onChange = jest.fn();
-    const { unmount } = makeDateTimeInput({ onChange });
-    const input: HTMLInputElement = screen.getByRole('textbox');
-
-    input.focus();
-    await user.paste('2022-02-22T12:30:45.123456789Z');
-
-    expect(onChange).toHaveBeenCalledWith('2022-02-22 12:30:45.123456789');
-    unmount();
-  });
-
-  it('removes timezone information (offset)', async () => {
-    const user = userEvent.setup();
-    const onChange = jest.fn();
-    const { unmount } = makeDateTimeInput({ onChange });
-    const input: HTMLInputElement = screen.getByRole('textbox');
-
-    input.focus();
-    await user.paste('2022-02-22T12:30:45.123456789+05:00');
-
-    expect(onChange).toHaveBeenCalledWith('2022-02-22 12:30:45.123456789');
-    unmount();
-  });
-
-  it('removes timezone information (named)', async () => {
-    const user = userEvent.setup();
-    const onChange = jest.fn();
-    const { unmount } = makeDateTimeInput({ onChange });
-    const input: HTMLInputElement = screen.getByRole('textbox');
-
-    input.focus();
-    await user.paste('2022-02-22 12:30:45.123456789 EDT');
-
-    expect(onChange).toHaveBeenCalledWith('2022-02-22 12:30:45.123456789');
+    expect(onChange).toHaveBeenCalledWith(expectedValue);
     unmount();
   });
 
@@ -222,19 +209,6 @@ describe('normalizeText', () => {
     await user.paste('2022-02-22 12:30:45.123456789');
 
     expect(input.value).toBe(`2022-02-22 12:30:45.123${Z}456${Z}789`);
-    unmount();
-  });
-
-  it('handles datetime without fractional seconds', async () => {
-    const user = userEvent.setup();
-    const onChange = jest.fn();
-    const { unmount } = makeDateTimeInput({ onChange });
-    const input: HTMLInputElement = screen.getByRole('textbox');
-
-    input.focus();
-    await user.paste('2022-02-22T12:30:45');
-
-    expect(onChange).toHaveBeenCalledWith('2022-02-22 12:30:45.000000000');
     unmount();
   });
 });
