@@ -569,17 +569,17 @@ export function getTextForDateCondition(
 ): string {
   switch (condition) {
     case DateCondition.IS_EXACTLY:
-      return `${columnName} == convertDateTime("${value}")`;
+      return `${columnName} == '${value}'`;
     case DateCondition.IS_NOT_EXACTLY:
-      return `${columnName} != convertDateTime(\`${value}\`)`;
+      return `${columnName} != '${value}'`;
     case DateCondition.IS_BEFORE:
-      return `${columnName} < convertDateTime(\`${value}\`)`;
+      return `${columnName} < '${value}'`;
     case DateCondition.IS_BEFORE_OR_EQUAL:
-      return `${columnName} <=  convertDateTime("${value}")`;
+      return `${columnName} <=  '${value}'`;
     case DateCondition.IS_AFTER:
-      return `${columnName} > convertDateTime(\`${value}\`)`;
+      return `${columnName} > '${value}'`;
     case DateCondition.IS_AFTER_OR_EQUAL:
-      return `${columnName} >=  convertDateTime(\`${value}\`)`;
+      return `${columnName} >=  '${value}'`;
     case DateCondition.IS_NULL:
       return `${columnName} == null`;
     case DateCondition.IS_NOT_NULL:
