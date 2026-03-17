@@ -5,11 +5,13 @@ import { TimeoutError } from '@deephaven/utils';
 export const FETCH_TIMEOUT = 10_000;
 
 /**
- * Fetch the definition for a variable given a connection. Subscribes to field updates and triggers when the variable is found.
+ * Fetch the definition for a variable given a connection. Waits for the next field update
+ * and resolves if the variable is found in the created variables.
  * @param connection Connection to get the variable from
  * @param name Name of the definition to fetch
  * @param timeout Timeout for the fetch
- * @returns Promise that resolves to the variable definition if found, or rejects if there's an error or the timeout has exceeded
+ * @returns Promise that resolves to the variable definition if found in the next field update,
+ *          or rejects if the variable is not found in that update or if the timeout is exceeded
  */
 export function fetchVariableDefinition(
   connection: dh.IdeConnection,
@@ -25,12 +27,14 @@ export function fetchVariableDefinition(
 }
 
 /**
- * Fetch the definition for a variable given a connection. Subscribes to field updates and triggers when a variable matching the predicate is found.
+ * Fetch the definition for a variable given a connection. Waits for the next field update
+ * and resolves if a variable matching the predicate is found in the created variables.
  * @param connection Connection to get the variable from
  * @param predicate Predicate function to test each variable definition
  * @param timeout Timeout for the fetch
  * @param errorMessage Optional error message for timeout and not found errors
- * @returns Promise that resolves to the variable definition if found, or rejects if there's an error or the timeout has exceeded
+ * @returns Promise that resolves to the variable definition if found in the next field update,
+ *          or rejects if no matching variable is found in that update or if the timeout is exceeded
  */
 export function fetchVariableDefinitionByPredicate(
   connection: dh.IdeConnection,
