@@ -231,6 +231,13 @@ export function DashboardLayout({
       log.debug('handleLayoutStateChanged', hasChanged, dehydratedLayoutConfig);
 
       if (hasChanged) {
+        log.debug(
+          'Layout config has changed',
+          'lastConfig',
+          lastConfig,
+          'dehydratedLayoutConfig',
+          dehydratedLayoutConfig
+        );
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
 
         setLastConfig(dehydratedLayoutConfig);
@@ -328,6 +335,15 @@ export function DashboardLayout({
         previousLayoutConfig !== layoutConfig &&
         layoutConfig !== lastConfig
       ) {
+        log.debug(
+          'loadNewConfig effect triggered. previousLayoutConfig',
+          previousLayoutConfig,
+          'layoutConfig',
+          layoutConfig,
+          'lastConfig',
+          lastConfig
+        );
+
         log.debug('Setting new layout content...');
         const content = LayoutUtils.hydrateLayoutConfig(
           layoutConfig,
