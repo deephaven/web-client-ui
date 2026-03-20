@@ -1,7 +1,12 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsDiffAdded, vsDiffRemoved, vsWarning } from '@deephaven/icons';
+import {
+  vsClose,
+  vsDiffAdded,
+  vsDiffRemoved,
+  vsWarning,
+} from '@deephaven/icons';
 import {
   useDebouncedCallback,
   useResizeObserver,
@@ -19,6 +24,9 @@ export type ErrorViewerProps = {
 
   /** The type of error message to display in the header. Defaults to Error. */
   type?: string;
+
+  /** Optional callback to dismiss the error. If provided, a Dismiss button will be displayed. It is up to the parent to implement the logic to dismiss the error. */
+  onDismiss?: () => void;
 };
 
 /**
@@ -28,6 +36,7 @@ function ErrorView({
   message,
   isExpanded: isExpandedProp = false,
   type = 'Error',
+  onDismiss,
 }: ErrorViewerProps): JSX.Element {
   const [isExpandable, setIsExpandable] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -77,6 +86,16 @@ function ErrorView({
               icon={isExpanded ? vsDiffRemoved : vsDiffAdded}
             >
               {isExpanded ? 'Show Less' : 'Show More'}
+            </Button>
+          )}
+          {onDismiss != null && (
+            <Button
+              kind="danger"
+              className="error-view-dismiss-button"
+              onClick={onDismiss}
+              icon={vsClose}
+            >
+              Dismiss
             </Button>
           )}
         </div>

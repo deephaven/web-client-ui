@@ -1,9 +1,12 @@
-/* eslint no-alert: "off" */
-import React, { type CSSProperties } from 'react';
-import { ErrorView } from '@deephaven/components';
+import React, { useState, type CSSProperties } from 'react';
+import { Button, ErrorView } from '@deephaven/components';
 import SampleSection from './SampleSection';
 
 function ErrorViews(): React.ReactElement {
+  const [isShortDismissed, setIsShortDismissed] = useState(false);
+  const [isMidDismissed, setIsMidDismissed] = useState(false);
+  const [isLongDismissed, setIsLongDismissed] = useState(false);
+
   const columnStyle: CSSProperties = {
     maxHeight: 500,
     display: 'flex',
@@ -17,6 +20,14 @@ function ErrorViews(): React.ReactElement {
 
   const midErrorType = 'MidError';
   const longErrorType = 'SuperLongErrorMessageType';
+
+  const hasAnyDismissed = isShortDismissed || isMidDismissed || isLongDismissed;
+
+  const handleReset = () => {
+    setIsShortDismissed(false);
+    setIsMidDismissed(false);
+    setIsLongDismissed(false);
+  };
 
   return (
     <SampleSection name="error-views">
@@ -49,6 +60,52 @@ function ErrorViews(): React.ReactElement {
             type={longErrorType}
             isExpanded
           />
+        </div>
+      </div>
+      <h3>
+        Dismissable
+        {hasAnyDismissed && (
+          <Button
+            kind="primary"
+            onClick={handleReset}
+            style={{ marginLeft: '1rem' }}
+          >
+            Reset
+          </Button>
+        )}
+      </h3>
+      <div className="row" style={{ maxHeight: 500 }}>
+        <div className="col" style={columnStyle}>
+          {!isShortDismissed && (
+            <ErrorView
+              message={shortErrorMessage}
+              onDismiss={() => {
+                setIsShortDismissed(true);
+              }}
+            />
+          )}
+        </div>
+        <div className="col" style={columnStyle}>
+          {!isMidDismissed && (
+            <ErrorView
+              message={midErrorMessage}
+              type={midErrorType}
+              onDismiss={() => {
+                setIsMidDismissed(true);
+              }}
+            />
+          )}
+        </div>
+        <div className="col" style={columnStyle}>
+          {!isLongDismissed && (
+            <ErrorView
+              message={longErrorMessage}
+              type={longErrorType}
+              onDismiss={() => {
+                setIsLongDismissed(true);
+              }}
+            />
+          )}
         </div>
       </div>
     </SampleSection>
