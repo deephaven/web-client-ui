@@ -958,13 +958,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.clearGridInputField();
         this.clearCrossColumSearch();
       }
-      this.startLoading('Filtering...', { resetRanges: true });
       const isChanged = this.applyInputFilters(
         changedInputFilters,
         replaceExistingFilters
       );
-      if (!isChanged) {
-        this.stopLoading();
+      if (isChanged) {
+        this.startLoading('Filtering...', { resetRanges: true });
       }
     }
 
