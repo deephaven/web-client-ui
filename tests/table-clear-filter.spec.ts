@@ -40,7 +40,7 @@ test('ctrl+e clears input filter without getting stuck in Filtering state', asyn
     // Click on the grid to ensure it has focus for the keyboard shortcut
     await page.locator('.iris-grid .grid-wrapper').click();
 
-    await page.keyboard.press('Control+e');
+    await page.keyboard.press('ControlOrMeta+e');
 
     // Wait for any debounced updates to process (input filter debounce is ~400ms total)
     await page.waitForTimeout(1000);
