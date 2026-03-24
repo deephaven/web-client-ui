@@ -940,8 +940,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.clearGridInputField();
         this.clearCrossColumSearch();
       }
-      this.startLoading('Filtering...', { resetRanges: true });
-      this.applyInputFilters(changedInputFilters, replaceExistingFilters);
+      const isChanged = this.applyInputFilters(
+        changedInputFilters,
+        replaceExistingFilters
+      );
+      if (isChanged) {
+        this.startLoading('Filtering...', { resetRanges: true });
+      }
     }
 
     if (isSelectingColumn !== prevProps.isSelectingColumn) {
@@ -1617,11 +1622,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * and clears any existing quickFilters or advancedFilters on that column
    * @param inputFilters Array of input filters to apply
    * @param replaceExisting If true, new filters will replace the existing ones, instead of merging
+   * @returns True if any filters were changed as a result of this operation
    */
   applyInputFilters(
     inputFilters: InputFilter[],
     replaceExisting = false
-  ): void {
+  ): boolean {
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
     const newAdvancedFilters = replaceExisting
@@ -1650,6 +1656,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         advancedFilters: newAdvancedFilters,
       });
     }
+    return isChanged;
   }
 
   /**
