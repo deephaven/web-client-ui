@@ -15,7 +15,6 @@ import {
 } from '@deephaven/components';
 import { vsEdit, vsHistory, vsTrash } from '@deephaven/icons';
 import { usePersistentState } from '@deephaven/dashboard';
-import { type MoveOperation } from '@deephaven/grid';
 import {
   type TableOption,
   type TableOptionPanelProps,
@@ -23,15 +22,14 @@ import {
   useTableOptionsHost,
   defaultTableOptionsRegistry,
   IrisGridUtils,
-  type DehydratedQuickFilter,
-  type DehydratedAdvancedFilter,
-  type DehydratedSort,
+  type DehydratedIrisGridState,
+  type DehydratedGridState,
 } from '@deephaven/iris-grid';
-import type { ColumnName } from '@deephaven/iris-grid';
 
 /**
  * Dehydrated (JSON-serializable) snapshot of table state.
  * Stored via usePersistentState for cross-session persistence.
+ * Uses the same structure as IrisGridUtils dehydration for proper hydration.
  */
 interface DehydratedStateSnapshot {
   /** Unique identifier */
@@ -40,26 +38,10 @@ interface DehydratedStateSnapshot {
   timestamp: string;
   /** User-defined name for the snapshot (optional) */
   name?: string;
-  /** Quick filters state (dehydrated) */
-  quickFilters: readonly DehydratedQuickFilter[];
-  /** Advanced filters state (dehydrated) */
-  advancedFilters: readonly DehydratedAdvancedFilter[];
-  /** Sort configuration (dehydrated) */
-  sorts: readonly DehydratedSort[];
-  /** Reverse sort order */
-  reverse: boolean;
-  /** Cross-column search value */
-  searchValue: string;
-  /** Columns for cross-column search */
-  selectedSearchColumns: readonly ColumnName[];
-  /** Invert search column selection */
-  invertSearchColumns: boolean;
-  /** Select distinct columns */
-  selectDistinctColumns: readonly ColumnName[];
-  /** Custom columns */
-  customColumns: readonly ColumnName[];
-  /** Re-arranged columns (move operations) */
-  movedColumns: readonly MoveOperation[];
+  /** Dehydrated IrisGrid state (filters, sorts, custom columns, etc.) */
+  irisGridState: Partial<DehydratedIrisGridState>;
+  /** Dehydrated Grid state (movedColumns, movedRows, etc.) */
+  gridState: Partial<DehydratedGridState>;
 }
 
 /**
@@ -76,16 +58,20 @@ const TABLE_HISTORY_OPTION_TYPE = 'table-history-option';
 
 /**
  * Dehydrates current grid state to a JSON-serializable snapshot.
+ * Uses IrisGridUtils dehydration methods for proper serialization.
  */
 function dehydrateSnapshot(
   gridState: GridStateSnapshot,
   irisGridUtils: IrisGridUtils
-): Omit<DehydratedStateSnapshot, 'id' | 'timestamp'> {
+): Omit<DehydratedStateSnapshot, 'id' | 'timestamp' | 'name'> {
   const { model, quickFilters, advancedFilters, sorts } = gridState;
-  return {
+  const { columns } = model;
+
+  // Dehydrate IrisGrid state (filters, sorts, custom columns, etc.)
+  const irisGridDehydrated: Partial<DehydratedIrisGridState> = {
     quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
     advancedFilters: irisGridUtils.dehydrateAdvancedFilters(
-      model.columns,
+      columns,
       advancedFilters
     ),
     sorts: IrisGridUtils.dehydrateSort(sorts),
@@ -95,7 +81,20 @@ function dehydrateSnapshot(
     invertSearchColumns: gridState.invertSearchColumns,
     selectDistinctColumns: [...gridState.selectDistinctColumns],
     customColumns: [...gridState.customColumns],
+  };
+
+  // Dehydrate Grid state (movedColumns)
+  // Use dehydrateGridState to properly convert column indices to names
+  const gridDehydrated = IrisGridUtils.dehydrateGridState(model, {
+    isStuckToBottom: false,
+    isStuckToRight: false,
     movedColumns: [...gridState.movedColumns],
+    movedRows: [],
+  });
+
+  return {
+    irisGridState: irisGridDehydrated,
+    gridState: gridDehydrated,
   };
 }
 
@@ -130,7 +129,7 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
     }
   );
 
-  const snapshots = state.snapshots;
+  const { snapshots } = state;
 
   const handleSaveSnapshot = useCallback(() => {
     const snapshot: DehydratedStateSnapshot = {
@@ -145,80 +144,18 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
 
   const handleRestoreSnapshot = useCallback(
     (snapshot: DehydratedStateSnapshot) => {
-      const { columns, formatter } = model;
-
-      // Get timezone from the model's formatter
-      const timeZone = formatter.timeZone;
-
-      // Hydrate quick filters
-      const hydratedQuickFilters = irisGridUtils.hydrateQuickFilters(
-        columns,
-        snapshot.quickFilters,
-        timeZone
-      );
-
-      // Hydrate advanced filters
-      const hydratedAdvancedFilters = irisGridUtils.hydrateAdvancedFilters(
-        columns,
-        snapshot.advancedFilters,
-        timeZone
-      );
-
-      // Hydrate sorts
-      const hydratedSorts = irisGridUtils.hydrateSort(columns, snapshot.sorts);
-
-      // Note: Dispatch order matters! SET_SELECT_DISTINCT_COLUMNS and SET_CUSTOM_COLUMNS
-      // trigger handlers that reset sorts/filters, so we dispatch them first (if changing),
-      // then restore everything else.
-
-      // Only dispatch SELECT_DISTINCT if actually changing (to avoid clearing everything)
-      const currentSelectDistinct = gridState.selectDistinctColumns;
-      const newSelectDistinct = snapshot.selectDistinctColumns;
-      const selectDistinctChanging =
-        currentSelectDistinct.length !== newSelectDistinct.length ||
-        !currentSelectDistinct.every((col, i) => col === newSelectDistinct[i]);
-
-      if (selectDistinctChanging) {
-        dispatch({
-          type: 'SET_SELECT_DISTINCT_COLUMNS',
-          columns: [...snapshot.selectDistinctColumns],
-        });
-      }
-
+      // Use RESTORE_DEHYDRATED_STATE action which handles hydration properly,
+      // including graceful handling of missing columns when the table structure
+      // has changed (e.g., columns hidden via Organize Columns).
       dispatch({
-        type: 'SET_CUSTOM_COLUMNS',
-        columns: [...snapshot.customColumns],
-      });
-
-      // Now restore filters, sorts, and search (after select distinct is handled)
-      dispatch({
-        type: 'SET_QUICK_FILTERS',
-        filters: hydratedQuickFilters,
-      });
-      dispatch({
-        type: 'SET_ADVANCED_FILTERS',
-        filters: hydratedAdvancedFilters,
-      });
-      dispatch({
-        type: 'SET_CROSS_COLUMN_SEARCH',
-        searchValue: snapshot.searchValue,
-        selectedSearchColumns: [...snapshot.selectedSearchColumns],
-        invertSearchColumns: snapshot.invertSearchColumns,
-      });
-
-      // SET_SORTS and SET_REVERSE must be last since other dispatches can clear them
-      dispatch({ type: 'SET_SORTS', sorts: hydratedSorts });
-      dispatch({ type: 'SET_REVERSE', reverse: snapshot.reverse });
-
-      // Restore moved columns (re-arranged column order)
-      dispatch({
-        type: 'SET_MOVED_COLUMNS',
-        columns: [...snapshot.movedColumns],
+        type: 'RESTORE_DEHYDRATED_STATE',
+        irisGridState: snapshot.irisGridState,
+        gridState: snapshot.gridState,
       });
 
       // Stay on the Table History screen after restoring
     },
-    [dispatch, model, irisGridUtils, gridState.selectDistinctColumns]
+    [dispatch]
   );
 
   const handleDeleteSnapshot = useCallback(
@@ -314,74 +251,82 @@ function TableHistoryPanel(_props: TableOptionPanelProps): JSX.Element {
     }
 
     const currentDehydrated = dehydrateSnapshot(gridState, irisGridUtils);
+    const currentIris = currentDehydrated.irisGridState;
+    const currentGrid = currentDehydrated.gridState;
+
+    // Handle backward compatibility with old snapshot format
+    // Old format had properties at top level, new format nests them in irisGridState/gridState
+    const lastIris = lastSnapshot.irisGridState ?? {};
+    const lastGrid = lastSnapshot.gridState ?? {};
     const changes: string[] = [];
 
     // Compare sorts
     const sortsChanged =
-      JSON.stringify(currentDehydrated.sorts) !==
-      JSON.stringify(lastSnapshot.sorts);
-    if (sortsChanged) {
-      changes.push(`Sorts: ${currentDehydrated.sorts.length} column(s)`);
+      JSON.stringify(currentIris.sorts) !== JSON.stringify(lastIris.sorts);
+    if (sortsChanged && currentIris.sorts != null) {
+      changes.push(`Sorts: ${currentIris.sorts.length} column(s)`);
     }
 
     // Compare quick filters
     const quickFiltersChanged =
-      JSON.stringify(currentDehydrated.quickFilters) !==
-      JSON.stringify(lastSnapshot.quickFilters);
-    if (quickFiltersChanged) {
+      JSON.stringify(currentIris.quickFilters) !==
+      JSON.stringify(lastIris.quickFilters);
+    if (quickFiltersChanged && currentIris.quickFilters != null) {
       changes.push(
-        `Quick Filters: ${currentDehydrated.quickFilters.length} filter(s)`
+        `Quick Filters: ${currentIris.quickFilters.length} filter(s)`
       );
     }
 
     // Compare advanced filters
     const advancedFiltersChanged =
-      JSON.stringify(currentDehydrated.advancedFilters) !==
-      JSON.stringify(lastSnapshot.advancedFilters);
-    if (advancedFiltersChanged) {
+      JSON.stringify(currentIris.advancedFilters) !==
+      JSON.stringify(lastIris.advancedFilters);
+    if (advancedFiltersChanged && currentIris.advancedFilters != null) {
       changes.push(
-        `Advanced Filters: ${currentDehydrated.advancedFilters.length} filter(s)`
+        `Advanced Filters: ${currentIris.advancedFilters.length} filter(s)`
       );
     }
 
     // Compare search
-    if (currentDehydrated.searchValue !== lastSnapshot.searchValue) {
-      changes.push(`Search: "${currentDehydrated.searchValue || '(empty)'}"`);
+    if (currentIris.searchValue !== lastIris.searchValue) {
+      const searchDisplay =
+        currentIris.searchValue != null && currentIris.searchValue.length > 0
+          ? currentIris.searchValue
+          : '(empty)';
+      changes.push(`Search: "${searchDisplay}"`);
     }
 
     // Compare reverse
-    if (currentDehydrated.reverse !== lastSnapshot.reverse) {
-      changes.push(`Reverse: ${currentDehydrated.reverse}`);
+    if (currentIris.reverse !== lastIris.reverse) {
+      changes.push(`Reverse: ${currentIris.reverse}`);
     }
 
     // Compare select distinct
     const selectDistinctChanged =
-      JSON.stringify(currentDehydrated.selectDistinctColumns) !==
-      JSON.stringify(lastSnapshot.selectDistinctColumns);
-    if (selectDistinctChanged) {
+      JSON.stringify(currentIris.selectDistinctColumns) !==
+      JSON.stringify(lastIris.selectDistinctColumns);
+    if (selectDistinctChanged && currentIris.selectDistinctColumns != null) {
       changes.push(
-        `Select Distinct: ${currentDehydrated.selectDistinctColumns.length} column(s)`
+        `Select Distinct: ${currentIris.selectDistinctColumns.length} column(s)`
       );
     }
 
     // Compare custom columns
     const customColumnsChanged =
-      JSON.stringify(currentDehydrated.customColumns) !==
-      JSON.stringify(lastSnapshot.customColumns);
-    if (customColumnsChanged) {
+      JSON.stringify(currentIris.customColumns) !==
+      JSON.stringify(lastIris.customColumns);
+    if (customColumnsChanged && currentIris.customColumns != null) {
       changes.push(
-        `Custom Columns: ${currentDehydrated.customColumns.length} column(s)`
+        `Custom Columns: ${currentIris.customColumns.length} column(s)`
       );
     }
 
     // Compare moved columns
     const movedColumnsChanged =
-      JSON.stringify(currentDehydrated.movedColumns) !==
-      JSON.stringify(lastSnapshot.movedColumns);
-    if (movedColumnsChanged) {
-      changes.push(
-        `Column Order: ${currentDehydrated.movedColumns.length} move(s)`
-      );
+      JSON.stringify(currentGrid.movedColumns) !==
+      JSON.stringify(lastGrid.movedColumns);
+    if (movedColumnsChanged && currentGrid.movedColumns != null) {
+      changes.push(`Column Order: ${currentGrid.movedColumns.length} move(s)`);
     }
 
     return changes;

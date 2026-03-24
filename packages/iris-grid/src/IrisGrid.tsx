@@ -125,7 +125,10 @@ import {
   TableSaver,
   DownloadServiceWorkerUtils,
 } from './sidebar';
-import IrisGridUtils, { type DehydratedIrisGridState } from './IrisGridUtils';
+import IrisGridUtils, {
+  type DehydratedIrisGridState,
+  type DehydratedGridState,
+} from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -176,6 +179,18 @@ import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGrid');
+
+/**
+ * Pending state restoration data.
+ * Stored when customColumns or selectDistinctColumns change,
+ * and applied after the columnschanged event fires.
+ */
+interface PendingRestoreState {
+  /** The dehydrated IrisGrid state to restore */
+  irisGridState: Partial<DehydratedIrisGridState>;
+  /** The dehydrated Grid state to restore */
+  gridState?: Partial<DehydratedGridState>;
+}
 
 const VIEWPORT_LOADING_DELAY = 500;
 
@@ -1041,6 +1056,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   decimalFormatOptions: { defaultFormatString?: string };
 
+  /**
+   * Pending state restoration.
+   * When restoring a snapshot with different customColumns or selectDistinctColumns,
+   * we first apply the column changes and store the rest here.
+   * After columnschanged fires, we hydrate and apply the remaining state.
+   */
+  pendingRestoreState: PendingRestoreState | null = null;
+
   integerFormatOptions: { defaultFormatString?: string };
 
   truncateNumbersWithPound: boolean;
@@ -1265,6 +1288,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           action.searchValue,
           action.selectedSearchColumns,
           action.invertSearchColumns
+        );
+        break;
+      case 'RESTORE_DEHYDRATED_STATE':
+        this.handleRestoreDehydratedState(
+          action.irisGridState,
+          action.gridState
         );
         break;
       default:
@@ -1954,6 +1983,188 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('Setting reverse', newReverse);
     this.startLoading('Sorting...');
     this.setState({ reverse: newReverse });
+  }
+
+  /**
+   * Handler for restoring a dehydrated state snapshot.
+   * Uses IrisGridUtils hydration methods for proper column resolution,
+   * and handles the proper sequencing of state changes.
+   *
+   * Similar to IrisGridPanel's modelQueue pattern:
+   * - If customColumns, selectDistinctColumns, or rollupConfig are changing,
+   *   we first apply those column-changing operations
+   * - Then wait for the columnschanged event before hydrating filters/sorts
+   * - This ensures hydration uses the correct column set
+   */
+  handleRestoreDehydratedState(
+    irisGridState: Partial<DehydratedIrisGridState>,
+    gridState?: Partial<DehydratedGridState>
+  ): void {
+    log.debug('Restoring dehydrated state', irisGridState, gridState);
+    this.startLoading('Restoring state...');
+
+    const {
+      customColumns: currentCustomColumns,
+      selectDistinctColumns: currentSelectDistinctColumns,
+      rollupConfig: currentRollupConfig,
+    } = this.state;
+
+    // Check if any column-changing properties are different from current state
+    // These operations alter model.columns and require waiting for columnschanged
+    const newCustomColumns =
+      irisGridState.customColumns ?? currentCustomColumns;
+    const customColumnsChanging =
+      JSON.stringify(newCustomColumns) !== JSON.stringify(currentCustomColumns);
+
+    const newSelectDistinctColumns =
+      irisGridState.selectDistinctColumns ?? currentSelectDistinctColumns;
+    const selectDistinctChanging =
+      JSON.stringify(newSelectDistinctColumns) !==
+      JSON.stringify(currentSelectDistinctColumns);
+
+    const newRollupConfig = irisGridState.rollupConfig ?? currentRollupConfig;
+    const rollupChanging =
+      JSON.stringify(newRollupConfig) !== JSON.stringify(currentRollupConfig);
+
+    const columnsChanging =
+      customColumnsChanging || selectDistinctChanging || rollupChanging;
+
+    if (columnsChanging) {
+      // Columns will change - store pending state and apply after columnschanged
+      log.debug(
+        'Column-changing operation detected, queueing state restoration',
+        { customColumnsChanging, selectDistinctChanging, rollupChanging }
+      );
+      this.pendingRestoreState = { irisGridState, gridState };
+
+      // Apply only the column-changing state now
+      // The rest will be applied in handleCustomColumnsChanged -> completePendingRestore
+      const columnState: Partial<IrisGridState> = {};
+      if (irisGridState.customColumns != null) {
+        columnState.customColumns = [...irisGridState.customColumns];
+      }
+      if (irisGridState.selectDistinctColumns != null) {
+        columnState.selectDistinctColumns = [
+          ...irisGridState.selectDistinctColumns,
+        ];
+      }
+      if (irisGridState.rollupConfig !== undefined) {
+        columnState.rollupConfig = irisGridState.rollupConfig;
+      }
+
+      this.setState(columnState as IrisGridState);
+      // Loading will continue until handleCustomColumnsChanged calls stopLoading
+    } else {
+      // Columns not changing - apply everything immediately
+      this.applyHydratedState(irisGridState, gridState);
+    }
+  }
+
+  /**
+   * Hydrates and applies dehydrated state using current model columns.
+   * Called either immediately (if columns aren't changing) or after columnschanged.
+   */
+  applyHydratedState(
+    irisGridState: Partial<DehydratedIrisGridState>,
+    gridState?: Partial<DehydratedGridState>
+  ): void {
+    const { model } = this.props;
+    const { columns, formatter } = model;
+    const { customColumns } = this.state;
+    const irisGridUtils = new IrisGridUtils(model.dh);
+
+    // Build the new state from dehydrated values using existing hydration utilities
+    const newState: Partial<IrisGridState> = {};
+
+    // Hydrate quick filters using current model columns
+    if (irisGridState.quickFilters != null) {
+      newState.quickFilters = irisGridUtils.hydrateQuickFilters(
+        columns,
+        irisGridState.quickFilters,
+        formatter.timeZone
+      );
+    }
+
+    // Hydrate advanced filters using current model columns
+    if (irisGridState.advancedFilters != null) {
+      newState.advancedFilters = irisGridUtils.hydrateAdvancedFilters(
+        columns,
+        irisGridState.advancedFilters,
+        formatter.timeZone
+      );
+    }
+
+    // Hydrate sorts using current model columns
+    if (irisGridState.sorts != null) {
+      newState.sorts = irisGridUtils.hydrateSort(columns, irisGridState.sorts);
+    }
+
+    // Simple values that don't need hydration
+    if (irisGridState.reverse != null) {
+      newState.reverse = irisGridState.reverse;
+    }
+
+    if (irisGridState.searchValue != null) {
+      newState.searchValue = irisGridState.searchValue;
+    }
+
+    if (irisGridState.selectedSearchColumns != null) {
+      newState.selectedSearchColumns = [...irisGridState.selectedSearchColumns];
+    }
+
+    if (irisGridState.invertSearchColumns != null) {
+      newState.invertSearchColumns = irisGridState.invertSearchColumns;
+    }
+
+    // selectDistinctColumns and customColumns should already be applied
+    // if they were changing (via handleRestoreDehydratedState)
+    // But if not changing, apply them here
+    if (irisGridState.selectDistinctColumns != null) {
+      newState.selectDistinctColumns = [...irisGridState.selectDistinctColumns];
+    }
+
+    if (irisGridState.customColumns != null) {
+      newState.customColumns = [...irisGridState.customColumns];
+    }
+
+    // Hydrate grid state (movedColumns, etc.) using existing utility
+    // Use current model columns for hydration (they now include custom columns)
+    if (gridState?.movedColumns != null) {
+      const hydratedGridState = IrisGridUtils.hydrateGridState(
+        model,
+        {
+          isStuckToBottom: gridState.isStuckToBottom ?? false,
+          isStuckToRight: gridState.isStuckToRight ?? false,
+          movedColumns: gridState.movedColumns,
+          movedRows: gridState.movedRows ?? [],
+        },
+        irisGridState.customColumns ?? customColumns
+      );
+      newState.movedColumns = hydratedGridState.movedColumns;
+      if (gridState.movedRows != null) {
+        newState.movedRows = hydratedGridState.movedRows;
+      }
+    }
+
+    this.setState(newState as IrisGridState);
+    this.stopLoading();
+  }
+
+  /**
+   * Completes any pending state restoration after columns have changed.
+   * Called from handleCustomColumnsChanged when pendingRestoreState exists.
+   */
+  completePendingRestore(): void {
+    if (this.pendingRestoreState == null) {
+      return;
+    }
+
+    log.debug('Completing pending state restoration');
+    const { irisGridState, gridState } = this.pendingRestoreState;
+    this.pendingRestoreState = null;
+
+    // Now hydrate and apply using the new columns
+    this.applyHydratedState(irisGridState, gridState);
   }
 
   clearAllAggregations(): void {
@@ -3739,6 +3950,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { isReady } = this.state;
     if (isReady) {
       this.updateMetrics();
+
+      // Complete any pending state restoration now that columns have changed
+      if (this.pendingRestoreState != null) {
+        this.completePendingRestore();
+      }
 
       // Make sure stopLoading() is called after the updateMetrics call,
       // otherwise IrisGridModelUpdater queues an extra setViewport based on old metrics.

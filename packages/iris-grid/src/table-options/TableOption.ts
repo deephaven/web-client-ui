@@ -17,6 +17,10 @@ import type {
   ChartBuilderSettings,
 } from '../sidebar';
 import type AdvancedSettingsType from '../sidebar/AdvancedSettingsType';
+import type {
+  DehydratedIrisGridState,
+  DehydratedGridState,
+} from '../IrisGridUtils';
 
 // ============================================================================
 // Grid State Snapshot (Read-Only)
@@ -198,6 +202,18 @@ export type GridAction =
       searchValue: string;
       selectedSearchColumns: readonly ColumnName[];
       invertSearchColumns: boolean;
+    }
+  | {
+      /**
+       * Restore a dehydrated state snapshot.
+       * Uses IrisGridUtils hydration methods internally for proper column resolution.
+       * This handles the sequencing of custom columns, filters, sorts, etc.
+       */
+      type: 'RESTORE_DEHYDRATED_STATE';
+      /** Dehydrated IrisGrid state (filters, sorts, custom columns, etc.) */
+      irisGridState: Partial<DehydratedIrisGridState>;
+      /** Dehydrated Grid state (movedColumns, movedRows, etc.) */
+      gridState?: Partial<DehydratedGridState>;
     };
 
 /**

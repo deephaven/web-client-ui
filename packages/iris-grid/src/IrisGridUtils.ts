@@ -1431,38 +1431,57 @@ class IrisGridUtils {
     savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
     timeZone: string
   ): ReadonlyAdvancedFilterMap {
-    const importedFilters = savedAdvancedFilters.map(
-      ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
-        number,
-        {
-          options: AdvancedFilterOptions;
-          filter: DhType.FilterCondition | null;
-        },
-      ] => {
-        const column = IrisGridUtils.getColumn(columns, columnIndex);
-        assertNotNull(column);
-        const options = this.hydrateAdvancedFilterOptions(
-          column,
-          advancedFilter.options
-        );
-        let filter = null;
+    const importedFilters = savedAdvancedFilters
+      .map(
+        ([columnIndex, advancedFilter]: DehydratedAdvancedFilter):
+          | [
+              number,
+              {
+                options: AdvancedFilterOptions;
+                filter: DhType.FilterCondition | null;
+              },
+            ]
+          | null => {
+          const column = IrisGridUtils.getColumn(columns, columnIndex);
+          // Skip filters for columns that no longer exist
+          // (e.g., columns hidden via Organize Columns)
+          if (column == null) {
+            log.debug(
+              'hydrateAdvancedFilters skipping filter for missing column',
+              columnIndex
+            );
+            return null;
+          }
+          const options = this.hydrateAdvancedFilterOptions(
+            column,
+            advancedFilter.options
+          );
+          let filter = null;
 
-        try {
-          const columnRetrieved = IrisGridUtils.getColumn(columns, columnIndex);
-          if (columnRetrieved != null) {
+          try {
             filter = this.tableUtils.makeAdvancedFilter(
               column,
               options,
               timeZone
             );
+          } catch (error) {
+            log.error('hydrateAdvancedFilters error with', options, error);
           }
-        } catch (error) {
-          log.error('hydrateAdvancedFilters error with', options, error);
-        }
 
-        return [columnIndex, { options, filter }];
-      }
-    );
+          return [columnIndex, { options, filter }];
+        }
+      )
+      .filter(
+        (
+          entry
+        ): entry is [
+          number,
+          {
+            options: AdvancedFilterOptions;
+            filter: DhType.FilterCondition | null;
+          },
+        ] => entry != null
+      );
 
     return new Map(importedFilters);
   }
