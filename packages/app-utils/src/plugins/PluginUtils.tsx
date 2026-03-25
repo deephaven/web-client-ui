@@ -13,7 +13,6 @@ import {
   type PluginModule,
   isPlugin,
   isMultiPlugin,
-  type MultiPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -143,9 +142,9 @@ export async function loadModulePlugins(
           log.debug(
             `MultiPlugin '${name}' contains ${moduleValue.plugins.length} plugins`
           );
-          for (const innerPlugin of moduleValue.plugins) {
+          moduleValue.plugins.forEach(innerPlugin => {
             registerPlugin(pluginMap, innerPlugin.name, innerPlugin, version);
-          }
+          });
         } else {
           registerPlugin(pluginMap, name, moduleValue, version);
         }
