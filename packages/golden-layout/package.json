@@ -21,7 +21,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:sass": "sass --embed-sources --load-path=../../node_modules --style=compressed ./src:./dist ./scss:./css",
-    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward"
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.js,.tsx,.jsx\" --source-maps --root-mode upward --ignore \"src/__tests__/**,src/test-utils/**\""
   },
   "repository": {
     "type": "git",
