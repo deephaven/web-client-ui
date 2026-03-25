@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.43](https://github.com/deephaven/web-client-ui/compare/v0.85.42...v0.85.43) (2026-03-25)
+
+### Bug Fixes
+
+- DH-22099: stop loading when input filter change has no effect on… ([#2643](https://github.com/deephaven/web-client-ui/issues/2643)) ([87b2c33](https://github.com/deephaven/web-client-ui/commit/87b2c335a98994d53a9928eb138c3c00f7acc6e0)), closes [#2639](https://github.com/deephaven/web-client-ui/issues/2639)
+
 ## [0.85.42](https://github.com/deephaven/web-client-ui/compare/v0.85.41...v0.85.42) (2026-01-29)
 
 ### Bug Fixes
