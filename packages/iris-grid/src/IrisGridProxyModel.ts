@@ -11,7 +11,7 @@ import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { type ColumnName } from './CommonTypes';
+import { type ColumnName, type UITotalsTableConfig } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import {
   type PartitionConfig,
@@ -429,6 +429,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         .then(table => makeModel(this.dh, table, this.formatter));
     }
     this.setNextModel(modelPromise);
+  }
+
+  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
+    if (this.modelPromise != null) {
+      // Model switch in progress. Don't forward, as the config may reference stale columns.
+      // COLUMNS_CHANGED will reapply the correct config after.
+      return;
+    }
+    this.model.totalsConfig = totalsConfig;
   }
 
   get isFilterRequired(): boolean {
