@@ -1382,11 +1382,24 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getModelTotalsConfig = memoize(
     (
       columns: readonly DhType.Column[],
+      originalColumns: readonly DhType.Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ): UITotalsTableConfig | null => {
       if ((config?.columns?.length ?? 0) > 0) {
         // If we've got rollups, then aggregations are applied as part of that...
+        return null;
+      }
+
+      // TODO: evaluate whether this should be moved to proxy model, since it should manage the model transition
+      // When a rollup is being removed the model `columns` still reflects the tree table's columns
+      // while the rollup config has already been cleared. Building a totals config with those stale
+      // column names would cause a server error.
+      if (
+        config != null &&
+        config.columns.length === 0 &&
+        columns !== originalColumns
+      ) {
         return null;
       }
 
@@ -5235,6 +5248,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 )}
                 totalsConfig={this.getModelTotalsConfig(
                   model.columns,
+                  model.originalColumns,
                   rollupConfig,
                   aggregationSettings
                 )}
