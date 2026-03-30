@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.44](https://github.com/deephaven/web-client-ui/compare/v0.85.43...v0.85.44) (2026-03-30)
+
+### Bug Fixes
+
+- Cherry-pick DH-22093: Fix web UI freezing bug from grid-block-events ([#2647](https://github.com/deephaven/web-client-ui/issues/2647)) ([3920b14](https://github.com/deephaven/web-client-ui/commit/3920b14e21446f7591ee80c583f3ff0ca8dd4d5b)), closes [#2646](https://github.com/deephaven/web-client-ui/issues/2646)
+
 ## [0.85.41](https://github.com/deephaven/web-client-ui/compare/v0.85.40...v0.85.41) (2026-01-15)
 
 ### ⚠ BREAKING CHANGES
