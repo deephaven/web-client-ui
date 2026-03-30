@@ -1255,19 +1255,12 @@ describe('grid-block-events cleanup', () => {
     mouseDown(0, 0, component, {}, separatorX, headerY);
 
     // Drag to trigger handleMouseDrag which adds the class
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
     // Normal mouse up should clean up
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 0,
-    });
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(false);
   });
@@ -1279,27 +1272,16 @@ describe('grid-block-events cleanup', () => {
 
     // Start drag
     mouseDown(0, 0, component, {}, separatorX, headerY);
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
     // Right-click during drag (button=2)
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 2,
-    });
+    mouseUp(0, 0, component, { button: 2 }, separatorX + 50, headerY);
 
     // Right-click during drag returns early, class should still be present
     // Then complete with left mouse up
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 0,
-    });
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(false);
   });
@@ -1311,30 +1293,19 @@ describe('grid-block-events cleanup', () => {
 
     // Start drag
     mouseDown(0, 0, component, {}, separatorX, headerY);
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
     // Middle mouse button up during drag (button=1) should be ignored
     // Drag should continue
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 1,
-    });
+    mouseUp(0, 0, component, { button: 1 }, separatorX + 50, headerY);
 
     // Class should still be present since drag is ongoing
     expect(hasBlockEventsClass()).toBe(true);
 
     // Left mouse up should properly end the drag and clean up
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 0,
-    });
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(false);
   });
@@ -1375,14 +1346,8 @@ describe('grid-block-events cleanup', () => {
     expect(hasBlockEventsClass()).toBe(false);
 
     // Start drag on Grid 1
-    fireEvent.mouseDown(component1.canvas!, {
-      clientX: separatorX,
-      clientY: headerY,
-    });
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseDown(0, 0, component1, {}, separatorX, headerY);
+    mouseMove(0, 0, component1, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
@@ -1395,11 +1360,7 @@ describe('grid-block-events cleanup', () => {
     expect(hasBlockEventsClass()).toBe(true);
 
     // Complete Grid 1's drag
-    fireEvent.mouseUp(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-      button: 0,
-    });
+    mouseUp(0, 0, component1, { button: 0 }, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(false);
   });
@@ -1411,10 +1372,7 @@ describe('grid-block-events cleanup', () => {
 
     // Start drag
     mouseDown(0, 0, component, {}, separatorX, headerY);
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
@@ -1433,25 +1391,15 @@ describe('grid-block-events cleanup', () => {
 
     // Start drag
     mouseDown(0, 0, component, {}, separatorX, headerY);
-    fireEvent.mouseMove(window, {
-      clientX: separatorX + 50,
-      clientY: headerY,
-    });
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
 
     expect(hasBlockEventsClass()).toBe(true);
 
     // Move mouse far outside grid (simulating dragging outside window)
-    fireEvent.mouseMove(window, {
-      clientX: -1000,
-      clientY: -1000,
-    });
+    mouseMove(0, 0, component, {}, -1000, -1000);
 
     // Mouse up outside grid boundaries
-    fireEvent.mouseUp(window, {
-      clientX: -1000,
-      clientY: -1000,
-      button: 0,
-    });
+    mouseUp(0, 0, component, { button: 0 }, -1000, -1000);
 
     // Should still clean up properly
     expect(hasBlockEventsClass()).toBe(false);
