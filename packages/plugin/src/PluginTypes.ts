@@ -1,4 +1,5 @@
 import type { BaseThemeType } from '@deephaven/components';
+import type { WidgetDescriptor } from '@deephaven/dashboard';
 import {
   type EventEmitter,
   type ItemContainer,
@@ -6,7 +7,6 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
-import { WidgetDescriptor } from 'packages/dashboard/src/PanelEvent';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
