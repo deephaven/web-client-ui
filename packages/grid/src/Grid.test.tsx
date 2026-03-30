@@ -1217,3 +1217,191 @@ describe('column separators', () => {
     });
   });
 });
+
+describe('grid-block-events cleanup', () => {
+  const resizableTheme = { ...defaultTheme, allowColumnResize: true };
+
+  function getColumnSeparatorX(columnIndex: VisibleIndex): number {
+    const { rowHeaderWidth, columnWidth } = resizableTheme;
+    return rowHeaderWidth + columnWidth * (columnIndex + 1) - 2;
+  }
+
+  function getColumnHeaderY(): number {
+    return Math.floor(resizableTheme.columnHeaderHeight / 2);
+  }
+
+  function hasBlockEventsClass(): boolean {
+    return document.documentElement.classList.contains('grid-block-events');
+  }
+
+  beforeEach(() => {
+    // Ensure clean state before each test
+    document.documentElement.classList.remove('grid-block-events');
+  });
+
+  afterEach(() => {
+    // Clean up after each test
+    document.documentElement.classList.remove('grid-block-events');
+  });
+
+  it('should remove grid-block-events after normal drag and mouse up', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    expect(hasBlockEventsClass()).toBe(false);
+
+    // Start drag on column separator
+    mouseDown(0, 0, component, {}, separatorX, headerY);
+
+    // Drag to trigger handleMouseDrag which adds the class
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Normal mouse up should clean up
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should remove grid-block-events when right-clicking during drag (case 1)', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    // Start drag
+    mouseDown(0, 0, component, {}, separatorX, headerY);
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Right-click during drag (button=2)
+    mouseUp(0, 0, component, { button: 2 }, separatorX + 50, headerY);
+
+    // Right-click during drag returns early, class should still be present
+    // Then complete with left mouse up
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should ignore middle-click during drag and continue dragging (case 2)', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    // Start drag
+    mouseDown(0, 0, component, {}, separatorX, headerY);
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Middle mouse button up during drag (button=1) should be ignored
+    // Drag should continue
+    mouseUp(0, 0, component, { button: 1 }, separatorX + 50, headerY);
+
+    // Class should still be present since drag is ongoing
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Left mouse up should properly end the drag and clean up
+    mouseUp(0, 0, component, { button: 0 }, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should handle addDocumentCursor with null cursor (case 3)', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+
+    expect(hasBlockEventsClass()).toBe(false);
+
+    // First add a real cursor - this sets documentCursor and adds grid-block-events
+    component.addDocumentCursor('move');
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Now simulate cursor being cleared to null (e.g., mouse handler sets cursor = null)
+    // This sets documentCursor to null but keeps grid-block-events
+    component.addDocumentCursor(null);
+
+    // grid-block-events should still be present since it was added
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // removeDocumentCursor should still clean up
+    // BUG: Currently it doesn't because documentCursor is null and
+    // the entire function body is guarded by `if (this.documentCursor != null)`
+    component.removeDocumentCursor();
+
+    // After fix, this should be false
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should handle multiple Grid instances without interference (case 5)', () => {
+    // Create two grid instances
+    const component1 = makeGridComponent(new MockGridModel(), resizableTheme);
+    const component2 = makeGridComponent(new MockGridModel(), resizableTheme);
+
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    expect(hasBlockEventsClass()).toBe(false);
+
+    // Start drag on Grid 1
+    mouseDown(0, 0, component1, {}, separatorX, headerY);
+    mouseMove(0, 0, component1, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Grid 2 unmounts while Grid 1 is dragging
+    // This simulates closing a panel or tab
+    component2.componentWillUnmount();
+
+    // Grid 2's unmount should NOT affect Grid 1's drag state
+    // The class should still be present for Grid 1
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Complete Grid 1's drag
+    mouseUp(0, 0, component1, { button: 0 }, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should clean up grid-block-events when component unmounts during drag (case 6)', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    // Start drag
+    mouseDown(0, 0, component, {}, separatorX, headerY);
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Component unmounts (simulates user navigating away or closing panel)
+    // This could happen if user drags outside window and releases there
+    component.componentWillUnmount();
+
+    // componentWillUnmount should clean up the class
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+
+  it('should not leave grid-block-events when drag ends outside grid boundaries', () => {
+    const component = makeGridComponent(new MockGridModel(), resizableTheme);
+    const separatorX = getColumnSeparatorX(0);
+    const headerY = getColumnHeaderY();
+
+    // Start drag
+    mouseDown(0, 0, component, {}, separatorX, headerY);
+    mouseMove(0, 0, component, {}, separatorX + 50, headerY);
+
+    expect(hasBlockEventsClass()).toBe(true);
+
+    // Move mouse far outside grid (simulating dragging outside window)
+    mouseMove(0, 0, component, {}, -1000, -1000);
+
+    // Mouse up outside grid boundaries
+    mouseUp(0, 0, component, { button: 0 }, -1000, -1000);
+
+    // Should still clean up properly
+    expect(hasBlockEventsClass()).toBe(false);
+  });
+});
