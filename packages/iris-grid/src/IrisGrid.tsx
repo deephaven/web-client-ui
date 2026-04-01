@@ -554,7 +554,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     },
     canCopy: true,
     canDownloadCsv: true,
-    frozenColumns: EMPTY_ARRAY,
+    frozenColumns: undefined,
     // Do not set a default density prop since we need to know if it overrides the global density setting
     density: undefined,
     canToggleSearch: true,
