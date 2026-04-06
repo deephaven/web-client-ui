@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { act, fireEvent, render } from '@testing-library/react';
+import React, { lazy, Suspense, useRef } from 'react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
@@ -431,6 +431,65 @@ describe('handleResizeAllColumns', () => {
 
       component.collapseAllColumns();
       expect(model.collapseAllColumns).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('LazyIrisGrid with StrictMode', () => {
+  it('renders without error when sorts and customColumns are not provided', async () => {
+    // This reproduces the real-world bug:
+    // 1. External consumers import IrisGrid from @deephaven/iris-grid, which is LazyIrisGrid
+    // 2. LazyIrisGrid = forwardRef wrapping lazy(() => import('./IrisGrid'))
+    // 3. The lazy wrapper means defaultProps are NOT resolved at element creation time
+    //    (both jsx() and createElement() produce props={} for lazy components)
+    // 4. React's reconciler resolves defaultProps during rendering for lazy components
+    // 5. In StrictMode, React double-fires effects: componentDidMount → componentWillUnmount → componentDidMount
+    // 6. On the second componentDidMount, loadTableState() reads this.props.sorts
+    //    which may be undefined if defaultProps resolution isn't applied consistently
+    //    across the StrictMode re-mount cycle
+    //
+    // To simulate true async lazy loading (vs Jest's synchronous import()),
+    // we use a deferred promise that we manually resolve.
+
+    let resolveLazy!: (value: { default: typeof IrisGrid }) => void;
+    const LazyIrisGridTest = React.forwardRef<
+      IrisGrid,
+      React.ComponentPropsWithoutRef<typeof IrisGrid>
+    >((props, ref) => {
+      const IrisGridLazy = React.useMemo(
+        () =>
+          lazy(
+            () =>
+              new Promise<{ default: typeof IrisGrid }>(resolve => {
+                resolveLazy = resolve;
+              })
+          ),
+        []
+      );
+      return (
+        <Suspense fallback={<div data-testid="loading" />}>
+          <IrisGridLazy ref={ref} {...props} />
+        </Suspense>
+      );
+    });
+    LazyIrisGridTest.displayName = 'LazyIrisGridTest';
+
+    const model = irisGridTestUtils.makeModel();
+
+    // Render in StrictMode — just like a real app typically does
+    const { queryByTestId } = render(
+      <React.StrictMode>
+        <LazyIrisGridTest model={model} settings={DEFAULT_SETTINGS} />
+      </React.StrictMode>
+    );
+
+    // Should initially show loading fallback
+    expect(queryByTestId('loading')).not.toBeNull();
+
+    // Now resolve the lazy import — this triggers the actual IrisGrid mount
+    // and the StrictMode double-mount cycle
+    await act(async () => {
+      resolveLazy(await import('./IrisGrid'));
     });
   });
 });

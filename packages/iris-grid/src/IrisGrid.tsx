@@ -2178,9 +2178,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.setState({
-      sorts,
+      sorts: sorts ?? EMPTY_ARRAY,
       reverse: reverse || reverseType === TableUtils.REVERSE_TYPE.POST_SORT,
-      customColumns,
+      customColumns: customColumns ?? EMPTY_ARRAY,
       isReady: true,
       searchFilter,
     });

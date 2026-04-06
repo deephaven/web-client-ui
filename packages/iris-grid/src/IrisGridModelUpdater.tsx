@@ -114,7 +114,7 @@ function IrisGridModelUpdater({
   );
   useOnChange(
     function updateSorts() {
-      const sortsForModel = [...sorts];
+      const sortsForModel = [...(sorts ?? EMPTY_ARRAY)];
       if (reverse) {
         sortsForModel.push(model.dh.Table.reverse());
       }
@@ -137,7 +137,7 @@ function IrisGridModelUpdater({
   useOnChange(
     function updateCustomColumns() {
       if (model.isCustomColumnsAvailable) {
-        model.customColumns = customColumns;
+        model.customColumns = customColumns ?? EMPTY_ARRAY;
       }
     },
     [model, customColumns]
