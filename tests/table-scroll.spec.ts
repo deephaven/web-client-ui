@@ -208,3 +208,18 @@ test('stuck to bottom scroll shrinking and growing table', async ({ page }) => {
   await page.waitForTimeout(2000);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
+
+test('html element has overscroll-behavior-x none to prevent browser back navigation', async ({
+  page,
+}) => {
+  // On macOS, horizontal overscroll at the viewport level triggers the browser's
+  // back/forward navigation gesture. The app must set overscroll-behavior-x: none
+  // on the <html> element to prevent this when users scroll to the edge of a grid.
+  await openTable(page, 'simple_table');
+  await waitForLoadingDone(page);
+
+  const htmlOverscrollX = await page.evaluate(() =>
+    window.getComputedStyle(document.documentElement).getPropertyValue('overscroll-behavior-x')
+  );
+  expect(htmlOverscrollX).toBe('none');
+});
