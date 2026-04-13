@@ -16,11 +16,10 @@ import {
   isWidgetPlugin,
   isWidgetMiddlewarePlugin,
   createChainedComponent,
+  createChainedPanelComponent,
   usePlugins,
   type WidgetPlugin,
   type WidgetMiddlewarePlugin,
-  type WidgetPanelProps,
-  type WidgetMiddlewarePanelProps,
 } from '@deephaven/plugin';
 import { WidgetPanel } from './panels';
 import { type WidgetPanelDescriptor } from './panels/WidgetPanelTypes';
@@ -35,50 +34,6 @@ interface WidgetTypeInfo {
   basePlugin: WidgetPlugin | null;
   /** Middleware plugins to apply, in order from outermost to innermost */
   middleware: WidgetMiddlewarePlugin[];
-}
-
-/**
- * Creates a panel component that chains middleware around a base panel component.
- * Each middleware panel wraps the next, with the base panel at the innermost layer.
- */
-function createChainedPanelComponent<T>(
-  basePanelComponent: React.ComponentType<WidgetPanelProps<T>>,
-  middleware: WidgetMiddlewarePlugin<T>[]
-): React.ComponentType<WidgetPanelProps<T>> {
-  // Filter to middleware that has a panelComponent and extract just the panel components
-  type MiddlewareWithPanel = WidgetMiddlewarePlugin<T> & {
-    panelComponent: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
-  };
-  const panelMiddleware = middleware.filter(
-    (m): m is MiddlewareWithPanel => m.panelComponent != null
-  );
-
-  if (panelMiddleware.length === 0) {
-    return basePanelComponent;
-  }
-
-  // Build the chain from inside out (base panel is innermost)
-  return [...panelMiddleware]
-    .reverse()
-    .reduce<React.ComponentType<WidgetPanelProps<T>>>(
-      (WrappedPanel, middlewarePlugin) => {
-        const { panelComponent: MiddlewarePanelComponent } = middlewarePlugin;
-
-        function ChainedPanel(props: WidgetPanelProps<T>) {
-          return (
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            <MiddlewarePanelComponent {...props} Component={WrappedPanel} />
-          );
-        }
-        ChainedPanel.displayName = `${middlewarePlugin.name}Panel(${
-          (WrappedPanel as React.ComponentType).displayName ??
-          (WrappedPanel as React.ComponentType).name ??
-          'Panel'
-        })`;
-        return ChainedPanel;
-      },
-      basePanelComponent
-    );
 }
 
 export function WrapWidgetPlugin(
