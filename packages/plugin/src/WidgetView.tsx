@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import Log from '@deephaven/log';
 import usePlugins from './usePlugins';
 import {
   isWidgetPlugin,
@@ -7,6 +8,8 @@ import {
   type WidgetMiddlewarePlugin,
 } from './PluginTypes';
 import { createChainedComponent } from './PluginUtils';
+
+const log = Log.module('@deephaven/plugin.WidgetView');
 
 export type WidgetViewProps = {
   /** Fetch function to return the widget */
@@ -33,6 +36,8 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
         foundMiddleware.push(p);
       } else if (foundBasePlugin == null) {
         foundBasePlugin = p;
+      } else {
+        log.warn(`Multiple base plugins for type ${type}, ignoring ${p.name}`);
       }
     });
 
