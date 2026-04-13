@@ -31,8 +31,8 @@ const log = Log.module('WidgetLoaderPlugin');
  * Information about a widget type including its base plugin and any middleware.
  */
 interface WidgetTypeInfo {
-  /** The base plugin that handles this widget type */
-  basePlugin: WidgetPlugin;
+  /** The base plugin that handles this widget type, or null if only middleware registered so far */
+  basePlugin: WidgetPlugin | null;
   /** Middleware plugins to apply, in order from outermost to innermost */
   middleware: WidgetMiddlewarePlugin[];
 }
@@ -179,8 +179,7 @@ export function WidgetLoaderPlugin(
             // No base plugin yet, create entry with just middleware
             // The base plugin will be set when a non-middleware plugin is registered
             typeMap.set(supportedType, {
-              // Use a placeholder that will be replaced
-              basePlugin: plugin as unknown as WidgetPlugin,
+              basePlugin: null,
               middleware: [plugin],
             });
             log.debug(
@@ -190,7 +189,7 @@ export function WidgetLoaderPlugin(
         } else {
           // Non-middleware plugin: becomes the base plugin
           if (existing != null) {
-            if (!isWidgetMiddlewarePlugin(existing.basePlugin)) {
+            if (existing.basePlugin != null) {
               // Already have a base plugin, warn about replacement
               log.warn(
                 `Multiple WidgetPlugins handling type ${supportedType}. ` +
@@ -211,10 +210,16 @@ export function WidgetLoaderPlugin(
     });
 
     // Filter out entries that only have middleware (no base plugin)
-    const validEntries = new Map<string, WidgetTypeInfo>();
+    const validEntries = new Map<
+      string,
+      WidgetTypeInfo & { basePlugin: WidgetPlugin }
+    >();
     typeMap.forEach((info, type) => {
-      if (!isWidgetMiddlewarePlugin(info.basePlugin)) {
-        validEntries.set(type, info);
+      if (info.basePlugin != null) {
+        validEntries.set(
+          type,
+          info as WidgetTypeInfo & { basePlugin: WidgetPlugin }
+        );
       } else {
         log.warn(
           `No base plugin found for type ${type}, middleware will not be applied`
@@ -266,8 +271,10 @@ export function WidgetLoaderPlugin(
 
   useEffect(() => {
     // Get unique base plugins (a plugin may handle multiple types)
-    const uniquePluginInfos = new Map<string, WidgetTypeInfo>();
-    supportedTypes.forEach((info, type) => {
+    // supportedTypes is already filtered to entries with non-null basePlugin
+    type ValidWidgetTypeInfo = WidgetTypeInfo & { basePlugin: WidgetPlugin };
+    const uniquePluginInfos = new Map<string, ValidWidgetTypeInfo>();
+    supportedTypes.forEach((info, _type) => {
       // Use the base plugin name as the key to get unique plugins
       if (!uniquePluginInfos.has(info.basePlugin.name)) {
         uniquePluginInfos.set(info.basePlugin.name, info);
