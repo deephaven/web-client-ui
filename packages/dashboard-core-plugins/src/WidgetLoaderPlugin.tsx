@@ -232,7 +232,11 @@ export function WidgetLoaderPlugin(
     supportedTypes.forEach((info, _type) => {
       // Use the base plugin name as the key to get unique plugins
       if (!uniquePluginInfos.has(info.basePlugin.name)) {
-        uniquePluginInfos.set(info.basePlugin.name, info);
+        // Clone to avoid mutating the useMemo result
+        uniquePluginInfos.set(info.basePlugin.name, {
+          basePlugin: info.basePlugin,
+          middleware: [...info.middleware],
+        });
       } else {
         // Merge middleware from multiple type registrations for the same base plugin
         const existingInfo = uniquePluginInfos.get(info.basePlugin.name);
@@ -266,7 +270,9 @@ export function WidgetLoaderPlugin(
           );
         }
 
-        // Has panel component - chain both component and panel
+        // Has panel component - chain middleware around the panel.
+        // Middleware with panelComponent wraps at the panel level directly.
+        // Middleware with only component is auto-promoted to a panel wrapper.
         const chainedPanelComponent = createChainedPanelComponent(
           panelComponent,
           middleware

@@ -34,10 +34,13 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
 
       if (isWidgetMiddlewarePlugin(p)) {
         foundMiddleware.push(p);
-      } else if (foundBasePlugin == null) {
-        foundBasePlugin = p;
       } else {
-        log.warn(`Multiple base plugins for type ${type}, ignoring ${p.name}`);
+        if (foundBasePlugin != null) {
+          log.warn(
+            `Multiple base plugins for type ${type}. Replacing ${foundBasePlugin.name} with ${p.name}`
+          );
+        }
+        foundBasePlugin = p;
       }
     });
 

@@ -1,0 +1,172 @@
+# Middleware Plugin Architecture
+
+## Overview
+
+Middleware plugins allow you to wrap and enhance existing widget plugins without modifying them. Multiple middleware plugins can target the same widget type and are chained in registration order, with the first registered middleware as the outermost wrapper.
+
+```
+┌─────────────────────────────┐
+│ Middleware A (outermost)    │
+│  ┌────────────────────────┐ │
+│  │ Middleware B            │ │
+│  │  ┌───────────────────┐ │ │
+│  │  │ Base Widget       │ │ │
+│  │  └───────────────────┘ │ │
+│  └────────────────────────┘ │
+└─────────────────────────────┘
+```
+
+## Key Concepts
+
+- **Base plugin**: A standard `WidgetPlugin` that renders a widget type. Exactly one base plugin handles each type (last registered wins if duplicates exist).
+- **Middleware plugin**: A `WidgetMiddlewarePlugin` that wraps the next component in the chain. It receives a `Component` prop and must render it to continue the chain.
+- **Chaining**: Middleware is applied in registration order. The first middleware registered becomes the outermost wrapper. Each middleware renders the next via its `Component` prop.
+
+## Types
+
+### `WidgetMiddlewarePlugin`
+
+```tsx
+interface WidgetMiddlewarePlugin<T = unknown> {
+  name: string;
+  type: PluginType.WIDGET_PLUGIN;
+  supportedTypes: string | string[];
+  isMiddleware: true;
+
+  // Required: wraps the widget component
+  component: React.ComponentType<WidgetMiddlewareComponentProps<T>>;
+
+  // Optional: wraps the panel component (only needed if the base plugin defines panelComponent)
+  panelComponent?: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+}
+```
+
+### `WidgetMiddlewareComponentProps`
+
+```tsx
+interface WidgetMiddlewareComponentProps<T = unknown> extends WidgetComponentProps<T> {
+  // The next component in the chain — render this to continue
+  Component: React.ComponentType<WidgetComponentProps<T>>;
+}
+```
+
+## Rendering Paths
+
+The middleware is applied in two different contexts:
+
+| Context | File | When Used |
+|---|---|---|
+| Dashboard panels | `WidgetLoaderPlugin.tsx` | Widget opened as a panel via `PanelEvent.OPEN` |
+| Inline/embedded | `WidgetView.tsx` | Widget rendered inline (e.g., inside a document) |
+
+Both paths collect middleware for the widget type and use `createChainedComponent` to build the wrapper chain.
+
+## Usage Examples
+
+### Basic Middleware — Add a Toolbar
+
+```tsx
+import { PluginType, type WidgetMiddlewareComponentProps } from '@deephaven/plugin';
+
+function MyToolbar({ Component, ...props }: WidgetMiddlewareComponentProps) {
+  return (
+    <div className="my-toolbar-wrapper">
+      <div className="toolbar">
+        <button onClick={() => console.log('Action!')}>Do Something</button>
+      </div>
+      <Component {...props} />
+    </div>
+  );
+}
+
+const myToolbarPlugin = {
+  name: 'my-toolbar-middleware',
+  type: PluginType.WIDGET_PLUGIN,
+  component: MyToolbar,
+  supportedTypes: 'deephaven.plot.express.DeephavenFigure',
+  isMiddleware: true,
+} satisfies WidgetMiddlewarePlugin;
+```
+
+### Intercepting Props
+
+```tsx
+function PropsInterceptor({ Component, ...props }: WidgetMiddlewareComponentProps) {
+  // Modify or augment props before passing them to the wrapped component
+  const enhancedFetch = useCallback(async () => {
+    const widget = await props.fetch();
+    // Transform or cache the widget data
+    return widget;
+  }, [props.fetch]);
+
+  return <Component {...props} fetch={enhancedFetch} />;
+}
+```
+
+### Adding Context
+
+```tsx
+const MyFeatureContext = createContext<MyFeatureState | null>(null);
+
+function FeatureProvider({ Component, ...props }: WidgetMiddlewareComponentProps) {
+  const [state, setState] = useState<MyFeatureState>({ enabled: true });
+
+  return (
+    <MyFeatureContext.Provider value={state}>
+      <Component {...props} />
+    </MyFeatureContext.Provider>
+  );
+}
+```
+
+### Conditional Wrapping
+
+```tsx
+function ConditionalMiddleware({ Component, ...props }: WidgetMiddlewareComponentProps) {
+  const shouldWrap = useSomeCondition();
+
+  if (!shouldWrap) {
+    // Pass through without wrapping
+    return <Component {...props} />;
+  }
+
+  return (
+    <div className="conditional-wrapper">
+      <Component {...props} />
+    </div>
+  );
+}
+```
+
+### Targeting Multiple Widget Types
+
+```tsx
+const multiTypeMiddleware = {
+  name: 'multi-type-middleware',
+  type: PluginType.WIDGET_PLUGIN,
+  component: MyMiddlewareComponent,
+  supportedTypes: ['deephaven.plot.express.DeephavenFigure', 'deephaven.ui.Element'],
+  isMiddleware: true,
+} satisfies WidgetMiddlewarePlugin;
+```
+
+## Registration
+
+Middleware plugins are registered the same way as regular plugins — they are included in the plugin map passed to `PluginsContext`. Registration order determines chaining order.
+
+```tsx
+// In the plugin map, order matters:
+const plugins = new Map([
+  ['base-widget', baseWidgetPlugin],           // Base plugin
+  ['middleware-a', middlewarePluginA],          // Outermost wrapper
+  ['middleware-b', middlewarePluginB],          // Inner wrapper (closer to base)
+]);
+```
+
+## Rules
+
+1. **A base plugin is required.** Middleware registered for a type with no base plugin has no effect and produces a warning.
+2. **Last base plugin wins.** If multiple non-middleware plugins register for the same type, the last one replaces earlier ones (with a warning).
+3. **Middleware must render `Component`.** If a middleware doesn't render the `Component` prop, the rest of the chain (including the base widget) will not appear.
+4. **Middleware must spread props.** Pass all received props to `Component` to ensure the base widget and other middleware receive them.
+5. **`panelComponent` middleware is separate.** If the base plugin defines a `panelComponent`, middleware targeting the panel layer must also define `panelComponent`.
