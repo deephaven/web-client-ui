@@ -15,7 +15,7 @@ const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 jest.mock('./ConditionalFormattingAPIUtils', () => ({
   makeTernaryFormatRule: jest.fn(
-    (rule, prevRule = null) =>
+    (_dh, rule, prevRule = null) =>
       `${rule.column.name} - ${rule.style.type} : ${prevRule}`
   ),
   makeColumnFormatColumn: jest.fn((col, rule) => `[col] ${rule}`),

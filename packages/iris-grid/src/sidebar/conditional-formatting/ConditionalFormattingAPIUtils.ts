@@ -10,6 +10,7 @@ import {
 // https://github.com/facebook/jest/issues/936#issuecomment-545080082
 
 export function makeTernaryFormatRule(
+  dh: typeof DhType,
   config: BaseFormatConfig,
   prevRule: string
 ): string | undefined {
@@ -17,7 +18,7 @@ export function makeTernaryFormatRule(
   if (styleDBString === undefined) {
     return undefined;
   }
-  const conditionDBString = getConditionDBString(config);
+  const conditionDBString = getConditionDBString(dh, config);
   return `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
 }
 
