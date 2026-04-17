@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import classNames from 'classnames';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -155,7 +156,7 @@ function getNumberInputs(
       return (
         <input
           type="number"
-          className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -166,16 +167,18 @@ function getNumberInputs(
         <div className="d-flex flex-row">
           <input
             type="number"
-            className={`form-control d-flex mr-2 ${
-              isInvalid ? 'is-invalid' : ''
-            }`}
+            className={classNames('form-control', 'd-flex', 'mr-2', {
+              'is-invalid': isInvalid,
+            })}
             placeholder="Start value"
             value={startValue ?? ''}
             onChange={handleStartValueChange}
           />
           <input
             type="number"
-            className={`form-control d-flex ${isInvalid ? 'is-invalid' : ''}`}
+            className={classNames('form-control', 'd-flex', {
+              'is-invalid': isInvalid,
+            })}
             placeholder="End value"
             value={endValue ?? ''}
             onChange={handleEndValueChange}
@@ -202,7 +205,7 @@ function getStringInputs(
       return (
         <input
           type="text"
-          className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -225,7 +228,7 @@ function getDateInputs(
       return (
         <input
           type="text"
-          className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -252,7 +255,7 @@ function getCharInputs(
       return (
         <input
           type="text"
-          className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           maxLength={1}
           placeholder="Enter value"
           value={conditionValue ?? ''}
