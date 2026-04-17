@@ -402,13 +402,26 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       // Column not selected
       return null;
     }
+
+    // Show invalid state only when there's a non-empty value that fails validation
+    const hasInvalidValue =
+      !isValid && conditionValue !== undefined && conditionValue !== '';
+
     if (TableUtils.isNumberType(selectedColumnType)) {
+      // For IS_BETWEEN, show invalid on each field only if that field has a value
+      const showInvalid =
+        selectedCondition === NumberCondition.IS_BETWEEN
+          ? !isValid &&
+            ((startValue !== undefined && startValue !== '') ||
+              (endValue !== undefined && endValue !== ''))
+          : hasInvalidValue;
+
       return getNumberInputs(
         selectedCondition as NumberCondition,
         handleValueChange,
         handleStartValueChange,
         handleEndValueChange,
-        !isValid,
+        showInvalid,
         conditionValue,
         startValue,
         endValue
@@ -418,7 +431,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getCharInputs(
         selectedCondition as CharCondition,
         handleValueChange,
-        !isValid,
+        hasInvalidValue,
         conditionValue
       );
     }
@@ -426,7 +439,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getStringInputs(
         selectedCondition as StringCondition,
         handleValueChange,
-        !isValid,
+        hasInvalidValue,
         conditionValue
       );
     }
@@ -434,7 +447,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getDateInputs(
         selectedCondition as DateCondition,
         handleValueChange,
-        !isValid,
+        hasInvalidValue,
         conditionValue
       );
     }
