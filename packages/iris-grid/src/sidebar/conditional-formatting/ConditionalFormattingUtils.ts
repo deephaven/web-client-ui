@@ -577,6 +577,9 @@ export function getTextForDateCondition(
 ): string {
   let formattedValue = value;
   if (typeof value === 'string') {
+    // The date time formatting may return a timezone that is not supported by the backend (e.g. 'EDT' instead of 'ET')
+    // so we need to parse the date time string and reformat it with a supported timezone ID.
+    // Note that we know this will be valid because the input value has already been validated with isDateConditionValid.
     const [dateTimeString, ...rest] = value.split(' ');
     const tzCode = rest.join(' ');
     const tz = dh.i18n.TimeZone.getTimeZone(tzCode);
