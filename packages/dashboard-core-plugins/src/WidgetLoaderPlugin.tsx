@@ -250,12 +250,24 @@ export function WidgetLoaderPlugin(
       }
     });
 
+    log.debug(
+      'Registering widget components',
+      [...uniquePluginInfos.entries()].map(([name, info]) => ({
+        plugin: name,
+        middleware: info.middleware.map(m => m.name),
+        hasPanel: info.basePlugin.panelComponent != null,
+      }))
+    );
+
     const deregisterFns = [...uniquePluginInfos.values()].map(
       ({ basePlugin, middleware }) => {
         const { panelComponent } = basePlugin;
 
         if (panelComponent == null) {
           // No panel component - chain the widget components and wrap in default panel
+          log.debug(
+            `Chaining widget components for ${basePlugin.name} (no panel component, using default wrapper)`
+          );
           const chainedComponent = createChainedComponent(
             basePlugin.component,
             middleware
@@ -273,6 +285,9 @@ export function WidgetLoaderPlugin(
         // Has panel component - chain middleware around the panel.
         // Middleware with panelComponent wraps at the panel level directly.
         // Middleware with only component is auto-promoted to a panel wrapper.
+        log.debug(
+          `Chaining panel components for ${basePlugin.name} (has custom panel component)`
+        );
         const chainedPanelComponent = createChainedPanelComponent(
           panelComponent,
           middleware

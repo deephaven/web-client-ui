@@ -111,8 +111,18 @@ export function createChainedComponent<T>(
   middleware: WidgetMiddlewarePlugin<T>[]
 ): React.ComponentType<WidgetComponentProps<T>> {
   if (middleware.length === 0) {
+    log.debug(
+      'No middleware to chain for component',
+      baseComponent.displayName ?? baseComponent.name
+    );
     return baseComponent;
   }
+
+  log.debug(
+    'Chaining component middleware',
+    baseComponent.displayName ?? baseComponent.name,
+    middleware.map(m => m.name)
+  );
 
   // Build the chain from inside out (base component is innermost)
   // Middleware is ordered outermost to innermost, so we reverse to build from inside out
@@ -156,8 +166,18 @@ export function createChainedPanelComponent<T>(
   );
 
   if (panelMiddleware.length === 0) {
+    log.debug(
+      'No panel middleware to chain for panel component',
+      basePanelComponent.displayName ?? basePanelComponent.name
+    );
     return basePanelComponent;
   }
+
+  log.debug(
+    'Chaining panel middleware',
+    basePanelComponent.displayName ?? basePanelComponent.name,
+    panelMiddleware.map(m => m.name)
+  );
 
   // Build the chain from inside out (base panel is innermost)
   return [...panelMiddleware]
