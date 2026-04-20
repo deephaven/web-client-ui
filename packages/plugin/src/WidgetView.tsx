@@ -61,7 +61,7 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
       return null;
     }
     return createChainedComponent(basePlugin.component, middleware);
-  }, [basePlugin, middleware]);
+  }, [basePlugin, middleware, type]);
 
   if (ChainedComponent != null) {
     log.debug(
