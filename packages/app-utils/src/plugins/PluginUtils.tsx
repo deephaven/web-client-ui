@@ -15,6 +15,7 @@ import {
   isMultiPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
+import { resolve } from './remote-component.config';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
 
@@ -104,7 +105,10 @@ function registerPlugin(
 }
 
 /**
- * Load all plugin modules available based on the manifest file at the provided base URL
+ * Load all plugin modules available based on the manifest file at the provided base URL.
+ * Plugins are loaded sequentially so that each plugin's exports are registered
+ * in the module resolve map before subsequent plugins load. This allows plugins
+ * to depend on other plugins via standard require() calls.
  * @param modulePluginsUrl The base URL of the module plugins to load
  * @returns A map from the name of the plugin to the plugin module that was loaded
  */
@@ -120,21 +124,24 @@ export async function loadModulePlugins(
     }
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises: Promise<LegacyPlugin | { default: Plugin }>[] = [];
-    for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main } = manifest.plugins[i];
-      const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
-      pluginPromises.push(loadModulePlugin(pluginMainUrl));
-    }
-
-    const pluginModules = await Promise.allSettled(pluginPromises);
 
     const pluginMap: PluginModuleMap = new Map();
-    for (let i = 0; i < pluginModules.length; i += 1) {
-      const module = pluginModules[i];
-      const { name, version } = manifest.plugins[i];
-      if (module.status === 'fulfilled') {
-        const moduleValue = getPluginModuleValue(module.value);
+
+    // Load plugins sequentially so each plugin's exports are available
+    // to subsequently loaded plugins via require()
+    for (let i = 0; i < manifest.plugins.length; i += 1) {
+      const { name, main, version } = manifest.plugins[i];
+      const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const myModule = await loadModulePlugin(pluginMainUrl);
+
+        // Register the raw module exports in the resolve map so
+        // subsequent plugins can require() this plugin by name
+        resolve[name] = myModule;
+        log.debug(`Registered plugin '${name}' in module resolve map`);
+
+        const moduleValue = getPluginModuleValue(myModule);
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
         } else if (isMultiPlugin(moduleValue)) {
@@ -148,8 +155,8 @@ export async function loadModulePlugins(
         } else {
           registerPlugin(pluginMap, name, moduleValue, version);
         }
-      } else {
-        log.error(`Unable to load plugin '${name}'`, module.reason);
+      } catch (e) {
+        log.error(`Unable to load plugin '${name}'`, e);
       }
     }
     log.info('Plugins loaded:', pluginMap);
