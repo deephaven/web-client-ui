@@ -22,6 +22,13 @@ const log = Log.module('@deephaven/app-utils.PluginUtils');
 export type PluginManifestPluginInfo = {
   name: string;
   main: string;
+  /**
+   * The npm package name for this plugin (e.g. `@deephaven/js-plugin-pivot`).
+   * When provided, the plugin's exports are registered in the module resolve
+   * map under this key, enabling other plugins to `require()` this plugin at
+   * runtime. If omitted, the plugin is not registered for cross-plugin imports.
+   */
+  package?: string;
   version: string;
 };
 
@@ -130,18 +137,20 @@ export async function loadModulePlugins(
     // Load plugins sequentially so each plugin's exports are available
     // to subsequently loaded plugins via require()
     for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main, version } = manifest.plugins[i];
+      const { name, main, version, package: packageName } = manifest.plugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
       try {
         // eslint-disable-next-line no-await-in-loop
-        const myModule = await loadModulePlugin(pluginMainUrl);
+        const pluginExports = await loadModulePlugin(pluginMainUrl);
 
         // Register the raw module exports in the resolve map so
-        // subsequent plugins can require() this plugin by name
-        resolve[name] = myModule;
-        log.debug(`Registered plugin '${name}' in module resolve map`);
+        // subsequent plugins can require() this plugin by its package name
+        if (packageName != null) {
+          resolve[packageName] = pluginExports;
+          log.debug(`Registered plugin '${packageName}' in module resolve map`);
+        }
 
-        const moduleValue = getPluginModuleValue(myModule);
+        const moduleValue = getPluginModuleValue(pluginExports);
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
         } else if (isMultiPlugin(moduleValue)) {

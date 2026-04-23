@@ -200,7 +200,11 @@ describe('loadModulePlugins', () => {
     jest.clearAllMocks();
     // Clean up any plugin entries added to resolve in previous tests
     Object.keys(resolve).forEach(key => {
-      if (key.startsWith('test-plugin')) {
+      if (
+        key.startsWith('test-plugin') ||
+        key.startsWith('@deephaven/js-plugin-test-plugin') ||
+        key.startsWith('@acme/')
+      ) {
         delete resolve[key];
       }
     });
@@ -237,7 +241,12 @@ describe('loadModulePlugins', () => {
     const moduleExports = { default: pluginA, SomeHelper: 'helper-value' };
 
     mockManifest([
-      { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
+      {
+        name: 'test-plugin-a',
+        main: 'index.js',
+        version: '1.0.0',
+        package: '@deephaven/js-plugin-test-plugin-a',
+      },
     ]);
 
     loadRemoteModule.mockResolvedValueOnce(moduleExports);
@@ -245,7 +254,24 @@ describe('loadModulePlugins', () => {
     await loadModulePlugins(BASE_URL);
 
     // The raw module exports (not the extracted PluginModule) should be in the resolve map
-    expect(resolve['test-plugin-a']).toBe(moduleExports);
+    expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBe(moduleExports);
+  });
+
+  it('does not register plugin in resolve map when package field is absent', async () => {
+    const pluginA = makePlugin('test-plugin-a');
+    const moduleExports = { default: pluginA };
+
+    mockManifest([
+      { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
+    ]);
+
+    loadRemoteModule.mockResolvedValueOnce(moduleExports);
+
+    await loadModulePlugins(BASE_URL);
+
+    // No package field → not registered in resolve map
+    expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBeUndefined();
+    expect(resolve['test-plugin-a']).toBeUndefined();
   });
 
   it('makes earlier plugins available to later plugins via resolve map', async () => {
@@ -253,8 +279,18 @@ describe('loadModulePlugins', () => {
     const pluginB = makePlugin('test-plugin-b');
 
     mockManifest([
-      { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
-      { name: 'test-plugin-b', main: 'index.js', version: '1.0.0' },
+      {
+        name: 'test-plugin-a',
+        main: 'index.js',
+        version: '1.0.0',
+        package: '@deephaven/js-plugin-test-plugin-a',
+      },
+      {
+        name: 'test-plugin-b',
+        main: 'index.js',
+        version: '1.0.0',
+        package: '@deephaven/js-plugin-test-plugin-b',
+      },
     ]);
 
     const moduleA = { default: pluginA, ExportedClass: class MyClass {} };
@@ -264,15 +300,15 @@ describe('loadModulePlugins', () => {
       () =>
         new Promise(res => {
           // At this point, plugin A should already be registered
-          expect(resolve['test-plugin-a']).toBe(moduleA);
+          expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBe(moduleA);
           res(pluginB);
         })
     );
 
     await loadModulePlugins(BASE_URL);
 
-    expect(resolve['test-plugin-a']).toBe(moduleA);
-    expect(resolve['test-plugin-b']).toBe(pluginB);
+    expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBe(moduleA);
+    expect(resolve['@deephaven/js-plugin-test-plugin-b']).toBe(pluginB);
   });
 
   it('continues loading remaining plugins when one fails', async () => {
@@ -299,14 +335,19 @@ describe('loadModulePlugins', () => {
 
   it('does not register a failed plugin in the resolve map', async () => {
     mockManifest([
-      { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
+      {
+        name: 'test-plugin-a',
+        main: 'index.js',
+        version: '1.0.0',
+        package: '@deephaven/js-plugin-test-plugin-a',
+      },
     ]);
 
     loadRemoteModule.mockRejectedValueOnce(new Error('Load failed'));
 
     await loadModulePlugins(BASE_URL);
 
-    expect(resolve['test-plugin-a']).toBeUndefined();
+    expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBeUndefined();
   });
 
   it('returns empty map when manifest fetch fails', async () => {
@@ -355,7 +396,7 @@ describe('loadModulePlugins', () => {
     expect(pluginMap.has('test-plugin-inner-2')).toBe(true);
 
     // The raw module should still be in the resolve map under the package name
-    expect(resolve['test-plugin-multi']).toBe(multiPlugin);
+    expect(resolve['@deephaven/js-plugin-test-plugin-multi']).toBeUndefined();
   });
 
   it('loads plugins from correct URLs based on manifest', async () => {
@@ -372,5 +413,27 @@ describe('loadModulePlugins', () => {
     expect(loadRemoteModule).toHaveBeenCalledWith(
       `${BASE_URL}/test-plugin-a/bundle.js`
     );
+  });
+
+  it('uses manifest package field as resolve key when provided', async () => {
+    const pluginA = makePlugin('test-plugin-a');
+    const moduleExports = { default: pluginA };
+
+    mockManifest([
+      {
+        name: 'test-plugin-a',
+        main: 'index.js',
+        version: '1.0.0',
+        package: '@acme/grid-extras',
+      },
+    ]);
+
+    loadRemoteModule.mockResolvedValueOnce(moduleExports);
+
+    await loadModulePlugins(BASE_URL);
+
+    // Should use the explicit package name, not the fallback
+    expect(resolve['@acme/grid-extras']).toBe(moduleExports);
+    expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBeUndefined();
   });
 });
