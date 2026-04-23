@@ -170,3 +170,61 @@ const plugins = new Map([
 3. **Middleware must render `Component`.** If a middleware doesn't render the `Component` prop, the rest of the chain (including the base widget) will not appear.
 4. **Middleware must spread props.** Pass all received props to `Component` to ensure the base widget and other middleware receive them.
 5. **`panelComponent` middleware is separate.** If the base plugin defines a `panelComponent`, middleware targeting the panel layer must also define `panelComponent`.
+
+## Cross-Plugin Dependencies
+
+Plugins load sequentially in manifest order. A plugin can expose its exports for later plugins to import at runtime by declaring a `package` field in the manifest.
+
+```
+1. pivot loads        → resolve["@deephaven/js-plugin-pivot"] = exports
+2. grid-toolbar loads → import "@deephaven/js-plugin-pivot" ✓
+```
+
+### Optional Manifest `package` Field
+
+When present, the plugin's exports are registered in the resolve map under this key.
+
+```json
+{
+  "plugins": [
+    { "name": "pivot", "main": "src/js/dist/index.js", "package": "@deephaven/js-plugin-pivot" },
+    { "name": "grid-toolbar", "main": "src/js/dist/bundle/index.js" }
+  ]
+}
+```
+
+Here `pivot` is importable (has `package`); `grid-toolbar` only consumes.
+
+### Consuming Another Plugin
+
+1. **Externalize** in your build config:
+   ```ts
+   // vite.config.ts
+   rollupOptions: { external: ['@deephaven/js-plugin-pivot'] }
+   ```
+
+2. **Import normally** in source:
+   ```ts
+   import { IrisGridPivotModel } from '@deephaven/js-plugin-pivot';
+   ```
+
+3. **Provide types.** In a monorepo, use `paths` in `tsconfig.json`:
+   ```json
+   { "compilerOptions": { "paths": {
+     "@deephaven/js-plugin-pivot": ["../pivot/src/js/src/index.ts"]
+   }}}
+   ```
+   For cross-repo dependencies, use ambient declarations instead:
+   ```ts
+   // pivotPlugin.d.ts
+   declare module '@deephaven/js-plugin-pivot' { export class IrisGridPivotModel {} }
+   ```
+
+4. **Ensure load order** — the dependency must appear before the consumer in `manifest.json`.
+
+### Rules
+
+- A plugin can only import plugins loaded earlier in the manifest.
+  **TODO**: add `dependencies` field to manifest and verify load order at runtime.
+- Only plugins with a `package` field are registered in the resolve map.
+- The `package` value must exactly match the `import` string.
