@@ -136,11 +136,25 @@ export function createChainedComponent<T>(
     .reduce<React.ComponentType<WidgetComponentProps<T>>>(
       (WrappedComponent, middlewarePlugin) => {
         const MiddlewareComponent = middlewarePlugin.component;
+        const supported = [middlewarePlugin.supportedTypes].flat();
 
-        function ChainedComponent(props: WidgetComponentProps<T>) {
+        function ChainedComponent({
+          metadata,
+          ...rest
+        }: WidgetComponentProps<T>) {
+          // Skip middleware if the widget type doesn't match its supportedTypes
+          if (metadata?.type != null && !supported.includes(metadata.type)) {
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            return <WrappedComponent {...rest} metadata={metadata} />;
+          }
           return (
             // eslint-disable-next-line react/jsx-props-no-spreading
-            <MiddlewareComponent {...props} Component={WrappedComponent} />
+            <MiddlewareComponent
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...rest}
+              metadata={metadata}
+              Component={WrappedComponent}
+            />
           );
         }
         ChainedComponent.displayName = `${middlewarePlugin.name}(${
@@ -190,11 +204,22 @@ export function createChainedPanelComponent<T>(
     .reduce<React.ComponentType<WidgetPanelProps<T>>>(
       (WrappedPanel, middlewarePlugin) => {
         const { panelComponent: MiddlewarePanelComponent } = middlewarePlugin;
+        const supported = [middlewarePlugin.supportedTypes].flat();
 
-        function ChainedPanel(props: WidgetPanelProps<T>) {
+        function ChainedPanel({ metadata, ...rest }: WidgetPanelProps<T>) {
+          // Skip middleware if the widget type doesn't match its supportedTypes
+          if (metadata?.type != null && !supported.includes(metadata.type)) {
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            return <WrappedPanel {...rest} metadata={metadata} />;
+          }
           return (
             // eslint-disable-next-line react/jsx-props-no-spreading
-            <MiddlewarePanelComponent {...props} Component={WrappedPanel} />
+            <MiddlewarePanelComponent
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...rest}
+              metadata={metadata}
+              Component={WrappedPanel}
+            />
           );
         }
         ChainedPanel.displayName = `${middlewarePlugin.name}Panel(${
@@ -339,6 +364,7 @@ function hasDefaultExport(value: unknown): value is { default: Plugin } {
   return (
     typeof value === 'object' &&
     value != null &&
+    (value as { default?: unknown }).default != null &&
     typeof (value as { default?: unknown }).default === 'object'
   );
 }

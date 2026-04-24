@@ -206,7 +206,7 @@ export interface WidgetMiddlewarePlugin<T = unknown>
  * Type guard to check if a plugin is a middleware plugin.
  */
 export function isWidgetMiddlewarePlugin(
-  plugin: PluginModule
+  plugin: PluginModuleExport
 ): plugin is WidgetMiddlewarePlugin {
   return (
     isWidgetPlugin(plugin) &&

@@ -283,8 +283,8 @@ export function WidgetLoaderPlugin(
         }
 
         // Has panel component - chain middleware around the panel.
-        // Middleware with panelComponent wraps at the panel level directly.
-        // Middleware with only component is auto-promoted to a panel wrapper.
+        // Only middleware that defines panelComponent is applied here.
+        // Middleware with only component is skipped in this path.
         log.debug(
           `Chaining panel components for ${basePlugin.name} (has custom panel component)`
         );

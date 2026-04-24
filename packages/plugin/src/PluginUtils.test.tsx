@@ -1,4 +1,5 @@
 import React from 'react';
+import { render, screen } from '@testing-library/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type ThemeData } from '@deephaven/components';
 import { dhTruck, vsPreview } from '@deephaven/icons';
@@ -13,6 +14,11 @@ import {
   PluginType,
   type ThemePlugin,
   type WidgetPlugin,
+  type WidgetMiddlewarePlugin,
+  type WidgetComponentProps,
+  type WidgetMiddlewareComponentProps,
+  type WidgetPanelProps,
+  type WidgetMiddlewarePanelProps,
 } from './PluginTypes';
 import {
   pluginSupportsType,
@@ -23,6 +29,8 @@ import {
   processLoadedModule,
   registerPlugin,
   sortPluginsByDependency,
+  createChainedComponent,
+  createChainedPanelComponent,
   type PluginManifestPluginInfo,
 } from './PluginUtils';
 
@@ -351,6 +359,20 @@ describe('getPluginModuleValue', () => {
 
   it('returns null if the module value is not a plugin', () => {
     const moduleValue = getPluginModuleValue({} as Plugin);
+    expect(moduleValue).toBeNull();
+  });
+
+  it('returns null for { default: null }', () => {
+    const moduleValue = getPluginModuleValue({
+      default: null,
+    } as unknown as Plugin);
+    expect(moduleValue).toBeNull();
+  });
+
+  it('returns null for { default: undefined }', () => {
+    const moduleValue = getPluginModuleValue({
+      default: undefined,
+    } as unknown as Plugin);
     expect(moduleValue).toBeNull();
   });
 
@@ -742,5 +764,238 @@ describe('sortPluginsByDependency', () => {
     const sorted = sortPluginsByDependency(plugins);
 
     expect(sorted.map(p => p.name)).toEqual(['a', 'b']);
+  });
+});
+
+describe('createChainedComponent', () => {
+  function BaseWidget({ fetch }: WidgetComponentProps) {
+    return <div data-testid="base">BaseWidget</div>;
+  }
+
+  function makeMiddleware(name: string, label: string): WidgetMiddlewarePlugin {
+    function MiddlewareComp({
+      Component,
+      ...props
+    }: WidgetMiddlewareComponentProps) {
+      return (
+        <div data-testid={name}>
+          <span>{label}</span>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+          <Component {...props} />
+        </div>
+      );
+    }
+    return {
+      name,
+      type: PluginType.WIDGET_PLUGIN,
+      supportedTypes: 'test-type',
+      isMiddleware: true,
+      component: MiddlewareComp,
+    };
+  }
+
+  it('returns base component unchanged when no middleware', () => {
+    const result = createChainedComponent(BaseWidget, []);
+    expect(result).toBe(BaseWidget);
+  });
+
+  it('wraps base component with single middleware', () => {
+    const mw = makeMiddleware('mw-a', 'A');
+    const Chained = createChainedComponent(BaseWidget, [mw]);
+
+    expect(Chained).not.toBe(BaseWidget);
+    expect(Chained.displayName).toBe('mw-a(BaseWidget)');
+  });
+
+  it('chains multiple middleware in correct order', () => {
+    const mwA = makeMiddleware('mw-a', 'A');
+    const mwB = makeMiddleware('mw-b', 'B');
+    const Chained = createChainedComponent(BaseWidget, [mwA, mwB]);
+
+    // First middleware is outermost
+    expect(Chained.displayName).toBe('mw-a(mw-b(BaseWidget))');
+  });
+
+  it('sets displayName for each layer', () => {
+    const mwA = makeMiddleware('outer', 'Outer');
+    const mwB = makeMiddleware('inner', 'Inner');
+    const Chained = createChainedComponent(BaseWidget, [mwA, mwB]);
+
+    expect(Chained.displayName).toContain('outer');
+    expect(Chained.displayName).toContain('inner');
+    expect(Chained.displayName).toContain('BaseWidget');
+  });
+
+  it('skips middleware when widget type does not match supportedTypes', () => {
+    const mw = makeMiddleware('table-mw', 'TableOnly');
+    // Override supportedTypes to only target 'table-type'
+    mw.supportedTypes = 'table-type';
+    const Chained = createChainedComponent(BaseWidget, [mw]);
+
+    const { container } = render(
+      <Chained fetch={jest.fn()} metadata={{ type: 'other-type' }} />
+    );
+
+    // Middleware should be skipped — base widget rendered directly
+    expect(screen.getByTestId('base')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="table-mw"]')).toBeNull();
+  });
+
+  it('applies middleware when widget type matches supportedTypes', () => {
+    const mw = makeMiddleware('table-mw', 'TableOnly');
+    mw.supportedTypes = 'table-type';
+    const Chained = createChainedComponent(BaseWidget, [mw]);
+
+    render(<Chained fetch={jest.fn()} metadata={{ type: 'table-type' }} />);
+
+    // Middleware should be applied
+    expect(screen.getByTestId('table-mw')).toBeInTheDocument();
+    expect(screen.getByTestId('base')).toBeInTheDocument();
+  });
+
+  it('applies middleware when metadata is undefined', () => {
+    const mw = makeMiddleware('mw-a', 'A');
+    const Chained = createChainedComponent(BaseWidget, [mw]);
+
+    render(<Chained fetch={jest.fn()} />);
+
+    // No metadata means type is unknown — middleware should apply
+    expect(screen.getByTestId('mw-a')).toBeInTheDocument();
+    expect(screen.getByTestId('base')).toBeInTheDocument();
+  });
+});
+
+describe('createChainedPanelComponent', () => {
+  function BasePanel({ fetch }: WidgetPanelProps) {
+    return <div data-testid="base-panel">BasePanel</div>;
+  }
+
+  function makePanelMiddleware(
+    name: string,
+    opts?: { hasPanelComponent?: boolean }
+  ): WidgetMiddlewarePlugin {
+    const hasPanelComp = opts?.hasPanelComponent ?? true;
+
+    function MiddlewareComp({
+      Component,
+      ...props
+    }: WidgetMiddlewareComponentProps) {
+      return (
+        <div>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+          <Component {...props} />
+        </div>
+      );
+    }
+
+    function PanelComp({ Component, ...props }: WidgetMiddlewarePanelProps) {
+      return (
+        <div data-testid={`${name}-panel`}>
+          <span>{name}</span>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+          <Component {...props} />
+        </div>
+      );
+    }
+
+    return {
+      name,
+      type: PluginType.WIDGET_PLUGIN,
+      supportedTypes: 'test-type',
+      isMiddleware: true,
+      component: MiddlewareComp,
+      panelComponent: hasPanelComp ? PanelComp : undefined,
+    };
+  }
+
+  it('returns base panel unchanged when no middleware', () => {
+    const result = createChainedPanelComponent(BasePanel, []);
+    expect(result).toBe(BasePanel);
+  });
+
+  it('returns base panel unchanged when middleware lacks panelComponent', () => {
+    const mw = makePanelMiddleware('mw-no-panel', {
+      hasPanelComponent: false,
+    });
+    const result = createChainedPanelComponent(BasePanel, [mw]);
+    expect(result).toBe(BasePanel);
+  });
+
+  it('wraps base panel with single panel middleware', () => {
+    const mw = makePanelMiddleware('mw-panel');
+    const Chained = createChainedPanelComponent(BasePanel, [mw]);
+
+    expect(Chained).not.toBe(BasePanel);
+    expect(Chained.displayName).toBe('mw-panelPanel(BasePanel)');
+  });
+
+  it('chains multiple panel middleware in correct order', () => {
+    const mwA = makePanelMiddleware('outer');
+    const mwB = makePanelMiddleware('inner');
+    const Chained = createChainedPanelComponent(BasePanel, [mwA, mwB]);
+
+    expect(Chained.displayName).toBe('outerPanel(innerPanel(BasePanel))');
+  });
+
+  it('filters out middleware without panelComponent', () => {
+    const mwWithPanel = makePanelMiddleware('with-panel', {
+      hasPanelComponent: true,
+    });
+    const mwWithout = makePanelMiddleware('without-panel', {
+      hasPanelComponent: false,
+    });
+    const Chained = createChainedPanelComponent(BasePanel, [
+      mwWithPanel,
+      mwWithout,
+    ]);
+
+    // Only the middleware with panelComponent should be applied
+    expect(Chained.displayName).toBe('with-panelPanel(BasePanel)');
+  });
+
+  it('skips panel middleware when widget type does not match supportedTypes', () => {
+    const mw = makePanelMiddleware('table-panel-mw');
+    mw.supportedTypes = 'table-type';
+    const Chained = createChainedPanelComponent(BasePanel, [mw]);
+
+    const panelProps = {
+      fetch: jest.fn(),
+      metadata: { type: 'other-type' },
+      localDashboardId: 'test',
+      glContainer: {} as WidgetPanelProps['glContainer'],
+      glEventHub: {} as WidgetPanelProps['glEventHub'],
+    };
+
+    const { container } = render(
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <Chained {...panelProps} />
+    );
+
+    // Middleware should be skipped
+    expect(screen.getByTestId('base-panel')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="table-panel-mw-panel"]')
+    ).toBeNull();
+  });
+
+  it('applies panel middleware when widget type matches supportedTypes', () => {
+    const mw = makePanelMiddleware('table-panel-mw');
+    mw.supportedTypes = 'table-type';
+    const Chained = createChainedPanelComponent(BasePanel, [mw]);
+
+    const panelProps = {
+      fetch: jest.fn(),
+      metadata: { type: 'table-type' },
+      localDashboardId: 'test',
+      glContainer: {} as WidgetPanelProps['glContainer'],
+      glEventHub: {} as WidgetPanelProps['glEventHub'],
+    };
+
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    render(<Chained {...panelProps} />);
+
+    // Middleware should be applied
+    expect(screen.getByTestId('table-panel-mw-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('base-panel')).toBeInTheDocument();
   });
 });
