@@ -787,9 +787,8 @@ describe('createChainedComponent', () => {
     }
     return {
       name,
-      type: PluginType.WIDGET_PLUGIN,
+      type: PluginType.MIDDLEWARE_PLUGIN,
       supportedTypes: 'test-type',
-      isMiddleware: true,
       component: MiddlewareComp,
     };
   }
@@ -900,9 +899,8 @@ describe('createChainedPanelComponent', () => {
 
     return {
       name,
-      type: PluginType.WIDGET_PLUGIN,
+      type: PluginType.MIDDLEWARE_PLUGIN,
       supportedTypes: 'test-type',
-      isMiddleware: true,
       component: MiddlewareComp,
       panelComponent: hasPanelComp ? PanelComp : undefined,
     };

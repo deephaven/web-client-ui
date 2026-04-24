@@ -29,9 +29,8 @@ Middleware plugins allow you to wrap and enhance existing widget plugins without
 ```tsx
 interface WidgetMiddlewarePlugin<T = unknown> {
   name: string;
-  type: PluginType.WIDGET_PLUGIN;
+  type: PluginType.MIDDLEWARE_PLUGIN;
   supportedTypes: string | string[];
-  isMiddleware: true;
 
   // Required: wraps the widget component
   component: React.ComponentType<WidgetMiddlewareComponentProps<T>>;
@@ -90,10 +89,9 @@ function MyToolbar({ Component, ...props }: WidgetMiddlewareComponentProps) {
 
 const myToolbarPlugin = {
   name: 'my-toolbar-middleware',
-  type: PluginType.WIDGET_PLUGIN,
+  type: PluginType.MIDDLEWARE_PLUGIN,
   component: MyToolbar,
   supportedTypes: 'deephaven.plot.express.DeephavenFigure',
-  isMiddleware: true,
 } satisfies WidgetMiddlewarePlugin;
 ```
 
@@ -152,10 +150,9 @@ function ConditionalMiddleware({ Component, ...props }: WidgetMiddlewareComponen
 ```tsx
 const multiTypeMiddleware = {
   name: 'multi-type-middleware',
-  type: PluginType.WIDGET_PLUGIN,
+  type: PluginType.MIDDLEWARE_PLUGIN,
   component: MyMiddlewareComponent,
   supportedTypes: ['deephaven.plot.express.DeephavenFigure', 'deephaven.ui.Element'],
-  isMiddleware: true,
 } satisfies WidgetMiddlewarePlugin;
 ```
 

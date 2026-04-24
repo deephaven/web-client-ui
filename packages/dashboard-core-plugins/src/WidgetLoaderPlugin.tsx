@@ -110,11 +110,10 @@ export function WidgetLoaderPlugin(
     const typeMap = new Map<string, WidgetTypeInfo>();
 
     plugins.forEach(plugin => {
-      if (!isWidgetPlugin(plugin)) {
+      const isMiddleware = isWidgetMiddlewarePlugin(plugin);
+      if (!isWidgetPlugin(plugin) && !isMiddleware) {
         return;
       }
-
-      const isMiddleware = isWidgetMiddlewarePlugin(plugin);
 
       [plugin.supportedTypes].flat().forEach(supportedType => {
         if (supportedType == null || supportedType === '') {

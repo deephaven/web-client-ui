@@ -18,6 +18,7 @@ const pluginTypeToTypeGuardMap = [
   [PluginType.AUTH_PLUGIN, isAuthPlugin],
   [PluginType.DASHBOARD_PLUGIN, isDashboardPlugin],
   [PluginType.ELEMENT_PLUGIN, isElementPlugin],
+  [PluginType.MIDDLEWARE_PLUGIN, isWidgetMiddlewarePlugin],
   [PluginType.MULTI_PLUGIN, isMultiPlugin],
   [PluginType.TABLE_PLUGIN, isTablePlugin],
   [PluginType.THEME_PLUGIN, isThemePlugin],
@@ -65,10 +66,9 @@ describe('isWidgetMiddlewarePlugin', () => {
 
   const middlewarePlugin: WidgetMiddlewarePlugin = {
     name: 'test-middleware',
-    type: PluginType.WIDGET_PLUGIN,
+    type: PluginType.MIDDLEWARE_PLUGIN,
     component: () => null,
     supportedTypes: 'test-type',
-    isMiddleware: true,
   };
 
   it('returns true for middleware plugins', () => {
@@ -77,14 +77,6 @@ describe('isWidgetMiddlewarePlugin', () => {
 
   it('returns false for regular widget plugins', () => {
     expect(isWidgetMiddlewarePlugin(baseWidgetPlugin)).toBe(false);
-  });
-
-  it('returns false for widget plugins with isMiddleware set to false', () => {
-    const notMiddleware = {
-      ...baseWidgetPlugin,
-      isMiddleware: false,
-    };
-    expect(isWidgetMiddlewarePlugin(notMiddleware)).toBe(false);
   });
 
   it('returns false for non-widget plugins', () => {

@@ -12,6 +12,7 @@ export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
   ELEMENT_PLUGIN: 'ElementPlugin',
+  MIDDLEWARE_PLUGIN: 'MiddlewarePlugin',
   MULTI_PLUGIN: 'MultiPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
@@ -180,20 +181,25 @@ export interface WidgetMiddlewarePanelProps<T = unknown>
  * - Intercept and modify props before they reach the wrapped component
  * - Provide additional context or state to the wrapped component
  * - Add menu items or other extensions to the widget
+ *
+ * A middleware plugin uses its own `PluginType.MIDDLEWARE_PLUGIN` discriminator
+ * (rather than being a flagged `WidgetPlugin`) so consumers can cleanly
+ * distinguish base widget plugins from middleware via type narrowing.
  */
-export interface WidgetMiddlewarePlugin<T = unknown>
-  extends Omit<WidgetPlugin<T>, 'component' | 'panelComponent'> {
-  /**
-   * Marks this plugin as middleware that should be chained
-   * with other plugins of the same supportedTypes.
-   */
-  isMiddleware: true;
+export interface WidgetMiddlewarePlugin<T = unknown> extends Plugin {
+  type: typeof PluginType.MIDDLEWARE_PLUGIN;
 
   /**
    * The middleware component that wraps the base widget component.
    * Receives the wrapped component as a prop and should render it.
    */
   component: React.ComponentType<WidgetMiddlewareComponentProps<T>>;
+
+  /**
+   * The server widget types that this middleware applies to.
+   * Matches the same `supportedTypes` semantics as `WidgetPlugin`.
+   */
+  supportedTypes: string | string[];
 
   /**
    * The middleware panel component that wraps the base panel component.
@@ -208,11 +214,7 @@ export interface WidgetMiddlewarePlugin<T = unknown>
 export function isWidgetMiddlewarePlugin(
   plugin: PluginModuleExport
 ): plugin is WidgetMiddlewarePlugin {
-  return (
-    isWidgetPlugin(plugin) &&
-    'isMiddleware' in plugin &&
-    plugin.isMiddleware === true
-  );
+  return 'type' in plugin && plugin.type === PluginType.MIDDLEWARE_PLUGIN;
 }
 
 export interface WidgetPlugin<T = unknown> extends Plugin {
@@ -389,6 +391,7 @@ export function isPlugin(plugin: unknown): plugin is Plugin {
     isMultiPlugin(plugin as PluginModuleExport) ||
     isTablePlugin(plugin as PluginModuleExport) ||
     isThemePlugin(plugin as PluginModuleExport) ||
-    isWidgetPlugin(plugin as PluginModuleExport)
+    isWidgetPlugin(plugin as PluginModuleExport) ||
+    isWidgetMiddlewarePlugin(plugin as PluginModuleExport)
   );
 }

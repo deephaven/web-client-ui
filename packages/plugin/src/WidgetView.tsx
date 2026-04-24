@@ -26,7 +26,11 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
     let foundBasePlugin: WidgetPlugin | undefined;
     const foundMiddleware: WidgetMiddlewarePlugin[] = [];
 
-    [...plugins.values()].filter(isWidgetPlugin).forEach(p => {
+    plugins.forEach(p => {
+      if (!isWidgetPlugin(p) && !isWidgetMiddlewarePlugin(p)) {
+        return;
+      }
+
       const supportsType = [p.supportedTypes].flat().includes(type);
       if (!supportsType) {
         return;

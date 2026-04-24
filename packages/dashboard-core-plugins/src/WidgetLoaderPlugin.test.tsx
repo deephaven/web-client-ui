@@ -300,18 +300,16 @@ describe('middleware plugin chaining', () => {
 
   const testMiddlewarePlugin: WidgetMiddlewarePlugin = {
     name: 'test-middleware',
-    type: PluginType.WIDGET_PLUGIN,
+    type: PluginType.MIDDLEWARE_PLUGIN,
     component: TestMiddlewareWrapper,
     supportedTypes: 'test-widget',
-    isMiddleware: true,
   };
 
   const testMiddlewarePluginTwo: WidgetMiddlewarePlugin = {
     name: 'test-middleware-two',
-    type: PluginType.WIDGET_PLUGIN,
+    type: PluginType.MIDDLEWARE_PLUGIN,
     component: TestMiddlewareWrapperTwo,
     supportedTypes: 'test-widget',
-    isMiddleware: true,
   };
 
   it('chains middleware plugin around base widget', async () => {
@@ -477,11 +475,10 @@ describe('middleware plugin chaining', () => {
 
     const panelMiddleware: WidgetMiddlewarePlugin = {
       name: 'panel-middleware',
-      type: PluginType.WIDGET_PLUGIN,
+      type: PluginType.MIDDLEWARE_PLUGIN,
       component: TestMiddlewareWrapper,
       panelComponent: TestPanelMiddleware,
       supportedTypes: 'test-widget-panel',
-      isMiddleware: true,
     };
 
     const layoutManager = createAndMountDashboard([
@@ -507,10 +504,9 @@ describe('middleware plugin chaining', () => {
     // Middleware that only defines component (no panelComponent)
     const componentOnlyMiddleware: WidgetMiddlewarePlugin = {
       name: 'component-only-middleware',
-      type: PluginType.WIDGET_PLUGIN,
+      type: PluginType.MIDDLEWARE_PLUGIN,
       component: TestMiddlewareWrapper,
       supportedTypes: 'test-widget-panel',
-      isMiddleware: true,
     };
 
     const layoutManager = createAndMountDashboard([
