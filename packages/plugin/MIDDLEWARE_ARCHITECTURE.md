@@ -220,11 +220,22 @@ Here `pivot` is importable (has `package`); `grid-toolbar` only consumes.
    declare module '@deephaven/js-plugin-pivot' { export class IrisGridPivotModel {} }
    ```
 
-4. **Ensure load order** — the dependency must appear before the consumer in `manifest.json`.
+4. **Declare dependencies** in `manifest.json`:
+   ```json
+   {
+     "name": "grid-toolbar",
+     "main": "src/js/dist/bundle/index.js",
+     "version": "0.0.0",
+     "dependencies": ["@deephaven/js-plugin-pivot"]
+   }
+   ```
+   The loader topologically sorts plugins so dependencies load first. If
+   `dependencies` is omitted, manifest order is preserved.
 
 ### Rules
 
-- A plugin can only import plugins loaded earlier in the manifest.
-  **TODO**: add `dependencies` field to manifest and verify load order at runtime.
+- Plugins are topologically sorted by their `dependencies` before loading.
+  Circular dependencies throw an error at load time.
 - Only plugins with a `package` field are registered in the resolve map.
 - The `package` value must exactly match the `import` string.
+- Dependency values in `dependencies` must match a `package` field of another plugin.

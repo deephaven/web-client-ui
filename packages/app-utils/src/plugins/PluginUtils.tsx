@@ -9,30 +9,14 @@ import {
   type Plugin,
   PluginType,
   isLegacyAuthPlugin,
-  isLegacyPlugin,
-  type PluginModule,
-  isPlugin,
-  isMultiPlugin,
+  processLoadedModule,
+  sortPluginsByDependency,
+  type PluginManifest,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 import { resolve } from './remote-component.config';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
-
-export type PluginManifestPluginInfo = {
-  name: string;
-  main: string;
-  /**
-   * The npm package name for this plugin (e.g. `@deephaven/js-plugin-pivot`).
-   * When provided, the plugin's exports are registered in the module resolve
-   * map under this key, enabling other plugins to `require()` this plugin at
-   * runtime. If omitted, the plugin is not registered for cross-plugin imports.
-   */
-  package?: string;
-  version: string;
-};
-
-export type PluginManifest = { plugins: PluginManifestPluginInfo[] };
 
 /**
  * Imports a commonjs plugin module from the provided URL
@@ -63,120 +47,6 @@ export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
   }
 }
 
-function hasDefaultExport(value: unknown): value is { default: Plugin } {
-  return (
-    typeof value === 'object' &&
-    value != null &&
-    typeof (value as { default?: unknown }).default === 'object'
-  );
-}
-
-export function getPluginModuleValue(
-  value: LegacyPlugin | Plugin | { default: Plugin }
-): PluginModule | null {
-  // TypeScript builds CJS default exports differently depending on
-  // whether there are also named exports. If the default is the only
-  // export, it will be the value. If there are also named exports,
-  // it will be assigned to the `default` property on the value.
-  if (isPlugin(value)) {
-    return value;
-  }
-  if (hasDefaultExport(value) && isPlugin(value.default)) {
-    return value.default;
-  }
-  if (isLegacyPlugin(value)) {
-    return value;
-  }
-  return null;
-}
-
-/**
- * Register a plugin in the plugin map. If a plugin with the same name is
- * already registered, the duplicate is skipped and a warning is logged.
- * @param pluginMap The plugin map to register the plugin in
- * @param name The name to register the plugin under
- * @param plugin The plugin to register
- * @param version Optional version to attach to the plugin
- */
-export function registerPlugin(
-  pluginMap: PluginModuleMap,
-  name: string,
-  plugin: PluginModule,
-  version?: string
-): void {
-  if (pluginMap.has(name)) {
-    log.warn(`Plugin '${name}' is already registered. Skipping duplicate.`);
-    return;
-  }
-  pluginMap.set(name, { ...plugin, version });
-}
-
-/**
- * Process a loaded plugin module: extract the plugin value, register in the
- * resolve map for cross-plugin imports, flatten MultiPlugins, and register
- * each resulting plugin in the plugin map.
- *
- * @param pluginMap The plugin map to register plugins in
- * @param resolveMap The module resolve map for cross-plugin imports
- * @param pluginExports The raw module exports from loading the plugin
- * @param name The manifest name of the plugin
- * @param packageName Optional package name for resolve map registration
- * @param version Optional version to attach to registered plugins
- */
-export function processLoadedModule(
-  pluginMap: PluginModuleMap,
-  resolveMap: Record<string, unknown>,
-  pluginExports: unknown,
-  name: string,
-  packageName?: string | null,
-  version?: string
-): void {
-  // Register raw module exports in the resolve map so subsequent
-  // plugins can import this plugin by its package name
-  if (packageName != null) {
-    resolveMap[packageName] = pluginExports;
-    log.debug(`Registered plugin '${packageName}' in module resolve map`);
-  }
-
-  const moduleValue = getPluginModuleValue(
-    pluginExports as LegacyPlugin | Plugin | { default: Plugin }
-  );
-  if (moduleValue == null) {
-    log.error(`Plugin '${name}' is missing an exported value.`);
-    return;
-  }
-
-  if (isMultiPlugin(moduleValue)) {
-    log.debug(
-      `MultiPlugin '${name}' contains ${moduleValue.plugins.length} plugins`
-    );
-    moduleValue.plugins.forEach(innerPlugin => {
-      if (!isPlugin(innerPlugin)) {
-        log.warn(
-          `Skipping invalid inner plugin from MultiPlugin '${name}'`,
-          innerPlugin
-        );
-        return;
-      }
-
-      const innerPluginName =
-        typeof innerPlugin.name === 'string' ? innerPlugin.name.trim() : '';
-
-      if (innerPluginName.length === 0) {
-        log.warn(
-          `Skipping unnamed inner plugin from MultiPlugin '${name}'`,
-          innerPlugin
-        );
-        return;
-      }
-
-      registerPlugin(pluginMap, innerPluginName, innerPlugin, version);
-    });
-  } else {
-    registerPlugin(pluginMap, name, moduleValue, version);
-  }
-}
-
 /**
  * Load all plugin modules available based on the manifest file at the provided base URL.
  * Plugins are loaded sequentially so that each plugin's exports are registered
@@ -198,12 +68,14 @@ export async function loadModulePlugins(
 
     log.debug('Plugin manifest loaded:', manifest);
 
+    const sortedPlugins = sortPluginsByDependency(manifest.plugins);
+
     const pluginMap: PluginModuleMap = new Map();
 
     // Load plugins sequentially so each plugin's exports are available
     // to subsequently loaded plugins via require()
-    for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main, version, package: packageName } = manifest.plugins[i];
+    for (let i = 0; i < sortedPlugins.length; i += 1) {
+      const { name, main, version, package: packageName } = sortedPlugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
       try {
         // eslint-disable-next-line no-await-in-loop
