@@ -222,9 +222,13 @@ function getStringConditionText(config: BaseFormatConfig): string {
   );
 }
 
-function getDateConditionText(config: BaseFormatConfig): string {
+function getDateConditionText(
+  dh: typeof DhType,
+  config: BaseFormatConfig
+): string {
   const { column, value } = config;
   return getTextForDateCondition(
+    dh,
     column.name,
     config.condition as DateCondition,
     value
@@ -248,7 +252,10 @@ function getCharConditionText(config: BaseFormatConfig): string {
   );
 }
 
-export function getConditionDBString(config: BaseFormatConfig): string {
+export function getConditionDBString(
+  dh: typeof DhType,
+  config: BaseFormatConfig
+): string {
   const { column } = config;
 
   if (TableUtils.isNumberType(column.type)) {
@@ -261,7 +268,7 @@ export function getConditionDBString(config: BaseFormatConfig): string {
     return getStringConditionText(config);
   }
   if (TableUtils.isDateType(column.type)) {
-    return getDateConditionText(config);
+    return getDateConditionText(dh, config);
   }
   if (TableUtils.isBooleanType(column.type)) {
     return getBooleanConditionText(config);
@@ -563,23 +570,35 @@ export function getTextForStringCondition(
 }
 
 export function getTextForDateCondition(
+  dh: typeof DhType,
   columnName: ColumnName,
   condition: DateCondition,
   value: unknown
 ): string {
+  let formattedValue = value;
+  if (typeof value === 'string') {
+    // The date time formatting may return a timezone that is not supported by the backend (e.g. 'EDT' instead of 'ET')
+    // so we need to parse the date time string and reformat it with a supported timezone ID.
+    // Note that we know this will be valid because the input value has already been validated with isDateConditionValid.
+    const [dateTimeString, ...rest] = value.split(' ');
+    const tzCode = rest.join(' ');
+    const tz = dh.i18n.TimeZone.getTimeZone(tzCode);
+    formattedValue = `${dateTimeString} ${tz.id}`;
+  }
+
   switch (condition) {
     case DateCondition.IS_EXACTLY:
-      return `${columnName} == '${value}'`;
+      return `${columnName} == '${formattedValue}'`;
     case DateCondition.IS_NOT_EXACTLY:
-      return `${columnName} != '${value}'`;
+      return `${columnName} != '${formattedValue}'`;
     case DateCondition.IS_BEFORE:
-      return `${columnName} < '${value}'`;
+      return `${columnName} < '${formattedValue}'`;
     case DateCondition.IS_BEFORE_OR_EQUAL:
-      return `${columnName} <=  '${value}'`;
+      return `${columnName} <=  '${formattedValue}'`;
     case DateCondition.IS_AFTER:
-      return `${columnName} > '${value}'`;
+      return `${columnName} > '${formattedValue}'`;
     case DateCondition.IS_AFTER_OR_EQUAL:
-      return `${columnName} >=  '${value}'`;
+      return `${columnName} >=  '${formattedValue}'`;
     case DateCondition.IS_NULL:
       return `${columnName} == null`;
     case DateCondition.IS_NOT_NULL:
@@ -684,7 +703,7 @@ export function getFormatColumns(
     FormatterType.CONDITIONAL
       ? columnFormatConfigMap.get(col.name)
       : rowFormatConfig) ?? ['null', undefined];
-    const rule = makeTernaryFormatRule(config, prevRule);
+    const rule = makeTernaryFormatRule(dh, config, prevRule);
     if (rule === undefined) {
       log.debug(`Ignoring format rule.`, config);
       return;
@@ -742,16 +761,6 @@ export function isDateConditionValid(
         dh.i18n.TimeZone.getTimeZone(tzCode);
       } catch (e) {
         log.debug('Invalid timezone string', tzCode);
-        return false;
-      }
-
-      // The backend timestamp parsing does not support timezones that end with ST or DT (e.g. EST, EDT)
-      // Passing these to the backend will cause the table to fail.
-      if (
-        tzCode.toUpperCase().endsWith('ST') ||
-        tzCode.toUpperCase().endsWith('DT')
-      ) {
-        log.debug('Timezone ending with ST or DT not supported', tzCode);
         return false;
       }
 

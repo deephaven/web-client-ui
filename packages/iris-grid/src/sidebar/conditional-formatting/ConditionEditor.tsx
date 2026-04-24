@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import classNames from 'classnames';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -140,6 +141,7 @@ function getNumberInputs(
   handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   handleStartValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   handleEndValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  isInvalid: boolean,
   conditionValue?: string,
   startValue?: string,
   endValue?: string
@@ -154,7 +156,7 @@ function getNumberInputs(
       return (
         <input
           type="number"
-          className="form-control"
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -165,14 +167,18 @@ function getNumberInputs(
         <div className="d-flex flex-row">
           <input
             type="number"
-            className="form-control d-flex mr-2"
+            className={classNames('form-control', 'd-flex', 'mr-2', {
+              'is-invalid': isInvalid,
+            })}
             placeholder="Start value"
             value={startValue ?? ''}
             onChange={handleStartValueChange}
           />
           <input
             type="number"
-            className="form-control d-flex"
+            className={classNames('form-control', 'd-flex', {
+              'is-invalid': isInvalid,
+            })}
             placeholder="End value"
             value={endValue ?? ''}
             onChange={handleEndValueChange}
@@ -188,6 +194,7 @@ function getNumberInputs(
 function getStringInputs(
   selectedCondition: StringCondition,
   handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  isInvalid: boolean,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -198,7 +205,7 @@ function getStringInputs(
       return (
         <input
           type="text"
-          className="form-control"
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -210,6 +217,7 @@ function getStringInputs(
 function getDateInputs(
   selectedCondition: DateCondition,
   handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  isInvalid: boolean,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -220,7 +228,7 @@ function getDateInputs(
       return (
         <input
           type="text"
-          className="form-control"
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           placeholder="Enter value"
           value={conditionValue ?? ''}
           onChange={handleValueChange}
@@ -236,6 +244,7 @@ function getBooleanInputs(): null {
 function getCharInputs(
   selectedCondition: CharCondition,
   handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  isInvalid: boolean,
   conditionValue?: string
 ): JSX.Element | null {
   switch (selectedCondition) {
@@ -246,7 +255,7 @@ function getCharInputs(
       return (
         <input
           type="text"
-          className="form-control"
+          className={classNames('form-control', { 'is-invalid': isInvalid })}
           maxLength={1}
           placeholder="Enter value"
           value={conditionValue ?? ''}
@@ -264,6 +273,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
   const [conditionValue, setValue] = useState(config.value);
   const [startValue, setStartValue] = useState(config.start);
   const [endValue, setEndValue] = useState(config.end);
+  const [isValid, setIsValid] = useState(true);
 
   if (selectedColumnType !== prevColumnType) {
     // Column type changed, reset condition and value fields
@@ -329,13 +339,13 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
 
   useEffect(
     function changeCondition() {
-      let isValid = true;
+      let isConditionValid = true;
 
       if (selectedCondition === undefined) {
         log.debug(
           'Unable to create formatting rule. Condition is not selected.'
         );
-        isValid = false;
+        isConditionValid = false;
       } else if (
         TableUtils.isNumberType(column.type) &&
         !isNumberConditionValid(
@@ -349,7 +359,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           'Unable to create formatting rule. Invalid value',
           conditionValue
         );
-        isValid = false;
+        isConditionValid = false;
       } else if (
         TableUtils.isDateType(column.type) &&
         !isDateConditionValid(
@@ -362,9 +372,10 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           'Unable to create formatting rule. Invalid date condition',
           conditionValue
         );
-        isValid = false;
+        isConditionValid = false;
       }
 
+      setIsValid(isConditionValid);
       onChange(
         {
           condition: selectedCondition,
@@ -372,7 +383,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           start: startValue,
           end: endValue,
         },
-        isValid
+        isConditionValid
       );
     },
     [
@@ -391,12 +402,26 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       // Column not selected
       return null;
     }
+
+    // Show invalid state only when there's a non-empty value that fails validation
+    const hasInvalidValue =
+      !isValid && conditionValue !== undefined && conditionValue !== '';
+
     if (TableUtils.isNumberType(selectedColumnType)) {
+      // For IS_BETWEEN, show invalid on each field only if that field has a value
+      const showInvalid =
+        selectedCondition === NumberCondition.IS_BETWEEN
+          ? !isValid &&
+            ((startValue !== undefined && startValue !== '') ||
+              (endValue !== undefined && endValue !== ''))
+          : hasInvalidValue;
+
       return getNumberInputs(
         selectedCondition as NumberCondition,
         handleValueChange,
         handleStartValueChange,
         handleEndValueChange,
+        showInvalid,
         conditionValue,
         startValue,
         endValue
@@ -406,6 +431,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getCharInputs(
         selectedCondition as CharCondition,
         handleValueChange,
+        hasInvalidValue,
         conditionValue
       );
     }
@@ -413,6 +439,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getStringInputs(
         selectedCondition as StringCondition,
         handleValueChange,
+        hasInvalidValue,
         conditionValue
       );
     }
@@ -420,6 +447,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return getDateInputs(
         selectedCondition as DateCondition,
         handleValueChange,
+        hasInvalidValue,
         conditionValue
       );
     }
@@ -432,6 +460,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
     conditionValue,
     startValue,
     endValue,
+    isValid,
     handleValueChange,
     handleStartValueChange,
     handleEndValueChange,
