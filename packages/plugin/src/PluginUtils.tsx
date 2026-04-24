@@ -25,6 +25,18 @@ import {
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
 
+/**
+ * Get a display-friendly name for a React component.
+ * Prefers displayName, falls back to name, then the provided fallback.
+ */
+function getComponentName(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: React.ComponentType<any>,
+  fallback = 'Component'
+): string {
+  return component.displayName ?? component.name ?? fallback;
+}
+
 export function pluginSupportsType(
   plugin: PluginModule | undefined,
   type: string
@@ -118,14 +130,14 @@ export function createChainedComponent<T>(
   if (middleware.length === 0) {
     log.debug(
       'No middleware to chain for component',
-      baseComponent.displayName ?? baseComponent.name
+      getComponentName(baseComponent)
     );
     return baseComponent;
   }
 
   log.debug(
     'Chaining component middleware',
-    baseComponent.displayName ?? baseComponent.name,
+    getComponentName(baseComponent),
     middleware.map(m => m.name)
   );
 
@@ -157,11 +169,9 @@ export function createChainedComponent<T>(
             />
           );
         }
-        ChainedComponent.displayName = `${middlewarePlugin.name}(${
-          (WrappedComponent as React.ComponentType).displayName ??
-          (WrappedComponent as React.ComponentType).name ??
-          'Component'
-        })`;
+        ChainedComponent.displayName = `${
+          middlewarePlugin.name
+        }(${getComponentName(WrappedComponent)})`;
         return ChainedComponent;
       },
       baseComponent
@@ -187,14 +197,14 @@ export function createChainedPanelComponent<T>(
   if (panelMiddleware.length === 0) {
     log.debug(
       'No panel middleware to chain for panel component',
-      basePanelComponent.displayName ?? basePanelComponent.name
+      getComponentName(basePanelComponent)
     );
     return basePanelComponent;
   }
 
   log.debug(
     'Chaining panel middleware',
-    basePanelComponent.displayName ?? basePanelComponent.name,
+    getComponentName(basePanelComponent),
     panelMiddleware.map(m => m.name)
   );
 
@@ -222,11 +232,9 @@ export function createChainedPanelComponent<T>(
             />
           );
         }
-        ChainedPanel.displayName = `${middlewarePlugin.name}Panel(${
-          (WrappedPanel as React.ComponentType).displayName ??
-          (WrappedPanel as React.ComponentType).name ??
-          'Panel'
-        })`;
+        ChainedPanel.displayName = `${
+          middlewarePlugin.name
+        }Panel(${getComponentName(WrappedPanel, 'Panel')})`;
         return ChainedPanel;
       },
       basePanelComponent
