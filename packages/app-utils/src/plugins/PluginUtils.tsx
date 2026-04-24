@@ -50,8 +50,8 @@ export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
 /**
  * Load all plugin modules available based on the manifest file at the provided base URL.
  * Plugins are loaded sequentially so that each plugin's exports are registered
- * in the module resolve map before subsequent plugins load. This allows plugins
- * to depend on other plugins via standard require() calls.
+ * in the module resolve map before subsequent plugins load. This enables
+ * cross-plugin imports via standard import statements.
  * @param modulePluginsUrl The base URL of the module plugins to load
  * @returns A map from the name of the plugin to the plugin module that was loaded
  */
@@ -73,7 +73,7 @@ export async function loadModulePlugins(
     const pluginMap: PluginModuleMap = new Map();
 
     // Load plugins sequentially so each plugin's exports are available
-    // to subsequently loaded plugins via require()
+    // to subsequently loaded plugins via import
     for (let i = 0; i < sortedPlugins.length; i += 1) {
       const { name, main, version, package: packageName } = sortedPlugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;

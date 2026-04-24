@@ -50,6 +50,15 @@ interface WidgetMiddlewareComponentProps<T = unknown> extends WidgetComponentPro
 }
 ```
 
+### `WidgetMiddlewarePanelProps`
+
+```tsx
+interface WidgetMiddlewarePanelProps<T = unknown> extends WidgetPanelProps<T> {
+  // The next panel component in the chain — render this to continue
+  Component: React.ComponentType<WidgetPanelProps<T>>;
+}
+```
+
 ## Rendering Paths
 
 The middleware is applied in two different contexts:
@@ -91,15 +100,15 @@ const myToolbarPlugin = {
 ### Intercepting Props
 
 ```tsx
-function PropsInterceptor({ Component, ...props }: WidgetMiddlewareComponentProps) {
+function PropsInterceptor({ Component, fetch, ...rest }: WidgetMiddlewareComponentProps) {
   // Modify or augment props before passing them to the wrapped component
   const enhancedFetch = useCallback(async () => {
-    const widget = await props.fetch();
+    const widget = await fetch();
     // Transform or cache the widget data
     return widget;
-  }, [props.fetch]);
+  }, [fetch]);
 
-  return <Component {...props} fetch={enhancedFetch} />;
+  return <Component {...rest} fetch={enhancedFetch} />;
 }
 ```
 
@@ -169,31 +178,31 @@ const plugins = new Map([
 2. **Last base plugin wins.** If multiple non-middleware plugins register for the same type, the last one replaces earlier ones (with a warning).
 3. **Middleware must render `Component`.** If a middleware doesn't render the `Component` prop, the rest of the chain (including the base widget) will not appear.
 4. **Middleware must spread props.** Pass all received props to `Component` to ensure the base widget and other middleware receive them.
-5. **`panelComponent` middleware is separate.** If the base plugin defines a `panelComponent`, middleware targeting the panel layer must also define `panelComponent`.
+5. **`panelComponent` middleware is separate.** When the base plugin defines a `panelComponent`, only middleware that also defines `panelComponent` is applied. Middleware with only `component` is silently skipped in the panel path — it will have no effect for that widget type.
 
 ## Cross-Plugin Dependencies
 
-Plugins load sequentially in manifest order. A plugin can expose its exports for later plugins to import at runtime by declaring a `package` field in the manifest.
+Plugins load sequentially in dependency order (topologically sorted by the `dependencies` field, with manifest order preserved among independent plugins). A plugin can expose its exports for later plugins to import at runtime by declaring a `package` field in the manifest.
 
 ```
-1. pivot loads        → resolve["@deephaven/js-plugin-pivot"] = exports
+1. pivot loads        → exports registered under "@deephaven/js-plugin-pivot"
 2. grid-toolbar loads → import "@deephaven/js-plugin-pivot" ✓
 ```
 
 ### Optional Manifest `package` Field
 
-When present, the plugin's exports are registered in the resolve map under this key.
+When present, the plugin's exports are made available to other plugins under this key, so they can be imported via standard `import` statements.
 
 ```json
 {
   "plugins": [
-    { "name": "pivot", "main": "src/js/dist/index.js", "package": "@deephaven/js-plugin-pivot" },
-    { "name": "grid-toolbar", "main": "src/js/dist/bundle/index.js" }
+    { "name": "pivot", "main": "src/js/dist/index.js", "version": "0.0.0", "package": "@deephaven/js-plugin-pivot" },
+    { "name": "grid-toolbar", "main": "src/js/dist/bundle/index.js", "version": "0.0.0", "dependencies": ["@deephaven/js-plugin-pivot"] }
   ]
 }
 ```
 
-Here `pivot` is importable (has `package`); `grid-toolbar` only consumes.
+Here `pivot` is importable (has `package`); `grid-toolbar` declares it as a dependency and only consumes.
 
 ### Consuming Another Plugin
 
@@ -236,6 +245,6 @@ Here `pivot` is importable (has `package`); `grid-toolbar` only consumes.
 
 - Plugins are topologically sorted by their `dependencies` before loading.
   Circular dependencies throw an error at load time.
-- Only plugins with a `package` field are registered in the resolve map.
+- Only plugins with a `package` field are importable by other plugins.
 - The `package` value must exactly match the `import` string.
 - Dependency values in `dependencies` must match a `package` field of another plugin.

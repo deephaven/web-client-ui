@@ -214,8 +214,8 @@ export type PluginManifestPluginInfo = {
   /**
    * The npm package name for this plugin (e.g. `@deephaven/js-plugin-pivot`).
    * When provided, the plugin's exports are registered in the module resolve
-   * map under this key, enabling other plugins to `require()` this plugin at
-   * runtime. If omitted, the plugin is not registered for cross-plugin imports.
+   * map under this key, making this plugin importable by other plugins at
+   * runtime. If omitted, the plugin is not available for cross-plugin imports.
    */
   package?: string;
   /**
