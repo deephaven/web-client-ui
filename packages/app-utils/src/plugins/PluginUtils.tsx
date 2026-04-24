@@ -91,24 +91,90 @@ export function getPluginModuleValue(
 }
 
 /**
- * Register a plugin in the plugin map, logging a warning if a plugin with the same name already exists.
+ * Register a plugin in the plugin map. If a plugin with the same name is
+ * already registered, the duplicate is skipped and a warning is logged.
  * @param pluginMap The plugin map to register the plugin in
  * @param name The name to register the plugin under
  * @param plugin The plugin to register
  * @param version Optional version to attach to the plugin
  */
-function registerPlugin(
+export function registerPlugin(
   pluginMap: PluginModuleMap,
   name: string,
   plugin: PluginModule,
   version?: string
 ): void {
   if (pluginMap.has(name)) {
-    log.warn(
-      `Plugin '${name}' is already registered. The existing plugin will be replaced.`
-    );
+    log.warn(`Plugin '${name}' is already registered. Skipping duplicate.`);
+    return;
   }
   pluginMap.set(name, { ...plugin, version });
+}
+
+/**
+ * Process a loaded plugin module: extract the plugin value, register in the
+ * resolve map for cross-plugin imports, flatten MultiPlugins, and register
+ * each resulting plugin in the plugin map.
+ *
+ * @param pluginMap The plugin map to register plugins in
+ * @param resolveMap The module resolve map for cross-plugin imports
+ * @param pluginExports The raw module exports from loading the plugin
+ * @param name The manifest name of the plugin
+ * @param packageName Optional package name for resolve map registration
+ * @param version Optional version to attach to registered plugins
+ */
+export function processLoadedModule(
+  pluginMap: PluginModuleMap,
+  resolveMap: Record<string, unknown>,
+  pluginExports: unknown,
+  name: string,
+  packageName?: string | null,
+  version?: string
+): void {
+  // Register raw module exports in the resolve map so subsequent
+  // plugins can import this plugin by its package name
+  if (packageName != null) {
+    resolveMap[packageName] = pluginExports;
+    log.debug(`Registered plugin '${packageName}' in module resolve map`);
+  }
+
+  const moduleValue = getPluginModuleValue(
+    pluginExports as LegacyPlugin | Plugin | { default: Plugin }
+  );
+  if (moduleValue == null) {
+    log.error(`Plugin '${name}' is missing an exported value.`);
+    return;
+  }
+
+  if (isMultiPlugin(moduleValue)) {
+    log.debug(
+      `MultiPlugin '${name}' contains ${moduleValue.plugins.length} plugins`
+    );
+    moduleValue.plugins.forEach(innerPlugin => {
+      if (!isPlugin(innerPlugin)) {
+        log.warn(
+          `Skipping invalid inner plugin from MultiPlugin '${name}'`,
+          innerPlugin
+        );
+        return;
+      }
+
+      const innerPluginName =
+        typeof innerPlugin.name === 'string' ? innerPlugin.name.trim() : '';
+
+      if (innerPluginName.length === 0) {
+        log.warn(
+          `Skipping unnamed inner plugin from MultiPlugin '${name}'`,
+          innerPlugin
+        );
+        return;
+      }
+
+      registerPlugin(pluginMap, innerPluginName, innerPlugin, version);
+    });
+  } else {
+    registerPlugin(pluginMap, name, moduleValue, version);
+  }
 }
 
 /**
@@ -143,27 +209,14 @@ export async function loadModulePlugins(
         // eslint-disable-next-line no-await-in-loop
         const pluginExports = await loadModulePlugin(pluginMainUrl);
 
-        // Register the raw module exports in the resolve map so
-        // subsequent plugins can require() this plugin by its package name
-        if (packageName != null) {
-          resolve[packageName] = pluginExports;
-          log.debug(`Registered plugin '${packageName}' in module resolve map`);
-        }
-
-        const moduleValue = getPluginModuleValue(pluginExports);
-        if (moduleValue == null) {
-          log.error(`Plugin '${name}' is missing an exported value.`);
-        } else if (isMultiPlugin(moduleValue)) {
-          // Flatten MultiPlugin: register each inner plugin by its own name
-          log.debug(
-            `MultiPlugin '${name}' contains ${moduleValue.plugins.length} plugins`
-          );
-          moduleValue.plugins.forEach(innerPlugin => {
-            registerPlugin(pluginMap, innerPlugin.name, innerPlugin, version);
-          });
-        } else {
-          registerPlugin(pluginMap, name, moduleValue, version);
-        }
+        processLoadedModule(
+          pluginMap,
+          resolve,
+          pluginExports,
+          name,
+          packageName,
+          version
+        );
       } catch (e) {
         log.error(`Unable to load plugin '${name}'`, e);
       }

@@ -2,9 +2,15 @@ import {
   type LegacyPlugin,
   type MultiPlugin,
   type Plugin,
+  type PluginModuleMap,
   PluginType,
 } from '@deephaven/plugin';
-import { getPluginModuleValue, loadModulePlugins } from './PluginUtils';
+import {
+  getPluginModuleValue,
+  loadModulePlugins,
+  processLoadedModule,
+  registerPlugin,
+} from './PluginUtils';
 import { resolve } from './remote-component.config';
 
 jest.mock('./loadRemoteModule', () => {
@@ -176,6 +182,190 @@ describe('getPluginModuleValue', () => {
       };
       const moduleValue = getPluginModuleValue(moduleWithNamedExports);
       expect(moduleValue).toBe(multiPlugin);
+    });
+  });
+});
+
+describe('registerPlugin', () => {
+  function makePlugin(name: string): Plugin {
+    return { name, type: PluginType.WIDGET_PLUGIN };
+  }
+
+  it('registers a plugin in the map', () => {
+    const pluginMap: PluginModuleMap = new Map();
+    const plugin = makePlugin('my-plugin');
+
+    registerPlugin(pluginMap, 'my-plugin', plugin, '1.0.0');
+
+    expect(pluginMap.get('my-plugin')).toEqual({ ...plugin, version: '1.0.0' });
+  });
+
+  it('skips duplicate and keeps the first registration', () => {
+    const pluginMap: PluginModuleMap = new Map();
+    const first = makePlugin('my-plugin');
+    const second = makePlugin('my-plugin');
+
+    registerPlugin(pluginMap, 'my-plugin', first, '1.0.0');
+    registerPlugin(pluginMap, 'my-plugin', second, '2.0.0');
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.get('my-plugin')).toEqual({ ...first, version: '1.0.0' });
+  });
+});
+
+describe('processLoadedModule', () => {
+  function makePlugin(name: string): Plugin {
+    return { name, type: PluginType.WIDGET_PLUGIN };
+  }
+
+  let pluginMap: PluginModuleMap;
+  let resolveMap: Record<string, unknown>;
+
+  beforeEach(() => {
+    pluginMap = new Map();
+    resolveMap = {};
+  });
+
+  it('registers a simple plugin', () => {
+    const plugin = makePlugin('my-plugin');
+    processLoadedModule(
+      pluginMap,
+      resolveMap,
+      plugin,
+      'my-plugin',
+      null,
+      '1.0.0'
+    );
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.get('my-plugin')).toEqual({ ...plugin, version: '1.0.0' });
+  });
+
+  it('registers a plugin with default export', () => {
+    const plugin = makePlugin('my-plugin');
+    processLoadedModule(
+      pluginMap,
+      resolveMap,
+      { default: plugin },
+      'my-plugin'
+    );
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.get('my-plugin')).toEqual({
+      ...plugin,
+      version: undefined,
+    });
+  });
+
+  it('registers in resolve map when packageName is provided', () => {
+    const plugin = makePlugin('my-plugin');
+    const exports = { default: plugin };
+    processLoadedModule(
+      pluginMap,
+      resolveMap,
+      exports,
+      'my-plugin',
+      '@scope/my-plugin'
+    );
+
+    expect(resolveMap['@scope/my-plugin']).toBe(exports);
+  });
+
+  it('does not register in resolve map when packageName is null', () => {
+    const plugin = makePlugin('my-plugin');
+    processLoadedModule(pluginMap, resolveMap, plugin, 'my-plugin', null);
+
+    expect(Object.keys(resolveMap)).toHaveLength(0);
+  });
+
+  it('does not register in resolve map when packageName is undefined', () => {
+    const plugin = makePlugin('my-plugin');
+    processLoadedModule(pluginMap, resolveMap, plugin, 'my-plugin');
+
+    expect(Object.keys(resolveMap)).toHaveLength(0);
+  });
+
+  it('flattens MultiPlugin and registers inner plugins', () => {
+    const multi: MultiPlugin = {
+      name: 'multi',
+      type: PluginType.MULTI_PLUGIN,
+      plugins: [makePlugin('inner-a'), makePlugin('inner-b')] as Plugin[],
+    };
+
+    processLoadedModule(pluginMap, resolveMap, multi, 'multi', null, '1.0.0');
+
+    expect(pluginMap.size).toBe(2);
+    expect(pluginMap.has('inner-a')).toBe(true);
+    expect(pluginMap.has('inner-b')).toBe(true);
+    expect(pluginMap.has('multi')).toBe(false);
+  });
+
+  it('skips invalid inner plugins in MultiPlugin', () => {
+    const multi: MultiPlugin = {
+      name: 'multi',
+      type: PluginType.MULTI_PLUGIN,
+      plugins: [
+        makePlugin('valid'),
+        { notAPlugin: true } as unknown as Plugin,
+      ] as Plugin[],
+    };
+
+    processLoadedModule(pluginMap, resolveMap, multi, 'multi');
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.has('valid')).toBe(true);
+  });
+
+  it('skips inner plugins with empty names in MultiPlugin', () => {
+    const multi: MultiPlugin = {
+      name: 'multi',
+      type: PluginType.MULTI_PLUGIN,
+      plugins: [
+        makePlugin('valid'),
+        { name: '', type: PluginType.WIDGET_PLUGIN } as Plugin,
+        { name: '  ', type: PluginType.WIDGET_PLUGIN } as Plugin,
+      ] as Plugin[],
+    };
+
+    processLoadedModule(pluginMap, resolveMap, multi, 'multi');
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.has('valid')).toBe(true);
+  });
+
+  it('skips duplicate inner plugins in MultiPlugin', () => {
+    const multi: MultiPlugin = {
+      name: 'multi',
+      type: PluginType.MULTI_PLUGIN,
+      plugins: [makePlugin('dupe'), makePlugin('dupe')] as Plugin[],
+    };
+
+    processLoadedModule(pluginMap, resolveMap, multi, 'multi');
+
+    expect(pluginMap.size).toBe(1);
+  });
+
+  it('does not register when module value is null', () => {
+    processLoadedModule(pluginMap, resolveMap, {} as Plugin, 'bad-plugin');
+
+    expect(pluginMap.size).toBe(0);
+  });
+
+  it('handles legacy plugin format', () => {
+    const legacy: LegacyPlugin = { TablePlugin: () => null };
+    processLoadedModule(
+      pluginMap,
+      resolveMap,
+      legacy,
+      'legacy-plugin',
+      null,
+      '1.0.0'
+    );
+
+    expect(pluginMap.size).toBe(1);
+    expect(pluginMap.get('legacy-plugin')).toEqual({
+      ...legacy,
+      version: '1.0.0',
     });
   });
 });
