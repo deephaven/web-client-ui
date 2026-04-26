@@ -1,10 +1,10 @@
-import { type ReactElement, type RefObject } from 'react';
+import { type ReactElement } from 'react';
 import { ListBox } from '@adobe/react-spectrum';
-import type { Key, LoadingState, Selection } from '@react-types/shared';
+import type { DOMRef, Key, LoadingState, Selection } from '@react-types/shared';
 
 export interface MultiSelectListBoxProps {
-  /** Container ref used by the keyboard hook for virtual focus DOM ops. */
-  containerRef: RefObject<HTMLDivElement>;
+  /** DOMRef forwarded to the inner Spectrum `<ListBox>`. */
+  listBoxRef: DOMRef<HTMLDivElement>;
   /** ID applied to the inner Spectrum `<ListBox>`. */
   listBoxId: string;
   /** Spectrum `LoadingState` for the items collection. */
@@ -28,7 +28,7 @@ export interface MultiSelectListBoxProps {
  * or the Spectrum `<ListBox>`. Private subcomponent of `MultiSelect`.
  */
 export function MultiSelectListBox({
-  containerRef,
+  listBoxRef,
   listBoxId,
   loadingState,
   filteredJsxChildren,
@@ -43,19 +43,19 @@ export function MultiSelectListBox({
   }
 
   return (
-    <div ref={containerRef} className="dh-multi-select-list-box-container">
-      <ListBox
-        id={listBoxId}
-        selectionMode="multiple"
-        selectedKeys={selectedKeys}
-        onSelectionChange={onSelectionChange}
-        disabledKeys={disabledKeys}
-        aria-label={ariaLabel}
-        isLoading={loadingState === 'loadingMore'}
-      >
-        {filteredJsxChildren}
-      </ListBox>
-    </div>
+    <ListBox
+      ref={listBoxRef}
+      id={listBoxId}
+      selectionMode="multiple"
+      selectedKeys={selectedKeys}
+      onSelectionChange={onSelectionChange}
+      disabledKeys={disabledKeys}
+      aria-label={ariaLabel}
+      isLoading={loadingState === 'loadingMore'}
+      UNSAFE_style={{ maxHeight: 'inherit' }}
+    >
+      {filteredJsxChildren}
+    </ListBox>
   );
 }
 
