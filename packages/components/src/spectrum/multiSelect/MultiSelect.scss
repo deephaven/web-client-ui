@@ -1,0 +1,592 @@
+/* stylelint-disable no-descending-specificity */
+
+// Wrapper for Spectrum's <Field>. Zero intrinsic width prevents the trigger
+// from growing with tag content. !important required to override Spectrum's
+// width rules on .spectrum-Field--positionTop and .spectrum-Form > *.
+.dh-multi-select {
+  inline-size: 0 !important;
+  min-inline-size: var(
+    --spectrum-combobox-default-width,
+    var(--spectrum-global-dimension-size-2400, 240px)
+  ) !important;
+  max-inline-size: 100% !important;
+}
+
+.dh-multi-select-trigger {
+  display: flex;
+  align-items: stretch;
+  border: none;
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  background-color: var(--dh-color-input-bg);
+  color: var(--dh-color-input-fg);
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  min-height: var(
+    --spectrum-alias-single-line-height,
+    var(--spectrum-global-dimension-size-400, 32px)
+  );
+
+  // Visual border via ::after: paints on top of all children (including chevron)
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--dh-color-input-border);
+    border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+    pointer-events: none;
+    transition: border-color 130ms ease-in-out;
+  }
+
+  // Hover state: :not(.is-focused) ensures focus styles take precedence
+  &:hover:not(.is-disabled):not(.is-read-only):not(.is-focused) {
+    &::after {
+      border-color: var(--dh-color-input-hover-border);
+    }
+
+    .dh-multi-select-chevron {
+      color: var(--dh-color-selector-hover-fg);
+      background-color: var(--dh-color-selector-hover-bg);
+
+      &::before {
+        border-left-color: var(--dh-color-input-hover-border);
+      }
+    }
+  }
+
+  // Focus state: applied by FocusRing `focusClass`
+  &.is-focused {
+    &::after {
+      border-color: var(--dh-color-input-focus-border);
+    }
+
+    .dh-multi-select-chevron:not(.is-open) {
+      background-color: var(--dh-color-selector-hover-bg);
+
+      &::before {
+        border-left-color: var(--dh-color-input-focus-border);
+      }
+    }
+  }
+
+  // Focus ring: applied by FocusRing `focusRingClass`
+  &.focus-ring {
+    box-shadow: 0 0 0 1px var(--dh-color-input-focus-border);
+  }
+
+  // Invalid state: outer border + chevron divider red.
+  &.is-invalid {
+    &::after {
+      border-color: var(
+        --spectrum-textfield-border-color-error,
+        var(--spectrum-red-900)
+      );
+    }
+
+    .dh-multi-select-chevron::before {
+      border-left-color: var(
+        --spectrum-textfield-border-color-error,
+        var(--spectrum-red-900)
+      );
+    }
+
+    &:hover:not(.is-disabled):not(.is-read-only):not(.is-focused) {
+      &::after {
+        border-color: var(
+          --spectrum-textfield-border-color-error-hover,
+          var(--spectrum-red-1000)
+        );
+      }
+
+      .dh-multi-select-chevron::before {
+        border-left-color: var(
+          --spectrum-textfield-border-color-error-hover,
+          var(--spectrum-red-1000)
+        );
+      }
+    }
+
+    &:active:not(.is-disabled):not(.is-read-only) {
+      &::after {
+        border-color: var(
+          --spectrum-textfield-border-color-error-down,
+          var(--spectrum-red-1100)
+        );
+      }
+
+      .dh-multi-select-chevron::before {
+        border-left-color: var(
+          --spectrum-textfield-border-color-error-down,
+          var(--spectrum-red-1100)
+        );
+      }
+    }
+
+    &.is-focused {
+      &::after {
+        border-color: var(--dh-color-input-focus-border);
+      }
+
+      .dh-multi-select-chevron::before {
+        border-left-color: var(--dh-color-input-focus-border);
+      }
+    }
+  }
+
+  // Disabled state
+  &.is-disabled {
+    background-color: var(--dh-color-input-disabled-bg);
+    color: var(--dh-color-input-disabled-fg);
+    cursor: default;
+
+    &::after {
+      border-color: var(--dh-color-input-disabled-border);
+    }
+
+    .dh-multi-select-chevron {
+      color: var(--dh-color-selector-disabled-fg);
+      background-color: var(--dh-color-input-disabled-bg);
+
+      &::before {
+        border-left-color: var(--dh-color-input-disabled-border);
+      }
+    }
+  }
+
+  // Read-only state
+  &.is-read-only {
+    cursor: default;
+  }
+
+  // Quiet variant: matches Spectrum ComboBox quiet
+  &.is-quiet {
+    background: none;
+    border-radius: 0;
+    min-width: calc(
+      2 *
+        var(
+          --spectrum-dropdown-height,
+          var(--spectrum-global-dimension-size-400, 32px)
+        )
+    );
+
+    &::after {
+      border: none;
+      border-bottom: var(--spectrum-alias-input-border-size, 1px) solid
+        var(--dh-color-input-border);
+      border-radius: 0;
+    }
+
+    &:hover:not(.is-disabled):not(.is-read-only):not(.is-focused) {
+      &::after {
+        border-bottom-color: var(--dh-color-input-hover-border);
+      }
+
+      .dh-multi-select-chevron {
+        background-color: transparent;
+
+        &::before {
+          border-bottom-color: var(--dh-color-input-hover-border);
+        }
+      }
+    }
+
+    &.is-focused {
+      &::after {
+        border-bottom-color: var(--dh-color-input-focus-border);
+      }
+
+      .dh-multi-select-chevron:not(.is-open) {
+        background-color: transparent;
+      }
+
+      .dh-multi-select-chevron::before {
+        border-bottom-color: var(--dh-color-input-focus-border);
+      }
+    }
+
+    // Quiet focus ring for bottom-only line (not full outline)
+    &.focus-ring {
+      box-shadow: 0 2px 0 0 var(--dh-color-input-focus-border);
+    }
+
+    .dh-multi-select-chevron {
+      inline-size: auto;
+      padding-inline-start: var(--spectrum-global-dimension-size-130, 10px);
+      padding-inline-end: 0;
+      background-color: transparent;
+      border-radius: 0;
+
+      // Bottom border continuation instead of left separator
+      &::before {
+        border-left: none;
+        border-bottom: var(--spectrum-alias-input-border-size, 1px) solid
+          var(--dh-color-input-border);
+        border-radius: 0;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: auto;
+        height: 0;
+      }
+
+      &.is-open {
+        background-color: var(
+          --spectrum-alias-background-color-transparent,
+          transparent
+        );
+      }
+    }
+
+    &.is-disabled .dh-multi-select-chevron {
+      border-radius: 0;
+
+      &::before {
+        border-bottom-color: var(--dh-color-input-disabled-border);
+      }
+    }
+
+    // Invalid quiet variant: bottom borders red.
+    &.is-invalid {
+      &::after {
+        border-bottom-color: var(
+          --spectrum-textfield-border-color-error,
+          var(--spectrum-red-900)
+        );
+      }
+
+      .dh-multi-select-chevron::before {
+        border-bottom-color: var(
+          --spectrum-textfield-border-color-error,
+          var(--spectrum-red-900)
+        );
+      }
+
+      &:hover:not(.is-disabled):not(.is-read-only):not(.is-focused) {
+        &::after {
+          border-bottom-color: var(
+            --spectrum-textfield-border-color-error-hover,
+            var(--spectrum-red-1000)
+          );
+        }
+
+        .dh-multi-select-chevron::before {
+          border-bottom-color: var(
+            --spectrum-textfield-border-color-error-hover,
+            var(--spectrum-red-1000)
+          );
+        }
+      }
+
+      &:active:not(.is-disabled):not(.is-read-only) {
+        &::after {
+          border-bottom-color: var(
+            --spectrum-textfield-border-color-error-down,
+            var(--spectrum-red-1100)
+          );
+        }
+
+        .dh-multi-select-chevron::before {
+          border-bottom-color: var(
+            --spectrum-textfield-border-color-error-down,
+            var(--spectrum-red-1100)
+          );
+        }
+      }
+
+      // Focus overrides red (specificity boost via &.is-invalid).
+      &.is-focused {
+        &::after {
+          border-bottom-color: var(--dh-color-input-focus-border);
+        }
+
+        .dh-multi-select-chevron::before {
+          border-bottom-color: var(--dh-color-input-focus-border);
+        }
+      }
+    }
+  }
+}
+
+// Content area tags + input wrapping flow.
+.dh-multi-select-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  // Half Spectrum's tag-group gap tokens: container gap is single-spaced, while
+  // Spectrum's per-tag margins double up between adjacent items.
+  gap: calc(
+      var(
+          --spectrum-taggroup-tag-gap-y,
+          var(--spectrum-global-dimension-size-100)
+        ) / 2
+    )
+    calc(
+      var(
+          --spectrum-taggroup-tag-gap-x,
+          var(--spectrum-global-dimension-size-100)
+        ) / 2
+    );
+  padding: 3px 0 3px 4px;
+}
+
+// Custom tag chip: matches Spectrum .spectrum-Tag exactly.
+.dh-multi-select-tag {
+  display: inline-grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  cursor: default;
+  user-select: none;
+  block-size: var(
+    --spectrum-tag-height,
+    var(--spectrum-global-dimension-size-300)
+  );
+  padding-inline-start: calc(
+    var(--spectrum-tag-padding-x, var(--spectrum-global-dimension-size-125)) -
+      var(--spectrum-tag-border-size, var(--spectrum-alias-border-size-thin))
+  );
+  border-style: solid;
+  border-width: var(
+    --spectrum-tag-border-size,
+    var(--spectrum-alias-border-size-thin)
+  );
+  border-radius: var(
+    --spectrum-tag-border-radius,
+    var(--spectrum-alias-border-radius-regular)
+  );
+  color: var(--spectrum-tag-text-color, var(--spectrum-global-color-gray-700));
+  background-color: var(
+    --spectrum-tag-background-color,
+    var(--spectrum-global-color-gray-75)
+  );
+  border-color: var(
+    --spectrum-tag-border-color,
+    var(--spectrum-global-color-gray-600)
+  );
+  font-size: var(
+    --spectrum-tag-text-size,
+    var(--spectrum-global-dimension-font-size-75)
+  );
+  transition:
+    border-color 0.13s ease-in-out,
+    color 0.13s ease-in-out,
+    box-shadow 0.13s ease-in-out,
+    background-color 0.13s ease-in-out;
+
+  &:hover {
+    background-color: var(
+      --spectrum-tag-background-color-hover,
+      var(--spectrum-global-color-gray-75)
+    );
+    color: var(
+      --spectrum-tag-text-color-hover,
+      var(--spectrum-global-color-gray-900)
+    );
+    border-color: var(
+      --spectrum-tag-border-color-hover,
+      var(--spectrum-global-color-gray-900)
+    );
+  }
+
+  .is-disabled & {
+    color: var(
+      --spectrum-tag-text-color-disabled,
+      var(--spectrum-global-color-gray-500)
+    );
+    background-color: var(
+      --spectrum-tag-background-color-disabled,
+      var(--spectrum-global-color-gray-200)
+    );
+    border-color: var(
+      --spectrum-tag-border-color-disabled,
+      var(--spectrum-global-color-gray-200)
+    );
+    pointer-events: none;
+  }
+}
+
+// Tag label: matches Spectrum .spectrum-Tag-content
+.dh-multi-select-tag-label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: calc(
+    var(--spectrum-tag-height, var(--spectrum-global-dimension-size-300)) -
+      calc(
+        var(--spectrum-tag-border-size, var(--spectrum-alias-border-size-thin)) *
+          2
+      )
+  );
+  margin-inline-end: 0;
+
+  // When there's no remove button, add end padding to match Spectrum.
+  &:last-child {
+    margin-inline-end: var(
+      --spectrum-tag-padding-x,
+      var(--spectrum-global-dimension-size-125)
+    );
+  }
+}
+
+// Tag remove button: matches Spectrum .spectrum-Tag-removeButton dimensions
+.dh-multi-select-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  height: calc(
+    var(--spectrum-tag-height, var(--spectrum-global-dimension-size-300)) -
+      (
+        2 *
+          var(
+            --spectrum-tag-border-size,
+            var(--spectrum-alias-border-size-thin)
+          )
+      )
+  );
+  width: var(--spectrum-global-dimension-size-300);
+
+  &:hover {
+    color: var(
+      --spectrum-tag-removable-button-icon-color-hover,
+      var(--spectrum-global-color-gray-900)
+    );
+  }
+
+  // Scale down the CrossSmall icon to fit the tag
+  svg {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+// Inline filter input: fills remaining space on the last row of tags.
+.dh-multi-select-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--dh-color-input-fg);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  flex: 1;
+  min-width: 40px;
+  padding: 2px 0 2px 4px;
+  // Match tag height so input aligns with tags on the same row
+  height: var(--spectrum-tag-height, var(--spectrum-global-dimension-size-300));
+
+  &:disabled {
+    color: var(--dh-color-input-disabled-fg);
+    cursor: default;
+  }
+}
+
+.dh-multi-select-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--spectrum-global-dimension-size-400, 32px);
+  flex-shrink: 0;
+  align-self: stretch;
+  box-sizing: border-box;
+  position: relative;
+  padding: var(--spectrum-combobox-fieldbutton-inset, 0);
+  background-color: var(--dh-color-selector-bg);
+  background-clip: content-box;
+  color: var(--dh-color-selector-fg);
+  border-radius: 0 calc(var(--spectrum-alias-border-radius-regular, 4px) - 1px)
+    calc(var(--spectrum-alias-border-radius-regular, 4px) - 1px) 0;
+  transition:
+    background-color 130ms ease-in-out,
+    color 130ms ease-in-out;
+
+  // Left separator line via pseudo-element (matches Spectrum FieldButton pattern)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    border-left: 1px solid var(--dh-color-input-border);
+    pointer-events: none;
+  }
+
+  // Active/open state: matches Spectrum FieldButton is-active.
+  &.is-open {
+    background-color: var(
+      --spectrum-fieldbutton-background-color-down,
+      var(--spectrum-global-color-gray-200)
+    );
+    color: var(
+      --spectrum-fieldbutton-icon-color-down,
+      var(--spectrum-alias-icon-color-down)
+    );
+
+    &::before {
+      border-left-color: var(
+        --spectrum-fieldbutton-border-color-down,
+        var(--spectrum-alias-border-color-down)
+      );
+    }
+  }
+}
+
+// Validation icon shown left of chevron when validationState="invalid".
+.dh-multi-select-invalid-icon {
+  display: flex;
+  align-items: center;
+  padding-inline-start: var(--spectrum-global-dimension-size-100, 8px);
+  padding-inline-end: var(--spectrum-global-dimension-size-100, 8px);
+  color: var(--spectrum-semantic-negative-color-icon);
+  flex-shrink: 0;
+}
+
+// Mirrors Spectrum ComboBox .no-results rule.
+.dh-multi-select-empty {
+  display: block;
+  padding-top: var(--spectrum-selectlist-option-padding-height);
+  padding-inline-start: var(
+    --spectrum-selectlist-option-padding,
+    var(--spectrum-global-dimension-static-size-150)
+  );
+  font-size: var(
+    --spectrum-selectlist-option-text-size,
+    var(--spectrum-alias-font-size-default)
+  );
+  font-weight: var(
+    --spectrum-selectlist-option-text-font-weight,
+    var(--spectrum-global-font-weight-regular)
+  );
+}
+
+// Inline loading spinner.
+.dh-multi-select-loading-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Inset to align with single-select spinner position.
+  padding-inline-end: 8px;
+  padding-inline-start: 4px;
+}
+
+// Virtual focus highlight (keyboard nav). Popover lives in a portal,
+// so the selector is unscoped.
+[role='option'][data-dh-focused='true'] {
+  background-color: var(--dh-color-item-list-hover-bg);
+  border-inline-start-color: var(
+    --spectrum-selectlist-option-focus-indicator-color,
+    var(--spectrum-alias-border-color-focus)
+  );
+}
