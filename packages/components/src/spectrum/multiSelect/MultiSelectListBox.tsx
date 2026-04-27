@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 import { ListBox } from '@adobe/react-spectrum';
-import type { DOMRef, Key, LoadingState, Selection } from '@react-types/shared';
+import type { DOMRef, LoadingState, Selection } from '@react-types/shared';
 
 export interface MultiSelectListBoxProps {
   /** DOMRef forwarded to the inner Spectrum `<ListBox>`. */
@@ -14,7 +14,7 @@ export interface MultiSelectListBoxProps {
   /** Selected keys */
   selectedKeys: Iterable<string>;
   /** Disabled keys for `<ListBox>`. */
-  disabledKeys: Key[] | undefined;
+  disabledKeys: Iterable<string> | undefined;
   /** Selection change handler from `<ListBox>`. */
   onSelectionChange: (selection: Selection) => void;
   /** ARIA label applied to the `<ListBox>`. */
