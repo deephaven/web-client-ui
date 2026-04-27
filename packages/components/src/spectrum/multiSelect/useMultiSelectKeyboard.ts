@@ -244,6 +244,7 @@ export function useMultiSelectKeyboard({
   useEffect(() => {
     const container = listBoxContainerRef.current;
     if (container == null) {
+      inputRef.current?.removeAttribute('aria-activedescendant');
       return;
     }
     const options = container.querySelectorAll<HTMLElement>('[role="option"]');
