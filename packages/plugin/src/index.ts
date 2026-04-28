@@ -1,6 +1,7 @@
 export * from './PluginsContext';
 export * from './PluginTypes';
 export * from './PluginUtils';
+export * from './pluginSortUtil';
 export * from './TablePlugin';
 export * from './useCustomThemes';
 export * from './useDashboardPlugins';
