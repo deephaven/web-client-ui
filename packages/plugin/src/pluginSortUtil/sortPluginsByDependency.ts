@@ -12,6 +12,7 @@ const log = Log.module('@deephaven/plugin.sortPluginsByDependency');
  * @param plugins The plugin list from the manifest
  * @returns A new array with plugins sorted so dependencies come first
  */
+// eslint-disable-next-line import/prefer-default-export
 export function sortPluginsByDependency<
   T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
 >(plugins: readonly T[]): T[] {
