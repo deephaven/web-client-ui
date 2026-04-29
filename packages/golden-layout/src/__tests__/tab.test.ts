@@ -168,6 +168,8 @@ describe('tabs apply their configuration', () => {
     expect(innerTab.element.hasClass('lm_focusin')).toBe(true);
     expect(outerTab.element.hasClass('lm_focusin')).toBe(false);
 
+    // jsdom doesn't implement scrollIntoView, which Tab._onTabClick calls.
+    Element.prototype.scrollIntoView = jest.fn();
     outerTab.element.trigger($.Event('click', { button: 0 }));
 
     expect(outerTab.element.hasClass('lm_focusin')).toBe(true);
