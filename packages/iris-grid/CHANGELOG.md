@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
+
+### Bug Fixes
+
+- DH-21869: Fix Timezone for Conditional Date Formatting ([#2663](https://github.com/deephaven/web-client-ui/issues/2663)) ([49781a7](https://github.com/deephaven/web-client-ui/commit/49781a7ce08151255fad5064f767dc8653411db3))
+
 ## [1.18.0](https://github.com/deephaven/web-client-ui/compare/v1.17.1...v1.18.0) (2026-04-09)
 
 **Note:** Version bump only for package @deephaven/iris-grid
