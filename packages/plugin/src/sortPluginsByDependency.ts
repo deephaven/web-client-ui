@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import { type PluginManifestPluginInfo } from '../PluginUtils';
+import { type PluginManifestPluginInfo } from './PluginUtils';
 
 const log = Log.module('@deephaven/plugin.sortPluginsByDependency');
 

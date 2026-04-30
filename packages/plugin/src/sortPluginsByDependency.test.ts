@@ -1,5 +1,5 @@
 import { sortPluginsByDependency } from './sortPluginsByDependency';
-import { type PluginManifestPluginInfo } from '../PluginUtils';
+import { type PluginManifestPluginInfo } from './PluginUtils';
 
 function makeManifestPlugin(
   name: string,
