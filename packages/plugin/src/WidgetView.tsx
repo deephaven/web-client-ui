@@ -48,14 +48,6 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
       }
     });
 
-    log.debug(
-      `WidgetView resolved plugins for type ${type}:`,
-      'base=',
-      foundBasePlugin?.name ?? 'none',
-      'middleware=',
-      foundMiddleware.map(m => m.name)
-    );
-
     return { basePlugin: foundBasePlugin, middleware: foundMiddleware };
   }, [plugins, type]);
 
@@ -68,10 +60,6 @@ export function WidgetView({ fetch, type }: WidgetViewProps): JSX.Element {
   }, [basePlugin, middleware, type]);
 
   if (ChainedComponent != null) {
-    log.debug(
-      `Rendering chained component for type ${type}:`,
-      ChainedComponent.displayName ?? ChainedComponent.name
-    );
     return <ChainedComponent fetch={fetch} />;
   }
 

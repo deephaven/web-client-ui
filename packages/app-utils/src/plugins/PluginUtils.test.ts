@@ -19,6 +19,11 @@ const { default: loadRemoteModule } = require('./loadRemoteModule') as {
 describe('loadModulePlugins', () => {
   const BASE_URL = 'http://localhost:4100/plugins';
 
+  // Snapshot the resolve map and global.fetch once so each test starts
+  // from a known baseline regardless of what previous tests added.
+  const originalResolveKeys = new Set(Object.keys(resolve));
+  const originalFetch = global.fetch;
+
   function makePlugin(name: string): Plugin {
     return { name, type: PluginType.WIDGET_PLUGIN };
   }
@@ -34,16 +39,16 @@ describe('loadModulePlugins', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Clean up any plugin entries added to resolve in previous tests
+    // Remove any keys added to the shared resolve map by previous tests
     Object.keys(resolve).forEach(key => {
-      if (
-        key.startsWith('test-plugin') ||
-        key.startsWith('@deephaven/js-plugin-test-plugin') ||
-        key.startsWith('@acme/')
-      ) {
+      if (!originalResolveKeys.has(key)) {
         delete resolve[key];
       }
     });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   it('loads plugins sequentially and registers them in the plugin map', async () => {

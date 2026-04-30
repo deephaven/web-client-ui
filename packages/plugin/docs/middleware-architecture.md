@@ -172,10 +172,11 @@ const plugins = new Map([
 ## Rules
 
 1. **A base plugin is required.** Middleware registered for a type with no base plugin has no effect and produces a warning.
-2. **Last base plugin wins.** If multiple non-middleware plugins register for the same type, the last one replaces earlier ones (with a warning).
-3. **Middleware must render `Component`.** If a middleware doesn't render the `Component` prop, the rest of the chain (including the base widget) will not appear.
-4. **Middleware must spread props.** Pass all received props to `Component` to ensure the base widget and other middleware receive them.
-5. **`panelComponent` middleware is separate.** When the base plugin defines a `panelComponent`, only middleware that also defines `panelComponent` is applied. Middleware with only `component` is silently skipped in the panel path — it will have no effect for that widget type.
+2. **Last base plugin wins (per widget type).** If multiple non-middleware plugins register for the same widget type, the last one replaces earlier ones (with a warning). This is widget-type resolution in `WidgetLoaderPlugin`, distinct from plugin-name collisions in the plugin map (see below).
+3. **First plugin name wins (in the plugin map).** When `registerPlugin` encounters a plugin name that is already in the plugin map, the duplicate is **skipped** and a warning is logged. The first registration is kept.
+4. **Middleware must render `Component`.** If a middleware doesn't render the `Component` prop, the rest of the chain (including the base widget) will not appear.
+5. **Middleware must spread props.** Pass all received props to `Component` to ensure the base widget and other middleware receive them.
+6. **`panelComponent` middleware is separate.** When the base plugin defines a `panelComponent`, only middleware that also defines `panelComponent` is applied. Middleware with only `component` is silently skipped in the panel path — it will have no effect for that widget type.
 
 ## Cross-Plugin Dependencies
 
