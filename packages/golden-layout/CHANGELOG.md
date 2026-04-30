@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
+
+### Bug Fixes
+
+- **golden-layout:** DH-22431: preserve focus indicator on nested dashboard tab ([#2664](https://github.com/deephaven/web-client-ui/issues/2664)) ([b2c5aa0](https://github.com/deephaven/web-client-ui/commit/b2c5aa08e0d014c6ac8a0ac973d984f2bb8b0b36))
+
 ## [1.17.1](https://github.com/deephaven/web-client-ui/compare/v1.17.0...v1.17.1) (2026-04-01)
 
 ### Bug Fixes
