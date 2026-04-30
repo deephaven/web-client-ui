@@ -1,4 +1,5 @@
 import {
+  type GridMetrics,
   type GridRange,
   type GridState,
   GridUtils,
@@ -76,8 +77,9 @@ export type HydratedIrisGridState = Pick<
   | 'conditionalFormats'
   | 'columnHeaderGroups'
   | 'partitionConfig'
-  | 'metrics'
->;
+> & {
+  metrics?: Partial<GridMetrics>;
+};
 
 export type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
 
@@ -1192,10 +1194,10 @@ class IrisGridUtils {
       customColumnFormatMap,
       columnAlignmentMap = EMPTY_MAP,
       isFilterBarShown,
-      metrics: { userColumnWidths, userRowHeights } = {
-        userColumnWidths: EMPTY_MAP,
-        userRowHeights: EMPTY_MAP,
-      },
+      metrics: {
+        userColumnWidths = new Map<ModelIndex, number>(),
+        userRowHeights = new Map<ModelIndex, number>(),
+      } = {},
       quickFilters,
       customColumns,
       conditionalFormats = EMPTY_ARRAY,
