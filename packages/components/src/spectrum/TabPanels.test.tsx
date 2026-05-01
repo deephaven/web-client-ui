@@ -169,7 +169,7 @@ describe('TabPanels', () => {
     );
 
     expect(screen.getByLabelText('panels')).toHaveStyle(
-      'background-color: red'
+      'background-color: rgb(255, 0, 0)'
     );
   });
 

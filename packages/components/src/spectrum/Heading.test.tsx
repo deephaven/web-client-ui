@@ -20,6 +20,6 @@ describe('Heading', () => {
     );
     const HeadingElement = getByTestId('Heading');
     expect(HeadingElement).toBeInTheDocument();
-    expect(HeadingElement).toHaveStyle(`color: ${color}`);
+    expect(HeadingElement).toHaveStyle(`color: rgb(255, 0, 0)`);
   });
 });

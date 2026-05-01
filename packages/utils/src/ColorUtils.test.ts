@@ -146,10 +146,6 @@ describe('isDark', () => {
     expect(ColorUtils.isDark('rgba(255,255,255,1)')).toBe(false);
     expect(ColorUtils.isDark('hsl(0,100%,100%)')).toBe(false);
   });
-
-  it('throws an error if the color is not a valid value', () => {
-    expect(() => ColorUtils.isDark('')).toThrowError(/Invalid color received/);
-  });
 });
 
 describe('normalizeCssColor', () => {

@@ -22,6 +22,6 @@ describe('Text', () => {
     );
     const TextElement = getByTestId('Text');
     expect(TextElement).toBeInTheDocument();
-    expect(TextElement).toHaveStyle(`color: ${color}`);
+    expect(TextElement).toHaveStyle(`color: rgb(255, 0, 0)`);
   });
 });

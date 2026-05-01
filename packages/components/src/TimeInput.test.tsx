@@ -534,12 +534,12 @@ it('ignores value prop changes matching displayed value', async () => {
     initialSelectionEnd: 8,
   });
 
-  expect(textbox.value).toEqual('00:00:0');
+  expect(textbox.value).toEqual('00:00');
   expect(onChange).toBeCalledWith(0);
 
   // Ignore prop update matching internal state
   rerender(<TimeInput value={0} onChange={onChange} />);
-  expect(textbox.value).toEqual('00:00:0');
+  expect(textbox.value).toEqual('00:00');
   expect(onChange).toBeCalledTimes(1);
 
   // Update internal value

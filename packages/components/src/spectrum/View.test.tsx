@@ -20,6 +20,6 @@ describe('View', () => {
     );
     const viewElement = getByTestId('view');
     expect(viewElement).toBeInTheDocument();
-    expect(viewElement).toHaveStyle(`background-color: ${backgroundColor}`);
+    expect(viewElement).toHaveStyle(`background-color: rgb(255, 0, 0)`);
   });
 });

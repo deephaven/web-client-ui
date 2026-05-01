@@ -170,8 +170,13 @@ describe('isExternalThemeEnabled', () => {
   ])(
     'should return true if external theme is enabled: %s',
     (themeKey, expected) => {
-      window.location.search =
-        themeKey == null ? '' : `${THEME_KEY_OVERRIDE_QUERY_PARAM}=${themeKey}`;
+      window.history.pushState(
+        {},
+        '',
+        themeKey == null
+          ? '/'
+          : `/?${THEME_KEY_OVERRIDE_QUERY_PARAM}=${themeKey}`
+      );
       expect(isExternalThemeEnabled()).toBe(expected);
     }
   );
@@ -183,8 +188,13 @@ describe('isPreloadTransparentTheme: %s', () => {
     ['false', false],
     [null, false],
   ])('should', (value, expected) => {
-    window.location.search =
-      value == null ? '' : `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=${value}`;
+    window.history.pushState(
+      {},
+      '',
+      value == null
+        ? '/'
+        : `/?${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=${value}`
+    );
     expect(isPreloadTransparentTheme()).toBe(expected);
   });
 });
@@ -438,7 +448,13 @@ describe('getDefaultSelectedThemeKey', () => {
     'should coalesce overide key -> preload key -> default key: %s, %s, %s',
     (overrideKey, preloadKey, expected) => {
       if (overrideKey != null) {
-        window.location.search = `?${THEME_KEY_OVERRIDE_QUERY_PARAM}=${overrideKey}`;
+        window.history.pushState(
+          {},
+          '',
+          `/?${THEME_KEY_OVERRIDE_QUERY_PARAM}=${overrideKey}`
+        );
+      } else {
+        window.history.pushState({}, '', '/');
       }
 
       localStorage.setItem(
@@ -691,7 +707,13 @@ describe('preloadTheme', () => {
       }
 
       if (preloadTransparent) {
-        window.location.search = `${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=true`;
+        window.history.pushState(
+          {},
+          '',
+          `/?${PRELOAD_TRANSPARENT_THEME_QUERY_PARAM}=true`
+        );
+      } else {
+        window.history.pushState({}, '', '/');
       }
 
       preloadTheme();

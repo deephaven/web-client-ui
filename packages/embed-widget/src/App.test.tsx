@@ -60,12 +60,7 @@ describe('App', () => {
     document.title = 'Deephaven Embedded Widget';
 
     // Mock window.location.search
-    Object.defineProperty(window, 'location', {
-      value: {
-        search: '?name=testWidget',
-      },
-      writable: true,
-    });
+    window.history.pushState({}, '', '/?name=testWidget');
   });
 
   it('should update document title with widget name from URL parameter', async () => {
@@ -83,12 +78,7 @@ describe('App', () => {
   });
 
   it('should not update document title when name parameter is missing', async () => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        search: '',
-      },
-      writable: true,
-    });
+    window.history.pushState({}, '', '/');
 
     render(
       <Provider store={store}>
