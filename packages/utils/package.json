@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@deephaven/log": "file:../log",
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.1.9"
   },
   "devDependencies": {
     "@deephaven/test-utils": "file:../test-utils"

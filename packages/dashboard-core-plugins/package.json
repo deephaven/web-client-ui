@@ -50,7 +50,7 @@
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.1.9",
     "prop-types": "^15.7.2",
     "react-markdown": "^8.0.7",
     "redux": "^4.2.0",

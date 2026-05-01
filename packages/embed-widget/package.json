@@ -30,7 +30,7 @@
     "@deephaven/utils": "file:../utils",
     "@fontsource/fira-mono": "5.0.13",
     "@fontsource/fira-sans": "5.0.20",
-    "nanoid": "5.0.7",
+    "nanoid": "5.1.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^7.2.7"

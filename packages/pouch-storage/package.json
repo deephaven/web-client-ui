@@ -27,8 +27,8 @@
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "lodash.throttle": "^4.1.1",
-    "pouchdb-browser": "^7.3.0",
-    "pouchdb-find": "^7.3.0"
+    "pouchdb-browser": "^9.0.0",
+    "pouchdb-find": "^9.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

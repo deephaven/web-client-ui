@@ -26,7 +26,7 @@
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "lodash.clamp": "^4.0.3",
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.1.9"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",

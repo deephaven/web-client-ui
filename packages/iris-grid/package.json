@@ -58,7 +58,7 @@
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "monaco-editor": "^0.43.0",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.1.9",
     "react-transition-group": "^4.4.2"
   },
   "peerDependencies": {
