@@ -265,6 +265,53 @@ describe('handleResizeColumn', () => {
   });
 });
 
+describe('handleRollupChange', () => {
+  it('un-hides group-by columns', () => {
+    const columns = irisGridTestUtils.makeColumns(3);
+    const irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(irisGridTestUtils.makeTable({ columns }))
+    );
+    const { metricCalculator } = irisGrid.state;
+    const resetColumnWidth = jest.spyOn(metricCalculator, 'resetColumnWidth');
+
+    const groupByNames = [columns[1].name, columns[2].name];
+
+    act(() => {
+      irisGrid.handleRollupChange({
+        columns: groupByNames,
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+    });
+
+    expect(resetColumnWidth).toHaveBeenCalledWith(1);
+    expect(resetColumnWidth).toHaveBeenCalledWith(2);
+    expect(irisGrid.state.rollupConfig?.columns).toEqual(groupByNames);
+  });
+
+  it('does not call resetColumnWidth when there are no group-by columns', () => {
+    const irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(
+        irisGridTestUtils.makeTable({
+          columns: irisGridTestUtils.makeColumns(3),
+        })
+      )
+    );
+    const { metricCalculator } = irisGrid.state;
+    const resetColumnWidth = jest.spyOn(metricCalculator, 'resetColumnWidth');
+
+    act(() => {
+      irisGrid.handleRollupChange({
+        columns: [],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+    });
+
+    expect(resetColumnWidth).not.toHaveBeenCalled();
+  });
+});
+
 // auto resize -> reset user width and set calculated width to content width
 // manual resize -> set user width to content width
 describe('handleResizeAllColumns', () => {
