@@ -170,11 +170,6 @@ export default class Tab {
     this.closeElement.off('click', this._onCloseClick);
     if (isComponent(this.contentItem)) {
       this.contentItem.container._contentElement.off();
-      this.contentItem.container._contentElement[0].removeEventListener(
-        'click',
-        this._onTabContentFocusIn,
-        true
-      );
     }
     if (this._dragListener) {
       this.contentItem.off(
@@ -216,7 +211,20 @@ export default class Tab {
   /**
    * Callback when the contentItem is focused in
    */
-  _onTabContentFocusIn() {
+  _onTabContentFocusIn(event?: JQuery.TriggeredEvent) {
+    // If the focus originated from inside a nested LayoutManager (a
+    // dashboard within a dashboard), let that nested layout's tab own
+    // the focus indicator instead of this outer tab. The focusin event
+    // bubbles, so without this check the outer tab would clear the
+    // nested tab's "lm_focusin" class and claim focus for itself.
+    if (
+      isComponent(this.contentItem) &&
+      event?.target instanceof Element &&
+      this._isInNestedLayout(event.target)
+    ) {
+      return;
+    }
+
     // Ensure only one tab is marked as having focus at a time.
     // In Firefox, if the focused element is removed from the DOM,
     // the focusout event won't trigger. This can result in two tabs
@@ -265,12 +273,13 @@ export default class Tab {
         this.header.parent.setActiveContentItem(this.contentItem);
       } else if (
         isComponent(this.contentItem) &&
-        !this.contentItem.container._contentElement[0].contains(
-          document.activeElement
-        )
+        !this._isFocusDirectlyInContainer()
       ) {
         // if no focus inside put focus onto the container
-        // so focusin always fires for tabclicks
+        // so focusin always fires for tabclicks. Focus inside a nested
+        // LayoutManager is not considered "inside" this container so
+        // that clicking the outer tab transfers focus (and the
+        // lm_focusin indicator) to it.
         this.contentItem.container._contentElement.focus();
       }
 
@@ -329,5 +338,35 @@ export default class Tab {
    */
   _onCloseMousedown(event: Event) {
     event.stopPropagation();
+  }
+
+  /**
+   * Returns true if the given element is inside this content item's
+   * container but within a nested LayoutManager (i.e. a dashboard
+   * embedded inside this tab's component). Such focus belongs to the
+   * nested layout's tab, not this outer one.
+   */
+  private _isInNestedLayout(element: Element): boolean {
+    const nestedLayoutRoot = $(element).closest('.lm_goldenlayout')[0];
+    const ownLayoutRoot = this._layoutManager.root.element[0];
+    return nestedLayoutRoot != null && nestedLayoutRoot !== ownLayoutRoot;
+  }
+
+  /**
+   * Returns true if the document's active element is inside this tab's
+   * container directly (not inside a nested LayoutManager).
+   */
+  private _isFocusDirectlyInContainer(): boolean {
+    if (!isComponent(this.contentItem)) {
+      return false;
+    }
+    const active = document.activeElement;
+    if (
+      active == null ||
+      !this.contentItem.container._contentElement[0].contains(active)
+    ) {
+      return false;
+    }
+    return !this._isInNestedLayout(active);
   }
 }

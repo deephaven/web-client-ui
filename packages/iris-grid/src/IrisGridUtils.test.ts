@@ -719,7 +719,7 @@ describe('dehydration methods', () => {
         metrics: {
           userColumnWidths: new Map(),
           userRowHeights: new Map(),
-        } as GridMetrics,
+        } as Partial<GridMetrics>,
       }),
     ],
   ])('%s should be serializable', (_label, result) => {

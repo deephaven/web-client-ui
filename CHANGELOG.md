@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
+
+### Bug Fixes
+
+- DH-21869: Fix Timezone for Conditional Date Formatting ([#2663](https://github.com/deephaven/web-client-ui/issues/2663)) ([49781a7](https://github.com/deephaven/web-client-ui/commit/49781a7ce08151255fad5064f767dc8653411db3))
+- **golden-layout:** DH-22431: preserve focus indicator on nested dashboard tab ([#2664](https://github.com/deephaven/web-client-ui/issues/2664)) ([b2c5aa0](https://github.com/deephaven/web-client-ui/commit/b2c5aa08e0d014c6ac8a0ac973d984f2bb8b0b36))
+
+## [1.18.0](https://github.com/deephaven/web-client-ui/compare/v1.17.1...v1.18.0) (2026-04-09)
+
+### Features
+
+- Export GridColorUtils ([#2655](https://github.com/deephaven/web-client-ui/issues/2655)) ([af923d4](https://github.com/deephaven/web-client-ui/commit/af923d439936f0949386ed16e5a647a73c008f87))
+
+### Bug Fixes
+
+- DH-21539: Prevent browser back navigation on horizontal overscroll ([#2654](https://github.com/deephaven/web-client-ui/issues/2654)) ([d504ec8](https://github.com/deephaven/web-client-ui/commit/d504ec853c6434343ea544b0ccee7710e666881b))
+
 ## [1.17.1](https://github.com/deephaven/web-client-ui/compare/v1.17.0...v1.17.1) (2026-04-01)
 
 ### Bug Fixes

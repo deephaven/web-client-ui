@@ -36,3 +36,5 @@ export { default as DataBarCellRenderer } from './DataBarCellRenderer';
 export * from './TokenBoxCellRenderer';
 export * from './GridRendererTypes';
 export * from './DataBarGridModel';
+export { default as GridColorUtils } from './GridColorUtils';
+export type { RGB, Oklab } from './GridColorUtils';
