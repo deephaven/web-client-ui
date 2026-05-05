@@ -202,7 +202,7 @@ interface IrisGridPanelState {
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly SortDescriptor[];
   userColumnWidths: ModelSizeMap;
-  userColumnWidthsByName: Map<ColumnName, number>;
+  userColumnWidthsByName: ReadonlyMap<ColumnName, number>;
   userRowHeights: ModelSizeMap;
   reverse: boolean;
   movedColumns: readonly MoveOperation[];

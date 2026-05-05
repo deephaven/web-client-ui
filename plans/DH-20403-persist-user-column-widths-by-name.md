@@ -1,6 +1,10 @@
-# DH-20403 — Persist hidden-column widths by name end-to-end
+# DH-20403 — Persist user column widths by name end-to-end
 
-Folded into PR [#2668](https://github.com/deephaven/web-client-ui/pull/2668).
+Follow-up split out of [PR #2668](https://github.com/deephaven/web-client-ui/pull/2668)
+(DH-22326). That PR's "Future work" section called out the dual
+by-index / by-name representation as the next thing to address; this PR
+threads `userColumnWidthsByName` end-to-end through the persistence boundary
+so saved layouts retain hidden-column state across model swaps.
 
 ## Problem
 

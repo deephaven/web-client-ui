@@ -36,7 +36,7 @@ export type IrisGridMetricCalculatorOptions = GridMetricCalculatorOptions & {
 };
 
 export class IrisGridMetricCalculator extends GridMetricCalculator {
-  // Column widths by name to keep track of columns going in and out of viewport
+  // Column widths by name to keep track of columns going in and out of viewport.
   private userColumnWidthsByName: Map<ColumnName, number>;
 
   // Cached model column names to detect when the column width map update is necessary
@@ -46,6 +46,12 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
 
   // Cached padding maps for column header groups
   private cachedPaddingMaps: Map<string, Map<string, number>> = new Map();
+
+  constructor(options: IrisGridMetricCalculatorOptions = {}) {
+    const { userColumnWidthsByName, ...rest } = options;
+    super(rest);
+    this.userColumnWidthsByName = userColumnWidthsByName ?? new Map();
+  }
 
   static getModelColumnRoot(
     model: IrisGridModel,
@@ -106,12 +112,6 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
       children: [],
       value: getLeafValue(name) ?? 0,
     };
-  }
-
-  constructor(options: IrisGridMetricCalculatorOptions = {}) {
-    const { userColumnWidthsByName, ...rest } = options;
-    super(rest);
-    this.userColumnWidthsByName = userColumnWidthsByName ?? new Map();
   }
 
   /**
