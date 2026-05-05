@@ -19,9 +19,25 @@ import { rebalanceTree, type TreeNode } from './TreeRebalanceUtil';
 
 export type IrisGridMetricState = GridMetricState & IrisGridStateOverride;
 
+type GridMetricCalculatorOptions = NonNullable<
+  ConstructorParameters<typeof GridMetricCalculator>[0]
+>;
+
+export type IrisGridMetricCalculatorOptions = GridMetricCalculatorOptions & {
+  /**
+   * Map of user-set column widths keyed by column name. This is the source
+   * of truth for hidden/manually-sized columns across model swaps (e.g.
+   * applying or removing a rollup), where the model's column indices
+   * change but names are stable. Entries for columns absent from the
+   * current model are preserved and re-projected onto the by-index map
+   * whenever the model swaps.
+   */
+  userColumnWidthsByName?: Map<ColumnName, number>;
+};
+
 export class IrisGridMetricCalculator extends GridMetricCalculator {
-  // Column widths by name to keep track of columns going in and out of viewport
-  private userColumnWidthsByName: Map<ColumnName, number> = new Map();
+  // Column widths by name to keep track of columns going in and out of viewport.
+  private userColumnWidthsByName: Map<ColumnName, number>;
 
   // Cached model column names to detect when the column width map update is necessary
   private cachedModelColumnNames: readonly ColumnName[] | undefined;
@@ -30,6 +46,12 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
 
   // Cached padding maps for column header groups
   private cachedPaddingMaps: Map<string, Map<string, number>> = new Map();
+
+  constructor(options: IrisGridMetricCalculatorOptions = {}) {
+    const { userColumnWidthsByName, ...rest } = options;
+    super(rest);
+    this.userColumnWidthsByName = userColumnWidthsByName ?? new Map();
+  }
 
   static getModelColumnRoot(
     model: IrisGridModel,
@@ -197,6 +219,7 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
     const modelColumnNames = this.getCachedCurrentModelColumnNames(
       model.columns
     );
+    const isFirstCall = this.cachedModelColumnNames == null;
     if (
       this.cachedModelColumnNames != null &&
       this.cachedModelColumnNames !== modelColumnNames &&
@@ -206,6 +229,10 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
       this.updateCalculatedColumnWidths(model);
       this.updateUserColumnWidths(model);
       this.cachedPaddingMaps.clear();
+    } else if (isFirstCall && this.userColumnWidthsByName.size > 0) {
+      // On the first call, project the seeded by-name widths into the
+      // by-index map for the current model.
+      this.updateUserColumnWidths(model);
     }
     this.cachedModelColumnNames = modelColumnNames;
 
@@ -337,6 +364,16 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   getUserColumnWidths(): ModelSizeMap {
     // This might return stale data if getMetrics hasn't been called
     return this.userColumnWidths;
+  }
+
+  /**
+   * Gets the user column widths keyed by column name. This is the source
+   * of truth for hidden/manually-sized columns across model swaps and
+   * persistence boundaries.
+   * @returns A map of user column widths keyed by column name
+   */
+  getUserColumnWidthsByName(): ReadonlyMap<ColumnName, number> {
+    return this.userColumnWidthsByName;
   }
 
   getCalculatedColumnWidths(): ModelSizeMap {
