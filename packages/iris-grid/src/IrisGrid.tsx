@@ -3652,8 +3652,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleRollupChange(rollupConfig: UIRollupConfig): void {
     log.info('Rollup change', rollupConfig);
 
+    // Un-hide hidden group-by columns.
+    if (rollupConfig?.columns != null && rollupConfig.columns.length > 0) {
+      const { metricCalculator } = this.state;
+      const userColumnWidthsByName =
+        metricCalculator.getUserColumnWidthsByName();
+      rollupConfig.columns.forEach(name => {
+        if (userColumnWidthsByName.get(name) === 0) {
+          metricCalculator.resetColumnWidthByName(name);
+        }
+      });
+    }
+
     this.resetGridViewState();
-    this.showAllColumns();
     this.clearAllFilters();
 
     this.startLoading(
