@@ -11,6 +11,7 @@ import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { type FilterData } from './IrisGrid';
+import { IrisGridMetricCalculator } from './IrisGridMetricCalculator';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
   type DehydratedSort,
@@ -921,5 +922,99 @@ describe('textAlignForValue', () => {
       IrisGridUtils.textAlignForValue('java.lang.String', 'TestColumn')
     ).toBe('left');
     expect(IrisGridUtils.textAlignForValue('char', 'TestColumn')).toBe('left');
+  });
+});
+
+describe('user column widths persistence by name', () => {
+  it('preserves widths for columns absent from the current model across a dehydrate/hydrate/dehydrate round-trip', () => {
+    // Original (un-rolled-up) model has 5 columns named name_0..name_4.
+    const originalColumns = irisGridTestUtils.makeColumns(5, 'name_');
+    const originalModel = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({ columns: originalColumns })
+    );
+
+    // Current model is a "rolled-up" subset that only includes name_0 (the
+    // group-by column). The other four columns are absent from the model.
+    const currentColumns = [originalColumns[0]];
+    const currentModel = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({ columns: currentColumns })
+    );
+
+    // Metric calculator carries widths for columns that aren't in the current
+    // model — e.g. name_2 was hidden by the user before the rollup.
+    const metricCalculator = new IrisGridMetricCalculator({
+      userColumnWidthsByName: new Map([['name_2', 0]]),
+    });
+
+    // First dehydrate against the current (rolled-up) model.
+    const firstDehydrated = irisGridUtils.dehydrateIrisGridState(currentModel, {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      customColumnFormatMap: new Map(),
+      columnAlignmentMap: new Map(),
+      isFilterBarShown: false,
+      quickFilters: new Map(),
+      customColumns: [],
+      reverse: false,
+      rollupConfig: undefined,
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      sorts: [],
+      invertSearchColumns: false,
+      pendingDataMap: new Map(),
+      frozenColumns: [],
+      conditionalFormats: [],
+      columnHeaderGroups: [],
+      partitionConfig: undefined,
+      metricCalculator,
+      metrics: {
+        userColumnWidths: new Map(),
+        userRowHeights: new Map(),
+      } as Partial<GridMetrics>,
+    });
+
+    expect(firstDehydrated.userColumnWidths).toEqual([['name_2', 0]]);
+
+    // Hydrate against the current (rolled-up) model. The by-name map should
+    // preserve the entry even though name_2 is absent from currentModel.
+    const hydrated = irisGridUtils.hydrateIrisGridState(currentModel, {
+      ...firstDehydrated,
+      userColumnWidths: firstDehydrated.userColumnWidths,
+    });
+    expect(hydrated.userColumnWidthsByName.get('name_2')).toBe(0);
+    expect(hydrated.userColumnWidths.size).toBe(0);
+
+    // Re-seed the metric calculator with the hydrated by-name map (this
+    // simulates IrisGrid passing `userColumnWidthsByName` through to its
+    // metric calculator constructor) and dehydrate again.
+    const reseeded = new IrisGridMetricCalculator({
+      userColumnWidthsByName: hydrated.userColumnWidthsByName,
+    });
+    const secondDehydrated = irisGridUtils.dehydrateIrisGridState(
+      currentModel,
+      {
+        ...firstDehydrated,
+        metricCalculator: reseeded,
+        metrics: {
+          userColumnWidths: new Map(),
+          userRowHeights: new Map(),
+        } as Partial<GridMetrics>,
+      }
+    );
+
+    // The entry for name_2 must survive the second save.
+    expect(secondDehydrated.userColumnWidths).toEqual([['name_2', 0]]);
+
+    // After removing the rollup (model swap back to originalColumns),
+    // hydrating against the original model yields a by-index map with the
+    // hidden width re-applied to name_2.
+    const restored = irisGridUtils.hydrateIrisGridState(
+      originalModel,
+      secondDehydrated
+    );
+    expect(restored.userColumnWidthsByName.get('name_2')).toBe(0);
+    expect(restored.userColumnWidths.get(2)).toBe(0);
   });
 });

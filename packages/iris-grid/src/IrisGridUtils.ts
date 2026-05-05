@@ -79,6 +79,11 @@ export type HydratedIrisGridState = Pick<
   | 'partitionConfig'
 > & {
   metrics?: Partial<GridMetrics>;
+  /**
+   * The metric calculator instance, used to access the by-name user column
+   * widths map (the source of truth across model swaps).
+   */
+  metricCalculator?: IrisGridState['metricCalculator'];
 };
 
 export type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
@@ -1194,6 +1199,7 @@ class IrisGridUtils {
       customColumnFormatMap,
       columnAlignmentMap = EMPTY_MAP,
       isFilterBarShown,
+      metricCalculator,
       metrics: {
         userColumnWidths = new Map<ModelIndex, number>(),
         userRowHeights = new Map<ModelIndex, number>(),
@@ -1219,6 +1225,23 @@ class IrisGridUtils {
       ? model.partitionColumns
       : [];
 
+    // Prefer the by-name map from the metric calculator: it preserves entries
+    // for columns absent from the current model (e.g. while a rollup is
+    // active), so reload-then-save round-trips don't drop them.
+    // Fall back to projecting the by-index map from `metrics` against the
+    // current model for callers that didn't pass a metric calculator.
+    const dehydratedUserColumnWidths: DehydratedUserColumnWidth[] =
+      metricCalculator != null
+        ? [...metricCalculator.getUserColumnWidthsByName()]
+        : [...userColumnWidths]
+            .filter(
+              ([columnIndex]) =>
+                columnIndex != null &&
+                columnIndex >= 0 &&
+                columnIndex < columns.length
+            )
+            .map(([columnIndex, width]) => [columns[columnIndex].name, width]);
+
     // Return value will be serialized, should not contain undefined
     return {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
@@ -1228,14 +1251,7 @@ class IrisGridUtils {
       isFilterBarShown,
       quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
       sorts: IrisGridUtils.dehydrateSort(sorts),
-      userColumnWidths: [...userColumnWidths]
-        .filter(
-          ([columnIndex]) =>
-            columnIndex != null &&
-            columnIndex >= 0 &&
-            columnIndex < columns.length
-        )
-        .map(([columnIndex, width]) => [columns[columnIndex].name, width]),
+      userColumnWidths: dehydratedUserColumnWidths,
       userRowHeights: [...userRowHeights],
       customColumns: [...customColumns],
       conditionalFormats: [...conditionalFormats],
@@ -1268,8 +1284,9 @@ class IrisGridUtils {
   hydrateIrisGridState(
     model: IrisGridModel,
     irisGridState: DehydratedIrisGridState
-  ): Omit<HydratedIrisGridState, 'metrics'> & {
+  ): Omit<HydratedIrisGridState, 'metrics' | 'metricCalculator'> & {
     userColumnWidths: ModelSizeMap;
+    userColumnWidthsByName: Map<ColumnName, number>;
     userRowHeights: ModelSizeMap;
   } {
     const {
@@ -1301,6 +1318,22 @@ class IrisGridUtils {
     const partitionColumns = isPartitionedGridModelProvider(model)
       ? model.partitionColumns
       : [];
+
+    // Build a name-keyed map preserving every persisted entry, including
+    // entries for columns absent from the current model. Then derive the
+    // by-index map from that for back-compat with consumers that read
+    // widths immediately after hydrate.
+    const userColumnWidthsByName = new Map<ColumnName, number>();
+    userColumnWidths.forEach(([column, width]) => {
+      const name =
+        typeof column === 'string' || (column as unknown) instanceof String
+          ? (column as ColumnName)
+          : columns[column as number]?.name;
+      if (name != null) {
+        userColumnWidthsByName.set(name, width);
+      }
+    });
+
     return {
       advancedFilters: this.hydrateAdvancedFilters(
         columns,
@@ -1317,22 +1350,13 @@ class IrisGridUtils {
         formatter.timeZone
       ),
       sorts: this.hydrateSort(columns, sorts, true),
+      userColumnWidthsByName,
       userColumnWidths: new Map(
-        userColumnWidths
-          .map(
-            ([column, width]: [string | number, number]): [number, number] => {
-              if (
-                typeof column === 'string' ||
-                (column as unknown) instanceof String
-              ) {
-                return [
-                  columns.findIndex(({ name }) => name === column),
-                  width,
-                ];
-              }
-              return [column, width];
-            }
-          )
+        [...userColumnWidthsByName]
+          .map(([name, width]): [number, number] => [
+            columns.findIndex(c => c.name === name),
+            width,
+          ])
           .filter(
             ([column]) =>
               column != null && column >= 0 && column < columns.length
