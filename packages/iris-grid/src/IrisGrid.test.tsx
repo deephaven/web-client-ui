@@ -266,18 +266,23 @@ describe('handleResizeColumn', () => {
 });
 
 describe('handleRollupChange', () => {
-  it('un-hides group-by columns by name', () => {
+  it('un-hides hidden group-by columns by name', () => {
     const columns = irisGridTestUtils.makeColumns(3);
     const irisGrid = makeComponent(
       irisGridTestUtils.makeModel(irisGridTestUtils.makeTable({ columns }))
     );
     const { metricCalculator } = irisGrid.state;
+
+    const groupByNames = [columns[1].name, columns[2].name];
+    // Seed both group-by columns as hidden (width 0) so the selective
+    // un-hide path actually fires.
+    metricCalculator.userColumnWidthsByName.set(groupByNames[0], 0);
+    metricCalculator.userColumnWidthsByName.set(groupByNames[1], 0);
+
     const resetColumnWidthByName = jest.spyOn(
       metricCalculator,
       'resetColumnWidthByName'
     );
-
-    const groupByNames = [columns[1].name, columns[2].name];
 
     act(() => {
       irisGrid.handleRollupChange({
@@ -347,6 +352,73 @@ describe('handleRollupChange', () => {
     expect(metricCalculator.userColumnWidthsByName.has(newGroupByName)).toBe(
       false
     );
+  });
+
+  it('preserves a non-zero user width on a group-by column', () => {
+    // A user can manually resize a column before applying a rollup. That
+    // width represents an explicit preference and must survive when the
+    // column becomes a group-by; only hidden (width 0) group-by columns get
+    // reset.
+    const columns = irisGridTestUtils.makeColumns(3);
+    const irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(irisGridTestUtils.makeTable({ columns }))
+    );
+    const { metricCalculator } = irisGrid.state;
+
+    const groupByColumn = columns[1];
+    const customWidth = 250;
+    metricCalculator.userColumnWidthsByName.set(
+      groupByColumn.name,
+      customWidth
+    );
+
+    const resetColumnWidthByName = jest.spyOn(
+      metricCalculator,
+      'resetColumnWidthByName'
+    );
+
+    act(() => {
+      irisGrid.handleRollupChange({
+        columns: [groupByColumn.name],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+    });
+
+    expect(resetColumnWidthByName).not.toHaveBeenCalled();
+    expect(
+      metricCalculator.userColumnWidthsByName.get(groupByColumn.name)
+    ).toBe(customWidth);
+  });
+
+  it('un-hides only the hidden group-by columns when widths are mixed', () => {
+    const columns = irisGridTestUtils.makeColumns(3);
+    const irisGrid = makeComponent(
+      irisGridTestUtils.makeModel(irisGridTestUtils.makeTable({ columns }))
+    );
+    const { metricCalculator } = irisGrid.state;
+
+    const hiddenName = columns[1].name;
+    const sizedName = columns[2].name;
+    metricCalculator.userColumnWidthsByName.set(hiddenName, 0);
+    metricCalculator.userColumnWidthsByName.set(sizedName, 250);
+
+    const resetColumnWidthByName = jest.spyOn(
+      metricCalculator,
+      'resetColumnWidthByName'
+    );
+
+    act(() => {
+      irisGrid.handleRollupChange({
+        columns: [hiddenName, sizedName],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+    });
+
+    expect(resetColumnWidthByName).toHaveBeenCalledTimes(1);
+    expect(resetColumnWidthByName).toHaveBeenCalledWith(hiddenName);
+    expect(metricCalculator.userColumnWidthsByName.get(sizedName)).toBe(250);
   });
 });
 

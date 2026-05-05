@@ -3816,14 +3816,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleRollupChange(rollupConfig: UIRollupConfig): void {
     log.info('Rollup change', rollupConfig);
 
-    // Un-hide group-by columns for the rollup. Reset by name (rather than by
-    // model index) because when editing an existing rollup the current model
-    // is the rolled-up one and may not contain a newly-added group-by column,
-    // so an index lookup against this.props.model would miss it.
+    // Un-hide hidden group-by columns.
     if (rollupConfig?.columns != null && rollupConfig.columns.length > 0) {
       const { metricCalculator } = this.state;
+      const userColumnWidthsByName =
+        metricCalculator.getUserColumnWidthsByName();
       rollupConfig.columns.forEach(name => {
-        metricCalculator.resetColumnWidthByName(name);
+        if (userColumnWidthsByName.get(name) === 0) {
+          metricCalculator.resetColumnWidthByName(name);
+        }
       });
     }
 
