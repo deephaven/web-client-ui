@@ -265,6 +265,64 @@ describe('handleResizeColumn', () => {
   });
 });
 
+describe('handleRollupChange', () => {
+  it('seeds metric calculator from userColumnWidthsByName prop and preserves widths for columns absent from the current model', () => {
+    // Current (rolled-up) model only contains the group-by column.
+    const fullColumns = irisGridTestUtils.makeColumns(3);
+    const currentColumns = [fullColumns[0]];
+    const currentModel = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({ columns: currentColumns })
+    );
+
+    // Persisted state includes a hidden width for a column not in the
+    // currently displayed (rolled-up) model.
+    const hiddenName = fullColumns[2].name;
+    const irisGrid = makeComponent(currentModel, DEFAULT_SETTINGS, {
+      userColumnWidthsByName: new Map([[hiddenName, 0]]),
+    });
+
+    const { metricCalculator } = irisGrid.state;
+    // The by-name map carries the entry even though it isn't in the model.
+    expect(metricCalculator.getUserColumnWidthsByName().get(hiddenName)).toBe(
+      0
+    );
+    // The by-index map should not include it (no model index).
+    expect([...metricCalculator.getUserColumnWidths().entries()]).toEqual([]);
+  });
+
+  it('un-hides a group-by column that is absent from the current (already rolled-up) model', () => {
+    // Simulates editing an existing rollup where a newly-added group-by
+    // column is not present in the current model (e.g. non-aggregated columns
+    // are hidden), so a model-index lookup against this.props.model would
+    // miss it. Resetting by name must still clear its hidden width.
+    const columns = irisGridTestUtils.makeColumns(3);
+    const model = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({ columns })
+    );
+    const irisGrid = makeComponent(model);
+    const { metricCalculator } = irisGrid.state;
+
+    // Simulate the column having been hidden previously (width 0 stored by name).
+    const newGroupByName = 'NotInCurrentModel';
+    metricCalculator.userColumnWidthsByName.set(newGroupByName, 0);
+
+    // Spy AFTER seeding so the spy still calls through.
+    jest.spyOn(model, 'getColumnIndexByName').mockReturnValue(undefined);
+
+    act(() => {
+      irisGrid.handleRollupChange({
+        columns: [newGroupByName],
+        showConstituents: false,
+        showNonAggregatedColumns: false,
+      });
+    });
+
+    expect(metricCalculator.userColumnWidthsByName.has(newGroupByName)).toBe(
+      false
+    );
+  });
+});
+
 // auto resize -> reset user width and set calculated width to content width
 // manual resize -> set user width to content width
 describe('handleResizeAllColumns', () => {
