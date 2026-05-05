@@ -334,6 +334,22 @@ export class IrisGridMetricCalculator extends GridMetricCalculator {
   }
 
   /**
+   * Resets the user width for a column by its name. Works regardless of
+   * whether the column is currently present in the model, so it is safe to
+   * call when the model is about to be swapped (e.g. when applying a rollup).
+   * @param name The name of the column to reset
+   */
+  resetColumnWidthByName(name: ColumnName): void {
+    this.userColumnWidthsByName.delete(name);
+    if (this.cachedModelColumnNames != null) {
+      const index = this.cachedModelColumnNames.indexOf(name);
+      if (index >= 0) {
+        super.resetColumnWidth(index);
+      }
+    }
+  }
+
+  /**
    * Resets all user column widths
    */
   resetAllColumnWidths(): void {
