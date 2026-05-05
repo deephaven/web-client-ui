@@ -1228,8 +1228,8 @@ class IrisGridUtils {
     // Prefer the by-name map from the metric calculator: it preserves entries
     // for columns absent from the current model (e.g. while a rollup is
     // active), so reload-then-save round-trips don't drop them.
-    // Fall back to projecting the by-index map against the current model for
-    // callers that didn't pass a metric calculator.
+    // Fall back to projecting the by-index map from `metrics` against the
+    // current model for callers that didn't pass a metric calculator.
     const dehydratedUserColumnWidths: DehydratedUserColumnWidth[] =
       metricCalculator != null
         ? [...metricCalculator.getUserColumnWidthsByName()]
