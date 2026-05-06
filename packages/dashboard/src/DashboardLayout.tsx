@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import type GoldenLayout from '@deephaven/golden-layout';
@@ -98,7 +99,18 @@ export function DashboardLayout({
 
   const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
-  const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
+  // `lastConfig` is intentionally a ref rather than state.
+  //
+  // The throttled body below writes the dehydrated config and synchronously
+  // calls `onLayoutChange`. The parent's resulting prop update can commit on
+  // a different React lane than this component's own state updates (e.g.
+  // `react-redux`'s `useSyncExternalStore` notifications flush at the Sync
+  // lane and pre-empt the Default lane). If we tracked `lastConfig` with
+  // `useState`, the `loadNewConfig` effect could run in a render where the
+  // parent's prop update has committed but our `setLastConfig` has not,
+  // wiping the layout. A ref is written synchronously and observable to any
+  // subsequent render regardless of lane (see DH-21843).
+  const lastConfigRef = useRef<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
   );
@@ -224,9 +236,10 @@ export function DashboardLayout({
   // Throttle the calls so that we don't flood comparing these layouts
   const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
     (dehydratedLayoutConfig: DashboardLayoutConfig) => {
+      const previousConfig = lastConfigRef.current;
       const hasChanged =
-        lastConfig == null ||
-        !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
+        previousConfig == null ||
+        !LayoutUtils.isEqual(previousConfig, dehydratedLayoutConfig);
 
       log.debug('handleLayoutStateChanged', hasChanged, dehydratedLayoutConfig);
 
@@ -234,13 +247,16 @@ export function DashboardLayout({
         log.debug(
           'Layout config has changed',
           'lastConfig',
-          lastConfig,
+          previousConfig,
           'dehydratedLayoutConfig',
           dehydratedLayoutConfig
         );
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
 
-        setLastConfig(dehydratedLayoutConfig);
+        // Update the ref synchronously before calling `onLayoutChange` so
+        // that any subsequent render triggered by the parent observes the
+        // latest value, regardless of the lane it commits on.
+        lastConfigRef.current = dehydratedLayoutConfig;
 
         onLayoutChange(dehydratedLayoutConfig);
 
@@ -331,9 +347,15 @@ export function DashboardLayout({
   const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(
     function loadNewConfig() {
+      // Use deep equality against `lastConfigRef` rather than a referential
+      // check. The parent commonly echoes back the dehydrated config we just
+      // emitted (sometimes as a fresh reference, e.g. through a reducer), and
+      // we must not treat that echo as a brand-new external config and wipe
+      // the layout (see DH-21843).
       if (
         previousLayoutConfig !== layoutConfig &&
-        layoutConfig !== lastConfig
+        (lastConfigRef.current == null ||
+          !LayoutUtils.isEqual(layoutConfig, lastConfigRef.current))
       ) {
         log.debug(
           'loadNewConfig effect triggered. previousLayoutConfig',
@@ -341,7 +363,7 @@ export function DashboardLayout({
           'layoutConfig',
           layoutConfig,
           'lastConfig',
-          lastConfig
+          lastConfigRef.current
         );
 
         log.debug('Setting new layout content...');
@@ -362,14 +384,7 @@ export function DashboardLayout({
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
       }
     },
-    [
-      hydrateComponent,
-      layout,
-      layoutConfig,
-      lastConfig,
-      panelManager,
-      previousLayoutConfig,
-    ]
+    [hydrateComponent, layout, layoutConfig, panelManager, previousLayoutConfig]
   );
 
   // This should be the last hook called in this component
