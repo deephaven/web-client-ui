@@ -21,6 +21,8 @@ interface Link {
   id: string;
   label: string;
 }
+
+// eslint-disable-next-line react/no-unused-prop-types
 type LinkCategory = { category: string; items: Link[] };
 
 /**

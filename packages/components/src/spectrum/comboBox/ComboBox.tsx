@@ -53,6 +53,7 @@ const ComboBoxInternal = React.forwardRef(function ComboBox(
 });
 ComboBoxInternal.displayName = 'ComboBox';
 
-export const ComboBox = ComboBoxInternal as unknown as React.ForwardRefExoticComponent<
-  ComboBoxProps & React.RefAttributes<unknown>
->;
+export const ComboBox =
+  ComboBoxInternal as unknown as React.ForwardRefExoticComponent<
+    ComboBoxProps & React.RefAttributes<unknown>
+  >;

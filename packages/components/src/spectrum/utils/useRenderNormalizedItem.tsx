@@ -71,10 +71,11 @@ export function useRenderNormalizedItem({
           <ActionGroup
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...groupProps}
-            children={groupProps.children}
             onAction={(key: ItemKey) => groupProps.onAction(key, itemKey)}
             onChange={keys => groupProps.onChange?.(keys, itemKey)}
-          />
+          >
+            {groupProps.children}
+          </ActionGroup>
         );
       } else if (isElementOfType(actions, ListActionMenu)) {
         const menuProps = actions.props as ListActionMenuProps<unknown>;
@@ -82,12 +83,13 @@ export function useRenderNormalizedItem({
           <ActionMenu
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...menuProps}
-            children={menuProps.children}
             onAction={(key: ItemKey) => menuProps.onAction(key, itemKey)}
             onOpenChange={(isOpen: boolean) =>
               menuProps.onOpenChange?.(isOpen, itemKey)
             }
-          />
+          >
+            {menuProps.children}
+          </ActionMenu>
         );
       }
 

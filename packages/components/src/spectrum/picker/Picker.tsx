@@ -57,8 +57,9 @@ const PickerInternal = React.forwardRef(function Picker(
 });
 PickerInternal.displayName = 'Picker';
 
-export const Picker = PickerInternal as unknown as React.ForwardRefExoticComponent<
-  PickerProps & React.RefAttributes<unknown>
->;
+export const Picker =
+  PickerInternal as unknown as React.ForwardRefExoticComponent<
+    PickerProps & React.RefAttributes<unknown>
+  >;
 
 export default Picker;
