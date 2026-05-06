@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type LayoutManager } from '@deephaven/golden-layout';
@@ -52,19 +53,33 @@ function TestPlugin(props: Partial<DashboardPluginComponentProps>) {
 }
 
 /**
- * Simulates the production pattern where `DashboardContainer` round-trips the
- * dehydrated layout through redux: the reducer always produces a fresh top-level
- * array reference, so the prop that arrives back at `DashboardLayout` is
- * structurally equal to but referentially different from what was emitted.
+ * Test harness that controls how the parent echoes the dehydrated
+ * `layoutConfig` back to `DashboardLayout`.
+ *
+ * The `echoMode` prop selects between three production-relevant patterns:
+ *
+ *  - `'same-ref'`: the parent stores and passes back the exact array reference
+ *    it received. This is what the enterprise `DashboardContainer` does today
+ *    (it mutates `tabModel.layoutConfig = layoutConfig` in place).
+ *  - `'clone'`: the parent stores a shallow clone of the array. Any echo path
+ *    that runs through a reducer or that defensively copies will produce a
+ *    new top-level reference like this.
+ *  - `'flush-sync'`: the parent stores the same reference but commits its
+ *    state update synchronously via `flushSync` from inside
+ *    `onLayoutConfigChange`. This forces the parent's prop update to commit
+ *    *before* `DashboardLayout`'s own queued `setLastConfig` does, which is
+ *    the lane-priority race observed in DH-21843 (`useSyncExternalStore`
+ *    notifications from `react-redux` flush at the Sync lane and pre-empt the
+ *    Default-lane local state update).
  */
 function ControlledDashboard({
   onGoldenLayoutChange,
   onLayoutConfigChange,
-  cloneOnEcho = true,
+  echoMode = 'same-ref',
 }: {
   onGoldenLayoutChange?: (gl: LayoutManager) => void;
   onLayoutConfigChange?: (config: DashboardLayoutConfig) => void;
-  cloneOnEcho?: boolean;
+  echoMode?: 'same-ref' | 'clone' | 'flush-sync';
 }) {
   const [layoutConfig, setLayoutConfig] = useState<
     DashboardLayoutConfig | undefined
@@ -76,7 +91,15 @@ function ControlledDashboard({
         onGoldenLayoutChange={onGoldenLayoutChange}
         onLayoutConfigChange={next => {
           onLayoutConfigChange?.(next);
-          setLayoutConfig(cloneOnEcho ? [...next] : next);
+          if (echoMode === 'clone') {
+            setLayoutConfig([...next]);
+          } else if (echoMode === 'flush-sync') {
+            flushSync(() => {
+              setLayoutConfig(next);
+            });
+          } else {
+            setLayoutConfig(next);
+          }
         }}
       >
         <TestPlugin />
@@ -97,28 +120,38 @@ beforeEach(() => {
   mountCounts.clear();
 });
 
-it('does not unmount existing panels when the parent echoes back a fresh layoutConfig reference', async () => {
-  // Regression test for the `loadNewConfig` race in DashboardLayout.
+it('does not unmount existing panels when the parent commits the echoed layoutConfig synchronously (DH-21843)', async () => {
+  // Regression test for DH-21843.
   //
-  // When a panel is opened, golden-layout emits `stateChanged`; the throttled
-  // handler in DashboardLayout calls `setLastConfig(cfg)` and
-  // `onLayoutChange(cfg)`. In production, `onLayoutChange` round-trips through
-  // redux and the prop that comes back is structurally equal to `cfg` but a
-  // different reference (reducers always produce a new state object). The
-  // `loadNewConfig` effect compares `layoutConfig !== lastConfig` referentially
-  // and treats this echo as a brand-new external config, then wipes and
-  // rehydrates the entire layout — unmounting & remounting every live panel
-  // (which in production tears down running console sessions).
+  // Production trace:
+  //   1. golden-layout emits `stateChanged`; the throttled handler in
+  //      `DashboardLayout` calls `setLastConfig(cfg)` then `onLayoutChange(cfg)`.
+  //   2. The parent (`DashboardContainer`) mutates `tabModel.layoutConfig = cfg`
+  //      (same reference) and dispatches a redux action.
+  //   3. `react-redux`'s `useSyncExternalStore` subscribers in connected
+  //      ancestors flush at the Sync lane, re-rendering the ancestor and
+  //      pushing the new `layoutConfig` prop down to `DashboardLayout` *before*
+  //      its own Default-lane `setLastConfig` has committed.
+  //   4. `DashboardLayout` commits a render where `layoutConfig` has advanced
+  //      to the new value but `lastConfig` is still the previous one. The
+  //      `loadNewConfig` effect's referential `layoutConfig !== lastConfig`
+  //      gate opens, the layout is wiped, every live panel is unmounted, and
+  //      `ConsoleContainer`'s cleanup closes the running console session.
   //
-  // With the bug present, the panel below mounts twice: once when the
-  // PanelEvent.OPEN is processed, and again when the round-trip wipes and
-  // rehydrates the layout from the echoed config.
+  // We reproduce that lane ordering deterministically by having the parent
+  // commit its state update via `flushSync` from inside `onLayoutConfigChange`,
+  // while still passing back the *same* array reference (matching
+  // `DashboardContainer`'s in-place mutation). With the bug present, the
+  // panel below mounts twice: once when the `PanelEvent.OPEN` is processed,
+  // and again when `loadNewConfig` wipes and rehydrates from the echoed
+  // config.
 
   let gl: LayoutManager | null = null;
   const onLayoutConfigChange = jest.fn();
 
   render(
     <ControlledDashboard
+      echoMode="flush-sync"
       onGoldenLayoutChange={newGl => {
         gl = newGl;
       }}
@@ -126,10 +159,8 @@ it('does not unmount existing panels when the parent echoes back a fresh layoutC
     />
   );
 
-  // Wait for golden-layout to initialise.
   await waitRAF();
 
-  // Open a single panel.
   act(() => {
     gl!.eventHub.emit(PanelEvent.OPEN, {
       panelId: 'panel-a',
@@ -137,8 +168,6 @@ it('does not unmount existing panels when the parent echoes back a fresh layoutC
     });
   });
 
-  // Let the GL stateChanged event fire (throttled to RAF) and the parent
-  // re-render with the echoed prop.
   await waitRAF();
   await waitRAF();
 
@@ -147,24 +176,61 @@ it('does not unmount existing panels when the parent echoes back a fresh layoutC
   });
 
   expect(onLayoutConfigChange).toHaveBeenCalled();
+  expect(mountCounts.get('a')).toBe(1);
+});
 
-  // The panel must have been mounted exactly once. With the bug, the
-  // referentially-different echo causes `loadNewConfig` to wipe + rehydrate the
-  // layout, unmounting and remounting the panel.
+it('does not unmount existing panels when the parent echoes back a fresh layoutConfig reference', async () => {
+  // Companion regression test. Any echo path that produces a new top-level
+  // array reference (reducer-produced state, defensive cloning, etc.) opens
+  // the same `loadNewConfig` referential gate as the lane-tearing case above,
+  // because `lastConfig` is `===`-compared against `layoutConfig`. The fix
+  // (deep-equality gate against a ref) must cover both shapes.
+
+  let gl: LayoutManager | null = null;
+  const onLayoutConfigChange = jest.fn();
+
+  render(
+    <ControlledDashboard
+      echoMode="clone"
+      onGoldenLayoutChange={newGl => {
+        gl = newGl;
+      }}
+      onLayoutConfigChange={onLayoutConfigChange}
+    />
+  );
+
+  await waitRAF();
+
+  act(() => {
+    gl!.eventHub.emit(PanelEvent.OPEN, {
+      panelId: 'panel-a',
+      widget: { type: 'test', name: 'a' },
+    });
+  });
+
+  await waitRAF();
+  await waitRAF();
+
+  await waitFor(() => {
+    expect(screen.getByTestId('test-panel-a')).toBeInTheDocument();
+  });
+
+  expect(onLayoutConfigChange).toHaveBeenCalled();
   expect(mountCounts.get('a')).toBe(1);
 });
 
 it('does not unmount existing panels when echoing back the same reference (sanity)', async () => {
-  // Companion to the regression test above: when the parent passes the exact
-  // same array reference back, the existing referential check happens to work
-  // and the layout should not be torn down. This test guards against
-  // accidentally regressing the happy path while fixing the bug.
+  // Happy path: when the parent passes the exact same array reference back
+  // *and* the echoed prop update commits in the same render as
+  // `DashboardLayout`'s own `setLastConfig`, the existing referential gate
+  // works. This test guards against regressing the happy path while fixing
+  // the cases above.
 
   let gl: LayoutManager | null = null;
 
   render(
     <ControlledDashboard
-      cloneOnEcho={false}
+      echoMode="same-ref"
       onGoldenLayoutChange={newGl => {
         gl = newGl;
       }}
