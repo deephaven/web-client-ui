@@ -100,7 +100,7 @@ export function DashboardLayout({
   const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
   // `lastConfig` is intentionally a ref rather than state so it can be written synchronously inside the throttled body before `onLayoutChange` runs.
-  // This guarantees any subsequent render triggered by the parent observes the latest value, regardless of which React lane that update commits on (see DH-21843).
+  // This guarantees any subsequent render triggered by the parent observes the latest value, regardless of how that render was scheduled (see DH-21843).
   const lastConfigRef = useRef<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
@@ -246,7 +246,7 @@ export function DashboardLayout({
 
         // Update the ref synchronously before calling `onLayoutChange` so
         // that any subsequent render triggered by the parent observes the
-        // latest value, regardless of the lane it commits on.
+        // latest value, regardless of how that render was scheduled.
         lastConfigRef.current = dehydratedLayoutConfig;
 
         onLayoutChange(dehydratedLayoutConfig);

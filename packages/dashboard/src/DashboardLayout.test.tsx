@@ -60,9 +60,12 @@ function TestPlugin(props: Partial<DashboardPluginComponentProps>) {
  * state update synchronously via `flushSync` from inside
  * `onLayoutConfigChange`. This forces the parent's prop update to commit
  * *before* `DashboardLayout`'s own queued `setLastConfig` does, reproducing
- * the lane-priority race observed in DH-21843 (`useSyncExternalStore`
- * notifications from `react-redux` flush at the Sync lane and pre-empt the
- * Default-lane local state update).
+ * the render ordering observed in DH-21843. `flushSync` is not the exact
+ * production mechanism (production uses a redux dispatch plus a
+ * class-component `setState` in `AppMainContainer`, with `react-redux@7.2.9`
+ * subscriptions in between — *not* `useSyncExternalStore`), but it produces
+ * the same observable: the parent re-renders with the echoed `layoutConfig`
+ * before the throttled body's `setLastConfig` has committed.
  */
 function ControlledDashboard({
   onGoldenLayoutChange,
@@ -111,18 +114,21 @@ it('does not unmount existing panels when the parent commits the echoed layoutCo
   //   1. golden-layout emits `stateChanged`; the throttled handler in
   //      `DashboardLayout` calls `setLastConfig(cfg)` then `onLayoutChange(cfg)`.
   //   2. The parent (`DashboardContainer`) mutates `tabModel.layoutConfig = cfg`
-  //      (same reference) and dispatches a redux action.
-  //   3. `react-redux`'s `useSyncExternalStore` subscribers in connected
-  //      ancestors flush at the Sync lane, re-rendering the ancestor and
-  //      pushing the new `layoutConfig` prop down to `DashboardLayout` *before*
-  //      its own Default-lane `setLastConfig` has committed.
+  //      (same reference) and dispatches a redux action; `AppMainContainer`
+  //      then calls a class-component `setState` to force a re-render.
+  //   3. The ancestor re-renders and pushes the echoed `layoutConfig` prop
+  //      down to `DashboardLayout` *before* the throttled body's queued
+  //      `setLastConfig(cfg)` has committed. (The exact React-18 reason these
+  //      updates didn't batch into one commit is not fully pinned down — see
+  //      `DH-21843-Analysis.md` — but the empirical evidence from production
+  //      logs is unambiguous.)
   //   4. `DashboardLayout` commits a render where `layoutConfig` has advanced
   //      to the new value but `lastConfig` is still the previous one. The
   //      `loadNewConfig` effect's referential `layoutConfig !== lastConfig`
   //      gate opens, the layout is wiped, every live panel is unmounted, and
   //      `ConsoleContainer`'s cleanup closes the running console session.
   //
-  // We reproduce that lane ordering deterministically by having the parent
+  // We reproduce that render ordering deterministically by having the parent
   // commit its state update via `flushSync` from inside `onLayoutConfigChange`,
   // while still passing back the *same* array reference (matching
   // `DashboardContainer`'s in-place mutation). With the bug present, the
