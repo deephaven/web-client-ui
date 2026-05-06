@@ -161,3 +161,67 @@ it('does not unmount existing panels when the parent commits the echoed layoutCo
   expect(onLayoutConfigChange).toHaveBeenCalled();
   expect(mountCounts.get('a')).toBe(1);
 });
+
+it('hydrates panels from a new external layoutConfig prop', async () => {
+  // Exercises the intended role of the `loadNewConfig` effect: when an
+  // external `layoutConfig` prop change arrives (e.g. loading a saved layout
+  // or switching tabs) and is not the echo of a state the layout already
+  // holds, the effect should rehydrate the layout from that config.
+  //
+  // This test passes both before and after the DH-21843 fix and guards
+  // against accidentally disabling the effect entirely.
+
+  let setExternalLayoutConfig:
+    | ((config: DashboardLayoutConfig | undefined) => void)
+    | null = null;
+
+  function ExternallyControlledDashboard() {
+    const [layoutConfig, setLayoutConfig] = useState<
+      DashboardLayoutConfig | undefined
+    >(undefined);
+    setExternalLayoutConfig = setLayoutConfig;
+    return (
+      <ApiContext.Provider value={dh}>
+        <Dashboard layoutConfig={layoutConfig}>
+          <TestPlugin />
+        </Dashboard>
+      </ApiContext.Provider>
+    );
+  }
+
+  render(<ExternallyControlledDashboard />);
+
+  await waitRAF();
+
+  expect(screen.queryByTestId('test-panel-a')).not.toBeInTheDocument();
+
+  const newConfig: DashboardLayoutConfig = [
+    {
+      type: 'stack',
+      content: [
+        {
+          type: 'react-component',
+          component: TestPanel.displayName,
+          props: { metadata: { type: 'test', name: 'a' } },
+          title: 'a',
+        },
+      ],
+    },
+    // Cast: the config shape mirrors what `hydrateLayoutConfig` accepts in
+    // production; the strict GoldenLayout `ItemConfig` typing requires extra
+    // fields that the hydrator fills in.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ] as any;
+
+  act(() => {
+    setExternalLayoutConfig!(newConfig);
+  });
+
+  await waitRAF();
+
+  await waitFor(() => {
+    expect(screen.getByTestId('test-panel-a')).toBeInTheDocument();
+  });
+
+  expect(mountCounts.get('a')).toBe(1);
+});
