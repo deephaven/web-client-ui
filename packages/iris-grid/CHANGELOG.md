@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.2](https://github.com/deephaven/web-client-ui/compare/v1.18.1...v1.18.2) (2026-05-06)
+
+### Bug Fixes
+
+- DH-20403: Persist user column widths by name in IrisGrid ([#2670](https://github.com/deephaven/web-client-ui/issues/2670)) ([a0247b1](https://github.com/deephaven/web-client-ui/commit/a0247b18bdea5299b76ebfb41c6de442f659f6be))
+- DH-22054: GridMetrics type update ([#2659](https://github.com/deephaven/web-client-ui/issues/2659)) ([c5426ec](https://github.com/deephaven/web-client-ui/commit/c5426ec08fc482a33f4c30d23bd7a5a4e8ebbea4))
+- DH-22326: Un-hide group-by columns, keep other hidden columns hidden when applying rollup ([#2668](https://github.com/deephaven/web-client-ui/issues/2668)) ([d76c08b](https://github.com/deephaven/web-client-ui/commit/d76c08bd4f8245cb6ca5ba6b38d864b4c3b0d58e))
+
 ## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
 
 ### Bug Fixes
