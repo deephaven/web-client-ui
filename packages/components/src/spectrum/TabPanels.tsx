@@ -14,6 +14,12 @@ import { type CollectionChildren } from '@react-types/shared';
 
 export interface DHCTabPanelsProps<T> extends SpectrumTabPanelsProps<T> {
   /**
+   * Children of the TabPanels component. Typically `Item` elements with keys
+   * matching their corresponding TabList items.
+   */
+  children: CollectionChildren<T>;
+
+  /**
    * If static panels with keys should stay mounted when not visible.
    * This will not apply to dynamic panels created with a render function.
    * Defaults to false.

@@ -12,7 +12,7 @@ import type { DOMRefValue } from '@react-types/shared';
 export function createValidationProps(
   isValid: boolean,
   errorMessage: string
-): Pick<SpectrumTextFieldProps, 'validationState' | 'errorMessage'> {
+): Partial<Pick<SpectrumTextFieldProps, 'validationState' | 'errorMessage'>> {
   if (isValid) {
     return {};
   }

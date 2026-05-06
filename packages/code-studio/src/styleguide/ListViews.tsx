@@ -79,10 +79,14 @@ export function ListViews(): JSX.Element {
 
   // Calculate the height of the single child example
   const singleChildExampleHeight =
-    LABELED_FLEX_CONTAINER_HEIGHTS.label[scale] +
+    LABELED_FLEX_CONTAINER_HEIGHTS.label[
+      scale as keyof typeof LABELED_FLEX_CONTAINER_HEIGHTS.label
+    ] +
     LABELED_FLEX_CONTAINER_HEIGHTS.gap +
     2 + // listview border
-    LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
+    LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][
+      scale as keyof (typeof LIST_VIEW_ROW_HEIGHTS)['compact']
+    ];
 
   const onDensityChange = useCallback((value: string) => {
     setDensity(value as ListViewProps['density']);

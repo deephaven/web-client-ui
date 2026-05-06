@@ -24,6 +24,9 @@ export type PickerPropsT<TProps> = Omit<
   | 'selectedKey'
   | 'defaultSelectedKey'
   | 'disabledKeys'
+  // `ref` is provided by `React.forwardRef` and should not be part of the
+  // component's props type.
+  | 'ref'
   // Excluding `defaultItems` and `items` since we are not currently supporting
   // a render function as `children`. This simplifies the API for determining
   // initial scroll position and wrapping items with tooltips.

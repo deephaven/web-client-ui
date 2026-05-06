@@ -13,8 +13,13 @@ export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 export type { MenuTriggerAction } from '@react-types/combobox';
 export { SpectrumComboBox };
 
-export const ComboBox = React.forwardRef(function ComboBox(
-  { UNSAFE_className, ...props }: ComboBoxProps,
+// `forwardRef`'s inferred prop type incorrectly drops required `children`
+// because of upstream Spectrum type issues, so use `any` for the inner
+// render function and re-cast the result to expose the correct
+// `ComboBoxProps` to consumers.
+const ComboBoxInternal = React.forwardRef(function ComboBox(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { UNSAFE_className, ...props }: any,
   ref: DOMRef<HTMLDivElement>
 ): JSX.Element {
   const {
@@ -46,4 +51,8 @@ export const ComboBox = React.forwardRef(function ComboBox(
     />
   );
 });
-ComboBox.displayName = 'ComboBox';
+ComboBoxInternal.displayName = 'ComboBox';
+
+export const ComboBox = ComboBoxInternal as unknown as React.ForwardRefExoticComponent<
+  ComboBoxProps & React.RefAttributes<unknown>
+>;

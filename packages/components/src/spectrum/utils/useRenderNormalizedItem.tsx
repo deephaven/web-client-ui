@@ -10,6 +10,7 @@ import {
   getItemKey,
   ITEM_EMPTY_STRING_TEXT_VALUE,
   type ItemIconSlot,
+  type ItemKey,
   type NormalizedItem,
   type TooltipOptions,
 } from './itemUtils';
@@ -65,22 +66,26 @@ export function useRenderNormalizedItem({
       let action = null;
 
       if (isElementOfType(actions, ListActionGroup)) {
+        const groupProps = actions.props as ListActionGroupProps<unknown>;
         action = (
           <ActionGroup
             // eslint-disable-next-line react/jsx-props-no-spreading
-            {...actions.props}
-            onAction={key => actions.props.onAction(key, itemKey)}
-            onChange={keys => actions.props.onChange?.(keys, itemKey)}
+            {...groupProps}
+            children={groupProps.children}
+            onAction={(key: ItemKey) => groupProps.onAction(key, itemKey)}
+            onChange={keys => groupProps.onChange?.(keys, itemKey)}
           />
         );
       } else if (isElementOfType(actions, ListActionMenu)) {
+        const menuProps = actions.props as ListActionMenuProps<unknown>;
         action = (
           <ActionMenu
             // eslint-disable-next-line react/jsx-props-no-spreading
-            {...actions.props}
-            onAction={key => actions.props.onAction(key, itemKey)}
-            onOpenChange={isOpen =>
-              actions.props.onOpenChange?.(isOpen, itemKey)
+            {...menuProps}
+            children={menuProps.children}
+            onAction={(key: ItemKey) => menuProps.onAction(key, itemKey)}
+            onOpenChange={(isOpen: boolean) =>
+              menuProps.onOpenChange?.(isOpen, itemKey)
             }
           />
         );

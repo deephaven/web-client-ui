@@ -69,7 +69,7 @@ export function SpectrumComponents(): JSX.Element {
             <ContextualHelpSample />
             <DialogTrigger>
               <ActionButton>Dialog Trigger</ActionButton>
-              {close => (
+              {(close: () => void) => (
                 <Dialog>
                   <Heading>Some Heading</Heading>
                   <Header>Some Header</Header>

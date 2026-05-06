@@ -7,7 +7,8 @@ import { PICKER_ITEM_HEIGHTS } from '../../UIConstants';
  */
 export function usePickerItemScale(): { itemHeight: number } {
   const { scale } = useSpectrumThemeProvider();
-  const itemHeight = PICKER_ITEM_HEIGHTS[scale];
+  const itemHeight =
+    PICKER_ITEM_HEIGHTS[scale as keyof typeof PICKER_ITEM_HEIGHTS];
 
   return { itemHeight };
 }

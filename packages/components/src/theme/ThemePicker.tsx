@@ -22,7 +22,9 @@ export function ThemePicker(): JSX.Element | null {
       selectedKey={selectedThemeKey}
       onSelectionChange={onSelectionChange}
     >
-      {item => <Item key={item.themeKey}>{item.name}</Item>}
+      {(item: { themeKey: string; name: string }) => (
+        <Item key={item.themeKey}>{item.name}</Item>
+      )}
     </Picker>
   );
 }

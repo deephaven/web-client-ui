@@ -147,9 +147,9 @@ export function SamplesMenu(): JSX.Element {
         </Icon>
       </ActionButton>
       <Menu items={links} onAction={onAction}>
-        {({ category, items }) => (
+        {({ category, items }: LinkCategory) => (
           <Section key={category} items={items} title={category}>
-            {({ id, label }) => <Item key={id}>{label}</Item>}
+            {(item: Link) => <Item key={item.id}>{item.label}</Item>}
           </Section>
         )}
       </Menu>

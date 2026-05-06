@@ -34,7 +34,10 @@ export function ListView({
   ...props
 }: ListViewProps): JSX.Element {
   const { scale } = useSpectrumThemeProvider();
-  const itemHeight = LIST_VIEW_ROW_HEIGHTS[props.density ?? 'regular'][scale];
+  const itemHeight =
+    LIST_VIEW_ROW_HEIGHTS[props.density ?? 'regular'][
+      scale as keyof (typeof LIST_VIEW_ROW_HEIGHTS)['regular']
+    ];
 
   const { getFormattedString: formatValue } = useFormatter(settings);
 

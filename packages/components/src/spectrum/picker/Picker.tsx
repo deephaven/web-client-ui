@@ -17,8 +17,13 @@ import { usePickerProps } from './usePickerProps';
  * for the Spectrum Picker component.
  * See https://react-spectrum.adobe.com/react-spectrum/Picker.html
  */
-export const Picker = React.forwardRef(function Picker(
-  { UNSAFE_className, ...props }: PickerProps,
+// `forwardRef`'s inferred prop type incorrectly drops required `children`
+// because of upstream Spectrum type issues, so use `any` for the inner
+// render function and re-cast the result to expose the correct `PickerProps`
+// to consumers.
+const PickerInternal = React.forwardRef(function Picker(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { UNSAFE_className, ...props }: any,
   ref: DOMRef<HTMLDivElement>
 ): JSX.Element {
   const {
@@ -50,6 +55,10 @@ export const Picker = React.forwardRef(function Picker(
     />
   );
 });
-Picker.displayName = 'Picker';
+PickerInternal.displayName = 'Picker';
+
+export const Picker = PickerInternal as unknown as React.ForwardRefExoticComponent<
+  PickerProps & React.RefAttributes<unknown>
+>;
 
 export default Picker;
