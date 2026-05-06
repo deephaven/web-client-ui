@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import type GoldenLayout from '@deephaven/golden-layout';
@@ -98,7 +99,9 @@ export function DashboardLayout({
 
   const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
-  const [lastConfig, setLastConfig] = useState<DashboardLayoutConfig>();
+  // `lastConfig` is intentionally a ref rather than state so it can be written synchronously inside the throttled body before `onLayoutChange` runs.
+  // This guarantees any subsequent render triggered by the parent observes the latest value, regardless of how that render was scheduled (see DH-21843).
+  const lastConfigRef = useRef<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
   );
@@ -224,9 +227,10 @@ export function DashboardLayout({
   // Throttle the calls so that we don't flood comparing these layouts
   const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
     (dehydratedLayoutConfig: DashboardLayoutConfig) => {
+      const previousConfig = lastConfigRef.current;
       const hasChanged =
-        lastConfig == null ||
-        !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
+        previousConfig == null ||
+        !LayoutUtils.isEqual(previousConfig, dehydratedLayoutConfig);
 
       log.debug('handleLayoutStateChanged', hasChanged, dehydratedLayoutConfig);
 
@@ -234,13 +238,16 @@ export function DashboardLayout({
         log.debug(
           'Layout config has changed',
           'lastConfig',
-          lastConfig,
+          previousConfig,
           'dehydratedLayoutConfig',
           dehydratedLayoutConfig
         );
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
 
-        setLastConfig(dehydratedLayoutConfig);
+        // Update the ref synchronously before calling `onLayoutChange` so
+        // that any subsequent render triggered by the parent observes the
+        // latest value, regardless of how that render was scheduled.
+        lastConfigRef.current = dehydratedLayoutConfig;
 
         onLayoutChange(dehydratedLayoutConfig);
 
@@ -333,7 +340,7 @@ export function DashboardLayout({
     function loadNewConfig() {
       if (
         previousLayoutConfig !== layoutConfig &&
-        layoutConfig !== lastConfig
+        layoutConfig !== lastConfigRef.current
       ) {
         log.debug(
           'loadNewConfig effect triggered. previousLayoutConfig',
@@ -341,7 +348,7 @@ export function DashboardLayout({
           'layoutConfig',
           layoutConfig,
           'lastConfig',
-          lastConfig
+          lastConfigRef.current
         );
 
         log.debug('Setting new layout content...');
@@ -362,14 +369,7 @@ export function DashboardLayout({
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
       }
     },
-    [
-      hydrateComponent,
-      layout,
-      layoutConfig,
-      lastConfig,
-      panelManager,
-      previousLayoutConfig,
-    ]
+    [hydrateComponent, layout, layoutConfig, panelManager, previousLayoutConfig]
   );
 
   // This should be the last hook called in this component
