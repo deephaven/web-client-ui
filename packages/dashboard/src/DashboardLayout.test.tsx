@@ -53,19 +53,31 @@ function TestPlugin(props: Partial<DashboardPluginComponentProps>) {
 }
 
 /**
- * Test harness that simulates the production parent (`DashboardContainer`)
- * echoing the dehydrated `layoutConfig` back to `DashboardLayout`.
+ * Test harness that simulates the production parent (`DashboardContainer` +
+ * `AppMainContainer`) echoing the dehydrated `layoutConfig` back to
+ * `DashboardLayout`.
  *
- * The parent stores the same array reference it received and commits the
- * state update synchronously via `flushSync` from inside
- * `onLayoutConfigChange`. This forces the parent's prop update to commit
- * *before* `DashboardLayout`'s own queued `setLastConfig` does, reproducing
- * the render ordering observed in DH-21843. `flushSync` is not the exact
- * production mechanism (production uses a redux dispatch plus a
- * class-component `setState` in `AppMainContainer`, with `react-redux@7.2.9`
- * subscriptions in between — *not* `useSyncExternalStore`), but it produces
- * the same observable: the parent re-renders with the echoed `layoutConfig`
- * before the throttled body's `setLastConfig` has committed.
+ * Background (see `DH-21843-Analysis-Short.md`): a single tick of the
+ * throttled body in `DashboardLayout` starts two independent update chains.
+ * Chain A is the local `setLastConfig(cfg)` (a `useState` update on the
+ * child). Chain B is `onLayoutChange(cfg)`, which synchronously calls into
+ * `DashboardContainer.handleLayoutStateChanged` (in-place mutation of
+ * `tabModel.layoutConfig`) → `AppMainContainer.handleDashboardChange`
+ * (class-component `setState` plus a later redux dispatch from
+ * `saveDashboard`). The bug occurs when chain B's parent re-render commits
+ * the echoed prop to `DashboardLayout` *before* chain A's `setLastConfig`
+ * has committed.
+ *
+ * The harness collapses chain B's multi-hop sequence into a single
+ * `flushSync(() => setLayoutConfig(next))` from inside
+ * `onLayoutConfigChange`, while still passing back the **same** array
+ * reference (matching the production in-place mutation). `flushSync` is not
+ * the exact production mechanism — production splits commits via the redux
+ * microtask in `saveDashboard` and a separate `handleRawLayoutStateChanged`
+ * listener, with `react-redux@7.2.9` subscriptions in between (not
+ * `useSyncExternalStore`) — but it produces the same observable: the parent
+ * re-renders with the echoed `layoutConfig` before the throttled body's
+ * `setLastConfig` has committed.
  */
 function ControlledDashboard({
   onGoldenLayoutChange,
@@ -108,33 +120,38 @@ beforeEach(() => {
 });
 
 it('does not unmount existing panels when the parent commits the echoed layoutConfig synchronously (DH-21843)', async () => {
-  // Regression test for DH-21843.
+  // Regression test for DH-21843. See `DH-21843-Analysis-Short.md` for the
+  // full root-cause analysis.
   //
-  // Production trace:
-  //   1. golden-layout emits `stateChanged`; the throttled handler in
-  //      `DashboardLayout` calls `setLastConfig(cfg)` then `onLayoutChange(cfg)`.
-  //   2. The parent (`DashboardContainer`) mutates `tabModel.layoutConfig = cfg`
-  //      (same reference) and dispatches a redux action; `AppMainContainer`
-  //      then calls a class-component `setState` to force a re-render.
-  //   3. The ancestor re-renders and pushes the echoed `layoutConfig` prop
-  //      down to `DashboardLayout` *before* the throttled body's queued
-  //      `setLastConfig(cfg)` has committed. (The exact React-18 reason these
-  //      updates didn't batch into one commit is not fully pinned down — see
-  //      `DH-21843-Analysis.md` — but the empirical evidence from production
-  //      logs is unambiguous.)
-  //   4. `DashboardLayout` commits a render where `layoutConfig` has advanced
-  //      to the new value but `lastConfig` is still the previous one. The
-  //      `loadNewConfig` effect's referential `layoutConfig !== lastConfig`
-  //      gate opens, the layout is wiped, every live panel is unmounted, and
-  //      `ConsoleContainer`'s cleanup closes the running console session.
+  // The bug: a single tick of `DashboardLayout`'s throttled body starts two
+  // independent update chains.
+  //   Chain A: `setLastConfig(cfg)` — a local `useState` update on the
+  //     child, enqueued for a future commit.
+  //   Chain B: `onLayoutChange(cfg)` — synchronously calls
+  //     `DashboardContainer.handleLayoutStateChanged`, which mutates
+  //     `tabModel.layoutConfig = cfg` in place and calls
+  //     `AppMainContainer.handleDashboardChange`. That handler does a
+  //     class-component `setState({ tabs: [...tabs] })` to force the
+  //     ancestor to re-render and propagate the echoed prop back down, plus
+  //     a later redux dispatch from `saveDashboard`.
   //
-  // We reproduce that render ordering deterministically by having the parent
-  // commit its state update via `flushSync` from inside `onLayoutConfigChange`,
-  // while still passing back the *same* array reference (matching
-  // `DashboardContainer`'s in-place mutation). With the bug present, the
-  // panel below mounts twice: once when the `PanelEvent.OPEN` is processed,
-  // and again when `loadNewConfig` wipes and rehydrates from the echoed
-  // config.
+  // Chain B has multiple scheduling boundaries (sync class `setState`, async
+  // redux microtask, separate `handleRawLayoutStateChanged` listener).
+  // Empirically, in production at least one of those re-renders commits the
+  // echoed `layoutConfig` prop into `DashboardLayout` *before* chain A's
+  // queued `setLastConfig` has committed. In that render `DashboardLayout`
+  // sees `layoutConfig=NEW` but `lastConfig=OLD`. The `loadNewConfig`
+  // effect's referential `layoutConfig !== lastConfig` gate opens, the
+  // layout is wiped, every live panel is unmounted, and
+  // `ConsoleContainer`'s cleanup closes the running console session.
+  //
+  // We reproduce that render ordering deterministically here by collapsing
+  // chain B into a `flushSync(() => setLayoutConfig(next))` inside
+  // `onLayoutConfigChange`, while still passing back the *same* array
+  // reference (matching the production in-place mutation). With the bug
+  // present, the panel below mounts twice: once when the `PanelEvent.OPEN`
+  // is processed, and again when `loadNewConfig` wipes and rehydrates from
+  // the echoed config.
 
   let gl: LayoutManager | null = null;
   const onLayoutConfigChange = jest.fn();
