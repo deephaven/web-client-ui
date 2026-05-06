@@ -57,12 +57,11 @@ function TestPlugin(props: Partial<DashboardPluginComponentProps>) {
  * `AppMainContainer`) echoing the dehydrated `layoutConfig` back to
  * `DashboardLayout`.
  *
- * Background (see `DH-21843-Analysis-Short.md`): a single tick of the
- * throttled body in `DashboardLayout` starts two independent update chains.
- * Chain A is the local `setLastConfig(cfg)` (a `useState` update on the
- * child). Chain B is `onLayoutChange(cfg)`, which synchronously calls into
- * `DashboardContainer.handleLayoutStateChanged` (in-place mutation of
- * `tabModel.layoutConfig`) → `AppMainContainer.handleDashboardChange`
+ * Background a single tick of the throttled body in `DashboardLayout` starts
+ * two independent update chains. Chain A is the local `setLastConfig(cfg)`
+ * (a `useState` update on the child). Chain B is `onLayoutChange(cfg)`, which
+ * synchronously calls into `DashboardContainer.handleLayoutStateChanged`
+ * (in-place mutation of `tabModel.layoutConfig`) → `AppMainContainer.handleDashboardChange`
  * (class-component `setState` plus a later redux dispatch from
  * `saveDashboard`). The bug occurs when chain B's parent re-render commits
  * the echoed prop to `DashboardLayout` *before* chain A's `setLastConfig`
@@ -120,8 +119,7 @@ beforeEach(() => {
 });
 
 it('does not unmount existing panels when the parent commits the echoed layoutConfig synchronously (DH-21843)', async () => {
-  // Regression test for DH-21843. See `DH-21843-Analysis-Short.md` for the
-  // full root-cause analysis.
+  // Regression test for DH-21843.
   //
   // The bug: a single tick of `DashboardLayout`'s throttled body starts two
   // independent update chains.
