@@ -99,17 +99,8 @@ export function DashboardLayout({
 
   const [isDashboardEmpty, setIsDashboardEmpty] = useState(false);
   const [isItemDragging, setIsItemDragging] = useState(false);
-  // `lastConfig` is intentionally a ref rather than state.
-  //
-  // The throttled body below writes the dehydrated config and synchronously
-  // calls `onLayoutChange`. The parent's resulting prop update can commit on
-  // a different React lane than this component's own state updates (e.g.
-  // `react-redux`'s `useSyncExternalStore` notifications flush at the Sync
-  // lane and pre-empt the Default lane). If we tracked `lastConfig` with
-  // `useState`, the `loadNewConfig` effect could run in a render where the
-  // parent's prop update has committed but our `setLastConfig` has not,
-  // wiping the layout. A ref is written synchronously and observable to any
-  // subsequent render regardless of lane (see DH-21843).
+  // `lastConfig` is intentionally a ref rather than state so it can be written synchronously inside the throttled body before `onLayoutChange` runs.
+  // This guarantees any subsequent render triggered by the parent observes the latest value, regardless of which React lane that update commits on (see DH-21843).
   const lastConfigRef = useRef<DashboardLayoutConfig>();
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
@@ -347,15 +338,9 @@ export function DashboardLayout({
   const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(
     function loadNewConfig() {
-      // Use deep equality against `lastConfigRef` rather than a referential
-      // check. The parent commonly echoes back the dehydrated config we just
-      // emitted (sometimes as a fresh reference, e.g. through a reducer), and
-      // we must not treat that echo as a brand-new external config and wipe
-      // the layout (see DH-21843).
       if (
         previousLayoutConfig !== layoutConfig &&
-        (lastConfigRef.current == null ||
-          !LayoutUtils.isEqual(layoutConfig, lastConfigRef.current))
+        layoutConfig !== lastConfigRef.current
       ) {
         log.debug(
           'loadNewConfig effect triggered. previousLayoutConfig',
