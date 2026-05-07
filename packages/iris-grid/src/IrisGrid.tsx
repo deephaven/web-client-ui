@@ -315,8 +315,21 @@ export interface IrisGridProps {
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
   settings?: Settings;
-  userColumnWidths: ModelSizeMap;
-  userRowHeights: ModelSizeMap;
+  /**
+   * @deprecated Pass `userColumnWidthsByName` instead. The by-index map is
+   * lossy across model swaps because column indices change when the model
+   * is replaced (e.g. when applying or removing a rollup). Kept for
+   * back-compat with consumers that have not migrated.
+   */
+  userColumnWidths: ReadonlyMap<ModelIndex, number>;
+  /**
+   * Map of user-set column widths keyed by column name. Source of truth
+   * for hidden/manually-sized columns across model swaps and persistence
+   * boundaries. Takes precedence over `userColumnWidths` when both are
+   * provided.
+   */
+  userColumnWidthsByName?: ReadonlyMap<ColumnName, number>;
+  userRowHeights: ReadonlyMap<ModelIndex, number>;
   onSelectionChanged: (gridRanges: readonly GridRange[]) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
@@ -513,6 +526,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
     rollupConfig: undefined,
     userColumnWidths: EMPTY_MAP,
+    userColumnWidthsByName: undefined,
     userRowHeights: EMPTY_MAP,
     onSelectionChanged: (): void => undefined,
     isSelectingColumn: false,
@@ -733,6 +747,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       movedRows: movedRowsProp,
       rollupConfig,
       userColumnWidths,
+      userColumnWidthsByName,
       userRowHeights,
       showSearchBar,
       searchValue,
@@ -780,6 +795,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const metricCalculator = getMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
+      userColumnWidthsByName:
+        userColumnWidthsByName != null
+          ? new Map(userColumnWidthsByName)
+          : undefined,
       userRowHeights: new Map(userRowHeights),
       movedColumns,
       initialColumnWidths: new Map(

@@ -199,6 +199,7 @@ interface IrisGridPanelState {
   quickFilters: ReadonlyQuickFilterMap;
   sorts: readonly SortDescriptor[];
   userColumnWidths: ModelSizeMap;
+  userColumnWidthsByName: ReadonlyMap<ColumnName, number>;
   userRowHeights: ModelSizeMap;
   reverse: boolean;
   movedColumns: readonly MoveOperation[];
@@ -309,6 +310,7 @@ export class IrisGridPanel extends PureComponent<
       quickFilters: new Map(),
       sorts: [],
       userColumnWidths: new Map(),
+      userColumnWidthsByName: new Map(),
       userRowHeights: new Map(),
       reverse: false,
       movedColumns: [],
@@ -1003,9 +1005,8 @@ export class IrisGridPanel extends PureComponent<
         rollupConfig,
         aggregationSettings,
         sorts,
-        // TODO:
-        // DH-20403: IrisGrid should persist user column widths when the model initializes with a partial column list
         userColumnWidths,
+        userColumnWidthsByName,
         userRowHeights,
         showSearchBar,
         searchValue,
@@ -1044,6 +1045,7 @@ export class IrisGridPanel extends PureComponent<
         aggregationSettings,
         sorts,
         userColumnWidths,
+        userColumnWidthsByName,
         userRowHeights,
         showSearchBar,
         searchValue,
@@ -1149,6 +1151,7 @@ export class IrisGridPanel extends PureComponent<
       rollupConfig,
       sorts,
       userColumnWidths,
+      userColumnWidthsByName,
       userRowHeights,
       showSearchBar,
       searchValue,
@@ -1233,6 +1236,7 @@ export class IrisGridPanel extends PureComponent<
             settings={settings}
             sorts={sorts}
             userColumnWidths={userColumnWidths}
+            userColumnWidthsByName={userColumnWidthsByName}
             userRowHeights={userRowHeights}
             model={model}
             showSearchBar={showSearchBar}

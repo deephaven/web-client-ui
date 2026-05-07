@@ -275,6 +275,32 @@ describe('rebuildFilters', () => {
   });
 });
 
+describe('handleRollupChange', () => {
+  it('seeds metric calculator from userColumnWidthsByName prop and preserves widths for columns absent from the current model', () => {
+    // Current (rolled-up) model only contains the group-by column.
+    const fullColumns = irisGridTestUtils.makeColumns(3);
+    const currentColumns = [fullColumns[0]];
+    const currentModel = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({ columns: currentColumns })
+    );
+
+    // Persisted state includes a hidden width for a column not in the
+    // currently displayed (rolled-up) model.
+    const hiddenName = fullColumns[2].name;
+    const irisGrid = makeComponent(currentModel, DEFAULT_SETTINGS, {
+      userColumnWidthsByName: new Map([[hiddenName, 0]]),
+    });
+
+    const { metricCalculator } = irisGrid.state;
+    // The by-name map carries the entry even though it isn't in the model.
+    expect(metricCalculator.getUserColumnWidthsByName().get(hiddenName)).toBe(
+      0
+    );
+    // The by-index map should not include it (no model index).
+    expect([...metricCalculator.getUserColumnWidths().entries()]).toEqual([]);
+  });
+});
+
 describe('column expand/collapse', () => {
   let model: IrisGridProxyModel & ExpandableColumnGridModel;
   let component: IrisGrid;
