@@ -111,6 +111,55 @@ describe('IrisGridMetricCalculator', () => {
     expect(calculator.getUserColumnWidths().get(0)).toBe(150);
   });
 
+  it('seeds userColumnWidthsByName from constructor options and projects to current model', () => {
+    const seeded = new IrisGridMetricCalculator({
+      userColumnWidthsByName: new Map([
+        ['Column2', 0],
+        ['NotInModel', 0],
+      ]),
+    });
+
+    expect([...seeded.getUserColumnWidthsByName().entries()]).toEqual([
+      ['Column2', 0],
+      ['NotInModel', 0],
+    ]);
+
+    // Force a model swap so updateUserColumnWidths runs and projects to the
+    // current model. The entry for `NotInModel` is preserved in the by-name
+    // map but does not appear in the by-index map.
+    seeded.getMetrics(state);
+
+    expect([...seeded.getUserColumnWidths().entries()]).toEqual([[1, 0]]);
+    expect([...seeded.getUserColumnWidthsByName().entries()]).toEqual([
+      ['Column2', 0],
+      ['NotInModel', 0],
+    ]);
+  });
+
+  it('preserves widths for columns absent from the current model across model swaps', () => {
+    const seeded = new IrisGridMetricCalculator({
+      userColumnWidthsByName: new Map([['Column2', 0]]),
+    });
+
+    // Initial model: 5 columns, Column2 is hidden.
+    seeded.getMetrics(state);
+    expect(seeded.getUserColumnWidths().get(1)).toBe(0);
+
+    // Swap to a smaller model that no longer contains Column2 (e.g. a rollup).
+    columns = columns.filter(col => col.name !== 'Column2');
+    seeded.getMetrics(state);
+    expect([...seeded.getUserColumnWidths().entries()]).toEqual([]);
+    // The by-name map preserves the hidden width for re-projection later.
+    expect([...seeded.getUserColumnWidthsByName().entries()]).toEqual([
+      ['Column2', 0],
+    ]);
+
+    // Restore the original model. Column2 should be hidden again.
+    columns = makeColumns();
+    seeded.getMetrics(state);
+    expect([...seeded.getUserColumnWidths().entries()]).toEqual([[1, 0]]);
+  });
+
   describe('getFilterInputCoordinates', () => {
     it.each([
       {
