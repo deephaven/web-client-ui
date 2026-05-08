@@ -44,12 +44,14 @@ async function getCorePlugins() {
   );
   const {
     GridPluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     WidgetLoaderPluginConfig,
   } = dashboardCorePlugins;
   return [
     GridPluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     WidgetLoaderPluginConfig,

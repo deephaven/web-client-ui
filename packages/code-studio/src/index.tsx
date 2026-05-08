@@ -46,6 +46,7 @@ async function getCorePlugins() {
   );
   const {
     GridPluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     ChartBuilderPluginConfig,
@@ -56,6 +57,7 @@ async function getCorePlugins() {
   } = dashboardCorePlugins;
   return [
     GridPluginConfig,
+    TableHistoryPluginConfig,
     PandasPluginConfig,
     ChartPluginConfig,
     ChartBuilderPluginConfig,
