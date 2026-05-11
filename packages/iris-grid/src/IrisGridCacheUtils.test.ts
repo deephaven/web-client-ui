@@ -51,7 +51,7 @@ const irisGridState = {
   metrics: {
     userColumnWidths: new Map(),
     userRowHeights: new Map(),
-  } as GridMetrics,
+  } as Partial<GridMetrics>,
 } satisfies HydratedIrisGridState;
 
 describe('makeMemoizedGridStateDehydrator', () => {

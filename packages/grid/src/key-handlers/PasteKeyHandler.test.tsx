@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { parseValueFromElement } from './PasteKeyHandler';
+import { parseValueFromElement, parseValueFromText } from './PasteKeyHandler';
 
 function makeElementFromJsx(jsx: JSX.Element): HTMLElement {
   return render(jsx).container;
@@ -128,5 +128,37 @@ describe('text parsing', () => {
 
   it('parses simple text element', () => {
     testHtml(<div>foo</div>, 'foo');
+  });
+});
+
+describe('parseValueFromText', () => {
+  it('parses a single numeric value', () => {
+    expect(parseValueFromText('12345')).toBe('12345');
+  });
+
+  it('trims whitespace for single value', () => {
+    expect(parseValueFromText('  3.14  \n')).toBe('3.14');
+  });
+
+  it('parses a table with multiple rows and columns', () => {
+    expect(
+      parseValueFromText('12345\t3.14\thello\n67890\t2.71\tworld\n')
+    ).toEqual([
+      ['12345', '3.14', 'hello'],
+      ['67890', '2.71', 'world'],
+    ]);
+  });
+
+  it('parses a single row from text', () => {
+    expect(parseValueFromText('12345\t67890\t99999')).toEqual([
+      ['12345', '67890', '99999'],
+    ]);
+  });
+
+  it('trims trailing newline without creating an empty row', () => {
+    expect(parseValueFromText('A\tB\n1\t2\n')).toEqual([
+      ['A', 'B'],
+      ['1', '2'],
+    ]);
   });
 });

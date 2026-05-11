@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.2](https://github.com/deephaven/web-client-ui/compare/v1.18.1...v1.18.2) (2026-05-06)
+
+### Bug Fixes
+
+- DH-20403: Persist user column widths by name in IrisGrid ([#2670](https://github.com/deephaven/web-client-ui/issues/2670)) ([a0247b1](https://github.com/deephaven/web-client-ui/commit/a0247b18bdea5299b76ebfb41c6de442f659f6be))
+
 ## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

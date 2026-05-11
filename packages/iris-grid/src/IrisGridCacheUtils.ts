@@ -71,6 +71,7 @@ function areIrisGridStatesEqual(
     irisGridStateA === irisGridStateB ||
     (irisGridStateA.metrics != null &&
       irisGridStateB.metrics != null &&
+      irisGridStateA.metricCalculator === irisGridStateB.metricCalculator &&
       irisGridStateA.metrics.userColumnWidths ===
         irisGridStateB.metrics.userColumnWidths &&
       irisGridStateA.metrics.userRowHeights ===
