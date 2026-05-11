@@ -12,11 +12,28 @@ import {
   processLoadedModule,
   sortPluginsByDependency,
   type PluginManifest,
+  type PluginManifestPluginInfo,
+  getPluginModuleValue,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 import { resolve } from './remote-component.config';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
+
+/**
+ * @deprecated Import from `@deephaven/plugin` instead.
+ */
+export type { PluginManifestPluginInfo };
+
+/**
+ * @deprecated Import from `@deephaven/plugin` instead.
+ */
+export type { PluginManifest };
+
+/**
+ * @deprecated Import from `@deephaven/plugin` instead.
+ */
+export { getPluginModuleValue };
 
 /**
  * Imports a commonjs plugin module from the provided URL
