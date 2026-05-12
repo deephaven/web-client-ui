@@ -4,7 +4,10 @@ import {
   PluginType,
   PluginsContext,
   type WidgetPlugin,
+  type WidgetMiddlewarePlugin,
   type WidgetComponentProps,
+  type WidgetMiddlewareComponentProps,
+  type WidgetMiddlewarePanelProps,
 } from '@deephaven/plugin';
 import { Provider } from 'react-redux';
 import { Dashboard, PanelEvent } from '@deephaven/dashboard';
@@ -265,5 +268,262 @@ describe('component wrapper', () => {
         glEventHub={new EventEmitter()}
       />
     );
+  });
+});
+
+describe('middleware plugin chaining', () => {
+  function TestMiddlewareWrapper({
+    Component,
+    ...props
+  }: WidgetMiddlewareComponentProps) {
+    return (
+      <div data-testid="middleware-wrapper">
+        <span>MiddlewareWrapper</span>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Component {...props} />
+      </div>
+    );
+  }
+
+  function TestMiddlewareWrapperTwo({
+    Component,
+    ...props
+  }: WidgetMiddlewareComponentProps) {
+    return (
+      <div data-testid="middleware-wrapper-two">
+        <span>MiddlewareWrapperTwo</span>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Component {...props} />
+      </div>
+    );
+  }
+
+  const testMiddlewarePlugin: WidgetMiddlewarePlugin = {
+    name: 'test-middleware',
+    type: PluginType.MIDDLEWARE_PLUGIN,
+    component: TestMiddlewareWrapper,
+    supportedTypes: 'test-widget',
+  };
+
+  const testMiddlewarePluginTwo: WidgetMiddlewarePlugin = {
+    name: 'test-middleware-two',
+    type: PluginType.MIDDLEWARE_PLUGIN,
+    component: TestMiddlewareWrapperTwo,
+    supportedTypes: 'test-widget',
+  };
+
+  it('chains middleware plugin around base widget', async () => {
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin', testWidgetPlugin],
+      ['test-middleware-plugin', testMiddlewarePlugin],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget' },
+        })
+    );
+
+    // Both the middleware wrapper and the base widget should be rendered
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(1);
+    expect(screen.queryAllByText('TestWidget').length).toBe(1);
+
+    // The widget should be inside the middleware wrapper
+    const wrapper = screen.getByTestId('middleware-wrapper');
+    expect(wrapper).toContainElement(screen.getByText('TestWidget'));
+  });
+
+  it('chains multiple middleware plugins in registration order', async () => {
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin', testWidgetPlugin],
+      ['test-middleware-plugin', testMiddlewarePlugin],
+      ['test-middleware-plugin-two', testMiddlewarePluginTwo],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget' },
+        })
+    );
+
+    // All components should be rendered
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(1);
+    expect(screen.queryAllByText('MiddlewareWrapperTwo').length).toBe(1);
+    expect(screen.queryAllByText('TestWidget').length).toBe(1);
+
+    // Middleware should be chained in registration order (first middleware is outermost)
+    const wrapperOne = screen.getByTestId('middleware-wrapper');
+    const wrapperTwo = screen.getByTestId('middleware-wrapper-two');
+    expect(wrapperOne).toContainElement(wrapperTwo);
+    expect(wrapperTwo).toContainElement(screen.getByText('TestWidget'));
+  });
+
+  it('middleware registered before base plugin is still applied', async () => {
+    const layoutManager = createAndMountDashboard([
+      ['test-middleware-plugin', testMiddlewarePlugin],
+      ['test-widget-plugin', testWidgetPlugin],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget' },
+        })
+    );
+
+    // Middleware should wrap the base widget
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(1);
+    expect(screen.queryAllByText('TestWidget').length).toBe(1);
+    const wrapper = screen.getByTestId('middleware-wrapper');
+    expect(wrapper).toContainElement(screen.getByText('TestWidget'));
+  });
+
+  it('middleware without base plugin is not rendered', async () => {
+    const layoutManager = createAndMountDashboard([
+      [
+        'test-middleware-only',
+        {
+          ...testMiddlewarePlugin,
+          supportedTypes: 'middleware-only-type',
+        },
+      ],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'middleware-only-type' },
+        })
+    );
+
+    // Nothing should be rendered since there's no base plugin
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(0);
+  });
+
+  it('base plugin replacement keeps middleware chain', async () => {
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin', testWidgetPlugin],
+      ['test-middleware-plugin', testMiddlewarePlugin],
+      [
+        'test-widget-plugin-two',
+        {
+          name: 'test-widget-plugin-two',
+          type: PluginType.WIDGET_PLUGIN,
+          component: TestWidgetTwo,
+          supportedTypes: 'test-widget',
+        },
+      ],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget' },
+        })
+    );
+
+    // The second base plugin should replace the first, but middleware should still apply
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(1);
+    expect(screen.queryAllByText('TestWidget').length).toBe(0);
+    expect(screen.queryAllByText('TestWidgetTwo').length).toBe(1);
+
+    const wrapper = screen.getByTestId('middleware-wrapper');
+    expect(wrapper).toContainElement(screen.getByText('TestWidgetTwo'));
+  });
+
+  it('middleware for one type does not affect a different type', async () => {
+    const otherPlugin: WidgetPlugin = {
+      name: 'other-widget',
+      type: PluginType.WIDGET_PLUGIN,
+      component: TestWidgetTwo,
+      supportedTypes: 'other-type',
+    };
+
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin', testWidgetPlugin],
+      ['other-widget', otherPlugin],
+      ['test-middleware-plugin', testMiddlewarePlugin], // targets 'test-widget' only
+    ]);
+
+    // Open the other type — middleware should NOT apply
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'other-type' },
+        })
+    );
+
+    expect(screen.queryAllByText('TestWidgetTwo').length).toBe(1);
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(0);
+  });
+
+  it('chains panel middleware around base panelComponent', async () => {
+    function TestPanelMiddleware({
+      Component,
+      ...props
+    }: WidgetMiddlewarePanelProps) {
+      return (
+        <div data-testid="panel-middleware">
+          <span>PanelMiddleware</span>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+          <Component {...props} />
+        </div>
+      );
+    }
+
+    const panelMiddleware: WidgetMiddlewarePlugin = {
+      name: 'panel-middleware',
+      type: PluginType.MIDDLEWARE_PLUGIN,
+      component: TestMiddlewareWrapper,
+      panelComponent: TestPanelMiddleware,
+      supportedTypes: 'test-widget-panel',
+    };
+
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin-with-panel', testWidgetPluginWithPanel],
+      ['panel-middleware', panelMiddleware],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget-panel' },
+        })
+    );
+
+    // Panel middleware should wrap the base panel
+    expect(screen.queryAllByText('PanelMiddleware').length).toBe(1);
+    expect(screen.queryAllByText('TestPanel').length).toBe(1);
+    const wrapper = screen.getByTestId('panel-middleware');
+    expect(wrapper).toContainElement(screen.getByText('TestPanel'));
+  });
+
+  it('skips component-only middleware when base has panelComponent', async () => {
+    // Middleware that only defines component (no panelComponent)
+    const componentOnlyMiddleware: WidgetMiddlewarePlugin = {
+      name: 'component-only-middleware',
+      type: PluginType.MIDDLEWARE_PLUGIN,
+      component: TestMiddlewareWrapper,
+      supportedTypes: 'test-widget-panel',
+    };
+
+    const layoutManager = createAndMountDashboard([
+      ['test-widget-plugin-with-panel', testWidgetPluginWithPanel],
+      ['component-only-middleware', componentOnlyMiddleware],
+    ]);
+
+    act(
+      () =>
+        layoutManager?.eventHub.emit(PanelEvent.OPEN, {
+          widget: { type: 'test-widget-panel' },
+        })
+    );
+
+    // The base panel should render, but middleware wrapper should NOT appear
+    // because the middleware lacks panelComponent and the base has panelComponent
+    expect(screen.queryAllByText('TestPanel').length).toBe(1);
+    expect(screen.queryAllByText('MiddlewareWrapper').length).toBe(0);
   });
 });

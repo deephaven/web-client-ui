@@ -25,7 +25,7 @@ import * as DeephavenReactHooks from '@deephaven/react-hooks';
 import * as DeephavenPlugin from '@deephaven/plugin';
 
 // eslint-disable-next-line import/prefer-default-export
-export const resolve = {
+export const resolve: Record<string, unknown> = {
   react,
   'react-dom': ReactDOM,
   redux,

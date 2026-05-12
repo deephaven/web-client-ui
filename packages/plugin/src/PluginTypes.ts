@@ -12,6 +12,7 @@ export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
   ELEMENT_PLUGIN: 'ElementPlugin',
+  MIDDLEWARE_PLUGIN: 'MiddlewarePlugin',
   MULTI_PLUGIN: 'MultiPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
@@ -142,6 +143,78 @@ export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
   localDashboardId: string;
   glContainer: ItemContainer;
   glEventHub: EventEmitter;
+}
+
+/**
+ * Props passed to middleware components that wrap a base widget.
+ * Extends WidgetComponentProps with the wrapped component.
+ */
+export interface WidgetMiddlewareComponentProps<T = unknown>
+  extends WidgetComponentProps<T> {
+  /**
+   * The next component in the middleware chain.
+   * Middleware should render this component to continue the chain.
+   */
+  Component: React.ComponentType<WidgetComponentProps<T>>;
+}
+
+/**
+ * Props passed to middleware panel components that wrap a base panel.
+ * Extends WidgetPanelProps with the wrapped panel component.
+ */
+export interface WidgetMiddlewarePanelProps<T = unknown>
+  extends WidgetPanelProps<T> {
+  /**
+   * The next panel component in the middleware chain.
+   * Middleware should render this component to continue the chain.
+   */
+  Component: React.ComponentType<WidgetPanelProps<T>>;
+}
+
+/**
+ * A middleware plugin that can wrap and enhance another widget plugin.
+ * Middleware plugins are chained together in registration order,
+ * with each middleware wrapping the next in the chain.
+ *
+ * The middleware pattern allows plugins to:
+ * - Add additional UI elements around a widget
+ * - Intercept and modify props before they reach the wrapped component
+ * - Provide additional context or state to the wrapped component
+ * - Add menu items or other extensions to the widget
+ *
+ * A middleware plugin uses its own `PluginType.MIDDLEWARE_PLUGIN` discriminator
+ * (rather than being a flagged `WidgetPlugin`) so consumers can cleanly
+ * distinguish base widget plugins from middleware via type narrowing.
+ */
+export interface WidgetMiddlewarePlugin<T = unknown> extends Plugin {
+  type: typeof PluginType.MIDDLEWARE_PLUGIN;
+
+  /**
+   * The middleware component that wraps the base widget component.
+   * Receives the wrapped component as a prop and should render it.
+   */
+  component: React.ComponentType<WidgetMiddlewareComponentProps<T>>;
+
+  /**
+   * The server widget types that this middleware applies to.
+   * Matches the same `supportedTypes` semantics as `WidgetPlugin`.
+   */
+  supportedTypes: string | string[];
+
+  /**
+   * The middleware panel component that wraps the base panel component.
+   * If omitted, only the component middleware will be applied.
+   */
+  panelComponent?: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+}
+
+/**
+ * Type guard to check if a plugin is a middleware plugin.
+ */
+export function isWidgetMiddlewarePlugin(
+  plugin: PluginModuleExport
+): plugin is WidgetMiddlewarePlugin {
+  return 'type' in plugin && plugin.type === PluginType.MIDDLEWARE_PLUGIN;
 }
 
 export interface WidgetPlugin<T = unknown> extends Plugin {
@@ -318,6 +391,7 @@ export function isPlugin(plugin: unknown): plugin is Plugin {
     isMultiPlugin(plugin as PluginModuleExport) ||
     isTablePlugin(plugin as PluginModuleExport) ||
     isThemePlugin(plugin as PluginModuleExport) ||
-    isWidgetPlugin(plugin as PluginModuleExport)
+    isWidgetPlugin(plugin as PluginModuleExport) ||
+    isWidgetMiddlewarePlugin(plugin as PluginModuleExport)
   );
 }

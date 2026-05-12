@@ -108,7 +108,8 @@ export type PluginModule =
         | 'TablePlugin'
         | 'ThemePlugin'
         | 'ElementPlugin'
-        | 'MultiPlugin';
+        | 'MultiPlugin'
+        | 'MiddlewarePlugin';
     }
   | {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
