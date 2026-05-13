@@ -14,22 +14,31 @@ import {
   PluginType,
   type ThemePlugin,
   type WidgetPlugin,
+<<<<<<< HEAD
   type WidgetMiddlewarePlugin,
   type WidgetComponentProps,
   type WidgetMiddlewareComponentProps,
   type WidgetPanelProps,
   type WidgetMiddlewarePanelProps,
+=======
+  type WidgetDashboardPlugin,
+>>>>>>> fdfefce4e1 (feat: DH-21757: Allow widget plugins to register types as dashboard types)
 } from './PluginTypes';
 import {
   pluginSupportsType,
+  pluginSupportsTypeAsDashboard,
   getIconForPlugin,
   getThemeDataFromPlugins,
   getPluginsElementMap,
+<<<<<<< HEAD
   getPluginModuleValue,
   processLoadedModule,
   registerPlugin,
   createChainedComponent,
   createChainedPanelComponent,
+=======
+  getWidgetDashboardPlugin,
+>>>>>>> fdfefce4e1 (feat: DH-21757: Allow widget plugins to register types as dashboard types)
 } from './PluginUtils';
 
 function TestWidget() {
@@ -72,6 +81,92 @@ test('pluginSupportsType', () => {
   expect(pluginSupportsType(widgetPlugin, 'test-widget-three')).toBe(false);
   expect(pluginSupportsType(dashboardPlugin, 'test-widget')).toBe(false);
   expect(pluginSupportsType(undefined, 'test-widget')).toBe(false);
+});
+
+const widgetDashboardPlugin: WidgetDashboardPlugin = {
+  name: 'test-widget-dashboard-plugin',
+  type: PluginType.WIDGET_PLUGIN,
+  component: TestWidget,
+  supportedTypes: ['test-widget'],
+  dashboardTypes: ['test-dashboard', 'test-dashboard-two'],
+  createDashboardPayload: jest.fn(),
+};
+
+const widgetDashboardPluginSingleType: WidgetDashboardPlugin = {
+  ...widgetDashboardPlugin,
+  name: 'test-widget-dashboard-plugin-single',
+  dashboardTypes: 'test-dashboard-single',
+};
+
+describe('pluginSupportsTypeAsDashboard', () => {
+  it('returns true for matching dashboard types', () => {
+    expect(
+      pluginSupportsTypeAsDashboard(widgetDashboardPlugin, 'test-dashboard')
+    ).toBe(true);
+    expect(
+      pluginSupportsTypeAsDashboard(widgetDashboardPlugin, 'test-dashboard-two')
+    ).toBe(true);
+    expect(
+      pluginSupportsTypeAsDashboard(
+        widgetDashboardPluginSingleType,
+        'test-dashboard-single'
+      )
+    ).toBe(true);
+  });
+
+  it('returns false for non-matching dashboard types', () => {
+    expect(
+      pluginSupportsTypeAsDashboard(widgetDashboardPlugin, 'unknown')
+    ).toBe(false);
+    // supportedTypes should not satisfy dashboard types
+    expect(
+      pluginSupportsTypeAsDashboard(widgetDashboardPlugin, 'test-widget')
+    ).toBe(false);
+  });
+
+  it('returns false for non-widget-dashboard plugins', () => {
+    expect(pluginSupportsTypeAsDashboard(widgetPlugin, 'test-widget')).toBe(
+      false
+    );
+    expect(
+      pluginSupportsTypeAsDashboard(dashboardPlugin, 'test-dashboard')
+    ).toBe(false);
+    expect(pluginSupportsTypeAsDashboard(undefined, 'test-dashboard')).toBe(
+      false
+    );
+  });
+});
+
+describe('getWidgetDashboardPlugin', () => {
+  const pluginMap = new Map<string, PluginModule>([
+    [widgetPlugin.name, widgetPlugin],
+    [dashboardPlugin.name, dashboardPlugin],
+    [widgetDashboardPlugin.name, widgetDashboardPlugin],
+    [widgetDashboardPluginSingleType.name, widgetDashboardPluginSingleType],
+  ]);
+
+  it('returns the plugin matching the dashboard type', () => {
+    expect(getWidgetDashboardPlugin(pluginMap, 'test-dashboard')).toBe(
+      widgetDashboardPlugin
+    );
+    expect(getWidgetDashboardPlugin(pluginMap, 'test-dashboard-two')).toBe(
+      widgetDashboardPlugin
+    );
+    expect(getWidgetDashboardPlugin(pluginMap, 'test-dashboard-single')).toBe(
+      widgetDashboardPluginSingleType
+    );
+  });
+
+  it('returns null when no plugin matches', () => {
+    expect(getWidgetDashboardPlugin(pluginMap, 'test-widget')).toBeNull();
+    expect(getWidgetDashboardPlugin(pluginMap, 'unknown')).toBeNull();
+  });
+
+  it('returns null for an empty plugin map', () => {
+    expect(
+      getWidgetDashboardPlugin(new Map(), 'test-dashboard')
+    ).toBeNull();
+  });
 });
 
 const DEFAULT_ICON = <FontAwesomeIcon icon={vsPreview} />;

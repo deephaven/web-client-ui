@@ -78,6 +78,12 @@ export const {
   useListener: usePanelOpenListener,
 } = makeEventFunctions<[detail: PanelOpenEventDetail]>(PanelEvent.OPEN);
 
+export const {
+  listen: listenForPanelClose,
+  emit: emitPanelClose,
+  useListener: usePanelCloseListener,
+} = makeEventFunctions<[panelId: string]>(PanelEvent.CLOSE);
+
 // TODO (#2147): Add the rest of the event functions here. Need to create the correct types for all of them.
 
 export default PanelEvent;

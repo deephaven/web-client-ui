@@ -1,5 +1,8 @@
 import type { BaseThemeType } from '@deephaven/components';
-import type { WidgetDescriptor } from '@deephaven/dashboard';
+import type {
+  CreateDashboardPayload,
+  WidgetDescriptor,
+} from '@deephaven/dashboard';
 import {
   type EventEmitter,
   type ItemContainer,
@@ -261,10 +264,41 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
   icon?: IconDefinition | React.ReactElement<unknown>;
 }
 
+/**
+ * Special type of WidgetPlugin that supports opening a widget as a dashboard instead of a panel.
+ */
+export interface WidgetDashboardPlugin<T = unknown> extends WidgetPlugin<T> {
+  /**
+   * The widget dashboard types that this plugin can handle.
+   * Widgets of these types can be opened by this plugin as a dashboard using the `createDashboardPayload` function.
+   * Can overlap with `supportedTypes` for widgets that can be opened as either a panel or a dashboard (e.g. nested dashboards).
+   */
+  dashboardTypes: string | string[];
+
+  /**
+   * A function to generate the dashboard payload for creating a new dashboard when a widget of widget is opened.
+   * @param widget Widget to get the create dashboard payload for
+   * @returns The dashboard payload for creating a new dashboard
+   */
+  createDashboardPayload<D extends WidgetDescriptor>(
+    widget: D
+  ): CreateDashboardPayload;
+}
+
 export function isWidgetPlugin(
   plugin: PluginModuleExport
 ): plugin is WidgetPlugin {
   return 'type' in plugin && plugin.type === PluginType.WIDGET_PLUGIN;
+}
+
+export function isWidgetDashboardPlugin(
+  plugin: PluginModuleExport
+): plugin is WidgetDashboardPlugin {
+  return (
+    isWidgetPlugin(plugin) &&
+    'dashboardTypes' in plugin &&
+    plugin.dashboardTypes != null
+  );
 }
 
 export interface TablePlugin extends Plugin {

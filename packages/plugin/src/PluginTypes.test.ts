@@ -11,8 +11,28 @@ import {
   type Plugin,
   type WidgetPlugin,
   type WidgetMiddlewarePlugin,
+  isWidgetDashboardPlugin,
+  type WidgetDashboardPlugin,
   isPlugin,
 } from './PluginTypes';
+
+function TestComponent() {
+  return null;
+}
+
+const widgetPlugin: WidgetPlugin = {
+  name: 'test-widget-plugin',
+  type: PluginType.WIDGET_PLUGIN,
+  component: TestComponent,
+  supportedTypes: 'test-widget',
+};
+
+const widgetDashboardPlugin: WidgetDashboardPlugin = {
+  ...widgetPlugin,
+  name: 'test-widget-dashboard-plugin',
+  dashboardTypes: 'test-dashboard',
+  createDashboardPayload: jest.fn(),
+};
 
 const pluginTypeToTypeGuardMap = [
   [PluginType.AUTH_PLUGIN, isAuthPlugin],
@@ -84,6 +104,45 @@ describe('isWidgetMiddlewarePlugin', () => {
       isWidgetMiddlewarePlugin({
         name: 'test',
         type: PluginType.DASHBOARD_PLUGIN,
+      })
+    ).toBe(false);
+  });
+});
+
+describe('isWidgetDashboardPlugin', () => {
+  it('returns true for a widget plugin with dashboardTypes set', () => {
+    expect(isWidgetDashboardPlugin(widgetDashboardPlugin)).toBe(true);
+  });
+
+  it('returns true when dashboardTypes is an array', () => {
+    expect(
+      isWidgetDashboardPlugin({
+        ...widgetDashboardPlugin,
+        dashboardTypes: ['test-dashboard', 'test-dashboard-two'],
+      })
+    ).toBe(true);
+  });
+
+  it('returns false for a widget plugin without dashboardTypes', () => {
+    expect(isWidgetDashboardPlugin(widgetPlugin)).toBe(false);
+  });
+
+  it('returns false for non-widget plugins', () => {
+    expect(
+      isWidgetDashboardPlugin({
+        name: 'test',
+        type: PluginType.DASHBOARD_PLUGIN,
+        component: TestComponent,
+      })
+    ).toBe(false);
+  });
+
+  it('returns false when dashboardTypes is null', () => {
+    expect(
+      isWidgetDashboardPlugin({
+        ...widgetPlugin,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dashboardTypes: null as any,
       })
     ).toBe(false);
   });

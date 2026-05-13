@@ -21,6 +21,8 @@ import {
   isPlugin,
   type LegacyPlugin,
   type Plugin,
+  type WidgetDashboardPlugin,
+  isWidgetDashboardPlugin,
 } from './PluginTypes';
 
 const log = Log.module('@deephaven/plugin.PluginUtils');
@@ -46,6 +48,23 @@ export function pluginSupportsType(
   }
 
   return [plugin.supportedTypes].flat().some(t => t === type);
+}
+
+/**
+ * Check if the given plugin supports opening a widget of the given type as a dashboard.
+ * @param plugin Plugin to check
+ * @param type Widget type
+ * @returns True if plugin supports opening it as a dashboard
+ */
+export function pluginSupportsTypeAsDashboard(
+  plugin: PluginModule | undefined,
+  type: string
+): boolean {
+  if (plugin == null || !isWidgetDashboardPlugin(plugin)) {
+    return false;
+  }
+
+  return [plugin.dashboardTypes].flat().some(t => t === type);
 }
 
 export function getIconForPlugin(plugin: PluginModule): React.ReactElement {
@@ -489,4 +508,23 @@ export function sortPluginsByDependency<
   }
 
   return sorted;
+}
+
+/**
+ * Get the WidgetPlugin that supports opening a widget of the given type as a dashboard.
+ * @param pluginMap Map of available plugins
+ * @param type Type of widget to check
+ * @returns The WidgetPlugin that supports opening this widget as a dashboard
+ */
+export function getWidgetDashboardPlugin(
+  pluginMap: PluginModuleMap,
+  type: string
+): WidgetDashboardPlugin | null {
+  return (
+    [...pluginMap.values()].find(
+      (entry): entry is WidgetDashboardPlugin =>
+        isWidgetDashboardPlugin(entry) &&
+        [entry.dashboardTypes].flat().some(t => t === type)
+    ) ?? null
+  );
 }
