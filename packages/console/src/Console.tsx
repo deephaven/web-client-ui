@@ -1096,18 +1096,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
             onDragEnter={this.handleDragEnter}
             onDragLeave={this.handleDragLeave}
           >
-            {showCsvOverlay && (
-              <CsvOverlay
-                onCancel={this.handleCsvFileCanceled}
-                onFileOpened={this.handleCsvFileOpened}
-                onPaste={this.handleCsvPaste}
-                clearDragError={this.handleClearDragError}
-                dragError={dragError}
-                onError={this.handleCsvError}
-                uploadInProgress={csvUploadInProgress}
-                allowZip={unzip != null}
-              />
-            )}
             <div
               role="presentation"
               className={classNames('scroll-pane no-scroll-x', {
@@ -1128,6 +1116,18 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
               />
               {historyChildren}
             </div>
+            {showCsvOverlay && (
+              <CsvOverlay
+                onCancel={this.handleCsvFileCanceled}
+                onFileOpened={this.handleCsvFileOpened}
+                onPaste={this.handleCsvPaste}
+                clearDragError={this.handleClearDragError}
+                dragError={dragError}
+                onError={this.handleCsvError}
+                uploadInProgress={csvUploadInProgress}
+                allowZip={unzip != null}
+              />
+            )}
           </div>
           {!showCsvOverlay && (
             <ConsoleInput
