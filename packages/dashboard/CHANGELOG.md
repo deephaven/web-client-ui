@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.19.0](https://github.com/deephaven/web-client-ui/compare/v1.18.2...v1.19.0) (2026-05-13)
+
+### Bug Fixes
+
+- DH-21843: Fix unexpected code studio unmount ([#2672](https://github.com/deephaven/web-client-ui/issues/2672)) ([ada1e36](https://github.com/deephaven/web-client-ui/commit/ada1e365383eb90f6222728f00101345e854785b))
+
 ## [1.18.1](https://github.com/deephaven/web-client-ui/compare/v1.18.0...v1.18.1) (2026-04-30)
 
 **Note:** Version bump only for package @deephaven/dashboard
