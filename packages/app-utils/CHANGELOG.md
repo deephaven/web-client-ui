@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.19.0](https://github.com/deephaven/web-client-ui/compare/v1.18.2...v1.19.0) (2026-05-13)
+
+### Features
+
+- DH-21476: Middleware plugin infrastructure for widget chaining ([#2660](https://github.com/deephaven/web-client-ui/issues/2660)) ([5116dfb](https://github.com/deephaven/web-client-ui/commit/5116dfb45ae7d9f0e798528d1cd8a6147b2890a3))
+
 ## [1.18.2](https://github.com/deephaven/web-client-ui/compare/v1.18.1...v1.18.2) (2026-05-06)
 
 **Note:** Version bump only for package @deephaven/app-utils

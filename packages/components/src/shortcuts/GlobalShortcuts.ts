@@ -68,8 +68,8 @@ const GLOBAL_SHORTCUTS = {
   OPEN_DASHBOARD_LIST: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.OPEN_DASHBOARD_LIST',
     name: 'Open Dashboard List',
-    shortcut: [MODIFIER.CTRL, MODIFIER.SHIFT, KEY.D],
-    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.D],
+    shortcut: [MODIFIER.ALT, MODIFIER.SHIFT, KEY.D],
+    macShortcut: [MODIFIER.OPTION, MODIFIER.SHIFT, KEY.D],
     isEditable: true,
   }),
   NEXT: ShortcutRegistry.createAndAdd({
