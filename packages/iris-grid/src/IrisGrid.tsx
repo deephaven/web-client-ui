@@ -4184,6 +4184,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({
       showOverflowModal: false,
     });
+    this.grid?.focus(); // Focus on the grid after closing the overflow modal
   }
 
   handleOpenNoPastePermissionModal(errorMessage: string): void {
