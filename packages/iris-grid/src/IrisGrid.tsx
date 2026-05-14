@@ -3389,15 +3389,22 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     // movedColumns reset triggers metricCalculator update in the Grid component
     this.setState({ movedColumns: model.initialMovedColumns });
-    // Re-apply filters to the new inner model (e.g. after a partition key change).
+    // Re-apply filters to the new inner model after a partition key change.
     // When TABLE_CHANGED fires after a partition swap the IrisGridModelUpdater's
     // updateFilter effect does not re-run because neither the proxy model reference
     // nor the filter array reference has changed. Rebuilding forces new
     // FilterCondition objects into state so getCachedFilter returns a new array,
     // which causes updateFilter to run against the freshly-swapped model.
-    // This is safe for rollup/selectDistinct changes because those handlers call
-    // clearAllFilters() before the model swap, making rebuildFilters() a no-op.
-    this.rebuildFilters();
+    // Only rebuild when mode is 'partition': the 'keys' and 'merged' modes swap
+    // in a table with a different column schema, so existing filter indices would
+    // reference wrong (or non-existent) columns.
+    const { partitionConfig } = this.state;
+    if (
+      isPartitionedGridModel(model) &&
+      partitionConfig?.mode === 'partition'
+    ) {
+      this.rebuildFilters();
+    }
   }
 
   handleViewChanged(metrics?: GridMetrics): void {
