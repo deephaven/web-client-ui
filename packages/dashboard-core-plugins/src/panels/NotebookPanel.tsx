@@ -57,6 +57,7 @@ import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import type { Tab, CloseOptions } from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
+import { type CoreConsoleSession } from '../ConsoleEvents';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './CorePanel';
 import './NotebookPanel.scss';
@@ -1068,10 +1069,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.runCommand(this.notebook.getSelectedCommand());
   }
 
-  handleSessionOpened(
-    session: dh.IdeSession,
-    { language }: { language: string }
-  ): void {
+  handleSessionOpened({ session, language }: CoreConsoleSession): void {
     this.setState({
       session,
       sessionLanguage: language,
