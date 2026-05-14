@@ -15,7 +15,9 @@ import {
 import {
   type DashboardPanelProps,
   emitCloseDashboard,
+  emitCreateDashboard,
   emitPanelOpen,
+  emitPanelClose,
   LayoutManagerContext,
   LayoutUtils,
   PanelEvent,
@@ -33,6 +35,7 @@ import {
 import { assertNotNull } from '@deephaven/utils';
 import {
   getIconForPlugin,
+  getWidgetDashboardPlugin,
   pluginSupportsType,
   type PluginModuleMap,
 } from '@deephaven/plugin';
@@ -220,6 +223,23 @@ export class ConsolePanel extends PureComponent<
     return id;
   }
 
+  /**
+   * Removes the item ID mapping from state by its ID value.
+   * @param id The item ID to delete from the itemIds map.
+   */
+  private deleteItemId(id: string): void {
+    this.setState(({ itemIds }) => {
+      log.debug('Delete item', id, itemIds);
+      const key = [...itemIds.keys()].find(k => itemIds.get(k) === id);
+      if (key === undefined) {
+        return null;
+      }
+      const newItemIds = new Map(itemIds);
+      newItemIds.delete(key);
+      return { itemIds: newItemIds };
+    });
+  }
+
   handleTabFocus(): void {
     this.consoleRef.current?.focus();
   }
@@ -238,6 +258,28 @@ export class ConsolePanel extends PureComponent<
         this.setItemId(panelId, panelId);
       }
     }
+  }
+
+  /**
+   * Handles a panel closed event. Removes the panel's item ID mapping unless
+   * the panel was replaced (i.e. a panel with the same ID still exists in the layout),
+   * in which case the mapping is retained for the replacement panel.
+   * @param panelId The ID of the panel that was closed.
+   */
+  handlePanelClosed(panelId: string): void {
+    // When replacing a panel, LayoutUtils.openComponent adds the new panel before removing the old
+    // one, so the old panel's CLOSED event fires with the same panelId as the new panel.
+    // If a panel with panelId still exists, it was replaced and we should not delete the itemId.
+    const { glContainer } = this.props;
+    const root = LayoutUtils.getRootFromContainer(glContainer);
+    const stack = LayoutUtils.getStackForConfig(root, { id: panelId });
+    if (
+      stack !== null &&
+      LayoutUtils.getContentItemInStack(stack, { id: panelId }) !== null
+    ) {
+      return;
+    }
+    this.deleteItemId(panelId);
   }
 
   handleFocusCommandHistory(): void {
@@ -282,7 +324,7 @@ export class ConsolePanel extends PureComponent<
       const id = this.getItemId(title, false);
       if (id != null) {
         const { glEventHub } = this.props;
-        glEventHub.emit(PanelEvent.CLOSE, id);
+        emitPanelClose(glEventHub, id);
         // Just emit for all panels since there shouldn't be dashboard and panel name conflicts
         emitCloseDashboard(glEventHub, title);
       }
@@ -302,23 +344,45 @@ export class ConsolePanel extends PureComponent<
    * @param widget The widget to open
    */
   openWidget(widget: dh.ide.VariableDescriptor & { title?: string }): void {
+    const { glEventHub, plugins } = this.props;
+    const { type } = widget;
+    const widgetDashboardPlugin = getWidgetDashboardPlugin(plugins, type);
+    if (widgetDashboardPlugin != null) {
+      // If it can be opened as a dashboard, open it as a dashboard. Otherwise, open it as a panel.
+      const dashboardPayload =
+        widgetDashboardPlugin.createDashboardPayload(widget);
+      log.debug('openDashboardWidget', dashboardPayload);
+      emitCreateDashboard(glEventHub, dashboardPayload);
+    } else {
+      this.openPanelWidget(widget);
+    }
+  }
+
+  /**
+   * Open the given widget in a new panel. This is used for all widget types except "widget dashboard" types, which are widgets that should be opened in a new dashboard instead of a panel.
+   * @param widget The widget to open
+   */
+  private openPanelWidget(
+    widget: dh.ide.VariableDescriptor & { title?: string }
+  ): void {
     const { glEventHub, sessionWrapper } = this.props;
     assertNotNull(sessionWrapper);
 
     const { config, session } = sessionWrapper;
     const { title = widget.name } = widget;
     assertNotNull(title);
-    const panelId = this.getItemId(title);
+    const itemId = this.getItemId(title);
+    assertNotNull(itemId);
     const openOptions = {
       fetch: () => session.getObject(widget),
-      panelId,
+      panelId: itemId,
       widget: {
         ...getVariableDescriptor(widget),
         sessionId: config.id,
       },
     };
 
-    log.debug('openWidget', openOptions);
+    log.debug('openPanelWidget', openOptions);
 
     emitPanelOpen(glEventHub, openOptions);
   }
@@ -341,7 +405,7 @@ export class ConsolePanel extends PureComponent<
     const panelIdsToClose = [...itemIds.values()];
     const { glEventHub } = this.props;
     panelIdsToClose.forEach(panelId => {
-      glEventHub.emit(PanelEvent.CLOSE, panelId);
+      emitPanelClose(glEventHub, panelId);
     });
 
     this.setState({ itemIds: new Map() });
