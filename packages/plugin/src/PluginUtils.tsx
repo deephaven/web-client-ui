@@ -514,7 +514,7 @@ export function sortPluginsByDependency<
  * Get the WidgetPlugin that supports opening a widget of the given type as a dashboard.
  * @param pluginMap Map of available plugins
  * @param type Type of widget to check
- * @returns The WidgetPlugin that supports opening this widget as a dashboard
+ * @returns The WidgetPlugin that supports opening this widget as a dashboard, or null if no matching plugin is found
  */
 export function getWidgetDashboardPlugin(
   pluginMap: PluginModuleMap,

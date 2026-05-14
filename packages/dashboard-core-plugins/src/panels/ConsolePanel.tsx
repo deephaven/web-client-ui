@@ -223,6 +223,10 @@ export class ConsolePanel extends PureComponent<
     return id;
   }
 
+  /**
+   * Removes the item ID mapping from state by its ID value.
+   * @param id The item ID to delete from the itemIds map.
+   */
   private deleteItemId(id: string): void {
     this.setState(({ itemIds }) => {
       log.debug('Delete item', id, itemIds);
@@ -256,6 +260,12 @@ export class ConsolePanel extends PureComponent<
     }
   }
 
+  /**
+   * Handles a panel closed event. Removes the panel's item ID mapping unless
+   * the panel was replaced (i.e. a panel with the same ID still exists in the layout),
+   * in which case the mapping is retained for the replacement panel.
+   * @param panelId The ID of the panel that was closed.
+   */
   handlePanelClosed(panelId: string): void {
     // When replacing a panel, LayoutUtils.openComponent adds the new panel before removing the old
     // one, so the old panel's CLOSED event fires with the same panelId as the new panel.

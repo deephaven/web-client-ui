@@ -14,15 +14,12 @@ import {
   PluginType,
   type ThemePlugin,
   type WidgetPlugin,
-<<<<<<< HEAD
   type WidgetMiddlewarePlugin,
   type WidgetComponentProps,
   type WidgetMiddlewareComponentProps,
   type WidgetPanelProps,
   type WidgetMiddlewarePanelProps,
-=======
   type WidgetDashboardPlugin,
->>>>>>> fdfefce4e1 (feat: DH-21757: Allow widget plugins to register types as dashboard types)
 } from './PluginTypes';
 import {
   pluginSupportsType,
@@ -30,15 +27,12 @@ import {
   getIconForPlugin,
   getThemeDataFromPlugins,
   getPluginsElementMap,
-<<<<<<< HEAD
   getPluginModuleValue,
   processLoadedModule,
   registerPlugin,
   createChainedComponent,
   createChainedPanelComponent,
-=======
   getWidgetDashboardPlugin,
->>>>>>> fdfefce4e1 (feat: DH-21757: Allow widget plugins to register types as dashboard types)
 } from './PluginUtils';
 
 function TestWidget() {
@@ -163,9 +157,7 @@ describe('getWidgetDashboardPlugin', () => {
   });
 
   it('returns null for an empty plugin map', () => {
-    expect(
-      getWidgetDashboardPlugin(new Map(), 'test-dashboard')
-    ).toBeNull();
+    expect(getWidgetDashboardPlugin(new Map(), 'test-dashboard')).toBeNull();
   });
 });
 
