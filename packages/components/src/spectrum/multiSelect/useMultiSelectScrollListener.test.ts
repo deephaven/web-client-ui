@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useMultiSelectScrollListener } from './useMultiSelectScrollListener';
 
 beforeEach(() => {
