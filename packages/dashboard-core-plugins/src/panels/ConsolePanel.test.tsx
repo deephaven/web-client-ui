@@ -1,10 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { type CommandHistoryStorage } from '@deephaven/console';
-import {
-  CREATE_DASHBOARD,
-  PanelEvent,
-} from '@deephaven/dashboard';
+import { CREATE_DASHBOARD, PanelEvent } from '@deephaven/dashboard';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import type { IdeConnection, IdeSession } from '@deephaven/jsapi-types';
 import { dh } from '@deephaven/jsapi-shim';

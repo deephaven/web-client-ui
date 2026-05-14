@@ -280,9 +280,7 @@ export interface WidgetDashboardPlugin<T = unknown> extends WidgetPlugin<T> {
    * @param widget Widget to get the create dashboard payload for
    * @returns The dashboard payload for creating a new dashboard
    */
-  createDashboardPayload<D extends WidgetDescriptor>(
-    widget: D
-  ): CreateDashboardPayload;
+  createDashboardPayload: (widget: WidgetDescriptor) => CreateDashboardPayload;
 }
 
 export function isWidgetPlugin(
