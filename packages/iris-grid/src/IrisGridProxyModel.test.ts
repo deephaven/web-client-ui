@@ -1,7 +1,8 @@
 import dh from '@deephaven/jsapi-shim';
 import type IrisGridModel from './IrisGridModel';
-import type IrisGridProxyModel from './IrisGridProxyModel';
+import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import { type PartitionConfig } from './PartitionedGridModel';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
@@ -134,6 +135,77 @@ describe('IrisGridProxyModel', () => {
     expect(testSetter).toHaveBeenCalledTimes(1);
     expect(testUnderlyingSetter).toHaveBeenCalledWith('underlying');
     expect(testUnderlyingSetter).toHaveBeenCalledTimes(1);
+  });
+
+  describe('set partitionConfig', () => {
+    const mockPartitionedTable = {
+      getMergedTable: jest.fn(() =>
+        Promise.resolve(irisGridTestUtils.makeTable())
+      ),
+      getKeyTable: jest.fn(() =>
+        Promise.resolve(irisGridTestUtils.makeTable())
+      ),
+      getKeys: jest.fn(() => Promise.resolve([])),
+      getTable: jest.fn(() => Promise.resolve(irisGridTestUtils.makeTable())),
+      keyColumns: [],
+      columns: [],
+      close: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+
+    let setNextModelSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      setNextModelSpy = jest
+        .spyOn(IrisGridProxyModel.prototype, 'setNextModel')
+        .mockImplementation(() => null);
+    });
+
+    afterEach(() => {
+      setNextModelSpy.mockRestore();
+    });
+
+    function makePartitionedModel() {
+      return irisGridTestUtils.makeModel(
+        mockPartitionedTable as unknown as Parameters<
+          typeof irisGridTestUtils.makeModel
+        >[0]
+      );
+    }
+
+    it('does not swap model when the same config reference is set again', () => {
+      const model = makePartitionedModel();
+      const config: PartitionConfig = { mode: 'partition', partitions: ['a'] };
+      model.partitionConfig = config;
+      setNextModelSpy.mockClear();
+      model.partitionConfig = config;
+      expect(setNextModelSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not swap model when a structurally equal config is set', () => {
+      const model = makePartitionedModel();
+      model.partitionConfig = { mode: 'partition', partitions: ['a'] };
+      setNextModelSpy.mockClear();
+      model.partitionConfig = { mode: 'partition', partitions: ['a'] };
+      expect(setNextModelSpy).not.toHaveBeenCalled();
+    });
+
+    it('swaps model when mode changes', () => {
+      const model = makePartitionedModel();
+      model.partitionConfig = { mode: 'partition', partitions: ['a'] };
+      setNextModelSpy.mockClear();
+      model.partitionConfig = { mode: 'merged', partitions: ['a'] };
+      expect(setNextModelSpy).toHaveBeenCalled();
+    });
+
+    it('swaps model when partition values change', () => {
+      const model = makePartitionedModel();
+      model.partitionConfig = { mode: 'partition', partitions: ['a'] };
+      setNextModelSpy.mockClear();
+      model.partitionConfig = { mode: 'partition', partitions: ['b'] };
+      expect(setNextModelSpy).toHaveBeenCalled();
+    });
   });
 
   // Functions must be set on prototype

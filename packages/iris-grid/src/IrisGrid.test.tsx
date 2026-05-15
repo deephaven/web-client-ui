@@ -11,10 +11,16 @@ import {
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import type IrisGridProxyModel from './IrisGridProxyModel';
+import { isPartitionedGridModel } from './PartitionedGridModel';
 
 jest.mock('@deephaven/grid', () => ({
   ...jest.requireActual('@deephaven/grid'),
   isExpandableColumnGridModel: jest.fn(),
+}));
+
+jest.mock('./PartitionedGridModel', () => ({
+  ...jest.requireActual('./PartitionedGridModel'),
+  isPartitionedGridModel: jest.fn(() => false),
 }));
 
 const { asMock } = TestUtils;
@@ -589,6 +595,29 @@ describe('handleResizeAllColumns', () => {
       component.collapseAllColumns();
       expect(model.collapseAllColumns).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('handleTableChanged', () => {
+  it('calls rebuildFilters for a partitioned model with partition mode', () => {
+    const component = makeComponent();
+    component.rebuildFilters = jest.fn();
+    // Set partitionConfig while isPartitionedGridModel is still false so
+    // IrisGridModelUpdater does not attempt to apply it to the regular model
+    act(() => {
+      component.setState({
+        partitionConfig: { mode: 'partition', partitions: [] },
+      });
+    });
+    // Mock true only for the handleTableChanged call; deps are unchanged so
+    // IrisGridModelUpdater's updatePartitionConfig won't re-fire during the
+    // movedColumns setState triggered inside handleTableChanged
+    asMock(isPartitionedGridModel).mockReturnValue(true);
+    act(() => {
+      component.handleTableChanged();
+    });
+    asMock(isPartitionedGridModel).mockReturnValue(false);
+    expect(component.rebuildFilters).toHaveBeenCalled();
   });
 });
 
