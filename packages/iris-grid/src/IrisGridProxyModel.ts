@@ -314,6 +314,20 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     if (!this.isPartitionRequired) {
       throw new Error('Partitions are not available');
     }
+    // Skip if config hasn't changed to avoid unnecessary model swaps (e.g. on remount)
+    if (
+      this.partition === partitionConfig ||
+      (this.partition != null &&
+        partitionConfig != null &&
+        this.partition.mode === partitionConfig.mode &&
+        this.partition.partitions.length ===
+          partitionConfig.partitions.length &&
+        this.partition.partitions.every(
+          (p, i) => p === partitionConfig.partitions[i]
+        ))
+    ) {
+      return;
+    }
     log.debug('set partitionConfig', partitionConfig);
     this.partition = partitionConfig;
 
