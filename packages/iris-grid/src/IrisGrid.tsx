@@ -3389,7 +3389,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     // movedColumns reset triggers metricCalculator update in the Grid component
     this.setState({ movedColumns: model.initialMovedColumns });
-    // For partitioned tables, we want to rebuild filters on table change to insure filters are applied to the new partition
+    // For partitioned tables, we want to rebuild filters on table change to ensure filters are applied to the new partition
     const { partitionConfig } = this.state;
     if (isPartitionedGridModel(model) && partitionConfig?.mode !== 'keys') {
       this.rebuildFilters();
