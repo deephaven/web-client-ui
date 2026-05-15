@@ -117,6 +117,7 @@ export default function IrisGridCellOverflowModal({
       setHeight(contentHeight)
     );
     autoSetLineNumbers();
+    (document.activeElement as HTMLElement)?.blur();
   }
 
   if (!isOpen && !isOpened) {

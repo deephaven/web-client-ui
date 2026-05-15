@@ -131,6 +131,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
         showOverflowModal: true,
         overflowText: this.irisGrid.getValueForCell(column, row) as string,
       });
+      return true; // Consume the event so GridSelectionMouseHandler doesn't clear the row selection
     }
 
     return false;
