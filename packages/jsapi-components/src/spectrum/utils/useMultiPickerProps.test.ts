@@ -1,9 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { usePickerItemScale } from '@deephaven/components';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import type { TableUtils } from '@deephaven/jsapi-utils';
 import { usePromiseFactory } from '@deephaven/react-hooks';
 import { TestUtils } from '@deephaven/test-utils';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useMultiPickerProps } from './useMultiPickerProps';
 import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 import { useItemRowDeserializer } from './useItemRowDeserializer';
@@ -34,10 +35,6 @@ jest.mock('../../useTableUtils');
 jest.mock('../../useWidgetClose');
 
 const { asMock, createMockProxy } = TestUtils;
-
-// Re-import useApi so we can configure its return value
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useApi } = require('@deephaven/jsapi-bootstrap');
 
 beforeEach(() => {
   jest.clearAllMocks();
