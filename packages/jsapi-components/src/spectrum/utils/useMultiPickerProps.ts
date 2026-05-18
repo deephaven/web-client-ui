@@ -118,21 +118,20 @@ export function useMultiPickerProps({
   // selected items display correct labels.
   const selectedKeysForSnapshot =
     props.selectedKeys ?? props.defaultSelectedKeys;
-  const hasLoadedSnapshotRef = useRef(false);
+  const snapshottedKeysRef = useRef<Set<string>>(new Set());
   const [snapshotItemsByIndex, setSnapshotItemsByIndex] = useState<
     Map<number, KeyedItem<NormalizedItemData>>
   >(new Map());
 
   // Reset when table changes so we re-snapshot.
   useEffect(() => {
-    hasLoadedSnapshotRef.current = false;
+    snapshottedKeysRef.current = new Set();
     setSnapshotItemsByIndex(new Map());
   }, [tableCopy]);
 
   useEffect(
     function snapshotSelectedKeyLabels() {
       if (
-        hasLoadedSnapshotRef.current ||
         tableCopy == null ||
         keyColumn == null ||
         selectedKeysForSnapshot == null ||
@@ -141,8 +140,16 @@ export function useMultiPickerProps({
         return;
       }
 
+      // Determine which keys still need snapshotting.
+      const keysToSnapshot = [...selectedKeysForSnapshot].filter(
+        key => !snapshottedKeysRef.current.has(String(key))
+      );
+
+      if (keysToSnapshot.length === 0) {
+        return;
+      }
+
       let isCanceled = false;
-      hasLoadedSnapshotRef.current = true;
 
       const column = tableCopy.findColumn(keyColumn.name);
       const columnValueType = tableUtils.getValueType(column.type);
@@ -152,7 +159,7 @@ export function useMultiPickerProps({
           // Seek row indices for all selected keys
           const rowIndices: number[] = [];
           await Promise.all(
-            [...selectedKeysForSnapshot].map(async key => {
+            keysToSnapshot.map(async key => {
               if (isCanceled) {
                 return;
               }
@@ -196,7 +203,15 @@ export function useMultiPickerProps({
           });
 
           if (!isCanceled) {
-            setSnapshotItemsByIndex(itemMap);
+            // Mark keys as successfully snapshotted so they are not re-fetched.
+            keysToSnapshot.forEach(key =>
+              snapshottedKeysRef.current.add(String(key))
+            );
+            setSnapshotItemsByIndex(prev => {
+              const merged = new Map(prev);
+              itemMap.forEach((value, key) => merged.set(key, value));
+              return merged;
+            });
           }
         } catch (err) {
           log.error('Error loading labels for selected keys', err);

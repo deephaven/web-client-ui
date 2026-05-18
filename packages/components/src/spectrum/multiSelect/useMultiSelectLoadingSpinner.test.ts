@@ -91,7 +91,7 @@ describe('useMultiSelectLoadingSpinner', () => {
     expect(result.current).toBe(false);
   });
 
-  it('does not show spinner when not open and menuTrigger is input', () => {
+  it('shows spinner when closed and menuTrigger is input and loadingState is loading', () => {
     const { result } = renderHook(() =>
       useMultiSelectLoadingSpinner({
         loadingState: 'loading',
