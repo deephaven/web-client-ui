@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
+
+### Bug Fixes
+
+- DH-22548: Command Selection Overrides Select File Button ([#2678](https://github.com/deephaven/web-client-ui/issues/2678)) ([0b5774e](https://github.com/deephaven/web-client-ui/commit/0b5774ed38609ccda28aba28445fcc7e5243b6c4))
+
 ## [1.17.0](https://github.com/deephaven/web-client-ui/compare/v1.16.1...v1.17.0) (2026-03-25)
 
 **Note:** Version bump only for package @deephaven/console

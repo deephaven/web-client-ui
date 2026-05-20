@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
+
+### Bug Fixes
+
+- DH-17831: Fix partition table losing quick filters ([#2682](https://github.com/deephaven/web-client-ui/issues/2682)) ([edb965f](https://github.com/deephaven/web-client-ui/commit/edb965fa464a0c174d7697ad736be9b958072cc9))
+- DH-22547: ESC cancels background row position ([#2683](https://github.com/deephaven/web-client-ui/issues/2683)) ([d6a2b98](https://github.com/deephaven/web-client-ui/commit/d6a2b98957b4158a3423eae2a14aaf3fcfc3c31e))
+
 ## [1.18.2](https://github.com/deephaven/web-client-ui/compare/v1.18.1...v1.18.2) (2026-05-06)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
+
+### Features
+
+- DH-21757: Allow widget plugins to register types as dashboard types ([#2679](https://github.com/deephaven/web-client-ui/issues/2679)) ([5028cf1](https://github.com/deephaven/web-client-ui/commit/5028cf18b41562cc1e3124385520517c4ed4c088))
+
 ## [1.19.0](https://github.com/deephaven/web-client-ui/compare/v1.18.2...v1.19.0) (2026-05-13)
 
 ### Bug Fixes

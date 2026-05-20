@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
+
+### Bug Fixes
+
+- DH-22040: Open Dashboard List global shortcut conflicts ([#2677](https://github.com/deephaven/web-client-ui/issues/2677)) ([e81219d](https://github.com/deephaven/web-client-ui/commit/e81219dd5d4c3665cba4e0d88074bc6cc02cd4f6))
+
 ## [1.17.0](https://github.com/deephaven/web-client-ui/compare/v1.16.1...v1.17.0) (2026-03-25)
 
 ### Features

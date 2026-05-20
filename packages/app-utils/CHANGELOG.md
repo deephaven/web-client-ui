@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
+
+**Note:** Version bump only for package @deephaven/app-utils
+
 ## [1.19.0](https://github.com/deephaven/web-client-ui/compare/v1.18.2...v1.19.0) (2026-05-13)
 
 ### Features
