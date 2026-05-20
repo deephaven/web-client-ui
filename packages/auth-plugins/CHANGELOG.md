@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.46](https://github.com/deephaven/web-client-ui/compare/v0.85.45...v0.85.46) (2026-05-20)
+
+**Note:** Version bump only for package @deephaven/auth-plugins
+
 ## [0.85.45](https://github.com/deephaven/web-client-ui/compare/v0.85.44...v0.85.45) (2026-05-08)
 
 **Note:** Version bump only for package @deephaven/auth-plugins

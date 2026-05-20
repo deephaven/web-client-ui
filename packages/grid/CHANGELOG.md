@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.46](https://github.com/deephaven/web-client-ui/compare/v0.85.45...v0.85.46) (2026-05-20)
+
+### Bug Fixes
+
+- DH-19210: Add plaintext paste key handling ([#2661](https://github.com/deephaven/web-client-ui/issues/2661)) ([#2684](https://github.com/deephaven/web-client-ui/issues/2684)) ([5b52141](https://github.com/deephaven/web-client-ui/commit/5b521418f4b0ab3b5e138e0a821e71229274ce7a))
+
 ## [0.85.44](https://github.com/deephaven/web-client-ui/compare/v0.85.43...v0.85.44) (2026-03-30)
 
 ### Bug Fixes
