@@ -100,7 +100,7 @@ export function Pickers(): JSX.Element {
 
   const [multiSelectedKeys, setMultiSelectedKeys] = useState<
     'all' | Iterable<ItemKey>
-  >([items[0].key!, items[1].key!, items[2].key!]);
+  >([String(items[0].key), String(items[1].key), String(items[2].key)]);
 
   const onMultiSelectChange = useCallback((keys: ItemSelection): void => {
     setMultiSelectedKeys(keys);
