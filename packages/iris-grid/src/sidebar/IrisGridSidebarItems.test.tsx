@@ -1,23 +1,31 @@
 /**
- * Tests for the `sidebarItems` IrisGrid prop and plugin-page
+ * Tests for the `transformTableOptions` IrisGrid prop and plugin-page
  * rendering.
  *
  * Covers:
  *   - default identity (no transform) renders the built-in menu
  *   - transform that hides one item drops it from the menu list
  *   - transform that adds an item with `configPage` causes
- *     `openOptions` to render that page through the default switch arm
+ *     selecting that menu item to render its page through the
+ *     default switch arm
  *   - transform that throws falls back to defaults and logs once
  *   - dev-mode duplicate-key warning fires
+ *   - a thrown `configPage` is caught by `PluginSidebarErrorBoundary`
+ *     and a minimal fallback UI is shown
+ *
+ * The tests drive the UI through user-facing interactions (clicking
+ * the Table Options button and selecting menu items) rather than
+ * poking IrisGrid's internal state, so they survive refactors of the
+ * menu/page wiring.
  */
-import React, { useRef } from 'react';
-import { act, render, screen } from '@testing-library/react';
+import React from 'react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import IrisGrid from '../IrisGrid';
 import IrisGridTestUtils from '../IrisGridTestUtils';
-import OptionType, { type SidebarItemKey } from './OptionType';
+import OptionType, { type OptionItemKey } from './OptionType';
 import { type OptionItem } from '../CommonTypes';
 
 const VIEW_SIZE = 500;
@@ -43,66 +51,48 @@ function mountGrid(
   extraProps: Partial<React.ComponentProps<typeof IrisGrid>> = {}
 ) {
   const model = irisGridTestUtils.makeModel();
-  let ref!: React.RefObject<IrisGrid>;
-  function GridWithRef() {
-    ref = useRef<IrisGrid>(null);
-    return (
-      <IrisGrid
-        model={model}
-        settings={DEFAULT_SETTINGS}
-        ref={ref}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...extraProps}
-      />
-    );
-  }
-  render(<GridWithRef />);
-  const grid = ref.current!;
-  return { grid, model };
+  render(
+    <IrisGrid
+      model={model}
+      settings={DEFAULT_SETTINGS}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...extraProps}
+    />
+  );
+  return { model };
 }
 
-/**
- * Force the Table Options menu open so the rendered menu items are
- * mounted in the DOM. Pokes IrisGrid state directly to avoid a
- * click-driven path.
- */
-function openMenu(grid: IrisGrid): void {
-  act(() => {
-    grid.setState({ isMenuShown: true });
-  });
+/** Open the Table Options sidebar via the settings button. */
+function openMenu(): void {
+  fireEvent.click(screen.getByRole('button', { name: 'Table Options' }));
 }
 
-/**
- * Push a sidebar page onto the open-options stack so the
- * page-switch render path runs.
- */
-function pushOpenOption(grid: IrisGrid, option: OptionItem): void {
-  act(() => {
-    grid.setState({ openOptions: [option] });
-  });
+/** Select a menu item by its visible title. */
+function selectOption(title: string): void {
+  fireEvent.click(screen.getByRole('menuitem', { name: title }));
 }
 
-describe('IrisGrid sidebarItems prop', () => {
-  it('renders the built-in menu unchanged when sidebarItems is omitted', () => {
-    const { grid } = mountGrid();
-    openMenu(grid);
-    // A representative built-in item should still be in the menu.
+describe('IrisGrid transformTableOptions prop', () => {
+  it('renders the built-in menu unchanged when transformTableOptions is omitted', () => {
+    mountGrid();
+    openMenu();
+    // Representative built-in items should still be in the menu.
     expect(screen.getByText('Quick Filters')).toBeInTheDocument();
     expect(screen.getByText('Go to')).toBeInTheDocument();
   });
 
   it('hides built-in items filtered out by the transform', () => {
-    const sidebarItems = (defaults: readonly OptionItem[]) =>
+    const transformTableOptions = (defaults: readonly OptionItem[]) =>
       defaults.filter(item => item.type !== OptionType.QUICK_FILTERS);
-    const { grid } = mountGrid({ sidebarItems });
-    openMenu(grid);
+    mountGrid({ transformTableOptions });
+    openMenu();
     expect(screen.queryByText('Quick Filters')).not.toBeInTheDocument();
     // Sanity: another built-in is still present.
     expect(screen.getByText('Go to')).toBeInTheDocument();
   });
 
   it('renders an added plugin item via its configPage', () => {
-    const PLUGIN_KEY: SidebarItemKey = 'plugin:test:hello';
+    const PLUGIN_KEY: OptionItemKey = 'plugin:test:hello';
     const PluginPage: React.FC<{ onBack: () => void }> = ({ onBack }) => (
       <div data-testid="plugin-page">
         Hello from plugin
@@ -116,17 +106,17 @@ describe('IrisGrid sidebarItems prop', () => {
       title: 'Plugin Hello',
       configPage: PluginPage,
     };
-    const sidebarItems = (defaults: readonly OptionItem[]) => [
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
       ...defaults,
       pluginItem,
     ];
-    const { grid } = mountGrid({ sidebarItems });
-    openMenu(grid);
+    mountGrid({ transformTableOptions });
+    openMenu();
     // The added item appears in the menu list.
     expect(screen.getByText('Plugin Hello')).toBeInTheDocument();
-    // Pushing the plugin item onto the page stack renders its
-    // configPage through the page-switch `default` arm.
-    pushOpenOption(grid, pluginItem);
+    // Selecting the plugin item renders its configPage through the
+    // page-switch `default` arm.
+    selectOption('Plugin Hello');
     expect(screen.getByTestId('plugin-page')).toBeInTheDocument();
   });
 
@@ -135,11 +125,11 @@ describe('IrisGrid sidebarItems prop', () => {
     const errorSpy = jest.spyOn(log, 'error').mockImplementation(() => {
       /* swallow */
     });
-    const sidebarItems = (): readonly OptionItem[] => {
+    const transformTableOptions = (): readonly OptionItem[] => {
       throw new Error('boom');
     };
-    const { grid } = mountGrid({ sidebarItems });
-    openMenu(grid);
+    mountGrid({ transformTableOptions });
+    openMenu();
     expect(screen.getByText('Quick Filters')).toBeInTheDocument();
     expect(errorSpy).toHaveBeenCalled();
     errorSpy.mockRestore();
@@ -150,17 +140,54 @@ describe('IrisGrid sidebarItems prop', () => {
     const warnSpy = jest.spyOn(log, 'warn').mockImplementation(() => {
       /* swallow */
     });
-    const dupKey: SidebarItemKey = 'plugin:test:dup';
-    const sidebarItems = (defaults: readonly OptionItem[]) => [
+    const dupKey: OptionItemKey = 'plugin:test:dup';
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
       ...defaults,
       { type: dupKey, title: 'A' } as OptionItem,
       { type: dupKey, title: 'B' } as OptionItem,
     ];
-    const { grid } = mountGrid({ sidebarItems });
-    openMenu(grid);
+    mountGrid({ transformTableOptions });
+    openMenu();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(`duplicate type "${dupKey}"`)
     );
     warnSpy.mockRestore();
+  });
+
+  it('renders a fallback UI when a plugin configPage throws', () => {
+    const log = Log.module('PluginSidebarErrorBoundary');
+    const errorSpy = jest.spyOn(log, 'error').mockImplementation(() => {
+      /* swallow */
+    });
+    // React logs uncaught render errors to console.error before the
+    // boundary catches them; mute that noise so test output stays clean.
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+      /* swallow */
+    });
+    const PLUGIN_KEY: OptionItemKey = 'plugin:test:boom';
+    const ThrowingPage: React.FC = () => {
+      throw new Error('boom');
+    };
+    const pluginItem: OptionItem = {
+      type: PLUGIN_KEY,
+      title: 'Boom',
+      configPage: ThrowingPage,
+    };
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
+      ...defaults,
+      pluginItem,
+    ];
+    mountGrid({ transformTableOptions });
+    openMenu();
+    selectOption('Boom');
+    const fallback = screen.getByTestId('plugin-sidebar-error');
+    expect(fallback).toBeInTheDocument();
+    expect(fallback).toHaveTextContent(PLUGIN_KEY);
+    expect(
+      within(fallback).getByRole('button', { name: 'Back' })
+    ).toBeInTheDocument();
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
+    consoleSpy.mockRestore();
   });
 });

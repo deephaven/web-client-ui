@@ -39,7 +39,7 @@ const EMPTY_EXTENSION: IrisGridSidebarExtension = Object.freeze({});
  * a non-null value so call sites can destructure
  * `transformTableOptions` without a null guard.
  */
-export function useResolvedSidebarExtension(): IrisGridSidebarExtension {
+export function useTableOptionsExtension(): IrisGridSidebarExtension {
   return useContext(IrisGridSidebarContext) ?? EMPTY_EXTENSION;
 }
 

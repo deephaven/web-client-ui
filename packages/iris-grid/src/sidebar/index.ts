@@ -4,7 +4,7 @@ import AggregationEdit from './aggregations/AggregationEdit';
 import AggregationUtils from './aggregations/AggregationUtils';
 import ChartBuilder from './ChartBuilder';
 import CustomColumnBuilder from './CustomColumnBuilder';
-import OptionType, { type OptionItemKey, isPluginItemKey } from './OptionType';
+import OptionType, { type OptionItemKey } from './OptionType';
 import RollupRows from './RollupRows';
 import TableCsvExporter from './TableCsvExporter';
 import TableSaver from './TableSaver';
@@ -14,7 +14,7 @@ import AdvancedSettingsType from './AdvancedSettingsType';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import {
   IrisGridSidebarContext,
-  useResolvedSidebarExtension,
+  useTableOptionsExtension,
   type IrisGridSidebarExtension,
   type SidebarExtensionProvider,
 } from './IrisGridSidebarContext';
@@ -28,7 +28,6 @@ export {
   CustomColumnBuilder,
   OptionType,
   type OptionItemKey,
-  isPluginItemKey,
   RollupRows,
   TableCsvExporter,
   TableSaver,
@@ -36,7 +35,7 @@ export {
   AdvancedSettingsType,
   DownloadServiceWorkerUtils,
   IrisGridSidebarContext,
-  useResolvedSidebarExtension,
+  useTableOptionsExtension,
   type IrisGridSidebarExtension,
   type SidebarExtensionProvider,
 };

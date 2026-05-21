@@ -71,7 +71,7 @@ export type OptionItem = {
   /**
    * Renderer for plugin-supplied sidebar pages. Built-in items leave
    * this undefined — the `IrisGrid` page switch renders them via
-   * its existing `case OptionType.*` arms; the `default` arm renders
+   * its existing `case OptionType.*` arms; the `default` case renders
    * `configPage` when present and falls back to a programmer-error
    * throw otherwise.
    */

@@ -318,7 +318,7 @@ export interface IrisGridProps {
    * relabel, reorder, or replace entries.
    *
    * Items returned with a `configPage` are rendered by the
-   * `default` arm of the page switch and isolated inside a small
+   * `default` case of the page switch and isolated inside a small
    * error boundary; items without a `configPage` MUST have a `type`
    * matching an existing `OptionType` enum value, otherwise the
    * existing case arms can't render them.
@@ -5228,17 +5228,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           // entire grid subtree. Built-in items that hit the default
           // case indicate a programmer error (unhandled enum case).
           const PluginPage = option.configPage;
-          if (PluginPage != null) {
-            return (
-              <PluginSidebarErrorBoundary
-                itemType={String(option.type)}
-                key={String(option.type)}
-              >
-                <PluginPage model={model} onBack={this.handleMenuBack} />
-              </PluginSidebarErrorBoundary>
-            );
+          if (PluginPage == null) {
+            throw Error(`Unexpected option type ${option.type}`);
           }
-          throw Error(`Unexpected option type ${option.type}`);
+          return (
+            <PluginSidebarErrorBoundary
+              itemType={String(option.type)}
+              key={String(option.type)}
+              onBack={this.handleMenuBack}
+            >
+              <PluginPage model={model} onBack={this.handleMenuBack} />
+            </PluginSidebarErrorBoundary>
+          );
         }
       }
     });

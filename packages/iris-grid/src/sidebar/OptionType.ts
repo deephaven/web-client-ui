@@ -18,19 +18,10 @@ enum OptionType {
 /**
  * Identifier for a sidebar entry. Built-in entries use the closed
  * `OptionType` enum; plugin-supplied entries use a namespaced string
- * (convention: `plugin:<plugin-name>:<id>`). See
- * `isPluginItemKey` for the runtime check used by the page switch.
+ * (convention: `plugin:<plugin-name>:<id>`). The page-switch
+ * distinguishes the two by the presence of `configPage` on the
+ * `OptionItem`, not by inspecting the key.
  */
 export type OptionItemKey = OptionType | string;
-
-const BUILTIN_OPTION_TYPES = new Set<string>(Object.values(OptionType));
-
-/**
- * Returns `true` iff `key` is a plugin-contributed sidebar key (i.e.
- * not a member of the built-in `OptionType` enum).
- */
-export function isPluginItemKey(key: OptionItemKey): key is string {
-  return !BUILTIN_OPTION_TYPES.has(key as string);
-}
 
 export default OptionType;

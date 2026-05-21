@@ -10,7 +10,7 @@ import {
   type IrisGridType,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
-  useResolvedSidebarExtension,
+  useTableOptionsExtension,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -144,7 +144,7 @@ export function GridWidgetPlugin({
     return [...columnSet];
   }, [linkerAlwaysFetchColumns, filterFetchColumns]);
 
-  const { transformTableOptions } = useResolvedSidebarExtension();
+  const { transformTableOptions } = useTableOptionsExtension();
 
   if (fetchResult.status === 'loading') {
     return (
