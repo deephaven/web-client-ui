@@ -17,7 +17,7 @@ import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import IrisGrid from '../IrisGrid';
 import IrisGridTestUtils from '../IrisGridTestUtils';
-import OptionType, { type OptionItemKey } from './OptionType';
+import OptionType, { type SidebarItemKey } from './OptionType';
 import { type OptionItem } from '../CommonTypes';
 
 const VIEW_SIZE = 500;
@@ -102,7 +102,7 @@ describe('IrisGrid sidebarItems prop', () => {
   });
 
   it('renders an added plugin item via its configPage', () => {
-    const PLUGIN_KEY: OptionItemKey = 'plugin:test:hello';
+    const PLUGIN_KEY: SidebarItemKey = 'plugin:test:hello';
     const PluginPage: React.FC<{ onBack: () => void }> = ({ onBack }) => (
       <div data-testid="plugin-page">
         Hello from plugin
@@ -150,7 +150,7 @@ describe('IrisGrid sidebarItems prop', () => {
     const warnSpy = jest.spyOn(log, 'warn').mockImplementation(() => {
       /* swallow */
     });
-    const dupKey: OptionItemKey = 'plugin:test:dup';
+    const dupKey: SidebarItemKey = 'plugin:test:dup';
     const sidebarItems = (defaults: readonly OptionItem[]) => [
       ...defaults,
       { type: dupKey, title: 'A' } as OptionItem,

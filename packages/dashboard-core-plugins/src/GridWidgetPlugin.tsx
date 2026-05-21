@@ -144,7 +144,7 @@ export function GridWidgetPlugin({
     return [...columnSet];
   }, [linkerAlwaysFetchColumns, filterFetchColumns]);
 
-  const sidebarExtension = useResolvedSidebarExtension();
+  const { transformTableOptions } = useResolvedSidebarExtension();
 
   if (fetchResult.status === 'loading') {
     return (
@@ -174,7 +174,7 @@ export function GridWidgetPlugin({
       onContextMenu={onContextMenu}
       inputFilters={inputFilters}
       customFilters={customFilters}
-      sidebarItems={sidebarExtension.transformItems}
+      transformTableOptions={transformTableOptions}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}

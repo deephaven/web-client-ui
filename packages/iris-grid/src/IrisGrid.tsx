@@ -327,7 +327,9 @@ export interface IrisGridProps {
    * stable and side-effect-free. A throwing transform is logged once
    * and treated as identity for that render.
    */
-  sidebarItems?: (defaults: readonly OptionItem[]) => readonly OptionItem[];
+  transformTableOptions?: (
+    defaults: readonly OptionItem[]
+  ) => readonly OptionItem[];
 
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
@@ -1301,42 +1303,45 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   /**
-   * Apply the `sidebarItems` transform (if any) to the default option
-   * list. Catches throws so a buggy plugin can't break the grid, and
-   * in development warns once per render about duplicate `type`
-   * collisions. Always returns a frozen array.
+   * Apply the `transformTableOptions` transform (if any) to the
+   * default option list.
+   * Catches exceptions so a buggy plugin can't break the grid,
+   * and warns about duplicate `type` collisions.
    */
-  applySidebarItemsTransform(
-    items: readonly OptionItem[]
-  ): readonly OptionItem[] {
-    const { sidebarItems } = this.props;
-    if (sidebarItems == null) {
-      return items;
-    }
-    let transformedItems: readonly OptionItem[];
-    try {
-      transformedItems = sidebarItems(items);
-    } catch (err) {
-      log.error(
-        'sidebarItems transform threw an error; falling back to defaults.',
-        err
-      );
-      return items;
-    }
-    const keys = new Set<string>();
-    for (let i = 0; i < transformedItems.length; i += 1) {
-      const key = String(transformedItems[i].type);
-      if (keys.has(key)) {
-        log.warn(
-          `sidebarItems transform produced duplicate type "${key}"; ` +
-            'only the first entry will be accessible from the menu.'
-        );
-        break;
+  getCachedTransformedOptionItems = memoize(
+    (
+      items: readonly OptionItem[],
+      transformTableOptions: IrisGridProps['transformTableOptions']
+    ): readonly OptionItem[] => {
+      if (transformTableOptions == null) {
+        return items;
       }
-      keys.add(key);
-    }
-    return Object.freeze([...transformedItems]);
-  }
+      let transformedItems: readonly OptionItem[];
+      try {
+        transformedItems = transformTableOptions(items);
+      } catch (err) {
+        log.error(
+          'transformTableOptions threw an error; falling back to defaults.',
+          err
+        );
+        return items;
+      }
+      const keys = new Set<string>();
+      for (let i = 0; i < transformedItems.length; i += 1) {
+        const key = String(transformedItems[i].type);
+        if (keys.has(key)) {
+          log.warn(
+            `transformTableOptions produced duplicate type "${key}"; ` +
+              'only the first entry will be accessible from the menu.'
+          );
+          break;
+        }
+        keys.add(key);
+      }
+      return Object.freeze([...transformedItems]);
+    },
+    { max: 1 }
+  );
 
   getCachedHiddenColumns = memoize(
     (
@@ -4720,6 +4725,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      transformTableOptions,
     } = this.props;
     const {
       metricCalculator,
@@ -5077,7 +5083,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown,
       advancedSettings.size > 0
     );
-    const optionItems = this.applySidebarItemsTransform(defaultOptionItems);
+    const optionItems = this.getCachedTransformedOptionItems(
+      defaultOptionItems,
+      transformTableOptions
+    );
 
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
@@ -5217,7 +5226,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           // `configPage`. The page is isolated inside an error
           // boundary so a throwing plugin doesn't tear down the
           // entire grid subtree. Built-in items that hit the default
-          // arm indicate a programmer error (unhandled enum case).
+          // case indicate a programmer error (unhandled enum case).
           const PluginPage = option.configPage;
           if (PluginPage != null) {
             return (

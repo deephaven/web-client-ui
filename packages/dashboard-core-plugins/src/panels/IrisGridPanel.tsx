@@ -1298,7 +1298,7 @@ export class IrisGridPanel extends PureComponent<
                 theme={theme}
                 columnHeaderGroups={columnHeaderGroups}
                 getMetricCalculator={getMetricCalculator}
-                sidebarItems={sidebarExtension?.transformItems}
+                transformTableOptions={sidebarExtension?.transformTableOptions}
               >
                 {childrenContent}
               </IrisGrid>

@@ -63,17 +63,17 @@ it('mounts without crashing', async () => {
   expect(queryByText('MockIrisGrid')).toBeInTheDocument();
 });
 
-it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', async () => {
+it('forwards IrisGridSidebarContext.transformTableOptions to IrisGrid.transformTableOptions', async () => {
   MockIrisGrid.mockClear();
   const table = TestUtils.createMockProxy<DhType.Table>({ columns: [] });
   const fetch = jest.fn(() => Promise.resolve(table));
   const store = createMockStore();
-  const transformItems = jest.fn(defaults => defaults);
+  const transformTableOptions = jest.fn(defaults => defaults);
 
   const { queryByText } = render(
     <Provider store={store}>
       <ApiContext.Provider value={dh}>
-        <IrisGridSidebarContext.Provider value={{ transformItems }}>
+        <IrisGridSidebarContext.Provider value={{ transformTableOptions }}>
           <GridWidgetPlugin fetch={fetch} />
         </IrisGridSidebarContext.Provider>
       </ApiContext.Provider>
@@ -85,5 +85,5 @@ it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', as
   const calls = MockIrisGrid.mock.calls;
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
-  expect(lastProps.sidebarItems).toBe(transformItems);
+  expect(lastProps.transformTableOptions).toBe(transformTableOptions);
 });

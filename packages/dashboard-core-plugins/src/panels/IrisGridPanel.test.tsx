@@ -65,7 +65,7 @@ function makeIrisGridPanelWrapper(
   workspace = {},
   settings = { timeZone: 'America/New_York' },
   sidebarExtensionValue: {
-    transformItems?: (defaults: readonly any[]) => readonly any[];
+    transformTableOptions?: (defaults: readonly any[]) => readonly any[];
   } | null = null
 ) {
   const panel = (
@@ -169,9 +169,9 @@ it('shows an error properly if table loading fails', async () => {
   expect(msg).toBeTruthy();
 });
 
-it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', async () => {
+it('forwards IrisGridSidebarContext.transformTableOptions to IrisGrid.transformTableOptions', async () => {
   MockIrisGrid.mockClear();
-  const transformItems = jest.fn(defaults => defaults);
+  const transformTableOptions = jest.fn(defaults => defaults);
   await act(() =>
     makeIrisGridPanelWrapper(
       undefined,
@@ -184,20 +184,20 @@ it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', as
       undefined,
       undefined,
       undefined,
-      { transformItems }
+      { transformTableOptions }
     )
   );
   const calls = MockIrisGrid.mock.calls;
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
-  expect(lastProps.sidebarItems).toBe(transformItems);
+  expect(lastProps.transformTableOptions).toBe(transformTableOptions);
 });
 
-it('passes undefined sidebarItems when no context provider is present', async () => {
+it('passes undefined transformTableOptions when no context provider is present', async () => {
   MockIrisGrid.mockClear();
   await act(() => makeIrisGridPanelWrapper());
   const calls = MockIrisGrid.mock.calls;
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
-  expect(lastProps.sidebarItems).toBeUndefined();
+  expect(lastProps.transformTableOptions).toBeUndefined();
 });
