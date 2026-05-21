@@ -279,18 +279,41 @@ function MultiSelectInner(
   const handleInputBlur = useCallback(
     (e: React.FocusEvent) => {
       const related = e.relatedTarget as HTMLElement | null;
-      // Ignore null relatedTarget (DOM churn during re-render).
-      // Real dismisses carry a relatedTarget or are handled by Spectrum.
-      if (related == null) {
-        return;
-      }
-      if (triggerRef.current != null && triggerRef.current.contains(related)) {
-        return;
-      }
-      if (
-        unwrappedPopoverRef.current != null &&
-        unwrappedPopoverRef.current.contains(related)
-      ) {
+
+      if (related != null) {
+        if (
+          triggerRef.current != null &&
+          triggerRef.current.contains(related)
+        ) {
+          return;
+        }
+        if (
+          unwrappedPopoverRef.current != null &&
+          unwrappedPopoverRef.current.contains(related)
+        ) {
+          return;
+        }
+      } else {
+        // relatedTarget can be null when clicking non-focusable content.
+        // Use rAF to check if focus moved back into the component.
+        requestAnimationFrame(() => {
+          const active = document.activeElement as HTMLElement | null;
+          if (
+            active != null &&
+            ((triggerRef.current != null &&
+              triggerRef.current.contains(active)) ||
+              (unwrappedPopoverRef.current != null &&
+                unwrappedPopoverRef.current.contains(active)))
+          ) {
+            return;
+          }
+          isFocusedRef.current = false;
+          if (overlayState.isOpen) {
+            closeOverlay();
+          }
+          onBlur?.(e);
+          onFocusChange?.(false);
+        });
         return;
       }
 
@@ -460,13 +483,14 @@ function MultiSelectInner(
               listBoxRef={listBoxRef}
               listBoxId={listBoxId}
               loadingState={loadingState}
-              filteredJsxChildren={filteredJsxChildren}
               selectedKeys={selectedKeys}
               disabledKeys={listBoxDisabledKeys}
               onSelectionChange={handleListBoxSelectionChange}
               ariaLabel={typeof label === 'string' ? label : 'Options'}
               emptyMessage={emptyMessage}
-            />
+            >
+              {filteredJsxChildren}
+            </MultiSelectListBox>
           </Popover>
         )}
       </div>

@@ -36,13 +36,12 @@ export interface UseMultiSelectKeyboardResult {
 }
 
 /**
- * TODO: fragile, see if there is a better way to link focused state
  * Replicates the key-normalization Spectrum applies to listbox option ids
- * (see `@react-aria/listbox/src/utils.ts`). Whitespace is stripped so that
+ * (see https://github.com/adobe/react-spectrum/blob/9508b15bf8c0e968c56220548207cc57c7e4f57c/packages/react-aria/src/listbox/utils.ts#L31). Whitespace is stripped so that
  * `<listId>-option-<normalizedKey>` matches the actual rendered DOM `id`.
  */
 function normalizeKey(key: string): string {
-  return key.replace(/\s*/g, '');
+  return key.replace(/\s+/g, '');
 }
 
 /**

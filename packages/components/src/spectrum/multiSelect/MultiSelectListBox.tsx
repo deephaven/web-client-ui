@@ -10,7 +10,7 @@ export interface MultiSelectListBoxProps {
   /** Spectrum `LoadingState` for the items collection. */
   loadingState: LoadingState | undefined;
   /** JSX children to render inside `<ListBox>`. */
-  filteredJsxChildren: ReactElement[];
+  children: ReactElement[];
   /** Selected keys */
   selectedKeys: Iterable<string>;
   /** Disabled keys for `<ListBox>`. */
@@ -31,7 +31,7 @@ export function MultiSelectListBox({
   listBoxRef,
   listBoxId,
   loadingState,
-  filteredJsxChildren,
+  children,
   selectedKeys,
   disabledKeys,
   onSelectionChange,
@@ -54,7 +54,7 @@ export function MultiSelectListBox({
       isLoading={loadingState === 'loadingMore'}
       UNSAFE_style={{ maxHeight: 'inherit' }}
     >
-      {filteredJsxChildren}
+      {children}
     </ListBox>
   );
 }

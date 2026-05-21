@@ -58,7 +58,6 @@ export function MultiSelect(props: MultiSelectProps): JSX.Element {
       {...restPickerProps}
       onInputChange={onInputChange}
       onOpenChange={onOpenChange}
-      onSearchTextChange={onSearchTextChange}
     />
   );
 }

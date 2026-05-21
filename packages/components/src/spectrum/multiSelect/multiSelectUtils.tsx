@@ -33,7 +33,8 @@ export interface MultiSelectFlatSection {
 export type MultiSelectFlatEntry = MultiSelectFlatItem | MultiSelectFlatSection;
 
 /**
- * TODO: this is pretty fragile
+ * React prepends `.$` to user-supplied keys in the element's `.key` property.
+ * Strip that prefix so we get the original key value.
  */
 function cleanReactKey(rawKey: string): string {
   return rawKey.replace(/^\.\$/, '');
@@ -88,7 +89,7 @@ export function flattenJsxChildren(
       const sectionItems: MultiSelectFlatItem[] = [];
       ensureArray(section.props.children).forEach(sectionChild => {
         if (isItemElement(sectionChild)) {
-          const item = itemElementToFlat(sectionChild as ItemElement<unknown>);
+          const item = itemElementToFlat(sectionChild);
           if (item != null) {
             sectionItems.push(item);
           }
@@ -105,7 +106,7 @@ export function flattenJsxChildren(
     }
 
     if (isItemElement(child)) {
-      const item = itemElementToFlat(child as ItemElement<unknown>);
+      const item = itemElementToFlat(child);
       if (item != null) {
         entries.push(item);
       }

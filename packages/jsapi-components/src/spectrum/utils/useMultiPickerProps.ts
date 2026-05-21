@@ -113,6 +113,26 @@ export function useMultiPickerProps({
   const dh = useApi();
   const tableUtils = useTableUtils();
 
+  // Only request columns needed by `deserializeRow` (key, label, and optionally icon).
+  const snapshotColumns = useMemo(() => {
+    if (tableCopy == null || keyColumn == null) {
+      return [];
+    }
+    const cols = [keyColumn];
+    if (labelColumn != null && labelColumn !== keyColumn) {
+      cols.push(labelColumn);
+    }
+    if (iconColumnName != null) {
+      try {
+        const iconCol = tableCopy.findColumn(iconColumnName);
+        cols.push(iconCol);
+      } catch {
+        // icon column not found, skip
+      }
+    }
+    return cols;
+  }, [tableCopy, keyColumn, labelColumn, iconColumnName]);
+
   // When selected keys point to rows outside the initial viewport, we take a table snapshot of
   // just those rows to load their real label data. This avoids moving the viewport and ensures all
   // selected items display correct labels.
@@ -185,7 +205,7 @@ export function useMultiPickerProps({
           const rangeSet = dh.RangeSet.ofItems(rowIndices);
           const tableData = await tableCopy.createSnapshot({
             rows: rangeSet,
-            columns: tableCopy.columns,
+            columns: snapshotColumns,
           });
 
           if (isCanceled) {
@@ -229,6 +249,7 @@ export function useMultiPickerProps({
       tableUtils,
       dh,
       deserializeRow,
+      snapshotColumns,
     ]
   );
 
