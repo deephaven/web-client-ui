@@ -152,10 +152,15 @@ function MultiSelectInner(
     [allEntries]
   );
   const allKeys = useMemo(() => allItems.map(i => i.key), [allItems]);
+
+  // Persistent label cache: accumulates labels from items as they appear in
+  // children. When server-side search filters items out of the children, the
+  // cache ensures tags still display the correct label.
+  const labelCacheRef = useRef<Map<string, string>>(new Map());
   const itemLabelMap = useMemo(() => {
-    const m = new Map<string, string>();
-    allItems.forEach(i => m.set(i.key, i.label));
-    return m;
+    const cache = labelCacheRef.current;
+    allItems.forEach(i => cache.set(i.key, i.label));
+    return new Map(cache);
   }, [allItems]);
 
   const getLabelFor = useCallback(

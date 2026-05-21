@@ -192,7 +192,6 @@ export function Pickers(): JSX.Element {
           <MultiSelect
             label="MultiSelect (Single Child)"
             tooltip={{ placement: 'bottom-end' }}
-            onChange={onMultiSelectChange}
           >
             <Item textValue="Aaa">Aaa</Item>
           </MultiSelect>
@@ -200,15 +199,10 @@ export function Pickers(): JSX.Element {
             label="MultiSelect (Mixed Children Types)"
             defaultSelectedKeys={['999']}
             tooltip
-            onChange={onMultiSelectChange}
           >
             {mixedItemsWithIconsNoDescriptions}
           </MultiSelect>
-          <MultiSelect
-            label="MultiSelect (Sections)"
-            tooltip
-            onChange={onMultiSelectChange}
-          >
+          <MultiSelect label="MultiSelect (Sections)" tooltip>
             {'String 1'}
             {'String 2'}
             {'String 3'}
