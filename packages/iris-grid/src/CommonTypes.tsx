@@ -6,8 +6,9 @@ import { type GridRangeIndex, type ModelIndex } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { type Shortcut } from '@deephaven/components';
 import { type IconDefinition } from '@deephaven/icons';
+import { type ComponentType } from 'react';
 import type AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { type UIRollupConfig, type OptionType } from './sidebar';
+import { type UIRollupConfig, type OptionItemKey } from './sidebar';
 import type IrisGridModel from './IrisGridModel';
 import { type IrisGridThemeType } from './IrisGridTheme';
 
@@ -42,13 +43,39 @@ export type Action = {
   shortcut: Shortcut;
 };
 
+/**
+ * Props passed to a plugin-supplied sidebar page (an item whose
+ * `configPage` is set). Pages receive the current model and a
+ * back-navigation callback; any additional state access should
+ * flow through the model or through props the plugin threads in
+ * itself.
+ */
+export type IrisGridSidebarPageProps = {
+  /** Current model the grid is rendering. */
+  model: IrisGridModel;
+  /** Pop the current page off the sidebar stack. */
+  onBack: () => void;
+};
+
 export type OptionItem = {
-  type: OptionType;
+  /**
+   * Built-in items use the `OptionType` enum; plugin-contributed items
+   * use a namespaced string key (convention `plugin:<name>:<id>`).
+   */
+  type: OptionItemKey;
   title: string;
   subtitle?: string;
   icon?: IconDefinition;
   isOn?: boolean;
   onChange?: () => void;
+  /**
+   * Renderer for plugin-supplied sidebar pages. Built-in items leave
+   * this undefined — the `IrisGrid` page switch renders them via
+   * its existing `case OptionType.*` arms; the `default` arm renders
+   * `configPage` when present and falls back to a programmer-error
+   * throw otherwise.
+   */
+  configPage?: ComponentType<IrisGridSidebarPageProps>;
 };
 
 export interface UITotalsTableConfig extends dh.TotalsTableConfig {

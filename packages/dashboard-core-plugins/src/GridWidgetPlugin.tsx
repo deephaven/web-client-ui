@@ -10,6 +10,7 @@ import {
   type IrisGridType,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
+  useResolvedSidebarExtension,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -143,6 +144,8 @@ export function GridWidgetPlugin({
     return [...columnSet];
   }, [linkerAlwaysFetchColumns, filterFetchColumns]);
 
+  const sidebarExtension = useResolvedSidebarExtension();
+
   if (fetchResult.status === 'loading') {
     return (
       <LoadingOverlay isLoading data-testid="grid-widget-plugin-loading" />
@@ -171,6 +174,7 @@ export function GridWidgetPlugin({
       onContextMenu={onContextMenu}
       inputFilters={inputFilters}
       customFilters={customFilters}
+      sidebarItems={sidebarExtension.transformItems}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}

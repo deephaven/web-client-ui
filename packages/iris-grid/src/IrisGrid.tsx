@@ -160,6 +160,7 @@ import {
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
+import PluginSidebarErrorBoundary from './sidebar/PluginSidebarErrorBoundary';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu, {
   type AdvancedSettingsMenuCallback,
@@ -309,6 +310,24 @@ export interface IrisGridProps {
   onDataSelected: (index: ModelIndex, map: RowDataMap) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
+
+  /**
+   * Pure transform over the default Table Options menu list. Receives
+   * the built-in items (already filtered by model availability) and
+   * returns the items to actually render. Use it to add, hide,
+   * relabel, reorder, or replace entries.
+   *
+   * Items returned with a `configPage` are rendered by the
+   * `default` arm of the page switch and isolated inside a small
+   * error boundary; items without a `configPage` MUST have a `type`
+   * matching an existing `OptionType` enum value, otherwise the
+   * existing case arms can't render them.
+   *
+   * Called inside memoization; the function should be referentially
+   * stable and side-effect-free. A throwing transform is logged once
+   * and treated as identity for that render.
+   */
+  sidebarItems?: (defaults: readonly OptionItem[]) => readonly OptionItem[];
 
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
@@ -1280,6 +1299,44 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     },
     { max: 1 }
   );
+
+  /**
+   * Apply the `sidebarItems` transform (if any) to the default option
+   * list. Catches throws so a buggy plugin can't break the grid, and
+   * in development warns once per render about duplicate `type`
+   * collisions. Always returns a frozen array.
+   */
+  applySidebarItemsTransform(
+    items: readonly OptionItem[]
+  ): readonly OptionItem[] {
+    const { sidebarItems } = this.props;
+    if (sidebarItems == null) {
+      return items;
+    }
+    let transformedItems: readonly OptionItem[];
+    try {
+      transformedItems = sidebarItems(items);
+    } catch (err) {
+      log.error(
+        'sidebarItems transform threw an error; falling back to defaults.',
+        err
+      );
+      return items;
+    }
+    const keys = new Set<string>();
+    for (let i = 0; i < transformedItems.length; i += 1) {
+      const key = String(transformedItems[i].type);
+      if (keys.has(key)) {
+        log.warn(
+          `sidebarItems transform produced duplicate type "${key}"; ` +
+            'only the first entry will be accessible from the menu.'
+        );
+        break;
+      }
+      keys.add(key);
+    }
+    return Object.freeze([...transformedItems]);
+  }
 
   getCachedHiddenColumns = memoize(
     (
@@ -5001,7 +5058,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    const optionItems = this.getCachedOptionItems(
+    const defaultOptionItems = this.getCachedOptionItems(
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
@@ -5020,6 +5077,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isGotoShown,
       advancedSettings.size > 0
     );
+    const optionItems = this.applySidebarItemsTransform(defaultOptionItems);
 
     const hiddenColumns = this.getCachedHiddenColumns(
       metricCalculator,
@@ -5154,8 +5212,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
           );
 
-        default:
+        default: {
+          // Plugin-contributed items render their own page via
+          // `configPage`. The page is isolated inside an error
+          // boundary so a throwing plugin doesn't tear down the
+          // entire grid subtree. Built-in items that hit the default
+          // arm indicate a programmer error (unhandled enum case).
+          const PluginPage = option.configPage;
+          if (PluginPage != null) {
+            return (
+              <PluginSidebarErrorBoundary
+                itemType={String(option.type)}
+                key={String(option.type)}
+              >
+                <PluginPage model={model} onBack={this.handleMenuBack} />
+              </PluginSidebarErrorBoundary>
+            );
+          }
           throw Error(`Unexpected option type ${option.type}`);
+        }
       }
     });
 

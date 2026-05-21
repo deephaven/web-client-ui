@@ -6,6 +6,7 @@ import { TestUtils } from '@deephaven/test-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { createMockStore } from '@deephaven/redux';
 import dh from '@deephaven/jsapi-shim';
+import { IrisGridSidebarContext } from '@deephaven/iris-grid';
 import GridWidgetPlugin from './GridWidgetPlugin';
 
 const mockGoldenLayout = { eventHub: TestUtils.createMockProxy() };
@@ -60,4 +61,29 @@ it('mounts without crashing', async () => {
   );
 
   expect(queryByText('MockIrisGrid')).toBeInTheDocument();
+});
+
+it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', async () => {
+  MockIrisGrid.mockClear();
+  const table = TestUtils.createMockProxy<DhType.Table>({ columns: [] });
+  const fetch = jest.fn(() => Promise.resolve(table));
+  const store = createMockStore();
+  const transformItems = jest.fn(defaults => defaults);
+
+  const { queryByText } = render(
+    <Provider store={store}>
+      <ApiContext.Provider value={dh}>
+        <IrisGridSidebarContext.Provider value={{ transformItems }}>
+          <GridWidgetPlugin fetch={fetch} />
+        </IrisGridSidebarContext.Provider>
+      </ApiContext.Provider>
+    </Provider>
+  );
+
+  await waitFor(() => expect(queryByText('MockIrisGrid')).toBeInTheDocument());
+
+  const calls = MockIrisGrid.mock.calls;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.sidebarItems).toBe(transformItems);
 });

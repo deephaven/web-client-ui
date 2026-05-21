@@ -4,7 +4,7 @@ import AggregationEdit from './aggregations/AggregationEdit';
 import AggregationUtils from './aggregations/AggregationUtils';
 import ChartBuilder from './ChartBuilder';
 import CustomColumnBuilder from './CustomColumnBuilder';
-import OptionType from './OptionType';
+import OptionType, { type OptionItemKey, isPluginItemKey } from './OptionType';
 import RollupRows from './RollupRows';
 import TableCsvExporter from './TableCsvExporter';
 import TableSaver from './TableSaver';
@@ -12,6 +12,12 @@ import VisibilityOrderingBuilder from './visibility-ordering-builder/VisibilityO
 import { type FormattingRule } from './conditional-formatting/ConditionalFormattingUtils';
 import AdvancedSettingsType from './AdvancedSettingsType';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
+import {
+  IrisGridSidebarContext,
+  useResolvedSidebarExtension,
+  type IrisGridSidebarExtension,
+  type SidebarExtensionProvider,
+} from './IrisGridSidebarContext';
 
 export {
   AdvancedSettings,
@@ -21,12 +27,18 @@ export {
   ChartBuilder,
   CustomColumnBuilder,
   OptionType,
+  type OptionItemKey,
+  isPluginItemKey,
   RollupRows,
   TableCsvExporter,
   TableSaver,
   VisibilityOrderingBuilder,
   AdvancedSettingsType,
   DownloadServiceWorkerUtils,
+  IrisGridSidebarContext,
+  useResolvedSidebarExtension,
+  type IrisGridSidebarExtension,
+  type SidebarExtensionProvider,
 };
 
 export type { FormattingRule as SidebarFormattingRule };

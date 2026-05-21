@@ -2,7 +2,10 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { IrisGridModelFactory } from '@deephaven/iris-grid';
+import {
+  IrisGridModelFactory,
+  IrisGridSidebarContext,
+} from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -60,9 +63,12 @@ function makeIrisGridPanelWrapper(
   user = TestUtils.REGULAR_USER,
   client = new (dh as any).Client(),
   workspace = {},
-  settings = { timeZone: 'America/New_York' }
+  settings = { timeZone: 'America/New_York' },
+  sidebarExtensionValue: {
+    transformItems?: (defaults: readonly any[]) => readonly any[];
+  } | null = null
 ) {
-  return render(
+  const panel = (
     <IrisGridPanel
       makeModel={makeModel}
       metadata={metadata}
@@ -78,6 +84,15 @@ function makeIrisGridPanelWrapper(
       loadPlugin={() => undefined}
       theme={undefined}
     />
+  );
+  return render(
+    sidebarExtensionValue == null ? (
+      panel
+    ) : (
+      <IrisGridSidebarContext.Provider value={sidebarExtensionValue}>
+        {panel}
+      </IrisGridSidebarContext.Provider>
+    )
   );
 }
 
@@ -152,4 +167,37 @@ it('shows an error properly if table loading fails', async () => {
     'Unable to open table. Error: TEST ERROR MESSAGE'
   );
   expect(msg).toBeTruthy();
+});
+
+it('forwards IrisGridSidebarContext.transformItems to IrisGrid.sidebarItems', async () => {
+  MockIrisGrid.mockClear();
+  const transformItems = jest.fn(defaults => defaults);
+  await act(() =>
+    makeIrisGridPanelWrapper(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { transformItems }
+    )
+  );
+  const calls = MockIrisGrid.mock.calls;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.sidebarItems).toBe(transformItems);
+});
+
+it('passes undefined sidebarItems when no context provider is present', async () => {
+  MockIrisGrid.mockClear();
+  await act(() => makeIrisGridPanelWrapper());
+  const calls = MockIrisGrid.mock.calls;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.sidebarItems).toBeUndefined();
 });
