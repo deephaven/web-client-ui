@@ -160,7 +160,7 @@ import {
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
-import PluginSidebarErrorBoundary from './sidebar/PluginSidebarErrorBoundary';
+import PluginTableOptionsErrorBoundary from './sidebar/PluginTableOptionsErrorBoundary';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu, {
   type AdvancedSettingsMenuCallback,
@@ -5232,13 +5232,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             throw Error(`Unexpected option type ${option.type}`);
           }
           return (
-            <PluginSidebarErrorBoundary
+            <PluginTableOptionsErrorBoundary
               itemType={String(option.type)}
               key={String(option.type)}
               onBack={this.handleMenuBack}
             >
               <PluginPage model={model} onBack={this.handleMenuBack} />
-            </PluginSidebarErrorBoundary>
+            </PluginTableOptionsErrorBoundary>
           );
         }
       }

@@ -1,7 +1,7 @@
 import React, { type ErrorInfo, type ReactNode } from 'react';
 import Log from '@deephaven/log';
 
-const log = Log.module('PluginSidebarErrorBoundary');
+const log = Log.module('PluginTableOptionsErrorBoundary');
 
 type Props = {
   /** Identifier for the failing item, used for log correlation. */
@@ -24,7 +24,7 @@ type State = { hasError: boolean };
  * blank panel. Used only by the page-switch `default` case in
  * `IrisGrid.tsx`.
  */
-export default class PluginSidebarErrorBoundary extends React.Component<
+export default class PluginTableOptionsErrorBoundary extends React.Component<
   Props,
   State
 > {
@@ -32,7 +32,10 @@ export default class PluginSidebarErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
-  state: State = { hasError: false };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
     const { itemType } = this.props;

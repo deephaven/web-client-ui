@@ -1,4 +1,4 @@
-import { createContext, useContext, type ComponentType } from 'react';
+import { createContext, type ComponentType } from 'react';
 import { type OptionItem } from '../CommonTypes';
 
 /**
@@ -15,7 +15,7 @@ import { type OptionItem } from '../CommonTypes';
  * `useContext`, merge, and publish the merged value through a new
  * Provider.
  */
-export interface IrisGridSidebarExtension {
+export interface IrisGridTableOptionsExtension {
   transformTableOptions?: (
     defaults: readonly OptionItem[]
   ) => readonly OptionItem[];
@@ -28,26 +28,14 @@ export interface IrisGridSidebarExtension {
  * (the default) means "no extension"; descendant consumers treat
  * that the same as an empty extension.
  */
-export const IrisGridSidebarContext =
-  createContext<IrisGridSidebarExtension | null>(null);
-
-const EMPTY_EXTENSION: IrisGridSidebarExtension = Object.freeze({});
-
-/**
- * Returns the current `IrisGridSidebarExtension` from context, or a
- * frozen empty extension when no Provider is present. Always returns
- * a non-null value so call sites can destructure
- * `transformTableOptions` without a null guard.
- */
-export function useTableOptionsExtension(): IrisGridSidebarExtension {
-  return useContext(IrisGridSidebarContext) ?? EMPTY_EXTENSION;
-}
+export const IrisGridTableOptionsContext =
+  createContext<IrisGridTableOptionsExtension | null>(null);
 
 /**
  * Convenience type for plugin authors who want to type their
  * middleware's contribution explicitly.
  */
-export type SidebarExtensionProvider = ComponentType<{
-  value: IrisGridSidebarExtension;
+export type TableOptionsExtensionProvider = ComponentType<{
+  value: IrisGridTableOptionsExtension;
   children?: React.ReactNode;
 }>;

@@ -4,7 +4,7 @@ import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import {
   IrisGridModelFactory,
-  IrisGridSidebarContext,
+  IrisGridTableOptionsContext,
 } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
@@ -89,9 +89,9 @@ function makeIrisGridPanelWrapper(
     sidebarExtensionValue == null ? (
       panel
     ) : (
-      <IrisGridSidebarContext.Provider value={sidebarExtensionValue}>
+      <IrisGridTableOptionsContext.Provider value={sidebarExtensionValue}>
         {panel}
-      </IrisGridSidebarContext.Provider>
+      </IrisGridTableOptionsContext.Provider>
     )
   );
 }
@@ -169,7 +169,7 @@ it('shows an error properly if table loading fails', async () => {
   expect(msg).toBeTruthy();
 });
 
-it('forwards IrisGridSidebarContext.transformTableOptions to IrisGrid.transformTableOptions', async () => {
+it('forwards IrisGridTableOptionsContext.transformTableOptions to IrisGrid.transformTableOptions', async () => {
   MockIrisGrid.mockClear();
   const transformTableOptions = jest.fn(defaults => defaults);
   await act(() =>
@@ -187,7 +187,7 @@ it('forwards IrisGridSidebarContext.transformTableOptions to IrisGrid.transformT
       { transformTableOptions }
     )
   );
-  const calls = MockIrisGrid.mock.calls;
+  const { calls } = MockIrisGrid.mock;
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBe(transformTableOptions);
@@ -196,7 +196,7 @@ it('forwards IrisGridSidebarContext.transformTableOptions to IrisGrid.transformT
 it('passes undefined transformTableOptions when no context provider is present', async () => {
   MockIrisGrid.mockClear();
   await act(() => makeIrisGridPanelWrapper());
-  const calls = MockIrisGrid.mock.calls;
+  const { calls } = MockIrisGrid.mock;
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBeUndefined();

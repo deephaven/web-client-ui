@@ -50,7 +50,7 @@ export type Action = {
  * flow through the model or through props the plugin threads in
  * itself.
  */
-export type IrisGridSidebarPageProps = {
+export type IrisGridTableOptionsPageProps = {
   /** Current model the grid is rendering. */
   model: IrisGridModel;
   /** Pop the current page off the sidebar stack. */
@@ -75,7 +75,7 @@ export type OptionItem = {
    * `configPage` when present and falls back to a programmer-error
    * throw otherwise.
    */
-  configPage?: ComponentType<IrisGridSidebarPageProps>;
+  configPage?: ComponentType<IrisGridTableOptionsPageProps>;
 };
 
 export interface UITotalsTableConfig extends dh.TotalsTableConfig {

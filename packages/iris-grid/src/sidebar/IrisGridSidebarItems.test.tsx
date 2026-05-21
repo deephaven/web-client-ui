@@ -10,7 +10,7 @@
  *     default switch arm
  *   - transform that throws falls back to defaults and logs once
  *   - dev-mode duplicate-key warning fires
- *   - a thrown `configPage` is caught by `PluginSidebarErrorBoundary`
+ *   - a thrown `configPage` is caught by `PluginTableOptionsErrorBoundary`
  *     and a minimal fallback UI is shown
  *
  * The tests drive the UI through user-facing interactions (clicking
@@ -93,14 +93,16 @@ describe('IrisGrid transformTableOptions prop', () => {
 
   it('renders an added plugin item via its configPage', () => {
     const PLUGIN_KEY: OptionItemKey = 'plugin:test:hello';
-    const PluginPage: React.FC<{ onBack: () => void }> = ({ onBack }) => (
-      <div data-testid="plugin-page">
-        Hello from plugin
-        <button type="button" onClick={onBack}>
-          back
-        </button>
-      </div>
-    );
+    function PluginPage({ onBack }: { onBack: () => void }) {
+      return (
+        <div data-testid="plugin-page">
+          Test plugin
+          <button type="button" onClick={onBack}>
+            back
+          </button>
+        </div>
+      );
+    }
     const pluginItem: OptionItem = {
       type: PLUGIN_KEY,
       title: 'Plugin Hello',
@@ -155,7 +157,7 @@ describe('IrisGrid transformTableOptions prop', () => {
   });
 
   it('renders a fallback UI when a plugin configPage throws', () => {
-    const log = Log.module('PluginSidebarErrorBoundary');
+    const log = Log.module('PluginTableOptionsErrorBoundary');
     const errorSpy = jest.spyOn(log, 'error').mockImplementation(() => {
       /* swallow */
     });

@@ -23,7 +23,7 @@ import {
   IrisGridModel,
   IrisGridCacheUtils,
   IrisGridUtils,
-  IrisGridSidebarContext,
+  IrisGridTableOptionsContext,
   isIrisGridTableModelTemplate,
   type ColumnName,
   type PendingDataMap,
@@ -1233,7 +1233,7 @@ export class IrisGridPanel extends PureComponent<
         )}
       >
         {isModelReady && model && (
-          <IrisGridSidebarContext.Consumer>
+          <IrisGridTableOptionsContext.Consumer>
             {sidebarExtension => (
               <IrisGrid
                 advancedFilters={advancedFilters}
@@ -1303,7 +1303,7 @@ export class IrisGridPanel extends PureComponent<
                 {childrenContent}
               </IrisGrid>
             )}
-          </IrisGridSidebarContext.Consumer>
+          </IrisGridTableOptionsContext.Consumer>
         )}
       </WidgetPanel>
     );
