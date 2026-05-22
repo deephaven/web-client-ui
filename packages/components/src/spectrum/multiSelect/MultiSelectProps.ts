@@ -32,7 +32,7 @@ export interface MultiSelectProps
     AriaLabelingProps,
     MultipleItemSelectionProps {
   /** Item or Section elements to render in the dropdown. */
-  children: ItemOrSection | ItemOrSection[];
+  children?: ItemOrSection | ItemOrSection[] | null | undefined;
   /** Can be set to true or a TooltipOptions to enable item tooltips. */
   tooltip?: boolean | TooltipOptions;
   /** The content to display as the field label. */
