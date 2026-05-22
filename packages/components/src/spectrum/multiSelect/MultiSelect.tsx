@@ -30,6 +30,23 @@ import { MultiSelectListBox } from './MultiSelectListBox';
 import './MultiSelect.scss';
 
 /**
+ * Convert a Spectrum dimension value (e.g. `"size-3000"`) to its CSS variable
+ * form. Numbers are converted to px. Already-valid CSS strings pass through.
+ */
+function toCssDimension(value: string | number | undefined): string | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  if (typeof value === 'number') {
+    return `${value}px`;
+  }
+  if (/^(size|static-size)-/.test(value)) {
+    return `var(--spectrum-global-dimension-${value})`;
+  }
+  return value;
+}
+
+/**
  * Multi-select styled to match Spectrum ComboBox. Renders selected items as
  * tags inside the trigger area alongside a filter input. Accepts the same
  * `Item` / `Section` JSX children as `Picker`.
@@ -481,7 +498,10 @@ function MultiSelectInner(
               triggerRef.current?.contains(target) !== true
             }
             UNSAFE_style={{
-              width: menuWidth ?? triggerRef.current?.offsetWidth ?? undefined,
+              width:
+                toCssDimension(menuWidth) ??
+                triggerRef.current?.offsetWidth ??
+                undefined,
             }}
           >
             <MultiSelectListBox
