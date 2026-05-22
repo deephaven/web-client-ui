@@ -1,19 +1,4 @@
 /* stylelint-disable no-descending-specificity */
-
-// Wrapper for Spectrum's <Field>. Width defaults to 0 so min-inline-size
-// controls the default size. When an explicit `width` style prop is passed,
-// Spectrum's Field applies it as an inline style which overrides this.
-// The !important on min-inline-size is required to override Spectrum's
-// width rules on .spectrum-Field--positionTop and .spectrum-Form > *.
-.dh-multi-select {
-  width: 0;
-  min-inline-size: var(
-    --spectrum-combobox-default-width,
-    var(--spectrum-global-dimension-size-2400, 240px)
-  ) !important;
-  max-width: 100%;
-}
-
 .dh-multi-select-trigger {
   display: flex;
   align-items: stretch;
