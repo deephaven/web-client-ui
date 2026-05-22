@@ -33,7 +33,9 @@ import './MultiSelect.scss';
  * Convert a Spectrum dimension value (e.g. `"size-3000"`) to its CSS variable
  * form. Numbers are converted to px. Already-valid CSS strings pass through.
  */
-function toCssDimension(value: string | number | undefined): string | undefined {
+function toCssDimension(
+  value: string | number | undefined
+): string | undefined {
   if (value == null) {
     return undefined;
   }
