@@ -22,6 +22,7 @@ export * from './comboBox';
 export * from './ListActionGroup';
 export * from './ListActionMenu';
 export * from './listView';
+export * from './multiSelect';
 export * from './picker';
 export * from './Heading';
 export * from './Text';

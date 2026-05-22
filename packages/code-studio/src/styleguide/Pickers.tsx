@@ -7,6 +7,8 @@ import {
   Icon,
   Item,
   type ItemKey,
+  type ItemSelection,
+  MultiSelect,
   PICKER_ITEM_HEIGHTS,
   PICKER_TOP_OFFSET,
   Picker,
@@ -96,6 +98,28 @@ export function Pickers(): JSX.Element {
     setSelectedKey(key);
   }, []);
 
+  const [multiSelectedKeys, setMultiSelectedKeys] = useState<
+    'all' | Iterable<ItemKey>
+  >([String(items[0].key), String(items[1].key), String(items[2].key)]);
+
+  const onMultiSelectChange = useCallback((keys: ItemSelection): void => {
+    setMultiSelectedKeys(keys);
+  }, []);
+
+  const [filteredMultiItems, setFilteredMultiItems] = useState(itemsWithIcons);
+
+  const onMultiSearch = useCallback(
+    (searchText: string) =>
+      setFilteredMultiItems(
+        searchText === ''
+          ? itemsWithIcons
+          : itemsWithIcons.filter(
+              ({ item }) => item?.textValue?.includes(searchText)
+            )
+      ),
+    []
+  );
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <SampleSection name="pickers">
@@ -164,11 +188,63 @@ export function Pickers(): JSX.Element {
           );
         })}
 
+        <Flex direction="row" gap={14}>
+          <MultiSelect
+            label="MultiSelect (Single Child)"
+            tooltip={{ placement: 'bottom-end' }}
+          >
+            <Item textValue="Aaa">Aaa</Item>
+          </MultiSelect>
+          <MultiSelect
+            label="MultiSelect (Mixed Children Types)"
+            defaultSelectedKeys={['999']}
+            tooltip
+          >
+            {mixedItemsWithIconsNoDescriptions}
+          </MultiSelect>
+          <MultiSelect label="MultiSelect (Sections)" tooltip>
+            {'String 1'}
+            {'String 2'}
+            {'String 3'}
+            <Section title="Section">
+              <Item textValue="Item Aaa">Item Aaa</Item>
+              <Item textValue="Item Bbb">Item Bbb</Item>
+              <Item textValue="Complex Ccc">
+                <PersonIcon />
+                <Text>Complex Ccc</Text>
+              </Item>
+            </Section>
+            <Section key="Key B">
+              <Item textValue="Item Ddd">Item Ddd</Item>
+              <Item textValue="Item Eee">Item Eee</Item>
+              <Item textValue="Complex Fff">
+                <PersonIcon />
+                <Text>Complex Fff</Text>
+              </Item>
+              <Item textValue="Ggg">
+                <PersonIcon />
+                <Text>Label</Text>
+                <Text slot="description">Description</Text>
+              </Item>
+              <Item textValue="Hhh">
+                <PersonIcon />
+                <Text>Label that causes overflow</Text>
+                <Text slot="description">Description that causes overflow</Text>
+              </Item>
+            </Section>
+            <Section title="Section A">{itemElementsA}</Section>
+            <Section title="Section B">{itemElementsB}</Section>
+            <Section key="Section C">{itemElementsC}</Section>
+            <Section key="Section D">{itemElementsD}</Section>
+            <Section title="Section E">{itemElementsE}</Section>
+          </MultiSelect>
+        </Flex>
+
         <Checkbox
           checked={showIcons}
           onChange={e => setShowIcons(e.currentTarget.checked)}
         >
-          Show Ions
+          Show Icons
         </Checkbox>
 
         <Flex direction="row" gap={14}>
@@ -191,6 +267,21 @@ export function Pickers(): JSX.Element {
             errorMessage="Please select an item."
             onInputChange={onSearch}
           />
+          <MultiSelect
+            label="MultiSelect (Controlled)"
+            selectedKeys={multiSelectedKeys}
+            onChange={onMultiSelectChange}
+            onSearchTextChange={onMultiSearch}
+          >
+            {filteredMultiItems.map(({ key, item }) => (
+              <Item
+                key={String(key)}
+                textValue={item?.textValue ?? String(key)}
+              >
+                {item?.textValue ?? String(key)}
+              </Item>
+            ))}
+          </MultiSelect>
         </Flex>
       </Flex>
     </SampleSection>

@@ -54,9 +54,13 @@ export function wrapIcon(
  * @returns The wrapped items or sections
  */
 export function wrapItemChildren<T>(
-  itemsOrSections: ItemOrSection<T> | ItemOrSection<T>[],
+  itemsOrSections: ItemOrSection<T> | ItemOrSection<T>[] | null | undefined,
   tooltipOptions: TooltipOptions | null
 ): ItemElement<T> | SectionElement<T> | (ItemElement<T> | SectionElement<T>)[] {
+  if (itemsOrSections == null) {
+    return [];
+  }
+
   const itemsOrSectionsArray = ensureArray(itemsOrSections);
 
   const result = itemsOrSectionsArray.map(item => {
