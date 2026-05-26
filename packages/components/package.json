@@ -24,7 +24,7 @@
     "build:theme": "sass --embed-sources --style=compressed --load-path=../../node_modules ./src/theme:./dist/theme"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "3.38.0",
+    "@adobe/react-spectrum": "3.47.0",
     "@deephaven/icons": "file:../icons",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
@@ -44,7 +44,7 @@
     "@react-spectrum/utils": "^3.11.5",
     "@react-stately/overlays": "^3.6.18",
     "@react-stately/utils": "^3.10.8",
-    "@react-types/combobox": "3.13.1",
+    "@react-types/combobox": "3.15.0",
     "@react-types/radio": "^3.8.1",
     "@react-types/shared": "^3.22.1",
     "@react-types/textfield": "^3.9.1",
