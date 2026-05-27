@@ -406,108 +406,90 @@ export function processLoadedModule(
 }
 
 /**
- * Topologically sort plugins so that dependencies are loaded before the
- * plugins that depend on them. Plugins without dependencies or whose
- * dependencies are not in the manifest keep their original relative order
- * (stable sort). Throws if a dependency cycle is detected.
+ * Group plugins into dependency levels for parallel loading. Plugins in the
+ * same level have no dependencies on each other and can be loaded concurrently.
+ * Each level's dependencies are fully contained in earlier levels.
+ *
+ * Handles cycles gracefully by placing remaining plugins into a final level
+ * and logging an error.
  *
  * @param plugins The plugin list from the manifest
- * @returns A new array with plugins sorted so dependencies come first
+ * @returns An array of levels, where each level is an array of plugins
  */
-export function sortPluginsByDependency<
+export function groupByDependencyLevel<
   T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
->(plugins: readonly T[]): T[] {
-  // Build a lookup from package name → plugin index
-  const packageToIndex = new Map<string, number>();
-  plugins.forEach((p, i) => {
+>(plugins: readonly T[]): T[][] {
+  // Map from package name to plugin for dependency resolution
+  const packageToPlugin = new Map<string, T>();
+  plugins.forEach(p => {
     if (p.package != null) {
-      packageToIndex.set(p.package, i);
+      packageToPlugin.set(p.package, p);
     }
   });
 
-  // Build adjacency list: index → indices it depends on
-  const depIndices = new Map<number, number[]>();
-  plugins.forEach((p, i) => {
-    if (p.dependencies != null && p.dependencies.length > 0) {
-      const resolved: number[] = [];
+  // Resolve each plugin's in-manifest dependencies
+  const deps = new Map<T, Set<T>>();
+  plugins.forEach(p => {
+    const resolved = new Set<T>();
+    if (p.dependencies != null) {
       p.dependencies.forEach(dep => {
-        const idx = packageToIndex.get(dep);
-        if (idx != null) {
-          resolved.push(idx);
+        const depPlugin = packageToPlugin.get(dep);
+        if (depPlugin != null) {
+          resolved.add(depPlugin);
         } else {
           log.warn(
             `Plugin '${p.name}' depends on '${dep}' which is not in the manifest`
           );
         }
       });
-      if (resolved.length > 0) {
-        depIndices.set(i, resolved);
-      }
     }
+    deps.set(p, resolved);
   });
 
-  // If no plugin has in-manifest dependencies, return original order
-  if (depIndices.size === 0) {
-    return [...plugins];
-  }
+  const levels: T[][] = [];
+  const remaining = new Set(plugins);
+  const loaded = new Set<T>();
 
-  // Kahn's algorithm for topological sort (stable — preserves original order
-  // among plugins at the same dependency depth)
-  const inDegree = new Array<number>(plugins.length).fill(0);
-
-  // Reverse adjacency: who depends on me?
-  const dependents = new Map<number, number[]>();
-  depIndices.forEach((deps, idx) => {
-    deps.forEach(dep => {
-      if (!dependents.has(dep)) {
-        dependents.set(dep, []);
+  while (remaining.size > 0) {
+    // Collect plugins whose dependencies are all loaded
+    const level: T[] = [];
+    remaining.forEach(p => {
+      const pDeps = deps.get(p);
+      if (pDeps == null || pDeps.size === 0) {
+        level.push(p);
+        return;
       }
-      const depList = dependents.get(dep);
-      if (depList != null) {
-        depList.push(idx);
-      }
-      inDegree[idx] += 1;
-    });
-  });
-
-  // Seed queue with all nodes that have no in-manifest dependencies,
-  // in their original order
-  const queue: number[] = [];
-  for (let i = 0; i < plugins.length; i += 1) {
-    if (inDegree[i] === 0) {
-      queue.push(i);
-    }
-  }
-
-  const sorted: T[] = [];
-  while (queue.length > 0) {
-    const idx = queue.shift();
-    if (idx == null) {
-      break;
-    }
-    sorted.push(plugins[idx]);
-    const deps = dependents.get(idx);
-    if (deps != null) {
-      // Process dependents in original manifest order for stability
-      deps.sort((a, b) => a - b);
-      deps.forEach(depIdx => {
-        inDegree[depIdx] -= 1;
-        if (inDegree[depIdx] === 0) {
-          queue.push(depIdx);
+      let allLoaded = true;
+      pDeps.forEach(d => {
+        if (!loaded.has(d)) {
+          allLoaded = false;
         }
       });
+      if (allLoaded) {
+        level.push(p);
+      }
+    });
+
+    if (level.length === 0) {
+      // Cycle detected — load remaining plugins together as a final level
+      const inCycle = [...remaining].map(p => p.name);
+      log.error(
+        `Circular plugin dependency detected among: ${inCycle.join(
+          ', '
+        )}. Loading remaining plugins together.`
+      );
+      levels.push([...remaining]);
+      break;
     }
+
+    levels.push(level);
+    level.forEach(p => {
+      remaining.delete(p);
+      loaded.add(p);
+    });
   }
 
-  if (sorted.length !== plugins.length) {
-    // Find the cycle participants for a useful error message
-    const inCycle = plugins.filter((_, i) => inDegree[i] > 0).map(p => p.name);
-    throw new Error(
-      `Circular plugin dependency detected among: ${inCycle.join(', ')}`
-    );
-  }
-
-  return sorted;
+  return levels;
 }
 
 /**

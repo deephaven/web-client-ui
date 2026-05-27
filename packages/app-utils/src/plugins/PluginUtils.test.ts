@@ -1,4 +1,9 @@
-import { type MultiPlugin, type Plugin, PluginType } from '@deephaven/plugin';
+import {
+  type MultiPlugin,
+  type Plugin,
+  type PluginManifestPluginInfo,
+  PluginType,
+} from '@deephaven/plugin';
 import { loadModulePlugins } from './PluginUtils';
 import { resolve } from './remote-component.config';
 
@@ -28,9 +33,7 @@ describe('loadModulePlugins', () => {
     return { name, type: PluginType.WIDGET_PLUGIN };
   }
 
-  function mockManifest(
-    plugins: { name: string; main: string; version: string }[]
-  ) {
+  function mockManifest(plugins: PluginManifestPluginInfo[]) {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({ plugins }),
@@ -131,12 +134,14 @@ describe('loadModulePlugins', () => {
         main: 'index.js',
         version: '1.0.0',
         package: '@deephaven/js-plugin-test-plugin-b',
+        dependencies: ['@deephaven/js-plugin-test-plugin-a'],
       },
     ]);
 
     const moduleA = { default: pluginA, ExportedClass: class MyClass {} };
 
-    // When plugin B loads, verify plugin A is already in the resolve map
+    // Plugin B depends on A, so it loads in the next level.
+    // When plugin B loads, verify plugin A is already in the resolve map.
     loadRemoteModule.mockResolvedValueOnce(moduleA).mockImplementationOnce(
       () =>
         new Promise(res => {
