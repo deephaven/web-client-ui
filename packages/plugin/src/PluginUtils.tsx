@@ -476,7 +476,7 @@ export function groupByDependencyLevel<
       log.error(
         `Circular plugin dependency detected among: ${inCycle.join(
           ', '
-        )}. Loading in manifest order.`
+        )}. Loading remaining plugins together.`
       );
       levels.push([...remaining]);
       break;
