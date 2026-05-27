@@ -416,9 +416,9 @@ export function processLoadedModule(
  * @param plugins The plugin list from the manifest
  * @returns An array of levels, where each level is an array of plugins
  */
-export function groupByDependencyLevel<
-  T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
->(plugins: readonly T[]): T[][] {
+export function groupByDependencyLevel<T extends PluginManifestPluginInfo>(
+  plugins: readonly T[]
+): T[][] {
   // Map from package name to plugin for dependency resolution
   const packageToPlugin = new Map<string, T>();
   plugins.forEach(p => {
@@ -494,9 +494,9 @@ export function groupByDependencyLevel<
  * @param plugins The plugin list from the manifest
  * @returns A new array with plugins sorted so dependencies come first
  */
-export function sortPluginsByDependency<
-  T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
->(plugins: readonly T[]): T[] {
+export function sortPluginsByDependency<T extends PluginManifestPluginInfo>(
+  plugins: readonly T[]
+): T[] {
   // Build a lookup from package name → plugin index
   const packageToIndex = new Map<string, number>();
   plugins.forEach((p, i) => {
