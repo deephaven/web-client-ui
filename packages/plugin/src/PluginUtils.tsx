@@ -406,10 +406,90 @@ export function processLoadedModule(
 }
 
 /**
+ * Group plugins into dependency levels for parallel loading. Plugins in the
+ * same level have no dependencies on each other and can be loaded concurrently.
+ * Each level's dependencies are fully contained in earlier levels.
+ *
+ * Handles cycles gracefully by placing remaining plugins into a final level
+ * and logging an error.
+ *
+ * @param plugins The plugin list from the manifest
+ * @returns An array of levels, where each level is an array of plugins
+ */
+export function groupByDependencyLevel<
+  T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
+>(plugins: readonly T[]): T[][] {
+  // Map from package name to plugin for dependency resolution
+  const packageToPlugin = new Map<string, T>();
+  plugins.forEach(p => {
+    if (p.package != null) {
+      packageToPlugin.set(p.package, p);
+    }
+  });
+
+  // Resolve each plugin's in-manifest dependencies
+  const deps = new Map<T, Set<T>>();
+  plugins.forEach(p => {
+    const resolved = new Set<T>();
+    if (p.dependencies != null) {
+      p.dependencies.forEach(dep => {
+        const depPlugin = packageToPlugin.get(dep);
+        if (depPlugin != null) {
+          resolved.add(depPlugin);
+        } else {
+          log.warn(
+            `Plugin '${p.name}' depends on '${dep}' which is not in the manifest`
+          );
+        }
+      });
+    }
+    deps.set(p, resolved);
+  });
+
+  const levels: T[][] = [];
+  const remaining = new Set(plugins);
+  const loaded = new Set<T>();
+
+  while (remaining.size > 0) {
+    // Collect plugins whose dependencies are all loaded
+    const level: T[] = [];
+    remaining.forEach(p => {
+      const pDeps = deps.get(p);
+      if (pDeps == null || [...pDeps].every(d => loaded.has(d))) {
+        level.push(p);
+      }
+    });
+
+    if (level.length === 0) {
+      // Cycle detected — load remaining plugins together as a final level
+      const inCycle = [...remaining].map(p => p.name);
+      log.error(
+        `Circular plugin dependency detected among: ${inCycle.join(
+          ', '
+        )}. Loading in manifest order.`
+      );
+      levels.push([...remaining]);
+      break;
+    }
+
+    levels.push(level);
+    level.forEach(p => {
+      remaining.delete(p);
+      loaded.add(p);
+    });
+  }
+
+  return levels;
+}
+
+/**
  * Topologically sort plugins so that dependencies are loaded before the
  * plugins that depend on them. Plugins without dependencies or whose
  * dependencies are not in the manifest keep their original relative order
  * (stable sort). Throws if a dependency cycle is detected.
+ *
+ * @deprecated Use {@link groupByDependencyLevel} instead, which supports
+ * parallel loading within each level and handles cycles gracefully.
  *
  * @param plugins The plugin list from the manifest
  * @returns A new array with plugins sorted so dependencies come first
