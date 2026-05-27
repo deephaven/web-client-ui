@@ -189,4 +189,27 @@ describe('groupByDependencyLevel', () => {
     expect(levels[0].map(p => p.name)).toEqual(['independent']);
     expect(levels[1].map(p => p.name).sort()).toEqual(['a', 'b']);
   });
+
+  it('handles longer cycle: a → b → c → a', () => {
+    const plugins = [
+      makeManifestPlugin('a', {
+        package: '@scope/a',
+        dependencies: ['@scope/b'],
+      }),
+      makeManifestPlugin('b', {
+        package: '@scope/b',
+        dependencies: ['@scope/c'],
+      }),
+      makeManifestPlugin('c', {
+        package: '@scope/c',
+        dependencies: ['@scope/a'],
+      }),
+    ];
+
+    const levels = groupByDependencyLevel(plugins);
+
+    // All three form a cycle — placed together in a single level
+    expect(levels).toHaveLength(1);
+    expect(levels[0].map(p => p.name).sort()).toEqual(['a', 'b', 'c']);
+  });
 });
