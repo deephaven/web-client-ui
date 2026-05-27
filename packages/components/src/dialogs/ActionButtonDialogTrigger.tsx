@@ -1,9 +1,14 @@
 import { type ReactElement } from 'react';
 import type { StyleProps } from '@react-types/shared';
-import type { SpectrumDialogClose } from '../spectrum';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ActionButton, DialogTrigger, Icon, Text } from '../spectrum';
+import {
+  ActionButton,
+  DialogTrigger,
+  Icon,
+  Text,
+  SpectrumDialogClose,
+} from '../spectrum';
 import { Tooltip } from '../popper';
 
 export interface ActionButtonDialogTriggerProps extends StyleProps {
