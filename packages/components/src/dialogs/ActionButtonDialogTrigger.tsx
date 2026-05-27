@@ -7,7 +7,7 @@ import {
   DialogTrigger,
   Icon,
   Text,
-  SpectrumDialogClose,
+  type SpectrumDialogClose,
 } from '../spectrum';
 import { Tooltip } from '../popper';
 
