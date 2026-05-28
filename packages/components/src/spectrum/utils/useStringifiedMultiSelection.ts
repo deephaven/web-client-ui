@@ -82,10 +82,21 @@ export function useStringifiedMultiSelection({
       }
 
       const actualKeys = new Set<ItemKey>();
+      const foundStringKeys = new Set<string>();
 
       normalizedItems.forEach(item => {
-        if (keys.has(String(getItemKey(item)))) {
+        const stringKey = String(getItemKey(item));
+        if (keys.has(stringKey)) {
           actualKeys.add(getItemKey(item));
+          foundStringKeys.add(stringKey);
+        }
+      });
+
+      // Preserve keys not found in normalizedItems (i.e., filtered out by server-side search).
+      // Pass them through as-is since they are already valid ItemKey values.
+      keys.forEach(key => {
+        if (!foundStringKeys.has(String(key))) {
+          actualKeys.add(key);
         }
       });
 

@@ -30,7 +30,7 @@ export type PickerPropsT<TProps> = Omit<
   | 'defaultItems'
   | 'items'
 > & {
-  children: ItemOrSection | ItemOrSection[];
+  children?: ItemOrSection | ItemOrSection[] | null | undefined;
 
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;

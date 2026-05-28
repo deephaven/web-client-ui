@@ -10,7 +10,7 @@ import {
   PluginType,
   isLegacyAuthPlugin,
   processLoadedModule,
-  sortPluginsByDependency,
+  groupByDependencyLevel,
   type PluginManifest,
   type PluginManifestPluginInfo,
   getPluginModuleValue,
@@ -66,8 +66,9 @@ export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
 
 /**
  * Load all plugin modules available based on the manifest file at the provided base URL.
- * Plugins are loaded sequentially so that each plugin's exports are registered
- * in the module resolve map before subsequent plugins load. This enables
+ * Plugins are grouped into dependency levels and loaded in parallel within each
+ * level. Levels are processed sequentially so that each level's exports are
+ * registered in the module resolve map before the next level loads, enabling
  * cross-plugin imports via standard import statements.
  * @param modulePluginsUrl The base URL of the module plugins to load
  * @returns A map from the name of the plugin to the plugin module that was loaded
@@ -85,29 +86,41 @@ export async function loadModulePlugins(
 
     log.debug('Plugin manifest loaded:', manifest);
 
-    const sortedPlugins = sortPluginsByDependency(manifest.plugins);
+    const levels = groupByDependencyLevel(manifest.plugins);
 
     const pluginMap: PluginModuleMap = new Map();
 
-    // Load plugins sequentially so each plugin's exports are available
-    // to subsequently loaded plugins via import
-    for (let i = 0; i < sortedPlugins.length; i += 1) {
-      const { name, main, version, package: packageName } = sortedPlugins[i];
-      const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const pluginExports = await loadModulePlugin(pluginMainUrl);
+    // Load plugins level by level. Plugins within a level have no
+    // inter-dependencies and load in parallel. Each level completes
+    // before the next starts so cross-plugin imports resolve correctly.
+    for (let lvl = 0; lvl < levels.length; lvl += 1) {
+      const level = levels[lvl];
 
-        processLoadedModule(
-          pluginMap,
-          resolve,
-          pluginExports,
-          name,
-          packageName,
-          version
-        );
-      } catch (e) {
-        log.error(`Unable to load plugin '${name}'`, e);
+      // eslint-disable-next-line no-await-in-loop
+      const results = await Promise.allSettled(
+        level.map(async plugin => {
+          const { name, main, version, package: packageName } = plugin;
+          const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
+          const pluginExports = await loadModulePlugin(pluginMainUrl);
+          return { pluginExports, name, packageName, version };
+        })
+      );
+
+      for (let r = 0; r < results.length; r += 1) {
+        const result = results[r];
+        if (result.status === 'fulfilled') {
+          const { pluginExports, name, packageName, version } = result.value;
+          processLoadedModule(
+            pluginMap,
+            resolve,
+            pluginExports,
+            name,
+            packageName,
+            version
+          );
+        } else {
+          log.error(`Unable to load plugin '${level[r].name}'`, result.reason);
+        }
       }
     }
     log.info('Plugins loaded:', pluginMap);

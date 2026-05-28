@@ -13,7 +13,11 @@ import { ListViewWrapper, type ListViewWrapperProps } from './ListViewWrapper';
 import { type ItemElementOrPrimitive } from '../shared';
 
 export type ListViewProps = MultipleItemSelectionProps & {
-  children: ItemElementOrPrimitive | ItemElementOrPrimitive[];
+  children?:
+    | ItemElementOrPrimitive
+    | ItemElementOrPrimitive[]
+    | null
+    | undefined;
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 

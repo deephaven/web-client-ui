@@ -1259,13 +1259,12 @@ export class GridRenderer {
       } else {
         const columnIndex = modelColumns.get(highlightedSeparator);
         const nextColumnIndex = modelColumns.get(highlightedSeparator + 1);
-        if (columnIndex == null || nextColumnIndex == null) {
-          shouldDrawSeparator = false;
-        } else {
-          shouldDrawSeparator =
-            model.textForColumnHeader(columnIndex, depth) !==
-            model.textForColumnHeader(nextColumnIndex, depth);
-        }
+        shouldDrawSeparator = GridUtils.hasColumnSeparatorAtDepth(
+          model,
+          depth,
+          columnIndex,
+          nextColumnIndex
+        );
       }
 
       if (

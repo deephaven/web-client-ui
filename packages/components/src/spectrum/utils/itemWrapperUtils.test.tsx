@@ -44,6 +44,19 @@ describe('wrapIcon', () => {
 describe.each([null, { placement: 'top' }] as const)(
   'wrapItemChildren: %s',
   tooltipOptions => {
+    it.each([null, undefined])(
+      'should return an empty array when children is %s',
+      nullish => {
+        const actual = wrapItemChildren(nullish, tooltipOptions);
+        expect(actual).toEqual([]);
+      }
+    );
+
+    it('should return an empty array when children is an empty array', () => {
+      const actual = wrapItemChildren([], tooltipOptions);
+      expect(actual).toEqual([]);
+    });
+
     it('should wrap primitives with Item elements', () => {
       const given = [
         'Item 1',

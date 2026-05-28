@@ -75,7 +75,7 @@ export function usePickerProps<
   );
 
   const items = useMemo(
-    () => ensureArray(wrapItemChildren(children, tooltipOptions)),
+    () => ensureArray(wrapItemChildren(children ?? [], tooltipOptions)),
     [children, tooltipOptions]
   );
 

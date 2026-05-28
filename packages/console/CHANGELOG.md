@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.0](https://github.com/deephaven/web-client-ui/compare/v1.20.0...v1.21.0) (2026-05-22)
+
+### Bug Fixes
+
+- DH-22677: Adjust dotted line position in upload screen UI ([#2687](https://github.com/deephaven/web-client-ui/issues/2687)) ([211519a](https://github.com/deephaven/web-client-ui/commit/211519a91f7bbdf4e8dee812a1061a989447d0a2))
+
 ## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
 
 ### Bug Fixes

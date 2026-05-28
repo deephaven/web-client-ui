@@ -456,7 +456,15 @@ export class GridUtils {
 
   /**
    * Check if a separator exists between a column and the next column at a given depth.
-   * A separator exists if adjacent columns have different header text at the specified depth.
+   *
+   * - At leaf depth (0), every model column is separated from the rest.
+   * - At deeper depths, separator existence follows column-header-group identity when
+   *   the model exposes groups via `getColumnHeaderGroup`. Distinct group instances
+   *   that happen to share a display name (e.g. pivot Totals groups) are correctly
+   *   treated as separate.
+   * - When neither side has a declared group, fall back to header-text inequality so
+   *   plain grouped-header models (which express grouping only through repeated text)
+   *   keep their existing behavior.
    *
    * @param model The grid model
    * @param depth The header depth to check at
@@ -479,14 +487,22 @@ export class GridUtils {
       return true;
     }
 
-    // At the leaf depth, every model column is its own physical column;
-    // adjacent leaves are always separable even when their header text happens
-    // to match (e.g. pivot value columns that share a value source name).
-    // if (depth === 0) {
-    //   return true;
-    // }
+    // Leaf depth: every distinct model column is a physical boundary
+    if (depth === 0) {
+      return true;
+    }
 
-    // A separator exists if adjacent columns have different header text at this depth
+    const groupA = model.getColumnHeaderGroup(columnIndex, depth);
+    const groupB = model.getColumnHeaderGroup(nextColumnIndex, depth);
+
+    if (groupA != null && groupB != null) {
+      return groupA !== groupB;
+    }
+    if (groupA != null || groupB != null) {
+      return true;
+    }
+
+    // Neither side has a declared group; fall back to text inequality
     return (
       model.textForColumnHeader(columnIndex, depth) !==
       model.textForColumnHeader(nextColumnIndex, depth)

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.0](https://github.com/deephaven/web-client-ui/compare/v1.20.0...v1.21.0) (2026-05-22)
+
+### Features
+
+- DH-19683: Multi-select combobox component ([#2685](https://github.com/deephaven/web-client-ui/issues/2685)) ([540e9c4](https://github.com/deephaven/web-client-ui/commit/540e9c4dd9d6e87e37d5b81b38f5d10fcf7811fc))
+
 ## [1.20.0](https://github.com/deephaven/web-client-ui/compare/v1.19.0...v1.20.0) (2026-05-20)
 
 **Note:** Version bump only for package @deephaven/code-studio
