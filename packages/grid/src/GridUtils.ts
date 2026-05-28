@@ -457,7 +457,7 @@ export class GridUtils {
   /**
    * Check if a separator exists between a column and the next column at a given depth.
    *
-   * - At leaf depth (0), every model column is separated from the rest.
+   * - At leaf depth (0), every model column has a separator on its trailing edge.
    * - At deeper depths, separator existence follows column-header-group identity when
    *   the model exposes groups via `getColumnHeaderGroup`. Distinct group instances
    *   that happen to share a display name (e.g. pivot Totals groups) are correctly
