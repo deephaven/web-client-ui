@@ -479,6 +479,13 @@ export class GridUtils {
       return true;
     }
 
+    // At the leaf depth, every model column is its own physical column;
+    // adjacent leaves are always separable even when their header text happens
+    // to match (e.g. pivot value columns that share a value source name).
+    // if (depth === 0) {
+    //   return true;
+    // }
+
     // A separator exists if adjacent columns have different header text at this depth
     return (
       model.textForColumnHeader(columnIndex, depth) !==

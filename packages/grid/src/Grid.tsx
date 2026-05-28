@@ -609,6 +609,19 @@ class Grid extends PureComponent<GridProps, GridState> {
       stateUpdates.isStuckToRight = false;
     }
 
+    // Sync renderer/metricCalculator props to instance fields so callers can
+    // swap them at runtime (e.g. pivot model swap supplies a pivot renderer
+    // and metric calculator).
+    if (this.props.renderer !== prevProps.renderer && this.props.renderer) {
+      this.renderer = this.props.renderer;
+    }
+    if (
+      this.props.metricCalculator !== prevProps.metricCalculator &&
+      this.props.metricCalculator
+    ) {
+      this.metricCalculator = this.props.metricCalculator;
+    }
+
     const updatedState = { ...this.state, ...stateUpdates };
 
     this.updateMetrics(updatedState);

@@ -138,6 +138,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
         return Reflect.set(target.model, prop, value, target.model);
       },
+      // Mirror `get` so duck-type checks (`'prop' in model`) used by inner
+      // model variants (e.g. pivot) resolve against the inner model when
+      // the proxy itself doesn't define the property.
+      has(target, prop) {
+        if (Reflect.has(target, prop)) {
+          return true;
+        }
+        return Reflect.has(target.model, prop);
+      },
     });
   }
 

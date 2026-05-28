@@ -5,6 +5,7 @@ import {
   type DataBarGridModel,
   type DataBarOptions,
   type GridCell,
+  type GridMouseHandler,
   GridModel,
   type GridRange,
   type GridThemeType,
@@ -21,6 +22,27 @@ import {
   type PendingDataErrorMap,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import type IrisGridMetricCalculator from './IrisGridMetricCalculator';
+import type IrisGridRenderer from './IrisGridRenderer';
+
+/**
+ * Factory signature for IrisGrid metric calculators. Mirrors
+ * `GetMetricCalculatorType` in `IrisGrid.tsx` but declared here so models can
+ * reference it without depending on the IrisGrid component module.
+ */
+export type ModelMetricCalculatorFactory = (
+  ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
+) => IrisGridMetricCalculator;
+
+/**
+ * Mouse handler entries a model may contribute. Either a concrete handler or a
+ * factory that receives the live IrisGrid instance (typed loosely so the model
+ * does not depend on the IrisGrid component class).
+ */
+export type ModelMouseHandlersProp = readonly (
+  | GridMouseHandler
+  | ((irisGrid: unknown) => GridMouseHandler)
+)[];
 
 export type DisplayColumn = DhType.Column & {
   /**
@@ -135,6 +157,26 @@ abstract class IrisGridModel<
   stopListening(): void {
     // no-op
   }
+
+  /**
+   * Optional factory used by `IrisGrid` to build its metric calculator. When
+   * present, takes precedence over the `getMetricCalculator` prop. Declared as
+   * an optional property (not a prototype method) so that proxy delegation
+   * keeps working for models that do not override it.
+   */
+  getMetricCalculator?: ModelMetricCalculatorFactory;
+
+  /**
+   * Optional override for the renderer used by `IrisGrid`. When present, takes
+   * precedence over the `renderer` prop.
+   */
+  getRenderer?: () => IrisGridRenderer;
+
+  /**
+   * Optional additional mouse handlers contributed by the model. Merged with
+   * the `mouseHandlers` prop and IrisGrid's built-in handlers.
+   */
+  getMouseHandlers?: () => ModelMouseHandlersProp;
 
   /**
    * Gets the columns for this model

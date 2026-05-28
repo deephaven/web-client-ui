@@ -1197,6 +1197,35 @@ describe('getColumnSeparatorIndex', () => {
       maxDepth: 2,
       expected: 1,
     },
+    {
+      description:
+        'should detect separator at depth 0 even when adjacent leaf header text matches (e.g. pivot value columns)',
+      x: 150, // Between column 0 and 1
+      y: 45, // Middle of the leaf header (depth 0) when maxDepth = 2
+      headerGroups: new Map([
+        [
+          0,
+          new Map([
+            // All leaves share the same display text (e.g. value source name)
+            [0, 'Sum'],
+            [1, 'Sum'],
+            [2, 'Sum'],
+            [3, 'Sum'],
+          ]),
+        ],
+        [
+          1,
+          new Map([
+            [0, 'Group1'],
+            [1, 'Group1'],
+            [2, 'Group2'],
+            [3, 'Group2'],
+          ]),
+        ],
+      ]),
+      maxDepth: 2,
+      expected: 0,
+    },
   ])('$description', ({ x, y, headerGroups, maxDepth, expected }) => {
     const metrics = createMockMetrics(maxDepth) as GridMetrics;
     const model = createMockGroupedGridModel(headerGroups);
