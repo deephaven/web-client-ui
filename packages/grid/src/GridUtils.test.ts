@@ -1120,7 +1120,8 @@ describe('getColumnSeparatorIndex', () => {
    * Creates a mock GridModel with grouped column headers for testing
    */
   const createMockGroupedGridModel = (
-    headerGroups: Map<number, Map<number, string>>
+    headerGroups: Map<number, Map<number, string>>,
+    columnHeaderGroups?: Map<number, Map<number, object>>
   ): GridModel =>
     TestUtils.createMockProxy<GridModel>({
       columnCount: 4,
@@ -1128,6 +1129,9 @@ describe('getColumnSeparatorIndex', () => {
       columnHeaderMaxDepth: headerGroups.size,
       textForColumnHeader: (column: ModelIndex, depth = 0) =>
         headerGroups.get(depth)?.get(column) ?? '',
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (columnHeaderGroups?.get(depth)?.get(column) as any) ?? undefined,
     });
 
   const singleLevelHeaderGroups = new Map([
@@ -1163,12 +1167,76 @@ describe('getColumnSeparatorIndex', () => {
     ],
   ]);
 
+  // Leaf depth with repeated header text (e.g. pivot leaves all labeled "Sum")
+  const repeatedLeafHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'Sum'],
+        [1, 'Sum'],
+        [2, 'Sum'],
+        [3, 'Sum'],
+      ]),
+    ],
+  ]);
+
+  // Two adjacent groups at depth 1 that share a display name but are
+  // distinct group instances (e.g. pivot Totals columns).
+  const sameNameGroupA = { name: 'Total', depth: 1 };
+  const sameNameGroupB = { name: 'Total', depth: 1 };
+  const sameNameAtDepth1Text = new Map([
+    [
+      0,
+      new Map([
+        [0, 'A'],
+        [1, 'B'],
+        [2, 'C'],
+        [3, 'D'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        [0, 'Total'],
+        [1, 'Total'],
+        [2, 'Total'],
+        [3, 'Total'],
+      ]),
+    ],
+  ]);
+  const sameNameAtDepth1Groups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [0, sameNameGroupA],
+        [1, sameNameGroupA],
+        [2, sameNameGroupB],
+        [3, sameNameGroupB],
+      ]),
+    ],
+  ]);
+
+  // Single declared group spanning all four columns at depth 1.
+  const singleGroupInstance = { name: 'OnlyGroup', depth: 1 };
+  const singleGroupAtDepth1Groups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [0, singleGroupInstance],
+        [1, singleGroupInstance],
+        [2, singleGroupInstance],
+        [3, singleGroupInstance],
+      ]),
+    ],
+  ]);
+
   it.each([
     {
       description: 'detects separator at column boundary',
       x: 150, // At boundary between column 0 and 1 (100 + 50)
       y: 15, // Middle of the top header (maxDepth - 1)
       headerGroups: singleLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 1,
       expected: 0,
     },
@@ -1177,6 +1245,7 @@ describe('getColumnSeparatorIndex', () => {
       x: 120, // Within column 1
       y: 15,
       headerGroups: singleLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 1,
       expected: null,
     },
@@ -1186,6 +1255,7 @@ describe('getColumnSeparatorIndex', () => {
       x: 150, // Between column 0 and 1
       y: 15, // Middle of the top header (maxDepth - 1)
       headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 2,
       expected: null,
     },
@@ -1194,21 +1264,58 @@ describe('getColumnSeparatorIndex', () => {
       x: 250, // Between Group1 and Group2
       y: 15,
       headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 2,
       expected: 1,
     },
-  ])('$description', ({ x, y, headerGroups, maxDepth, expected }) => {
-    const metrics = createMockMetrics(maxDepth) as GridMetrics;
-    const model = createMockGroupedGridModel(headerGroups);
+    {
+      description:
+        'detects leaf-depth separator even when adjacent header text is identical (pivot leaves)',
+      x: 150, // Between column 0 and 1, both labeled "Sum"
+      y: 15,
+      headerGroups: repeatedLeafHeaderGroups,
+      columnHeaderGroups: undefined,
+      maxDepth: 1,
+      expected: 0,
+    },
+    {
+      description:
+        'detects depth-1 separator between distinct group instances that share a display name (pivot Totals)',
+      x: 250, // Between column 1 (groupA) and column 2 (groupB)
+      y: 15, // Middle of the top header (maxDepth - 1 = 1)
+      headerGroups: sameNameAtDepth1Text,
+      columnHeaderGroups: sameNameAtDepth1Groups,
+      maxDepth: 2,
+      expected: 1,
+    },
+    {
+      description:
+        'returns no depth-1 separator within the same declared group instance even when text would differ',
+      x: 150, // Between column 0 and 1, both in same group instance
+      y: 15,
+      headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: singleGroupAtDepth1Groups,
+      maxDepth: 2,
+      expected: null,
+    },
+  ])(
+    '$description',
+    ({ x, y, headerGroups, columnHeaderGroups, maxDepth, expected }) => {
+      const metrics = createMockMetrics(maxDepth) as GridMetrics;
+      const model = createMockGroupedGridModel(
+        headerGroups,
+        columnHeaderGroups
+      );
 
-    const result = GridUtils.getColumnSeparatorIndex(
-      x,
-      y,
-      metrics,
-      mockTheme,
-      model
-    );
+      const result = GridUtils.getColumnSeparatorIndex(
+        x,
+        y,
+        metrics,
+        mockTheme,
+        model
+      );
 
-    expect(result).toBe(expected);
-  });
+      expect(result).toBe(expected);
+    }
+  );
 });
