@@ -1319,3 +1319,84 @@ describe('getColumnSeparatorIndex', () => {
     }
   );
 });
+
+describe('hasColumnSeparatorAtDepth', () => {
+  const groupA = { name: 'G', depth: 1 };
+  const groupB = { name: 'G', depth: 1 };
+
+  const createModel = (
+    text: Map<number, Map<number, string>>,
+    groups?: Map<number, Map<number, object>>
+  ): GridModel =>
+    TestUtils.createMockProxy<GridModel>({
+      textForColumnHeader: (column: ModelIndex, depth = 0) =>
+        text.get(depth)?.get(column) ?? undefined,
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (groups?.get(depth)?.get(column) as any) ?? undefined,
+    });
+
+  const textOnly = new Map([
+    [
+      1,
+      new Map([
+        [0, 'X'],
+        [1, 'X'],
+        [2, 'Y'],
+      ]),
+    ],
+  ]);
+
+  it('returns false when depth is undefined', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, undefined, 0, 1)).toBe(
+      false
+    );
+  });
+
+  it('returns false when columnIndex is undefined', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, undefined, 1)).toBe(
+      false
+    );
+  });
+
+  it('returns true at leaf depth regardless of text equality', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 0, 0, 1)).toBe(true);
+  });
+
+  it('returns true when only one side has a declared group (trailing ungrouped)', () => {
+    const mixedGroups = new Map([[1, new Map<number, object>([[0, groupA]])]]);
+    const model = createModel(textOnly, mixedGroups);
+    // column 0 in group, column 1 not in group -> separator at the group edge
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(true);
+  });
+
+  it('returns true for the trailing edge when nextColumnIndex is undefined and the cell is drawn', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, undefined)).toBe(
+      true
+    );
+  });
+
+  it('treats distinct group instances with identical names as separated', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupB],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(true);
+  });
+
+  it('falls back to text inequality when neither side has a declared group', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(false);
+    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, 2)).toBe(true);
+  });
+});
