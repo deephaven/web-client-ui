@@ -41,7 +41,7 @@ function AutoResizeTextarea({
     function syncStateWithProp() {
       // keep state value in sync with prop changes
       // but not while focused, as the display value is exploded
-      // and the prop value is often imploded
+      // and the prop value might not be
       if (!isFocused.current) {
         setValue(propsValue);
       }

@@ -1,16 +1,19 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import AutoResizeTextarea from './AutoResizeTextarea';
 
-const DEFAULT_PROPS = {
-  value: '',
-  onChange: jest.fn(),
-  'data-testid': 'auto-resize-textarea',
-};
-
-function renderTextarea(props = {}) {
-  return render(<AutoResizeTextarea {...DEFAULT_PROPS} {...props} />);
+function renderTextarea(
+  props: Partial<React.ComponentProps<typeof AutoResizeTextarea>> = {}
+) {
+  const { value = '', onChange = jest.fn(), ...rest } = props;
+  return render(
+    <AutoResizeTextarea
+      value={value}
+      onChange={onChange}
+      data-testid="auto-resize-textarea"
+      {...rest}
+    />
+  );
 }
 
 function getTextarea() {
@@ -124,10 +127,10 @@ describe('AutoResizeTextarea', () => {
       const onChange = jest.fn();
       const { rerender } = render(
         <AutoResizeTextarea
-          {...DEFAULT_PROPS}
           value={IMPLODED_VALUE}
-          delimiter={DELIMITER}
           onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
         />
       );
       const textarea = getTextarea();
@@ -144,10 +147,10 @@ describe('AutoResizeTextarea', () => {
       const implodedFromOnChange = onChange.mock.calls[0][0];
       rerender(
         <AutoResizeTextarea
-          {...DEFAULT_PROPS}
           value={implodedFromOnChange}
-          delimiter={DELIMITER}
           onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
         />
       );
 
@@ -200,11 +203,22 @@ describe('AutoResizeTextarea', () => {
 
   describe('syncs with prop changes', () => {
     it('updates internal value when prop value changes', () => {
+      const onChange = jest.fn();
       const { rerender } = render(
-        <AutoResizeTextarea {...DEFAULT_PROPS} value="initial" />
+        <AutoResizeTextarea
+          value="initial"
+          onChange={onChange}
+          data-testid="auto-resize-textarea"
+        />
       );
 
-      rerender(<AutoResizeTextarea {...DEFAULT_PROPS} value="updated" />);
+      rerender(
+        <AutoResizeTextarea
+          value="updated"
+          onChange={onChange}
+          data-testid="auto-resize-textarea"
+        />
+      );
 
       expect(getTextarea()).toHaveValue('updated');
     });
