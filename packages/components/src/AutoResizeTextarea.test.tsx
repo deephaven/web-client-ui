@@ -5,13 +5,27 @@ import AutoResizeTextarea from './AutoResizeTextarea';
 function renderTextarea(
   props: Partial<React.ComponentProps<typeof AutoResizeTextarea>> = {}
 ) {
-  const { value = '', onChange = jest.fn(), ...rest } = props;
+  const {
+    value = '',
+    onChange = jest.fn(),
+    className,
+    spellCheck,
+    placeholder,
+    disabled,
+    delimiter,
+    id,
+  } = props;
   return render(
     <AutoResizeTextarea
       value={value}
       onChange={onChange}
+      className={className}
+      spellCheck={spellCheck}
+      placeholder={placeholder}
+      disabled={disabled}
+      delimiter={delimiter}
+      id={id}
       data-testid="auto-resize-textarea"
-      {...rest}
     />
   );
 }
