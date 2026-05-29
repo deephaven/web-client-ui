@@ -35,11 +35,16 @@ function AutoResizeTextarea({
   const [value, setValue] = useState(propsValue);
   const [isPastedChange, setIsPastedChange] = useState(false);
   const element = useRef<HTMLTextAreaElement>(null);
+  const isFocused = useRef(false);
 
   useEffect(
     function syncStateWithProp() {
       // keep state value in sync with prop changes
-      setValue(propsValue);
+      // but not while focused, as the display value is exploded
+      // and the prop value is often imploded
+      if (!isFocused.current) {
+        setValue(propsValue);
+      }
     },
     [propsValue]
   );
@@ -81,13 +86,17 @@ function AutoResizeTextarea({
       setIsPastedChange(false);
     }
     setValue(newValue);
-    onChange(newValue);
+    // If there is a delimiter, the onChange value should always be the imploded version
+    // to prevent mismatch when exiting without triggering onBlur
+    // The exploded version is display only
+    onChange(delimiter ? implode(newValue) : newValue);
   }
 
   function handleFocus(): void {
     if (!element.current) {
       return;
     }
+    isFocused.current = true;
     if (delimiter) {
       setValue(explode(value));
       reCalculateLayout();
@@ -106,6 +115,7 @@ function AutoResizeTextarea({
   }
 
   function handleBlur(): void {
+    isFocused.current = false;
     if (delimiter) {
       setValue(implode(value));
       onChange(implode(value));
