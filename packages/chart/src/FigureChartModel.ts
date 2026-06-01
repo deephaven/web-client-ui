@@ -12,9 +12,10 @@ import type {
   XAxisName,
   YAxisName,
 } from 'plotly.js';
-import type {
-  DateTimeColumnFormatter,
-  Formatter,
+import {
+  TableUtils,
+  type DateTimeColumnFormatter,
+  type Formatter,
 } from '@deephaven/jsapi-utils';
 import ChartModel, {
   type ChartEvent,
@@ -789,6 +790,24 @@ class FigureChartModel extends ChartModel {
   }
 
   /**
+   * Coerce a filter value to the appropriate type based on column type.
+   * Input filters always provide string values, but OneClick expects the
+   * native type (e.g. number for numeric columns) to match partition keys.
+   */
+  private coerceFilterValue(value: unknown, columnType: string): unknown {
+    if (value == null) {
+      return value;
+    }
+    if (typeof value === 'string' && TableUtils.isNumberType(columnType)) {
+      const num = Number(value);
+      if (!Number.isNaN(num)) {
+        return num;
+      }
+    }
+    return value;
+  }
+
+  /**
    * Sets the filter on the model. Will only set the values that have changed.
    * @param filterMap Map of filter column names to values
    */
@@ -806,11 +825,13 @@ class FigureChartModel extends ChartModel {
       // Need to get all the keys in case a filter was removed
       const keys = new Set([...filterMap.keys(), ...this.lastFilter.keys()]);
       keys.forEach(key => {
-        const value = filterMap.get(key);
-        if (
-          this.lastFilter.get(key) !== value &&
-          columns.find(column => column.name === key) != null
-        ) {
+        const rawValue = filterMap.get(key);
+        const column = columns.find(c => c.name === key);
+        if (this.lastFilter.get(key) !== rawValue && column != null) {
+          const value =
+            rawValue != null
+              ? this.coerceFilterValue(rawValue, column.type)
+              : rawValue;
           oneClick.setValueForColumn(key, value);
         }
       });
