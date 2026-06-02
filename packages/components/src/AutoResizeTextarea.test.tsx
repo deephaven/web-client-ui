@@ -172,6 +172,104 @@ describe('AutoResizeTextarea', () => {
       expect(textarea).toHaveValue(editedExploded);
     });
 
+    it('explodes new prop value received while focused', () => {
+      const onChange = jest.fn();
+      const { rerender } = render(
+        <AutoResizeTextarea
+          value="-Xmx512m -Xms256m"
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+      const textarea = getTextarea();
+
+      fireEvent.focus(textarea);
+      expect(textarea).toHaveValue('-Xmx512m\n-Xms256m');
+
+      // Parent provides an entirely new value while still focused
+      rerender(
+        <AutoResizeTextarea
+          value="-Xmx1024m -Xms512m -Dfoo=bar"
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+
+      // Display should show the exploded version of the new prop value
+      expect(textarea).toHaveValue('-Xmx1024m\n-Xms512m\n-Dfoo=bar');
+    });
+
+    it('does not strip a partially-typed delimiter when parent re-renders', () => {
+      const onChange = jest.fn();
+      const { rerender } = render(
+        <AutoResizeTextarea
+          value="-Xmx512m -Xms256m"
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+      const textarea = getTextarea();
+
+      fireEvent.focus(textarea);
+
+      // User types " -" at the end to start a new arg — display has a trailing delimiter
+      const withPartialArg = '-Xmx512m\n-Xms256m\n-';
+      fireEvent.change(textarea, { target: { value: withPartialArg } });
+
+      // onChange reports the imploded form: "-Xmx512m -Xms256m -"
+      const implodedWithPartial = onChange.mock.calls[0][0];
+      expect(implodedWithPartial).toBe('-Xmx512m -Xms256m -');
+
+      // Parent re-renders with that value
+      rerender(
+        <AutoResizeTextarea
+          value={implodedWithPartial}
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+
+      // The trailing "-" must NOT be stripped from the display
+      expect(textarea).toHaveValue(withPartialArg);
+    });
+
+    it('does not clobber a trailing newline when parent re-renders', () => {
+      const onChange = jest.fn();
+      const { rerender } = render(
+        <AutoResizeTextarea
+          value="-Xmx512m -Xms256m"
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+      const textarea = getTextarea();
+
+      fireEvent.focus(textarea);
+
+      // User presses Enter to start typing a new arg
+      const withTrailingNewline = '-Xmx512m\n-Xms256m\n';
+      fireEvent.change(textarea, { target: { value: withTrailingNewline } });
+
+      // Parent re-renders with the onChange value
+      const implodedValue = onChange.mock.calls[0][0];
+      rerender(
+        <AutoResizeTextarea
+          value={implodedValue}
+          onChange={onChange}
+          delimiter={DELIMITER}
+          data-testid="auto-resize-textarea"
+        />
+      );
+
+      // The trailing newline must NOT be stripped from the display
+      expect(textarea).toHaveValue(withTrailingNewline);
+    });
+
     it('explodes pasted content', () => {
       const onChange = jest.fn();
       renderTextarea({
