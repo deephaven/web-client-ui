@@ -1,6 +1,6 @@
 import React from 'react';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import type { Column } from '@deephaven/jsapi-types';
 // import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
@@ -33,18 +33,24 @@ const irisGridTestUtils = new IrisGridTestUtils(dh);
 // );
 
 function makeAdvancedFilterCreatorWrapper(
-  {
+  overrides: {
+    tableUtils?: TableUtils;
+    options?: AdvancedFilterOptions;
+    model?: IrisGridModel;
+    column?: Column;
+    formatter?: Formatter;
+    isMaximized?: boolean;
+    onToggleMaximize?: () => void;
+  } = {}
+) {
+  const {
     tableUtils,
     options,
     model,
     column,
     formatter,
-  }: {
-    tableUtils: TableUtils;
-    options: AdvancedFilterOptions;
-    model: IrisGridModel;
-    column: Column;
-    formatter: Formatter;
+    isMaximized,
+    onToggleMaximize,
   } = {
     tableUtils: new TableUtils(dh),
     options: {
@@ -56,8 +62,11 @@ function makeAdvancedFilterCreatorWrapper(
     model: irisGridTestUtils.makeModel(),
     column: irisGridTestUtils.makeColumn('0'), // needs to match column name in makeModel so that columnIndex can be found when rendering
     formatter: new Formatter(dh),
-  }
-) {
+    isMaximized: false,
+    onToggleMaximize: () => null,
+    ...overrides,
+  };
+
   const wrapper = render(
     <AdvancedFilterCreator
       model={model}
@@ -68,6 +77,8 @@ function makeAdvancedFilterCreatorWrapper(
       onDone={() => null}
       options={options}
       tableUtils={tableUtils}
+      isMaximized={isMaximized}
+      onToggleMaximize={onToggleMaximize}
     />
   );
 
@@ -87,6 +98,31 @@ function makeAdvancedFilterCreatorWrapper(
 
 it('renders without crashing', () => {
   makeAdvancedFilterCreatorWrapper();
+});
+
+it('calls onToggleMaximize when maximize button is clicked', () => {
+  const onToggleMaximize = jest.fn();
+  const { container } = makeAdvancedFilterCreatorWrapper({ onToggleMaximize });
+
+  const maximizeButton = container.querySelector<HTMLButtonElement>(
+    '.advanced-filter-menu-buttons .sort-operator:last-child'
+  );
+
+  expect(maximizeButton).not.toBeNull();
+  fireEvent.click(maximizeButton as HTMLButtonElement);
+
+  expect(onToggleMaximize).toHaveBeenCalledTimes(1);
+});
+
+it('marks maximize button active when isMaximized is true', () => {
+  const { container } = makeAdvancedFilterCreatorWrapper({ isMaximized: true });
+
+  const maximizeButton = container.querySelector<HTMLButtonElement>(
+    '.advanced-filter-menu-buttons .sort-operator:last-child'
+  );
+
+  expect(maximizeButton).not.toBeNull();
+  expect(maximizeButton?.classList.contains('active')).toBe(true);
 });
 
 // jest.mock('./AdvancedFilterCreatorFilterItem', () =>

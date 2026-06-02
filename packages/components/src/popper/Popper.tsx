@@ -60,6 +60,7 @@ interface PopperProps {
   children: React.ReactNode;
   options: PopperOptions;
   className: string;
+  containerClassName: string;
   timeout: number;
   onEntered: () => void;
   onExited: () => void;
@@ -81,6 +82,7 @@ class Popper extends Component<PopperProps, PopperState> {
   static defaultProps = {
     options: {},
     className: '',
+    containerClassName: '',
     timeout: ThemeExport.transitionMs,
     onEntered(): void {
       // no-op
@@ -106,7 +108,7 @@ class Popper extends Component<PopperProps, PopperState> {
     this.handleExit = this.handleExit.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
     this.element = document.createElement('div');
-    this.element.className = 'popper-container';
+    this.updateContainerClassName(props.containerClassName);
     this.container = React.createRef<HTMLDivElement>();
 
     // cancelAnimationFrame does nothing if the handle isn't recognized
@@ -122,8 +124,12 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   componentDidUpdate(prevProps: PopperProps): void {
-    const { isShown } = this.props;
+    const { isShown, containerClassName } = this.props;
     const { popper } = this.state;
+
+    if (prevProps.containerClassName !== containerClassName) {
+      this.updateContainerClassName(containerClassName);
+    }
 
     if (prevProps.isShown !== isShown) {
       cancelAnimationFrame(this.rAF);
@@ -153,6 +159,10 @@ class Popper extends Component<PopperProps, PopperState> {
 
   // This is the request animation frame handle number
   rAF: number;
+
+  updateContainerClassName(containerClassName: string): void {
+    this.element.className = classNames('popper-container', containerClassName);
+  }
 
   /** Goes through an element and it's parents until the first visible element is found */
   getVisibleElement(element: HTMLElement | null): HTMLElement | null {
