@@ -36,7 +36,7 @@ function explode(input: string, delimiter: string): string {
 
 /**
  * Makes a textarea that auto resizes based on contents, its height grows with new lines.
- * If a delimeter is set, such as " -" or " ", as used by jvm args or env vars
+ * If a delimiter is set, such as " -" or " ", as used by jvm args or env vars
  * then the field will also "explode" the value by the delimiter over new lines
  * on focus, and implode on blur. By default, it doesn't word wrap.
  */
@@ -60,13 +60,12 @@ function AutoResizeTextarea({
 
   useEffect(
     function syncStateWithProp() {
-      if (!isFocused.current) {
-        // When not focused, always sync to the new prop value.
+      if (!isFocused.current || !delimiter) {
+        // When not focused (or no delimiter), always sync to the new prop value.
         setValue(propsValue);
       } else if (implode(valueRef.current) !== implode(propsValue)) {
-        // When focused, only update if the imploded value changed
-        // to prevent clobbering delimiters
-        setValue(delimiter ? explode(propsValue, delimiter) : propsValue);
+        // When focused with delimiter, only update if the imploded value changed to prevent clobbering delimiters
+        setValue(explode(propsValue, delimiter));
       }
     },
     [propsValue, delimiter]
