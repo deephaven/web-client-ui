@@ -23,6 +23,20 @@ function implode(input: string): string {
     .join(' ');
 }
 
+/**
+ * Splits a string on a delimiter, respecting quoted spans.
+ * Delimiters that appear inside `"..."` or `'...'` are treated as literal
+ * characters and do not cause a split. Quotes are preserved in the returned
+ * tokens so the operation is lossless (suitable for display-only transformations
+ * where the original text must be recoverable).
+ *
+ * An unbalanced opening quote (no matching closing quote found ahead) is treated
+ * as a literal character and splitting proceeds normally.
+ *
+ * @param input The string to split.
+ * @param delimiter The delimiter to split on.
+ * @returns An array of tokens. Always contains at least one element.
+ */
 function splitOnDelimiter(input: string, delimiter: string): string[] {
   // Walk the string character by character, tracking quoted spans so that
   // delimiters inside "..." or '...' are not treated as split points.
@@ -59,6 +73,7 @@ function splitOnDelimiter(input: string, delimiter: string): string[] {
       current = '';
       i += delimiter.length;
     } else {
+      // Plain character outside any quoted span and not part of the delimiter — accumulate it
       current += ch;
       i += 1;
     }
