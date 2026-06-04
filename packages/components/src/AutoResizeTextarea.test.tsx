@@ -336,12 +336,12 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  // ─── Quoted-value use-case coverage (TC-2 through TC-7) ──────────────────
+  // ─── Quoted-value use-case coverage ───────────────────────────────────────
   // Tests marked it.failing are expected to fail until the implementation is
   // updated to handle quoted values. Once the feature is implemented, change
   // those to plain it() calls.
 
-  describe('TC-2: JVM arguments, with quotes – delimiter " -"', () => {
+  describe('JVM arguments, with quotes – delimiter " -"', () => {
     const DELIMITER = ' -';
 
     it('keeps a quoted value containing a space on one line when exploding', () => {
@@ -420,7 +420,7 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  describe('TC-3: environment variables, no quotes – delimiter " "', () => {
+  describe('environment variables, no quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
     it('explodes env vars on focus', () => {
@@ -454,7 +454,7 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  describe('TC-4: environment variables, with quotes – delimiter " "', () => {
+  describe('environment variables, with quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
     it.failing(
@@ -509,7 +509,7 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  describe('TC-5: Python packages, no quotes – delimiter " "', () => {
+  describe('Python packages, no quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
     it('explodes package list on focus', () => {
@@ -561,7 +561,7 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  describe('TC-6: extra classpaths, no quotes – delimiter " "', () => {
+  describe('extra classpaths, no quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
     it('explodes classpath entries on focus', () => {
@@ -587,7 +587,7 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  describe('TC-7: extra classpaths, with quotes – delimiter " "', () => {
+  describe('extra classpaths, with quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
     it.failing(
