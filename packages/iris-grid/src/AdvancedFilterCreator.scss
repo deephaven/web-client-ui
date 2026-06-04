@@ -124,6 +124,50 @@ $advanced-filter-maximized-height: 85vh;
       }
     }
   }
+
+  // The component renders a <form> wrapping all interactive content; make it
+  // the flex column so the values list can claim remaining vertical space.
+  > form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+
+    > .advanced-filter-values-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
+  .advanced-filter-creator-select-value {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+
+    .select-value-list-wrapper {
+      flex: 1 1 auto;
+      min-height: 120px;
+      // Establishes a containing block for the absolutely-positioned scroll
+      // pane so it cannot grow to fit the (huge) virtual list content.
+      position: relative;
+      overflow: hidden;
+    }
+
+    // Pin the scroll pane to fill its wrapper. Without this, the fixed
+    // height: 120px rule or the inner virtual list's intrinsic height
+    // (itemCount × rowHeight) would size the pane and defeat virtualization.
+    .select-value-list-scroll-pane {
+      position: absolute;
+      inset: 0;
+      height: auto;
+      max-height: none;
+      min-height: 0;
+    }
+  }
 }
 
 // Maximized state: override popper.js inline position so the dialog fills the viewport.
@@ -142,49 +186,5 @@ $advanced-filter-maximized-height: 85vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-
-    // The component renders a <form> wrapping all interactive content; make it
-    // the flex column so the values list can claim the remaining vertical space.
-    > form {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
-
-      > .advanced-filter-values-group {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        min-height: 0;
-      }
-    }
-
-    .advanced-filter-creator-select-value {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-
-      .select-value-list-wrapper {
-        flex: 1 1 auto;
-        min-height: 120px;
-        // Establishes a containing block for the absolutely-positioned scroll
-        // pane so it cannot grow to fit the (huge) virtual list content.
-        position: relative;
-        overflow: hidden;
-      }
-
-      // Pin the scroll pane to fill its wrapper. Without this, the fixed
-      // height: 120px rule or the inner virtual list's intrinsic height
-      // (itemCount × rowHeight) would size the pane and defeat virtualization.
-      .select-value-list-scroll-pane {
-        position: absolute;
-        inset: 0;
-        height: auto;
-        max-height: none;
-        min-height: 0;
-      }
-    }
   }
 }
