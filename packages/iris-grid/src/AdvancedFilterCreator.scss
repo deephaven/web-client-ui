@@ -1,5 +1,8 @@
 @import '@deephaven/components/scss/custom.scss';
 
+$advanced-filter-maximized-width: min(94vw, 2200px);
+$advanced-filter-maximized-height: 85vh;
+
 .advanced-filter-creator {
   padding: $popover-body-padding-y $popover-body-padding-x;
 
@@ -132,8 +135,8 @@
   transform: translate(-50%, -50%) !important;
 
   .advanced-filter-creator {
-    width: min(94vw, 2200px) !important;
-    height: 85vh !important;
+    width: $advanced-filter-maximized-width !important;
+    height: $advanced-filter-maximized-height !important;
     max-width: none !important;
     max-height: none !important;
     overflow: hidden;
