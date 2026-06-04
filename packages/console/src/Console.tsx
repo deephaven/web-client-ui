@@ -39,7 +39,7 @@ import ConsoleObjectsMenu from './ConsoleObjectsMenu';
 
 const log = Log.module('Console');
 
-interface Settings {
+export interface Settings {
   isAutoLaunchPanelsEnabled: boolean;
   isPrintStdOutEnabled: boolean;
   isClosePanelsOnDisconnectEnabled: boolean;
