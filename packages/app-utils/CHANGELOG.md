@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
+
+### Bug Fixes
+
+- DH-22737: Group plugins by dependency level for parallel loading ([#2690](https://github.com/deephaven/web-client-ui/issues/2690)) ([d3474f6](https://github.com/deephaven/web-client-ui/commit/d3474f6a999115b875d54421d19f1107a1f0fe61))
+- Spectrum version bump and pin ([#2689](https://github.com/deephaven/web-client-ui/issues/2689)) ([f099b41](https://github.com/deephaven/web-client-ui/commit/f099b415fc1f951799444b8d022b0984f54e02cd))
+
 ## [1.21.0](https://github.com/deephaven/web-client-ui/compare/v1.20.0...v1.21.0) (2026-05-22)
 
 **Note:** Version bump only for package @deephaven/app-utils

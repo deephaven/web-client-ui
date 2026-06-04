@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
+
+### Bug Fixes
+
+- DH-16187: send imploded value to AutoResizeTextarea parent ([#2692](https://github.com/deephaven/web-client-ui/issues/2692)) ([8b45759](https://github.com/deephaven/web-client-ui/commit/8b457593480013b3e3c23226f429bf4cfc452b89))
+- Spectrum version bump and pin ([#2689](https://github.com/deephaven/web-client-ui/issues/2689)) ([f099b41](https://github.com/deephaven/web-client-ui/commit/f099b415fc1f951799444b8d022b0984f54e02cd))
+
 ## [1.21.0](https://github.com/deephaven/web-client-ui/compare/v1.20.0...v1.21.0) (2026-05-22)
 
 ### Features
