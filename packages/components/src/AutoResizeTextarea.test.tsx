@@ -337,9 +337,7 @@ describe('AutoResizeTextarea', () => {
   });
 
   // ─── Quoted-value use-case coverage ───────────────────────────────────────
-  // Tests marked it.failing are expected to fail until the implementation is
-  // updated to handle quoted values. Once the feature is implemented, change
-  // those to plain it() calls.
+  // Tests for quote-aware splitting behaviour.
 
   describe('JVM arguments, with quotes – delimiter " -"', () => {
     const DELIMITER = ' -';
@@ -353,17 +351,14 @@ describe('AutoResizeTextarea', () => {
       expect(getTextarea()).toHaveValue('-Dfoo="bar baz"\n-Xmx512m');
     });
 
-    it.failing(
-      'keeps a quoted value containing the delimiter on one line when exploding',
-      () => {
-        renderTextarea({
-          value: '-Dfoo="has -dash inside" -Xmx512m',
-          delimiter: DELIMITER,
-        });
-        fireEvent.focus(getTextarea());
-        expect(getTextarea()).toHaveValue('-Dfoo="has -dash inside"\n-Xmx512m');
-      }
-    );
+    it('keeps a quoted value containing the delimiter on one line when exploding', () => {
+      renderTextarea({
+        value: '-Dfoo="has -dash inside" -Xmx512m',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('-Dfoo="has -dash inside"\n-Xmx512m');
+    });
 
     it('round-trips: implode(explode(value)) === value for quoted arg containing delimiter', () => {
       const onChange = jest.fn();
@@ -457,29 +452,23 @@ describe('AutoResizeTextarea', () => {
   describe('environment variables, with quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
-    it.failing(
-      'keeps a double-quoted value containing a space on one line',
-      () => {
-        renderTextarea({
-          value: 'FOO="hello world" BAZ=qux',
-          delimiter: DELIMITER,
-        });
-        fireEvent.focus(getTextarea());
-        expect(getTextarea()).toHaveValue('FOO="hello world"\nBAZ=qux');
-      }
-    );
+    it('keeps a double-quoted value containing a space on one line', () => {
+      renderTextarea({
+        value: 'FOO="hello world" BAZ=qux',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('FOO="hello world"\nBAZ=qux');
+    });
 
-    it.failing(
-      'keeps a single-quoted value containing a space on one line',
-      () => {
-        renderTextarea({
-          value: "FOO='hello world' BAZ=qux",
-          delimiter: DELIMITER,
-        });
-        fireEvent.focus(getTextarea());
-        expect(getTextarea()).toHaveValue("FOO='hello world'\nBAZ=qux");
-      }
-    );
+    it('keeps a single-quoted value containing a space on one line', () => {
+      renderTextarea({
+        value: "FOO='hello world' BAZ=qux",
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue("FOO='hello world'\nBAZ=qux");
+    });
 
     it('round-trips: implode(explode(value)) === value for quoted env vars', () => {
       const onChange = jest.fn();
@@ -590,17 +579,14 @@ describe('AutoResizeTextarea', () => {
   describe('extra classpaths, with quotes – delimiter " "', () => {
     const DELIMITER = ' ';
 
-    it.failing(
-      'keeps a quoted path containing spaces on one line when exploding',
-      () => {
-        renderTextarea({
-          value: '"/a/path with spaces" /c/d',
-          delimiter: DELIMITER,
-        });
-        fireEvent.focus(getTextarea());
-        expect(getTextarea()).toHaveValue('"/a/path with spaces"\n/c/d');
-      }
-    );
+    it('keeps a quoted path containing spaces on one line when exploding', () => {
+      renderTextarea({
+        value: '"/a/path with spaces" /c/d',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('"/a/path with spaces"\n/c/d');
+    });
 
     it('round-trips: implode(explode(value)) === value for quoted paths', () => {
       const onChange = jest.fn();

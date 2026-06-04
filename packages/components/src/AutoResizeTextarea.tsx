@@ -23,14 +23,57 @@ function implode(input: string): string {
     .join(' ');
 }
 
+function splitOnDelimiter(input: string, delimiter: string): string[] {
+  // Walk the string character by character, tracking quoted spans so that
+  // delimiters inside "..." or '...' are not treated as split points.
+  // Quotes are preserved in the output (not stripped) so the round-trip is lossless.
+  // An unbalanced quote is treated as a literal character — splitting continues normally.
+  const tokens: string[] = [];
+  let current = '';
+  let quoteChar: '"' | "'" | null = null;
+  let i = 0;
+
+  while (i < input.length) {
+    const ch = input[i];
+
+    if (quoteChar !== null) {
+      // Inside a quoted span — accumulate until we hit the matching closing quote
+      current += ch;
+      if (ch === quoteChar) {
+        quoteChar = null;
+      }
+      i += 1;
+    } else if (ch === '"' || ch === "'") {
+      // Only treat as a quoted span if there is a matching closing quote ahead.
+      // An unbalanced quote is treated as a literal character so the delimiter
+      // logic continues to work normally.
+      const closingIdx = input.indexOf(ch, i + 1);
+      if (closingIdx !== -1) {
+        quoteChar = ch;
+      }
+      current += ch;
+      i += 1;
+    } else if (input.startsWith(delimiter, i)) {
+      // Delimiter found outside a quoted span — emit the current token and advance
+      tokens.push(current);
+      current = '';
+      i += delimiter.length;
+    } else {
+      current += ch;
+      i += 1;
+    }
+  }
+
+  tokens.push(current);
+  return tokens;
+}
+
 function explode(input: string, delimiter: string): string {
-  // split by delimiter, commonly " " or " -"
-  // strip empty strings (if delimiter is space, and there are multiple spaces in a row)
-  // and join with new line and a trimmed delimiter (get rid of leading spaces)
-  return input
-    .trim()
-    .split(delimiter)
-    .filter(string => string) // remove empty strings
+  // Split by delimiter (commonly " " or " -") respecting quoted spans, then
+  // join with newline + trimmed delimiter so each token appears on its own line.
+  // Empty tokens (e.g. from multiple consecutive delimiters) are filtered out.
+  return splitOnDelimiter(input.trim(), delimiter)
+    .filter(token => token !== '') // remove empty strings
     .join(`\n${delimiter.trim()}`);
 }
 
