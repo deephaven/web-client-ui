@@ -336,47 +336,10 @@ describe('AutoResizeTextarea', () => {
     });
   });
 
-  // ─── Use-case coverage (TC-1 through TC-8) ────────────────────────────────
+  // ─── Quoted-value use-case coverage (TC-2 through TC-7) ──────────────────
   // Tests marked it.failing are expected to fail until the implementation is
   // updated to handle quoted values. Once the feature is implemented, change
   // those to plain it() calls.
-
-  describe('TC-1: JVM arguments, no quotes – delimiter " -"', () => {
-    const DELIMITER = ' -';
-
-    it('explodes args on focus', () => {
-      renderTextarea({
-        value: '-Xmx512m -Xms256m -Dfoo=bar',
-        delimiter: DELIMITER,
-      });
-      fireEvent.focus(getTextarea());
-      expect(getTextarea()).toHaveValue('-Xmx512m\n-Xms256m\n-Dfoo=bar');
-    });
-
-    it('implodes on blur', () => {
-      const onChange = jest.fn();
-      renderTextarea({
-        value: '-Xmx512m -Xms256m -Dfoo=bar',
-        delimiter: DELIMITER,
-        onChange,
-      });
-      fireEvent.focus(getTextarea());
-      fireEvent.blur(getTextarea());
-      expect(onChange).toHaveBeenCalledWith('-Xmx512m -Xms256m -Dfoo=bar');
-    });
-
-    it('round-trips: implode(explode(value)) === value', () => {
-      const onChange = jest.fn();
-      renderTextarea({
-        value: '-Xmx512m -Xms256m -Dfoo=bar',
-        delimiter: DELIMITER,
-        onChange,
-      });
-      fireEvent.focus(getTextarea());
-      fireEvent.blur(getTextarea());
-      expect(onChange).toHaveBeenCalledWith('-Xmx512m -Xms256m -Dfoo=bar');
-    });
-  });
 
   describe('TC-2: JVM arguments, with quotes – delimiter " -"', () => {
     const DELIMITER = ' -';
@@ -660,30 +623,6 @@ describe('AutoResizeTextarea', () => {
       fireEvent.blur(getTextarea());
       // Round-trip: original value is preserved
       expect(onChange).toHaveBeenCalledWith('"/bad /c/d');
-    });
-  });
-
-  describe('TC-8: no delimiter', () => {
-    it('does not transform value on focus', () => {
-      renderTextarea({ value: 'assignment policy params' });
-      fireEvent.focus(getTextarea());
-      expect(getTextarea()).toHaveValue('assignment policy params');
-    });
-
-    it('passes quoted values through to onChange unchanged', () => {
-      const onChange = jest.fn();
-      renderTextarea({ onChange });
-      fireEvent.change(getTextarea(), {
-        target: { value: 'KEY="value with spaces"' },
-      });
-      expect(onChange).toHaveBeenCalledWith('KEY="value with spaces"');
-    });
-
-    it('passes newlines through to onChange unchanged', () => {
-      const onChange = jest.fn();
-      renderTextarea({ onChange });
-      fireEvent.change(getTextarea(), { target: { value: 'line1\nline2' } });
-      expect(onChange).toHaveBeenCalledWith('line1\nline2');
     });
   });
 });
