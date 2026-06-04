@@ -335,4 +335,355 @@ describe('AutoResizeTextarea', () => {
       expect(getTextarea()).toHaveValue('updated');
     });
   });
+
+  // ─── Use-case coverage (TC-1 through TC-8) ────────────────────────────────
+  // Tests marked it.failing are expected to fail until the implementation is
+  // updated to handle quoted values. Once the feature is implemented, change
+  // those to plain it() calls.
+
+  describe('TC-1: JVM arguments, no quotes – delimiter " -"', () => {
+    const DELIMITER = ' -';
+
+    it('explodes args on focus', () => {
+      renderTextarea({
+        value: '-Xmx512m -Xms256m -Dfoo=bar',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('-Xmx512m\n-Xms256m\n-Dfoo=bar');
+    });
+
+    it('implodes on blur', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '-Xmx512m -Xms256m -Dfoo=bar',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('-Xmx512m -Xms256m -Dfoo=bar');
+    });
+
+    it('round-trips: implode(explode(value)) === value', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '-Xmx512m -Xms256m -Dfoo=bar',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('-Xmx512m -Xms256m -Dfoo=bar');
+    });
+  });
+
+  describe('TC-2: JVM arguments, with quotes – delimiter " -"', () => {
+    const DELIMITER = ' -';
+
+    it('keeps a quoted value containing a space on one line when exploding', () => {
+      renderTextarea({
+        value: '-Dfoo="bar baz" -Xmx512m',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('-Dfoo="bar baz"\n-Xmx512m');
+    });
+
+    it.failing(
+      'keeps a quoted value containing the delimiter on one line when exploding',
+      () => {
+        renderTextarea({
+          value: '-Dfoo="has -dash inside" -Xmx512m',
+          delimiter: DELIMITER,
+        });
+        fireEvent.focus(getTextarea());
+        expect(getTextarea()).toHaveValue('-Dfoo="has -dash inside"\n-Xmx512m');
+      }
+    );
+
+    it('round-trips: implode(explode(value)) === value for quoted arg containing delimiter', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '-Dfoo="has -dash inside" -Xmx512m',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith(
+        '-Dfoo="has -dash inside" -Xmx512m'
+      );
+    });
+
+    it('round-trips: implode(explode(value)) === value for quoted args', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '-Dfoo="bar baz" -Xmx512m',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('-Dfoo="bar baz" -Xmx512m');
+    });
+
+    it('unbalanced quote: splits on the delimiter as if no quote, does not throw', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '-Dfoo="bad -Xmx512m',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      // Unbalanced quote is treated as a literal character; split proceeds normally
+      expect(getTextarea()).toHaveValue('-Dfoo="bad\n-Xmx512m');
+      fireEvent.blur(getTextarea());
+      // Round-trip: original value is preserved
+      expect(onChange).toHaveBeenCalledWith('-Dfoo="bad -Xmx512m');
+    });
+
+    it('pasted JVM args with quoted value explode correctly', () => {
+      const onChange = jest.fn();
+      renderTextarea({ value: '', delimiter: DELIMITER, onChange });
+      const textarea = getTextarea();
+      fireEvent.focus(textarea);
+      fireEvent.paste(textarea);
+      fireEvent.change(textarea, {
+        target: { value: '-Dfoo="bar baz" -Xmx512m' },
+      });
+      expect(textarea).toHaveValue('-Dfoo="bar baz"\n-Xmx512m');
+      expect(onChange).toHaveBeenCalledWith('-Dfoo="bar baz" -Xmx512m');
+    });
+  });
+
+  describe('TC-3: environment variables, no quotes – delimiter " "', () => {
+    const DELIMITER = ' ';
+
+    it('explodes env vars on focus', () => {
+      renderTextarea({ value: 'FOO=bar BAZ=qux', delimiter: DELIMITER });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('FOO=bar\nBAZ=qux');
+    });
+
+    it('implodes on blur', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'FOO=bar BAZ=qux',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('FOO=bar BAZ=qux');
+    });
+
+    it('round-trips: implode(explode(value)) === value', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'FOO=bar BAZ=qux',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('FOO=bar BAZ=qux');
+    });
+  });
+
+  describe('TC-4: environment variables, with quotes – delimiter " "', () => {
+    const DELIMITER = ' ';
+
+    it.failing(
+      'keeps a double-quoted value containing a space on one line',
+      () => {
+        renderTextarea({
+          value: 'FOO="hello world" BAZ=qux',
+          delimiter: DELIMITER,
+        });
+        fireEvent.focus(getTextarea());
+        expect(getTextarea()).toHaveValue('FOO="hello world"\nBAZ=qux');
+      }
+    );
+
+    it.failing(
+      'keeps a single-quoted value containing a space on one line',
+      () => {
+        renderTextarea({
+          value: "FOO='hello world' BAZ=qux",
+          delimiter: DELIMITER,
+        });
+        fireEvent.focus(getTextarea());
+        expect(getTextarea()).toHaveValue("FOO='hello world'\nBAZ=qux");
+      }
+    );
+
+    it('round-trips: implode(explode(value)) === value for quoted env vars', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'FOO="hello world" BAZ=qux',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('FOO="hello world" BAZ=qux');
+    });
+
+    it('unbalanced quote: splits on the delimiter as if no quote, does not throw', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'FOO="bad BAZ=qux',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      // Unbalanced quote is treated as a literal character; split proceeds normally
+      expect(getTextarea()).toHaveValue('FOO="bad\nBAZ=qux');
+      fireEvent.blur(getTextarea());
+      // Round-trip: original value is preserved
+      expect(onChange).toHaveBeenCalledWith('FOO="bad BAZ=qux');
+    });
+  });
+
+  describe('TC-5: Python packages, no quotes – delimiter " "', () => {
+    const DELIMITER = ' ';
+
+    it('explodes package list on focus', () => {
+      renderTextarea({
+        value: 'numpy==1.24 pandas>=2.0 scipy[extra]',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue(
+        'numpy==1.24\npandas>=2.0\nscipy[extra]'
+      );
+    });
+
+    it('implodes on blur', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'numpy==1.24 pandas>=2.0 scipy[extra]',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith(
+        'numpy==1.24 pandas>=2.0 scipy[extra]'
+      );
+    });
+
+    it('does not treat square brackets as quotes', () => {
+      renderTextarea({
+        value: 'scipy[extra] numpy',
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('scipy[extra]\nnumpy');
+    });
+
+    it('round-trips: implode(explode(value)) === value', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: 'numpy==1.24 pandas>=2.0 scipy[extra]',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith(
+        'numpy==1.24 pandas>=2.0 scipy[extra]'
+      );
+    });
+  });
+
+  describe('TC-6: extra classpaths, no quotes – delimiter " "', () => {
+    const DELIMITER = ' ';
+
+    it('explodes classpath entries on focus', () => {
+      renderTextarea({ value: '/a/b /c/d', delimiter: DELIMITER });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('/a/b\n/c/d');
+    });
+
+    it('implodes on blur', () => {
+      const onChange = jest.fn();
+      renderTextarea({ value: '/a/b /c/d', delimiter: DELIMITER, onChange });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('/a/b /c/d');
+    });
+
+    it('round-trips: implode(explode(value)) === value', () => {
+      const onChange = jest.fn();
+      renderTextarea({ value: '/a/b /c/d', delimiter: DELIMITER, onChange });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('/a/b /c/d');
+    });
+  });
+
+  describe('TC-7: extra classpaths, with quotes – delimiter " "', () => {
+    const DELIMITER = ' ';
+
+    it.failing(
+      'keeps a quoted path containing spaces on one line when exploding',
+      () => {
+        renderTextarea({
+          value: '"/a/path with spaces" /c/d',
+          delimiter: DELIMITER,
+        });
+        fireEvent.focus(getTextarea());
+        expect(getTextarea()).toHaveValue('"/a/path with spaces"\n/c/d');
+      }
+    );
+
+    it('round-trips: implode(explode(value)) === value for quoted paths', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: '"/a/path with spaces" /c/d',
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith('"/a/path with spaces" /c/d');
+    });
+
+    it('unbalanced quote: splits on the delimiter as if no quote, does not throw', () => {
+      const onChange = jest.fn();
+      renderTextarea({ value: '"/bad /c/d', delimiter: DELIMITER, onChange });
+      fireEvent.focus(getTextarea());
+      // Unbalanced quote is treated as a literal character; split proceeds normally
+      expect(getTextarea()).toHaveValue('"/bad\n/c/d');
+      fireEvent.blur(getTextarea());
+      // Round-trip: original value is preserved
+      expect(onChange).toHaveBeenCalledWith('"/bad /c/d');
+    });
+  });
+
+  describe('TC-8: no delimiter', () => {
+    it('does not transform value on focus', () => {
+      renderTextarea({ value: 'assignment policy params' });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue('assignment policy params');
+    });
+
+    it('passes quoted values through to onChange unchanged', () => {
+      const onChange = jest.fn();
+      renderTextarea({ onChange });
+      fireEvent.change(getTextarea(), {
+        target: { value: 'KEY="value with spaces"' },
+      });
+      expect(onChange).toHaveBeenCalledWith('KEY="value with spaces"');
+    });
+
+    it('passes newlines through to onChange unchanged', () => {
+      const onChange = jest.fn();
+      renderTextarea({ onChange });
+      fireEvent.change(getTextarea(), { target: { value: 'line1\nline2' } });
+      expect(onChange).toHaveBeenCalledWith('line1\nline2');
+    });
+  });
 });
