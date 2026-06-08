@@ -166,7 +166,7 @@ class Popper extends Component<PopperProps, PopperState> {
   // This is the request animation frame handle number
   rAF: number;
 
-  updateContainerClassName(
+  private updateContainerClassName(
     containerClassName: string,
     isMaximized: boolean
   ): void {
