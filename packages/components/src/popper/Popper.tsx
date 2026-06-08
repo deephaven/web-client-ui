@@ -25,6 +25,7 @@ import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 const POPPER_CLASS_NAME = 'popper';
+const POPPER_CONTAINER_CLASS_NAME = 'popper-container';
 
 const KEEP_IN_PARENT_OPTIONS: PopperOptions = {
   placement: 'bottom-end',
@@ -170,7 +171,7 @@ class Popper extends Component<PopperProps, PopperState> {
     isMaximized: boolean
   ): void {
     this.element.className = classNames(
-      'popper-container',
+      POPPER_CONTAINER_CLASS_NAME,
       containerClassName,
       {
         maximized: isMaximized,
