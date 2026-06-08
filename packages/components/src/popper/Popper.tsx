@@ -61,6 +61,7 @@ interface PopperProps {
   options: PopperOptions;
   className: string;
   containerClassName: string;
+  isMaximized: boolean;
   timeout: number;
   onEntered: () => void;
   onExited: () => void;
@@ -83,6 +84,7 @@ class Popper extends Component<PopperProps, PopperState> {
     options: {},
     className: '',
     containerClassName: '',
+    isMaximized: false,
     timeout: ThemeExport.transitionMs,
     onEntered(): void {
       // no-op
@@ -108,7 +110,7 @@ class Popper extends Component<PopperProps, PopperState> {
     this.handleExit = this.handleExit.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
     this.element = document.createElement('div');
-    this.updateContainerClassName(props.containerClassName);
+    this.updateContainerClassName(props.containerClassName, props.isMaximized);
     this.container = React.createRef<HTMLDivElement>();
 
     // cancelAnimationFrame does nothing if the handle isn't recognized
@@ -124,11 +126,14 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   componentDidUpdate(prevProps: PopperProps): void {
-    const { isShown, containerClassName } = this.props;
+    const { isShown, containerClassName, isMaximized } = this.props;
     const { popper } = this.state;
 
-    if (prevProps.containerClassName !== containerClassName) {
-      this.updateContainerClassName(containerClassName);
+    if (
+      prevProps.containerClassName !== containerClassName ||
+      prevProps.isMaximized !== isMaximized
+    ) {
+      this.updateContainerClassName(containerClassName, isMaximized);
     }
 
     if (prevProps.isShown !== isShown) {
@@ -160,8 +165,17 @@ class Popper extends Component<PopperProps, PopperState> {
   // This is the request animation frame handle number
   rAF: number;
 
-  updateContainerClassName(containerClassName: string): void {
-    this.element.className = classNames('popper-container', containerClassName);
+  updateContainerClassName(
+    containerClassName: string,
+    isMaximized: boolean
+  ): void {
+    this.element.className = classNames(
+      'popper-container',
+      containerClassName,
+      {
+        maximized: isMaximized,
+      }
+    );
   }
 
   /** Goes through an element and it's parents until the first visible element is found */

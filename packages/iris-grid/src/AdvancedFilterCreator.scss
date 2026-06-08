@@ -170,14 +170,8 @@ $advanced-filter-maximized-height: 85vh;
   }
 }
 
-// Maximized state: override popper.js inline position so the dialog fills the viewport.
-// !important is required because popper.js sets position/top/left/transform as inline styles.
-.popper-container.advanced-filter-menu-popper-maximized {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-
+// Maximized state dimensions for the advanced filter dialog.
+.popper-container.maximized {
   .advanced-filter-creator {
     width: $advanced-filter-maximized-width !important;
     height: $advanced-filter-maximized-height !important;

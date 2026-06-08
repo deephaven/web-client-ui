@@ -5006,11 +5006,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               >
                 <Popper
                   className="advanced-filter-menu-popper"
-                  containerClassName={classNames({
-                    'advanced-filter-menu-popper-maximized':
-                      shownAdvancedFilter === columnIndex &&
-                      maximizedAdvancedFilter === columnIndex,
-                  })}
+                  isMaximized={
+                    shownAdvancedFilter === columnIndex &&
+                    maximizedAdvancedFilter === columnIndex
+                  }
                   onEntered={this.getAdvancedMenuOpenedHandler(columnIndex)}
                   onExited={() => {
                     this.handleAdvancedMenuClosed(columnIndex);
