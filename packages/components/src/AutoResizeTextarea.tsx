@@ -23,14 +23,72 @@ function implode(input: string): string {
     .join(' ');
 }
 
+/**
+ * Splits a string on a delimiter, respecting quoted spans.
+ * Delimiters that appear inside `"..."` or `'...'` are treated as literal
+ * characters and do not cause a split. Quotes are preserved in the returned
+ * tokens so the operation is lossless (suitable for display-only transformations
+ * where the original text must be recoverable).
+ *
+ * An unbalanced opening quote (no matching closing quote found ahead) is treated
+ * as a literal character and splitting proceeds normally.
+ *
+ * @param input The string to split.
+ * @param delimiter The delimiter to split on.
+ * @returns An array of tokens. Always contains at least one element.
+ */
+function splitOnDelimiter(input: string, delimiter: string): string[] {
+  // Walk the string character by character, tracking quoted spans so that
+  // delimiters inside "..." or '...' are not treated as split points.
+  // Quotes are preserved in the output (not stripped) so the round-trip is lossless.
+  // An unbalanced quote is treated as a literal character — splitting continues normally.
+  const tokens: string[] = [];
+  let current = '';
+  let quoteChar: '"' | "'" | null = null;
+  let i = 0;
+
+  while (i < input.length) {
+    const ch = input[i];
+
+    if (quoteChar !== null) {
+      // Inside a quoted span — accumulate until we hit the matching closing quote
+      current += ch;
+      if (ch === quoteChar) {
+        quoteChar = null;
+      }
+      i += 1;
+    } else if (ch === '"' || ch === "'") {
+      // Only treat as a quoted span if there is a matching closing quote ahead.
+      // An unbalanced quote is treated as a literal character so the delimiter
+      // logic continues to work normally.
+      const closingIdx = input.indexOf(ch, i + 1);
+      if (closingIdx !== -1) {
+        quoteChar = ch;
+      }
+      current += ch;
+      i += 1;
+    } else if (input.startsWith(delimiter, i)) {
+      // Delimiter found outside a quoted span — emit the current token and advance
+      tokens.push(current);
+      current = '';
+      i += delimiter.length;
+    } else {
+      // Plain character outside any quoted span and not part of the delimiter — accumulate it
+      current += ch;
+      i += 1;
+    }
+  }
+
+  tokens.push(current);
+  return tokens;
+}
+
 function explode(input: string, delimiter: string): string {
-  // split by delimiter, commonly " " or " -"
-  // strip empty strings (if delimiter is space, and there are multiple spaces in a row)
-  // and join with new line and a trimmed delimiter (get rid of leading spaces)
-  return input
-    .trim()
-    .split(delimiter)
-    .filter(string => string) // remove empty strings
+  // Split by delimiter (commonly " " or " -") respecting quoted spans, then
+  // join with newline + trimmed delimiter so each token appears on its own line.
+  // Empty tokens (e.g. from multiple consecutive delimiters) are filtered out.
+  return splitOnDelimiter(input.trim(), delimiter)
+    .filter(token => token !== '') // remove empty strings
     .join(`\n${delimiter.trim()}`);
 }
 
