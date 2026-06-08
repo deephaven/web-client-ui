@@ -482,6 +482,50 @@ describe('AutoResizeTextarea', () => {
       expect(onChange).toHaveBeenCalledWith('FOO="hello world" BAZ=qux');
     });
 
+    it('keeps a double-quoted span containing a single quote on one line', () => {
+      // "it's" contains a single quote inside double quotes — must not break the span
+      renderTextarea({
+        value: `FOO="it's fine" BAZ=qux`,
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue(`FOO="it's fine"\nBAZ=qux`);
+    });
+
+    it('round-trips: double-quoted span containing a single quote', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: `FOO="it's fine" BAZ=qux`,
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith(`FOO="it's fine" BAZ=qux`);
+    });
+
+    it('keeps a single-quoted span containing a double quote on one line', () => {
+      // 'say "hello"' contains double quotes inside single quotes — must not break the span
+      renderTextarea({
+        value: `FOO='say "hello"' BAZ=qux`,
+        delimiter: DELIMITER,
+      });
+      fireEvent.focus(getTextarea());
+      expect(getTextarea()).toHaveValue(`FOO='say "hello"'\nBAZ=qux`);
+    });
+
+    it('round-trips: single-quoted span containing a double quote', () => {
+      const onChange = jest.fn();
+      renderTextarea({
+        value: `FOO='say "hello"' BAZ=qux`,
+        delimiter: DELIMITER,
+        onChange,
+      });
+      fireEvent.focus(getTextarea());
+      fireEvent.blur(getTextarea());
+      expect(onChange).toHaveBeenCalledWith(`FOO='say "hello"' BAZ=qux`);
+    });
+
     it('unbalanced quote: splits on the delimiter as if no quote, does not throw', () => {
       const onChange = jest.fn();
       renderTextarea({
