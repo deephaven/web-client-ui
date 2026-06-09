@@ -14,6 +14,7 @@ import { getCommandHistoryStorage, type RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
+import { type CoreConsoleSession } from '../ConsoleEvents';
 import './CommandHistoryPanel.scss';
 import Panel from './CorePanel';
 import { getDashboardSessionWrapper } from '../redux';
@@ -110,10 +111,11 @@ class CommandHistoryPanel extends Component<
     this.container.current?.restoreScrollPosition();
   }
 
-  handleSessionOpened(
-    session: dh.IdeSession,
-    { language, sessionId }: { language: string; sessionId: string }
-  ): void {
+  handleSessionOpened({
+    session,
+    language,
+    sessionId,
+  }: CoreConsoleSession): void {
     this.setState(
       {
         session,

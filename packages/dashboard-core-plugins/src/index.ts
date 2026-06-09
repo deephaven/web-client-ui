@@ -28,6 +28,7 @@ export * from './useGridLinker';
 export * from './useLoadTablePlugin';
 export * from './useTablePlugin';
 
+export * from './ConsoleEvents';
 export * from './events';
 export * from './panels';
 export * from './redux';
