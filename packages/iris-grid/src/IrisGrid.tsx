@@ -5459,6 +5459,7 @@ function renderCellInputComponent({
       <CellDropdownField
         className={className}
         disabled={disabled}
+        isQuickEdit={isQuickEdit}
         value={value}
         options={allowedValues}
         onChange={onChange}

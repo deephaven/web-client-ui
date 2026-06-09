@@ -10,6 +10,7 @@ export type CellDropdownFieldProps = {
   options: string[];
   className?: string;
   disabled?: boolean;
+  isQuickEdit?: boolean;
   value?: string;
   /** Called whenever the selected value changes. */
   onChange?: (value: string) => void;
@@ -36,6 +37,8 @@ export function CellDropdownField({
   options,
   className = '',
   disabled = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isQuickEdit = false,
   value: propsValue = '',
   onChange = EMPTY_FUNCTION,
   onCancel = EMPTY_FUNCTION,
@@ -101,6 +104,7 @@ export function CellDropdownField({
         menuWidth="max-content"
         aria-label="Cell value"
         isDisabled={disabled}
+        isQuiet
       >
         {options.map(option => (
           <Item key={option}>{option}</Item>
