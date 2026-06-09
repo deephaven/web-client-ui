@@ -1,6 +1,9 @@
 .cell-dropdown-field {
   position: absolute;
-  inset: -7px 0 0 3px;
+  // Compensate for Spectrum quiet Picker's internal padding so the button
+  // aligns visually with the cell boundary.
+  top: calc(-1 * var(--spectrum-picker-quiet-padding-top, 7px));
+  left: var(--spectrum-picker-quiet-border-side-width, 3px);
 
   .cell-dropdown-field-picker {
     width: 100%;
