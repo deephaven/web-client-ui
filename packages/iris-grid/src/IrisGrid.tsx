@@ -30,6 +30,7 @@ import {
 import {
   CellInputField,
   type CellInputFieldProps,
+  type ColumnRestriction,
   Grid,
   type GridMetrics,
   type GridMouseHandler,
@@ -153,6 +154,7 @@ import {
   DownloadServiceWorkerUtils,
 } from './sidebar';
 import CellDropdownField from './CellDropdownField';
+import type { StringListRestriction } from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import IrisGridModel from './IrisGridModel';
@@ -5448,16 +5450,18 @@ function renderCellInputComponent({
   onDone,
   onContextMenu,
   style,
-}: CellInputFieldProps & { columnRestriction?: string }): ReactNode {
+}: CellInputFieldProps & { columnRestriction?: ColumnRestriction }): ReactNode {
   if (
-    columnRestriction ===
+    columnRestriction?.type ===
     'io.deephaven.proto.backplane.grpc.StringListRestriction'
   ) {
+    const { allowedValues } = columnRestriction as StringListRestriction;
     return (
       <CellDropdownField
         className={className}
         disabled={disabled}
         value={value}
+        options={allowedValues}
         onChange={onChange}
         onCancel={onCancel}
         onDone={onDone}

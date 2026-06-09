@@ -56,6 +56,7 @@ import {
   TreeKeyHandler,
 } from './key-handlers';
 import CellInputField, { type CellInputFieldProps } from './CellInputField';
+import type { ColumnRestriction } from './GridModel';
 import PasteError from './errors/PasteError';
 import {
   type Coordinate,
@@ -144,7 +145,7 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Render the cell input field. Override to render a different component based on column restriction.
   renderCellInputComponent?: (
-    props: CellInputFieldProps & { columnRestriction?: string }
+    props: CellInputFieldProps & { columnRestriction?: ColumnRestriction }
   ) => ReactNode;
 
   // Optional state override to pass in to the metric and render state
@@ -281,7 +282,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       onDone,
       onContextMenu,
       style,
-    }: CellInputFieldProps & { columnRestriction?: string }): ReactNode => (
+    }: CellInputFieldProps & {
+      columnRestriction?: ColumnRestriction;
+    }): ReactNode => (
       <CellInputField
         selectionRange={selectionRange}
         className={className}

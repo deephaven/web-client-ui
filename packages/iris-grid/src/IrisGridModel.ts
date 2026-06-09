@@ -647,12 +647,20 @@ abstract class IrisGridModel<
     return null;
   }
 
-  getColumnRestriction(column: ModelIndex): string | undefined {
+  getColumnRestriction(column: ModelIndex): StringListRestriction | undefined {
     const c = this.columns[column];
     // Need update Column type for columnRestrictions to avoid using `as any`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (c as any)?.columnRestrictions?.[0]?.type;
+    return (c as any)?.columnRestrictions?.[0];
   }
 }
+
+/**
+ * Restriction type for columns whose values must come from a predefined list of strings.
+ */
+export type StringListRestriction = {
+  type: 'io.deephaven.proto.backplane.grpc.StringListRestriction';
+  allowedValues: string[];
+};
 
 export default IrisGridModel;

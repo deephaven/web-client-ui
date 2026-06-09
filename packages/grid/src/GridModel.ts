@@ -238,13 +238,22 @@ abstract class GridModel<
   }
 
   /**
-   *  Get the column restriction for a column, which can be used to determine what type of input field to render for cells in that column
-   * @param column the model index of the column to get the restriction for
-   * @returns the column restriction for the column, or undefined if there is no restriction
+   * Get the column restriction for a column, which can be used to determine
+   * what type of input component to render for cells in that column.
+   * @param column The model index of the column
+   * @returns The column restriction, or undefined if there is no restriction
    */
-  getColumnRestriction(column: ModelIndex): string | undefined {
+  getColumnRestriction(column: ModelIndex): ColumnRestriction | undefined {
     return undefined;
   }
 }
+
+/**
+ * Base type for a column restriction. Carries a `type` discriminator that
+ * can be used to narrow to a more specific restriction shape.
+ */
+export type ColumnRestriction = {
+  type: string;
+};
 
 export default GridModel;

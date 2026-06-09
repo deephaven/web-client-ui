@@ -5,10 +5,9 @@ import { Item, Picker, type ItemKey } from '@deephaven/components';
 import { type SELECTION_DIRECTION } from '@deephaven/grid';
 import './CellDropdownField.scss';
 
-// TODO: Replace with real options sourced from the column restriction values
-const PLACEHOLDER_OPTIONS = ['Option A', 'Option B', 'Option C'];
-
 export type CellDropdownFieldProps = {
+  /** The list of allowed values to display in the dropdown. */
+  options: string[];
   className?: string;
   disabled?: boolean;
   value?: string;
@@ -34,6 +33,7 @@ export type CellDropdownFieldProps = {
  * column restriction requires a constrained set of values.
  */
 export function CellDropdownField({
+  options,
   className = '',
   disabled = false,
   value: propsValue = '',
@@ -100,8 +100,9 @@ export function CellDropdownField({
         onFocusChange={handleFocusChange}
         menuWidth="max-content"
         aria-label="Cell value"
+        isDisabled={disabled}
       >
-        {PLACEHOLDER_OPTIONS.map(option => (
+        {options.map(option => (
           <Item key={option}>{option}</Item>
         ))}
       </Picker>

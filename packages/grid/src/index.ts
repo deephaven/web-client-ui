@@ -10,6 +10,7 @@ export * from './Grid';
 export * from './GridMetricCalculator';
 export * from './GridMetrics';
 export { default as GridModel } from './GridModel';
+export * from './GridModel';
 export * from './GridMouseHandler';
 export * from './GridRange';
 export * from './GridAxisRange';
