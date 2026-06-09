@@ -1,4 +1,4 @@
-import { type IrisGridModel } from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 
 /**
  * Transform applied to the model an IrisGrid host (panel or widget) builds,
