@@ -48,7 +48,8 @@ export function useIrisGridModel(
       return newModel;
     }
     try {
-      return await transformModel(newModel);
+      const transformedModel = await transformModel(newModel);
+      return transformedModel;
     } catch (e) {
       // The host owns the base model's lifecycle; if the transform rejects it
       // never returns a model for us to close, so close the base model here to

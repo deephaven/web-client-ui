@@ -566,7 +566,8 @@ export class IrisGridPanel extends PureComponent<
       transformModel != null
         ? Promise.resolve(makeModel()).then(async model => {
             try {
-              return await transformModel(model);
+              const transformedModel = await transformModel(model);
+              return transformedModel;
             } catch (e) {
               // The host owns the base model's lifecycle; if the transform
               // rejects it never returns a model for us to close, so close
