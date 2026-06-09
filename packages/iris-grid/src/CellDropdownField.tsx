@@ -98,6 +98,7 @@ export function CellDropdownField({
         UNSAFE_className="cell-dropdown-field-picker"
         selectedKey={value || null}
         autoFocus
+        defaultOpen
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onFocusChange={handleFocusChange}
