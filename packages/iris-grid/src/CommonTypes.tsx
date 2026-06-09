@@ -69,6 +69,15 @@ export type OptionItem = {
   isOn?: boolean;
   onChange?: () => void;
   /**
+   * Optional sort weight for positioning the item within the menu. Items
+   * are stably sorted by ascending `order`; an omitted `order` sinks the
+   * item to the end of the menu. Built-in items are numbered with a stride
+   * of 100 (Chart Builder `100` … Go to `1200`), so a plugin can slot an
+   * item between two built-ins (e.g. `250`) or before all of them with a
+   * smaller/negative value.
+   */
+  order?: number;
+  /**
    * Renderer for plugin-supplied sidebar pages. Built-in items leave
    * this undefined — the `IrisGrid` page switch renders them via
    * its existing `case OptionType.*` arms; the `default` case renders

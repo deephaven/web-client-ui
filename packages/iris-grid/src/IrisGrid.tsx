@@ -1235,6 +1235,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CHART_BUILDER,
           title: 'Chart Builder',
           icon: dhGraphLineUp,
+          order: 100,
         });
       }
       if (isOrganizeColumnsAvailable) {
@@ -1242,6 +1243,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.VISIBILITY_ORDERING_BUILDER,
           title: 'Organize Columns',
           icon: dhEye,
+          order: 200,
         });
       }
       if (isFormatColumnsAvailable) {
@@ -1249,6 +1251,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CONDITIONAL_FORMATTING,
           title: 'Conditional Formatting',
           icon: vsEdit,
+          order: 300,
         });
       }
       if (isCustomColumnsAvailable) {
@@ -1256,6 +1259,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CUSTOM_COLUMN_BUILDER,
           title: 'Custom Columns',
           icon: vsSplitHorizontal,
+          order: 400,
         });
       }
       if (isRollupAvailable) {
@@ -1263,6 +1267,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.ROLLUP_ROWS,
           title: 'Rollup Rows',
           icon: dhTriangleDownSquare,
+          order: 500,
         });
       }
       if (isTotalsAvailable) {
@@ -1270,6 +1275,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.AGGREGATIONS,
           title: 'Aggregate Columns',
           icon: vsSymbolOperator,
+          order: 600,
         });
       }
       if (isSelectDistinctAvailable) {
@@ -1277,6 +1283,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.SELECT_DISTINCT,
           title: 'Select Distinct Values',
           icon: vsRuby,
+          order: 700,
         });
       }
       if (isExportAvailable && canDownloadCsv) {
@@ -1284,6 +1291,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.TABLE_EXPORTER,
           title: 'Download CSV',
           icon: vsCloudDownload,
+          order: 800,
         });
       }
       if (hasAdvancedSettings) {
@@ -1291,6 +1299,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.ADVANCED_SETTINGS,
           title: 'Advanced Settings',
           icon: vsTools,
+          order: 900,
         });
       }
       optionItems.push({
@@ -1300,6 +1309,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         icon: vsFilter,
         isOn: isFilterBarShown,
         onChange: toggleFilterBarAction.action,
+        order: 1000,
       });
       if (canToggleSearch) {
         optionItems.push({
@@ -1309,6 +1319,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: vsSearch,
           isOn: showSearchBar,
           onChange: toggleSearchBarAction.action,
+          order: 1100,
         });
       }
       optionItems.push({
@@ -1318,6 +1329,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         icon: vsReply,
         isOn: showGotoRow,
         onChange: toggleGotoRowAction.action,
+        order: 1200,
       });
 
       return Object.freeze(optionItems);
@@ -1349,9 +1361,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
         return items;
       }
+      // Stably sort by ascending `order`. Items without an `order` sink to
+      // the end of the menu (default `Infinity`), while items with an `order`
+      // are positioned by their weight. Decorate-sort-undecorate guarantees
+      // stability regardless of the engine's sort implementation.
+      const sortedItems = transformedItems
+        .map((item, index) => ({ item, index }))
+        .sort(
+          (a, b) =>
+            (a.item.order ?? Infinity) - (b.item.order ?? Infinity) ||
+            a.index - b.index
+        )
+        .map(({ item }) => item);
       const keys = new Set<string>();
-      for (let i = 0; i < transformedItems.length; i += 1) {
-        const key = String(transformedItems[i].type);
+      for (let i = 0; i < sortedItems.length; i += 1) {
+        const key = String(sortedItems[i].type);
         if (keys.has(key)) {
           log.warn(
             `transformTableOptions produced duplicate type "${key}"; ` +
@@ -1361,7 +1385,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
         keys.add(key);
       }
-      return Object.freeze([...transformedItems]);
+      return Object.freeze(sortedItems);
     },
     { max: 1 }
   );

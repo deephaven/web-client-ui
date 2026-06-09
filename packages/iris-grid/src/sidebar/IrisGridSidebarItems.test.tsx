@@ -137,6 +137,100 @@ describe('IrisGrid transformTableOptions prop', () => {
     errorSpy.mockRestore();
   });
 
+  it('orders plugin items by their `order` weight relative to built-ins', () => {
+    const aboveItem: OptionItem = {
+      type: 'plugin:test:above',
+      title: 'Above Built-ins',
+      order: -1,
+    };
+    const belowItem: OptionItem = {
+      type: 'plugin:test:below',
+      title: 'Below Built-ins',
+      order: 1300,
+    };
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
+      ...defaults,
+      belowItem,
+      aboveItem,
+    ];
+    mountGrid({ transformTableOptions });
+    openMenu();
+    const titles = screen
+      .getAllByRole('menuitem')
+      .map(item => item.textContent ?? '');
+    const aboveIndex = titles.findIndex(t => t.includes('Above Built-ins'));
+    const belowIndex = titles.findIndex(t => t.includes('Below Built-ins'));
+    const quickFiltersIndex = titles.findIndex(t =>
+      t.includes('Quick Filters')
+    );
+    expect(aboveIndex).toBeGreaterThanOrEqual(0);
+    expect(belowIndex).toBeGreaterThanOrEqual(0);
+    expect(quickFiltersIndex).toBeGreaterThanOrEqual(0);
+    // Negative order floats above the built-ins, positive order sinks below.
+    expect(aboveIndex).toBeLessThan(quickFiltersIndex);
+    expect(belowIndex).toBeGreaterThan(quickFiltersIndex);
+  });
+
+  it('sorts items without an `order` to the end of the menu', () => {
+    const noOrderItem: OptionItem = {
+      type: 'plugin:test:noorder',
+      title: 'No Order Plugin',
+    };
+    const orderedItem: OptionItem = {
+      type: 'plugin:test:ordered',
+      title: 'Ordered Plugin',
+      order: 99999,
+    };
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
+      noOrderItem,
+      ...defaults,
+      orderedItem,
+    ];
+    mountGrid({ transformTableOptions });
+    openMenu();
+    const titles = screen
+      .getAllByRole('menuitem')
+      .map(item => item.textContent ?? '');
+    const noOrderIndex = titles.findIndex(t => t.includes('No Order Plugin'));
+    const orderedIndex = titles.findIndex(t => t.includes('Ordered Plugin'));
+    const goToIndex = titles.findIndex(t => t.includes('Go to'));
+    expect(noOrderIndex).toBeGreaterThanOrEqual(0);
+    expect(orderedIndex).toBeGreaterThanOrEqual(0);
+    expect(goToIndex).toBeGreaterThanOrEqual(0);
+    // The unordered item sinks to the very end, even past a high-`order` item
+    // and the last built-in.
+    expect(noOrderIndex).toBeGreaterThan(orderedIndex);
+    expect(noOrderIndex).toBeGreaterThan(goToIndex);
+    expect(noOrderIndex).toBe(titles.length - 1);
+  });
+
+  it('keeps the relative order of items that share the same `order`', () => {
+    const firstItem: OptionItem = {
+      type: 'plugin:test:first',
+      title: 'First Plugin',
+      order: 5,
+    };
+    const secondItem: OptionItem = {
+      type: 'plugin:test:second',
+      title: 'Second Plugin',
+      order: 5,
+    };
+    const transformTableOptions = (defaults: readonly OptionItem[]) => [
+      ...defaults,
+      firstItem,
+      secondItem,
+    ];
+    mountGrid({ transformTableOptions });
+    openMenu();
+    const titles = screen
+      .getAllByRole('menuitem')
+      .map(item => item.textContent ?? '');
+    const firstIndex = titles.findIndex(t => t.includes('First Plugin'));
+    const secondIndex = titles.findIndex(t => t.includes('Second Plugin'));
+    expect(firstIndex).toBeGreaterThanOrEqual(0);
+    expect(secondIndex).toBeGreaterThan(firstIndex);
+  });
+
   it('warns in development when the transform produces duplicate types', () => {
     const log = Log.module('IrisGrid');
     const warnSpy = jest.spyOn(log, 'warn').mockImplementation(() => {
