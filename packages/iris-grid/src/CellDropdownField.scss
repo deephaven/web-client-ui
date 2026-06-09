@@ -2,16 +2,35 @@
   position: absolute;
   // Compensate for Spectrum quiet Picker's internal padding so the button
   // aligns visually with the cell boundary.
-  top: calc(-1 * var(--spectrum-picker-quiet-padding-top, 7px));
+  // top: calc(-1 * var(--spectrum-picker-quiet-padding-top, 7px));
   left: var(--spectrum-picker-quiet-border-side-width, 3px);
   // Match the cell's row stripe background so the quiet Picker's transparent
   // background doesn't show the canvas beneath it.
   background-color: var(--grid-cell-bg);
+  // Clip to the cell row height; the Picker button is taller than the row.
+  overflow: hidden;
+
+  // Override Spectrum Picker sizing to match grid cell dimensions.
+  // --spectrum-dropdown-height drives the button block-size and internal padding.
+  --spectrum-dropdown-height: var(--grid-row-height, 20px);
+  // Remove Spectrum's minimum width so the Picker can be as narrow as the cell.
+  --spectrum-dropdown-quiet-min-width: 0;
+  --spectrum-dropdown-min-width: 0;
+  // Match the grid font size (Spectrum reads this variable for the label text).
+  --spectrum-dropdown-text-size: 12px;
 
   .cell-dropdown-field-picker {
     width: 100%;
     height: 100%;
     min-width: 0;
     min-height: 0;
+
+    // Force the inner button to fill the wrapper width.
+    // Spectrum does not stretch the quiet button by default.
+    button {
+      width: 100%;
+      // Override font-family: Spectrum sets this via an ancestor i18n class.
+      font-family: 'fira sans', sans-serif;
+    }
   }
 }

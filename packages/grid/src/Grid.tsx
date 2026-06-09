@@ -2316,6 +2316,7 @@ class Grid extends PureComponent<GridProps, GridState> {
             width: w - leftBorderOffset,
             height: h,
             '--grid-cell-bg': cellBackgroundColor,
+            '--grid-row-height': `${h}px`,
           } as CSSProperties)
         : { opacity: 0 };
 
