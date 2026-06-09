@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Item, Picker, type ItemKey } from '@deephaven/components';
@@ -43,6 +43,8 @@ export function CellDropdownField({
   style,
 }: CellDropdownFieldProps): JSX.Element {
   const [value, setValue] = useState(propsValue);
+  // Use a ref for `isCancelled` so the focus change handler always sees the latest value
+  const isCancelled = useRef(false);
 
   /**
    * Handle when the selected value changes in the Picker. Updates local state and calls onChange and onDone with the new value.
@@ -67,10 +69,24 @@ export function CellDropdownField({
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
+        isCancelled.current = true;
         onCancel();
       }
     },
     [onCancel]
+  );
+
+  /**
+   * Commit the current value when the Picker loses focus entirely (trigger + overlay).
+   * Skipped if the edit was already cancelled via Escape.
+   */
+  const handleFocusChange = useCallback(
+    (isFocused: boolean) => {
+      if (!isFocused && !isCancelled.current) {
+        onDone(value, { direction: null });
+      }
+    },
+    [onDone, value]
   );
 
   return (
@@ -78,9 +94,11 @@ export function CellDropdownField({
       <Picker
         UNSAFE_className="cell-dropdown-field-picker"
         selectedKey={value || null}
-        isDisabled={disabled}
+        autoFocus
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onFocusChange={handleFocusChange}
+        menuWidth="max-content"
         aria-label="Cell value"
       >
         {PLACEHOLDER_OPTIONS.map(option => (
