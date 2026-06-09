@@ -28,6 +28,8 @@ import {
   SlideTransition,
 } from '@deephaven/components';
 import {
+  CellInputField,
+  type CellInputFieldProps,
   Grid,
   type GridMetrics,
   type GridMouseHandler,
@@ -150,6 +152,7 @@ import {
   VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
 } from './sidebar';
+import CellDropdownField from './CellDropdownField';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import IrisGridModel from './IrisGridModel';
@@ -5229,6 +5232,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onSelectionChanged={this.handleSelectionChanged}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
+            renderCellInputComponent={renderCellInputComponent}
             stateOverride={stateOverride}
             theme={theme}
           >
@@ -5426,6 +5430,56 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       </div>
     );
   }
+}
+
+/**
+ * Renders the appropriate cell input component based on the column restriction type.
+ * Renders a CellDropdownField for StringListRestriction columns, otherwise CellInputField.
+ */
+function renderCellInputComponent({
+  columnRestriction,
+  selectionRange,
+  className,
+  disabled,
+  isQuickEdit,
+  value,
+  onChange,
+  onCancel,
+  onDone,
+  onContextMenu,
+  style,
+}: CellInputFieldProps & { columnRestriction?: string }): ReactNode {
+  if (
+    columnRestriction ===
+    'io.deephaven.proto.backplane.grpc.StringListRestriction'
+  ) {
+    return (
+      <CellDropdownField
+        className={className}
+        disabled={disabled}
+        value={value}
+        onChange={onChange}
+        onCancel={onCancel}
+        onDone={onDone}
+        style={style}
+      />
+    );
+  }
+
+  return (
+    <CellInputField
+      selectionRange={selectionRange}
+      className={className}
+      disabled={disabled}
+      isQuickEdit={isQuickEdit}
+      value={value}
+      onChange={onChange}
+      onCancel={onCancel}
+      onDone={onDone}
+      onContextMenu={onContextMenu}
+      style={style}
+    />
+  );
 }
 
 export default IrisGrid;

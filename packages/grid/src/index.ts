@@ -1,3 +1,5 @@
+export { default as CellInputField } from './CellInputField';
+export * from './CellInputField';
 export * from './ColumnHeaderGroup';
 export * from './EditableGridModel';
 export * from './DeletableGridModel';
