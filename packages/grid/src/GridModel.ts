@@ -236,6 +236,15 @@ abstract class GridModel<
   renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
     return 'text';
   }
+
+  /**
+   *  Get the column restriction for a column, which can be used to determine what type of input field to render for cells in that column
+   * @param column the model index of the column to get the restriction for
+   * @returns the column restriction for the column, or undefined if there is no restriction
+   */
+  getColumnRestriction(column: ModelIndex): string | undefined {
+    return undefined;
+  }
 }
 
 export default GridModel;

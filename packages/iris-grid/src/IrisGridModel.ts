@@ -646,6 +646,13 @@ abstract class IrisGridModel<
   tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     return null;
   }
+
+  getColumnRestriction(column: ModelIndex): string | undefined {
+    const c = this.columns[column];
+    // Need update Column type for columnRestrictions to avoid using `as any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (c as any)?.columnRestrictions?.[0]?.type;
+  }
 }
 
 export default IrisGridModel;

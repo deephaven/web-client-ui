@@ -55,7 +55,7 @@ import {
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
-import CellInputField from './CellInputField';
+import CellInputField, { type CellInputFieldProps } from './CellInputField';
 import PasteError from './errors/PasteError';
 import {
   type Coordinate,
@@ -141,6 +141,11 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Renderer for the grid canvas
   renderer?: GridRenderer;
+
+  // Render the cell input field. Override to render a different component based on column restriction.
+  renderCellInputComponent?: (
+    props: CellInputFieldProps & { columnRestriction?: string }
+  ) => ReactNode;
 
   // Optional state override to pass in to the metric and render state
   // Can be used to add custom properties as well
@@ -264,6 +269,32 @@ class Grid extends PureComponent<GridProps, GridState> {
         window.open(token.href, '_blank', 'noopener,noreferrer');
       }
     },
+    renderCellInputComponent: ({
+      columnRestriction: _columnRestriction,
+      selectionRange,
+      className,
+      disabled,
+      isQuickEdit,
+      value,
+      onChange,
+      onCancel,
+      onDone,
+      onContextMenu,
+      style,
+    }: CellInputFieldProps & { columnRestriction?: string }): ReactNode => (
+      <CellInputField
+        selectionRange={selectionRange}
+        className={className}
+        disabled={disabled}
+        isQuickEdit={isQuickEdit}
+        value={value}
+        onChange={onChange}
+        onCancel={onCancel}
+        onDone={onDone}
+        onContextMenu={onContextMenu}
+        style={style}
+      />
+    ),
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -2291,19 +2322,23 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? model.isValidForCell(modelColumn, modelRow, value)
         : false;
 
+    const { renderCellInputComponent } = this.props;
+    const columnRestriction =
+      modelColumn != null ? model.getColumnRestriction(modelColumn) : undefined;
+
     return (
-      <div style={wrapperStyle}>
-        <CellInputField
-          key={`${column},${row}`}
-          selectionRange={selectionRange}
-          className={classNames({ error: !isValid })}
-          onCancel={this.handleEditCellCancel}
-          onChange={this.handleEditCellChange}
-          onDone={this.handleEditCellCommit}
-          isQuickEdit={isQuickEdit}
-          style={inputStyle}
-          value={value}
-        />
+      <div key={`${column},${row}`} style={wrapperStyle}>
+        {renderCellInputComponent({
+          selectionRange,
+          className: classNames({ error: !isValid }),
+          onCancel: this.handleEditCellCancel,
+          onChange: this.handleEditCellChange,
+          onDone: this.handleEditCellCommit,
+          isQuickEdit,
+          style: inputStyle,
+          value,
+          columnRestriction,
+        })}
       </div>
     );
   }
