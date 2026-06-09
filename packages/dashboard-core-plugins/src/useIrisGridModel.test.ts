@@ -131,3 +131,28 @@ it('should return a memoized object for repeated calls', async () => {
   rerender(fetch);
   expect(result.current).toBe(fetchResult);
 });
+
+it('should apply transformModel to the built model', async () => {
+  const table = TestUtils.createMockProxy<dh.Table>();
+  const fetch = jest.fn(() => Promise.resolve(table));
+  const transformedModel = TestUtils.createMockProxy<IrisGridModel>();
+  const transformModel = jest.fn(() => transformedModel);
+  const { result } = renderHook(() => useIrisGridModel(fetch, transformModel));
+  await waitFor(() => expect(result.current.status).toBe('success'));
+  expect(transformModel).toHaveBeenCalledWith(mockModel);
+  expect((result.current as IrisGridModelFetchSuccessResult).model).toBe(
+    transformedModel
+  );
+});
+
+it('should close the base model if transformModel rejects', async () => {
+  const table = TestUtils.createMockProxy<dh.Table>();
+  const fetch = jest.fn(() => Promise.resolve(table));
+  const error = new Error('Transform failed');
+  const transformModel = jest.fn(() => Promise.reject(error));
+  (mockModel.close as jest.Mock).mockClear();
+  const { result } = renderHook(() => useIrisGridModel(fetch, transformModel));
+  await waitFor(() => expect(result.current.status).toBe('error'));
+  expect((result.current as IrisGridModelFetchErrorResult).error).toBe(error);
+  expect(mockModel.close).toHaveBeenCalledTimes(1);
+});

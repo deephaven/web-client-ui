@@ -87,3 +87,28 @@ it('forwards the transformTableOptions prop to IrisGrid.transformTableOptions', 
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBe(transformTableOptions);
 });
+
+it('applies transformModel to the model passed to IrisGrid', async () => {
+  MockIrisGrid.mockClear();
+  const table = TestUtils.createMockProxy<DhType.Table>({ columns: [] });
+  const fetch = jest.fn(() => Promise.resolve(table));
+  const store = createMockStore();
+  const transformedModel = TestUtils.createMockProxy({ columns: [] });
+  const transformModel = jest.fn(() => transformedModel);
+
+  const { queryByText } = render(
+    <Provider store={store}>
+      <ApiContext.Provider value={dh}>
+        <GridWidgetPlugin fetch={fetch} transformModel={transformModel} />
+      </ApiContext.Provider>
+    </Provider>
+  );
+
+  await waitFor(() => expect(queryByText('MockIrisGrid')).toBeInTheDocument());
+
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  const { calls } = MockIrisGrid.mock;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.model).toBe(transformedModel);
+});

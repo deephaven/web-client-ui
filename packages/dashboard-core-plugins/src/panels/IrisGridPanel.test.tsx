@@ -63,7 +63,8 @@ function makeIrisGridPanelWrapper(
   settings = { timeZone: 'America/New_York' },
   transformTableOptions:
     | ((defaults: readonly any[]) => readonly any[])
-    | undefined = undefined
+    | undefined = undefined,
+  transformModel: ((model: any) => any) | undefined = undefined
 ) {
   const panel = (
     <IrisGridPanel
@@ -81,6 +82,7 @@ function makeIrisGridPanelWrapper(
       loadPlugin={() => undefined}
       theme={undefined}
       transformTableOptions={transformTableOptions}
+      transformModel={transformModel}
     />
   );
   return render(panel);
@@ -190,4 +192,56 @@ it('passes undefined transformTableOptions when the prop is omitted', async () =
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBeUndefined();
+});
+
+it('applies transformModel to the built model before passing it to IrisGrid', async () => {
+  MockIrisGrid.mockClear();
+  const transformedModel = await makeMakeModel()();
+  const transformModel = jest.fn(() => transformedModel);
+  await act(() =>
+    makeIrisGridPanelWrapper(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      transformModel
+    )
+  );
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  const { calls } = MockIrisGrid.mock;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.model).toBe(transformedModel);
+});
+
+it('closes the base model if transformModel rejects', async () => {
+  MockIrisGrid.mockClear();
+  const baseModel = TestUtils.createMockProxy<any>({ close: jest.fn() });
+  const makeModel = jest.fn(() => Promise.resolve(baseModel));
+  const error = new Error('Transform failed');
+  const transformModel = jest.fn(() => Promise.reject(error));
+  const { container } = makeIrisGridPanelWrapper(
+    makeModel,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    transformModel
+  );
+  await expectNotLoading(container);
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  expect(baseModel.close).toHaveBeenCalledTimes(1);
 });

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -8,9 +8,12 @@ import {
   IrisGridCacheUtils,
   type IrisGridState,
   type IrisGridType,
+  type IrisGridThemeType,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
+  type IrisGridModel,
   type IrisGridTableOptionsWidgetProps,
+  type IrisGridModelWidgetProps,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -32,14 +35,30 @@ import { useTablePlugin } from './useTablePlugin';
 export function GridWidgetPlugin({
   fetch,
   transformTableOptions,
+  transformModel,
+  theme,
+  onModelChanged,
 }: WidgetComponentProps<DhType.Table> &
-  IrisGridTableOptionsWidgetProps): JSX.Element | null {
+  IrisGridTableOptionsWidgetProps &
+  IrisGridModelWidgetProps & {
+    /** Theme overrides forwarded to `<IrisGrid>`. */
+    theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
+    /** Called once the model is built, so middleware can observe it. */
+    onModelChanged?: (model: IrisGridModel) => void;
+  }): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
   const { eventHub } = useLayoutManager();
 
-  const fetchResult = useIrisGridModel(fetch);
+  const fetchResult = useIrisGridModel(fetch, transformModel);
   const model =
     fetchResult.status === 'success' ? fetchResult.model : undefined;
+
+  // Notify observers (e.g. middleware) when the built model changes.
+  useEffect(() => {
+    if (model != null) {
+      onModelChanged?.(model);
+    }
+  }, [model, onModelChanged]);
 
   const dh = useApi();
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
@@ -175,6 +194,7 @@ export function GridWidgetPlugin({
       inputFilters={inputFilters}
       customFilters={customFilters}
       transformTableOptions={transformTableOptions}
+      theme={theme}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}

@@ -215,3 +215,90 @@ and re-runs are driven by actual dependencies. Passing the model itself,
 or the full `IrisGrid` instance, is intentionally off the table: the
 surface is too large, too volatile, and (in the model's case)
 memoization-hostile.
+
+## Transforming the model
+
+Some plugins need more than a custom menu — they need to change the
+**model** the grid renders (e.g. wrap it in a proxy that can swap its
+inner model in response to a config page). For that there is a second,
+symmetric opt-in seam: the `transformModel` prop.
+
+Like `transformTableOptions`, it lives on an iris-grid-specific
+interface (`IrisGridModelWidgetProps`), not on the generic
+`WidgetComponentProps` / `WidgetPanelProps`, and is threaded down the
+middleware chain by the hosts that build the model for you
+(`IrisGridPanel`, `GridWidgetPlugin` / `useIrisGridModel`).
+
+```ts
+import { type IrisGridModelTransform } from '@deephaven/iris-grid';
+
+// (model: IrisGridModel) => IrisGridModel | Promise<IrisGridModel>
+const transformModel: IrisGridModelTransform = model =>
+  wrapInMyProxy(model);
+```
+
+The host builds the model from `fetch` as usual, then applies
+`transformModel` to whatever it built **before** handing it to
+`<IrisGrid>`. The returned model must be a drop-in for the input — the
+host owns its lifecycle and will `close()` whatever you return, so wrap
+rather than discard the model you were given. The transform may be async
+if it needs to await dependencies first.
+
+Rules:
+
+- `transformModel` must be **referentially stable**. It is applied when
+  the model is (re)built; an unstable transform would rebuild the model.
+  Memoize it with `useMemo` / `useCallback`.
+- It runs once per model build, not per render, so it is the right place
+  for one-time wrapping — not for per-render state.
+- This is why model construction stays in the host: the host keeps
+  ownership of `fetch`, error/loading state, and `close()`, while the
+  plugin only augments the result. A middleware using `transformModel`
+  can therefore render the wrapped `Component` and stay a **chained**
+  layer instead of taking over model construction and becoming terminal.
+
+### Publishing `transformModel` from middleware
+
+A middleware that needs both seams composes them the same way — run any
+upstream transform first, then layer your own — and passes both down to
+the `Component` it wraps:
+
+```tsx
+import { useMemo, type ComponentType } from 'react';
+import {
+  type IrisGridModelTransform,
+  type IrisGridModelWidgetProps,
+  type IrisGridTableOptionsWidgetProps,
+} from '@deephaven/iris-grid';
+
+function MyMiddleware({
+  Component,
+  transformModel,
+  transformTableOptions,
+  ...props
+}: WidgetMiddlewarePanelProps &
+  IrisGridModelWidgetProps &
+  IrisGridTableOptionsWidgetProps) {
+  const composedModel = useMemo<IrisGridModelTransform>(
+    () => async model => {
+      const base = transformModel != null ? await transformModel(model) : model;
+      return wrapInMyProxy(base);
+    },
+    [transformModel]
+  );
+
+  const Next = Component as ComponentType<
+    typeof props &
+      IrisGridModelWidgetProps &
+      IrisGridTableOptionsWidgetProps
+  >;
+  return (
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Next
+      {...props}
+      transformModel={composedModel}
+      transformTableOptions={transformTableOptions}
+    />
+  );
+}
+```

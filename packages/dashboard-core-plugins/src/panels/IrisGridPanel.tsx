@@ -49,6 +49,7 @@ import {
   type MouseHandlersProp,
   type GetMetricCalculatorType,
   type TableOptionsTransform,
+  type IrisGridModelTransform,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -179,6 +180,14 @@ export interface OwnProps extends DashboardPanelProps {
    * `transformTableOptions` snapshot).
    */
   onModelChanged?: (model: IrisGridModel) => void;
+
+  /**
+   * Transform applied to the model built by `makeModel` before it is handed
+   * to `IrisGrid`. Lets IrisGrid-aware middleware wrap the host-built model
+   * (e.g. in a proxy) without taking over model construction. Applied when
+   * the model is (re)built, so it must be referentially stable.
+   */
+  transformModel?: IrisGridModelTransform;
 }
 
 interface StateProps {
@@ -549,11 +558,25 @@ export class IrisGridPanel extends PureComponent<
       error: null,
       isDisconnected: false,
     });
-    const { makeModel } = this.props;
+    const { makeModel, transformModel } = this.props;
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    this.modelPromise = PromiseUtils.makeCancelable(makeModel(), resolved =>
+    const modelPromise =
+      transformModel != null
+        ? Promise.resolve(makeModel()).then(async model => {
+            try {
+              return await transformModel(model);
+            } catch (e) {
+              // The host owns the base model's lifecycle; if the transform
+              // rejects it never returns a model for us to close, so close
+              // the base model here to avoid leaking it.
+              model.close();
+              throw e;
+            }
+          })
+        : Promise.resolve(makeModel());
+    this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
       resolved.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
