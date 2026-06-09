@@ -154,10 +154,12 @@ import {
   DownloadServiceWorkerUtils,
 } from './sidebar';
 import CellDropdownField from './CellDropdownField';
-import type { StringListRestriction } from './IrisGridModel';
+import IrisGridModel, {
+  STRING_LIST_RESTRICTION_TYPE,
+  type StringListRestriction,
+} from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
-import IrisGridModel from './IrisGridModel';
 import {
   isPartitionedGridModel,
   type PartitionConfig,
@@ -5451,10 +5453,7 @@ function renderCellInputComponent({
   onContextMenu,
   style,
 }: CellInputFieldProps & { columnRestriction?: ColumnRestriction }): ReactNode {
-  if (
-    columnRestriction?.type ===
-    'io.deephaven.proto.backplane.grpc.StringListRestriction'
-  ) {
+  if (columnRestriction?.type === STRING_LIST_RESTRICTION_TYPE) {
     const { allowedValues } = columnRestriction as StringListRestriction;
     return (
       <CellDropdownField
