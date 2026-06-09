@@ -2281,7 +2281,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       allRowHeights,
     } = metrics;
 
-    const { activeCellSelectionBorderWidth } = this.getTheme();
+    const { activeCellSelectionBorderWidth, rowBackgroundColors, maxDepth } =
+      this.getTheme();
 
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
@@ -2294,16 +2295,28 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? activeCellSelectionBorderWidth
         : 0;
 
+    // Compute the stripe color for this visible row, mirroring how the canvas renderer draws row stripes
+    let cellBackgroundColor: string | undefined;
+    if (rowBackgroundColors) {
+      const colorSets = GridRenderer.getCachedBackgroundColors(
+        rowBackgroundColors,
+        maxDepth
+      );
+      const colorSet = colorSets[row % colorSets.length];
+      [cellBackgroundColor] = colorSet;
+    }
+
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
     const wrapperStyle: CSSProperties =
       x != null && y != null && w != null && h != null
-        ? {
+        ? ({
             position: 'absolute',
             left: gridX + x + leftBorderOffset,
             top: gridY + y,
             width: w - leftBorderOffset,
             height: h,
-          }
+            '--grid-cell-bg': cellBackgroundColor,
+          } as CSSProperties)
         : { opacity: 0 };
 
     let modelColumn;
