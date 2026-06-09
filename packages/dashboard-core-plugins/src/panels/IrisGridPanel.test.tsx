@@ -2,10 +2,7 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import {
-  IrisGridModelFactory,
-  IrisGridTableOptionsContext,
-} from '@deephaven/iris-grid';
+import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -64,9 +61,9 @@ function makeIrisGridPanelWrapper(
   client = new (dh as any).Client(),
   workspace = {},
   settings = { timeZone: 'America/New_York' },
-  sidebarExtensionValue: {
-    transformTableOptions?: (defaults: readonly any[]) => readonly any[];
-  } | null = null
+  transformTableOptions:
+    | ((defaults: readonly any[]) => readonly any[])
+    | undefined = undefined
 ) {
   const panel = (
     <IrisGridPanel
@@ -83,17 +80,10 @@ function makeIrisGridPanelWrapper(
       getDownloadWorker={() => undefined}
       loadPlugin={() => undefined}
       theme={undefined}
+      transformTableOptions={transformTableOptions}
     />
   );
-  return render(
-    sidebarExtensionValue == null ? (
-      panel
-    ) : (
-      <IrisGridTableOptionsContext.Provider value={sidebarExtensionValue}>
-        {panel}
-      </IrisGridTableOptionsContext.Provider>
-    )
-  );
+  return render(panel);
 }
 
 async function expectLoading(container) {
@@ -169,7 +159,7 @@ it('shows an error properly if table loading fails', async () => {
   expect(msg).toBeTruthy();
 });
 
-it('forwards IrisGridTableOptionsContext.transformTableOptions to IrisGrid.transformTableOptions', async () => {
+it('forwards the transformTableOptions prop to IrisGrid.transformTableOptions', async () => {
   MockIrisGrid.mockClear();
   const transformTableOptions = jest.fn(defaults => defaults);
   await act(() =>
@@ -184,7 +174,7 @@ it('forwards IrisGridTableOptionsContext.transformTableOptions to IrisGrid.trans
       undefined,
       undefined,
       undefined,
-      { transformTableOptions }
+      transformTableOptions
     )
   );
   const { calls } = MockIrisGrid.mock;
@@ -193,7 +183,7 @@ it('forwards IrisGridTableOptionsContext.transformTableOptions to IrisGrid.trans
   expect(lastProps.transformTableOptions).toBe(transformTableOptions);
 });
 
-it('passes undefined transformTableOptions when no context provider is present', async () => {
+it('passes undefined transformTableOptions when the prop is omitted', async () => {
   MockIrisGrid.mockClear();
   await act(() => makeIrisGridPanelWrapper());
   const { calls } = MockIrisGrid.mock;

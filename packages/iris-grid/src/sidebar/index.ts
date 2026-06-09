@@ -13,11 +13,9 @@ import { type FormattingRule } from './conditional-formatting/ConditionalFormatt
 import AdvancedSettingsType from './AdvancedSettingsType';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 import {
-  IrisGridTableOptionsContext,
-  type IrisGridTableOptionsExtension,
-  type TableOptionsExtensionProvider,
-} from './IrisGridTableOptionsContext';
-import { useTableOptionsExtension } from './useTableOptionsExtension';
+  type IrisGridTableOptionsWidgetProps,
+  type TableOptionsTransform,
+} from './IrisGridTableOptionsWidgetProps';
 
 export {
   AdvancedSettings,
@@ -34,10 +32,8 @@ export {
   VisibilityOrderingBuilder,
   AdvancedSettingsType,
   DownloadServiceWorkerUtils,
-  IrisGridTableOptionsContext,
-  useTableOptionsExtension,
-  type IrisGridTableOptionsExtension,
-  type TableOptionsExtensionProvider,
+  type IrisGridTableOptionsWidgetProps,
+  type TableOptionsTransform,
 };
 
 export type { FormattingRule as SidebarFormattingRule };

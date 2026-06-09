@@ -217,7 +217,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
     this.modelPromise = PromiseUtils.makeCancelable(
       modelPromise,
-      (model: IrisGridModel) => model.close()
+      (model: IrisGridModel) => {
+        // Don't close originalModel — it's the source-of-truth model owned
+        // by this proxy, not a transient transform result. Closing it would
+        // invalidate the underlying table for any consumer that later asks
+        // to swap back to it.
+        if (model !== this.originalModel) {
+          model.close();
+        }
+      }
     );
     this.modelPromise
       .then(model => {

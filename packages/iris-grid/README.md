@@ -29,18 +29,21 @@ extensible. Plugin authors can hide built-in items, relabel or reorder
 them, and add their own items that open a custom configuration page —
 without forking `IrisGrid`.
 
-There are two entry points, depending on where you sit in the tree:
+There is a single entry point: the `transformTableOptions` prop on
+`<IrisGrid>`. It is **opt-in** — it lives on the iris-grid-specific
+`IrisGridTableOptionsWidgetProps`, not on the generic
+`WidgetComponentProps` / `WidgetPanelProps`, so widgets that don't care
+about the Table Options menu never see it.
 
-1. **Direct prop** — pass `transformTableOptions` to `<IrisGrid>` when you
-   own the render site.
-2. **Context** — wrap any subtree in `IrisGridTableOptionsContext.Provider`
-   when you can't reach the `<IrisGrid>` directly (typical for
-   `WidgetMiddlewarePlugin` / `DashboardPlugin` authors). The panel hosts
-   that ship with Deephaven (`IrisGridPanel`, `GridWidgetPlugin`) read
-   the context and forward it to the prop for you.
-
-Both routes accept the same payload: an `IrisGridTableOptionsExtension`
-with an optional `transformTableOptions` transform.
+- **Own the render site?** Pass `transformTableOptions` straight to
+  `<IrisGrid>`.
+- **A `WidgetMiddlewarePlugin` that doesn't render `<IrisGrid>`
+  yourself?** Thread the prop down the middleware chain via the
+  `Component` you wrap, composing your own transform on top of the one
+  you received (see [Publishing from middleware](#publishing-from-middleware)).
+  The panel hosts that ship with Deephaven (`IrisGridPanel`,
+  `GridWidgetPlugin`) accept `transformTableOptions` as a prop and
+  forward it to `<IrisGrid>`.
 
 ### Writing a transform
 
@@ -103,42 +106,82 @@ export function ColumnInspectorPage({
 so a throw inside your page shows a small inline fallback instead of
 unmounting the whole grid.
 
-### Publishing via context (middleware pattern)
+### Publishing from middleware
 
 When you're a `WidgetMiddlewarePlugin` and don't render `<IrisGrid>`
-yourself, publish the extension through context:
+yourself, you receive `transformTableOptions` as a prop and pass a
+composed transform down to the `Component` (or panel) you wrap. Run the
+upstream transform first so contributions compose, then layer your own
+changes on top:
 
 ```tsx
+import { useMemo, type ComponentType } from 'react';
 import {
-  IrisGridTableOptionsContext,
-  type IrisGridTableOptionsExtension,
+  type IrisGridTableOptionsWidgetProps,
+  type TableOptionsTransform,
 } from '@deephaven/iris-grid';
-import { useContext, useMemo } from 'react';
 
-function MyMiddleware({ children }: { children: React.ReactNode }) {
-  const parent = useContext(IrisGridTableOptionsContext);
-  const value = useMemo<IrisGridTableOptionsExtension>(
-    () => ({
-      transformTableOptions: defaults => {
-        // Run the parent transform first so contributions compose.
-        const upstream = parent?.transformTableOptions?.(defaults) ?? defaults;
-        return [...upstream, myPluginItem];
-      },
-    }),
-    [parent]
+function makeMyTransform(
+  upstream: TableOptionsTransform | undefined
+): TableOptionsTransform {
+  return defaults => {
+    const base = upstream != null ? upstream(defaults) : defaults;
+    return [...base, myPluginItem];
+  };
+}
+
+function MyMiddleware({
+  Component,
+  transformTableOptions,
+  ...props
+}: WidgetMiddlewarePanelProps & IrisGridTableOptionsWidgetProps) {
+  const composedTransform = useMemo(
+    () => makeMyTransform(transformTableOptions),
+    [transformTableOptions]
   );
 
-  return (
-    <IrisGridTableOptionsContext.Provider value={value}>
-      {children}
-    </IrisGridTableOptionsContext.Provider>
-  );
+  const Next = Component as ComponentType<
+    typeof props & IrisGridTableOptionsWidgetProps
+  >;
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  return <Next {...props} transformTableOptions={composedTransform} />;
 }
 ```
 
-Composition rule: when multiple providers nest, each one should read
-the parent value via `useContext`, run its transform first, then layer
-its own changes on top — last writer wins for any given `OptionItem.type`.
+Composition rule: each middleware layer reads the `transformTableOptions`
+it was handed, runs that transform first, then layers its own changes on
+top — last writer wins for any given `OptionItem.type`.
+
+#### Model-aware menus
+
+The transform must stay **pure** — it only sees `defaults`, never the
+`IrisGridModel`. To make a menu react to model state (e.g. relabel an
+item once a pivot is active), take a **snapshot of the value you care
+about** from model events and fold it into the transform's identity:
+
+```tsx
+const [isPivot, setIsPivot] = useState(model.isPivot);
+useEffect(() => {
+  const handler = () => setIsPivot(model.isPivot);
+  model.addEventListener(SOME_MODEL_EVENT, handler);
+  return () => model.removeEventListener(SOME_MODEL_EVENT, handler);
+}, [model]);
+
+const composedTransform = useMemo(
+  () => makeMyTransform(transformTableOptions, isPivot),
+  [transformTableOptions, isPivot]
+);
+```
+
+Because `composedTransform`'s identity changes when the snapshot
+changes, `IrisGrid` re-runs it (its menu cache is keyed on
+`[defaults, transform]`). Keeping the snapshot in the dependency array —
+rather than reading `model.isPivot` inside the transform — is what keeps
+that memoization honest.
+
+To obtain the model when the host builds it for you, pass an
+`onModelChanged` callback to `IrisGridPanel` (called once the panel's
+model is ready).
 
 ### Full example
 
@@ -146,14 +189,16 @@ See the [`@deephaven/js-plugin-table-options-example`](https://github.com/deepha
 plugin for a working `WidgetMiddlewarePlugin` and `DashboardPlugin` that
 hides a built-in item and adds a `configPage`-backed page.
 
-### Future work
+### Why the transform doesn't take the model
 
-The transform signature today is `(defaults) => items` — it does **not**
-receive the `IrisGridModel` or grid state. State-aware menus
-(e.g. "hide an item unless rollup is active", "show *Reset filters* only
-when filters exist") should be implemented in the middleware: subscribe
-to model events in the `Provider`, recompute the extension, and let the
-transform itself stay pure.
+The transform signature is `(defaults) => items` — it deliberately does
+**not** receive the `IrisGridModel` or grid state. State-aware menus
+(e.g. "relabel an item once a pivot is active", "show *Reset filters*
+only when filters exist") are implemented in the middleware: subscribe
+to model events, snapshot the value you need, and fold that snapshot
+into the transform's identity (see
+[Model-aware menus](#model-aware-menus)). The transform itself stays
+pure.
 
 This isn't just about keeping the public surface small — it's also
 what keeps menu memoization honest. `IrisGrid` caches the computed
@@ -164,10 +209,9 @@ identity does not change when `isExpandable`, `filter`, `sorts`, or
 `isRollup` flip, so any plugin that read those fields would silently
 return stale items until something unrelated invalidated the cache.
 
-If a model-aware transform proves necessary, the planned evolution is
-to pass a **curated snapshot of values** as the second argument —
-something like `(defaults, { isRollup, hasFilters, columnCount, ... }) => items`
-— so the memo key changes when those values change and re-runs are
-driven by actual dependencies. Passing the model itself, or the full
-`IrisGrid` instance, is intentionally off the table: the surface is
-too large, too volatile, and (in the model's case) memoization-hostile.
+By passing a **curated snapshot of values** through the transform's
+closure instead, the memo key changes exactly when those values change
+and re-runs are driven by actual dependencies. Passing the model itself,
+or the full `IrisGrid` instance, is intentionally off the table: the
+surface is too large, too volatile, and (in the model's case)
+memoization-hostile.

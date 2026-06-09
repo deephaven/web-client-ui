@@ -176,7 +176,7 @@ import {
   type AggregationSettings,
 } from './sidebar/aggregations/Aggregations';
 import { type ChartBuilderSettings } from './sidebar/ChartBuilder';
-import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import type AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type UIRollupConfig } from './sidebar/RollupRows';
 import {
   type Action,
@@ -1400,35 +1400,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (
       columns: readonly DhType.Column[],
       aggregations: readonly Aggregation[]
-    ): OperationMap => {
-      const operationMap: OperationMap = {};
-      aggregations
-        .filter(
-          (a: Aggregation) => !AggregationUtils.isRollupOperation(a.operation)
-        )
-        .forEach(({ operation, selected, invert }) => {
-          AggregationUtils.getOperationColumnNames(
-            columns,
-            operation,
-            selected,
-            invert
-          ).forEach(name => {
-            const newOperations = [...(operationMap[name] ?? []), operation];
-            operationMap[name] = Object.freeze(newOperations);
-          });
-        });
-      return operationMap;
-    },
+    ): OperationMap => IrisGridUtils.getOperationMap(columns, aggregations),
     { max: 1 }
   );
 
   getOperationOrder = memoize(
     (aggregations: readonly Aggregation[]): AggregationOperation[] =>
-      aggregations
-        .map((a: Aggregation) => a.operation)
-        .filter(
-          (o: AggregationOperation) => !AggregationUtils.isRollupOperation(o)
-        ),
+      IrisGridUtils.getOperationOrder(aggregations),
     { max: 1 }
   );
 
@@ -1493,31 +1471,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: readonly DhType.Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
-    ): UITotalsTableConfig | null => {
-      if ((config?.columns?.length ?? 0) > 0) {
-        // If we've got rollups, then aggregations are applied as part of that...
-        return null;
-      }
-
-      // Filter out aggregations without any columns actually selected
-      const aggregations = aggregationSettings.aggregations.filter(
-        agg => agg.selected.length > 0 || agg.invert
-      );
-      if (aggregations.length === 0) {
-        // We don't actually have any aggregations set, don't bother
-        return null;
-      }
-
-      const operationMap = this.getOperationMap(columns, aggregations);
-      const operationOrder = this.getOperationOrder(aggregations);
-
-      return {
-        operationMap,
-        operationOrder,
-        showOnTop: aggregationSettings.showOnTop,
-        defaultOperation: AggregationOperation.SKIP,
-      } as UITotalsTableConfig;
-    },
+    ): UITotalsTableConfig | null =>
+      IrisGridUtils.getModelTotalsConfig(columns, config, aggregationSettings),
     { max: 1 }
   );
 

@@ -10,7 +10,7 @@ import {
   type IrisGridType,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
-  useTableOptionsExtension,
+  type IrisGridTableOptionsWidgetProps,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -31,7 +31,9 @@ import { useTablePlugin } from './useTablePlugin';
 
 export function GridWidgetPlugin({
   fetch,
-}: WidgetComponentProps<DhType.Table>): JSX.Element | null {
+  transformTableOptions,
+}: WidgetComponentProps<DhType.Table> &
+  IrisGridTableOptionsWidgetProps): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
   const { eventHub } = useLayoutManager();
 
@@ -143,8 +145,6 @@ export function GridWidgetPlugin({
     ]);
     return [...columnSet];
   }, [linkerAlwaysFetchColumns, filterFetchColumns]);
-
-  const { transformTableOptions } = useTableOptionsExtension();
 
   if (fetchResult.status === 'loading') {
     return (
