@@ -5441,7 +5441,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
  * Renders a CellDropdownField for StringListRestriction columns, otherwise CellInputField.
  */
 function renderCellInputComponent({
-  columnRestriction,
+  columnRestrictions,
   selectionRange,
   className,
   disabled,
@@ -5452,9 +5452,15 @@ function renderCellInputComponent({
   onDone,
   onContextMenu,
   style,
-}: CellInputFieldProps & { columnRestriction?: ColumnRestriction }): ReactNode {
-  if (columnRestriction?.type === STRING_LIST_RESTRICTION_TYPE) {
-    const { allowedValues } = columnRestriction as StringListRestriction;
+}: CellInputFieldProps & {
+  columnRestrictions: ColumnRestriction[];
+}): ReactNode {
+  // If there is exactly one column restriction and it is a StringListRestriction, render a dropdown field with the allowed values as options.
+  if (
+    columnRestrictions.length === 1 &&
+    columnRestrictions[0].type === STRING_LIST_RESTRICTION_TYPE
+  ) {
+    const { allowedValues } = columnRestrictions[0] as StringListRestriction;
     return (
       <CellDropdownField
         className={className}
@@ -5470,6 +5476,7 @@ function renderCellInputComponent({
     );
   }
 
+  // For all other cases, render a standard cell input field.
   return (
     <CellInputField
       selectionRange={selectionRange}

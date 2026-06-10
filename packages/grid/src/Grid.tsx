@@ -145,7 +145,7 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Render the cell input field. Override to render a different component based on column restriction.
   renderCellInputComponent?: (
-    props: CellInputFieldProps & { columnRestriction?: ColumnRestriction }
+    props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
   ) => ReactNode;
 
   // Optional state override to pass in to the metric and render state
@@ -271,7 +271,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     },
     renderCellInputComponent: ({
-      columnRestriction: _columnRestriction,
+      columnRestrictions: _columnRestrictions,
       selectionRange,
       className,
       disabled,
@@ -283,7 +283,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       onContextMenu,
       style,
     }: CellInputFieldProps & {
-      columnRestriction?: ColumnRestriction;
+      columnRestrictions: ColumnRestriction[];
     }): ReactNode => (
       <CellInputField
         selectionRange={selectionRange}
@@ -2340,8 +2340,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         : false;
 
     const { renderCellInputComponent } = this.props;
-    const columnRestriction =
-      modelColumn != null ? model.getColumnRestriction(modelColumn) : undefined;
+    const columnRestrictions =
+      modelColumn != null ? model.getColumnRestriction(modelColumn) : [];
 
     return (
       <div key={`${column},${row}`} style={wrapperStyle}>
@@ -2354,7 +2354,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           isQuickEdit,
           style: inputStyle,
           value,
-          columnRestriction,
+          columnRestrictions,
         })}
       </div>
     );
