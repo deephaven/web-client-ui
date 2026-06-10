@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
+
+### Features
+
+- DH-19720: Make Web Advanced Filter Dialog Maximizable ([#2694](https://github.com/deephaven/web-client-ui/issues/2694)) ([c19eda0](https://github.com/deephaven/web-client-ui/commit/c19eda07f41aafdee0231d81700f3ef4fc579623))
+
+### Bug Fixes
+
+- DH-22803: Update AutoResizeTextarea to handle quoted values ([#2696](https://github.com/deephaven/web-client-ui/issues/2696)) ([76bb1d0](https://github.com/deephaven/web-client-ui/commit/76bb1d0183961b1141aa3ed9b21a997300e07a61))
+
 ## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
 
 ### Bug Fixes
