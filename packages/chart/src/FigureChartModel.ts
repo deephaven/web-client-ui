@@ -791,8 +791,9 @@ class FigureChartModel extends ChartModel {
 
   /**
    * Coerce a filter value to the appropriate type based on column type.
-   * Input filters always provide string values, but OneClick expects the
+   * Input filter controls always provide string values, but OneClick expects the
    * native type (e.g. number for numeric columns) to match partition keys.
+   * Linkers provide the raw value, so that value should be returned as is.
    */
   private coerceFilterValue(value: unknown, columnType: string): unknown {
     if (value == null) {
