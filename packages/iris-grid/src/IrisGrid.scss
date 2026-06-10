@@ -149,6 +149,14 @@ $cell-invalid-box-shadow:
         }
       }
     }
+
+    .cell-dropdown-field {
+      box-shadow: $cell-box-shadow;
+
+      &.error {
+        box-shadow: $cell-invalid-box-shadow;
+      }
+    }
   }
 }
 
