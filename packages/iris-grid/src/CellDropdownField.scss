@@ -4,6 +4,7 @@
   // aligns visually with the cell boundary.
   left: var(--spectrum-picker-quiet-border-side-width, 3px);
   right: 0;
+  padding-left: 5px;
   // Match the cell's row stripe background so the quiet Picker's transparent
   // background doesn't show the canvas beneath it.
   background-color: var(--grid-cell-bg);
