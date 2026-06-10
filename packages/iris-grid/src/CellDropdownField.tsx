@@ -102,7 +102,6 @@ export function CellDropdownField({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onFocusChange={handleFocusChange}
-        menuWidth="max-content"
         aria-label="Cell value"
         isDisabled={disabled}
         isQuiet
