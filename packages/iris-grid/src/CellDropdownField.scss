@@ -2,7 +2,6 @@
   position: absolute;
   // Compensate for Spectrum quiet Picker's internal padding so the button
   // aligns visually with the cell boundary.
-  // top: calc(-1 * var(--spectrum-picker-quiet-padding-top, 7px));
   left: var(--spectrum-picker-quiet-border-side-width, 3px);
   right: 0;
   // Match the cell's row stripe background so the quiet Picker's transparent
