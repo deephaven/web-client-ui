@@ -51,12 +51,13 @@ function SlideTransition({
   // current child before CSSTransition triggers the enter/exit animation.
   // (Keying on `in` rather than `children` avoids re-creating the ref callback
   // on every render, which would needlessly detach/re-attach the ref.)
+  const { in: inProp } = props;
+
   const setRef = useCallback(
     (node: HTMLElement | null) => {
       nodeRef.current = (node?.firstElementChild as HTMLElement | null) ?? null;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.in]
+    [inProp]
   );
 
   return (
