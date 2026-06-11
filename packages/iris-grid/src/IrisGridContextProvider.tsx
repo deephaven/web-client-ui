@@ -16,7 +16,7 @@ import CellInputRendererContext, {
  */
 export type IrisGridThemeContextValue = IrisGridThemeType;
 
-export const IrisGridThemeContext = createContext<{
+export const IrisGridContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
   cellInputRendererRegistry: CellInputRendererRegistry;
@@ -25,7 +25,7 @@ export const IrisGridThemeContext = createContext<{
   density: 'regular',
   cellInputRendererRegistry: DEFAULT_REGISTRY,
 });
-IrisGridThemeContext.displayName = 'IrisGridThemeContext';
+IrisGridContext.displayName = 'IrisGridContext';
 
 /**
  * Provides the IrisGrid theme and cell input renderer registry to all
@@ -59,8 +59,8 @@ export function IrisGridContextProvider({
   );
 
   return (
-    <IrisGridThemeContext.Provider value={contextValue}>
+    <IrisGridContext.Provider value={contextValue}>
       {children}
-    </IrisGridThemeContext.Provider>
+    </IrisGridContext.Provider>
   );
 }

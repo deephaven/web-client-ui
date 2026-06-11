@@ -196,7 +196,7 @@ import {
   type UITotalsTableConfig,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
-import { IrisGridThemeContext } from './IrisGridContextProvider';
+import { IrisGridContext } from './IrisGridContextProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -498,10 +498,10 @@ export interface IrisGridState {
 }
 
 class IrisGrid extends Component<IrisGridProps, IrisGridState> {
-  static contextType = IrisGridThemeContext;
+  static contextType = IrisGridContext;
 
   // eslint-disable-next-line react/static-property-placement, react/sort-comp
-  declare context: React.ContextType<typeof IrisGridThemeContext>;
+  declare context: React.ContextType<typeof IrisGridContext>;
 
   static minDebounce = 150;
 
