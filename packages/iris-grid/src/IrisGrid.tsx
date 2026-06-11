@@ -29,7 +29,6 @@ import {
 } from '@deephaven/components';
 import {
   Grid,
-  type CellInputRendererRegistry,
   type GridMetrics,
   type GridMouseHandler,
   GridRange,
@@ -197,7 +196,7 @@ import {
   type UITotalsTableConfig,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
-import { IrisGridThemeContext } from './IrisGridThemeProvider';
+import { IrisGridThemeContext } from './IrisGridContextProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -391,14 +390,6 @@ export interface IrisGridProps {
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
 
-  /**
-   * Registry of cell input renderer functions keyed by column restriction type.
-   * Passed directly to Grid, which performs the lookup at render time.
-   * Defaults to DHC's built-in registry (StringListRestriction → CellDropdownField).
-   * Use CellInputRendererContext to supply this automatically from context.
-   */
-  cellInputRendererRegistry?: CellInputRendererRegistry;
-
   density?: 'compact' | 'regular' | 'spacious';
 
   getMetricCalculator: GetMetricCalculatorType;
@@ -587,7 +578,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     getMetricCalculator: (
       ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
     ): IrisGridMetricCalculator => new IrisGridMetricCalculator(...args),
-    cellInputRendererRegistry: DEFAULT_REGISTRY,
   } satisfies Partial<IrisGridProps>;
 
   constructor(props: IrisGridProps) {
@@ -4674,8 +4664,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
-      cellInputRendererRegistry,
     } = this.props;
+    const { cellInputRendererRegistry } = this.context;
     const {
       metricCalculator,
       metrics,
@@ -5241,7 +5231,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onSelectionChanged={this.handleSelectionChanged}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
-            cellInputRendererRegistry={cellInputRendererRegistry}
+            cellInputRendererRegistry={
+              cellInputRendererRegistry ?? DEFAULT_REGISTRY
+            }
             stateOverride={stateOverride}
             theme={theme}
           >

@@ -1,9 +1,13 @@
 import { useTheme } from '@deephaven/components';
-import { createContext, type ReactNode, useMemo } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import { type CellInputRendererRegistry } from '@deephaven/grid';
 import {
   createDefaultIrisGridTheme,
   type IrisGridThemeType,
 } from './IrisGridTheme';
+import CellInputRendererContext, {
+  DEFAULT_REGISTRY,
+} from './CellInputRendererContext';
 
 /**
  * The context value for the IrisGridThemeProvider.
@@ -15,20 +19,32 @@ export type IrisGridThemeContextValue = IrisGridThemeType;
 export const IrisGridThemeContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
-}>({ theme: null, density: 'regular' });
+  cellInputRendererRegistry: CellInputRendererRegistry;
+}>({
+  theme: null,
+  density: 'regular',
+  cellInputRendererRegistry: DEFAULT_REGISTRY,
+});
 IrisGridThemeContext.displayName = 'IrisGridThemeContext';
 
-export interface IrisGridThemeProviderProps {
+/**
+ * Provides the IrisGrid theme and cell input renderer registry to all
+ * IrisGrid instances in the subtree. Reads the CellInputRendererRegistry
+ * from CellInputRendererContext so that DHE (or any other consumer) can
+ * supply custom renderers simply by wrapping with CellInputRendererContext.Provider.
+ */
+export interface IrisGridContextProviderProps {
   children: ReactNode;
   /* The density of the grid. Defaults to regular */
   density?: 'compact' | 'regular' | 'spacious';
 }
 
-export function IrisGridThemeProvider({
+export function IrisGridContextProvider({
   children,
   density = 'regular',
-}: IrisGridThemeProviderProps): JSX.Element {
+}: IrisGridContextProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
+  const cellInputRendererRegistry = useContext(CellInputRendererContext);
 
   const gridTheme = useMemo(
     () => createDefaultIrisGridTheme(),
@@ -38,8 +54,8 @@ export function IrisGridThemeProvider({
   );
 
   const contextValue = useMemo(
-    () => ({ theme: gridTheme, density }),
-    [gridTheme, density]
+    () => ({ theme: gridTheme, density, cellInputRendererRegistry }),
+    [gridTheme, density, cellInputRendererRegistry]
   );
 
   return (
