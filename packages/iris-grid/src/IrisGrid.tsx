@@ -28,10 +28,8 @@ import {
   SlideTransition,
 } from '@deephaven/components';
 import {
-  CellInputField,
-  type CellInputFieldProps,
-  type ColumnRestriction,
   Grid,
+  type CellInputRendererRegistry,
   type GridMetrics,
   type GridMouseHandler,
   GridRange,
@@ -153,11 +151,8 @@ import {
   VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
 } from './sidebar';
-import CellDropdownField from './CellDropdownField';
-import IrisGridModel, {
-  STRING_LIST_RESTRICTION_TYPE,
-  type StringListRestriction,
-} from './IrisGridModel';
+import { DEFAULT_REGISTRY } from './CellInputRendererContext';
+import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import {
@@ -396,6 +391,14 @@ export interface IrisGridProps {
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
 
+  /**
+   * Registry of cell input renderer functions keyed by column restriction type.
+   * Passed directly to Grid, which performs the lookup at render time.
+   * Defaults to DHC's built-in registry (StringListRestriction → CellDropdownField).
+   * Use CellInputRendererContext to supply this automatically from context.
+   */
+  cellInputRendererRegistry?: CellInputRendererRegistry;
+
   density?: 'compact' | 'regular' | 'spacious';
 
   getMetricCalculator: GetMetricCalculatorType;
@@ -584,6 +587,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     getMetricCalculator: (
       ...args: ConstructorParameters<typeof IrisGridMetricCalculator>
     ): IrisGridMetricCalculator => new IrisGridMetricCalculator(...args),
+    cellInputRendererRegistry: DEFAULT_REGISTRY,
   } satisfies Partial<IrisGridProps>;
 
   constructor(props: IrisGridProps) {
@@ -4670,6 +4674,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      cellInputRendererRegistry,
     } = this.props;
     const {
       metricCalculator,
@@ -5236,7 +5241,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onSelectionChanged={this.handleSelectionChanged}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
-            renderCellInputComponent={renderCellInputComponent}
+            cellInputRendererRegistry={cellInputRendererRegistry}
             stateOverride={stateOverride}
             theme={theme}
           >
@@ -5434,63 +5439,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       </div>
     );
   }
-}
-
-/**
- * Renders the appropriate cell input component based on the column restriction type.
- * Renders a CellDropdownField for StringListRestriction columns, otherwise CellInputField.
- */
-function renderCellInputComponent({
-  columnRestrictions,
-  selectionRange,
-  className,
-  disabled,
-  isQuickEdit,
-  value,
-  onChange,
-  onCancel,
-  onDone,
-  onContextMenu,
-  style,
-}: CellInputFieldProps & {
-  columnRestrictions: ColumnRestriction[];
-}): ReactNode {
-  // If there is exactly one column restriction and it is a StringListRestriction, render a dropdown field with the allowed values as options.
-  if (
-    columnRestrictions.length === 1 &&
-    columnRestrictions[0].type === STRING_LIST_RESTRICTION_TYPE
-  ) {
-    const { allowedValues } = columnRestrictions[0] as StringListRestriction;
-    return (
-      <CellDropdownField
-        className={className}
-        disabled={disabled}
-        isQuickEdit={isQuickEdit}
-        value={value}
-        options={allowedValues}
-        onChange={onChange}
-        onCancel={onCancel}
-        onDone={onDone}
-        style={style}
-      />
-    );
-  }
-
-  // For all other cases, render a standard cell input field.
-  return (
-    <CellInputField
-      selectionRange={selectionRange}
-      className={className}
-      disabled={disabled}
-      isQuickEdit={isQuickEdit}
-      value={value}
-      onChange={onChange}
-      onCancel={onCancel}
-      onDone={onDone}
-      onContextMenu={onContextMenu}
-      style={style}
-    />
-  );
 }
 
 export default IrisGrid;

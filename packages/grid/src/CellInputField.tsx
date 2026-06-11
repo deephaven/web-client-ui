@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { SELECTION_DIRECTION } from './GridRange';
+import type { ColumnRestriction } from './GridModel';
 import GridUtils from './GridUtils';
 import './CellInputField.scss';
 
@@ -23,6 +24,21 @@ export type CellInputFieldProps = {
   onContextMenu?: React.MouseEventHandler<HTMLTextAreaElement>;
   style?: React.CSSProperties;
 };
+
+/** A renderer for a single cell input field based on column restriction type. */
+export type CellInputRendererFn = (
+  props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
+) => React.ReactNode;
+
+/**
+ * A map from column restriction type string to a cell input renderer function.
+ * Grid looks up columnRestrictions[0].type in this registry and falls back to
+ * CellInputField when there is no match.
+ */
+export type CellInputRendererRegistry = ReadonlyMap<
+  string,
+  CellInputRendererFn
+>;
 
 const directionForKey = (key: string): SELECTION_DIRECTION | undefined => {
   switch (key) {

@@ -55,7 +55,10 @@ import {
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
-import CellInputField, { type CellInputFieldProps } from './CellInputField';
+import CellInputField, {
+  type CellInputFieldProps,
+  type CellInputRendererRegistry,
+} from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
 import PasteError from './errors/PasteError';
 import {
@@ -143,10 +146,12 @@ export type GridProps = typeof Grid.defaultProps & {
   // Renderer for the grid canvas
   renderer?: GridRenderer;
 
-  // Render the cell input field. Override to render a different component based on column restriction.
-  renderCellInputComponent?: (
-    props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
-  ) => ReactNode;
+  /**
+   * Registry of cell input renderer functions keyed by column restriction type.
+   * Grid looks up columnRestrictions[0].type at render time and falls back to
+   * its built-in CellInputField when there is no match.
+   */
+  cellInputRendererRegistry?: CellInputRendererRegistry;
 
   // Optional state override to pass in to the metric and render state
   // Can be used to add custom properties as well
@@ -270,34 +275,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         window.open(token.href, '_blank', 'noopener,noreferrer');
       }
     },
-    renderCellInputComponent: ({
-      columnRestrictions: _columnRestrictions,
-      selectionRange,
-      className,
-      disabled,
-      isQuickEdit,
-      value,
-      onChange,
-      onCancel,
-      onDone,
-      onContextMenu,
-      style,
-    }: CellInputFieldProps & {
-      columnRestrictions: ColumnRestriction[];
-    }): ReactNode => (
-      <CellInputField
-        selectionRange={selectionRange}
-        className={className}
-        disabled={disabled}
-        isQuickEdit={isQuickEdit}
-        value={value}
-        onChange={onChange}
-        onCancel={onCancel}
-        onDone={onDone}
-        onContextMenu={onContextMenu}
-        style={style}
-      />
-    ),
+    cellInputRendererRegistry: new Map() as CellInputRendererRegistry,
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -2339,23 +2317,45 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? model.isValidForCell(modelColumn, modelRow, value)
         : false;
 
-    const { renderCellInputComponent } = this.props;
+    const { cellInputRendererRegistry } = this.props;
     const columnRestrictions =
       modelColumn != null ? model.getColumnRestriction(modelColumn) : [];
 
+    const cellInputProps: CellInputFieldProps & {
+      columnRestrictions: ColumnRestriction[];
+    } = {
+      selectionRange,
+      className: classNames({ error: !isValid }),
+      onCancel: this.handleEditCellCancel,
+      onChange: this.handleEditCellChange,
+      onDone: this.handleEditCellCommit,
+      isQuickEdit,
+      style: inputStyle,
+      value,
+      columnRestrictions,
+    };
+
+    const renderer =
+      columnRestrictions.length === 1
+        ? cellInputRendererRegistry?.get(columnRestrictions[0].type)
+        : undefined;
+
     return (
       <div key={`${column},${row}`} style={wrapperStyle}>
-        {renderCellInputComponent({
-          selectionRange,
-          className: classNames({ error: !isValid }),
-          onCancel: this.handleEditCellCancel,
-          onChange: this.handleEditCellChange,
-          onDone: this.handleEditCellCommit,
-          isQuickEdit,
-          style: inputStyle,
-          value,
-          columnRestrictions,
-        })}
+        {renderer != null ? (
+          renderer(cellInputProps)
+        ) : (
+          <CellInputField
+            selectionRange={selectionRange}
+            className={classNames({ error: !isValid })}
+            onCancel={this.handleEditCellCancel}
+            onChange={this.handleEditCellChange}
+            onDone={this.handleEditCellCommit}
+            isQuickEdit={isQuickEdit}
+            style={inputStyle}
+            value={value}
+          />
+        )}
       </div>
     );
   }

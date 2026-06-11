@@ -32,3 +32,6 @@ export * from './IrisGridMetricCalculator';
 export * from './IrisGridRenderer';
 export * from './IrisGridCacheUtils';
 export { default as IrisGridCellRendererUtils } from './IrisGridCellRendererUtils';
+export { default as CellInputRendererContext } from './CellInputRendererContext';
+export * from './CellInputRendererContext';
+export { default as CellDropdownField } from './CellDropdownField';
