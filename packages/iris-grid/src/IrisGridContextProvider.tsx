@@ -10,12 +10,27 @@ import CellInputRendererContext, {
 } from './CellInputRendererContext';
 
 /**
- * The context value for the IrisGridThemeProvider.
+ * The theme portion of the IrisGrid context value.
  * This must be a full object and not a partial so that we
  * can createDefaultIrisGridTheme once, and not per grid.
  */
 export type IrisGridThemeContextValue = IrisGridThemeType;
 
+/**
+ * Internal context that carries only the theme and density.
+ * Provided by IrisGridThemeProvider and consumed by IrisGridContextProvider.
+ * Not intended for direct use outside this file.
+ */
+const IrisGridThemeOnlyContext = createContext<{
+  theme: IrisGridThemeContextValue | null;
+  density: 'compact' | 'regular' | 'spacious';
+}>({ theme: null, density: 'regular' });
+
+/**
+ * Combined context consumed by IrisGrid via static contextType.
+ * Provided by IrisGridContextProvider which combines the theme (from
+ * IrisGridThemeOnlyContext) and the renderer registry (from CellInputRendererContext).
+ */
 export const IrisGridContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
@@ -27,24 +42,27 @@ export const IrisGridContext = createContext<{
 });
 IrisGridContext.displayName = 'IrisGridContext';
 
-/**
- * Provides the IrisGrid theme and cell input renderer registry to all
- * IrisGrid instances in the subtree. Reads the CellInputRendererRegistry
- * from CellInputRendererContext so that DHE (or any other consumer) can
- * supply custom renderers simply by wrapping with CellInputRendererContext.Provider.
- */
-export interface IrisGridContextProviderProps {
+// ---------------------------------------------------------------------------
+// IrisGridThemeProvider
+// Bootstrap concern: provides theme + density. Mount in ThemeBootstrap.
+// ---------------------------------------------------------------------------
+
+export interface IrisGridThemeProviderProps {
   children: ReactNode;
-  /* The density of the grid. Defaults to regular */
+  /** The density of the grid. Defaults to regular */
   density?: 'compact' | 'regular' | 'spacious';
 }
 
-export function IrisGridContextProvider({
+/**
+ * Provides the IrisGrid theme and density to all IrisGridContextProviders
+ * in the subtree. Should be mounted once near the app root in ThemeBootstrap
+ * alongside other theme providers.
+ */
+export function IrisGridThemeProvider({
   children,
   density = 'regular',
-}: IrisGridContextProviderProps): JSX.Element {
+}: IrisGridThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
-  const cellInputRendererRegistry = useContext(CellInputRendererContext);
 
   const gridTheme = useMemo(
     () => createDefaultIrisGridTheme(),
@@ -54,8 +72,45 @@ export function IrisGridContextProvider({
   );
 
   const contextValue = useMemo(
-    () => ({ theme: gridTheme, density, cellInputRendererRegistry }),
-    [gridTheme, density, cellInputRendererRegistry]
+    () => ({ theme: gridTheme, density }),
+    [gridTheme, density]
+  );
+
+  return (
+    <IrisGridThemeOnlyContext.Provider value={contextValue}>
+      {children}
+    </IrisGridThemeOnlyContext.Provider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// IrisGridContextProvider
+// Combiner: reads IrisGridThemeOnlyContext + CellInputRendererContext and
+// provides the unified IrisGridContext that IrisGrid consumes. Mount this
+// directly above each IrisGrid instance (LazyIrisGrid does this automatically).
+// ---------------------------------------------------------------------------
+
+export interface IrisGridContextProviderProps {
+  children: ReactNode;
+}
+
+/**
+ * Combines the IrisGrid theme (from IrisGridThemeProvider) and the cell input
+ * renderer registry (from CellInputRendererContext) into a single IrisGridContext
+ * value for IrisGrid to consume via its static contextType.
+ *
+ * DHE (or any consumer) can inject custom cell input renderers by mounting a
+ * CellInputRendererContext.Provider above this in the tree.
+ */
+export function IrisGridContextProvider({
+  children,
+}: IrisGridContextProviderProps): JSX.Element {
+  const { theme, density } = useContext(IrisGridThemeOnlyContext);
+  const cellInputRendererRegistry = useContext(CellInputRendererContext);
+
+  const contextValue = useMemo(
+    () => ({ theme, density, cellInputRendererRegistry }),
+    [theme, density, cellInputRendererRegistry]
   );
 
   return (

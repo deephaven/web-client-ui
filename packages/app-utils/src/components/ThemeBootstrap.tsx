@@ -3,7 +3,7 @@ import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
 import { isExternalThemeEnabled, ThemeProvider } from '@deephaven/components';
 import { useAppSelector } from '@deephaven/dashboard';
-import { IrisGridContextProvider } from '@deephaven/iris-grid';
+import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { PluginsContext, useCustomThemes } from '@deephaven/plugin';
 import { getSettings } from '@deephaven/redux';
 
@@ -27,9 +27,9 @@ export function ThemeBootstrap({
     <ThemeProvider themes={themes} waitForActivation={waitForActivation}>
       <ChartThemeProvider>
         <MonacoThemeProvider>
-          <IrisGridContextProvider density={settings.gridDensity}>
+          <IrisGridThemeProvider density={settings.gridDensity}>
             {children}
-          </IrisGridContextProvider>
+          </IrisGridThemeProvider>
         </MonacoThemeProvider>
       </ChartThemeProvider>
     </ThemeProvider>
