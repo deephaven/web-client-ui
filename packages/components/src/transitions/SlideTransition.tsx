@@ -46,18 +46,17 @@ function SlideTransition({
   const nodeRef = useRef<HTMLElement | null>(null);
 
   // Mimics findDOMNode for CSSTransition.
-  // Re-attaching the ref whenever `in` toggles re-reads `firstElementChild`
-  // exactly when the child appears or disappears, so `nodeRef` points at the
-  // current child before CSSTransition triggers the enter/exit animation.
-  // (Keying on `in` rather than `children` avoids re-creating the ref callback
-  // on every render, which would needlessly detach/re-attach the ref.)
-  const { in: inProp } = props;
-
+  // Keying on `in` rather than `children` avoids re-creating the ref callback
+  // on every render, which would needlessly detach/re-attach the ref.
   const setRef = useCallback(
     (node: HTMLElement | null) => {
       nodeRef.current = (node?.firstElementChild as HTMLElement | null) ?? null;
     },
-    [inProp]
+    // `inProp` is intentionally a dependency: toggling `in` must re-create the
+    // callback so the ref re-attaches and re-reads `firstElementChild` when the
+    // child appears/disappears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.in]
   );
 
   return (
