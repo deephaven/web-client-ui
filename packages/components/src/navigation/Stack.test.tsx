@@ -42,7 +42,7 @@ beforeAll(() => {
 
 describe('stack push and pop tests', () => {
   let texts: string[];
-  let stackItems: React.ReactNode[];
+  let stackItems: React.ReactElement[];
   let rerender: (ui: React.ReactElement) => void;
 
   function renderStack(stackCount: number, itemCount = 5) {
