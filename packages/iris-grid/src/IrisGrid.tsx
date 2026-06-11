@@ -5437,22 +5437,28 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         >
           <div className="table-sidebar">
             <Stack>
-              <Page title="Table Options" onClose={this.handleMenuClose}>
-                <Menu
-                  onSelect={i => this.handleMenuSelect(optionItems[i])}
-                  items={optionItems}
-                />
-              </Page>
-              {openOptionsStack.map((option, i) => (
+              {[
                 <Page
-                  title={openOptions[i].title}
-                  onBack={this.handleMenuBack}
+                  key="table-options"
+                  title="Table Options"
                   onClose={this.handleMenuClose}
-                  key={openOptions[i].type}
                 >
-                  {option}
-                </Page>
-              ))}
+                  <Menu
+                    onSelect={i => this.handleMenuSelect(optionItems[i])}
+                    items={optionItems}
+                  />
+                </Page>,
+                ...openOptionsStack.map((option, i) => (
+                  <Page
+                    title={openOptions[i].title}
+                    onBack={this.handleMenuBack}
+                    onClose={this.handleMenuClose}
+                    key={openOptions[i].type}
+                  >
+                    {option}
+                  </Page>
+                )),
+              ]}
             </Stack>
           </div>
         </SlideTransition>
