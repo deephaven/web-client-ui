@@ -2,6 +2,7 @@ import IrisGrid from './LazyIrisGrid';
 
 export default IrisGrid;
 export { IrisGrid };
+export * from './RemoteComponentModules';
 export * from './sidebar';
 export * from './AdvancedFilterCreator';
 export * from './CommonTypes';
