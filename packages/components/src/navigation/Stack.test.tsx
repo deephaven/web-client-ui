@@ -130,3 +130,170 @@ describe('stack push and pop tests', () => {
     expectStack([0]);
   });
 });
+
+describe('key-based view tracking', () => {
+  function runTimers() {
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+  }
+
+  /** Builds a stack item identified by `key` but with arbitrary content. */
+  function keyedItem(key: string, content: string) {
+    return (
+      <div key={key} className={key}>
+        {content}
+      </div>
+    );
+  }
+
+  it('keeps content live when re-rendered with new props for the same key', () => {
+    // The element instance changes but the key does not - this mimics a parent
+    // (e.g. IrisGrid) re-rendering with fresh children for the same logical
+    // view. The rendered view should reflect the latest props, and no slide
+    // animation should be triggered.
+    const { rerender } = render(<Stack>{[keyedItem('a', 'v1')]}</Stack>);
+    expect(screen.getByText('v1')).toBeTruthy();
+
+    rerender(<Stack>{[keyedItem('a', 'v2')]}</Stack>);
+
+    expect(screen.getByText('v2')).toBeTruthy();
+    expect(screen.queryByText('v1')).toBeNull();
+    // No push/pop animation should have started.
+    expect(document.querySelector('.pushing-view')).toBeNull();
+    expect(document.querySelector('.popping-view')).toBeNull();
+  });
+
+  it('does not churn or remount when repeatedly re-rendered with new instances for the same keys', () => {
+    // Regression: a host (e.g. IrisGrid) re-renders frequently, handing the
+    // stack brand-new element objects that represent the same logical views.
+    // Tracking by `key` means these re-renders must not trigger a push/pop
+    // animation, and the mounted view must stay mounted (same DOM node).
+    const { rerender } = render(
+      <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
+    );
+    const mountedView = screen.getByText('B');
+
+    for (let i = 0; i < 5; i += 1) {
+      // Fresh element instances, identical keys.
+      rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+
+      // The same DOM node remains mounted - it was never unmounted/remounted.
+      expect(screen.getByText('B')).toBe(mountedView);
+      // No slide animation was triggered by the re-render.
+      expect(document.querySelector('.pushing-view')).toBeNull();
+      expect(document.querySelector('.popping-view')).toBeNull();
+    }
+
+    // Running any timers must not flush a pending animation - there is none.
+    runTimers();
+    expect(screen.getByText('B')).toBe(mountedView);
+    expect(screen.queryByText('A')).toBeNull();
+  });
+
+  it('does not retrigger the push animation when re-rendered mid-push with the same top key', () => {
+    const { rerender } = render(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+    // Mid-push: main 'A' plus pushing 'B'.
+    expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.getByText('B')).toBeTruthy();
+
+    // Re-render with brand-new element instances for the same keys/length.
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+    // Still mid-push to the same view - nothing changes.
+    expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.getByText('B')).toBeTruthy();
+
+    runTimers();
+    // Push completes - 'B' becomes the main view.
+    expect(screen.getByText('B')).toBeTruthy();
+    expect(screen.queryByText('A')).toBeNull();
+  });
+
+  it('redirects the push to a new view when a different view is pushed mid-push', () => {
+    const { rerender } = render(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+    expect(screen.getByText('B')).toBeTruthy();
+
+    // Push a third view before the first push completes.
+    rerender(
+      <Stack>
+        {[keyedItem('a', 'A'), keyedItem('b', 'B'), keyedItem('c', 'C')]}
+      </Stack>
+    );
+    // The push now targets 'C' instead of 'B'.
+    expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.getByText('C')).toBeTruthy();
+    expect(screen.queryByText('B')).toBeNull();
+
+    runTimers();
+    expect(screen.getByText('C')).toBeTruthy();
+  });
+
+  it('redirects the main view when the top changes mid-pop', () => {
+    const { rerender } = render(
+      <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
+    );
+    expect(screen.getByText('B')).toBeTruthy();
+
+    // Pop down to 'A' - starts the pop animation for 'B'.
+    rerender(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.getByText('B')).toBeTruthy();
+
+    // While 'B' is still popping out, swap the remaining view to 'C'.
+    rerender(<Stack>{[keyedItem('c', 'C')]}</Stack>);
+    expect(screen.getByText('C')).toBeTruthy();
+    expect(screen.queryByText('A')).toBeNull();
+    // 'B' is still animating out.
+    expect(screen.getByText('B')).toBeTruthy();
+
+    runTimers();
+    expect(screen.getByText('C')).toBeTruthy();
+    expect(screen.queryByText('B')).toBeNull();
+  });
+
+  it('does not churn the main view when re-rendered mid-pop with the same remaining view', () => {
+    const { rerender } = render(
+      <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
+    );
+
+    // Pop down to 'A' - starts the pop animation for 'B'.
+    rerender(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.getByText('B')).toBeTruthy();
+
+    // Re-render mid-pop with a new element instance for the same key 'A'.
+    // The top key is unchanged, so the main view is left untouched.
+    rerender(<Stack>{[keyedItem('a', 'A2')]}</Stack>);
+    expect(screen.getByText('A2')).toBeTruthy();
+    // 'B' is still animating out.
+    expect(screen.getByText('B')).toBeTruthy();
+
+    runTimers();
+    expect(screen.getByText('A2')).toBeTruthy();
+    expect(screen.queryByText('B')).toBeNull();
+  });
+
+  it('swaps the main view without animating when the top key changes at the same depth', () => {
+    // Same stack length but a different top key - the main view is replaced
+    // directly, with no push/pop animation.
+    const { rerender } = render(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    expect(screen.getByText('A')).toBeTruthy();
+
+    rerender(<Stack>{[keyedItem('b', 'B')]}</Stack>);
+    expect(screen.getByText('B')).toBeTruthy();
+    expect(screen.queryByText('A')).toBeNull();
+    expect(document.querySelector('.pushing-view')).toBeNull();
+    expect(document.querySelector('.popping-view')).toBeNull();
+  });
+
+  it('renders nothing when there are no children', () => {
+    const { container } = render(<Stack>{[]}</Stack>);
+    const mainView = container.querySelector('.main-view');
+    expect(mainView).not.toBeNull();
+    expect(mainView).toBeEmptyDOMElement();
+    expect(document.querySelector('.pushing-view')).toBeNull();
+    expect(document.querySelector('.popping-view')).toBeNull();
+  });
+});

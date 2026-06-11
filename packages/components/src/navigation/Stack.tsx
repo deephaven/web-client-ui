@@ -13,7 +13,7 @@ export type StackProps = {
  *
  * The parent that renders the stack may re-render frequently (e.g. an
  * `IrisGrid` re-renders on every table tick) and hand us brand-new element
- * objects that represent the *same* logical view. Tracking the animating views
+ * objects that represent the same logical view. Tracking the animating views
  * by `key` (rather than by element reference) means those re-renders neither
  * retrigger the slide animation nor churn state every frame.
  *
