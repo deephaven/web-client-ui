@@ -16,10 +16,29 @@ jest.mock('./loadRemoteModule', () => {
   };
 });
 
+// ESM plugin loading touches the DOM / blob URLs which aren't available in
+// jsdom. Mock it so loadModulePlugins exercises the CommonJS path by default;
+// individual tests can override isEsModulePlugin to exercise the ESM path.
+jest.mock('./esmPluginLoader', () => ({
+  __esModule: true,
+  buildHostImportMap: jest.fn(() => ({ imports: {} })),
+  buildPluginImportMap: jest.fn(() => ({ imports: {} })),
+  injectImportMap: jest.fn(),
+  isEsModulePlugin: jest.fn().mockResolvedValue(false),
+  loadEsModulePlugin: jest.fn(),
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
 const { default: loadRemoteModule } = require('./loadRemoteModule') as {
   default: jest.Mock;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+const { isEsModulePlugin, loadEsModulePlugin } =
+  require('./esmPluginLoader') as {
+    isEsModulePlugin: jest.Mock;
+    loadEsModulePlugin: jest.Mock;
+  };
 
 describe('loadModulePlugins', () => {
   const BASE_URL = 'http://localhost:4100/plugins';

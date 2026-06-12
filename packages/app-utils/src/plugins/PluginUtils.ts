@@ -17,6 +17,13 @@ import {
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 import { resolve } from './remote-component.config';
+import {
+  buildHostImportMap,
+  buildPluginImportMap,
+  injectImportMap,
+  isEsModulePlugin,
+  loadEsModulePlugin,
+} from './esmPluginLoader';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
 
@@ -36,13 +43,22 @@ export type { PluginManifest };
 export { getPluginModuleValue };
 
 /**
- * Imports a commonjs plugin module from the provided URL
+ * Imports a plugin module from the provided URL. The module format is detected
+ * automatically: modern ES module plugins are loaded via es-module-shims (so
+ * they can lazy-load chunks and resolve host singletons through the injected
+ * import map), while legacy CommonJS plugins are loaded via the remote module
+ * loader.
  * @param pluginUrl The URL of the plugin to load
  * @returns The loaded module
  */
 export async function loadModulePlugin(
   pluginUrl: string
 ): Promise<LegacyPlugin | { default: Plugin }> {
+  if (await isEsModulePlugin(pluginUrl)) {
+    return (await loadEsModulePlugin(pluginUrl)) as
+      | LegacyPlugin
+      | { default: Plugin };
+  }
   const myModule = await loadRemoteModule(pluginUrl);
   return myModule;
 }
@@ -85,6 +101,12 @@ export async function loadModulePlugins(
     }
 
     log.debug('Plugin manifest loaded:', manifest);
+
+    // Inject import maps before loading any plugin so ESM plugins can resolve
+    // host singletons (react, @deephaven/*, ...) and cross-plugin package
+    // imports. Harmless for CommonJS plugins, which never reference these.
+    injectImportMap(buildHostImportMap(resolve));
+    injectImportMap(buildPluginImportMap(manifest.plugins, modulePluginsUrl));
 
     const levels = groupByDependencyLevel(manifest.plugins);
 

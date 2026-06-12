@@ -62,6 +62,47 @@ e.g. To point to the default dev port:
 VITE_JS_PLUGINS_DEV_PORT=4100
 ```
 
+### Plugin module formats (ES module and CommonJS)
+
+Remotely-loaded plugins may be authored as either modern **ES modules** or
+legacy **CommonJS** bundles. The host auto-detects the format of each plugin
+entry at load time (using [es-module-lexer](https://github.com/guybedford/es-module-lexer)),
+so no manifest changes are required and both formats are supported
+indefinitely.
+
+ES module plugins can **code-split / lazy-load** parts of their UI via dynamic
+`import()`, so only the code needed for a given view is fetched. They resolve
+the same host singletons (`react`, `redux`, `@deephaven/*`, ...) provided by
+[remote-component.config.ts](packages/app-utils/src/plugins/remote-component.config.ts)
+through an import map the host injects at runtime, polyfilled by
+[es-module-shims](https://github.com/guybedford/es-module-shims) on browsers
+that don't support runtime-injected import maps (e.g. Firefox).
+
+To author an ES module plugin:
+
+- Build with Vite lib mode `formats: ['es']` and `build.cssCodeSplit: true`.
+- Mark host singletons as `external` so they are emitted as bare `import`
+  statements rather than bundled (one React, one redux store, one design
+  system, ...).
+- Use `vite-plugin-css-injected-by-js` with `relativeCSSInjection: true` so a
+  lazy chunk's compiled CSS/SCSS is injected when the chunk loads.
+- Lazy-load heavier views with `React.lazy(() => import('./View'))` (and import
+  any `.scss`/`.css` inside the lazy module so its styles travel with the
+  chunk).
+
+See [@deephaven/plugin-example](packages/plugin-example) for a complete,
+runnable example plus a tiny dev server. To try it locally:
+
+```
+npm run start:plugin-example   # builds + serves on :4100
+# then set VITE_JS_PLUGINS_DEV_PORT=4100 in packages/code-studio/.env.development.local
+npm start
+```
+
+Migrating existing `deephaven-plugins` from CommonJS to ES modules is optional
+and can be done incrementally — see
+[the migration guide](packages/app-utils/docs/migrating-plugins-to-esm.md).
+
 ## Local Vite Config
 
 If you'd like to override the vite config for local dev, you can define a `packages/code-studio/vite.config.local.ts` file that extends from `vite.config.ts`. This file is excluded via `.gitignore` which makes it easy to keep local overrides in tact.

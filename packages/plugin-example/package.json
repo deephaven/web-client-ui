@@ -1,0 +1,38 @@
+{
+  "name": "@deephaven/plugin-example",
+  "version": "1.22.0",
+  "description": "Example ES module Deephaven plugin demonstrating lazy-loaded components and dynamically imported styling",
+  "private": true,
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:plugin": "vite build",
+    "serve": "node serve.js",
+    "start": "vite build --watch & node serve.js"
+  },
+  "dependencies": {
+    "@deephaven/components": "file:../components",
+    "@deephaven/icons": "file:../icons",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/log": "file:../log",
+    "@deephaven/plugin": "file:../plugin"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.7.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "sass": "^1.62.1",
+    "vite": "^5.4.2",
+    "vite-plugin-css-injected-by-js": "^3.5.2"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
