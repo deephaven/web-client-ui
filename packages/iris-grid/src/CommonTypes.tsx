@@ -44,6 +44,33 @@ export type Action = {
 };
 
 /**
+ * Options accepted by `IrisGrid.startLoading`. Mirrors the inline options bag
+ * on that method so initiators (including plugins) can type their request.
+ */
+export type StartLoadingOptions = {
+  /** Reset selected ranges and scroll position when loading begins. */
+  resetRanges?: boolean;
+  /** Whether the loading scrim shows a cancel button. */
+  loadingCancelShown?: boolean;
+  /** Whether the loading scrim blocks interaction with the grid. */
+  loadingBlocksGrid?: boolean;
+};
+
+/**
+ * Detail payload for `IrisGridModel.EVENT.PENDING`. Self-describing so an
+ * initiator (e.g. a plugin) can raise the loading scrim for an operation
+ * IrisGrid has no built-in knowledge of.
+ */
+export type PendingOperationDetail = {
+  /**
+   * Display text for the scrim. Omitted → IrisGrid uses a generic message.
+   */
+  text?: string;
+  /** Scrim options the initiator wants applied while loading. */
+  options?: StartLoadingOptions;
+};
+
+/**
  * Props passed to a plugin-supplied sidebar page (an item whose
  * `configPage` is set). Pages receive the current model and a
  * back-navigation callback; any additional state access should

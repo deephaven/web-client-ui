@@ -137,6 +137,7 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
       column == null ||
       modelRow == null ||
       modelColumn == null ||
+      model.columns[modelColumn] == null ||
       !TableUtils.isStringType(model.columns[modelColumn].type)
     ) {
       return false;

@@ -1722,6 +1722,12 @@ const VisibilityOrderingBuilder = memo(
       redo();
     }, [redo]);
 
+    console.log('[0] rendering visibility ordering builder with state', {
+      movedColumns: state.movedColumns,
+      hiddenColumns: state.hiddenColumns,
+      columnHeaderGroups: state.columnHeaderGroups,
+    });
+
     return (
       <VisibilityOrderingBuilderInner
         // eslint-disable-next-line react/jsx-props-no-spreading

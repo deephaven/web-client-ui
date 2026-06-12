@@ -189,6 +189,7 @@ import {
   type OptionItem,
   type PendingDataErrorMap,
   type PendingDataMap,
+  type PendingOperationDetail,
   type QuickFilterMap,
   type ReadonlyAdvancedFilterMap,
   type ReadonlyAggregationMap,
@@ -630,6 +631,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMenuSelect = this.handleMenuSelect.bind(this);
     this.handleMenuBack = this.handleMenuBack.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handlePending = this.handlePending.bind(this);
+    this.handlePendingCleared = this.handlePendingCleared.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
@@ -994,8 +997,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // in component state and is only refreshed on a model-driven
     // COLUMNS_CHANGED event. Mirror that path when the prop itself changes
     // so consumers that swap `getMetricCalculator` at runtime stay in sync.
+    // This is a prop swap against the *same* model, so the column set hasn't
+    // changed — preserve the user's moved columns rather than resetting them.
     if (getMetricCalculator !== prevProps.getMetricCalculator) {
-      this.maybeRebuildMetricCalculator();
+      this.maybeRebuildMetricCalculator(false);
     }
 
     const changedInputFilters =
@@ -2564,6 +2569,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.REQUEST_FAILED,
       this.handleRequestFailed
     );
+    model.addEventListener(IrisGridModel.EVENT.PENDING, this.handlePending);
+    model.addEventListener(
+      IrisGridModel.EVENT.PENDING_CLEARED,
+      this.handlePendingCleared
+    );
     model.addEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       this.handleCustomColumnsChanged
@@ -2587,6 +2597,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.removeEventListener(
       IrisGridModel.EVENT.REQUEST_FAILED,
       this.handleRequestFailed
+    );
+    model.removeEventListener(IrisGridModel.EVENT.PENDING, this.handlePending);
+    model.removeEventListener(
+      IrisGridModel.EVENT.PENDING_CLEARED,
+      this.handlePendingCleared
     );
     model.removeEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
@@ -3427,6 +3442,33 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
+  /**
+   * Raise the loading scrim in response to a model-driven `PENDING` event. The
+   * model is the start signal, mirroring how `UPDATED`/`COLUMNS_CHANGED` are
+   * already the model-driven stop signal. Idempotent: the first message within
+   * a commit wins (the `loadingScrimStartTime == null` guard collapses multiple
+   * pending operations into a single scrim).
+   */
+  handlePending(event: EventT): void {
+    const { detail } = event as CustomEvent<PendingOperationDetail | undefined>;
+    const { text, options } = detail ?? {};
+    if (this.loadingScrimStartTime == null) {
+      this.startLoading(text ?? 'Loading...', {
+        loadingCancelShown: false,
+        ...options,
+      });
+    }
+  }
+
+  /**
+   * Clear the loading scrim in response to a model-driven `PENDING_CLEARED`
+   * event. Only needed for operations that do not naturally end in
+   * `UPDATED`/`COLUMNS_CHANGED`/`REQUEST_FAILED`.
+   */
+  handlePendingCleared(): void {
+    this.stopLoading();
+  }
+
   handleUpdate(): void {
     log.debug2('Received model update');
 
@@ -3752,15 +3794,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * and do not need explicit handling here.
    *
    * User column-widths / row-heights from the previous calculator are not
-   * carried over: a swap means the column set has effectively changed, so
-   * the stored sizes wouldn't map to anything meaningful.
+   * carried over: a factory swap means the column set has effectively
+   * changed, so the stored sizes wouldn't map to anything meaningful.
+   *
+   * @param resetMovedColumns When true (the model-class swap case, e.g.
+   * entering a pivot or rollup), moved columns are reset to the new model's
+   * initial order — stale moves reference indices that may no longer exist
+   * (e.g. a pivot model that exposes fewer, non-movable columns than the
+   * prior layout), which would otherwise remap visible columns out of view.
+   * When false (a `getMetricCalculator` prop swap against the same model),
+   * the column set is unchanged, so the user's moved columns are preserved.
    */
-  maybeRebuildMetricCalculator(): void {
+  maybeRebuildMetricCalculator(resetMovedColumns = true): void {
     const { model, getMetricCalculator } = this.props;
     const factory = model.getMetricCalculator ?? getMetricCalculator;
     if (factory === this.lastMetricCalculatorFactory) return;
 
-    const { movedColumns } = this.state;
+    const { movedColumns: currentMovedColumns } = this.state;
+    const movedColumns = resetMovedColumns
+      ? model.initialMovedColumns
+      : currentMovedColumns;
     const next = factory({
       userColumnWidths: new Map(),
       userRowHeights: new Map(),
@@ -3782,7 +3835,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (this.grid != null) {
       this.grid.metricCalculator = next;
     }
-    this.setState({ metricCalculator: next });
+    this.setState({ metricCalculator: next, movedColumns });
   }
 
   handlePendingCommitClicked(): Promise<void> {

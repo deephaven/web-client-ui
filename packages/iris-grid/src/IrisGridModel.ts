@@ -15,11 +15,13 @@ import {
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter, type SortDescriptor } from '@deephaven/jsapi-utils';
+import { EventShimCustomEvent } from '@deephaven/utils';
 import {
   type ColumnName,
   type UITotalsTableConfig,
   type PendingDataMap,
   type PendingDataErrorMap,
+  type PendingOperationDetail,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import type IrisGridMetricCalculator from './IrisGridMetricCalculator';
@@ -100,6 +102,20 @@ abstract class IrisGridModel<
     /** Fired when the viewport is applied to the table and we're waiting for a response. */
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
     VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
+    /**
+     * Fired when an async, config-changing operation has begun. Raises the
+     * IrisGrid loading scrim. Detail is an optional, self-describing
+     * {@link PendingOperationDetail} so an initiator (e.g. a plugin) can raise
+     * the scrim for an operation IrisGrid has no built-in knowledge of.
+     */
+    PENDING: 'PENDING',
+    /**
+     * Optional completion signal for a pending operation that does NOT
+     * naturally end in `UPDATED` / `COLUMNS_CHANGED` / `REQUEST_FAILED`.
+     * Built-in operations never need this; their existing events clear the
+     * scrim.
+     */
+    PENDING_CLEARED: 'PENDING_CLEARED',
   } as const);
 
   constructor(dh: typeof DhType) {
@@ -156,6 +172,19 @@ abstract class IrisGridModel<
    */
   stopListening(): void {
     // no-op
+  }
+
+  /**
+   * Dispatch a `PENDING` event to raise the IrisGrid loading scrim for an
+   * async, config-changing operation initiated on this model.
+   * @param detail Optional self-describing detail (scrim text and options).
+   */
+  protected dispatchPending(detail?: PendingOperationDetail): void {
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.PENDING, {
+        detail,
+      }) as never
+    );
   }
 
   /**
