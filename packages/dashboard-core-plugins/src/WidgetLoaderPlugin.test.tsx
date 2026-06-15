@@ -31,9 +31,11 @@ function TestWidgetTwo() {
   return <div>TestWidgetTwo</div>;
 }
 
-function TestPanel() {
+const TestPanel = React.forwardRef<unknown>((props, ref) => {
+  React.useImperativeHandle(ref, () => ({}));
   return <div>TestPanel</div>;
-}
+});
+TestPanel.displayName = 'TestPanel';
 
 class TestForwardRef extends React.PureComponent<WidgetComponentProps> {
   render() {
@@ -460,18 +462,17 @@ describe('middleware plugin chaining', () => {
   });
 
   it('chains panel middleware around base panelComponent', async () => {
-    function TestPanelMiddleware({
-      Component,
-      ...props
-    }: WidgetMiddlewarePanelProps) {
-      return (
-        <div data-testid="panel-middleware">
-          <span>PanelMiddleware</span>
-          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <Component {...props} />
-        </div>
-      );
-    }
+    const TestPanelMiddleware = React.forwardRef<
+      unknown,
+      WidgetMiddlewarePanelProps
+    >(({ Component, ...props }, ref) => (
+      <div data-testid="panel-middleware">
+        <span>PanelMiddleware</span>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Component ref={ref} {...props} />
+      </div>
+    ));
+    TestPanelMiddleware.displayName = 'TestPanelMiddleware';
 
     const panelMiddleware: WidgetMiddlewarePlugin = {
       name: 'panel-middleware',

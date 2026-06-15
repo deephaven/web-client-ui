@@ -32,6 +32,8 @@ import {
   registerPlugin,
   createChainedComponent,
   createChainedPanelComponent,
+  createPanelMiddleware,
+  createWidgetMiddleware,
   getWidgetDashboardPlugin,
 } from './PluginUtils';
 
@@ -963,5 +965,134 @@ describe('createChainedPanelComponent', () => {
     // golden-layout cannot persist the wrapped panel's state.
     expect(screen.getByTestId('ref-mw-panel')).toBeInTheDocument();
     expect(ref.current).toEqual({ marker: 'base-panel-instance' });
+  });
+});
+
+describe('createPanelMiddleware', () => {
+  it('forwards the ref to the wrapped Component', () => {
+    const RefBasePanelBase = React.forwardRef<
+      { marker: string },
+      WidgetPanelProps
+    >((props, ref) => {
+      React.useImperativeHandle(ref, () => ({ marker: 'base-instance' }));
+      return <div data-testid="base-panel">RefBasePanel</div>;
+    });
+    RefBasePanelBase.displayName = 'RefBasePanel';
+    const RefBasePanel = RefBasePanelBase as React.ForwardRefExoticComponent<
+      WidgetPanelProps & React.RefAttributes<unknown>
+    >;
+
+    const Middleware = createPanelMiddleware(() => ({}), 'TestPanelMiddleware');
+
+    const ref = React.createRef<{ marker: string }>();
+    render(
+      <Middleware
+        ref={ref}
+        Component={RefBasePanel}
+        fetch={jest.fn()}
+        metadata={{ type: 'test-type' }}
+        localDashboardId="test"
+        glContainer={{} as WidgetPanelProps['glContainer']}
+        glEventHub={{} as WidgetPanelProps['glEventHub']}
+      />
+    );
+
+    expect(screen.getByTestId('base-panel')).toBeInTheDocument();
+    expect(ref.current).toEqual({ marker: 'base-instance' });
+  });
+
+  it('injects props and wraps the wrapped Component', () => {
+    let received: Record<string, unknown> | undefined;
+    const BasePanelBase = React.forwardRef<unknown, WidgetPanelProps>(
+      (props, ref) => {
+        received = props as unknown as Record<string, unknown>;
+        return <div data-testid="base-panel">BasePanel</div>;
+      }
+    );
+    BasePanelBase.displayName = 'BasePanel';
+    const BasePanel = BasePanelBase as React.ForwardRefExoticComponent<
+      WidgetPanelProps & React.RefAttributes<unknown>
+    >;
+
+    const marker = jest.fn();
+    const Middleware = createPanelMiddleware(() => ({
+      inject: { extraProp: marker },
+      wrap: child => <div data-testid="wrapper">{child}</div>,
+    }));
+
+    render(
+      <Middleware
+        Component={BasePanel}
+        fetch={jest.fn()}
+        metadata={{ type: 'test-type' }}
+        localDashboardId="test"
+        glContainer={{} as WidgetPanelProps['glContainer']}
+        glEventHub={{} as WidgetPanelProps['glEventHub']}
+      />
+    );
+
+    expect(screen.getByTestId('wrapper')).toBeInTheDocument();
+    expect(screen.getByTestId('base-panel')).toBeInTheDocument();
+    expect(received?.extraProp).toBe(marker);
+  });
+
+  it('passes the incoming props (minus Component) to the body hook', () => {
+    const useBody = jest.fn(() => ({}));
+    const BasePanelBase = React.forwardRef<unknown, WidgetPanelProps>(() => (
+      <div data-testid="base-panel">BasePanel</div>
+    ));
+    BasePanelBase.displayName = 'BasePanel';
+    const BasePanel = BasePanelBase as React.ForwardRefExoticComponent<
+      WidgetPanelProps & React.RefAttributes<unknown>
+    >;
+    const Middleware = createPanelMiddleware(useBody);
+
+    render(
+      <Middleware
+        Component={BasePanel}
+        fetch={jest.fn()}
+        metadata={{ type: 'test-type' }}
+        localDashboardId="test"
+        glContainer={{} as WidgetPanelProps['glContainer']}
+        glEventHub={{} as WidgetPanelProps['glEventHub']}
+      />
+    );
+
+    expect(useBody).toHaveBeenCalledTimes(1);
+    const bodyProps = useBody.mock.calls[0][0] as Record<string, unknown>;
+    expect(bodyProps).not.toHaveProperty('Component');
+    expect(bodyProps).toMatchObject({
+      localDashboardId: 'test',
+      metadata: { type: 'test-type' },
+    });
+  });
+});
+
+describe('createWidgetMiddleware', () => {
+  it('injects props and wraps the wrapped Component', () => {
+    let received: Record<string, unknown> | undefined;
+    function BaseWidget(props: WidgetComponentProps): JSX.Element {
+      received = props as unknown as Record<string, unknown>;
+      return <div data-testid="base-widget">BaseWidget</div>;
+    }
+    BaseWidget.displayName = 'BaseWidget';
+
+    const marker = jest.fn();
+    const Middleware = createWidgetMiddleware(() => ({
+      inject: { extraProp: marker },
+      wrap: child => <div data-testid="wrapper">{child}</div>,
+    }));
+
+    render(
+      <Middleware
+        Component={BaseWidget}
+        fetch={jest.fn()}
+        metadata={{ type: 'test-type' }}
+      />
+    );
+
+    expect(screen.getByTestId('wrapper')).toBeInTheDocument();
+    expect(screen.getByTestId('base-widget')).toBeInTheDocument();
+    expect(received?.extraProp).toBe(marker);
   });
 });

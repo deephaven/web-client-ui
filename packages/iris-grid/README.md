@@ -112,10 +112,23 @@ When you're a `WidgetMiddlewarePlugin` and don't render `<IrisGrid>`
 yourself, you receive `transformTableOptions` as a prop and pass a
 composed transform down to the `Component` (or panel) you wrap. Run the
 upstream transform first so contributions compose, then layer your own
-changes on top:
+changes on top.
+
+A `panelComponent` middleware should be built with `createPanelMiddleware`
+from `@deephaven/plugin`: you supply a body hook that may `inject` props onto
+the wrapped component and/or `wrap` the child in a wrapper element (both
+optional), and the factory owns the `React.forwardRef` ceremony and ref
+forwarding for you. That ref matters —
+golden-layout binds a ref to the registered panel to persist class-panel
+state (sorts, filters, column moves, etc.) into its `componentState`, and a
+middleware that swallowed it would silently break that persistence for every
+panel below it; the factory guarantees it can't be dropped. For the non-panel
+`component` path use `createWidgetMiddleware`, which is otherwise identical but
+takes no ref.
 
 ```tsx
-import { useMemo, type ComponentType } from 'react';
+import { useMemo } from 'react';
+import { createPanelMiddleware, type WidgetPanelProps } from '@deephaven/plugin';
 import {
   type IrisGridTableOptionsWidgetProps,
   type TableOptionsTransform,
@@ -130,23 +143,25 @@ function makeMyTransform(
   };
 }
 
-function MyMiddleware({
-  Component,
-  transformTableOptions,
-  ...props
-}: WidgetMiddlewarePanelProps & IrisGridTableOptionsWidgetProps) {
+const MyMiddleware = createPanelMiddleware<
+  unknown,
+  WidgetPanelProps & IrisGridTableOptionsWidgetProps
+>(({ transformTableOptions }) => {
   const composedTransform = useMemo(
     () => makeMyTransform(transformTableOptions),
     [transformTableOptions]
   );
-
-  const Next = Component as ComponentType<
-    typeof props & IrisGridTableOptionsWidgetProps
-  >;
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  return <Next {...props} transformTableOptions={composedTransform} />;
-}
+  return { inject: { transformTableOptions: composedTransform } };
+}, 'MyMiddleware');
 ```
+
+The body hook receives the incoming props (minus `Component`) and returns an
+optional `{ inject?, wrap? }`. Every incoming prop is forwarded to the wrapped
+component automatically; `inject` only adds or overrides the few props you
+actually change (here `transformTableOptions`), and `wrap` optionally nests the
+child (e.g. in a context provider). Both fields are optional — a pass-through
+middleware can return `{}`. The factory adds the `ref` plumbing on top.
+
 
 Composition rule: each middleware layer reads the `transformTableOptions`
 it was handed, runs that transform first, then layers its own changes on
@@ -260,25 +275,23 @@ Rules:
 ### Publishing `transformModel` from middleware
 
 A middleware that needs both seams composes them the same way — run any
-upstream transform first, then layer your own — and passes both down to
-the `Component` it wraps:
+upstream transform first, then layer your own — and returns both from its
+body hook's `inject`. Props you don't touch (here `transformTableOptions`)
+are forwarded automatically, so you only inject what you change:
 
 ```tsx
-import { useMemo, type ComponentType } from 'react';
+import { useMemo } from 'react';
+import { createPanelMiddleware, type WidgetPanelProps } from '@deephaven/plugin';
 import {
   type IrisGridModelTransform,
   type IrisGridModelWidgetProps,
   type IrisGridTableOptionsWidgetProps,
 } from '@deephaven/iris-grid';
 
-function MyMiddleware({
-  Component,
-  transformModel,
-  transformTableOptions,
-  ...props
-}: WidgetMiddlewarePanelProps &
-  IrisGridModelWidgetProps &
-  IrisGridTableOptionsWidgetProps) {
+const MyMiddleware = createPanelMiddleware<
+  unknown,
+  WidgetPanelProps & IrisGridModelWidgetProps & IrisGridTableOptionsWidgetProps
+>(({ transformModel }) => {
   const composedModel = useMemo<IrisGridModelTransform>(
     () => async model => {
       const base = transformModel != null ? await transformModel(model) : model;
@@ -286,19 +299,7 @@ function MyMiddleware({
     },
     [transformModel]
   );
-
-  const Next = Component as ComponentType<
-    typeof props &
-      IrisGridModelWidgetProps &
-      IrisGridTableOptionsWidgetProps
-  >;
-  return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <Next
-      {...props}
-      transformModel={composedModel}
-      transformTableOptions={transformTableOptions}
-    />
-  );
-}
+  return { inject: { transformModel: composedModel } };
+}, 'MyMiddleware');
 ```
+

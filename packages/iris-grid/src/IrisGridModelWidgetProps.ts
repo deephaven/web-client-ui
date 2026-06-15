@@ -27,5 +27,3 @@ export type IrisGridModelTransform = (
 export interface IrisGridModelWidgetProps {
   transformModel?: IrisGridModelTransform;
 }
-
-export default IrisGridModelWidgetProps;

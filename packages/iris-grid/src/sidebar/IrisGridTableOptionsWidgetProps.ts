@@ -23,5 +23,3 @@ export type TableOptionsTransform = (
 export interface IrisGridTableOptionsWidgetProps {
   transformTableOptions?: TableOptionsTransform;
 }
-
-export default IrisGridTableOptionsWidgetProps;
