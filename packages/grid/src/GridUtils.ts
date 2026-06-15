@@ -465,6 +465,10 @@ export class GridUtils {
    * - When neither side has a declared group, fall back to header-text inequality so
    *   plain grouped-header models (which express grouping only through repeated text)
    *   keep their existing behavior.
+   * - The check is symmetric across the boundary: a separator is drawn at either
+   *   outer edge of a group cell, including the left edge of a group that is preceded
+   *   by an ungrouped column (empty band). Only a boundary with an empty band on
+   *   both sides has no separator.
    *
    * @param model The grid model
    * @param depth The header depth to check at
@@ -487,24 +491,36 @@ export class GridUtils {
       return true;
     }
 
+    // A header cell is drawn above a column at this depth when the column has a
+    // declared group or header text. Where no cell is drawn the band is empty.
     const groupA = model.getColumnHeaderGroup(columnIndex, depth);
-
-    // No header cell is drawn above this column at this depth (empty band), so
-    // there is no right-edge separator to grab. A cell exists when the column
-    // has a declared group or header text at this depth.
-    const hasHeaderCell =
+    const hasHeaderCellA =
       groupA != null || model.textForColumnHeader(columnIndex, depth) != null;
-    if (!hasHeaderCell) {
-      return false;
-    }
 
-    // Always show separator at the right edge of the last column's header cell
+    // Right edge of the last column: a separator exists only if a cell is drawn
+    // above it (otherwise it is the right edge of an empty band).
     if (nextColumnIndex == null) {
-      return true;
+      return hasHeaderCellA;
     }
 
     const groupB = model.getColumnHeaderGroup(nextColumnIndex, depth);
+    const hasHeaderCellB =
+      groupB != null ||
+      model.textForColumnHeader(nextColumnIndex, depth) != null;
 
+    // Empty band on both sides: nothing to separate
+    if (!hasHeaderCellA && !hasHeaderCellB) {
+      return false;
+    }
+
+    // Exactly one side has a header cell: this is an outer edge of a group cell
+    // (the left edge of a group preceded by an empty band, or the right edge of
+    // a group followed by one).
+    if (hasHeaderCellA !== hasHeaderCellB) {
+      return true;
+    }
+
+    // Both sides have header cells
     if (groupA != null && groupB != null) {
       return groupA !== groupB;
     }

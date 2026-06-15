@@ -1264,6 +1264,40 @@ describe('getColumnSeparatorIndex', () => {
     ],
   ]);
 
+  // Column 0 has no group above it at depth 1 (the depth-1 band above column 0
+  // is visually empty); columns 1-3 belong to a depth-1 group "G".
+  const leadingUngroupedGroupInstance = { name: 'G', depth: 1 };
+  const leadingUngroupedHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'M'],
+        [1, 'A'],
+        [2, 'B'],
+        [3, 'C'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        // column 0 intentionally absent at depth 1 (no group cell drawn)
+        [1, 'G'],
+        [2, 'G'],
+        [3, 'G'],
+      ]),
+    ],
+  ]);
+  const leadingUngroupedColumnGroups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [1, leadingUngroupedGroupInstance],
+        [2, leadingUngroupedGroupInstance],
+        [3, leadingUngroupedGroupInstance],
+      ]),
+    ],
+  ]);
+
   it.each([
     {
       description: 'detects separator at column boundary',
@@ -1349,6 +1383,26 @@ describe('getColumnSeparatorIndex', () => {
       y: 15,
       headerGroups: trailingUngroupedHeaderGroups,
       columnHeaderGroups: trailingUngroupedColumnGroups,
+      maxDepth: 2,
+      expected: null,
+    },
+    {
+      description:
+        'detects depth-1 separator at the left edge of a group that starts after an ungrouped column',
+      x: 150, // Between column 0 (no group at depth 1) and column 1 (in group G)
+      y: 15, // Middle of the top header (maxDepth - 1 = 1)
+      headerGroups: leadingUngroupedHeaderGroups,
+      columnHeaderGroups: leadingUngroupedColumnGroups,
+      maxDepth: 2,
+      expected: 0,
+    },
+    {
+      description:
+        'returns no depth-1 separator at the left edge of an ungrouped leading column (empty band above)',
+      x: 50, // Left edge of column 0 (no group cell at depth 1 above it)
+      y: 15,
+      headerGroups: leadingUngroupedHeaderGroups,
+      columnHeaderGroups: leadingUngroupedColumnGroups,
       maxDepth: 2,
       expected: null,
     },
