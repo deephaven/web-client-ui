@@ -15,7 +15,6 @@ import {
   type WidgetMiddlewarePlugin,
   type WidgetComponentProps,
   type WidgetPanelProps,
-  type WidgetMiddlewarePanelProps,
   isLegacyPlugin,
   isMultiPlugin,
   isPlugin,
@@ -214,13 +213,10 @@ export function createChainedPanelComponent<T>(
   type RefCapablePanel = React.ForwardRefExoticComponent<
     WidgetPanelProps<T> & React.RefAttributes<unknown>
   >;
-  type RefCapableMiddlewarePanel = React.ForwardRefExoticComponent<
-    WidgetMiddlewarePanelProps<T> & React.RefAttributes<unknown>
-  >;
 
   // Filter to middleware that has a panelComponent and extract just the panel components
   type MiddlewareWithPanel = WidgetMiddlewarePlugin<T> & {
-    panelComponent: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+    panelComponent: NonNullable<WidgetMiddlewarePlugin<T>['panelComponent']>;
   };
   const panelMiddleware = middleware.filter(
     (m): m is MiddlewareWithPanel => m.panelComponent != null
@@ -244,8 +240,7 @@ export function createChainedPanelComponent<T>(
   return [...panelMiddleware]
     .reverse()
     .reduce<RefCapablePanel>((WrappedPanel, middlewarePlugin) => {
-      const MiddlewarePanelComponent =
-        middlewarePlugin.panelComponent as RefCapableMiddlewarePanel;
+      const MiddlewarePanelComponent = middlewarePlugin.panelComponent;
       const supported = [middlewarePlugin.supportedTypes].flat();
 
       const ChainedPanel = React.forwardRef<unknown, WidgetPanelProps<T>>(

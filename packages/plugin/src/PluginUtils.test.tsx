@@ -814,15 +814,16 @@ describe('createChainedPanelComponent', () => {
       );
     }
 
-    function PanelComp({ Component, ...props }: WidgetMiddlewarePanelProps) {
-      return (
+    const PanelComp = React.forwardRef<unknown, WidgetMiddlewarePanelProps>(
+      ({ Component, ...props }, ref) => (
         <div data-testid={`${name}-panel`}>
           <span>{name}</span>
           {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <Component {...props} />
+          <Component ref={ref} {...props} />
         </div>
-      );
-    }
+      )
+    );
+    PanelComp.displayName = `${name}PanelComp`;
 
     return {
       name,
@@ -922,5 +923,45 @@ describe('createChainedPanelComponent', () => {
     // Middleware should be applied
     expect(screen.getByTestId('table-panel-mw-panel')).toBeInTheDocument();
     expect(screen.getByTestId('base-panel')).toBeInTheDocument();
+  });
+
+  it('forwards the golden-layout ref through middleware to the base panel', () => {
+    // A ref-capable base panel, mirroring a class panel golden-layout binds a
+    // ref to for componentState persistence.
+    const RefBasePanel = React.forwardRef<{ marker: string }, WidgetPanelProps>(
+      (props, ref) => {
+        React.useImperativeHandle(ref, () => ({
+          marker: 'base-panel-instance',
+        }));
+        return <div data-testid="ref-base-panel">RefBasePanel</div>;
+      }
+    );
+    RefBasePanel.displayName = 'RefBasePanel';
+
+    const mw = makePanelMiddleware('ref-mw');
+    const Chained = createChainedPanelComponent(RefBasePanel, [
+      mw,
+    ]) as React.ForwardRefExoticComponent<
+      WidgetPanelProps & React.RefAttributes<unknown>
+    >;
+
+    const panelProps = {
+      fetch: jest.fn(),
+      metadata: { type: 'test-type' },
+      localDashboardId: 'test',
+      glContainer: {} as WidgetPanelProps['glContainer'],
+      glEventHub: {} as WidgetPanelProps['glEventHub'],
+    };
+
+    const ref = React.createRef<{ marker: string }>();
+    render(
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <Chained ref={ref} {...panelProps} />
+    );
+
+    // The ref must reach the base panel through the middleware layer, otherwise
+    // golden-layout cannot persist the wrapped panel's state.
+    expect(screen.getByTestId('ref-mw-panel')).toBeInTheDocument();
+    expect(ref.current).toEqual({ marker: 'base-panel-instance' });
   });
 });

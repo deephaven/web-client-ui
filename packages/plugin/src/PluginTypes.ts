@@ -216,8 +216,17 @@ export interface WidgetMiddlewarePlugin<T = unknown> extends Plugin {
   /**
    * The middleware panel component that wraps the base panel component.
    * If omitted, only the component middleware will be applied.
+   *
+   * Must be a `React.forwardRef` component: middleware that transparently
+   * wraps a single inner panel has to forward its own `ref` to the wrapped
+   * `Component`. Golden-layout binds a ref to the registered panel to persist
+   * class-component state into its `componentState`; if a middleware swallows
+   * the ref, the wrapped panel's state (sorts, filters, column moves, etc.) is
+   * never serialized and is lost on reload.
    */
-  panelComponent?: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+  panelComponent?: React.ForwardRefExoticComponent<
+    WidgetMiddlewarePanelProps<T> & React.RefAttributes<unknown>
+  >;
 }
 
 /**
