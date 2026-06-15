@@ -24,16 +24,18 @@
   --spectrum-dropdown-text-size: 12px;
 
   // Our own chevron rendered as a pseudo-element on the right.
+  // Square element with border-right + border-bottom rotated 45° → symmetric V.
   &::after {
     content: '';
     display: block;
     flex-shrink: 0;
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid currentColor;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentcolor;
+    border-bottom: 2px solid currentcolor;
+    transform: rotate(45deg);
     margin-left: 4px;
+    margin-bottom: 4px; // shift up to visually center the rotated square
     opacity: 0.7;
   }
 
