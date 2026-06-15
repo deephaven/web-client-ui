@@ -1190,8 +1190,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   /**
    * The metric calculator factory most recently used to instantiate the
-   * calculator currently stored in state. Used by `handleCustomColumnsChanged`
-   * to detect when a model swap exposes a different factory and rebuild.
+   * calculator currently stored in state. Used by `maybeRebuildMetricCalculator`
+   * (called from `componentDidUpdate` when the `getMetricCalculator` prop
+   * changes) to detect when a different factory is supplied and rebuild.
    */
   lastMetricCalculatorFactory?: GetMetricCalculatorType;
 

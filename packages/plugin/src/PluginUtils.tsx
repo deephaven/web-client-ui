@@ -247,16 +247,22 @@ export function createChainedPanelComponent<T>(
 
       const ChainedPanel = React.forwardRef<unknown, WidgetPanelProps<T>>(
         ({ metadata, ...rest }, ref) => {
+          // Only forward the ref when golden-layout actually provides one.
+          // Spreading an empty object (rather than passing `ref={null}`) keeps
+          // a plain function-component base panel on a non-golden-layout render
+          // path from being handed a ref prop it can't accept.
+          const refProps = ref != null ? { ref } : {};
           // Skip middleware if the widget type doesn't match its supportedTypes
           if (metadata?.type != null && !supported.includes(metadata.type)) {
             return (
               // eslint-disable-next-line react/jsx-props-no-spreading
-              <WrappedPanel ref={ref} {...rest} metadata={metadata} />
+              <WrappedPanel {...refProps} {...rest} metadata={metadata} />
             );
           }
           return (
             <MiddlewarePanelComponent
-              ref={ref}
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...refProps}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...rest}
               metadata={metadata}
