@@ -321,4 +321,36 @@ test.describe('column group separators', () => {
       'nested-group-separator-depth-1-resized.png'
     );
   });
+
+  test('still highlights on hover after selecting rows by drag', async ({
+    page,
+  }) => {
+    const gridBox = await page
+      .locator('.iris-grid-panel .iris-grid')
+      .boundingBox();
+    expect(gridBox).not.toBeNull();
+    if (gridBox === null) return;
+
+    const rowHeight = 19; // Based on default in IrisGridTheme
+    const fullHeaderHeight = 90; // 3 header levels * 30px
+
+    // Drag over column data to select 2 rows
+    const dataX = gridBox.x + 20;
+    const firstRowY = gridBox.y + fullHeaderHeight + rowHeight / 2;
+    await page.mouse.move(dataX, firstRowY);
+    await page.mouse.down();
+    await page.mouse.move(dataX, firstRowY + rowHeight, { steps: 10 });
+    await page.mouse.up();
+
+    // Hover over a column group separator (column 0, depth 1)
+    const separatorPos = await getColumnSeparatorPosition(page, 0, 1);
+    await page.mouse.move(separatorPos.x, separatorPos.y);
+    await page.waitForTimeout(100);
+
+    // The separator should still highlight on hover even though a row
+    // selection drag happened just before
+    await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot(
+      'column-group-separator-hover-after-row-select.png'
+    );
+  });
 });
