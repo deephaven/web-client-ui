@@ -11,6 +11,8 @@
   background-color: var(--grid-cell-bg);
   // Clip to the cell row height; the Picker button is taller than the row.
   overflow: hidden;
+  display: flex;
+  align-items: center;
 
   // Override Spectrum Picker sizing to match grid cell dimensions.
   // --spectrum-dropdown-height drives the button block-size and internal padding.
@@ -21,17 +23,31 @@
   // Match the grid font size (Spectrum reads this variable for the label text).
   --spectrum-dropdown-text-size: 12px;
 
-  .cell-dropdown-field-picker {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
+  // Our own chevron rendered as a pseudo-element on the right.
+  &::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    margin-left: 4px;
+    opacity: 0.7;
+  }
 
-    // Force the inner button to fill the wrapper width.
-    // Spectrum does not stretch the quiet button by default.
+  .cell-dropdown-field-picker {
+    flex: 1;
+    min-width: 0;
+
+    // Hide Spectrum's built-in chevron since we render our own.
+    svg[class*='spectrum-Dropdown-chevron'] {
+      display: none;
+    }
+
+    // Override font-family: Spectrum sets this via an ancestor i18n class.
     button {
-      width: 100%;
-      // Override font-family: Spectrum sets this via an ancestor i18n class.
       font-family: 'fira sans', sans-serif;
     }
   }

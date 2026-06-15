@@ -96,6 +96,7 @@ export function CellDropdownField({
     <div className={classNames('cell-dropdown-field', className)} style={style}>
       <Picker
         UNSAFE_className="cell-dropdown-field-picker"
+        width="100%"
         selectedKey={value || null}
         autoFocus
         defaultOpen
