@@ -39,6 +39,11 @@ $height6: 15px; // Appears 1 time
   user-select: none;
 }
 
+.lm_intersection_dragging,
+.lm_intersection_dragging * {
+  cursor: move !important;
+}
+
 // If a specific Pane is maximized
 .lm_maximised {
   position: absolute;
@@ -78,6 +83,24 @@ $height6: 15px; // Appears 1 time
       position: absolute;
       cursor: ew-resize;
     }
+  }
+}
+
+// Intersection splitter: an invisible grab area at grid crossing points that
+// enables simultaneous (2D) resizing of rows and columns. The visible drag
+// affordance is the two perpendicular splitter lines themselves, which are
+// highlighted (via .lm_dragging) on hover and while dragging.
+.lm_intersection_splitter {
+  position: absolute;
+  z-index: 60;
+  pointer-events: auto;
+  cursor: move;
+
+  .lm_drag_handle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: move;
   }
 }
 

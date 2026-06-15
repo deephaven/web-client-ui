@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import AbstractContentItem from './AbstractContentItem';
 import { animFrame } from '../utils';
-import { Splitter } from '../controls';
+import { IntersectionSplitter, Splitter } from '../controls';
 import type LayoutManager from '../LayoutManager';
 import type { ColumnItemConfig, ItemConfig, RowItemConfig } from '../config';
 
@@ -12,6 +12,13 @@ export default class RowOrColumn extends AbstractContentItem {
   parent: AbstractContentItem | null;
 
   private _splitter: Splitter[] = [];
+  private _intersectionSplitter: {
+    splitter: IntersectionSplitter;
+    key: string;
+    parentSplitterIndex: number;
+    childItemIndex: number;
+    childSplitterIndex: number;
+  }[] = [];
   private _splitterSize: number;
   private _splitterGrabSize: number;
   private _isColumn: boolean;
@@ -19,6 +26,8 @@ export default class RowOrColumn extends AbstractContentItem {
   private _splitterPosition: number | null = null;
   private _splitterMinPosition: number | null = null;
   private _splitterMaxPosition: number | null = null;
+  private _isIntersectionDragging = false;
+  private _isIntersectionHovered = false;
 
   constructor(
     isColumn: true,
@@ -202,6 +211,7 @@ export default class RowOrColumn extends AbstractContentItem {
     if (this.contentItems.length > 0) {
       this._calculateRelativeSizes();
       this._setAbsoluteSizes();
+      this._scheduleIntersectionRefresh();
     }
     this.emitBubblingEvent('stateChanged');
     this.emit('resize');
@@ -222,6 +232,17 @@ export default class RowOrColumn extends AbstractContentItem {
     for (i = 0; i < this.contentItems.length - 1; i++) {
       this.contentItems[i].element.after(this._createSplitter(i).element);
     }
+
+    // Initialise children eagerly so their splitters exist before we attach
+    // intersection handles to them. _$init is idempotent so the outer
+    // callDownwards('_$init') traversal will skip them as no-ops.
+    for (i = 0; i < this.contentItems.length; i++) {
+      if (this.contentItems[i].isInitialised !== true) {
+        this.contentItems[i]._$init();
+      }
+    }
+
+    this._refreshIntersectionSplitters();
   }
 
   /**
@@ -586,6 +607,15 @@ export default class RowOrColumn extends AbstractContentItem {
    * @param   {lm.controls.Splitter} splitter
    */
   _onSplitterDragStop(splitter: Splitter) {
+    this._applySplitterDragStop(splitter);
+
+    this._scheduleSetSize();
+  }
+
+  /**
+   * Applies drag-stop updates for one splitter without scheduling layout.
+   */
+  private _applySplitterDragStop(splitter: Splitter) {
     const items = this._getItemsForSplitter(splitter);
     const sizeBefore = items.before.element[this._dimension]() ?? 0;
     const sizeAfter = items.after.element[this._dimension]() ?? 0;
@@ -604,9 +634,463 @@ export default class RowOrColumn extends AbstractContentItem {
       top: 0,
       left: 0,
     });
+  }
 
+  /**
+   * Schedules a full descendant size update on the next animation frame.
+   */
+  private _scheduleSetSize() {
     animFrame(
       this.callDownwards.bind(this, 'setSize', undefined, undefined, undefined)
     );
+    // setSize only propagates downwards, so it repositions intersection handles
+    // owned by this item and its descendants. A handle that sits at a crossing
+    // is owned by the parent RowOrColumn (it depends on a child splitter's
+    // position), so ancestors must be refreshed too or their handles drift out
+    // of sync with the lines after a drag.
+    this._scheduleAncestorIntersectionRefresh();
+  }
+
+  /**
+   * Schedule intersection handle refresh after layout and browser positioning settle.
+   */
+  private _scheduleIntersectionRefresh() {
+    animFrame(() => {
+      animFrame(this._refreshIntersectionSplitters.bind(this));
+    });
+  }
+
+  /**
+   * Schedule an intersection handle refresh on every RowOrColumn ancestor so
+   * crossing handles stay aligned after a drag that only resized descendants.
+   */
+  private _scheduleAncestorIntersectionRefresh() {
+    let ancestor = this.parent;
+    while (ancestor != null) {
+      if (ancestor instanceof RowOrColumn) {
+        ancestor._scheduleIntersectionRefresh();
+      }
+      ancestor = ancestor.parent;
+    }
+  }
+
+  // ============================================================================
+  // Intersection Splitter Methods - Support for 2D grid resizing
+  // ============================================================================
+
+  /**
+   * Create intersection splitters at the crossing points between this
+   * RowOrColumn's splitters and the splitters of any perpendicular child.
+   *
+   * Each handle is appended into this RowOrColumn's container and positioned
+   * with JS (via `_positionIntersectionSplitter`) during refresh so it stays
+   * aligned as the layout changes. Handles are keyed by their splitter indices
+   * so existing ones are reused rather than recreated.
+   */
+  private _createIntersectionSplitters() {
+    this.childElementContainer.css('position', 'relative');
+
+    const addIntersectionsForChild = (
+      parentSplitterIndex: number,
+      childItemIndex: number,
+      childItem: RowOrColumn
+    ) => {
+      for (
+        let childSplitterIndex = 0;
+        childSplitterIndex < childItem._splitter.length;
+        childSplitterIndex++
+      ) {
+        const intersectionPosition = this._getIntersectionPosition(
+          parentSplitterIndex,
+          childItemIndex,
+          childSplitterIndex
+        );
+
+        if (intersectionPosition == null) {
+          continue;
+        }
+
+        const key =
+          parentSplitterIndex + ':' + childItemIndex + ':' + childSplitterIndex;
+        this._ensureIntersectionSplitter(
+          key,
+          parentSplitterIndex,
+          childItemIndex,
+          childSplitterIndex
+        );
+      }
+    };
+
+    for (
+      let parentSplitterIndex = 0;
+      parentSplitterIndex < this._splitter.length;
+      parentSplitterIndex++
+    ) {
+      const beforeItem = this.contentItems[parentSplitterIndex];
+      const afterItem = this.contentItems[parentSplitterIndex + 1];
+
+      const beforeChild = this._asPerpendicularRowOrColumn(beforeItem);
+      const afterChild = this._asPerpendicularRowOrColumn(afterItem);
+
+      if (beforeChild != null) {
+        addIntersectionsForChild(
+          parentSplitterIndex,
+          parentSplitterIndex,
+          beforeChild
+        );
+      }
+
+      if (afterChild != null) {
+        addIntersectionsForChild(
+          parentSplitterIndex,
+          parentSplitterIndex + 1,
+          afterChild
+        );
+      }
+    }
+  }
+
+  /**
+   * Recreate intersection splitters based on current splitter topology.
+   * This keeps handles aligned and present after layout tree mutations.
+   */
+  private _refreshIntersectionSplitters() {
+    const previousCount = this._intersectionSplitter.length;
+    this._intersectionSplitter = this._intersectionSplitter.filter(
+      intersection => {
+        const keep = this._isIntersectionTopologyValid(
+          intersection.parentSplitterIndex,
+          intersection.childItemIndex,
+          intersection.childSplitterIndex
+        );
+        if (!keep) {
+          intersection.splitter._$destroy();
+        }
+        return keep;
+      }
+    );
+
+    this._createIntersectionSplitters();
+
+    for (let i = 0; i < this._intersectionSplitter.length; i++) {
+      const intersection = this._intersectionSplitter[i];
+      this._positionIntersectionSplitter(intersection);
+    }
+
+    // If handles were added/removed due to topology change, run one more pass
+    // on the next frame to settle post-layout positions.
+    if (this._intersectionSplitter.length !== previousCount) {
+      animFrame(() => {
+        for (let i = 0; i < this._intersectionSplitter.length; i++) {
+          this._positionIntersectionSplitter(this._intersectionSplitter[i]);
+        }
+      });
+    }
+  }
+
+  /**
+   * Destroy all previously created intersection splitters.
+   */
+  private _destroyIntersectionSplitters() {
+    for (let i = 0; i < this._intersectionSplitter.length; i++) {
+      this._intersectionSplitter[i].splitter._$destroy();
+    }
+    this._intersectionSplitter = [];
+  }
+
+  /**
+   * Tear down splitters (including intersection handles and their document-level
+   * drag listeners) before delegating to the base destroy logic.
+   */
+  _$destroy() {
+    this._destroyIntersectionSplitters();
+    for (let i = 0; i < this._splitter.length; i++) {
+      this._splitter[i]._$destroy();
+    }
+    this._splitter = [];
+    AbstractContentItem.prototype._$destroy.call(this);
+  }
+
+  private _isIntersectionTopologyValid(
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number
+  ) {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childItem = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childItem?._splitter[childSplitterIndex];
+
+    return parentSplitter != null && childItem != null && childSplitter != null;
+  }
+
+  /**
+   * Returns the item cast to RowOrColumn iff it is a perpendicular child of
+   * this RowOrColumn (i.e. a row inside a column or vice versa), otherwise null.
+   */
+  private _asPerpendicularRowOrColumn(
+    item: AbstractContentItem | undefined
+  ): RowOrColumn | null {
+    if (!(item instanceof RowOrColumn)) {
+      return null;
+    }
+    return item._isColumn !== this._isColumn ? item : null;
+  }
+
+  /**
+   * Create a single intersection splitter anchored in this row/column overlay
+   * at the given coordinates.
+   */
+  private _ensureIntersectionSplitter(
+    key: string,
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number
+  ) {
+    const existing = this._intersectionSplitter.find(item => item.key === key);
+    if (existing != null) {
+      existing.parentSplitterIndex = parentSplitterIndex;
+      existing.childItemIndex = childItemIndex;
+      existing.childSplitterIndex = childSplitterIndex;
+      return;
+    }
+
+    const intersectionSplitter = new IntersectionSplitter(
+      this._splitterSize,
+      this._splitterGrabSize
+    );
+
+    intersectionSplitter.on(
+      'dragStart',
+      this._onIntersectionSplitterDragStart.bind(
+        this,
+        intersectionSplitter,
+        parentSplitterIndex,
+        childItemIndex,
+        childSplitterIndex
+      ),
+      this
+    );
+    intersectionSplitter.on(
+      'drag',
+      this._onIntersectionSplitterDrag.bind(
+        this,
+        intersectionSplitter,
+        parentSplitterIndex,
+        childItemIndex,
+        childSplitterIndex
+      ),
+      this
+    );
+    intersectionSplitter.on(
+      'dragStop',
+      this._onIntersectionSplitterDragStop.bind(
+        this,
+        intersectionSplitter,
+        parentSplitterIndex,
+        childItemIndex,
+        childSplitterIndex
+      ),
+      this
+    );
+
+    // Highlight both perpendicular lines while hovering the grab area, mirroring
+    // the active line affordance used for 1D splitter drags.
+    intersectionSplitter.element.on('mouseenter', () => {
+      this._isIntersectionHovered = true;
+      this._setIntersectionHighlight(
+        parentSplitterIndex,
+        childItemIndex,
+        childSplitterIndex,
+        true
+      );
+    });
+    intersectionSplitter.element.on('mouseleave', () => {
+      this._isIntersectionHovered = false;
+      if (!this._isIntersectionDragging) {
+        this._setIntersectionHighlight(
+          parentSplitterIndex,
+          childItemIndex,
+          childSplitterIndex,
+          false
+        );
+      }
+    });
+
+    intersectionSplitter.element.css({
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      transform: 'translate(-50%, -50%)',
+      zIndex: 60,
+    });
+
+    this.childElementContainer.append(intersectionSplitter.element);
+    this._intersectionSplitter.push({
+      splitter: intersectionSplitter,
+      key,
+      parentSplitterIndex,
+      childItemIndex,
+      childSplitterIndex,
+    });
+  }
+
+  private _positionIntersectionSplitter(intersection: {
+    splitter: IntersectionSplitter;
+    parentSplitterIndex: number;
+    childItemIndex: number;
+    childSplitterIndex: number;
+  }) {
+    const position = this._getIntersectionPosition(
+      intersection.parentSplitterIndex,
+      intersection.childItemIndex,
+      intersection.childSplitterIndex
+    );
+
+    if (position == null) {
+      return;
+    }
+
+    intersection.splitter.element.css({
+      left: position.left,
+      top: position.top,
+    });
+  }
+
+  /**
+   * Compute intersection coordinates relative to this row/column container.
+   */
+  private _getIntersectionPosition(
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number
+  ): { left: number; top: number } | null {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childItem = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childItem?._splitter[childSplitterIndex];
+
+    if (parentSplitter == null || childItem == null || childSplitter == null) {
+      return null;
+    }
+
+    const parentPos = parentSplitter.element.position();
+    const childItemPos = childItem.element.position();
+    const childSplitterPos = childSplitter.element.position();
+
+    if (parentPos == null || childItemPos == null || childSplitterPos == null) {
+      return null;
+    }
+
+    if (this._isColumn) {
+      return {
+        left: (childItemPos.left ?? 0) + (childSplitterPos.left ?? 0),
+        top: parentPos.top ?? 0,
+      };
+    }
+
+    return {
+      left: parentPos.left ?? 0,
+      top: (childItemPos.top ?? 0) + (childSplitterPos.top ?? 0),
+    };
+  }
+
+  /**
+   * Toggle the active-line highlight on both splitters that meet at an
+   * intersection. Reuses the standard `.lm_dragging` line style so the 2D
+   * affordance is visually identical to the existing 1D drag affordance.
+   */
+  private _setIntersectionHighlight(
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number,
+    highlighted: boolean
+  ) {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childItem = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childItem?._splitter[childSplitterIndex];
+
+    parentSplitter?.element.toggleClass('lm_dragging', highlighted);
+    childSplitter?.element.toggleClass('lm_dragging', highlighted);
+  }
+
+  /**
+   * Invoked when an intersection splitter's DragListener fires dragStart.
+   * Calculates movement bounds for both axes (via the existing 1D logic) so the
+   * drag stays within valid ranges, and highlights both perpendicular lines.
+   */
+  private _onIntersectionSplitterDragStart(
+    intersectionSplitter: IntersectionSplitter,
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number
+  ) {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childBefore = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childBefore._splitter[childSplitterIndex];
+
+    // Reuse the existing 1D splitter drag logic to compute bounds for each axis.
+    this._onSplitterDragStart(parentSplitter);
+    childBefore._onSplitterDragStart(childSplitter);
+
+    this._isIntersectionDragging = true;
+    this._setIntersectionHighlight(
+      parentSplitterIndex,
+      childItemIndex,
+      childSplitterIndex,
+      true
+    );
+    $(document.body).addClass('lm_intersection_dragging');
+  }
+
+  /**
+   * Invoked when an intersection splitter's DragListener fires drag. Moves both
+   * splitter lines by delegating to the existing 1D logic, which clamps each
+   * axis to its own valid range. The lines moving form the 2D drag affordance.
+   */
+  private _onIntersectionSplitterDrag(
+    intersectionSplitter: IntersectionSplitter,
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number,
+    offsetX: number,
+    offsetY: number
+  ) {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childBefore = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childBefore._splitter[childSplitterIndex];
+
+    this._onSplitterDrag(parentSplitter, offsetX, offsetY);
+    childBefore._onSplitterDrag(childSplitter, offsetX, offsetY);
+  }
+
+  /**
+   * Invoked when an intersection splitter's DragListener fires dragStop.
+   * Applies both axis updates atomically (via the existing 1D logic), clears the
+   * highlight unless the pointer is still over the handle, then relayouts once.
+   */
+  private _onIntersectionSplitterDragStop(
+    intersectionSplitter: IntersectionSplitter,
+    parentSplitterIndex: number,
+    childItemIndex: number,
+    childSplitterIndex: number
+  ) {
+    const parentSplitter = this._splitter[parentSplitterIndex];
+    const childBefore = this.contentItems[childItemIndex] as RowOrColumn;
+    const childSplitter = childBefore._splitter[childSplitterIndex];
+
+    this._applySplitterDragStop(parentSplitter);
+    childBefore._applySplitterDragStop(childSplitter);
+
+    this._isIntersectionDragging = false;
+    if (!this._isIntersectionHovered) {
+      this._setIntersectionHighlight(
+        parentSplitterIndex,
+        childItemIndex,
+        childSplitterIndex,
+        false
+      );
+    }
+    $(document.body).removeClass('lm_intersection_dragging');
+
+    this._scheduleSetSize();
   }
 }
