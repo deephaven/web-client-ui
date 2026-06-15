@@ -97,7 +97,8 @@ export function useWidget<T extends WidgetTypes = dh.Widget>(
           if (isCancelled) {
             return;
           }
-          log.error('loadWidgetInternal error', descriptor, e);
+          // We shouldn't log an error from the hook. The onus is on the consumer to log the error from the hook if they want to. However, we can log a debug message for troubleshooting.
+          log.debug('loadWidgetInternal error', descriptor, e);
           setWrapper({ widget: null, error: e ?? new Error('Null error') });
         }
       }
