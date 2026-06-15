@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -25,7 +25,7 @@
     "@deephaven/test-utils": "file:../test-utils"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "3.38.0",
+    "@adobe/react-spectrum": "3.47.0",
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",

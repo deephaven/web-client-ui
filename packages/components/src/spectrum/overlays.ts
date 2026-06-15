@@ -4,6 +4,7 @@ export {
   ContextualHelp,
   type SpectrumContextualHelpProps as ContextualHelpProps,
   Dialog,
+  type SpectrumDialogClose,
   type SpectrumDialogProps as DialogProps,
   DialogContainer,
   type SpectrumDialogContainerProps as DialogContainerProps,

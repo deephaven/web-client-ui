@@ -14,6 +14,7 @@ import { connect, type ConnectedProps } from 'react-redux';
 import type { dh } from '@deephaven/jsapi-types';
 import Panel from './CorePanel';
 import { NotebookEvent } from '../events';
+import { type CoreConsoleSession } from '../ConsoleEvents';
 import './FileExplorerPanel.scss';
 import { getDashboardSessionWrapper } from '../redux';
 
@@ -224,10 +225,7 @@ export class FileExplorerPanel extends React.Component<
     glEventHub.emit(NotebookEvent.RENAME_FILE, oldName, newName);
   }
 
-  handleSessionOpened(
-    session: dh.IdeSession,
-    { language }: { language: string }
-  ): void {
+  handleSessionOpened({ session, language }: CoreConsoleSession): void {
     this.setState({
       session,
       language,

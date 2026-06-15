@@ -4,16 +4,21 @@ import './Stack.scss';
 import { SlideTransition } from '../transitions';
 
 export type StackProps = {
-  children: React.ReactNode | React.ReactNode[];
+  /**
+   * Stack views to animate between. Each child must be a React element with a
+   * stable `key`; views are tracked by that key across re-renders (primitive
+   * nodes such as strings/numbers are not supported).
+   */
+  children: React.ReactElement | React.ReactElement[];
   'data-testid'?: string;
 };
 
 /**
- * Identifies a stack view by its React `key` rather than by element identity.
+ * Returns the React `key` for an element, or `null` for non-elements.
  *
  * The parent that renders the stack may re-render frequently (e.g. an
  * `IrisGrid` re-renders on every table tick) and hand us brand-new element
- * objects that represent the *same* logical view. Tracking the animating views
+ * objects that represent the same logical view. Tracking the animating views
  * by `key` (rather than by element reference) means those re-renders neither
  * retrigger the slide animation nor churn state every frame.
  *
