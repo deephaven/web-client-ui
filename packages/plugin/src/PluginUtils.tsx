@@ -200,11 +200,21 @@ export function createChainedComponent<T>(
 /**
  * Creates a panel component that chains middleware around a base panel component.
  * Each middleware panel wraps the next, with the base panel at the innermost layer.
+ *
+ * The chain forwards the `ref` injected by golden-layout (on the registered
+ * panel) all the way down to `basePanelComponent`. Golden-layout uses that ref
+ * to bind a class panel's React state into its serialized `componentState`;
+ * forwarding it keeps that persistence working through transparent middleware,
+ * so wrapped panels still restore sorts/filters/column moves on reload.
  */
 export function createChainedPanelComponent<T>(
   basePanelComponent: React.ComponentType<WidgetPanelProps<T>>,
   middleware: WidgetMiddlewarePlugin<T>[]
 ): React.ComponentType<WidgetPanelProps<T>> {
+  type RefCapablePanel = React.ForwardRefExoticComponent<
+    WidgetPanelProps<T> & React.RefAttributes<unknown>
+  >;
+
   // Filter to middleware that has a panelComponent and extract just the panel components
   type MiddlewareWithPanel = WidgetMiddlewarePlugin<T> & {
     panelComponent: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
@@ -230,20 +240,23 @@ export function createChainedPanelComponent<T>(
   // Build the chain from inside out (base panel is innermost)
   return [...panelMiddleware]
     .reverse()
-    .reduce<React.ComponentType<WidgetPanelProps<T>>>(
-      (WrappedPanel, middlewarePlugin) => {
-        const { panelComponent: MiddlewarePanelComponent } = middlewarePlugin;
-        const supported = [middlewarePlugin.supportedTypes].flat();
+    .reduce<RefCapablePanel>((WrappedPanel, middlewarePlugin) => {
+      const MiddlewarePanelComponent =
+        middlewarePlugin.panelComponent as RefCapablePanel;
+      const supported = [middlewarePlugin.supportedTypes].flat();
 
-        function ChainedPanel({ metadata, ...rest }: WidgetPanelProps<T>) {
+      const ChainedPanel = React.forwardRef<unknown, WidgetPanelProps<T>>(
+        ({ metadata, ...rest }, ref) => {
           // Skip middleware if the widget type doesn't match its supportedTypes
           if (metadata?.type != null && !supported.includes(metadata.type)) {
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            return <WrappedPanel {...rest} metadata={metadata} />;
+            return (
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              <WrappedPanel ref={ref} {...rest} metadata={metadata} />
+            );
           }
           return (
-            // eslint-disable-next-line react/jsx-props-no-spreading
             <MiddlewarePanelComponent
+              ref={ref}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...rest}
               metadata={metadata}
@@ -251,13 +264,12 @@ export function createChainedPanelComponent<T>(
             />
           );
         }
-        ChainedPanel.displayName = `${
-          middlewarePlugin.name
-        }Panel(${getComponentName(WrappedPanel, 'Panel')})`;
-        return ChainedPanel;
-      },
-      basePanelComponent
-    );
+      );
+      ChainedPanel.displayName = `${
+        middlewarePlugin.name
+      }Panel(${getComponentName(WrappedPanel, 'Panel')})`;
+      return ChainedPanel;
+    }, basePanelComponent as RefCapablePanel);
 }
 
 export type PluginManifestPluginInfo = {

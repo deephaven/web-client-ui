@@ -8,7 +8,7 @@ import {
   IrisGridCacheUtils,
   type IrisGridState,
   type IrisGridType,
-  type IrisGridThemeType,
+  type IrisGridViewProps,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
   type IrisGridModel,
@@ -36,13 +36,17 @@ export function GridWidgetPlugin({
   fetch,
   transformTableOptions,
   transformModel,
-  theme,
+  irisGridProps,
   onModelChanged,
 }: WidgetComponentProps<DhType.Table> &
   IrisGridTableOptionsWidgetProps &
   IrisGridModelWidgetProps & {
-    /** Theme overrides forwarded to `<IrisGrid>`. */
-    theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
+    /**
+     * View-concern overrides (theme, renderer, mouse handlers, metric
+     * calculator) forwarded as a single bag to `<IrisGrid>`. Lets a plugin
+     * contribute presentation without this host knowing each concern by name.
+     */
+    irisGridProps?: Partial<IrisGridViewProps>;
     /** Called once the model is built, so middleware can observe it. */
     onModelChanged?: (model: IrisGridModel) => void;
   }): JSX.Element | null {
@@ -194,7 +198,8 @@ export function GridWidgetPlugin({
       inputFilters={inputFilters}
       customFilters={customFilters}
       transformTableOptions={transformTableOptions}
-      theme={theme}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...irisGridProps}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}

@@ -170,8 +170,17 @@ export interface WidgetMiddlewarePanelProps<T = unknown>
   /**
    * The next panel component in the middleware chain.
    * Middleware should render this component to continue the chain.
+   *
+   * This is ref-capable: middleware that transparently wraps a single inner
+   * panel should forward its own `ref` to this component. Golden-layout binds
+   * a ref to the registered panel to persist class-component state into its
+   * `componentState`; if a middleware swallows the ref, the wrapped panel's
+   * state (sorts, filters, column moves, etc.) is never serialized and is lost
+   * on reload.
    */
-  Component: React.ComponentType<WidgetPanelProps<T>>;
+  Component: React.ForwardRefExoticComponent<
+    WidgetPanelProps<T> & React.RefAttributes<unknown>
+  >;
 }
 
 /**

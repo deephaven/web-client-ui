@@ -183,6 +183,18 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       this.addListeners(model);
     }
 
+    if (oldModel !== model) {
+      // Signal an inner-model swap so the host can reset view state owned by
+      // the previous model (e.g. `movedColumns`). Dispatched before
+      // COLUMNS_CHANGED / TABLE_CHANGED so the host resets moves first, then
+      // reacts to the new column set.
+      this.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.MODEL_CHANGED, {
+          detail: model,
+        })
+      );
+    }
+
     if (oldColumns !== model.columns) {
       this.dispatchEvent(
         new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
@@ -296,6 +308,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   get isSelectDistinctAvailable(): boolean {
     return (
+      // The presented model must support select distinct. Models that don't
+      // (e.g. pivot models) report false here even though the underlying
+      // source table would. This keeps the capability consistent with whatever
+      // is currently displayed.
+      this.model.isSelectDistinctAvailable &&
       (this.originalModel.isSelectDistinctAvailable ||
         this.selectDistinct.length > 0) &&
       this.rollup == null

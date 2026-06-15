@@ -80,7 +80,6 @@ function makeIrisGridPanelWrapper(
       panelState={undefined}
       getDownloadWorker={() => undefined}
       loadPlugin={() => undefined}
-      theme={undefined}
       transformTableOptions={transformTableOptions}
       transformModel={transformModel}
     />

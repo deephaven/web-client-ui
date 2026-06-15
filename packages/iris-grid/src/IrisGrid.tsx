@@ -416,6 +416,20 @@ export interface IrisGridProps {
   getMetricCalculator: GetMetricCalculatorType;
 }
 
+/**
+ * The subset of `IrisGridProps` that overrides how the grid presents its
+ * model: theme, canvas renderer, extra mouse handlers, and the metric
+ * calculator factory. Hosts that render `<IrisGrid>` on behalf of a plugin
+ * (e.g. `GridWidgetPlugin`) accept this as a single passthrough bag so they
+ * don't need to know each view concern by name, and plugins build it from
+ * their own hooks. Kept as a `Pick` (not `Partial<IrisGridProps>`) so it can
+ * never clobber structural props like `model` or `ref`.
+ */
+export type IrisGridViewProps = Pick<
+  IrisGridProps,
+  'theme' | 'renderer' | 'mouseHandlers' | 'getMetricCalculator'
+>;
+
 export interface IrisGridState {
   isFilterBarShown: boolean;
   isSelectingPartition: boolean;
@@ -638,6 +652,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleTableChanged = this.handleTableChanged.bind(this);
+    this.handleModelChanged = this.handleModelChanged.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
@@ -828,8 +843,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const movedRows =
       movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
-    const metricCalculatorFactory =
-      model.getMetricCalculator ?? getMetricCalculator;
+    const metricCalculatorFactory = getMetricCalculator;
     const metricCalculator = metricCalculatorFactory({
       userColumnWidths: new Map(userColumnWidths),
       userColumnWidthsByName:
@@ -993,14 +1007,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     // The renderer and mouse handlers flow through memoized getters in
     // render(), so a `renderer` / `mouseHandlers` prop change naturally
-    // propagates on the next render. The metric calculator, however, lives
-    // in component state and is only refreshed on a model-driven
-    // COLUMNS_CHANGED event. Mirror that path when the prop itself changes
-    // so consumers that swap `getMetricCalculator` at runtime stay in sync.
-    // This is a prop swap against the *same* model, so the column set hasn't
-    // changed — preserve the user's moved columns rather than resetting them.
+    // propagates on the next render. The metric calculator, however, lives in
+    // component state, so mirror that path when the `getMetricCalculator` prop
+    // changes (e.g. the pivot-builder middleware swapping the pivot factory in
+    // or out) so the calculator stays in sync. Moved columns are not touched
+    // here — a model swap resets them via `handleModelChanged`.
     if (getMetricCalculator !== prevProps.getMetricCalculator) {
-      this.maybeRebuildMetricCalculator(false);
+      this.maybeRebuildMetricCalculator();
     }
 
     const changedInputFilters =
@@ -1643,41 +1656,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   getCachedMouseHandlers = memoize(
-    (
-      mouseHandlersProp: MouseHandlersProp,
-      modelHandlers: readonly (
-        | GridMouseHandler
-        | ((irisGrid: unknown) => GridMouseHandler)
-      )[] = EMPTY_ARRAY
-    ): readonly GridMouseHandler[] =>
-      [...mouseHandlersProp, ...modelHandlers, ...this.mouseHandlers].map(
-        handler => (typeof handler === 'function' ? handler(this) : handler)
+    (mouseHandlersProp: MouseHandlersProp): readonly GridMouseHandler[] =>
+      [...mouseHandlersProp, ...this.mouseHandlers].map(handler =>
+        typeof handler === 'function' ? handler(this) : handler
       ),
-    // length: 2 — without this, memoizee infers `fn.length` (which is 1 here
-    // because `modelHandlers` has a default value) and uses ONLY
-    // `mouseHandlersProp` as the cache key. That hides changes to
-    // `modelHandlers` (e.g. when a proxy model swaps its inner model and
-    // starts returning pivot handlers).
-    { max: 1, length: 2 }
+    { max: 1 }
   );
 
   getCachedRenderer = memoize(
-    (rendererProp?: IrisGridRenderer, modelRenderer?: IrisGridRenderer) =>
-      modelRenderer ?? rendererProp ?? new IrisGridRenderer(),
+    (rendererProp?: IrisGridRenderer) => rendererProp ?? new IrisGridRenderer(),
     { max: 1 }
   );
 
   get renderer(): IrisGridRenderer {
-    const { model, renderer } = this.props;
-    return this.getCachedRenderer(renderer, model.getRenderer?.());
+    const { renderer } = this.props;
+    return this.getCachedRenderer(renderer);
   }
 
   getMouseHandlers(): readonly GridMouseHandler[] {
-    const { model, mouseHandlers } = this.props;
-    return this.getCachedMouseHandlers(
-      mouseHandlers,
-      model.getMouseHandlers?.()
-    );
+    const { mouseHandlers } = this.props;
+    return this.getCachedMouseHandlers(mouseHandlers);
   }
 
   getValueForCell(
@@ -2590,6 +2588,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
     );
+    model.addEventListener(
+      IrisGridModel.EVENT.MODEL_CHANGED,
+      this.handleModelChanged
+    );
   }
 
   stopListening(model: IrisGridModel): void {
@@ -2618,6 +2620,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.removeEventListener(
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.MODEL_CHANGED,
+      this.handleModelChanged
     );
   }
 
@@ -3508,13 +3514,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleTableChanged(): void {
     const { model } = this.props;
-    // movedColumns reset triggers metricCalculator update in the Grid component
-    this.setState({ movedColumns: model.initialMovedColumns });
     // For partitioned tables, we want to rebuild filters on table change to ensure filters are applied to the new partition
     const { partitionConfig } = this.state;
     if (isPartitionedGridModel(model) && partitionConfig?.mode !== 'keys') {
       this.rebuildFilters();
     }
+  }
+
+  /**
+   * Handle an inner-model swap on a proxy model (`MODEL_CHANGED`). The previous
+   * model's `movedColumns` reference indices that may not exist in the new
+   * model (e.g. a pivot exposes a different column set), so reset them to the
+   * new model's initial order. The metric calculator is rebuilt separately when
+   * the `getMetricCalculator` prop changes (see `componentDidUpdate`); a calc
+   * whose seed `movedColumns` are now stale self-heals because `getMetrics`
+   * reconciles against the grid's current `movedColumns` at draw time.
+   */
+  handleModelChanged(): void {
+    const { model } = this.props;
+    this.setState({ movedColumns: model.initialMovedColumns });
   }
 
   handleViewChanged(metrics?: GridMetrics): void {
@@ -3773,7 +3791,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleCustomColumnsChanged(): void {
     log.debug('Model columns changed');
-    this.maybeRebuildMetricCalculator();
     const { isReady } = this.state;
     if (isReady) {
       this.updateMetrics();
@@ -3787,33 +3804,29 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Detect a model swap that exposes a different `getMetricCalculator`
-   * factory (e.g. a proxy model whose inner model changed class) and replace
-   * the calculator instance in state when it does. The renderer and mouse
-   * handlers are recomputed via their memoized getters on the next render
-   * and do not need explicit handling here.
+   * Rebuild the metric calculator when the `getMetricCalculator` prop swaps for
+   * a different factory (e.g. entering or leaving a pivot, where the
+   * pivot-builder middleware flips the prop). The renderer and mouse handlers
+   * are recomputed via their memoized getters on the next render and do not
+   * need explicit handling here.
    *
    * User column-widths / row-heights from the previous calculator are not
-   * carried over: a factory swap means the column set has effectively
-   * changed, so the stored sizes wouldn't map to anything meaningful.
+   * carried over: a factory swap means the column set has effectively changed,
+   * so the stored sizes wouldn't map to anything meaningful.
    *
-   * @param resetMovedColumns When true (the model-class swap case, e.g.
-   * entering a pivot or rollup), moved columns are reset to the new model's
-   * initial order — stale moves reference indices that may no longer exist
-   * (e.g. a pivot model that exposes fewer, non-movable columns than the
-   * prior layout), which would otherwise remap visible columns out of view.
-   * When false (a `getMetricCalculator` prop swap against the same model),
-   * the column set is unchanged, so the user's moved columns are preserved.
+   * Moved columns are NOT reset here — that is owned by `handleModelChanged`
+   * (the `MODEL_CHANGED` event) so that a plain prop swap against the same
+   * model preserves the user's layout. The new calculator is seeded with the
+   * current moved columns; `getMetrics` reconciles against the grid's live
+   * `movedColumns` at draw time, so a later reset stays consistent.
    */
-  maybeRebuildMetricCalculator(resetMovedColumns = true): void {
-    const { model, getMetricCalculator } = this.props;
-    const factory = model.getMetricCalculator ?? getMetricCalculator;
+  maybeRebuildMetricCalculator(): void {
+    const { getMetricCalculator } = this.props;
+    const factory = getMetricCalculator;
     if (factory === this.lastMetricCalculatorFactory) return;
 
-    const { movedColumns: currentMovedColumns } = this.state;
-    const movedColumns = resetMovedColumns
-      ? model.initialMovedColumns
-      : currentMovedColumns;
+    const { model } = this.props;
+    const { movedColumns } = this.state;
     const next = factory({
       userColumnWidths: new Map(),
       userRowHeights: new Map(),
@@ -3827,15 +3840,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
     this.lastMetricCalculatorFactory = factory;
     log.debug('Swapping metric calculator', next);
-    // Also push the new calculator onto the Grid synchronously. The
-    // immediately-following `updateMetrics()` call reads `Grid.metricCalculator`
-    // directly, before React has committed the setState below — without this
-    // sync assignment, a model swap (e.g. pivot reset) would invoke the old
-    // calculator against the new model and could throw.
+    // Also push the new calculator onto the Grid synchronously so any
+    // immediately-following read of `Grid.metricCalculator` (before React has
+    // committed the setState below) uses the new instance against the new
+    // model rather than invoking the old calculator and potentially throwing.
     if (this.grid != null) {
       this.grid.metricCalculator = next;
     }
-    this.setState({ metricCalculator: next, movedColumns });
+    this.setState({ metricCalculator: next });
   }
 
   handlePendingCommitClicked(): Promise<void> {

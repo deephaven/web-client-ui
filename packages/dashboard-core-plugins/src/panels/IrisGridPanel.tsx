@@ -27,7 +27,6 @@ import {
   type ColumnName,
   type PendingDataMap,
   type InputFilter,
-  type IrisGridThemeType,
   type ReadonlyAdvancedFilterMap,
   type AggregationSettings,
   type AdvancedSettingsType,
@@ -45,9 +44,7 @@ import {
   type ColumnHeaderGroup,
   type IrisGridContextMenuData,
   type PartitionConfig,
-  type IrisGridRenderer,
-  type MouseHandlersProp,
-  type GetMetricCalculatorType,
+  type IrisGridViewProps,
   type TableOptionsTransform,
   type IrisGridModelTransform,
 } from '@deephaven/iris-grid';
@@ -159,13 +156,13 @@ export interface OwnProps extends DashboardPanelProps {
   /** Load a plugin defined by the table */
   loadPlugin: (pluginName: string) => TablePluginComponent;
 
-  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
-
-  mouseHandlers?: MouseHandlersProp;
-
-  renderer?: IrisGridRenderer;
-
-  getMetricCalculator?: GetMetricCalculatorType;
+  /**
+   * View-concern overrides (theme, renderer, mouse handlers, metric
+   * calculator) forwarded as a single bag to `IrisGrid`. Lets IrisGrid-aware
+   * middleware contribute presentation without this panel knowing each
+   * concern by name. Threaded down the middleware chain.
+   */
+  irisGridProps?: Partial<IrisGridViewProps>;
 
   /**
    * Transform applied to the built-in Table Options items before they are
@@ -1188,13 +1185,10 @@ export class IrisGridPanel extends PureComponent<
       inputFilters,
       links,
       metadata,
-      mouseHandlers,
       panelState,
       user,
-      renderer,
       settings,
-      getMetricCalculator,
-      theme,
+      irisGridProps,
       transformTableOptions,
     } = this.props;
     const {
@@ -1297,13 +1291,11 @@ export class IrisGridPanel extends PureComponent<
             isSelectingPartition={isSelectingPartition}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
-            mouseHandlers={mouseHandlers}
             movedColumns={movedColumns}
             movedRows={movedRows}
             partitions={partitions}
             partitionConfig={partitionConfig}
             quickFilters={quickFilters}
-            renderer={renderer}
             reverse={reverse}
             rollupConfig={rollupConfig}
             settings={settings}
@@ -1331,10 +1323,10 @@ export class IrisGridPanel extends PureComponent<
             ref={this.irisGrid}
             getDownloadWorker={getDownloadWorker}
             frozenColumns={frozenColumns}
-            theme={theme}
             columnHeaderGroups={columnHeaderGroups}
-            getMetricCalculator={getMetricCalculator}
             transformTableOptions={transformTableOptions}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...irisGridProps}
           >
             {childrenContent}
           </IrisGrid>
