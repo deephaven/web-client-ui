@@ -482,17 +482,27 @@ export class GridUtils {
       return false;
     }
 
-    // Always show separator for the last column
-    if (nextColumnIndex == null) {
-      return true;
-    }
-
     // Leaf depth: every distinct model column is a physical boundary
     if (depth === 0) {
       return true;
     }
 
     const groupA = model.getColumnHeaderGroup(columnIndex, depth);
+
+    // No header cell is drawn above this column at this depth (empty band), so
+    // there is no right-edge separator to grab. A cell exists when the column
+    // has a declared group or header text at this depth.
+    const hasHeaderCell =
+      groupA != null || model.textForColumnHeader(columnIndex, depth) != null;
+    if (!hasHeaderCell) {
+      return false;
+    }
+
+    // Always show separator at the right edge of the last column's header cell
+    if (nextColumnIndex == null) {
+      return true;
+    }
+
     const groupB = model.getColumnHeaderGroup(nextColumnIndex, depth);
 
     if (groupA != null && groupB != null) {
