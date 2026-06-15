@@ -200,9 +200,10 @@ model is ready).
 
 ### Full example
 
-See the [`@deephaven/js-plugin-table-options-example`](https://github.com/deephaven/deephaven-plugins/tree/main/plugins/table-options-example)
-plugin for a working `WidgetMiddlewarePlugin` and `DashboardPlugin` that
-hides a built-in item and adds a `configPage`-backed page.
+See the [`@deephaven/js-plugin-pivot-builder`](https://github.com/deephaven/deephaven-plugins/tree/main/plugins/pivot-builder)
+plugin for a working `WidgetMiddlewarePlugin` that replaces the default
+widget renderer and adds a `configPage`-backed "Rollup, Aggregate and Pivot"
+item to the Table Options sidebar.
 
 ### Why the transform doesn't take the model
 
