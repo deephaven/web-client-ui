@@ -1946,6 +1946,14 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     this.notifyMouseHandlers('onUp', event, false);
+
+    // isDragging is set on any drag in handleMouseDrag, so it must be reset
+    // here for drags that aren't owned by a handler that resets it (e.g. a
+    // selection drag). Otherwise it stays stuck true and suppresses the
+    // column separator hover highlight.
+    if (isDragging) {
+      this.setState({ isDragging: false });
+    }
   }
 
   handleResize(): void {
