@@ -59,3 +59,4 @@ export * from './UIConstants';
 export { default as UISwitch } from './UISwitch';
 export * from './XComponent';
 export * from './XComponentMap';
+export * from './RemoteComponentModules';
