@@ -1,11 +1,9 @@
 /**
- * Third-party module namespaces re-exported so the host app's remote
- * component resolve map can share its single bundled copy with plugins,
- * without each consumer having to depend on the package directly.
+ * Re-exports third-party module namespaces so plugins share the host app's
+ * single bundled copy via the remote component resolve map.
  *
- * `@deephaven/iris-grid` owns the `@dnd-kit/*` packages (used by the
- * visibility-ordering drag-reorder UI), so re-exporting from here lets
- * grid-related plugins share the exact same dnd-kit instances.
+ * `@deephaven/iris-grid` owns the `@dnd-kit/*` packages, so re-exporting them
+ * here lets grid-related plugins share the same dnd-kit instances.
  */
 export * as DndKitCore from '@dnd-kit/core';
 export * as DndKitSortable from '@dnd-kit/sortable';
