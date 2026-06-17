@@ -150,6 +150,9 @@ $cell-invalid-box-shadow:
       }
     }
 
+    // Apply the same focus-ring box-shadow to CellDropdownField that
+    // CellInputField (the textarea) receives, so the cell outline is
+    // visible when a dropdown editor is open.
     .cell-dropdown-field {
       box-shadow: $cell-box-shadow;
 
