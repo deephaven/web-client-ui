@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Item, Picker, type ItemKey } from '@deephaven/components';
-import { type SELECTION_DIRECTION } from '@deephaven/grid';
+import { SELECTION_DIRECTION } from '@deephaven/grid';
 import './CellDropdownField.scss';
 
 export type CellDropdownFieldProps = {
@@ -50,6 +50,8 @@ export function CellDropdownField({
   const isCancelled = useRef(false);
   // Track whether a selection was committed so onOpenChange can distinguish ESC from a selection
   const isSelectionCommitted = useRef(false);
+  // Direction to use when committing — set by capturing Enter before Spectrum consumes it
+  const commitDirection = useRef<SELECTION_DIRECTION | null>(null);
 
   /**
    * Handle when the selected value changes in the Picker. Updates local state and calls onChange and onDone with the new value.
@@ -61,9 +63,26 @@ export function CellDropdownField({
       isSelectionCommitted.current = true;
       setValue(newValue);
       onChange(newValue);
-      onDone(newValue, { direction: null });
+      onDone(newValue, { direction: commitDirection.current });
+      commitDirection.current = null;
     },
     [onChange, onDone]
+  );
+
+  /**
+   * Capture Enter before Spectrum consumes it to record the intended commit direction.
+   * Spectrum handles Enter to select the highlighted item and fires onChange — by the
+   * time onChange fires the key event is gone, so we must capture direction here.
+   */
+  const handleWrapperKeyDownCapture = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        commitDirection.current = event.shiftKey
+          ? SELECTION_DIRECTION.UP
+          : SELECTION_DIRECTION.DOWN;
+      }
+    },
+    []
   );
 
   /**
@@ -111,7 +130,12 @@ export function CellDropdownField({
   );
 
   return (
-    <div className={classNames('cell-dropdown-field', className)} style={style}>
+    // onKeyDownCapture captures Enter before Spectrum consumes it to set commit direction
+    <div
+      className={classNames('cell-dropdown-field', className)}
+      style={style}
+      onKeyDownCapture={handleWrapperKeyDownCapture}
+    >
       <Picker
         UNSAFE_className="cell-dropdown-field-picker"
         width="100%"
