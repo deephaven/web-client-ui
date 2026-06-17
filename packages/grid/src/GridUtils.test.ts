@@ -1106,6 +1106,8 @@ describe('getColumnSeparatorIndex', () => {
       [2, 2],
       [3, 3],
     ]),
+    columnCount: 4,
+    movedColumns: [],
     // Additional properties needed for getRowAtY (called by getColumnHeaderDepthAtY)
     gridY: 30,
     floatingTopRowCount: 0,
@@ -1120,7 +1122,8 @@ describe('getColumnSeparatorIndex', () => {
    * Creates a mock GridModel with grouped column headers for testing
    */
   const createMockGroupedGridModel = (
-    headerGroups: Map<number, Map<number, string>>
+    headerGroups: Map<number, Map<number, string>>,
+    columnHeaderGroups?: Map<number, Map<number, object>>
   ): GridModel =>
     TestUtils.createMockProxy<GridModel>({
       columnCount: 4,
@@ -1128,6 +1131,9 @@ describe('getColumnSeparatorIndex', () => {
       columnHeaderMaxDepth: headerGroups.size,
       textForColumnHeader: (column: ModelIndex, depth = 0) =>
         headerGroups.get(depth)?.get(column) ?? '',
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (columnHeaderGroups?.get(depth)?.get(column) as any) ?? undefined,
     });
 
   const singleLevelHeaderGroups = new Map([
@@ -1163,12 +1169,76 @@ describe('getColumnSeparatorIndex', () => {
     ],
   ]);
 
+  // Leaf depth with repeated header text (e.g. pivot leaves all labeled "Sum")
+  const repeatedLeafHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'Sum'],
+        [1, 'Sum'],
+        [2, 'Sum'],
+        [3, 'Sum'],
+      ]),
+    ],
+  ]);
+
+  // Two adjacent groups at depth 1 that share a display name but are
+  // distinct group instances (e.g. pivot Totals columns).
+  const sameNameGroupA = { name: 'Total', depth: 1 };
+  const sameNameGroupB = { name: 'Total', depth: 1 };
+  const sameNameAtDepth1Text = new Map([
+    [
+      0,
+      new Map([
+        [0, 'A'],
+        [1, 'B'],
+        [2, 'C'],
+        [3, 'D'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        [0, 'Total'],
+        [1, 'Total'],
+        [2, 'Total'],
+        [3, 'Total'],
+      ]),
+    ],
+  ]);
+  const sameNameAtDepth1Groups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [0, sameNameGroupA],
+        [1, sameNameGroupA],
+        [2, sameNameGroupB],
+        [3, sameNameGroupB],
+      ]),
+    ],
+  ]);
+
+  // Single declared group spanning all four columns at depth 1.
+  const singleGroupInstance = { name: 'OnlyGroup', depth: 1 };
+  const singleGroupAtDepth1Groups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [0, singleGroupInstance],
+        [1, singleGroupInstance],
+        [2, singleGroupInstance],
+        [3, singleGroupInstance],
+      ]),
+    ],
+  ]);
+
   it.each([
     {
       description: 'detects separator at column boundary',
       x: 150, // At boundary between column 0 and 1 (100 + 50)
       y: 15, // Middle of the top header (maxDepth - 1)
       headerGroups: singleLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 1,
       expected: 0,
     },
@@ -1177,6 +1247,7 @@ describe('getColumnSeparatorIndex', () => {
       x: 120, // Within column 1
       y: 15,
       headerGroups: singleLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 1,
       expected: null,
     },
@@ -1186,6 +1257,7 @@ describe('getColumnSeparatorIndex', () => {
       x: 150, // Between column 0 and 1
       y: 15, // Middle of the top header (maxDepth - 1)
       headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 2,
       expected: null,
     },
@@ -1194,21 +1266,282 @@ describe('getColumnSeparatorIndex', () => {
       x: 250, // Between Group1 and Group2
       y: 15,
       headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: undefined,
       maxDepth: 2,
       expected: 1,
     },
-  ])('$description', ({ x, y, headerGroups, maxDepth, expected }) => {
-    const metrics = createMockMetrics(maxDepth) as GridMetrics;
-    const model = createMockGroupedGridModel(headerGroups);
+    {
+      description:
+        'detects leaf-depth separator even when adjacent header text is identical (pivot leaves)',
+      x: 150, // Between column 0 and 1, both labeled "Sum"
+      y: 15,
+      headerGroups: repeatedLeafHeaderGroups,
+      columnHeaderGroups: undefined,
+      maxDepth: 1,
+      expected: 0,
+    },
+    {
+      description:
+        'detects depth-1 separator between distinct group instances that share a display name (pivot Totals)',
+      x: 250, // Between column 1 (groupA) and column 2 (groupB)
+      y: 15, // Middle of the top header (maxDepth - 1 = 1)
+      headerGroups: sameNameAtDepth1Text,
+      columnHeaderGroups: sameNameAtDepth1Groups,
+      maxDepth: 2,
+      expected: 1,
+    },
+    {
+      description:
+        'returns no depth-1 separator within the same declared group instance even when text would differ',
+      x: 150, // Between column 0 and 1, both in same group instance
+      y: 15,
+      headerGroups: multiLevelHeaderGroups,
+      columnHeaderGroups: singleGroupAtDepth1Groups,
+      maxDepth: 2,
+      expected: null,
+    },
+  ])(
+    '$description',
+    ({ x, y, headerGroups, columnHeaderGroups, maxDepth, expected }) => {
+      const metrics = createMockMetrics(maxDepth) as GridMetrics;
+      const model = createMockGroupedGridModel(
+        headerGroups,
+        columnHeaderGroups
+      );
 
-    const result = GridUtils.getColumnSeparatorIndex(
-      x,
-      y,
-      metrics,
-      mockTheme,
-      model
-    );
+      const result = GridUtils.getColumnSeparatorIndex(
+        x,
+        y,
+        metrics,
+        mockTheme,
+        model
+      );
 
-    expect(result).toBe(expected);
+      expect(result).toBe(expected);
+    }
+  );
+});
+
+describe('isSameColumnGroupAtDepth', () => {
+  const groupA = { name: 'G', depth: 1 };
+  const groupB = { name: 'G', depth: 1 };
+
+  const createModel = (
+    text: Map<number, Map<number, string>>,
+    groups?: Map<number, Map<number, object>>
+  ): GridModel =>
+    TestUtils.createMockProxy<GridModel>({
+      textForColumnHeader: (column: ModelIndex, depth = 0) =>
+        text.get(depth)?.get(column) ?? undefined,
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (groups?.get(depth)?.get(column) as any) ?? undefined,
+    });
+
+  const textOnly = new Map([
+    [
+      1,
+      new Map([
+        [0, 'X'],
+        [1, 'X'],
+        [2, 'Y'],
+      ]),
+    ],
+  ]);
+
+  it('returns true for the same declared group instance', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(true);
+  });
+
+  it('returns false for distinct group instances that share a name', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupB],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(false);
+  });
+
+  it('returns false when only one side has a declared group', () => {
+    const groups = new Map([[1, new Map<number, object>([[0, groupA]])]]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(false);
+  });
+
+  it('falls back to text equality when neither side has a declared group', () => {
+    const model = createModel(textOnly);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(true);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 1, 2)).toBe(false);
+  });
+});
+
+describe('hasColumnSeparatorAtDepth', () => {
+  const groupA = { name: 'G', depth: 1 };
+  const groupB = { name: 'G', depth: 1 };
+  const COLUMN_COUNT = 3;
+  const NO_MOVES: MoveOperation[] = [];
+
+  const createModel = (
+    text: Map<number, Map<number, string>>,
+    groups?: Map<number, Map<number, object>>
+  ): GridModel =>
+    TestUtils.createMockProxy<GridModel>({
+      textForColumnHeader: (column: ModelIndex, depth = 0) =>
+        text.get(depth)?.get(column) ?? undefined,
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (groups?.get(depth)?.get(column) as any) ?? undefined,
+    });
+
+  const textOnly = new Map([
+    [
+      1,
+      new Map([
+        [0, 'X'],
+        [1, 'X'],
+        [2, 'Y'],
+      ]),
+    ],
+  ]);
+
+  it('returns false when depth is undefined', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        undefined,
+        0,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(false);
+  });
+
+  it('returns false when visibleIndex is undefined', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        1,
+        undefined,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(false);
+  });
+
+  it('returns true at leaf depth regardless of text equality', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 0, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
+  });
+
+  it('returns true when only one side has a declared group (trailing ungrouped)', () => {
+    const mixedGroups = new Map([[1, new Map<number, object>([[0, groupA]])]]);
+    const model = createModel(textOnly, mixedGroups);
+    // column 0 in group, column 1 not in group -> separator at the group edge
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
+  });
+
+  it('returns true for the true trailing edge of the table', () => {
+    const model = createModel(textOnly);
+    // visibleIndex === columnCount - 1 -> trailing edge
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        1,
+        COLUMN_COUNT - 1,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(true);
+  });
+
+  it('does not treat an off-screen next column as the trailing edge', () => {
+    // Two adjacent columns in the same group; the next column is off-screen but
+    // still within columnCount, so there must NOT be a separator between them.
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(false);
+  });
+
+  it('treats distinct group instances with identical names as separated', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupB],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
+  });
+
+  it('falls back to text inequality when neither side has a declared group', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(false);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
+  });
+
+  it('uses movedColumns to resolve the adjacent model column', () => {
+    const FOUR_COLUMNS = 4;
+    // Move visible 3 to visible 0 -> visible order is [3, 0, 1, 2]
+    const moves: MoveOperation[] = [{ from: 3, to: 0 }];
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+          [2, groupA],
+          // model column 3 has no group
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    // visible 0 -> model 3 (ungrouped), visible 1 -> model 0 (groupA) -> separator
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, FOUR_COLUMNS, moves)
+    ).toBe(true);
+    // visible 1 -> model 0, visible 2 -> model 1 (both groupA) -> no separator
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, FOUR_COLUMNS, moves)
+    ).toBe(false);
   });
 });
