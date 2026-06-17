@@ -1,3 +1,4 @@
+import type React from 'react';
 import { type VisibleIndex, type Coordinate } from './GridMetrics';
 import type GridMetrics from './GridMetrics';
 import type GridModel from './GridModel';
@@ -5,9 +6,39 @@ import type GridRange from './GridRange';
 import { type GridTheme } from './GridTheme';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
+import type { CellInputFieldProps } from './CellInputField';
+import type { ColumnRestriction } from './GridModel';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;
+
+/**
+ * A renderer for a single cell input field based on column restriction type.
+ *
+ * Set `preservesExistingValue = true` on the function to signal that
+ * keystroke-initiated edits should open the editor with the existing cell
+ * value rather than replacing it with the typed character.
+ */
+export type CellInputRendererFn = ((
+  props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
+) => React.ReactNode) & {
+  /**
+   * When true, keystroke-initiated edits preserve the existing cell value
+   * instead of replacing it with the typed character. Intended for renderers
+   * like dropdowns where the typed character has no meaning as a new value.
+   */
+  preservesExistingValue?: boolean;
+};
+
+/**
+ * A map from column restriction type string to a cell input renderer function.
+ * Grid looks up columnRestrictions[0].type in this registry and falls back to
+ * CellInputField when there is no match.
+ */
+export type CellInputRendererRegistry = ReadonlyMap<
+  string,
+  CellInputRendererFn
+>;
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 

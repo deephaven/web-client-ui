@@ -55,10 +55,7 @@ import {
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
-import CellInputField, {
-  type CellInputFieldProps,
-  type CellInputRendererRegistry,
-} from './CellInputField';
+import CellInputField, { type CellInputFieldProps } from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
 import PasteError from './errors/PasteError';
 import {
@@ -82,6 +79,7 @@ import {
   type EditingCell,
   type GridRenderState,
   type EditingCellTextSelectionRange,
+  type CellInputRendererRegistry,
 } from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
