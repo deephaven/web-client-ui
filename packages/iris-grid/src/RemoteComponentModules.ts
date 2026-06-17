@@ -6,5 +6,6 @@
  * here lets grid-related plugins share the same dnd-kit instances.
  */
 export * as DndKitCore from '@dnd-kit/core';
+export * as DndKitModifiers from '@dnd-kit/modifiers';
 export * as DndKitSortable from '@dnd-kit/sortable';
 export * as DndKitUtilities from '@dnd-kit/utilities';
