@@ -408,6 +408,7 @@ export interface IrisGridState {
   quickFilters: ReadonlyQuickFilterMap;
   advancedFilters: ReadonlyAdvancedFilterMap;
   shownAdvancedFilter: number | null;
+  maximizedAdvancedFilter: number | null;
   hoverAdvancedFilter: number | null;
 
   sorts: readonly SortDescriptor[];
@@ -587,6 +588,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleAdvancedFilterSortChange =
       this.handleAdvancedFilterSortChange.bind(this);
     this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
+    this.handleAdvancedFilterToggleMaximize =
+      this.handleAdvancedFilterToggleMaximize.bind(this);
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
     this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
     this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
@@ -851,6 +854,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters: quickFilters ? new Map(quickFilters) : new Map(),
       advancedFilters: new Map(advancedFilters),
       shownAdvancedFilter: null,
+      maximizedAdvancedFilter: null,
       hoverAdvancedFilter: null,
       sorts: [],
       reverse: false,
@@ -1142,13 +1146,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 100 }
   );
 
+  getAdvancedMenuToggleMaximizeHandler = memoize(
+    (column: ModelIndex) =>
+      this.handleAdvancedFilterToggleMaximize.bind(this, column),
+    { max: 100 }
+  );
+
   getCachedAdvancedFilterMenuActions = memoize(
     (
       model: IrisGridModel,
       column: DhType.Column,
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
-      formatter: Formatter
+      formatter: Formatter,
+      isMaximized: boolean,
+      onToggleMaximize: () => void
     ) => (
       <AdvancedFilterCreator
         model={model}
@@ -1160,6 +1172,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         sortDirection={sortDirection}
         formatter={formatter}
         tableUtils={this.tableUtils}
+        isMaximized={isMaximized}
+        onToggleMaximize={onToggleMaximize}
       />
     ),
     { max: 50 }
@@ -3177,8 +3191,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.focus();
   }
 
+  handleAdvancedFilterToggleMaximize(column: GridRangeIndex): void {
+    this.setState(({ maximizedAdvancedFilter }) => ({
+      maximizedAdvancedFilter:
+        maximizedAdvancedFilter === column ? null : column,
+    }));
+  }
+
   handleAdvancedMenuOpened(column: GridRangeIndex): void {
-    this.setState({ shownAdvancedFilter: column });
+    this.setState({
+      shownAdvancedFilter: column,
+      maximizedAdvancedFilter: null,
+    });
   }
 
   handleGotoRowOpened(): void {
@@ -3197,11 +3221,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.filterInputRef?.current !== null
     ) {
       this.filterInputRef?.current.focus();
-      this.setState({ shownAdvancedFilter: null });
+      this.setState({
+        shownAdvancedFilter: null,
+        maximizedAdvancedFilter: null,
+      });
     } else {
       this.setState({
         focusedFilterBarColumn: null,
         shownAdvancedFilter: null,
+        maximizedAdvancedFilter: null,
       });
     }
   }
@@ -4681,6 +4709,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       shownColumnTooltip,
       hoverAdvancedFilter,
       shownAdvancedFilter,
+      maximizedAdvancedFilter,
       hoverSelectColumn,
       quickFilters,
       advancedFilters,
@@ -4884,7 +4913,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                       }
                     )}
                     onClick={() => {
-                      this.setState({ shownAdvancedFilter: columnIndex });
+                      this.setState({
+                        shownAdvancedFilter: columnIndex,
+                        maximizedAdvancedFilter: null,
+                      });
                     }}
                     onContextMenu={event => {
                       this.grid?.handleContextMenu(event);
@@ -4974,6 +5006,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               >
                 <Popper
                   className="advanced-filter-menu-popper"
+                  isMaximized={
+                    shownAdvancedFilter === columnIndex &&
+                    maximizedAdvancedFilter === columnIndex
+                  }
                   onEntered={this.getAdvancedMenuOpenedHandler(columnIndex)}
                   onExited={() => {
                     this.handleAdvancedMenuClosed(columnIndex);
@@ -4990,7 +5026,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     column,
                     advancedFilterOptions,
                     sortDirection,
-                    formatter
+                    formatter,
+                    shownAdvancedFilter === columnIndex &&
+                      maximizedAdvancedFilter === columnIndex,
+                    this.getAdvancedMenuToggleMaximizeHandler(columnIndex)
                   )}
                 </Popper>
               </div>
@@ -5398,22 +5437,28 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         >
           <div className="table-sidebar">
             <Stack>
-              <Page title="Table Options" onClose={this.handleMenuClose}>
-                <Menu
-                  onSelect={i => this.handleMenuSelect(optionItems[i])}
-                  items={optionItems}
-                />
-              </Page>
-              {openOptionsStack.map((option, i) => (
+              {[
                 <Page
-                  title={openOptions[i].title}
-                  onBack={this.handleMenuBack}
+                  key="table-options"
+                  title="Table Options"
                   onClose={this.handleMenuClose}
-                  key={openOptions[i].type}
                 >
-                  {option}
-                </Page>
-              ))}
+                  <Menu
+                    onSelect={i => this.handleMenuSelect(optionItems[i])}
+                    items={optionItems}
+                  />
+                </Page>,
+                ...openOptionsStack.map((option, i) => (
+                  <Page
+                    title={openOptions[i].title}
+                    onBack={this.handleMenuBack}
+                    onClose={this.handleMenuClose}
+                    key={openOptions[i].type}
+                  >
+                    {option}
+                  </Page>
+                )),
+              ]}
             </Stack>
           </div>
         </SlideTransition>

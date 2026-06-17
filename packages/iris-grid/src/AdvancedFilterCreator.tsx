@@ -11,7 +11,12 @@ import {
   type TypeValue as FilterTypeValue,
   assertOperatorValue as assertFilterOperatorValue,
 } from '@deephaven/filters';
-import { dhSortAmountDown, dhNewCircleLargeFilled } from '@deephaven/icons';
+import {
+  dhSortAmountDown,
+  dhNewCircleLargeFilled,
+  vsScreenFull,
+  vsScreenNormal,
+} from '@deephaven/icons';
 import {
   type Formatter,
   TableUtils,
@@ -58,6 +63,8 @@ interface AdvancedFilterCreatorProps {
   sortDirection: SortDirection;
   formatter: Formatter;
   tableUtils: TableUtils;
+  isMaximized: boolean;
+  onToggleMaximize: () => void;
 }
 
 interface AdvancedFilterItem {
@@ -459,7 +466,15 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { column, model, sortDirection, formatter, tableUtils } = this.props;
+    const {
+      column,
+      model,
+      sortDirection,
+      formatter,
+      tableUtils,
+      isMaximized,
+      onToggleMaximize,
+    } = this.props;
     const {
       filterItems,
       filterOperators,
@@ -597,6 +612,17 @@ class AdvancedFilterCreator extends PureComponent<
                 }
                 disabled={!isSortable}
               />
+              <Button
+                kind="ghost"
+                className={classNames('sort-operator', {
+                  active: isMaximized,
+                })}
+                onClick={onToggleMaximize}
+                icon={isMaximized ? vsScreenNormal : vsScreenFull}
+                tooltip={
+                  isMaximized ? 'Restore dialog size' : 'Maximize dialog'
+                }
+              />
             </div>
           </div>
           <hr />
@@ -608,7 +634,7 @@ class AdvancedFilterCreator extends PureComponent<
           {isValuesTableAvailable && valuesTableError == null && (
             <>
               {!isBoolean && <hr />}
-              <div className="form-group">
+              <div className="form-group advanced-filter-values-group">
                 <AdvancedFilterCreatorSelectValue
                   dh={dh}
                   table={valuesTable}

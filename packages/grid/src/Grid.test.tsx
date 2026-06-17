@@ -1135,6 +1135,24 @@ describe('column separators', () => {
     });
   });
 
+  describe('selection drag', () => {
+    it('resets isDragging on mouse up so separator highlight is not suppressed', () => {
+      const component = makeGridComponent();
+
+      // Start a selection drag on a data cell
+      mouseDown(0, 0, component);
+
+      // Drag to another cell to enter the dragging state
+      mouseMove(2, 2, component);
+      expect(component.state.isDragging).toBe(true);
+
+      // Releasing the mouse must clear isDragging, otherwise the column
+      // separator hover highlight stays suppressed in the renderer
+      mouseUp(2, 2, component);
+      expect(component.state.isDragging).toBe(false);
+    });
+  });
+
   describe('column separator double-click interactions', () => {
     it('should auto-size column on double-click on separator', () => {
       const component = makeGridComponent(new MockGridModel(), resizableTheme);

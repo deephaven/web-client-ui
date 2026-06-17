@@ -15,9 +15,86 @@ interface AutoResizeTextareaProps {
   'data-testid'?: string;
 }
 
+function implode(input: string): string {
+  return input
+    .split('\n')
+    .map(string => string.trim())
+    .filter(string => string) // remove empty strings (e.g. from trailing newlines)
+    .join(' ');
+}
+
+/**
+ * Splits a string on a delimiter, respecting quoted spans.
+ * Delimiters that appear inside `"..."` or `'...'` are treated as literal
+ * characters and do not cause a split. Quotes are preserved in the returned
+ * tokens so the operation is lossless (suitable for display-only transformations
+ * where the original text must be recoverable).
+ *
+ * An unbalanced opening quote (no matching closing quote found ahead) is treated
+ * as a literal character and splitting proceeds normally.
+ *
+ * @param input The string to split.
+ * @param delimiter The delimiter to split on.
+ * @returns An array of tokens. Always contains at least one element.
+ */
+function splitOnDelimiter(input: string, delimiter: string): string[] {
+  // Walk the string character by character, tracking quoted spans so that
+  // delimiters inside "..." or '...' are not treated as split points.
+  // Quotes are preserved in the output (not stripped) so the round-trip is lossless.
+  // An unbalanced quote is treated as a literal character — splitting continues normally.
+  const tokens: string[] = [];
+  let current = '';
+  let quoteChar: '"' | "'" | null = null;
+  let i = 0;
+
+  while (i < input.length) {
+    const ch = input[i];
+
+    if (quoteChar !== null) {
+      // Inside a quoted span — accumulate until we hit the matching closing quote
+      current += ch;
+      if (ch === quoteChar) {
+        quoteChar = null;
+      }
+      i += 1;
+    } else if (ch === '"' || ch === "'") {
+      // Only treat as a quoted span if there is a matching closing quote ahead.
+      // An unbalanced quote is treated as a literal character so the delimiter
+      // logic continues to work normally.
+      const closingIdx = input.indexOf(ch, i + 1);
+      if (closingIdx !== -1) {
+        quoteChar = ch;
+      }
+      current += ch;
+      i += 1;
+    } else if (input.startsWith(delimiter, i)) {
+      // Delimiter found outside a quoted span — emit the current token and advance
+      tokens.push(current);
+      current = '';
+      i += delimiter.length;
+    } else {
+      // Plain character outside any quoted span and not part of the delimiter — accumulate it
+      current += ch;
+      i += 1;
+    }
+  }
+
+  tokens.push(current);
+  return tokens;
+}
+
+function explode(input: string, delimiter: string): string {
+  // Split by delimiter (commonly " " or " -") respecting quoted spans, then
+  // join with newline + trimmed delimiter so each token appears on its own line.
+  // Empty tokens (e.g. from multiple consecutive delimiters) are filtered out.
+  return splitOnDelimiter(input.trim(), delimiter)
+    .filter(token => token !== '') // remove empty strings
+    .join(`\n${delimiter.trim()}`);
+}
+
 /**
  * Makes a textarea that auto resizes based on contents, its height grows with new lines.
- * If a delimeter is set, such as " -" or " ", as used by jvm args or env vars
+ * If a delimiter is set, such as " -" or " ", as used by jvm args or env vars
  * then the field will also "explode" the value by the delimiter over new lines
  * on focus, and implode on blur. By default, it doesn't word wrap.
  */
@@ -35,32 +112,22 @@ function AutoResizeTextarea({
   const [value, setValue] = useState(propsValue);
   const [isPastedChange, setIsPastedChange] = useState(false);
   const element = useRef<HTMLTextAreaElement>(null);
+  const isFocused = useRef(false);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   useEffect(
     function syncStateWithProp() {
-      // keep state value in sync with prop changes
-      setValue(propsValue);
+      if (!isFocused.current || !delimiter) {
+        // When not focused (or no delimiter), always sync to the new prop value.
+        setValue(propsValue);
+      } else if (implode(valueRef.current) !== implode(propsValue)) {
+        // When focused with delimiter, only update if the imploded value changed to prevent clobbering delimiters
+        setValue(explode(propsValue, delimiter));
+      }
     },
-    [propsValue]
+    [propsValue, delimiter]
   );
-
-  function explode(input: string): string {
-    // split by delimiter, commonly " " or " -"
-    // strip empty strings (if delimiter is space, and there are multiple spaces in a row)
-    // and join with new line and a trimmed delimeter (get rid of leading spaces)
-    return input
-      .trim()
-      .split(delimiter)
-      .filter(string => string) // remove empty strings
-      .join(`\n${delimiter.trim()}`);
-  }
-
-  function implode(input: string): string {
-    return input
-      .split('\n')
-      .map(string => string.trim())
-      .join(' ');
-  }
 
   function reCalculateLayout(): void {
     if (!element.current) {
@@ -77,19 +144,23 @@ function AutoResizeTextarea({
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>): void {
     let newValue = event.target.value;
     if (isPastedChange) {
-      if (delimiter) newValue = explode(newValue);
+      if (delimiter) newValue = explode(newValue, delimiter);
       setIsPastedChange(false);
     }
     setValue(newValue);
-    onChange(newValue);
+    // If there is a delimiter, the onChange value should always be the imploded version
+    // to prevent mismatch when exiting without triggering onBlur
+    // The exploded version is display only
+    onChange(delimiter ? implode(newValue) : newValue);
   }
 
   function handleFocus(): void {
     if (!element.current) {
       return;
     }
+    isFocused.current = true;
     if (delimiter) {
-      setValue(explode(value));
+      setValue(explode(value, delimiter));
       reCalculateLayout();
     }
     element.current.scrollLeft = 0;
@@ -106,6 +177,7 @@ function AutoResizeTextarea({
   }
 
   function handleBlur(): void {
+    isFocused.current = false;
     if (delimiter) {
       setValue(implode(value));
       onChange(implode(value));

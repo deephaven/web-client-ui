@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
+
+### Bug Fixes
+
+- Spectrum version bump and pin ([#2689](https://github.com/deephaven/web-client-ui/issues/2689)) ([f099b41](https://github.com/deephaven/web-client-ui/commit/f099b415fc1f951799444b8d022b0984f54e02cd))
+
 ## [1.21.0](https://github.com/deephaven/web-client-ui/compare/v1.20.0...v1.21.0) (2026-05-22)
 
 ### Features

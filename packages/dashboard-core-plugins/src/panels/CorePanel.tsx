@@ -2,15 +2,17 @@ import React, { PureComponent, type ReactElement } from 'react';
 import { createXComponent } from '@deephaven/components';
 import { type BasePanelProps, BasePanel } from '@deephaven/dashboard';
 import type { dh } from '@deephaven/jsapi-types';
-import { ConsoleEvent, InputFilterEvent } from '../events';
+import {
+  type CoreConsoleSession,
+  listenForSessionClosed,
+  listenForSessionOpened,
+} from '../ConsoleEvents';
+import { InputFilterEvent } from '../events';
 
 export type CorePanelProps = BasePanelProps & {
   onClearAllFilters?: (...args: unknown[]) => void;
   onSessionClose?: (session: dh.IdeSession) => void;
-  onSessionOpen?: (
-    session: dh.IdeSession,
-    { language, sessionId }: { language: string; sessionId: string }
-  ) => void;
+  onSessionOpen?: (session: CoreConsoleSession) => void;
 };
 
 /**
@@ -28,8 +30,14 @@ class CorePanel extends PureComponent<CorePanelProps> {
   componentDidMount(): void {
     const { glEventHub } = this.props;
 
-    glEventHub.on(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
-    glEventHub.on(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
+    this.stopListenForSessionClosed = listenForSessionClosed(
+      glEventHub,
+      this.handleSessionClosed
+    );
+    this.stopListenForSessionOpened = listenForSessionOpened(
+      glEventHub,
+      this.handleSessionOpened
+    );
     glEventHub.on(
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
@@ -39,13 +47,17 @@ class CorePanel extends PureComponent<CorePanelProps> {
   componentWillUnmount(): void {
     const { glEventHub } = this.props;
 
-    glEventHub.off(ConsoleEvent.SESSION_CLOSED, this.handleSessionClosed);
-    glEventHub.off(ConsoleEvent.SESSION_OPENED, this.handleSessionOpened);
+    this.stopListenForSessionClosed?.();
+    this.stopListenForSessionOpened?.();
     glEventHub.off(
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
     );
   }
+
+  stopListenForSessionClosed?: () => void;
+
+  stopListenForSessionOpened?: () => void;
 
   handleClearAllFilters(...args: unknown[]): void {
     const { onClearAllFilters } = this.props;
@@ -57,12 +69,9 @@ class CorePanel extends PureComponent<CorePanelProps> {
     onSessionClose?.(session);
   }
 
-  handleSessionOpened(
-    session: dh.IdeSession,
-    params: { language: string; sessionId: string }
-  ): void {
+  handleSessionOpened(session: CoreConsoleSession): void {
     const { onSessionOpen } = this.props;
-    onSessionOpen?.(session, params);
+    onSessionOpen?.(session);
   }
 
   render(): ReactElement {
