@@ -14,7 +14,7 @@ import {
 
 export type { CellInputRendererFn, CellInputRendererRegistry };
 
-function renderStringListRestriction({
+const renderStringListRestriction: CellInputRendererFn = ({
   columnRestrictions,
   className,
   disabled,
@@ -26,7 +26,7 @@ function renderStringListRestriction({
   style,
 }: CellInputFieldProps & {
   columnRestrictions: ColumnRestriction[];
-}): ReactNode {
+}): ReactNode => {
   const { allowedValues } = columnRestrictions[0] as StringListRestriction;
   return (
     <CellDropdownField
@@ -41,7 +41,8 @@ function renderStringListRestriction({
       style={style}
     />
   );
-}
+};
+renderStringListRestriction.preservesExistingValue = true;
 
 /**
  * The default registry, installed as the context default value so that

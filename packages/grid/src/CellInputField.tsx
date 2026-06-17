@@ -25,10 +25,23 @@ export type CellInputFieldProps = {
   style?: React.CSSProperties;
 };
 
-/** A renderer for a single cell input field based on column restriction type. */
-export type CellInputRendererFn = (
+/**
+ * A renderer for a single cell input field based on column restriction type.
+ *
+ * Set `preservesExistingValue = true` on the function to signal that
+ * keystroke-initiated edits should open the editor with the existing cell
+ * value rather than replacing it with the typed character.
+ */
+export type CellInputRendererFn = ((
   props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
-) => React.ReactNode;
+) => React.ReactNode) & {
+  /**
+   * When true, keystroke-initiated edits preserve the existing cell value
+   * instead of replacing it with the typed character. Intended for renderers
+   * like dropdowns where the typed character has no meaning as a new value.
+   */
+  preservesExistingValue?: boolean;
+};
 
 /**
  * A map from column restriction type string to a cell input renderer function.
