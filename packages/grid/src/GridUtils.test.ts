@@ -1106,6 +1106,8 @@ describe('getColumnSeparatorIndex', () => {
       [2, 2],
       [3, 3],
     ]),
+    columnCount: 4,
+    movedColumns: [],
     // Additional properties needed for getRowAtY (called by getColumnHeaderDepthAtY)
     gridY: 30,
     floatingTopRowCount: 0,
@@ -1320,7 +1322,7 @@ describe('getColumnSeparatorIndex', () => {
   );
 });
 
-describe('hasColumnSeparatorAtDepth', () => {
+describe('isSameColumnGroupAtDepth', () => {
   const groupA = { name: 'G', depth: 1 };
   const groupB = { name: 'G', depth: 1 };
 
@@ -1347,37 +1349,148 @@ describe('hasColumnSeparatorAtDepth', () => {
     ],
   ]);
 
-  it('returns false when depth is undefined', () => {
-    const model = createModel(textOnly);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, undefined, 0, 1)).toBe(
-      false
-    );
+  it('returns true for the same declared group instance', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(true);
   });
 
-  it('returns false when columnIndex is undefined', () => {
+  it('returns false for distinct group instances that share a name', () => {
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupB],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(false);
+  });
+
+  it('returns false when only one side has a declared group', () => {
+    const groups = new Map([[1, new Map<number, object>([[0, groupA]])]]);
+    const model = createModel(textOnly, groups);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(false);
+  });
+
+  it('falls back to text equality when neither side has a declared group', () => {
     const model = createModel(textOnly);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, undefined, 1)).toBe(
-      false
-    );
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 0, 1)).toBe(true);
+    expect(GridUtils.isSameColumnGroupAtDepth(model, 1, 1, 2)).toBe(false);
+  });
+});
+
+describe('hasColumnSeparatorAtDepth', () => {
+  const groupA = { name: 'G', depth: 1 };
+  const groupB = { name: 'G', depth: 1 };
+  const COLUMN_COUNT = 3;
+  const NO_MOVES: MoveOperation[] = [];
+
+  const createModel = (
+    text: Map<number, Map<number, string>>,
+    groups?: Map<number, Map<number, object>>
+  ): GridModel =>
+    TestUtils.createMockProxy<GridModel>({
+      textForColumnHeader: (column: ModelIndex, depth = 0) =>
+        text.get(depth)?.get(column) ?? undefined,
+      getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (groups?.get(depth)?.get(column) as any) ?? undefined,
+    });
+
+  const textOnly = new Map([
+    [
+      1,
+      new Map([
+        [0, 'X'],
+        [1, 'X'],
+        [2, 'Y'],
+      ]),
+    ],
+  ]);
+
+  it('returns false when depth is undefined', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        undefined,
+        0,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(false);
+  });
+
+  it('returns false when visibleIndex is undefined', () => {
+    const model = createModel(textOnly);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        1,
+        undefined,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(false);
   });
 
   it('returns true at leaf depth regardless of text equality', () => {
     const model = createModel(textOnly);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 0, 0, 1)).toBe(true);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 0, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
   });
 
   it('returns true when only one side has a declared group (trailing ungrouped)', () => {
     const mixedGroups = new Map([[1, new Map<number, object>([[0, groupA]])]]);
     const model = createModel(textOnly, mixedGroups);
     // column 0 in group, column 1 not in group -> separator at the group edge
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(true);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
   });
 
-  it('returns true for the trailing edge when nextColumnIndex is undefined and the cell is drawn', () => {
+  it('returns true for the true trailing edge of the table', () => {
     const model = createModel(textOnly);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, undefined)).toBe(
-      true
-    );
+    // visibleIndex === columnCount - 1 -> trailing edge
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(
+        model,
+        1,
+        COLUMN_COUNT - 1,
+        COLUMN_COUNT,
+        NO_MOVES
+      )
+    ).toBe(true);
+  });
+
+  it('does not treat an off-screen next column as the trailing edge', () => {
+    // Two adjacent columns in the same group; the next column is off-screen but
+    // still within columnCount, so there must NOT be a separator between them.
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(false);
   });
 
   it('treats distinct group instances with identical names as separated', () => {
@@ -1391,12 +1504,44 @@ describe('hasColumnSeparatorAtDepth', () => {
       ],
     ]);
     const model = createModel(textOnly, groups);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(true);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
   });
 
   it('falls back to text inequality when neither side has a declared group', () => {
     const model = createModel(textOnly);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, 1)).toBe(false);
-    expect(GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, 2)).toBe(true);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, COLUMN_COUNT, NO_MOVES)
+    ).toBe(false);
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, COLUMN_COUNT, NO_MOVES)
+    ).toBe(true);
+  });
+
+  it('uses movedColumns to resolve the adjacent model column', () => {
+    const FOUR_COLUMNS = 4;
+    // Move visible 3 to visible 0 -> visible order is [3, 0, 1, 2]
+    const moves: MoveOperation[] = [{ from: 3, to: 0 }];
+    const groups = new Map([
+      [
+        1,
+        new Map<number, object>([
+          [0, groupA],
+          [1, groupA],
+          [2, groupA],
+          // model column 3 has no group
+        ]),
+      ],
+    ]);
+    const model = createModel(textOnly, groups);
+    // visible 0 -> model 3 (ungrouped), visible 1 -> model 0 (groupA) -> separator
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 0, FOUR_COLUMNS, moves)
+    ).toBe(true);
+    // visible 1 -> model 0, visible 2 -> model 1 (both groupA) -> no separator
+    expect(
+      GridUtils.hasColumnSeparatorAtDepth(model, 1, 1, FOUR_COLUMNS, moves)
+    ).toBe(false);
   });
 });
