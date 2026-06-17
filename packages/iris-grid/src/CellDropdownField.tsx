@@ -109,11 +109,19 @@ export function CellDropdownField({
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
       if (!isOpen && !isSelectionCommitted.current) {
-        isCancelled.current = true;
-        onCancel();
+        if (commitDirection.current !== null) {
+          // Enter was pressed on the already-selected item — Spectrum didn't fire
+          // onChange because the value didn't change, but we should still commit.
+          isSelectionCommitted.current = true;
+          onDone(value, { direction: commitDirection.current });
+          commitDirection.current = null;
+        } else {
+          isCancelled.current = true;
+          onCancel();
+        }
       }
     },
-    [onCancel]
+    [onCancel, onDone, value]
   );
 
   /**
