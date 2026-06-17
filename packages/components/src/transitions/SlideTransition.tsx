@@ -45,11 +45,19 @@ function SlideTransition({
 }: SlideTransitionProps): JSX.Element {
   const nodeRef = useRef<HTMLElement | null>(null);
 
-  // Mimics findDOMNode for CSSTransition
-  // The ref should be set before CSSTransition does anything with it
-  const setRef = useCallback((node: HTMLElement | null) => {
-    nodeRef.current = node?.firstElementChild as HTMLElement;
-  }, []);
+  // Mimics findDOMNode for CSSTransition.
+  // Keying on `in` rather than `children` avoids re-creating the ref callback
+  // on every render, which would needlessly detach/re-attach the ref.
+  const setRef = useCallback(
+    (node: HTMLElement | null) => {
+      nodeRef.current = (node?.firstElementChild as HTMLElement | null) ?? null;
+    },
+    // `inProp` is intentionally a dependency: toggling `in` must re-create the
+    // callback so the ref re-attaches and re-reads `firstElementChild` when the
+    // child appears/disappears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.in]
+  );
 
   return (
     <CSSTransition

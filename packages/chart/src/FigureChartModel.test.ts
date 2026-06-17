@@ -590,3 +590,149 @@ it('handles axes min and max properly', () => {
 
   expect(layout.yaxis2?.autorangeoptions?.maxallowed).toEqual(undefined);
 });
+
+describe('setFilter', () => {
+  function makeOneClickModel({ columnName = 'Z', columnType = 'int' } = {}) {
+    const oneClick = {
+      columns: [{ name: columnName, type: columnType }],
+      requireAllFiltersToDisplay: false,
+      setValueForColumn: jest.fn(),
+    };
+
+    const series = chartTestUtils.makeSeries({ name: 'S1' });
+    // Attach oneClick to the series
+    (series as unknown as Record<string, unknown>).oneClick = oneClick;
+
+    const chart = chartTestUtils.makeChart({ series: [series] });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
+    const model = new FigureChartModel(dh, figure);
+    model.subscribe(jest.fn());
+
+    return { model, oneClick };
+  }
+
+  describe('coerceFilterValue', () => {
+    it('coerces string to number for int column type', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'int' });
+      const filterMap = new Map([['Z', '1']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 1);
+    });
+
+    it('coerces string to number for long column type', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'long' });
+      const filterMap = new Map([['Z', '42']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 42);
+    });
+
+    it('coerces string to number for double column type', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'double' });
+      const filterMap = new Map([['Z', '3.14']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 3.14);
+    });
+
+    it('coerces string "0" to number 0', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'int' });
+      const filterMap = new Map([['Z', '0']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 0);
+    });
+
+    it('passes numeric value through unchanged', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'int' });
+      const filterMap = new Map<string, unknown>([['Z', 5]]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 5);
+    });
+
+    it('does not coerce string for string column type', () => {
+      const { model, oneClick } = makeOneClickModel({
+        columnType: 'java.lang.String',
+      });
+      const filterMap = new Map([['Z', '1']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', '1');
+    });
+
+    it('does not coerce non-numeric strings for number column type', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'int' });
+      const filterMap = new Map([['Z', 'abc']]);
+
+      model.setFilter(filterMap);
+
+      expect(oneClick.setValueForColumn).toHaveBeenCalledWith('Z', 'abc');
+    });
+
+    it('passes null/undefined to clear filter', () => {
+      const { model, oneClick } = makeOneClickModel({ columnType: 'int' });
+
+      // First set a value
+      model.setFilter(new Map<string, unknown>([['Z', '1']]));
+      // Then clear it
+      model.setFilter(new Map<string, unknown>([['Z', undefined]]));
+
+      expect(oneClick.setValueForColumn).toHaveBeenLastCalledWith(
+        'Z',
+        undefined
+      );
+    });
+  });
+
+  it('only calls setValueForColumn when value changes', () => {
+    const { model, oneClick } = makeOneClickModel();
+
+    model.setFilter(new Map([['Z', '1']]));
+    expect(oneClick.setValueForColumn).toHaveBeenCalledTimes(1);
+
+    // Same value again should not call
+    model.setFilter(new Map([['Z', '1']]));
+    expect(oneClick.setValueForColumn).toHaveBeenCalledTimes(1);
+
+    // Different value should call
+    model.setFilter(new Map([['Z', '2']]));
+    expect(oneClick.setValueForColumn).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears filter when column removed from filterMap', () => {
+    const { model, oneClick } = makeOneClickModel();
+
+    model.setFilter(new Map([['Z', '1']]));
+    // Remove the key entirely
+    model.setFilter(new Map());
+
+    expect(oneClick.setValueForColumn).toHaveBeenLastCalledWith('Z', undefined);
+  });
+
+  it('ignores columns not in oneClick', () => {
+    const { model, oneClick } = makeOneClickModel({ columnName: 'Z' });
+
+    model.setFilter(new Map([['NotAColumn', '1']]));
+
+    expect(oneClick.setValueForColumn).not.toHaveBeenCalled();
+  });
+
+  it('warns when no oneClicks exist', () => {
+    const series = chartTestUtils.makeSeries({ name: 'S1' });
+    const chart = chartTestUtils.makeChart({ series: [series] });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
+    const model = new FigureChartModel(dh, figure);
+    model.subscribe(jest.fn());
+
+    // Should not throw, just warn
+    expect(() => model.setFilter(new Map([['Z', '1']]))).not.toThrow();
+  });
+});

@@ -9,6 +9,7 @@ import Log from '@deephaven/log';
 import { type RootState } from '@deephaven/redux';
 import './LogPanel.scss';
 import Panel from './CorePanel';
+import { type CoreConsoleSession } from '../ConsoleEvents';
 import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
@@ -72,7 +73,7 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
     }
   }
 
-  handleSessionOpened(session: dh.IdeSession): void {
+  handleSessionOpened({ session }: CoreConsoleSession): void {
     log.debug('Session opened', [session]);
     this.setState({ session });
   }

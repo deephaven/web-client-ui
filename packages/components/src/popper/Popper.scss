@@ -13,6 +13,15 @@ $animation-offset: 10px;
   }
 }
 
+// Override popper.js inline positioning when a maximized popper should be
+// centered and fixed in the viewport.
+.popper-container.maximized {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
 .popper.popper-tooltip {
   --background-color: var(--dh-color-tooltip-bg);
 }

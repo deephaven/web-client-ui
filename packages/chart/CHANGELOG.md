@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
+
+### Bug Fixes
+
+- DH-15773: Coerce string to numeric for input filter ([#2693](https://github.com/deephaven/web-client-ui/issues/2693)) ([0b7d6bb](https://github.com/deephaven/web-client-ui/commit/0b7d6bbb97cef9a0da6da348f7fcf9ff99df8e5f))
+
 ## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
 
 **Note:** Version bump only for package @deephaven/chart

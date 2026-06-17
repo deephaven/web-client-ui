@@ -13,9 +13,10 @@ import {
   type ElementPlugin,
   type ElementMap,
   type WidgetMiddlewarePlugin,
+  type WidgetMiddlewareComponentProps,
+  type WidgetMiddlewarePanelProps,
   type WidgetComponentProps,
   type WidgetPanelProps,
-  type WidgetMiddlewarePanelProps,
   isLegacyPlugin,
   isMultiPlugin,
   isPlugin,
@@ -200,14 +201,24 @@ export function createChainedComponent<T>(
 /**
  * Creates a panel component that chains middleware around a base panel component.
  * Each middleware panel wraps the next, with the base panel at the innermost layer.
+ *
+ * The chain forwards the `ref` injected by golden-layout (on the registered
+ * panel) all the way down to `basePanelComponent`. Golden-layout uses that ref
+ * to bind a class panel's React state into its serialized `componentState`;
+ * forwarding it keeps that persistence working through transparent middleware,
+ * so wrapped panels still restore sorts/filters/column moves on reload.
  */
 export function createChainedPanelComponent<T>(
   basePanelComponent: React.ComponentType<WidgetPanelProps<T>>,
   middleware: WidgetMiddlewarePlugin<T>[]
 ): React.ComponentType<WidgetPanelProps<T>> {
+  type RefCapablePanel = React.ForwardRefExoticComponent<
+    WidgetPanelProps<T> & React.RefAttributes<unknown>
+  >;
+
   // Filter to middleware that has a panelComponent and extract just the panel components
   type MiddlewareWithPanel = WidgetMiddlewarePlugin<T> & {
-    panelComponent: React.ComponentType<WidgetMiddlewarePanelProps<T>>;
+    panelComponent: NonNullable<WidgetMiddlewarePlugin<T>['panelComponent']>;
   };
   const panelMiddleware = middleware.filter(
     (m): m is MiddlewareWithPanel => m.panelComponent != null
@@ -230,20 +241,28 @@ export function createChainedPanelComponent<T>(
   // Build the chain from inside out (base panel is innermost)
   return [...panelMiddleware]
     .reverse()
-    .reduce<React.ComponentType<WidgetPanelProps<T>>>(
-      (WrappedPanel, middlewarePlugin) => {
-        const { panelComponent: MiddlewarePanelComponent } = middlewarePlugin;
-        const supported = [middlewarePlugin.supportedTypes].flat();
+    .reduce<RefCapablePanel>((WrappedPanel, middlewarePlugin) => {
+      const MiddlewarePanelComponent = middlewarePlugin.panelComponent;
+      const supported = [middlewarePlugin.supportedTypes].flat();
 
-        function ChainedPanel({ metadata, ...rest }: WidgetPanelProps<T>) {
+      const ChainedPanel = React.forwardRef<unknown, WidgetPanelProps<T>>(
+        ({ metadata, ...rest }, ref) => {
+          // Only forward the ref when golden-layout actually provides one.
+          // Spreading an empty object (rather than passing `ref={null}`) keeps
+          // a plain function-component base panel on a non-golden-layout render
+          // path from being handed a ref prop it can't accept.
+          const refProps = ref != null ? { ref } : {};
           // Skip middleware if the widget type doesn't match its supportedTypes
           if (metadata?.type != null && !supported.includes(metadata.type)) {
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            return <WrappedPanel {...rest} metadata={metadata} />;
+            return (
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              <WrappedPanel {...refProps} {...rest} metadata={metadata} />
+            );
           }
           return (
-            // eslint-disable-next-line react/jsx-props-no-spreading
             <MiddlewarePanelComponent
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...refProps}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...rest}
               metadata={metadata}
@@ -251,13 +270,110 @@ export function createChainedPanelComponent<T>(
             />
           );
         }
-        ChainedPanel.displayName = `${
-          middlewarePlugin.name
-        }Panel(${getComponentName(WrappedPanel, 'Panel')})`;
-        return ChainedPanel;
-      },
-      basePanelComponent
+      );
+      ChainedPanel.displayName = `${
+        middlewarePlugin.name
+      }Panel(${getComponentName(WrappedPanel, 'Panel')})`;
+      return ChainedPanel;
+    }, basePanelComponent as RefCapablePanel);
+}
+
+/**
+ * What a middleware body hook returns. Both fields are optional:
+ *
+ * - `inject`: extra props merged onto the wrapped `Component`, threaded down
+ *   the middleware chain. Use it to forward IrisGrid-aware props (e.g.
+ *   `transformModel`, `transformTableOptions`, `onModelChanged`) without
+ *   hand-writing the widening cast on `Component`.
+ * - `wrap`: an optional wrapper placed *around* the wrapped component (e.g. a
+ *   context provider). Receives the already-rendered child element and must
+ *   return an element that renders it.
+ */
+export interface MiddlewareBodyResult {
+  inject?: Record<string, unknown>;
+  wrap?: (child: React.ReactElement) => React.ReactElement;
+}
+
+/**
+ * A hook implementing the body of a middleware. Receives the incoming props
+ * (without `Component`) and returns an optional set of props to inject plus an
+ * optional wrapper. The same body hook can back both a panel and a widget
+ * middleware (see {@link createPanelMiddleware} / {@link createWidgetMiddleware}),
+ * so a plugin expresses its behavior once.
+ *
+ * Type the `props` parameter as wide as the middleware needs (e.g. intersect
+ * with `IrisGridTableOptionsWidgetProps`) — the factory passes the runtime
+ * props through unchanged.
+ */
+export type MiddlewareBody<P> = (props: P) => MiddlewareBodyResult;
+
+/**
+ * Builds a panel-path middleware component from a single body hook, owning the
+ * `React.forwardRef` ceremony and ref forwarding that golden-layout state
+ * persistence depends on.
+ *
+ * The returned component is ref-capable and always forwards its `ref` to the
+ * wrapped `Component`, so a middleware author can never accidentally drop it
+ * (which would silently break `componentState` persistence — sorts, filters,
+ * column moves — on reload). The body hook only decides what to inject and how
+ * to wrap; it never sees the ref.
+ */
+export function createPanelMiddleware<
+  T = unknown,
+  P extends WidgetPanelProps<T> = WidgetPanelProps<T>,
+>(
+  useBody: MiddlewareBody<P>,
+  displayName = 'PanelMiddleware'
+): React.ForwardRefExoticComponent<
+  WidgetMiddlewarePanelProps<T> & React.RefAttributes<unknown>
+> {
+  const PanelMiddleware = React.forwardRef<
+    unknown,
+    WidgetMiddlewarePanelProps<T>
+  >(({ Component, ...rest }, ref) => {
+    const { inject, wrap } = useBody(rest as unknown as P);
+    const Next = Component as unknown as React.ForwardRefExoticComponent<
+      Record<string, unknown> & React.RefAttributes<unknown>
+    >;
+    const child = (
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <Next ref={ref} {...rest} {...inject} />
     );
+    return wrap != null ? wrap(child) : child;
+  });
+  PanelMiddleware.displayName = displayName;
+  return PanelMiddleware;
+}
+
+/**
+ * Builds a widget-path middleware component from a single body hook. The widget
+ * path takes no ref, so this is a plain function component; otherwise it mirrors
+ * {@link createPanelMiddleware} (same `inject` / `wrap` contract), letting a
+ * plugin reuse one body hook for both paths.
+ */
+export function createWidgetMiddleware<
+  T = unknown,
+  P extends WidgetComponentProps<T> = WidgetComponentProps<T>,
+>(
+  useBody: MiddlewareBody<P>,
+  displayName = 'WidgetMiddleware'
+): React.ComponentType<WidgetMiddlewareComponentProps<T>> {
+  function WidgetMiddleware({
+    Component,
+    ...rest
+  }: WidgetMiddlewareComponentProps<T>): React.ReactElement {
+    const { inject, wrap } = useBody(rest as unknown as P);
+    const Next = Component as unknown as React.ComponentType<
+      Record<string, unknown>
+    >;
+    const child = (
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <Next {...rest} {...inject} />
+    );
+    return wrap != null ? wrap(child) : child;
+  }
+  WidgetMiddleware.displayName = displayName;
+  return WidgetMiddleware;
 }
 
 export type PluginManifestPluginInfo = {

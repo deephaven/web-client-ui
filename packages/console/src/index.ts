@@ -2,6 +2,7 @@ import Console from './Console';
 
 export default Console;
 export { Console };
+export type { Settings as ConsoleSettings } from './Console';
 export { default as ConsoleInput } from './ConsoleInput';
 export { default as SHORTCUTS } from './ConsoleShortcuts';
 export { default as ConsoleStatusBar } from './ConsoleStatusBar';
