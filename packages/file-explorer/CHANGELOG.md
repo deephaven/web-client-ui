@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+**Note:** Version bump only for package @deephaven/file-explorer
+
 ## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
 
 **Note:** Version bump only for package @deephaven/file-explorer

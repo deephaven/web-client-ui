@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+### Bug Fixes
+
+- DH-22758: Fix column resize bug on columns with the same display text ([#2691](https://github.com/deephaven/web-client-ui/issues/2691)) ([65c5c93](https://github.com/deephaven/web-client-ui/commit/65c5c9378a051b3cac2c73f108c92f4c2f48eda0))
+- DH-22881: Fix column group separator highlight after drag ([#2699](https://github.com/deephaven/web-client-ui/issues/2699)) ([c404f46](https://github.com/deephaven/web-client-ui/commit/c404f46a228e6991c44a2f744bdec0bd5fb7baf6))
+
 ## [1.18.2](https://github.com/deephaven/web-client-ui/compare/v1.18.1...v1.18.2) (2026-05-06)
 
 ### Bug Fixes
