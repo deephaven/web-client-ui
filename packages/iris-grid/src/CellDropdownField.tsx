@@ -48,6 +48,8 @@ export function CellDropdownField({
   const [value, setValue] = useState(propsValue);
   // Use a ref for `isCancelled` so the focus change handler always sees the latest value
   const isCancelled = useRef(false);
+  // Track whether a selection was committed so onOpenChange can distinguish ESC from a selection
+  const isSelectionCommitted = useRef(false);
 
   /**
    * Handle when the selected value changes in the Picker. Updates local state and calls onChange and onDone with the new value.
@@ -56,6 +58,7 @@ export function CellDropdownField({
   const handleChange = useCallback(
     (key: ItemKey | null) => {
       const newValue = key?.toString() ?? '';
+      isSelectionCommitted.current = true;
       setValue(newValue);
       onChange(newValue);
       onDone(newValue, { direction: null });
@@ -72,6 +75,21 @@ export function CellDropdownField({
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
+        isCancelled.current = true;
+        onCancel();
+      }
+    },
+    [onCancel]
+  );
+
+  /**
+   * When the overlay closes without a committed selection (e.g. ESC pressed while
+   * the menu is open), cancel the edit. Spectrum consumes the ESC keydown to close
+   * the overlay so onKeyDown never fires in that case.
+   */
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen && !isSelectionCommitted.current) {
         isCancelled.current = true;
         onCancel();
       }
@@ -102,6 +120,7 @@ export function CellDropdownField({
         defaultOpen
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onOpenChange={handleOpenChange}
         onFocusChange={handleFocusChange}
         aria-label="Cell value"
         isDisabled={disabled}
