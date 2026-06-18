@@ -1,5 +1,10 @@
 ---
-applyTo: "packages/**/*.{ts,tsx,js,jsx},packages/**/*.{test,spec}.{ts,tsx,js,jsx},tests/**/*,jest*.cjs,playwright*.config.ts"
+applyTo:
+  - "packages/**/*.{ts,tsx,js,jsx}"
+  - "packages/**/*.{test,spec}.{ts,tsx,js,jsx}"
+  - "tests/**/*"
+  - "jest*.cjs"
+  - "playwright*.config.ts"
 ---
 
 # Test review
