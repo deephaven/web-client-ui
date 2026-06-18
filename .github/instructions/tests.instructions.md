@@ -16,6 +16,6 @@ applyTo: "packages/**/*.{ts,tsx,js,jsx},packages/**/*.{test,spec}.{ts,tsx,js,jsx
   - `git fetch origin main:refs/remotes/origin/main` before `--changedSince origin/main` commands if needed
   - `npm run test:lint -- --changedSince origin/main`
   - `npm run test:unit -- --changedSince origin/main`
-- `npm run e2e` requires `localhost:4000/ide/` plus a `deephaven-core` backend on port `10000` with anonymous auth and `tests/docker-scripts/data/app.d`.
+- `npm run e2e` requires `localhost:4000/ide/` plus a `deephaven-core` backend on port `10000` with anonymous auth and `-Ddeephaven.application.dir=tests/docker-scripts/data/app.d`.
 - Treat repeated `jest-haste-map: duplicate manual mock found` output as known noise unless accompanied by real test failures.
 - Comment when coverage is missing, mis-scoped, or unvalidated—not simply because additional tests could exist.
