@@ -650,9 +650,10 @@ abstract class IrisGridModel<
 
   getColumnRestriction(column: ModelIndex): ColumnRestriction[] {
     const c = this.columns[column];
-    // Need update Column type for columnRestrictions to avoid using `as any`
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (c as any)?.columnRestrictions ?? [];
+    return (
+      (c as { columnRestrictions?: ColumnRestriction[] } | undefined)
+        ?.columnRestrictions ?? []
+    );
   }
 }
 
