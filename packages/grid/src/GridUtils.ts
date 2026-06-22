@@ -455,35 +455,80 @@ export class GridUtils {
   }
 
   /**
-   * Check if a separator exists between a column and the next column at a given depth.
+   * Determine whether two adjacent columns belong to the same column-header group
+   * at the given depth.
    *
-   * - At leaf depth (0), every model column is separated from the rest.
-   * - At deeper depths, separator existence follows column-header-group identity when
-   *   the model exposes groups via `getColumnHeaderGroup`. Distinct group instances
-   *   that happen to share a display name (e.g. pivot Totals groups) are correctly
-   *   treated as separate.
-   * - When neither side has a declared group, fall back to header-text inequality so
-   *   plain grouped-header models (which express grouping only through repeated text)
-   *   keep their existing behavior.
-   * - The check is symmetric across the boundary: a separator is drawn at either
-   *   outer edge of a group cell, including the left edge of a group that is preceded
-   *   by an ungrouped column (empty band). Only a boundary with an empty band on
-   *   both sides has no separator.
+   * - When the model exposes group instances via `getColumnHeaderGroup`, identity
+   *   decides: two distinct group instances that happen to share a display name
+   *   (e.g. pivot Totals groups) are treated as different groups.
+   * - When only one side has a declared group, they are different groups.
+   * - When neither side has a declared group, fall back to header-text equality so
+   *   plain grouped-header models (which express grouping only through repeated
+   *   text) keep their existing behavior.
    *
    * @param model The grid model
    * @param depth The header depth to check at
-   * @param columnIndex The current model column index
-   * @param nextColumnIndex The next model column index (undefined for last column)
+   * @param columnIndex The first model column index
+   * @param otherColumnIndex The second model column index
+   * @returns true if both columns are part of the same group at this depth
+   */
+  static isSameColumnGroupAtDepth(
+    model: GridModel,
+    depth: number,
+    columnIndex: ModelIndex,
+    otherColumnIndex: ModelIndex
+  ): boolean {
+    const groupA = model.getColumnHeaderGroup(columnIndex, depth);
+    const groupB = model.getColumnHeaderGroup(otherColumnIndex, depth);
+
+    if (groupA != null && groupB != null) {
+      return groupA === groupB;
+    }
+    if (groupA != null || groupB != null) {
+      return false;
+    }
+
+    // Neither side has a declared group; fall back to text equality
+    return (
+      model.textForColumnHeader(columnIndex, depth) ===
+      model.textForColumnHeader(otherColumnIndex, depth)
+    );
+  }
+
+  /**
+   * Check if a separator exists between the column at `visibleIndex` and the
+   * column immediately after it at a given header depth.
+   *
+   * - At leaf depth (0), every model column has a separator on its trailing edge.
+   * - At deeper depths, separator existence follows column-header-group identity
+   *   (see {@link isSameColumnGroupAtDepth}). Distinct group instances that share a
+   *   display name (e.g. pivot Totals groups) are correctly treated as separate.
+   * - The true trailing edge of the table (the last column) always has a separator.
+   *
+   * The next model column is resolved from `visibleIndex + 1` so that an off-screen
+   * neighbor is handled correctly and is not mistaken for the table's trailing edge.
+   *
+   * @param model The grid model
+   * @param depth The header depth to check at
+   * @param visibleIndex The visible index of the current column
+   * @param columnCount The total number of columns in the model
+   * @param movedColumns The current column-move operations
    * @returns true if a separator should be shown, false otherwise
    */
   static hasColumnSeparatorAtDepth(
     model: GridModel,
     depth: number | undefined,
-    columnIndex: ModelIndex | undefined,
-    nextColumnIndex: ModelIndex | undefined
+    visibleIndex: VisibleIndex | undefined,
+    columnCount: number,
+    movedColumns: readonly MoveOperation[]
   ): boolean {
-    if (depth == null || columnIndex == null) {
+    if (depth == null || visibleIndex == null) {
       return false;
+    }
+
+    // True trailing edge of the table
+    if (visibleIndex >= columnCount - 1) {
+      return true;
     }
 
     // Leaf depth: every distinct model column is a physical boundary
@@ -491,47 +536,17 @@ export class GridUtils {
       return true;
     }
 
-    // A header cell is drawn above a column at this depth when the column has a
-    // declared group or header text. Where no cell is drawn the band is empty.
-    const groupA = model.getColumnHeaderGroup(columnIndex, depth);
-    const hasHeaderCellA =
-      groupA != null || model.textForColumnHeader(columnIndex, depth) != null;
+    const columnIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
+    const nextColumnIndex = GridUtils.getModelIndex(
+      visibleIndex + 1,
+      movedColumns
+    );
 
-    // Right edge of the last column: a separator exists only if a cell is drawn
-    // above it (otherwise it is the right edge of an empty band).
-    if (nextColumnIndex == null) {
-      return hasHeaderCellA;
-    }
-
-    const groupB = model.getColumnHeaderGroup(nextColumnIndex, depth);
-    const hasHeaderCellB =
-      groupB != null ||
-      model.textForColumnHeader(nextColumnIndex, depth) != null;
-
-    // Empty band on both sides: nothing to separate
-    if (!hasHeaderCellA && !hasHeaderCellB) {
-      return false;
-    }
-
-    // Exactly one side has a header cell: this is an outer edge of a group cell
-    // (the left edge of a group preceded by an empty band, or the right edge of
-    // a group followed by one).
-    if (hasHeaderCellA !== hasHeaderCellB) {
-      return true;
-    }
-
-    // Both sides have header cells
-    if (groupA != null && groupB != null) {
-      return groupA !== groupB;
-    }
-    if (groupA != null || groupB != null) {
-      return true;
-    }
-
-    // Neither side has a declared group; fall back to text inequality
-    return (
-      model.textForColumnHeader(columnIndex, depth) !==
-      model.textForColumnHeader(nextColumnIndex, depth)
+    return !GridUtils.isSameColumnGroupAtDepth(
+      model,
+      depth,
+      columnIndex,
+      nextColumnIndex
     );
   }
 
@@ -560,7 +575,8 @@ export class GridUtils {
       allColumnXs,
       allColumnWidths,
       columnHeaderMaxDepth,
-      modelColumns,
+      columnCount,
+      movedColumns,
     } = metrics;
     const { allowColumnResize, headerSeparatorHandleSize } = theme;
 
@@ -599,8 +615,9 @@ export class GridUtils {
           GridUtils.hasColumnSeparatorAtDepth(
             model,
             depth,
-            modelColumns.get(column),
-            modelColumns.get(column + 1)
+            column,
+            columnCount,
+            movedColumns
           )
         ) {
           return column;
@@ -639,8 +656,9 @@ export class GridUtils {
           GridUtils.hasColumnSeparatorAtDepth(
             model,
             depth,
-            modelColumns.get(column),
-            modelColumns.get(column + 1)
+            column,
+            columnCount,
+            movedColumns
           )
         ) {
           return column;

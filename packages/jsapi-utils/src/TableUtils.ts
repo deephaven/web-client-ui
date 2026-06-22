@@ -530,6 +530,10 @@ export class TableUtils {
     return this.isStringType(columnType) || this.isCharType(columnType);
   }
 
+  static isArrayType(columnType: string): boolean {
+    return columnType.includes('[]');
+  }
+
   /**
    * Get base column type
    * @param columnType Column type

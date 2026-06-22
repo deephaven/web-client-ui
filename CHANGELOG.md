@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+### Bug Fixes
+
+- DH-13522: exclude some aggs for arrays ([#2697](https://github.com/deephaven/web-client-ui/issues/2697)) ([35bc710](https://github.com/deephaven/web-client-ui/commit/35bc710f4a034da81c1dd99ddaee451465577b31))
+- DH-20910: Don't log an error when loading a widget ([#2700](https://github.com/deephaven/web-client-ui/issues/2700)) ([37b079e](https://github.com/deephaven/web-client-ui/commit/37b079e2f8ef65a6d8b7a7bb2c423030cfcff188))
+- DH-22758: Fix column resize bug on columns with the same display text ([#2691](https://github.com/deephaven/web-client-ui/issues/2691)) ([65c5c93](https://github.com/deephaven/web-client-ui/commit/65c5c9378a051b3cac2c73f108c92f4c2f48eda0))
+- DH-22867: Fix Table Options slide animation ([#2698](https://github.com/deephaven/web-client-ui/issues/2698)) ([e0600dd](https://github.com/deephaven/web-client-ui/commit/e0600dd9ff999b48af22d269c9a8b542e8815cd3))
+- DH-22881: Fix column group separator highlight after drag ([#2699](https://github.com/deephaven/web-client-ui/issues/2699)) ([c404f46](https://github.com/deephaven/web-client-ui/commit/c404f46a228e6991c44a2f744bdec0bd5fb7baf6))
+- DH-22918: Pass ref through middleware chain, export createWidgetMiddleware helpers ([#2703](https://github.com/deephaven/web-client-ui/issues/2703)) ([0427362](https://github.com/deephaven/web-client-ui/commit/04273624d8b718cf8d743541cf32280e2c5a0652)), closes [#2688](https://github.com/deephaven/web-client-ui/issues/2688)
+
 ## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
 
 ### Features

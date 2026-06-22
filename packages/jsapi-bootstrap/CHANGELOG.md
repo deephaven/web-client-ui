@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+### Bug Fixes
+
+- DH-20910: Don't log an error when loading a widget ([#2700](https://github.com/deephaven/web-client-ui/issues/2700)) ([37b079e](https://github.com/deephaven/web-client-ui/commit/37b079e2f8ef65a6d8b7a7bb2c423030cfcff188))
+
 ## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
 
 **Note:** Version bump only for package @deephaven/jsapi-bootstrap
