@@ -1380,13 +1380,13 @@ describe('getColumnSeparatorIndex', () => {
     },
     {
       description:
-        'returns no depth-1 separator at the right edge of an ungrouped trailing column (empty band above)',
-      x: 450, // Right edge of column 3 (no group cell at depth 1 above it)
+        'detects a depth-1 separator at the right edge of an ungrouped trailing column (true trailing edge of the table)',
+      x: 450, // Right edge of column 3, the last column in the table
       y: 15,
       headerGroups: trailingUngroupedHeaderGroups,
       columnHeaderGroups: trailingUngroupedColumnGroups,
       maxDepth: 2,
-      expected: null,
+      expected: 3,
     },
     {
       description:
