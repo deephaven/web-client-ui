@@ -45,7 +45,8 @@ class RestrictedEditKeyHandler extends KeyHandler {
     // Read the registry from context at call time (not construction time).
     const registry =
       this.irisGrid.context?.cellInputRendererRegistry ?? DEFAULT_REGISTRY;
-    const restrictions = model.getColumnRestriction(cursorColumn);
+    const modelColumn = grid.getModelColumn(cursorColumn);
+    const restrictions = model.getColumnRestriction(modelColumn);
     if (restrictions.length === 1) {
       const renderer = registry.get(restrictions[0].type);
       if (renderer?.preservesExistingValue === true) {
