@@ -2286,8 +2286,9 @@ class Grid extends PureComponent<GridProps, GridState> {
         rowBackgroundColors,
         maxDepth
       );
+      const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
       const colorSet = colorSets[row % colorSets.length];
-      [cellBackgroundColor] = colorSet;
+      cellBackgroundColor = colorSet[Math.min(depth, colorSet.length - 1)];
     }
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
