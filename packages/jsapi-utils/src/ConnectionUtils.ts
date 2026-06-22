@@ -31,7 +31,7 @@ export function fetchVariableDefinition(
  * Fetch the definition for a variable given a connection. Waits for the next
  * field update event and resolves if a variable matching the predicate is found
  * in the created variables.
- * @param connection Connection to get the variable from
+ * @param fieldSource Connection or session exposing `subscribeToFieldUpdates`
  * @param predicate Predicate function to test each variable definition
  * @param timeout Timeout for the fetch
  * @param errorMessage Optional error message for timeout and not found errors
@@ -39,7 +39,7 @@ export function fetchVariableDefinition(
  *          or rejects if no matching variable is found in that update or if the timeout is exceeded
  */
 export function fetchVariableDefinitionByPredicate(
-  connection: dh.IdeConnection,
+  fieldSource: Pick<dh.IdeConnection, 'subscribeToFieldUpdates'>,
   predicate: (definition: dh.ide.VariableDefinition) => boolean,
   timeout = FETCH_TIMEOUT,
   errorMessage = 'Variable not found'
@@ -67,6 +67,6 @@ export function fetchVariableDefinitionByPredicate(
       }
     }
 
-    removeListener = connection.subscribeToFieldUpdates(handleFieldUpdates);
+    removeListener = fieldSource.subscribeToFieldUpdates(handleFieldUpdates);
   });
 }

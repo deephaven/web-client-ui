@@ -7,6 +7,8 @@ import {
   LoadingSpinner,
 } from '@deephaven/components';
 import {
+  type VariableDefinitionFinder,
+  VariableDefinitionFinderContext,
   ObjectFetcherContext,
   type ObjectFetchManager,
   ObjectFetchManagerContext,
@@ -17,6 +19,7 @@ import {
 } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { fetchVariableDefinitionByPredicate } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import { vsDebugDisconnect } from '@deephaven/icons';
 import ConnectionContext from './ConnectionContext';
@@ -179,6 +182,23 @@ export function ConnectionBootstrap({
     [connection]
   );
 
+  const variableDefinitionFinder = useCallback<VariableDefinitionFinder>(
+    async predicate => {
+      assertNotNull(
+        connection,
+        'No connection available to find variable with'
+      );
+      // Core exposes a single connection, so the worker descriptor is unused.
+      try {
+        return await fetchVariableDefinitionByPredicate(connection, predicate);
+      } catch {
+        // Treat "not found" and timeouts uniformly as absent.
+        return null;
+      }
+    },
+    [connection]
+  );
+
   /** We don't really need to do anything fancy in Core to manage an object, just fetch it  */
   const objectManager: ObjectFetchManager = useMemo(
     () => ({
@@ -215,27 +235,31 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        <ObjectFetchManagerContext.Provider value={objectManager}>
-          {children}
-          <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
-            <InfoModal
-              icon={vsDebugDisconnect}
-              title={
-                <>
-                  <LoadingSpinner /> Attempting to reconnect...
-                </>
-              }
-              subtitle="Please check your network connection."
+        <VariableDefinitionFinderContext.Provider
+          value={variableDefinitionFinder}
+        >
+          <ObjectFetchManagerContext.Provider value={objectManager}>
+            {children}
+            <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
+              <InfoModal
+                icon={vsDebugDisconnect}
+                title={
+                  <>
+                    <LoadingSpinner /> Attempting to reconnect...
+                  </>
+                }
+                subtitle="Please check your network connection."
+              />
+            </DebouncedModal>
+            <BasicModal
+              confirmButtonText="Refresh"
+              onConfirm={handleRefresh}
+              isOpen={isAuthFailed}
+              headerText="Authentication failed"
+              bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
             />
-          </DebouncedModal>
-          <BasicModal
-            confirmButtonText="Refresh"
-            onConfirm={handleRefresh}
-            isOpen={isAuthFailed}
-            headerText="Authentication failed"
-            bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
-          />
-        </ObjectFetchManagerContext.Provider>
+          </ObjectFetchManagerContext.Provider>
+        </VariableDefinitionFinderContext.Provider>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
