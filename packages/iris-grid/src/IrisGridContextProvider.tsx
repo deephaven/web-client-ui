@@ -11,7 +11,8 @@ import {
 /**
  * Combined context consumed by IrisGrid via static contextType.
  * Provided by IrisGridContextProvider which combines the theme (from
- * IrisGridThemeOnlyContext) and the renderer registry (from CellInputRendererContext).
+ * IrisGridThemeContext / IrisGridThemeProvider) and the renderer registry (from
+ * CellInputRendererContext).
  */
 export const IrisGridContext = createContext<{
   theme: IrisGridThemeContextValue | null;
