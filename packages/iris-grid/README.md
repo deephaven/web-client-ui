@@ -91,12 +91,19 @@ import { type IrisGridTableOptionsPageProps } from '@deephaven/iris-grid';
 
 export function ColumnInspectorPage({
   model,
+  hiddenColumns,
   onBack,
 }: IrisGridTableOptionsPageProps): JSX.Element {
+  const hidden = new Set(hiddenColumns);
   return (
     <div>
       <button type="button" onClick={onBack}>Back</button>
-      <pre>{model.columns.map(c => c.name).join('\n')}</pre>
+      <pre>
+        {model.columns
+          .filter(c => !hidden.has(c.name))
+          .map(c => c.name)
+          .join('\n')}
+      </pre>
     </div>
   );
 }

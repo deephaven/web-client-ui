@@ -80,6 +80,14 @@ export type PendingOperationDetail = {
 export type IrisGridTableOptionsPageProps = {
   /** Current model the grid is rendering. */
   model: IrisGridModel;
+  /**
+   * Names of columns currently hidden by the user (via the Visibility &
+   * Ordering builder) or by `model.layoutHints.hiddenColumns`. Order is
+   * not significant. Pages that surface column choosers should use this
+   * to filter their selection lists; column-name comparisons are
+   * case-sensitive and must match `IrisGridModel#columns[i].name`.
+   */
+  hiddenColumns: readonly ColumnName[];
   /** Pop the current page off the sidebar stack. */
   onBack: () => void;
 };

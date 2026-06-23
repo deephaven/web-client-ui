@@ -1434,6 +1434,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 1 }
   );
 
+  getCachedHiddenColumnNames = memoize(
+    (
+      hiddenColumns: readonly ModelIndex[],
+      columns: readonly DhType.Column[]
+    ): readonly ColumnName[] =>
+      Object.freeze(
+        hiddenColumns
+          .map(idx => columns[idx]?.name)
+          .filter((n): n is ColumnName => n != null)
+      ),
+    { max: 1 }
+  );
+
   getAggregationMap = memoize(
     (
       columns: readonly DhType.Column[],
@@ -5401,7 +5414,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               key={String(option.type)}
               onBack={this.handleMenuBack}
             >
-              <PluginPage model={model} onBack={this.handleMenuBack} />
+              <PluginPage
+                model={model}
+                hiddenColumns={this.getCachedHiddenColumnNames(
+                  hiddenColumns,
+                  model.columns
+                )}
+                onBack={this.handleMenuBack}
+              />
             </PluginTableOptionsErrorBoundary>
           );
         }
