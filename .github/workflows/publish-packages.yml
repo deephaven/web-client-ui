@@ -37,8 +37,26 @@ jobs:
       - name: Build production
         run: npm run build
       - name: Publish canary packages
+        # lerna's `--canary` only differentiates runs via `+<sha>` build metadata,
+        # which npm strips on publish, so every canary run for the same base
+        # version collides on the same published version
+        # (e.g. 1.22.2-alpha-pivot-builder.0). Instead, set an explicit,
+        # npm-visible prerelease version (run_number keeps it unique per run) and
+        # publish what's on disk with `from-package`.
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: ./node_modules/.bin/lerna publish --canary --force-publish=\* --preid ${{ github.event.inputs.preid }} --dist-tag canary --yes
+        run: |
+          BASE=$(node -p "require('./lerna.json').version")
+          NEXT=$(node -p "require('semver').inc('$BASE', 'patch')")
+          VERSION="${NEXT}-${{ github.event.inputs.preid }}.${{ github.run_number }}"
+          echo "Publishing canary version $VERSION"
+          ./node_modules/.bin/lerna version "$VERSION" \
+            --exact \
+            --force-publish=\* \
+            --no-push \
+            --no-git-tag-version \
+            --no-changelog \
+            --yes
+          ./node_modules/.bin/lerna publish from-package --dist-tag canary --yes
       - name: Publish production packages
         if: ${{ github.event_name == 'release' }}
         run: ./node_modules/.bin/lerna publish from-package --yes
