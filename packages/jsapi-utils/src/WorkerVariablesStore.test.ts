@@ -273,7 +273,7 @@ describe('createWorkerVariablesStore', () => {
     expect(store.snapshot('w1')).toBeNull();
   });
 
-  it('does not start a second subscription while one is already resolving', async () => {
+  it('re-resolves after an invalidate that lands mid-resolve, without resolving concurrently', async () => {
     let resolve: (c: dh.IdeConnection) => void = () => undefined;
     const connectionPromise = new Promise<dh.IdeConnection>(r => {
       resolve = r;
@@ -282,14 +282,19 @@ describe('createWorkerVariablesStore', () => {
     const resolveConnection = jest.fn(() => connectionPromise);
     const store = createWorkerVariablesStore(resolveConnection);
     store.subscribe('w1', jest.fn());
-    // First start is mid-flight (resolving); invalidate kicks off a second
-    // start which must bail out early instead of resolving again.
+    // First start is mid-flight (resolving); invalidate must NOT kick off a
+    // concurrent resolve while one is already in flight.
     store.invalidate('w1');
     expect(resolveConnection).toHaveBeenCalledTimes(1);
+    expect(subscribeMock).not.toHaveBeenCalled();
+    // Once the in-flight resolve completes it bails out as stale (generation
+    // bumped) but must trigger a fresh resolve so the entry isn't left stuck.
     resolve(connection);
     await flushPromises();
-    // The original resolve is stale (generation bumped), so no subscription.
-    expect(subscribeMock).not.toHaveBeenCalled();
+    expect(resolveConnection).toHaveBeenCalledTimes(2);
+    expect(subscribeMock).toHaveBeenCalledTimes(1);
+    // Subscription is open again; snapshot stays null until a delta arrives.
+    expect(store.snapshot('w1')).toBeNull();
   });
 
   it('logs and recovers when resolveConnection rejects', async () => {

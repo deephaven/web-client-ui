@@ -208,6 +208,21 @@ export function createWorkerVariablesStore(
       log.error('Failed to resolve worker connection', key, e);
     } finally {
       entry.resolving = false;
+      // If `invalidate` ran while this resolve was in flight, it bumped
+      // `generation` but couldn't start a fresh resolve (this one was still
+      // marked `resolving`). The in-flight resolve above then bailed out as
+      // stale, so kick off another resolve now that `resolving` is cleared —
+      // otherwise the entry would be stuck with `list === null` and no
+      // subscription until the next `invalidate`/subscribe. `gen` now equals
+      // `entry.generation` when no invalidation occurred, so this never loops.
+      if (
+        entries.get(key) === entry &&
+        gen !== entry.generation &&
+        entry.unsubscribeFieldUpdates == null &&
+        entry.listeners.size > 0
+      ) {
+        start(key).catch(() => undefined);
+      }
     }
   }
 
