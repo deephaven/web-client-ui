@@ -46,7 +46,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           PREID="${{ github.event.inputs.preid }}.$(git rev-parse --short HEAD)"
-          ./node_modules/.bin/lerna publish --canary --preid "$PREID" --dist-tag canary --yes
+          ./node_modules/.bin/lerna publish --canary --preid "$PREID" --force-publish=\* --dist-tag canary --yes
       - name: Publish production packages
         if: ${{ github.event_name == 'release' }}
         run: ./node_modules/.bin/lerna publish from-package --yes
