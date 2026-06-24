@@ -240,4 +240,66 @@ describe('createWorkerVariablesStore', () => {
     expect(listener).not.toHaveBeenCalled();
     expect(store.snapshot('w1')).toBeNull();
   });
+
+  it('isolates a throwing listener so other listeners still run', async () => {
+    const { connection, emit } = makeConnection();
+    const store = createWorkerVariablesStore(async () => connection);
+    const throwing = jest.fn(() => {
+      throw new Error('listener boom');
+    });
+    const other = jest.fn();
+    store.subscribe('w1', throwing);
+    store.subscribe('w1', other);
+    await flushPromises();
+    expect(() => emit({ created: [makeDefinition('v1')] })).not.toThrow();
+    expect(throwing).toHaveBeenCalledTimes(1);
+    expect(other).toHaveBeenCalledTimes(1);
+    expect(store.snapshot('w1')?.map(v => v.id)).toEqual(['v1']);
+  });
+
+  it('swallows errors thrown while unsubscribing from field updates', async () => {
+    const unsubscribeMock = jest.fn(() => {
+      throw new Error('unsubscribe boom');
+    });
+    const subscribeMock = jest.fn(() => unsubscribeMock);
+    const connection = {
+      subscribeToFieldUpdates: subscribeMock,
+    } as unknown as dh.IdeConnection;
+    const store = createWorkerVariablesStore(async () => connection);
+    const off = store.subscribe('w1', jest.fn());
+    await flushPromises();
+    expect(() => off()).not.toThrow();
+    expect(unsubscribeMock).toHaveBeenCalledTimes(1);
+    expect(store.snapshot('w1')).toBeNull();
+  });
+
+  it('does not start a second subscription while one is already resolving', async () => {
+    let resolve: (c: dh.IdeConnection) => void = () => undefined;
+    const connectionPromise = new Promise<dh.IdeConnection>(r => {
+      resolve = r;
+    });
+    const { connection, subscribeMock } = makeConnection();
+    const resolveConnection = jest.fn(() => connectionPromise);
+    const store = createWorkerVariablesStore(resolveConnection);
+    store.subscribe('w1', jest.fn());
+    // First start is mid-flight (resolving); invalidate kicks off a second
+    // start which must bail out early instead of resolving again.
+    store.invalidate('w1');
+    expect(resolveConnection).toHaveBeenCalledTimes(1);
+    resolve(connection);
+    await flushPromises();
+    // The original resolve is stale (generation bumped), so no subscription.
+    expect(subscribeMock).not.toHaveBeenCalled();
+  });
+
+  it('logs and recovers when resolveConnection rejects', async () => {
+    const store = createWorkerVariablesStore(async () => {
+      throw new Error('resolve boom');
+    });
+    const listener = jest.fn();
+    store.subscribe('w1', listener);
+    await flushPromises();
+    expect(listener).not.toHaveBeenCalled();
+    expect(store.snapshot('w1')).toBeNull();
+  });
 });
