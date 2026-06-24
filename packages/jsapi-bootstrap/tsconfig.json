@@ -8,7 +8,6 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../components" },
-    { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../react-hooks" },
     { "path": "../test-utils" },
