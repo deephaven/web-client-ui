@@ -54,6 +54,28 @@ export type ResolveConnection = (
 ) => Promise<dh.IdeConnection | null>;
 
 /**
+ * Identify a variable for delta matching. `dh.ide.VariableDefinition` declares
+ * a non-optional `id`, but at runtime instances are frequently created as just
+ * `{ name, type }` (e.g. field-update payloads and test fixtures), so `id` may
+ * be absent. Fall back to `name`, then `title`, and return `undefined` when no
+ * usable key exists so such items are never matched against a delta. Keys are
+ * namespaced by source field so an `id` of `"x"` never collides with a `name`
+ * of `"x"`.
+ */
+function getVariableKey(v: dh.ide.VariableDefinition): string | undefined {
+  if (typeof v.id === 'string' && v.id.length > 0) {
+    return `id:${v.id}`;
+  }
+  if (typeof v.name === 'string' && v.name.length > 0) {
+    return `name:${v.name}`;
+  }
+  if (typeof v.title === 'string' && v.title.length > 0) {
+    return `title:${v.title}`;
+  }
+  return undefined;
+}
+
+/**
  * A ref-counted store of worker variable lists, keyed by worker. Wraps
  * `IdeConnection.subscribeToFieldUpdates` so the underlying push subscription
  * is opened once per worker regardless of the number of React consumers.
@@ -165,11 +187,18 @@ export function createWorkerVariablesStore(
       // identity is stable for `useSyncExternalStore` consumers.
       const unsubscribe = connection.subscribeToFieldUpdates(changes => {
         if (gen !== entry.generation) return;
-        const removedIds = new Set(changes.removed.map(v => v.id));
-        const updatedIds = new Set(changes.updated.map(v => v.id));
-        const next = (entry.list ?? []).filter(
-          v => !removedIds.has(v.id) && !updatedIds.has(v.id)
+        const removedKeys = new Set(
+          changes.removed.map(getVariableKey).filter(k => k != null)
         );
+        const updatedKeys = new Set(
+          changes.updated.map(getVariableKey).filter(k => k != null)
+        );
+        // Keep keyless items (they can't be matched) and items whose key was
+        // not removed or updated; updated/created items are re-appended below.
+        const next = (entry.list ?? []).filter(v => {
+          const k = getVariableKey(v);
+          return k == null || (!removedKeys.has(k) && !updatedKeys.has(k));
+        });
         next.push(...changes.updated, ...changes.created);
         entry.list = next;
         notify(entry);

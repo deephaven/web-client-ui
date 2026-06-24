@@ -302,4 +302,57 @@ describe('createWorkerVariablesStore', () => {
     expect(listener).not.toHaveBeenCalled();
     expect(store.snapshot('w1')).toBeNull();
   });
+
+  it('matches deltas by name/title when id is absent', async () => {
+    const { connection, emit } = makeConnection();
+    const store = createWorkerVariablesStore(async () => connection);
+    store.subscribe('w1', jest.fn());
+    await flushPromises();
+
+    // Definitions without an id (id omitted) must still be tracked by name.
+    const a = makeDefinition('a', { id: undefined as unknown as string });
+    const b = makeDefinition('b', { id: undefined as unknown as string });
+    emit({ created: [a, b] });
+    expect(store.snapshot('w1')?.map(v => v.name)).toEqual(['a', 'b']);
+
+    // Removing by name (no id) should drop the matching entry, not all.
+    emit({
+      removed: [makeDefinition('a', { id: undefined as unknown as string })],
+    });
+    expect(store.snapshot('w1')?.map(v => v.name)).toEqual(['b']);
+
+    // Updating by name replaces in place and moves to the end.
+    emit({
+      updated: [
+        makeDefinition('b', {
+          id: undefined as unknown as string,
+          title: 'b2',
+        }),
+      ],
+    });
+    const snap = store.snapshot('w1');
+    expect(snap?.map(v => v.name)).toEqual(['b']);
+    expect(snap?.find(v => v.name === 'b')?.title).toBe('b2');
+  });
+
+  it('keeps keyless items instead of dropping them on a delta', async () => {
+    const { connection, emit } = makeConnection();
+    const store = createWorkerVariablesStore(async () => connection);
+    store.subscribe('w1', jest.fn());
+    await flushPromises();
+
+    const keyless = makeDefinition('', {
+      id: undefined as unknown as string,
+      name: '',
+      title: '',
+    });
+    emit({ created: [keyless, makeDefinition('a')] });
+    expect(store.snapshot('w1')).toHaveLength(2);
+
+    // An unrelated delta must not drop the keyless item.
+    emit({ removed: [makeDefinition('a')] });
+    const snap = store.snapshot('w1');
+    expect(snap).toHaveLength(1);
+    expect(snap?.[0]).toBe(keyless);
+  });
 });
