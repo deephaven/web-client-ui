@@ -91,10 +91,10 @@ import { type IrisGridTableOptionsPageProps } from '@deephaven/iris-grid';
 
 export function ColumnInspectorPage({
   model,
-  hiddenColumns,
+  viewState,
   onBack,
 }: IrisGridTableOptionsPageProps): JSX.Element {
-  const hidden = new Set(hiddenColumns);
+  const hidden = new Set(viewState.hiddenColumns);
   return (
     <div>
       <button type="button" onClick={onBack}>Back</button>
@@ -112,6 +112,11 @@ export function ColumnInspectorPage({
 `IrisGrid` wraps each `configPage` render in `PluginTableOptionsErrorBoundary`,
 so a throw inside your page shows a small inline fallback instead of
 unmounting the whole grid.
+
+The `viewState` prop is an `IrisGridViewState` — a curated, read-only snapshot
+of the grid's current view configuration (e.g. `viewState.hiddenColumns`). It's
+a small, stable subset of the grid's internal state; new fields are added
+additively as plugins need them.
 
 ### Publishing from middleware
 

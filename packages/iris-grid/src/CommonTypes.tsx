@@ -71,15 +71,13 @@ export type PendingOperationDetail = {
 };
 
 /**
- * Props passed to a plugin-supplied sidebar page (an item whose
- * `configPage` is set). Pages receive the current model and a
- * back-navigation callback; any additional state access should
- * flow through the model or through props the plugin threads in
- * itself.
+ * A curated, read-only snapshot of the grid's current view configuration,
+ * exposed to plugin-supplied sidebar pages. This is intentionally a small,
+ * stable subset of the grid's internal state (not `IrisGridState` itself):
+ * fields are added here additively as plugins need them, so the plugin API
+ * stays decoupled from `IrisGrid`'s internal/serialization concerns.
  */
-export type IrisGridTableOptionsPageProps = {
-  /** Current model the grid is rendering. */
-  model: IrisGridModel;
+export interface IrisGridViewState {
   /**
    * Names of columns currently hidden by the user (via the Visibility &
    * Ordering builder) or by `model.layoutHints.hiddenColumns`. Order is
@@ -87,7 +85,21 @@ export type IrisGridTableOptionsPageProps = {
    * to filter their selection lists; column-name comparisons are
    * case-sensitive and must match `IrisGridModel#columns[i].name`.
    */
-  hiddenColumns: readonly ColumnName[];
+  readonly hiddenColumns: readonly ColumnName[];
+}
+
+/**
+ * Props passed to a plugin-supplied sidebar page (an item whose
+ * `configPage` is set). Pages receive the current model, a read-only
+ * snapshot of the grid's view state, and a back-navigation callback; any
+ * additional state access should flow through the model or through props
+ * the plugin threads in itself.
+ */
+export type IrisGridTableOptionsPageProps = {
+  /** Current model the grid is rendering. */
+  model: IrisGridModel;
+  /** Read-only snapshot of the grid's current view configuration. */
+  viewState: IrisGridViewState;
   /** Pop the current page off the sidebar stack. */
   onBack: () => void;
 };

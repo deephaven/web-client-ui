@@ -185,6 +185,7 @@ import {
   type ColumnName,
   type InputFilter,
   type IrisGridStateOverride,
+  type IrisGridViewState,
   type OperationMap,
   type OptionItem,
   type PendingDataErrorMap,
@@ -1444,6 +1445,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           .map(idx => columns[idx]?.name)
           .filter((n): n is ColumnName => n != null)
       ),
+    { max: 1 }
+  );
+
+  getCachedViewState = memoize(
+    (hiddenColumns: readonly ColumnName[]): IrisGridViewState =>
+      Object.freeze({ hiddenColumns }),
     { max: 1 }
   );
 
@@ -5416,9 +5423,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             >
               <PluginPage
                 model={model}
-                hiddenColumns={this.getCachedHiddenColumnNames(
-                  hiddenColumns,
-                  model.columns
+                viewState={this.getCachedViewState(
+                  this.getCachedHiddenColumnNames(hiddenColumns, model.columns)
                 )}
                 onBack={this.handleMenuBack}
               />
