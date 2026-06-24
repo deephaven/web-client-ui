@@ -1394,11 +1394,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
         return items;
       }
+      // Collapse duplicate `type` entries before sorting. A duplicate `type`
+      // would otherwise collide on the `<Menu>` / `<Page>` React key and cause
+      // incorrect page reuse. Per the documented composition rule (see the
+      // package README), the last writer wins: a later entry — e.g. from a
+      // downstream middleware — overrides an earlier one with the same type.
+      // `Map.set` keeps the most recent value while preserving the original
+      // insertion slot, so an override stays in place unless it changes
+      // `order`.
+      const byType = new Map<string, OptionItem>();
+      transformedItems.forEach(item => {
+        byType.set(String(item.type), item);
+      });
       // Stably sort by ascending `order`. Items without an `order` sink to
       // the end of the menu (default `Infinity`), while items with an `order`
       // are positioned by their weight. Decorate-sort-undecorate guarantees
       // stability regardless of the engine's sort implementation.
-      const sortedItems = transformedItems
+      const sortedItems = [...byType.values()]
         .map((item, index) => ({ item, index }))
         .sort(
           (a, b) =>
@@ -1406,24 +1418,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             a.index - b.index
         )
         .map(({ item }) => item);
-      // Drop duplicate `type` entries, keeping the first occurrence. A
-      // duplicate `type` would collide on the `<Menu>` / `<Page>` React key
-      // and cause incorrect page reuse, so we de-dupe to match the warning.
-      const keys = new Set<string>();
-      const dedupedItems: OptionItem[] = [];
-      sortedItems.forEach(item => {
-        const key = String(item.type);
-        if (keys.has(key)) {
-          log.warn(
-            `transformTableOptions produced duplicate type "${key}"; ` +
-              'only the first entry will be kept.'
-          );
-          return;
-        }
-        keys.add(key);
-        dedupedItems.push(item);
-      });
-      return Object.freeze(dedupedItems);
+      return Object.freeze(sortedItems);
     },
     { max: 1 }
   );
@@ -3523,6 +3518,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Clear the loading scrim in response to a model-driven `PENDING_CLEARED`
    * event. Only needed for operations that do not naturally end in
    * `UPDATED`/`COLUMNS_CHANGED`/`REQUEST_FAILED`.
+   *
+   * The current contract assumes a single outstanding model-driven operation:
+   * `handlePending` collapses concurrent `PENDING` events into one scrim, so
+   * this clears unconditionally. That is consistent with the existing scrim,
+   * which any model stop signal already clears regardless of what else is in
+   * flight. Ref-counting overlapping operations is intentionally deferred to
+   * the planned migration that routes the built-in `startLoading` calls
+   * through `PENDING`/`PENDING_CLEARED`; only once every raise/clear goes
+   * through this pair can a depth counter stay balanced (a counter added now
+   * would desync against the direct `startLoading` callers).
    */
   handlePendingCleared(): void {
     this.stopLoading();

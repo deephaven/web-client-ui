@@ -101,6 +101,12 @@ abstract class IrisGridModel<
      * naturally end in `UPDATED` / `COLUMNS_CHANGED` / `REQUEST_FAILED`.
      * Built-in operations never need this; their existing events clear the
      * scrim.
+     *
+     * Assumes a single outstanding model-driven operation: the scrim is not
+     * ref-counted, so a `PENDING_CLEARED` clears it regardless of other
+     * in-flight operations. Ref-counting is deferred to the planned migration
+     * that routes built-in `startLoading` calls through these events, where a
+     * depth counter can stay balanced.
      */
     PENDING_CLEARED: 'PENDING_CLEARED',
   } as const);

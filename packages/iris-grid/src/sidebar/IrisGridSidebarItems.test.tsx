@@ -9,7 +9,7 @@
  *     selecting that menu item to render its page through the
  *     default switch arm
  *   - transform that throws falls back to defaults and logs once
- *   - dev-mode duplicate-key warning fires
+ *   - a later duplicate `type` overrides an earlier one (last writer wins)
  *   - a thrown `configPage` is caught by `PluginTableOptionsErrorBoundary`
  *     and a minimal fallback UI is shown
  *
@@ -231,11 +231,7 @@ describe('IrisGrid transformTableOptions prop', () => {
     expect(secondIndex).toBeGreaterThan(firstIndex);
   });
 
-  it('warns in development when the transform produces duplicate types', () => {
-    const log = Log.module('IrisGrid');
-    const warnSpy = jest.spyOn(log, 'warn').mockImplementation(() => {
-      /* swallow */
-    });
+  it('lets a later duplicate `type` override an earlier one (last writer wins)', () => {
     const dupKey: OptionItemKey = 'plugin:test:dup';
     const transformTableOptions = (defaults: readonly OptionItem[]) => [
       ...defaults,
@@ -244,10 +240,10 @@ describe('IrisGrid transformTableOptions prop', () => {
     ];
     mountGrid({ transformTableOptions });
     openMenu();
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(`duplicate type "${dupKey}"`)
-    );
-    warnSpy.mockRestore();
+    // The later entry wins: only 'B' is rendered, 'A' is dropped, and the
+    // single surviving entry avoids a React key collision on `<Menu>`.
+    expect(screen.getByText('B')).toBeInTheDocument();
+    expect(screen.queryByText('A')).not.toBeInTheDocument();
   });
 
   it('renders a fallback UI when a plugin configPage throws', () => {
