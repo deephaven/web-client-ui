@@ -846,8 +846,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const movedRows =
       movedRowsProp.length > 0 ? movedRowsProp : model.initialMovedRows;
 
-    const metricCalculatorFactory = getMetricCalculator;
-    const metricCalculator = metricCalculatorFactory({
+    const metricCalculator = getMetricCalculator({
       userColumnWidths: new Map(userColumnWidths),
       userColumnWidthsByName:
         userColumnWidthsByName != null
@@ -862,9 +861,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         ])
       ),
     });
-    // Remember the factory we used so we can detect a model-driven swap
-    // (e.g. pivot-builder's proxy swapping its inner model) on COLUMNS_CHANGED.
-    this.lastMetricCalculatorFactory = metricCalculatorFactory;
+    // Remember the factory we used so `maybeRebuildMetricCalculator` (called
+    // from `componentDidUpdate` when the `getMetricCalculator` prop changes)
+    // can detect a model-driven swap, e.g. pivot-builder's proxy swapping its
+    // inner model.
+    this.lastMetricCalculatorFactory = getMetricCalculator;
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
       dh,
@@ -1373,8 +1374,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   /**
    * Apply the `transformTableOptions` transform (if any) to the
    * default option list.
-   * Catches exceptions so a buggy plugin can't break the grid,
-   * and warns about duplicate `type` collisions.
+   * Catches exceptions so a buggy plugin can't break the grid, and collapses
+   * duplicate `type` entries (last writer wins) before sorting by `order`.
    */
   getCachedTransformedOptionItems = memoize(
     (
@@ -3880,12 +3881,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   maybeRebuildMetricCalculator(): void {
     const { getMetricCalculator } = this.props;
-    const factory = getMetricCalculator;
-    if (factory === this.lastMetricCalculatorFactory) return;
+    if (getMetricCalculator === this.lastMetricCalculatorFactory) return;
 
     const { model } = this.props;
     const { movedColumns } = this.state;
-    const next = factory({
+    const next = getMetricCalculator({
       userColumnWidths: new Map(),
       userRowHeights: new Map(),
       movedColumns,
@@ -3896,7 +3896,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         ])
       ),
     });
-    this.lastMetricCalculatorFactory = factory;
+    this.lastMetricCalculatorFactory = getMetricCalculator;
     log.debug('Swapping metric calculator', next);
     // Also push the new calculator onto the Grid synchronously so any
     // immediately-following read of `Grid.metricCalculator` (before React has
@@ -5428,7 +5428,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <PluginTableOptionsErrorBoundary
               itemType={String(option.type)}
               key={String(option.type)}
-              onBack={this.handleMenuBack}
             >
               <PluginPage
                 model={model}

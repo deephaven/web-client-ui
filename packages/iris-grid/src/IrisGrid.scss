@@ -87,6 +87,10 @@ $cell-invalid-box-shadow:
     }
   }
 
+  .plugin-sidebar-error {
+    padding: $spacer 1.5em;
+  }
+
   .section-title {
     padding: $spacer 0;
     font-weight: 500;

@@ -19,7 +19,7 @@
  * menu/page wiring.
  */
 import React from 'react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -275,9 +275,7 @@ describe('IrisGrid transformTableOptions prop', () => {
     const fallback = screen.getByTestId('plugin-sidebar-error');
     expect(fallback).toBeInTheDocument();
     expect(fallback).toHaveTextContent(PLUGIN_KEY);
-    expect(
-      within(fallback).getByRole('button', { name: 'Back' })
-    ).toBeInTheDocument();
+    expect(fallback).toHaveTextContent('boom');
     expect(errorSpy).toHaveBeenCalled();
     errorSpy.mockRestore();
     consoleSpy.mockRestore();
