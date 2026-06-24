@@ -96,6 +96,7 @@ export function createWorkerVariablesStore(
 ): WorkerVariablesStore {
   const entries = new Map<string, Entry>();
 
+  /** Get the entry for `key`, creating an empty one if it doesn't exist. */
   function getOrCreate(key: string): Entry {
     let entry = entries.get(key);
     if (entry == null) {
@@ -111,6 +112,7 @@ export function createWorkerVariablesStore(
     return entry;
   }
 
+  /** Invoke every listener on `entry`, isolating listener errors. */
   function notify(entry: Entry): void {
     entry.listeners.forEach(listener => {
       try {
@@ -121,6 +123,7 @@ export function createWorkerVariablesStore(
     });
   }
 
+  /** Close the field-updates subscription for `key`, if any. */
   function teardown(key: string): void {
     const entry = entries.get(key);
     if (entry?.unsubscribeFieldUpdates != null) {
@@ -133,6 +136,7 @@ export function createWorkerVariablesStore(
     }
   }
 
+  /** Resolve the connection for `key` and open its field-updates subscription. */
   async function start(key: string): Promise<void> {
     const entry = entries.get(key);
     if (
@@ -157,19 +161,16 @@ export function createWorkerVariablesStore(
         log.debug('No connection available for worker', key);
         return;
       }
-      // Cumulative list maintained inside the closure; entry.list is replaced
-      // with a fresh array each delta so snapshot identity is stable.
-      const current: dh.ide.VariableDefinition[] = [];
+      // entry.list is replaced with a fresh array each delta so snapshot
+      // identity is stable for `useSyncExternalStore` consumers.
       const unsubscribe = connection.subscribeToFieldUpdates(changes => {
         if (gen !== entry.generation) return;
         const removedIds = new Set(changes.removed.map(v => v.id));
         const updatedIds = new Set(changes.updated.map(v => v.id));
-        const next = current.filter(
+        const next = (entry.list ?? []).filter(
           v => !removedIds.has(v.id) && !updatedIds.has(v.id)
         );
         next.push(...changes.updated, ...changes.created);
-        current.length = 0;
-        current.push(...next);
         entry.list = next;
         notify(entry);
       });
@@ -181,43 +182,50 @@ export function createWorkerVariablesStore(
     }
   }
 
-  return {
-    snapshot(key) {
-      return entries.get(key)?.list ?? null;
-    },
-    subscribe(key, listener) {
-      const entry = getOrCreate(key);
-      entry.listeners.add(listener);
-      if (entry.unsubscribeFieldUpdates == null && !entry.resolving) {
-        // start handles its own errors; nothing to do on rejection
-        start(key).catch(() => undefined);
-      }
-      return () => {
-        entry.listeners.delete(listener);
-        if (entry.listeners.size === 0) {
-          teardown(key);
-          entry.list = null;
-          entries.delete(key);
-        }
-      };
-    },
-    invalidate(key) {
-      const entry = entries.get(key);
-      if (entry == null) return;
-      entry.generation += 1;
-      teardown(key);
-      entry.list = null;
-      notify(entry);
-      if (entry.listeners.size > 0) {
-        // start handles its own errors; nothing to do on rejection
-        start(key).catch(() => undefined);
-      }
-    },
-    destroy() {
-      Array.from(entries.keys()).forEach(key => {
+  /** Current list for `key`, or `null` if not yet resolved. */
+  function snapshot(key: string): WorkerVariables | null {
+    return entries.get(key)?.list ?? null;
+  }
+
+  /** Register `listener` for `key`, starting the subscription on first listener. */
+  function subscribe(key: string, listener: () => void): () => void {
+    const entry = getOrCreate(key);
+    entry.listeners.add(listener);
+    if (entry.unsubscribeFieldUpdates == null && !entry.resolving) {
+      // start handles its own errors; nothing to do on rejection
+      start(key).catch(() => undefined);
+    }
+    return () => {
+      entry.listeners.delete(listener);
+      if (entry.listeners.size === 0) {
         teardown(key);
-      });
-      entries.clear();
-    },
-  };
+        entry.list = null;
+        entries.delete(key);
+      }
+    };
+  }
+
+  /** Drop the cached list/subscription for `key` and re-resolve if observed. */
+  function invalidate(key: string): void {
+    const entry = entries.get(key);
+    if (entry == null) return;
+    entry.generation += 1;
+    teardown(key);
+    entry.list = null;
+    notify(entry);
+    if (entry.listeners.size > 0) {
+      // start handles its own errors; nothing to do on rejection
+      start(key).catch(() => undefined);
+    }
+  }
+
+  /** Tear down every entry and clear all state. */
+  function destroy(): void {
+    Array.from(entries.keys()).forEach(key => {
+      teardown(key);
+    });
+    entries.clear();
+  }
+
+  return { snapshot, subscribe, invalidate, destroy };
 }
