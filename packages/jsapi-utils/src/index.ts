@@ -12,3 +12,4 @@ export * from './SessionUtils';
 export * from './Settings';
 export * from './TableUtils';
 export * from './ViewportDataUtils';
+export * from './WorkerVariablesStore';

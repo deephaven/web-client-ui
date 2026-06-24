@@ -14,9 +14,14 @@ import {
   type UriVariableDescriptor,
   useApi,
   useClient,
+  WorkerVariablesContext,
 } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import {
+  createWorkerVariablesStore,
+  type WorkerVariablesStore,
+} from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import { vsDebugDisconnect } from '@deephaven/icons';
 import ConnectionContext from './ConnectionContext';
@@ -179,6 +184,25 @@ export function ConnectionBootstrap({
     [connection]
   );
 
+  // Push-based worker variable store for DHC. Core exposes a single
+  // connection, so the resolver ignores the worker key.
+  const [workerVariablesStore, setWorkerVariablesStore] =
+    useState<WorkerVariablesStore | null>(null);
+  useEffect(
+    function manageWorkerVariablesStore() {
+      if (connection == null) {
+        setWorkerVariablesStore(null);
+        return undefined;
+      }
+      const store = createWorkerVariablesStore(async () => connection);
+      setWorkerVariablesStore(store);
+      return () => {
+        store.destroy();
+      };
+    },
+    [connection]
+  );
+
   /** We don't really need to do anything fancy in Core to manage an object, just fetch it  */
   const objectManager: ObjectFetchManager = useMemo(
     () => ({
@@ -215,27 +239,29 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        <ObjectFetchManagerContext.Provider value={objectManager}>
-          {children}
-          <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
-            <InfoModal
-              icon={vsDebugDisconnect}
-              title={
-                <>
-                  <LoadingSpinner /> Attempting to reconnect...
-                </>
-              }
-              subtitle="Please check your network connection."
+        <WorkerVariablesContext.Provider value={workerVariablesStore}>
+          <ObjectFetchManagerContext.Provider value={objectManager}>
+            {children}
+            <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
+              <InfoModal
+                icon={vsDebugDisconnect}
+                title={
+                  <>
+                    <LoadingSpinner /> Attempting to reconnect...
+                  </>
+                }
+                subtitle="Please check your network connection."
+              />
+            </DebouncedModal>
+            <BasicModal
+              confirmButtonText="Refresh"
+              onConfirm={handleRefresh}
+              isOpen={isAuthFailed}
+              headerText="Authentication failed"
+              bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
             />
-          </DebouncedModal>
-          <BasicModal
-            confirmButtonText="Refresh"
-            onConfirm={handleRefresh}
-            isOpen={isAuthFailed}
-            headerText="Authentication failed"
-            bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
-          />
-        </ObjectFetchManagerContext.Provider>
+          </ObjectFetchManagerContext.Provider>
+        </WorkerVariablesContext.Provider>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
