@@ -60,22 +60,22 @@ export type ResolveConnection = (
  */
 export type WorkerVariablesStore = {
   /** Current list for `key`, or `null` if not yet resolved. */
-  snapshot(key: string): WorkerVariables | null;
+  snapshot: (key: string) => WorkerVariables | null;
   /**
    * Subscribe to changes for `key`. The listener fires after each delta is
    * applied. Returns an unsubscribe function; the underlying field-updates
    * subscription is closed when the last listener for `key` unsubscribes.
    */
-  subscribe(key: string, listener: () => void): () => void;
+  subscribe: (key: string, listener: () => void) => () => void;
   /**
    * Drop the cached list and subscription for `key`. Active subscribers will
    * be notified (snapshot becomes `null`) and a fresh resolve+subscribe will
    * kick off. Use when an external signal indicates the worker behind `key`
    * has been replaced (e.g. DHE query restart).
    */
-  invalidate(key: string): void;
+  invalidate: (key: string) => void;
   /** Tear down all entries. Call when the owning provider unmounts. */
-  destroy(): void;
+  destroy: () => void;
 };
 
 type Entry = {
@@ -121,8 +121,9 @@ export function createWorkerVariablesStore(
     });
   }
 
-  function teardown(entry: Entry): void {
-    if (entry.unsubscribeFieldUpdates != null) {
+  function teardown(key: string): void {
+    const entry = entries.get(key);
+    if (entry?.unsubscribeFieldUpdates != null) {
       try {
         entry.unsubscribeFieldUpdates();
       } catch (e) {
@@ -132,8 +133,15 @@ export function createWorkerVariablesStore(
     }
   }
 
-  async function start(key: string, entry: Entry): Promise<void> {
-    if (entry.resolving || entry.unsubscribeFieldUpdates != null) return;
+  async function start(key: string): Promise<void> {
+    const entry = entries.get(key);
+    if (
+      entry == null ||
+      entry.resolving ||
+      entry.unsubscribeFieldUpdates != null
+    ) {
+      return;
+    }
     entry.resolving = true;
     const gen = entry.generation;
     try {
@@ -181,12 +189,13 @@ export function createWorkerVariablesStore(
       const entry = getOrCreate(key);
       entry.listeners.add(listener);
       if (entry.unsubscribeFieldUpdates == null && !entry.resolving) {
-        void start(key, entry);
+        // start handles its own errors; nothing to do on rejection
+        start(key).catch(() => undefined);
       }
       return () => {
         entry.listeners.delete(listener);
         if (entry.listeners.size === 0) {
-          teardown(entry);
+          teardown(key);
           entry.list = null;
           entries.delete(key);
         }
@@ -196,19 +205,17 @@ export function createWorkerVariablesStore(
       const entry = entries.get(key);
       if (entry == null) return;
       entry.generation += 1;
-      teardown(entry);
+      teardown(key);
       entry.list = null;
       notify(entry);
       if (entry.listeners.size > 0) {
-        void start(key, entry);
+        // start handles its own errors; nothing to do on rejection
+        start(key).catch(() => undefined);
       }
     },
     destroy() {
-      entries.forEach(entry => {
-        teardown(entry);
-        entry.listeners.clear();
-        entry.list = null;
-        entry.generation += 1;
+      Array.from(entries.keys()).forEach(key => {
+        teardown(key);
       });
       entries.clear();
     },

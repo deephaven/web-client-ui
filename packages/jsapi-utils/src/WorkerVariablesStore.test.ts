@@ -1,9 +1,12 @@
 import type { dh } from '@deephaven/jsapi-types';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   DEFAULT_WORKER_KEY,
   createWorkerVariablesStore,
   getWorkerKey,
 } from './WorkerVariablesStore';
+
+const { flushPromises } = TestUtils;
 
 type FieldUpdateListener = (changes: dh.ide.VariableChanges) => void;
 
@@ -78,10 +81,6 @@ describe('getWorkerKey', () => {
 });
 
 describe('createWorkerVariablesStore', () => {
-  function flushMicrotasks(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, 0));
-  }
-
   it('returns null snapshot before any updates arrive', async () => {
     const { connection } = makeConnection();
     const store = createWorkerVariablesStore(async () => connection);
@@ -97,7 +96,7 @@ describe('createWorkerVariablesStore', () => {
     const b = jest.fn();
     store.subscribe('w1', a);
     store.subscribe('w1', b);
-    await flushMicrotasks();
+    await flushPromises();
     expect(subscribeMock).toHaveBeenCalledTimes(1);
     emit({ created: [makeDefinition('v1')] });
     expect(a).toHaveBeenCalledTimes(1);
@@ -110,7 +109,7 @@ describe('createWorkerVariablesStore', () => {
     const store = createWorkerVariablesStore(async () => connection);
     store.subscribe('w1', jest.fn());
     store.subscribe('w2', jest.fn());
-    await flushMicrotasks();
+    await flushPromises();
     expect(subscribeMock).toHaveBeenCalledTimes(2);
   });
 
@@ -118,7 +117,7 @@ describe('createWorkerVariablesStore', () => {
     const { connection, emit } = makeConnection();
     const store = createWorkerVariablesStore(async () => connection);
     store.subscribe('w1', jest.fn());
-    await flushMicrotasks();
+    await flushPromises();
 
     emit({ created: [makeDefinition('a'), makeDefinition('b')] });
     const snap1 = store.snapshot('w1');
@@ -147,7 +146,7 @@ describe('createWorkerVariablesStore', () => {
     const b = jest.fn();
     const offA = store.subscribe('w1', a);
     const offB = store.subscribe('w1', b);
-    await flushMicrotasks();
+    await flushPromises();
     offA();
     expect(unsubscribeMock).not.toHaveBeenCalled();
     offB();
@@ -159,7 +158,7 @@ describe('createWorkerVariablesStore', () => {
     const { connection, unsubscribeMock } = makeConnection();
     const store = createWorkerVariablesStore(async () => connection);
     const off = store.subscribe('w1', jest.fn());
-    await flushMicrotasks();
+    await flushPromises();
     off();
     off();
     expect(unsubscribeMock).toHaveBeenCalledTimes(1);
@@ -182,7 +181,7 @@ describe('createWorkerVariablesStore', () => {
 
     const onChange = jest.fn();
     store.subscribe('w1', onChange);
-    await flushMicrotasks();
+    await flushPromises();
     listener?.({
       created: [makeDefinition('a')],
       removed: [],
@@ -196,7 +195,7 @@ describe('createWorkerVariablesStore', () => {
     expect(store.snapshot('w1')).toBeNull();
     expect(onChange).toHaveBeenCalledTimes(1);
 
-    await flushMicrotasks();
+    await flushPromises();
     expect(subscribeMock).toHaveBeenCalledTimes(2);
     listener?.({
       created: [makeDefinition('b')],
@@ -211,7 +210,7 @@ describe('createWorkerVariablesStore', () => {
     const store = createWorkerVariablesStore(async () => connection);
     const listener = jest.fn();
     store.subscribe('w1', listener);
-    await flushMicrotasks();
+    await flushPromises();
     store.destroy();
     expect(unsubscribeMock).toHaveBeenCalledTimes(1);
     emit({ created: [makeDefinition('v1')] });
@@ -229,7 +228,7 @@ describe('createWorkerVariablesStore', () => {
     const off = store.subscribe('w1', jest.fn());
     off();
     resolve(connection);
-    await flushMicrotasks();
+    await flushPromises();
     expect(subscribeMock).not.toHaveBeenCalled();
   });
 
@@ -237,7 +236,7 @@ describe('createWorkerVariablesStore', () => {
     const store = createWorkerVariablesStore(async () => null);
     const listener = jest.fn();
     store.subscribe('w1', listener);
-    await flushMicrotasks();
+    await flushPromises();
     expect(listener).not.toHaveBeenCalled();
     expect(store.snapshot('w1')).toBeNull();
   });
