@@ -32,14 +32,13 @@ import { InputFilterEvent } from './events';
 import useGridLinker from './useGridLinker';
 import { useTablePlugin } from './useTablePlugin';
 
-export function GridWidgetPlugin({
-  fetch,
-  transformTableOptions,
-  transformModel,
-  irisGridProps,
-  onModelChanged,
-}: WidgetComponentProps<DhType.Table> &
-  IrisGridTableOptionsWidgetProps &
+/**
+ * Props that can only be supplied by IrisGrid-aware middleware wrapping
+ * `GridWidgetPlugin` (regular plugins receive only `WidgetComponentProps`).
+ * Grouped together so the middleware-only surface is explicit; the component
+ * depends on `Partial` of this so each prop stays optional.
+ */
+export type GridWidgetPluginMiddlewareProps = IrisGridTableOptionsWidgetProps &
   IrisGridModelWidgetProps & {
     /**
      * View-concern overrides (theme, renderer, mouse handlers, metric
@@ -49,7 +48,16 @@ export function GridWidgetPlugin({
     irisGridProps?: Partial<IrisGridViewProps>;
     /** Called once the model is built, so middleware can observe it. */
     onModelChanged?: (model: IrisGridModel) => void;
-  }): JSX.Element | null {
+  };
+
+export function GridWidgetPlugin({
+  fetch,
+  transformTableOptions,
+  transformModel,
+  irisGridProps,
+  onModelChanged,
+}: WidgetComponentProps<DhType.Table> &
+  Partial<GridWidgetPluginMiddlewareProps>): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
   const { eventHub } = useLayoutManager();
 

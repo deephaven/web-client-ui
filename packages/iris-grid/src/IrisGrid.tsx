@@ -149,6 +149,7 @@ import {
   TableSaver,
   VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
+  type TableOptionsTransform,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -329,9 +330,7 @@ export interface IrisGridProps {
    * stable and side-effect-free. A throwing transform is logged once
    * and treated as identity for that render.
    */
-  transformTableOptions?: (
-    defaults: readonly OptionItem[]
-  ) => readonly OptionItem[];
+  transformTableOptions?: TableOptionsTransform;
 
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
@@ -1407,19 +1406,24 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             a.index - b.index
         )
         .map(({ item }) => item);
+      // Drop duplicate `type` entries, keeping the first occurrence. A
+      // duplicate `type` would collide on the `<Menu>` / `<Page>` React key
+      // and cause incorrect page reuse, so we de-dupe to match the warning.
       const keys = new Set<string>();
-      for (let i = 0; i < sortedItems.length; i += 1) {
-        const key = String(sortedItems[i].type);
+      const dedupedItems: OptionItem[] = [];
+      sortedItems.forEach(item => {
+        const key = String(item.type);
         if (keys.has(key)) {
           log.warn(
             `transformTableOptions produced duplicate type "${key}"; ` +
-              'only the first entry will be accessible from the menu.'
+              'only the first entry will be kept.'
           );
-          break;
+          return;
         }
         keys.add(key);
-      }
-      return Object.freeze(sortedItems);
+        dedupedItems.push(item);
+      });
+      return Object.freeze(dedupedItems);
     },
     { max: 1 }
   );
