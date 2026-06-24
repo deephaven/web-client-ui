@@ -7,3 +7,5 @@ export * from './useDeferredApi';
 export * from './useObjectFetch';
 export * from './useObjectFetcher';
 export * from './useWidget';
+export * from './useWorkerVariables';
+export * from './WorkerVariablesContext';
