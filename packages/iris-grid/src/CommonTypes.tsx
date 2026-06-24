@@ -84,8 +84,11 @@ export interface IrisGridViewState {
    * not significant. Pages that surface column choosers should use this
    * to filter their selection lists; column-name comparisons are
    * case-sensitive and must match `IrisGridModel#columns[i].name`.
+   *
+   * Optional so plugins keep handling fields defensively as this type grows,
+   * staying resilient when the host's iris-grid version differs from theirs.
    */
-  readonly hiddenColumns: readonly ColumnName[];
+  readonly hiddenColumns?: readonly ColumnName[];
 }
 
 /**
