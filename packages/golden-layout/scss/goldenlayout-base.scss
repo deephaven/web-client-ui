@@ -84,6 +84,14 @@ $height6: 15px; // Appears 1 time
       cursor: ew-resize;
     }
   }
+
+  // While part of an active 2D intersection (hover or drag), lift the line above
+  // pane content so an offset T/cross junction renders cleanly instead of being
+  // clipped by the neighbouring pane. Stays below the intersection handle
+  // (z-index 60) so the handle always wins pointer priority for 2D dragging.
+  &.lm_intersection_line {
+    z-index: 59;
+  }
 }
 
 // Intersection splitter: an invisible grab area at grid crossing points that

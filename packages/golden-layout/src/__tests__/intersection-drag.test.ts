@@ -417,6 +417,63 @@ describe('intersection splitter drag', () => {
     }
   });
 
+  it('creates a handle for a perpendicular splitter nested deeper than one level', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      // The bottom row holds a left column whose first child is itself a row.
+      // That inner row's vertical splitter is two levels below the root column's
+      // top/bottom bar yet its top still touches it, so the bar owner (the root
+      // column) must create a crossing handle for it.
+      layout = await createLayout({
+        content: [
+          {
+            type: 'column',
+            content: [
+              { type: 'component', componentName: 'testComponent' },
+              {
+                type: 'row',
+                content: [
+                  {
+                    type: 'column',
+                    content: [
+                      {
+                        type: 'row',
+                        content: [
+                          { type: 'component', componentName: 'testComponent' },
+                          { type: 'component', componentName: 'testComponent' },
+                        ],
+                      },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                  { type: 'component', componentName: 'testComponent' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const rootColumn = verifyPath('column', layout) as any;
+      expect(rootColumn).toBeDefined();
+
+      await new Promise<void>(resolve => {
+        window.requestAnimationFrame(() => resolve());
+      });
+
+      // Handles owned by the root column are appended directly into its element.
+      // It owns one for the bottom row's own vertical splitter (left column |
+      // right component) and one for the deeply nested inner-row splitter.
+      const rootOwnedHandles = rootColumn.element.children(
+        '.lm_intersection_splitter'
+      );
+      expect(rootOwnedHandles.length).toBe(2);
+    } finally {
+      restoreMocks();
+    }
+  });
+
   it('preserves all intersection handles after normal vertical and horizontal splitter drags', async () => {
     const restoreMocks = setupDimensionMocks();
 
@@ -596,6 +653,77 @@ describe('intersection splitter drag', () => {
 
       intersectionHandle.trigger('mouseleave');
       expect(bottomRow.element.find('.lm_splitter.lm_dragging').length).toBe(0);
+    } finally {
+      restoreMocks();
+    }
+  });
+
+  it('stretches the stem line with a transform (not box size) and clears it on stop', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      layout = await createLayout({
+        content: [
+          {
+            type: 'column',
+            content: [
+              { type: 'component', componentName: 'testComponent' },
+              {
+                type: 'row',
+                content: [
+                  {
+                    type: 'column',
+                    content: [
+                      { type: 'component', componentName: 'testComponent' },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                  { type: 'component', componentName: 'testComponent' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const bottomRow = verifyPath('column.1.row', layout) as any;
+      expect(bottomRow).toBeDefined();
+
+      const intersectionHandle = bottomRow.element
+        .find('.lm_intersection_splitter')
+        .first();
+      expect(intersectionHandle.length).toBe(1);
+
+      // The stem line is the vertical splitter inside the bottom row.
+      const stemLine = bottomRow.element.find('.lm_splitter.lm_vertical');
+      expect(stemLine.length).toBe(1);
+      const stemEl = stemLine[0] as HTMLElement;
+
+      const startX = 100;
+      const startY = 100;
+      const mousedown = $.Event('mousedown') as JQuery.TriggeredEvent;
+      mousedown.pageX = startX;
+      mousedown.pageY = startY;
+      mousedown.button = 0;
+      intersectionHandle.trigger(mousedown);
+
+      const mousemove = $.Event('mousemove') as JQuery.TriggeredEvent;
+      mousemove.pageX = startX - 40;
+      mousemove.pageY = startY - 40;
+      $(document).trigger(mousemove);
+
+      // While dragging, the stem is stretched via a scale transform - never by
+      // mutating its box size, which would reflow sibling panes and headers.
+      expect(stemEl.style.transform).toContain('scale');
+      expect(stemEl.style.width).toBe('');
+
+      $(document).trigger('mouseup');
+      await new Promise<void>(resolve => {
+        window.requestAnimationFrame(() => resolve());
+      });
+
+      // The transform is cleared once the drag stops.
+      expect(stemEl.style.transform).toBe('');
     } finally {
       restoreMocks();
     }
