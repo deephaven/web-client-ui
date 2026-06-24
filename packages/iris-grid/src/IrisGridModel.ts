@@ -80,7 +80,7 @@ abstract class IrisGridModel<
      * every inner-model swap regardless of model class, so the host can reset
      * view state (e.g. `movedColumns`) that the previous model owned.
      */
-    MODEL_CHANGED: 'MODEL_CHANGED',
+    SCHEMA_CHANGED: 'SCHEMA_CHANGED',
     FILTERS_CHANGED: 'FILTERS_CHANGED',
     SORTS_CHANGED: 'SORTS_CHANGED',
     DISCONNECT: 'DISCONNECT',

@@ -189,7 +189,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       // COLUMNS_CHANGED / TABLE_CHANGED so the host resets moves first, then
       // reacts to the new column set.
       this.dispatchEvent(
-        new EventShimCustomEvent(IrisGridModel.EVENT.MODEL_CHANGED, {
+        new EventShimCustomEvent(IrisGridModel.EVENT.SCHEMA_CHANGED, {
           detail: model,
         })
       );

@@ -153,26 +153,26 @@ describe('IrisGridProxyModel', () => {
   });
 
   describe('setModel', () => {
-    it('dispatches MODEL_CHANGED when swapping to a different inner model', () => {
-      const handleModelChanged = jest.fn();
+    it('dispatches SCHEMA_CHANGED when swapping to a different inner model', () => {
+      const handleSchemaChanged = jest.fn();
       proxyModel.addEventListener(
-        IrisGridModel.EVENT.MODEL_CHANGED,
-        handleModelChanged
+        IrisGridModel.EVENT.SCHEMA_CHANGED,
+        handleSchemaChanged
       );
       const newModel = irisGridTestUtils.makeModel();
       proxyModel.setModel(newModel);
-      expect(handleModelChanged).toHaveBeenCalledTimes(1);
-      expect(handleModelChanged.mock.calls[0][0].detail).toBe(newModel);
+      expect(handleSchemaChanged).toHaveBeenCalledTimes(1);
+      expect(handleSchemaChanged.mock.calls[0][0].detail).toBe(newModel);
     });
 
-    it('does not dispatch MODEL_CHANGED when setting the same model', () => {
-      const handleModelChanged = jest.fn();
+    it('does not dispatch SCHEMA_CHANGED when setting the same model', () => {
+      const handleSchemaChanged = jest.fn();
       proxyModel.addEventListener(
-        IrisGridModel.EVENT.MODEL_CHANGED,
-        handleModelChanged
+        IrisGridModel.EVENT.SCHEMA_CHANGED,
+        handleSchemaChanged
       );
       proxyModel.setModel(proxyModel.model);
-      expect(handleModelChanged).not.toHaveBeenCalled();
+      expect(handleSchemaChanged).not.toHaveBeenCalled();
     });
   });
 

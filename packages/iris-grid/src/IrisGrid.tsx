@@ -655,7 +655,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleTableChanged = this.handleTableChanged.bind(this);
-    this.handleModelChanged = this.handleModelChanged.bind(this);
+    this.handleSchemaChanged = this.handleSchemaChanged.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
@@ -1015,7 +1015,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // component state, so mirror that path when the `getMetricCalculator` prop
     // changes (e.g. the pivot-builder middleware swapping the pivot factory in
     // or out) so the calculator stays in sync. Moved columns are not touched
-    // here — a model swap resets them via `handleModelChanged`.
+    // here — a model swap resets them via `handleSchemaChanged`.
     if (getMetricCalculator !== prevProps.getMetricCalculator) {
       this.maybeRebuildMetricCalculator();
     }
@@ -2628,8 +2628,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleTableChanged
     );
     model.addEventListener(
-      IrisGridModel.EVENT.MODEL_CHANGED,
-      this.handleModelChanged
+      IrisGridModel.EVENT.SCHEMA_CHANGED,
+      this.handleSchemaChanged
     );
   }
 
@@ -2661,8 +2661,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleTableChanged
     );
     model.removeEventListener(
-      IrisGridModel.EVENT.MODEL_CHANGED,
-      this.handleModelChanged
+      IrisGridModel.EVENT.SCHEMA_CHANGED,
+      this.handleSchemaChanged
     );
   }
 
@@ -3575,7 +3575,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Handle an inner-model swap on a proxy model (`MODEL_CHANGED`). The previous
+   * Handle an inner-model swap on a proxy model (`SCHEMA_CHANGED`). The previous
    * model's `movedColumns` reference indices that may not exist in the new
    * model (e.g. a pivot exposes a different column set), so reset them to the
    * new model's initial order. The metric calculator is rebuilt separately when
@@ -3583,7 +3583,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * whose seed `movedColumns` are now stale self-heals because `getMetrics`
    * reconciles against the grid's current `movedColumns` at draw time.
    */
-  handleModelChanged(): void {
+  handleSchemaChanged(): void {
     const { model } = this.props;
     this.setState({ movedColumns: model.initialMovedColumns });
   }
@@ -3867,8 +3867,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * carried over: a factory swap means the column set has effectively changed,
    * so the stored sizes wouldn't map to anything meaningful.
    *
-   * Moved columns are NOT reset here — that is owned by `handleModelChanged`
-   * (the `MODEL_CHANGED` event) so that a plain prop swap against the same
+   * Moved columns are NOT reset here — that is owned by `handleSchemaChanged`
+   * (the `SCHEMA_CHANGED` event) so that a plain prop swap against the same
    * model preserves the user's layout. The new calculator is seeded with the
    * current moved columns; `getMetrics` reconciles against the grid's live
    * `movedColumns` at draw time, so a later reset stays consistent.
