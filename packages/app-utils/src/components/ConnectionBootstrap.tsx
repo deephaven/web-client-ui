@@ -7,8 +7,6 @@ import {
   LoadingSpinner,
 } from '@deephaven/components';
 import {
-  type VariableDefinitionFinder,
-  VariableDefinitionFinderContext,
   ObjectFetcherContext,
   type ObjectFetchManager,
   ObjectFetchManagerContext,
@@ -16,10 +14,14 @@ import {
   type UriVariableDescriptor,
   useApi,
   useClient,
+  WorkerVariablesContext,
 } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { fetchVariableDefinitionByPredicate } from '@deephaven/jsapi-utils';
+import {
+  createWorkerVariablesStore,
+  type WorkerVariablesStore,
+} from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import { vsDebugDisconnect } from '@deephaven/icons';
 import ConnectionContext from './ConnectionContext';
@@ -182,19 +184,21 @@ export function ConnectionBootstrap({
     [connection]
   );
 
-  const variableDefinitionFinder = useCallback<VariableDefinitionFinder>(
-    async predicate => {
-      assertNotNull(
-        connection,
-        'No connection available to find variable with'
-      );
-      // Core exposes a single connection, so the worker descriptor is unused.
-      try {
-        return await fetchVariableDefinitionByPredicate(connection, predicate);
-      } catch {
-        // Treat "not found" and timeouts uniformly as absent.
-        return null;
+  // Push-based worker variable store for DHC. Core exposes a single
+  // connection, so the resolver ignores the worker key.
+  const [workerVariablesStore, setWorkerVariablesStore] =
+    useState<WorkerVariablesStore | null>(null);
+  useEffect(
+    function manageWorkerVariablesStore() {
+      if (connection == null) {
+        setWorkerVariablesStore(null);
+        return undefined;
       }
+      const store = createWorkerVariablesStore(async () => connection);
+      setWorkerVariablesStore(store);
+      return () => {
+        store.destroy();
+      };
     },
     [connection]
   );
@@ -235,9 +239,7 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        <VariableDefinitionFinderContext.Provider
-          value={variableDefinitionFinder}
-        >
+        <WorkerVariablesContext.Provider value={workerVariablesStore}>
           <ObjectFetchManagerContext.Provider value={objectManager}>
             {children}
             <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
@@ -259,7 +261,7 @@ export function ConnectionBootstrap({
               bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
             />
           </ObjectFetchManagerContext.Provider>
-        </VariableDefinitionFinderContext.Provider>
+        </WorkerVariablesContext.Provider>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
