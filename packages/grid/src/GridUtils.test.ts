@@ -1130,7 +1130,7 @@ describe('getColumnSeparatorIndex', () => {
       rowCount: 100,
       columnHeaderMaxDepth: headerGroups.size,
       textForColumnHeader: (column: ModelIndex, depth = 0) =>
-        headerGroups.get(depth)?.get(column) ?? '',
+        headerGroups.get(depth)?.get(column),
       getColumnHeaderGroup: (column: ModelIndex, depth: number) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (columnHeaderGroups?.get(depth)?.get(column) as any) ?? undefined,
@@ -1232,6 +1232,74 @@ describe('getColumnSeparatorIndex', () => {
     ],
   ]);
 
+  // Columns 0-2 belong to a depth-1 group "G"; column 3 has no group above it
+  // at depth 1 (the depth-1 band above column 3 is visually empty).
+  const trailingUngroupedGroupInstance = { name: 'G', depth: 1 };
+  const trailingUngroupedHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'A'],
+        [1, 'B'],
+        [2, 'C'],
+        [3, 'M'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        [0, 'G'],
+        [1, 'G'],
+        [2, 'G'],
+        // column 3 intentionally absent at depth 1 (no group cell drawn)
+      ]),
+    ],
+  ]);
+  const trailingUngroupedColumnGroups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [0, trailingUngroupedGroupInstance],
+        [1, trailingUngroupedGroupInstance],
+        [2, trailingUngroupedGroupInstance],
+      ]),
+    ],
+  ]);
+
+  // Column 0 has no group above it at depth 1 (the depth-1 band above column 0
+  // is visually empty); columns 1-3 belong to a depth-1 group "G".
+  const leadingUngroupedGroupInstance = { name: 'G', depth: 1 };
+  const leadingUngroupedHeaderGroups = new Map([
+    [
+      0,
+      new Map([
+        [0, 'M'],
+        [1, 'A'],
+        [2, 'B'],
+        [3, 'C'],
+      ]),
+    ],
+    [
+      1,
+      new Map([
+        // column 0 intentionally absent at depth 1 (no group cell drawn)
+        [1, 'G'],
+        [2, 'G'],
+        [3, 'G'],
+      ]),
+    ],
+  ]);
+  const leadingUngroupedColumnGroups = new Map([
+    [
+      1,
+      new Map<number, object>([
+        [1, leadingUngroupedGroupInstance],
+        [2, leadingUngroupedGroupInstance],
+        [3, leadingUngroupedGroupInstance],
+      ]),
+    ],
+  ]);
+
   it.each([
     {
       description: 'detects separator at column boundary',
@@ -1297,6 +1365,46 @@ describe('getColumnSeparatorIndex', () => {
       y: 15,
       headerGroups: multiLevelHeaderGroups,
       columnHeaderGroups: singleGroupAtDepth1Groups,
+      maxDepth: 2,
+      expected: null,
+    },
+    {
+      description:
+        'detects depth-1 separator at the right edge of a group that ends before an ungrouped column',
+      x: 350, // Between column 2 (in group G) and column 3 (no group at depth 1)
+      y: 15, // Middle of the top header (maxDepth - 1 = 1)
+      headerGroups: trailingUngroupedHeaderGroups,
+      columnHeaderGroups: trailingUngroupedColumnGroups,
+      maxDepth: 2,
+      expected: 2,
+    },
+    {
+      description:
+        'detects a depth-1 separator at the right edge of an ungrouped trailing column (true trailing edge of the table)',
+      x: 450, // Right edge of column 3, the last column in the table
+      y: 15,
+      headerGroups: trailingUngroupedHeaderGroups,
+      columnHeaderGroups: trailingUngroupedColumnGroups,
+      maxDepth: 2,
+      expected: 3,
+    },
+    {
+      description:
+        'detects depth-1 separator at the left edge of a group that starts after an ungrouped column',
+      x: 150, // Between column 0 (no group at depth 1) and column 1 (in group G)
+      y: 15, // Middle of the top header (maxDepth - 1 = 1)
+      headerGroups: leadingUngroupedHeaderGroups,
+      columnHeaderGroups: leadingUngroupedColumnGroups,
+      maxDepth: 2,
+      expected: 0,
+    },
+    {
+      description:
+        'returns no depth-1 separator at the left edge of an ungrouped leading column (empty band above)',
+      x: 50, // Left edge of column 0 (no group cell at depth 1 above it)
+      y: 15,
+      headerGroups: leadingUngroupedHeaderGroups,
+      columnHeaderGroups: leadingUngroupedColumnGroups,
       maxDepth: 2,
       expected: null,
     },

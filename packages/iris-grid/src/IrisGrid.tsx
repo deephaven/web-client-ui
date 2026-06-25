@@ -149,6 +149,7 @@ import {
   TableSaver,
   VisibilityOrderingBuilder,
   DownloadServiceWorkerUtils,
+  type TableOptionsTransform,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -160,6 +161,7 @@ import {
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
+import PluginTableOptionsErrorBoundary from './sidebar/PluginTableOptionsErrorBoundary';
 import AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettingsMenu, {
   type AdvancedSettingsMenuCallback,
@@ -175,7 +177,7 @@ import {
   type AggregationSettings,
 } from './sidebar/aggregations/Aggregations';
 import { type ChartBuilderSettings } from './sidebar/ChartBuilder';
-import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import type AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type UIRollupConfig } from './sidebar/RollupRows';
 import {
   type Action,
@@ -184,10 +186,12 @@ import {
   type ColumnName,
   type InputFilter,
   type IrisGridStateOverride,
+  type IrisGridViewState,
   type OperationMap,
   type OptionItem,
   type PendingDataErrorMap,
   type PendingDataMap,
+  type PendingOperationDetail,
   type QuickFilterMap,
   type ReadonlyAdvancedFilterMap,
   type ReadonlyAggregationMap,
@@ -310,6 +314,24 @@ export interface IrisGridProps {
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
 
+  /**
+   * Pure transform over the default Table Options menu list. Receives
+   * the built-in items (already filtered by model availability) and
+   * returns the items to actually render. Use it to add, hide,
+   * relabel, reorder, or replace entries.
+   *
+   * Items returned with a `configPage` are rendered by the
+   * `default` case of the page switch and isolated inside a small
+   * error boundary; items without a `configPage` MUST have a `type`
+   * matching an existing `OptionType` enum value, otherwise the
+   * existing case arms can't render them.
+   *
+   * Called inside memoization; the function should be referentially
+   * stable and side-effect-free. A throwing transform is logged once
+   * and treated as identity for that render.
+   */
+  transformTableOptions?: TableOptionsTransform;
+
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
@@ -393,6 +415,20 @@ export interface IrisGridProps {
 
   getMetricCalculator: GetMetricCalculatorType;
 }
+
+/**
+ * The subset of `IrisGridProps` that overrides how the grid presents its
+ * model: theme, canvas renderer, extra mouse handlers, and the metric
+ * calculator factory. Hosts that render `<IrisGrid>` on behalf of a plugin
+ * (e.g. `GridWidgetPlugin`) accept this as a single passthrough bag so they
+ * don't need to know each view concern by name, and plugins build it from
+ * their own hooks. Kept as a `Pick` (not `Partial<IrisGridProps>`) so it can
+ * never clobber structural props like `model` or `ref`.
+ */
+export type IrisGridViewProps = Pick<
+  IrisGridProps,
+  'theme' | 'renderer' | 'mouseHandlers' | 'getMetricCalculator'
+>;
 
 export interface IrisGridState {
   isFilterBarShown: boolean;
@@ -612,11 +648,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMenuSelect = this.handleMenuSelect.bind(this);
     this.handleMenuBack = this.handleMenuBack.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handlePending = this.handlePending.bind(this);
+    this.handlePendingCleared = this.handlePendingCleared.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleTableChanged = this.handleTableChanged.bind(this);
+    this.handleSchemaChanged = this.handleSchemaChanged.bind(this);
     this.handleTooltipRef = this.handleTooltipRef.bind(this);
     this.handleViewChanged = this.handleViewChanged.bind(this);
     this.handleFormatSelection = this.handleFormatSelection.bind(this);
@@ -822,6 +861,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         ])
       ),
     });
+    // Remember the factory we used so `maybeRebuildMetricCalculator` (called
+    // from `componentDidUpdate` when the `getMetricCalculator` prop changes)
+    // can detect a model-driven swap, e.g. pivot-builder's proxy swapping its
+    // inner model.
+    this.lastMetricCalculatorFactory = getMetricCalculator;
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
       dh,
@@ -958,11 +1002,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model,
       customFilters,
       sorts,
+      getMetricCalculator,
     } = this.props;
 
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
       this.startListening(model);
+    }
+
+    // The renderer and mouse handlers flow through memoized getters in
+    // render(), so a `renderer` / `mouseHandlers` prop change naturally
+    // propagates on the next render. The metric calculator, however, lives in
+    // component state, so mirror that path when the `getMetricCalculator` prop
+    // changes (e.g. the pivot-builder middleware swapping the pivot factory in
+    // or out) so the calculator stays in sync. Moved columns are not touched
+    // here — a model swap resets them via `handleSchemaChanged`.
+    if (getMetricCalculator !== prevProps.getMetricCalculator) {
+      this.maybeRebuildMetricCalculator();
     }
 
     const changedInputFilters =
@@ -1133,6 +1189,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   mouseHandlers: MouseHandlersProp;
 
+  /**
+   * The metric calculator factory most recently used to instantiate the
+   * calculator currently stored in state. Used by `maybeRebuildMetricCalculator`
+   * (called from `componentDidUpdate` when the `getMetricCalculator` prop
+   * changes) to detect when a different factory is supplied and rebuild.
+   */
+  lastMetricCalculatorFactory?: GetMetricCalculatorType;
+
   slideTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   bottomTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -1205,6 +1269,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CHART_BUILDER,
           title: 'Chart Builder',
           icon: dhGraphLineUp,
+          order: 100,
         });
       }
       if (isOrganizeColumnsAvailable) {
@@ -1212,6 +1277,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.VISIBILITY_ORDERING_BUILDER,
           title: 'Organize Columns',
           icon: dhEye,
+          order: 200,
         });
       }
       if (isFormatColumnsAvailable) {
@@ -1219,6 +1285,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CONDITIONAL_FORMATTING,
           title: 'Conditional Formatting',
           icon: vsEdit,
+          order: 300,
         });
       }
       if (isCustomColumnsAvailable) {
@@ -1226,6 +1293,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.CUSTOM_COLUMN_BUILDER,
           title: 'Custom Columns',
           icon: vsSplitHorizontal,
+          order: 400,
         });
       }
       if (isRollupAvailable) {
@@ -1233,6 +1301,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.ROLLUP_ROWS,
           title: 'Rollup Rows',
           icon: dhTriangleDownSquare,
+          order: 500,
         });
       }
       if (isTotalsAvailable) {
@@ -1240,6 +1309,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.AGGREGATIONS,
           title: 'Aggregate Columns',
           icon: vsSymbolOperator,
+          order: 600,
         });
       }
       if (isSelectDistinctAvailable) {
@@ -1247,6 +1317,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.SELECT_DISTINCT,
           title: 'Select Distinct Values',
           icon: vsRuby,
+          order: 700,
         });
       }
       if (isExportAvailable && canDownloadCsv) {
@@ -1254,6 +1325,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.TABLE_EXPORTER,
           title: 'Download CSV',
           icon: vsCloudDownload,
+          order: 800,
         });
       }
       if (hasAdvancedSettings) {
@@ -1261,6 +1333,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           type: OptionType.ADVANCED_SETTINGS,
           title: 'Advanced Settings',
           icon: vsTools,
+          order: 900,
         });
       }
       optionItems.push({
@@ -1270,6 +1343,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         icon: vsFilter,
         isOn: isFilterBarShown,
         onChange: toggleFilterBarAction.action,
+        order: 1000,
       });
       if (canToggleSearch) {
         optionItems.push({
@@ -1279,6 +1353,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           icon: vsSearch,
           isOn: showSearchBar,
           onChange: toggleSearchBarAction.action,
+          order: 1100,
         });
       }
       optionItems.push({
@@ -1288,9 +1363,63 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         icon: vsReply,
         isOn: showGotoRow,
         onChange: toggleGotoRowAction.action,
+        order: 1200,
       });
 
       return Object.freeze(optionItems);
+    },
+    { max: 1 }
+  );
+
+  /**
+   * Apply the `transformTableOptions` transform (if any) to the
+   * default option list.
+   * Catches exceptions so a buggy plugin can't break the grid, and collapses
+   * duplicate `type` entries (last writer wins) before sorting by `order`.
+   */
+  getCachedTransformedOptionItems = memoize(
+    (
+      items: readonly OptionItem[],
+      transformTableOptions: IrisGridProps['transformTableOptions']
+    ): readonly OptionItem[] => {
+      if (transformTableOptions == null) {
+        return items;
+      }
+      let transformedItems: readonly OptionItem[];
+      try {
+        transformedItems = transformTableOptions(items);
+      } catch (err) {
+        log.error(
+          'transformTableOptions threw an error; falling back to defaults.',
+          err
+        );
+        return items;
+      }
+      // Collapse duplicate `type` entries before sorting. A duplicate `type`
+      // would otherwise collide on the `<Menu>` / `<Page>` React key and cause
+      // incorrect page reuse. Per the documented composition rule (see the
+      // package README), the last writer wins: a later entry — e.g. from a
+      // downstream middleware — overrides an earlier one with the same type.
+      // `Map.set` keeps the most recent value while preserving the original
+      // insertion slot, so an override stays in place unless it changes
+      // `order`.
+      const byType = new Map<string, OptionItem>();
+      transformedItems.forEach(item => {
+        byType.set(String(item.type), item);
+      });
+      // Stably sort by ascending `order`. Items without an `order` sink to
+      // the end of the menu (default `Infinity`), while items with an `order`
+      // are positioned by their weight. Decorate-sort-undecorate guarantees
+      // stability regardless of the engine's sort implementation.
+      const sortedItems = [...byType.values()]
+        .map((item, index) => ({ item, index }))
+        .sort(
+          (a, b) =>
+            (a.item.order ?? Infinity) - (b.item.order ?? Infinity) ||
+            a.index - b.index
+        )
+        .map(({ item }) => item);
+      return Object.freeze(sortedItems);
     },
     { max: 1 }
   );
@@ -1303,6 +1432,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridUtils.getHiddenColumns(
         new Map([...metricCalculator.initialColumnWidths, ...userColumnWidths])
       ),
+    { max: 1 }
+  );
+
+  getCachedHiddenColumnNames = memoize(
+    (
+      hiddenColumns: readonly ModelIndex[],
+      columns: readonly DhType.Column[]
+    ): readonly ColumnName[] =>
+      Object.freeze(
+        hiddenColumns
+          .map(idx => columns[idx]?.name)
+          .filter((n): n is ColumnName => n != null)
+      ),
+    { max: 1 }
+  );
+
+  getCachedViewState = memoize(
+    (hiddenColumns: readonly ColumnName[]): IrisGridViewState =>
+      Object.freeze({ hiddenColumns }),
     { max: 1 }
   );
 
@@ -1329,35 +1477,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (
       columns: readonly DhType.Column[],
       aggregations: readonly Aggregation[]
-    ): OperationMap => {
-      const operationMap: OperationMap = {};
-      aggregations
-        .filter(
-          (a: Aggregation) => !AggregationUtils.isRollupOperation(a.operation)
-        )
-        .forEach(({ operation, selected, invert }) => {
-          AggregationUtils.getOperationColumnNames(
-            columns,
-            operation,
-            selected,
-            invert
-          ).forEach(name => {
-            const newOperations = [...(operationMap[name] ?? []), operation];
-            operationMap[name] = Object.freeze(newOperations);
-          });
-        });
-      return operationMap;
-    },
+    ): OperationMap => IrisGridUtils.getOperationMap(columns, aggregations),
     { max: 1 }
   );
 
   getOperationOrder = memoize(
     (aggregations: readonly Aggregation[]): AggregationOperation[] =>
-      aggregations
-        .map((a: Aggregation) => a.operation)
-        .filter(
-          (o: AggregationOperation) => !AggregationUtils.isRollupOperation(o)
-        ),
+      IrisGridUtils.getOperationOrder(aggregations),
     { max: 1 }
   );
 
@@ -1422,31 +1548,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: readonly DhType.Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
-    ): UITotalsTableConfig | null => {
-      if ((config?.columns?.length ?? 0) > 0) {
-        // If we've got rollups, then aggregations are applied as part of that...
-        return null;
-      }
-
-      // Filter out aggregations without any columns actually selected
-      const aggregations = aggregationSettings.aggregations.filter(
-        agg => agg.selected.length > 0 || agg.invert
-      );
-      if (aggregations.length === 0) {
-        // We don't actually have any aggregations set, don't bother
-        return null;
-      }
-
-      const operationMap = this.getOperationMap(columns, aggregations);
-      const operationOrder = this.getOperationOrder(aggregations);
-
-      return {
-        operationMap,
-        operationOrder,
-        showOnTop: aggregationSettings.showOnTop,
-        defaultOperation: AggregationOperation.SKIP,
-      } as UITotalsTableConfig;
-    },
+    ): UITotalsTableConfig | null =>
+      IrisGridUtils.getModelTotalsConfig(columns, config, aggregationSettings),
     { max: 1 }
   );
 
@@ -1588,8 +1691,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   getCachedMouseHandlers = memoize(
-    (mouseHandlers: MouseHandlersProp): readonly GridMouseHandler[] =>
-      [...mouseHandlers, ...this.mouseHandlers].map(handler =>
+    (mouseHandlersProp: MouseHandlersProp): readonly GridMouseHandler[] =>
+      [...mouseHandlersProp, ...this.mouseHandlers].map(handler =>
         typeof handler === 'function' ? handler(this) : handler
       ),
     { max: 1 }
@@ -2499,6 +2602,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.REQUEST_FAILED,
       this.handleRequestFailed
     );
+    model.addEventListener(IrisGridModel.EVENT.PENDING, this.handlePending);
+    model.addEventListener(
+      IrisGridModel.EVENT.PENDING_CLEARED,
+      this.handlePendingCleared
+    );
     model.addEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       this.handleCustomColumnsChanged
@@ -2514,6 +2622,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.addEventListener(
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
+    );
+    model.addEventListener(
+      IrisGridModel.EVENT.SCHEMA_CHANGED,
+      this.handleSchemaChanged
     );
   }
 
@@ -2523,6 +2635,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.REQUEST_FAILED,
       this.handleRequestFailed
     );
+    model.removeEventListener(IrisGridModel.EVENT.PENDING, this.handlePending);
+    model.removeEventListener(
+      IrisGridModel.EVENT.PENDING_CLEARED,
+      this.handlePendingCleared
+    );
     model.removeEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       this.handleCustomColumnsChanged
@@ -2538,6 +2655,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.removeEventListener(
       IrisGridModel.EVENT.TABLE_CHANGED,
       this.handleTableChanged
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.SCHEMA_CHANGED,
+      this.handleSchemaChanged
     );
   }
 
@@ -3376,6 +3497,43 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
+  /**
+   * Raise the loading scrim in response to a model-driven `PENDING` event. The
+   * model is the start signal, mirroring how `UPDATED`/`COLUMNS_CHANGED` are
+   * already the model-driven stop signal. Idempotent: the first message within
+   * a commit wins (the `loadingScrimStartTime == null` guard collapses multiple
+   * pending operations into a single scrim).
+   */
+  handlePending(event: EventT): void {
+    const { detail } = event as CustomEvent<PendingOperationDetail | undefined>;
+    const { text, options } = detail ?? {};
+    if (this.loadingScrimStartTime == null) {
+      this.startLoading(text ?? 'Loading...', {
+        loadingCancelShown: false,
+        ...options,
+      });
+    }
+  }
+
+  /**
+   * Clear the loading scrim in response to a model-driven `PENDING_CLEARED`
+   * event. Only needed for operations that do not naturally end in
+   * `UPDATED`/`COLUMNS_CHANGED`/`REQUEST_FAILED`.
+   *
+   * The current contract assumes a single outstanding model-driven operation:
+   * `handlePending` collapses concurrent `PENDING` events into one scrim, so
+   * this clears unconditionally. That is consistent with the existing scrim,
+   * which any model stop signal already clears regardless of what else is in
+   * flight. Ref-counting overlapping operations is intentionally deferred to
+   * the planned migration that routes the built-in `startLoading` calls
+   * through `PENDING`/`PENDING_CLEARED`; only once every raise/clear goes
+   * through this pair can a depth counter stay balanced (a counter added now
+   * would desync against the direct `startLoading` callers).
+   */
+  handlePendingCleared(): void {
+    this.stopLoading();
+  }
+
   handleUpdate(): void {
     log.debug2('Received model update');
 
@@ -3415,13 +3573,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleTableChanged(): void {
     const { model } = this.props;
-    // movedColumns reset triggers metricCalculator update in the Grid component
-    this.setState({ movedColumns: model.initialMovedColumns });
     // For partitioned tables, we want to rebuild filters on table change to ensure filters are applied to the new partition
     const { partitionConfig } = this.state;
     if (isPartitionedGridModel(model) && partitionConfig?.mode !== 'keys') {
       this.rebuildFilters();
     }
+  }
+
+  /**
+   * Handle an inner-model swap on a proxy model (`SCHEMA_CHANGED`). The previous
+   * model's `movedColumns` reference indices that may not exist in the new
+   * model (e.g. a pivot exposes a different column set), so reset them to the
+   * new model's initial order. The metric calculator is rebuilt separately when
+   * the `getMetricCalculator` prop changes (see `componentDidUpdate`); a calc
+   * whose seed `movedColumns` are now stale self-heals because `getMetrics`
+   * reconciles against the grid's current `movedColumns` at draw time.
+   */
+  handleSchemaChanged(): void {
+    const { model } = this.props;
+    this.setState({ movedColumns: model.initialMovedColumns });
   }
 
   handleViewChanged(metrics?: GridMetrics): void {
@@ -3690,6 +3860,52 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     } else {
       this.loadTableState();
     }
+  }
+
+  /**
+   * Rebuild the metric calculator when the `getMetricCalculator` prop swaps for
+   * a different factory (e.g. entering or leaving a pivot, where the
+   * pivot-builder middleware flips the prop). The renderer and mouse handlers
+   * are recomputed via their memoized getters on the next render and do not
+   * need explicit handling here.
+   *
+   * User column-widths / row-heights from the previous calculator are not
+   * carried over: a factory swap means the column set has effectively changed,
+   * so the stored sizes wouldn't map to anything meaningful.
+   *
+   * Moved columns are NOT reset here — that is owned by `handleSchemaChanged`
+   * (the `SCHEMA_CHANGED` event) so that a plain prop swap against the same
+   * model preserves the user's layout. The new calculator is seeded with the
+   * current moved columns; `getMetrics` reconciles against the grid's live
+   * `movedColumns` at draw time, so a later reset stays consistent.
+   */
+  maybeRebuildMetricCalculator(): void {
+    const { getMetricCalculator } = this.props;
+    if (getMetricCalculator === this.lastMetricCalculatorFactory) return;
+
+    const { model } = this.props;
+    const { movedColumns } = this.state;
+    const next = getMetricCalculator({
+      userColumnWidths: new Map(),
+      userRowHeights: new Map(),
+      movedColumns,
+      initialColumnWidths: new Map(
+        model?.layoutHints?.hiddenColumns?.map(name => [
+          model.getColumnIndexByName(name),
+          0,
+        ])
+      ),
+    });
+    this.lastMetricCalculatorFactory = getMetricCalculator;
+    log.debug('Swapping metric calculator', next);
+    // Also push the new calculator onto the Grid synchronously so any
+    // immediately-following read of `Grid.metricCalculator` (before React has
+    // committed the setState below) uses the new instance against the new
+    // model rather than invoking the old calculator and potentially throwing.
+    if (this.grid != null) {
+      this.grid.metricCalculator = next;
+    }
+    this.setState({ metricCalculator: next });
   }
 
   handlePendingCommitClicked(): Promise<void> {
@@ -4691,6 +4907,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      transformTableOptions,
     } = this.props;
     const {
       metricCalculator,
@@ -5040,7 +5257,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
-    const optionItems = this.getCachedOptionItems(
+    const defaultOptionItems = this.getCachedOptionItems(
       onCreateChart !== undefined && model.isChartBuilderAvailable,
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
@@ -5058,6 +5275,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.isTableSearchAvailable(),
       isGotoShown,
       advancedSettings.size > 0
+    );
+    const optionItems = this.getCachedTransformedOptionItems(
+      defaultOptionItems,
+      transformTableOptions
     );
 
     const hiddenColumns = this.getCachedHiddenColumns(
@@ -5193,8 +5414,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
           );
 
-        default:
-          throw Error(`Unexpected option type ${option.type}`);
+        default: {
+          // Plugin-contributed items render their own page via
+          // `configPage`. The page is isolated inside an error
+          // boundary so a throwing plugin doesn't tear down the
+          // entire grid subtree. Built-in items that hit the default
+          // case indicate a programmer error (unhandled enum case).
+          const PluginPage = option.configPage;
+          if (PluginPage == null) {
+            throw Error(`Unexpected option type ${option.type}`);
+          }
+          return (
+            <PluginTableOptionsErrorBoundary
+              itemType={String(option.type)}
+              key={String(option.type)}
+            >
+              <PluginPage
+                model={model}
+                viewState={this.getCachedViewState(
+                  this.getCachedHiddenColumnNames(hiddenColumns, model.columns)
+                )}
+                onBack={this.handleMenuBack}
+              />
+            </PluginTableOptionsErrorBoundary>
+          );
+        }
       }
     });
 

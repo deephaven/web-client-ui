@@ -30,16 +30,21 @@ import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type FilterData, type IrisGridState } from './IrisGrid';
 import {
   type ColumnName,
+  type OperationMap,
   type ReadonlyAdvancedFilterMap,
   type ReadonlyQuickFilterMap,
   type InputFilter,
   type CellData,
   type PendingDataMap,
   type UIRow,
+  type UITotalsTableConfig,
   type AdvancedFilterOptions,
 } from './CommonTypes';
 import { type UIRollupConfig } from './sidebar/RollupRows';
-import { type AggregationSettings } from './sidebar/aggregations/Aggregations';
+import {
+  type Aggregation,
+  type AggregationSettings,
+} from './sidebar/aggregations/Aggregations';
 import { type FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import type IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
@@ -884,6 +889,78 @@ class IrisGridUtils {
       includeDescriptions,
       aggregations: aggregationMap,
     };
+  }
+
+  /**
+   * Build a per-column aggregation operation map for use in a
+   * `UITotalsTableConfig`. Rollup-only operations are skipped.
+   */
+  static getOperationMap(
+    columns: readonly DhType.Column[],
+    aggregations: readonly Aggregation[]
+  ): OperationMap {
+    const operationMap: OperationMap = {};
+    aggregations
+      .filter(a => !AggregationUtils.isRollupOperation(a.operation))
+      .forEach(({ operation, selected, invert }) => {
+        AggregationUtils.getOperationColumnNames(
+          columns,
+          operation,
+          selected,
+          invert
+        ).forEach(name => {
+          const newOperations = [...(operationMap[name] ?? []), operation];
+          operationMap[name] = Object.freeze(newOperations);
+        });
+      });
+    return operationMap;
+  }
+
+  /**
+   * Ordered list of (non-rollup) operations used by a totals table.
+   */
+  static getOperationOrder(
+    aggregations: readonly Aggregation[]
+  ): AggregationOperation[] {
+    return aggregations
+      .map(a => a.operation)
+      .filter(o => !AggregationUtils.isRollupOperation(o));
+  }
+
+  /**
+   * Hydrate model totals config for a standalone aggregations view
+   * (no rollup). Returns `null` when there are no active aggregations
+   * or when a rollup is active (in which case aggregations are folded
+   * into the rollup config instead — see `getModelRollupConfig`).
+   *
+   * @param  columns Model columns
+   * @param  rollupConfig Current rollup config (or undefined). When set
+   *                     with at least one grouping column, this returns
+   *                     `null` so totals don't double-up with the rollup.
+   * @param  aggregationSettings Aggregation settings
+   */
+  static getModelTotalsConfig(
+    columns: readonly DhType.Column[],
+    rollupConfig: UIRollupConfig | undefined,
+    aggregationSettings: AggregationSettings
+  ): UITotalsTableConfig | null {
+    if ((rollupConfig?.columns?.length ?? 0) > 0) {
+      return null;
+    }
+
+    const aggregations = aggregationSettings.aggregations.filter(
+      agg => agg.selected.length > 0 || agg.invert
+    );
+    if (aggregations.length === 0) {
+      return null;
+    }
+
+    return {
+      operationMap: IrisGridUtils.getOperationMap(columns, aggregations),
+      operationOrder: IrisGridUtils.getOperationOrder(aggregations),
+      showOnTop: aggregationSettings.showOnTop,
+      defaultOperation: AggregationOperation.SKIP,
+    } as UITotalsTableConfig;
   }
 
   /**

@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import type IrisGridModel from './IrisGridModel';
+import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import { type PartitionConfig } from './PartitionedGridModel';
@@ -135,6 +135,45 @@ describe('IrisGridProxyModel', () => {
     expect(testSetter).toHaveBeenCalledTimes(1);
     expect(testUnderlyingSetter).toHaveBeenCalledWith('underlying');
     expect(testUnderlyingSetter).toHaveBeenCalledTimes(1);
+  });
+
+  describe('has trap', () => {
+    it('resolves `in` checks against the inner model', () => {
+      Object.defineProperty(underlyingModel, 'testUnderlyingMember', {
+        value: 'underlying',
+        writable: true,
+        configurable: true,
+      });
+      expect('testUnderlyingMember' in proxyModel).toBe(true);
+    });
+
+    it('returns false for properties on neither the proxy nor inner model', () => {
+      expect('someUndefinedProperty' in proxyModel).toBe(false);
+    });
+  });
+
+  describe('setModel', () => {
+    it('dispatches SCHEMA_CHANGED when swapping to a different inner model', () => {
+      const handleSchemaChanged = jest.fn();
+      proxyModel.addEventListener(
+        IrisGridModel.EVENT.SCHEMA_CHANGED,
+        handleSchemaChanged
+      );
+      const newModel = irisGridTestUtils.makeModel();
+      proxyModel.setModel(newModel);
+      expect(handleSchemaChanged).toHaveBeenCalledTimes(1);
+      expect(handleSchemaChanged.mock.calls[0][0].detail).toBe(newModel);
+    });
+
+    it('does not dispatch SCHEMA_CHANGED when setting the same model', () => {
+      const handleSchemaChanged = jest.fn();
+      proxyModel.addEventListener(
+        IrisGridModel.EVENT.SCHEMA_CHANGED,
+        handleSchemaChanged
+      );
+      proxyModel.setModel(proxyModel.model);
+      expect(handleSchemaChanged).not.toHaveBeenCalled();
+    });
   });
 
   describe('set partitionConfig', () => {

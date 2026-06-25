@@ -556,6 +556,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMoveColumnComplete,
       onMovedRowsChanged,
       onMoveRowComplete,
+      renderer,
+      metricCalculator,
     } = this.props;
 
     const {
@@ -607,6 +609,16 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (isStickyRight !== prevIsStickyRight) {
       stateUpdates.isStuckToRight = false;
+    }
+
+    // Sync renderer/metricCalculator props to instance fields so callers can
+    // swap them at runtime (e.g. pivot model swap supplies a pivot renderer
+    // and metric calculator).
+    if (renderer !== prevProps.renderer) {
+      this.renderer = renderer ?? new GridRenderer();
+    }
+    if (metricCalculator !== prevProps.metricCalculator) {
+      this.metricCalculator = metricCalculator ?? new GridMetricCalculator();
     }
 
     const updatedState = { ...this.state, ...stateUpdates };

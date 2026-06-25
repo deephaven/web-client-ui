@@ -138,6 +138,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
         return Reflect.set(target.model, prop, value, target.model);
       },
+      // Mirror `get` so duck-type checks (`'prop' in model`) used by inner
+      // model variants (e.g. pivot) resolve against the inner model when
+      // the proxy itself doesn't define the property.
+      has(target, prop) {
+        if (Reflect.has(target, prop)) {
+          return true;
+        }
+        return Reflect.has(target.model, prop);
+      },
     });
   }
 
@@ -174,6 +183,18 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       this.addListeners(model);
     }
 
+    if (oldModel !== model) {
+      // Signal an inner-model swap so the host can reset view state owned by
+      // the previous model (e.g. `movedColumns`). Dispatched before
+      // COLUMNS_CHANGED / TABLE_CHANGED so the host resets moves first, then
+      // reacts to the new column set.
+      this.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.SCHEMA_CHANGED, {
+          detail: model,
+        })
+      );
+    }
+
     if (oldColumns !== model.columns) {
       this.dispatchEvent(
         new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
@@ -208,7 +229,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
     this.modelPromise = PromiseUtils.makeCancelable(
       modelPromise,
-      (model: IrisGridModel) => model.close()
+      (model: IrisGridModel) => {
+        // Don't close originalModel — it's the source-of-truth model owned
+        // by this proxy, not a transient transform result. Closing it would
+        // invalidate the underlying table for any consumer that later asks
+        // to swap back to it.
+        if (model !== this.originalModel) {
+          model.close();
+        }
+      }
     );
     this.modelPromise
       .then(model => {
@@ -279,6 +308,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   get isSelectDistinctAvailable(): boolean {
     return (
+      // The presented model must support select distinct. Models that don't
+      // (e.g. pivot models) report false here even though the underlying
+      // source table would. This keeps the capability consistent with whatever
+      // is currently displayed.
+      this.model.isSelectDistinctAvailable &&
       (this.originalModel.isSelectDistinctAvailable ||
         this.selectDistinct.length > 0) &&
       this.rollup == null

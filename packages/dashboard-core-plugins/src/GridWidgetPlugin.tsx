@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -8,8 +8,12 @@ import {
   IrisGridCacheUtils,
   type IrisGridState,
   type IrisGridType,
+  type IrisGridViewProps,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
+  type IrisGridModel,
+  type IrisGridTableOptionsWidgetProps,
+  type IrisGridModelWidgetProps,
 } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, type RootState } from '@deephaven/redux';
@@ -28,15 +32,45 @@ import { InputFilterEvent } from './events';
 import useGridLinker from './useGridLinker';
 import { useTablePlugin } from './useTablePlugin';
 
+/**
+ * Props that can only be supplied by IrisGrid-aware middleware wrapping
+ * `GridWidgetPlugin` (regular plugins receive only `WidgetComponentProps`).
+ * Grouped together so the middleware-only surface is explicit; the component
+ * depends on `Partial` of this so each prop stays optional.
+ */
+export type GridWidgetPluginMiddlewareProps = IrisGridTableOptionsWidgetProps &
+  IrisGridModelWidgetProps & {
+    /**
+     * View-concern overrides (theme, renderer, mouse handlers, metric
+     * calculator) forwarded as a single bag to `<IrisGrid>`. Lets a plugin
+     * contribute presentation without this host knowing each concern by name.
+     */
+    irisGridProps?: Partial<IrisGridViewProps>;
+    /** Called once the model is built, so middleware can observe it. */
+    onModelChanged?: (model: IrisGridModel) => void;
+  };
+
 export function GridWidgetPlugin({
   fetch,
-}: WidgetComponentProps<DhType.Table>): JSX.Element | null {
+  transformTableOptions,
+  transformModel,
+  irisGridProps,
+  onModelChanged,
+}: WidgetComponentProps<DhType.Table> &
+  Partial<GridWidgetPluginMiddlewareProps>): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
   const { eventHub } = useLayoutManager();
 
-  const fetchResult = useIrisGridModel(fetch);
+  const fetchResult = useIrisGridModel(fetch, transformModel);
   const model =
     fetchResult.status === 'success' ? fetchResult.model : undefined;
+
+  // Notify observers (e.g. middleware) when the built model changes.
+  useEffect(() => {
+    if (model != null) {
+      onModelChanged?.(model);
+    }
+  }, [model, onModelChanged]);
 
   const dh = useApi();
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
@@ -171,6 +205,9 @@ export function GridWidgetPlugin({
       onContextMenu={onContextMenu}
       inputFilters={inputFilters}
       customFilters={customFilters}
+      transformTableOptions={transformTableOptions}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...irisGridProps}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...linkerProps}
       alwaysFetchColumns={alwaysFetchColumns}

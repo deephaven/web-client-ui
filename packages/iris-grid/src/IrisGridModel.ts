@@ -14,11 +14,13 @@ import {
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter, type SortDescriptor } from '@deephaven/jsapi-utils';
+import { EventShimCustomEvent } from '@deephaven/utils';
 import {
   type ColumnName,
   type UITotalsTableConfig,
   type PendingDataMap,
   type PendingDataErrorMap,
+  type PendingOperationDetail,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
 
@@ -70,6 +72,15 @@ abstract class IrisGridModel<
     REQUEST_FAILED: 'REQUEST_FAILED',
     COLUMNS_CHANGED: 'COLUMNS_CHANGED',
     TABLE_CHANGED: 'TABLE_CHANGED',
+    /**
+     * Fired by `IrisGridProxyModel` whenever its inner model is swapped for a
+     * different instance (e.g. pivot-builder swapping a table model for a pivot
+     * model, or back). The `detail` is the new inner model. Unlike
+     * `TABLE_CHANGED` (only dispatched for table-template models), this fires on
+     * every inner-model swap regardless of model class, so the host can reset
+     * view state (e.g. `movedColumns`) that the previous model owned.
+     */
+    SCHEMA_CHANGED: 'SCHEMA_CHANGED',
     FILTERS_CHANGED: 'FILTERS_CHANGED',
     SORTS_CHANGED: 'SORTS_CHANGED',
     DISCONNECT: 'DISCONNECT',
@@ -78,6 +89,26 @@ abstract class IrisGridModel<
     /** Fired when the viewport is applied to the table and we're waiting for a response. */
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
     VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
+    /**
+     * Fired when an async, config-changing operation has begun. Raises the
+     * IrisGrid loading scrim. Detail is an optional, self-describing
+     * {@link PendingOperationDetail} so an initiator (e.g. a plugin) can raise
+     * the scrim for an operation IrisGrid has no built-in knowledge of.
+     */
+    PENDING: 'PENDING',
+    /**
+     * Optional completion signal for a pending operation that does NOT
+     * naturally end in `UPDATED` / `COLUMNS_CHANGED` / `REQUEST_FAILED`.
+     * Built-in operations never need this; their existing events clear the
+     * scrim.
+     *
+     * Assumes a single outstanding model-driven operation: the scrim is not
+     * ref-counted, so a `PENDING_CLEARED` clears it regardless of other
+     * in-flight operations. Ref-counting is deferred to the planned migration
+     * that routes built-in `startLoading` calls through these events, where a
+     * depth counter can stay balanced.
+     */
+    PENDING_CLEARED: 'PENDING_CLEARED',
   } as const);
 
   constructor(dh: typeof DhType) {
@@ -134,6 +165,19 @@ abstract class IrisGridModel<
    */
   stopListening(): void {
     // no-op
+  }
+
+  /**
+   * Dispatch a `PENDING` event to raise the IrisGrid loading scrim for an
+   * async, config-changing operation initiated on this model.
+   * @param detail Optional self-describing detail (scrim text and options).
+   */
+  protected dispatchPending(detail?: PendingOperationDetail): void {
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.PENDING, {
+        detail,
+      }) as never
+    );
   }
 
   /**

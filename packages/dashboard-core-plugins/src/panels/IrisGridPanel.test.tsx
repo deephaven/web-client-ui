@@ -60,9 +60,13 @@ function makeIrisGridPanelWrapper(
   user = TestUtils.REGULAR_USER,
   client = new (dh as any).Client(),
   workspace = {},
-  settings = { timeZone: 'America/New_York' }
+  settings = { timeZone: 'America/New_York' },
+  transformTableOptions:
+    | ((defaults: readonly any[]) => readonly any[])
+    | undefined = undefined,
+  transformModel: ((model: any) => any) | undefined = undefined
 ) {
-  return render(
+  const panel = (
     <IrisGridPanel
       makeModel={makeModel}
       metadata={metadata}
@@ -76,9 +80,11 @@ function makeIrisGridPanelWrapper(
       panelState={undefined}
       getDownloadWorker={() => undefined}
       loadPlugin={() => undefined}
-      theme={undefined}
+      transformTableOptions={transformTableOptions}
+      transformModel={transformModel}
     />
   );
+  return render(panel);
 }
 
 async function expectLoading(container) {
@@ -152,4 +158,89 @@ it('shows an error properly if table loading fails', async () => {
     'Unable to open table. Error: TEST ERROR MESSAGE'
   );
   expect(msg).toBeTruthy();
+});
+
+it('forwards the transformTableOptions prop to IrisGrid.transformTableOptions', async () => {
+  MockIrisGrid.mockClear();
+  const transformTableOptions = jest.fn(defaults => defaults);
+  await act(() =>
+    makeIrisGridPanelWrapper(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      transformTableOptions
+    )
+  );
+  const { calls } = MockIrisGrid.mock;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.transformTableOptions).toBe(transformTableOptions);
+});
+
+it('passes undefined transformTableOptions when the prop is omitted', async () => {
+  MockIrisGrid.mockClear();
+  await act(() => makeIrisGridPanelWrapper());
+  const { calls } = MockIrisGrid.mock;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.transformTableOptions).toBeUndefined();
+});
+
+it('applies transformModel to the built model before passing it to IrisGrid', async () => {
+  MockIrisGrid.mockClear();
+  const transformedModel = await makeMakeModel()();
+  const transformModel = jest.fn(() => transformedModel);
+  await act(() =>
+    makeIrisGridPanelWrapper(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      transformModel
+    )
+  );
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  const { calls } = MockIrisGrid.mock;
+  expect(calls.length).toBeGreaterThan(0);
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.model).toBe(transformedModel);
+});
+
+it('closes the base model if transformModel rejects', async () => {
+  MockIrisGrid.mockClear();
+  const baseModel = TestUtils.createMockProxy<any>({ close: jest.fn() });
+  const makeModel = jest.fn(() => Promise.resolve(baseModel));
+  const error = new Error('Transform failed');
+  const transformModel = jest.fn(() => Promise.reject(error));
+  const { container } = makeIrisGridPanelWrapper(
+    makeModel,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    transformModel
+  );
+  await expectNotLoading(container);
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  expect(baseModel.close).toHaveBeenCalledTimes(1);
 });
