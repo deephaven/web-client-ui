@@ -133,13 +133,6 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   }
 }
 
-// Intersection splitter (2D grid resize). The grab area is invisible; the drag
-// affordance is the two perpendicular splitter lines, which reuse the standard
-// .lm_splitter.lm_dragging highlight above.
-.lm_intersection_splitter {
-  background: transparent;
-}
-
 // Pane Header (container of Tabs for each pane)
 .lm_header {
   box-sizing: content-box; // golden-layout sets a js height using a content box model
