@@ -83,9 +83,9 @@ $height6: 15px; // Appears 1 time
   // While part of an active 2D intersection (hover or drag), lift the line above
   // pane content so an offset T/cross junction renders cleanly instead of being
   // clipped by the neighbouring pane. Stays below the intersection handle
-  // (z-index 60) so the handle always wins pointer priority for 2D dragging.
+  // (z-index 22) so the handle always wins pointer priority for 2D dragging.
   &.lm_intersection_line {
-    z-index: 59;
+    z-index: 21;
   }
 }
 
@@ -95,7 +95,7 @@ $height6: 15px; // Appears 1 time
 // highlighted (via .lm_dragging) on hover and while dragging.
 .lm_intersection_splitter {
   position: absolute;
-  z-index: 60;
+  z-index: 22;
   pointer-events: auto;
   cursor: move;
 
