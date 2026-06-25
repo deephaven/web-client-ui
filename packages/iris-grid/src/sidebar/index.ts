@@ -4,7 +4,10 @@ import AggregationEdit from './aggregations/AggregationEdit';
 import AggregationUtils from './aggregations/AggregationUtils';
 import ChartBuilder from './ChartBuilder';
 import CustomColumnBuilder from './CustomColumnBuilder';
-import OptionType, { type OptionItemKey } from './OptionType';
+import OptionType, {
+  type OptionItemKey,
+  type PluginOptionKey,
+} from './OptionType';
 import RollupRows from './RollupRows';
 import TableCsvExporter from './TableCsvExporter';
 import TableSaver from './TableSaver';
@@ -26,6 +29,7 @@ export {
   CustomColumnBuilder,
   OptionType,
   type OptionItemKey,
+  type PluginOptionKey,
   RollupRows,
   TableCsvExporter,
   TableSaver,
