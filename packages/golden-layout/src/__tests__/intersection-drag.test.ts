@@ -728,4 +728,170 @@ describe('intersection splitter drag', () => {
       restoreMocks();
     }
   });
+
+  it('keeps stem transform scale positive on large intersection drags', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      layout = await createLayout({
+        content: [
+          {
+            type: 'column',
+            content: [
+              { type: 'component', componentName: 'testComponent' },
+              {
+                type: 'row',
+                content: [
+                  {
+                    type: 'column',
+                    content: [
+                      { type: 'component', componentName: 'testComponent' },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                  { type: 'component', componentName: 'testComponent' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const bottomRow = verifyPath('column.1.row', layout) as any;
+      expect(bottomRow).toBeDefined();
+
+      const intersectionHandle = bottomRow.element
+        .find('.lm_intersection_splitter')
+        .first();
+      expect(intersectionHandle.length).toBe(1);
+
+      const stemLine = bottomRow.element.find('.lm_splitter.lm_vertical');
+      expect(stemLine.length).toBe(1);
+      const stemEl = stemLine[0] as HTMLElement;
+
+      const startX = 100;
+      const startY = 100;
+      const mousedown = $.Event('mousedown') as JQuery.TriggeredEvent;
+      mousedown.pageX = startX;
+      mousedown.pageY = startY;
+      mousedown.button = 0;
+      intersectionHandle.trigger(mousedown);
+
+      // Drive far past practical bounds to ensure clamping never inverts or
+      // collapses the stretched stem line.
+      const mousemove = $.Event('mousemove') as JQuery.TriggeredEvent;
+      mousemove.pageX = startX - 5000;
+      mousemove.pageY = startY - 5000;
+      $(document).trigger(mousemove);
+
+      const transform = stemEl.style.transform;
+      expect(transform).toContain('scale');
+      const match = transform.match(/scale[XY]\(([-\d.]+)\)/);
+      expect(match).not.toBeNull();
+      expect(Number(match?.[1] ?? '0')).toBeGreaterThan(0);
+
+      $(document).trigger('mouseup');
+    } finally {
+      restoreMocks();
+    }
+  });
+
+  it('does not highlight other intersections while one intersection drag is active', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      layout = await createLayout({
+        content: [
+          {
+            type: 'row',
+            content: [
+              {
+                type: 'column',
+                content: [
+                  { type: 'component', componentName: 'testComponent' },
+                  {
+                    type: 'row',
+                    content: [
+                      {
+                        type: 'column',
+                        content: [
+                          {
+                            type: 'component',
+                            componentName: 'testComponent',
+                          },
+                          {
+                            type: 'component',
+                            componentName: 'testComponent',
+                          },
+                        ],
+                      },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'column',
+                content: [
+                  { type: 'component', componentName: 'testComponent' },
+                  {
+                    type: 'row',
+                    content: [
+                      {
+                        type: 'column',
+                        content: [
+                          {
+                            type: 'component',
+                            componentName: 'testComponent',
+                          },
+                          {
+                            type: 'component',
+                            componentName: 'testComponent',
+                          },
+                        ],
+                      },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const handles = $('.lm_intersection_splitter');
+      expect(handles.length).toBeGreaterThanOrEqual(2);
+
+      const firstHandle = handles.eq(0);
+      const secondHandle = handles.eq(1);
+
+      const startX = 100;
+      const startY = 100;
+      const mousedown = $.Event('mousedown') as JQuery.TriggeredEvent;
+      mousedown.pageX = startX;
+      mousedown.pageY = startY;
+      mousedown.button = 0;
+      firstHandle.trigger(mousedown);
+
+      const mousemove = $.Event('mousemove') as JQuery.TriggeredEvent;
+      mousemove.pageX = startX - 30;
+      mousemove.pageY = startY - 30;
+      $(document).trigger(mousemove);
+
+      // Exactly the dragged intersection's two lines should be highlighted.
+      expect($('.lm_splitter.lm_intersection_line').length).toBe(2);
+
+      // Crossing another handle during drag must not add highlight lines.
+      secondHandle.trigger('mouseenter');
+      expect($('.lm_splitter.lm_intersection_line').length).toBe(2);
+
+      $(document).trigger('mouseup');
+      await new Promise<void>(resolve => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    } finally {
+      restoreMocks();
+    }
+  });
 });

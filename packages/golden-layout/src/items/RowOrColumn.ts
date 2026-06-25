@@ -37,7 +37,6 @@ export default class RowOrColumn extends AbstractContentItem {
   private _splitterMinPosition: number | null = null;
   private _splitterMaxPosition: number | null = null;
   private _isIntersectionDragging = false;
-  private _isIntersectionHovered = false;
 
   constructor(
     isColumn: true,
@@ -902,14 +901,24 @@ export default class RowOrColumn extends AbstractContentItem {
     // Highlight both perpendicular lines while hovering the grab area, mirroring
     // the active line affordance used for 1D splitter drags.
     intersectionSplitter.element.on('mouseenter', () => {
-      this._isIntersectionHovered = true;
+      // Ignore hover state changes during an active 2D drag. Crossing over
+      // other handles while dragging should not transfer or pin highlights.
+      if (
+        this._isIntersectionDragging ||
+        $(document.body).hasClass('lm_intersection_dragging')
+      ) {
+        return;
+      }
       this._setIntersectionHighlight(record, true);
     });
     intersectionSplitter.element.on('mouseleave', () => {
-      this._isIntersectionHovered = false;
-      if (!this._isIntersectionDragging) {
-        this._setIntersectionHighlight(record, false);
+      if (
+        this._isIntersectionDragging ||
+        $(document.body).hasClass('lm_intersection_dragging')
+      ) {
+        return;
       }
+      this._setIntersectionHighlight(record, false);
     });
 
     intersectionSplitter.element.css({
@@ -1057,7 +1066,11 @@ export default class RowOrColumn extends AbstractContentItem {
     const newLength = record.junctionAtNearEdge
       ? fullLength - shift
       : fullLength + shift;
-    const scale = fullLength > 0 ? newLength / fullLength : 1;
+    // Keep the stretched stem visible and non-inverted even when the parent
+    // splitter's clamped shift exceeds the stem owner's span.
+    const minVisibleLength = Math.max(this._splitterSize, 1);
+    const safeLength = Math.max(newLength, minVisibleLength);
+    const scale = fullLength > 0 ? safeLength / fullLength : 1;
 
     // Anchor the far tip: scale about the edge opposite the junction.
     const farEdge = record.junctionAtNearEdge
@@ -1091,9 +1104,7 @@ export default class RowOrColumn extends AbstractContentItem {
     childSplitter.element.css({ transform: '', 'transform-origin': '' });
 
     this._isIntersectionDragging = false;
-    if (!this._isIntersectionHovered) {
-      this._setIntersectionHighlight(record, false);
-    }
+    this._setIntersectionHighlight(record, false);
     $(document.body).removeClass('lm_intersection_dragging');
 
     this._scheduleSetSize();
