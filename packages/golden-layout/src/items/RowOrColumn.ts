@@ -37,6 +37,11 @@ export default class RowOrColumn extends AbstractContentItem {
   private _splitterMinPosition: number | null = null;
   private _splitterMaxPosition: number | null = null;
   private _isIntersectionDragging = false;
+  private _activeFourWayPartner: IntersectionRecord | null = null;
+  private _activeFourWaySharedCenterMin: number | null = null;
+  private _activeFourWaySharedCenterMax: number | null = null;
+  private _activeFourWayBaseCenter: number | null = null;
+  private _activeFourWayPartnerBaseCenter: number | null = null;
 
   constructor(
     isColumn: true,
@@ -900,6 +905,7 @@ export default class RowOrColumn extends AbstractContentItem {
 
     // Highlight both perpendicular lines while hovering the grab area, mirroring
     // the active line affordance used for 1D splitter drags.
+    let hoverPartner: IntersectionRecord | null = null;
     intersectionSplitter.element.on('mouseenter', () => {
       // Ignore hover state changes during an active 2D drag. Crossing over
       // other handles while dragging should not transfer or pin highlights.
@@ -910,6 +916,10 @@ export default class RowOrColumn extends AbstractContentItem {
         return;
       }
       this._setIntersectionHighlight(record, true);
+      hoverPartner = this._findNearFourWayPartner(record);
+      if (hoverPartner != null) {
+        this._setIntersectionHighlight(hoverPartner, true);
+      }
     });
     intersectionSplitter.element.on('mouseleave', () => {
       if (
@@ -919,6 +929,10 @@ export default class RowOrColumn extends AbstractContentItem {
         return;
       }
       this._setIntersectionHighlight(record, false);
+      if (hoverPartner != null) {
+        this._setIntersectionHighlight(hoverPartner, false);
+        hoverPartner = null;
+      }
     });
 
     intersectionSplitter.element.css({
@@ -1014,6 +1028,98 @@ export default class RowOrColumn extends AbstractContentItem {
   }
 
   /**
+   * Find a nearby sibling intersection on the same parent splitter so a
+   * near-aligned 4-way corner can be dragged as one.
+   */
+  private _findNearFourWayPartner(
+    record: IntersectionRecord
+  ): IntersectionRecord | null {
+    // getBoundingClientRect() returns zeros in jsdom; skip partner detection
+    // when geometry is unavailable so unit tests remain deterministic.
+    const container = this.childElementContainer[0];
+    const containerRect = container?.getBoundingClientRect();
+    if (
+      containerRect == null ||
+      (containerRect.width === 0 && containerRect.height === 0)
+    ) {
+      return null;
+    }
+
+    const base = this._getIntersectionPosition(record);
+    if (base == null) {
+      return null;
+    }
+
+    // Keep this intentionally conservative for now; can be made configurable.
+    const tolerancePx = 8;
+    let best: IntersectionRecord | null = null;
+    let bestDist = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i < this._intersectionSplitter.length; i++) {
+      const candidate = this._intersectionSplitter[i];
+      if (
+        candidate.key === record.key ||
+        candidate.parentSplitterIndex !== record.parentSplitterIndex
+      ) {
+        continue;
+      }
+
+      const position = this._getIntersectionPosition(candidate);
+      if (position == null) {
+        continue;
+      }
+
+      const dx = Math.abs(position.left - base.left);
+      const dy = Math.abs(position.top - base.top);
+      if (dx > tolerancePx || dy > tolerancePx) {
+        continue;
+      }
+
+      const dist = dx + dy;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = candidate;
+      }
+    }
+
+    return best;
+  }
+
+  /**
+   * Clamp and apply one splitter visual drag offset on the owner's active axis.
+   */
+  private _setSplitterDragOffset(
+    owner: RowOrColumn,
+    splitter: Splitter,
+    offset: number
+  ) {
+    const min = owner._splitterMinPosition;
+    const max = owner._splitterMaxPosition;
+    if (min == null || max == null) {
+      return;
+    }
+
+    const clamped = Math.max(min, Math.min(max, offset));
+    owner._splitterPosition = clamped;
+    splitter.element.css(owner._isColumn ? 'top' : 'left', clamped);
+  }
+
+  /**
+   * Get the splitter line center on the owner's active drag axis.
+   */
+  private _getSplitterAxisCenter(owner: RowOrColumn, splitter: Splitter) {
+    const element = splitter.element[0];
+    if (element == null) {
+      return null;
+    }
+
+    const rect = element.getBoundingClientRect();
+    return owner._isColumn
+      ? rect.top + rect.height / 2
+      : rect.left + rect.width / 2;
+  }
+
+  /**
    * Invoked when an intersection splitter's DragListener fires dragStart.
    * Calculates movement bounds for both axes (via the existing 1D logic) so the
    * drag stays within valid ranges, and highlights both perpendicular lines.
@@ -1021,13 +1127,70 @@ export default class RowOrColumn extends AbstractContentItem {
   private _onIntersectionSplitterDragStart(record: IntersectionRecord) {
     const parentSplitter = this._splitter[record.parentSplitterIndex];
     const childSplitter = record.stemOwner._splitter[record.stemSplitterIndex];
+    const partner = this._findNearFourWayPartner(record);
+    const partnerSplitter = partner
+      ? partner.stemOwner._splitter[partner.stemSplitterIndex]
+      : null;
 
     // Reuse the existing 1D splitter drag logic to compute bounds for each axis.
     this._onSplitterDragStart(parentSplitter);
     record.stemOwner._onSplitterDragStart(childSplitter);
+    this._activeFourWaySharedCenterMin = null;
+    this._activeFourWaySharedCenterMax = null;
+    this._activeFourWayBaseCenter = null;
+    this._activeFourWayPartnerBaseCenter = null;
+
+    if (partner != null && partnerSplitter != null) {
+      partner.stemOwner._onSplitterDragStart(partnerSplitter);
+
+      const baseCenter = this._getSplitterAxisCenter(
+        record.stemOwner,
+        childSplitter
+      );
+      const partnerBaseCenter = this._getSplitterAxisCenter(
+        partner.stemOwner,
+        partnerSplitter
+      );
+
+      const recordMin = record.stemOwner._splitterMinPosition;
+      const recordMax = record.stemOwner._splitterMaxPosition;
+      const partnerMin = partner.stemOwner._splitterMinPosition;
+      const partnerMax = partner.stemOwner._splitterMaxPosition;
+      if (
+        recordMin != null &&
+        recordMax != null &&
+        partnerMin != null &&
+        partnerMax != null &&
+        baseCenter != null &&
+        partnerBaseCenter != null
+      ) {
+        const recordCenterMin = baseCenter + recordMin;
+        const recordCenterMax = baseCenter + recordMax;
+        const partnerCenterMin = partnerBaseCenter + partnerMin;
+        const partnerCenterMax = partnerBaseCenter + partnerMax;
+        const sharedCenterMin = Math.max(recordCenterMin, partnerCenterMin);
+        const sharedCenterMax = Math.min(recordCenterMax, partnerCenterMax);
+        if (sharedCenterMin <= sharedCenterMax) {
+          this._activeFourWayPartner = partner;
+          this._activeFourWaySharedCenterMin = sharedCenterMin;
+          this._activeFourWaySharedCenterMax = sharedCenterMax;
+          this._activeFourWayBaseCenter = baseCenter;
+          this._activeFourWayPartnerBaseCenter = partnerBaseCenter;
+        } else {
+          this._activeFourWayPartner = null;
+        }
+      } else {
+        this._activeFourWayPartner = null;
+      }
+    } else {
+      this._activeFourWayPartner = null;
+    }
 
     this._isIntersectionDragging = true;
     this._setIntersectionHighlight(record, true);
+    if (this._activeFourWayPartner != null) {
+      this._setIntersectionHighlight(this._activeFourWayPartner, true);
+    }
     $(document.body).addClass('lm_intersection_dragging');
   }
 
@@ -1054,9 +1217,45 @@ export default class RowOrColumn extends AbstractContentItem {
   ) {
     const parentSplitter = this._splitter[record.parentSplitterIndex];
     const childSplitter = record.stemOwner._splitter[record.stemSplitterIndex];
+    const partner = this._activeFourWayPartner;
+    const partnerSplitter = partner
+      ? partner.stemOwner._splitter[partner.stemSplitterIndex]
+      : null;
 
     this._onSplitterDrag(parentSplitter, offsetX, offsetY);
-    record.stemOwner._onSplitterDrag(childSplitter, offsetX, offsetY);
+    if (partner != null && partnerSplitter != null) {
+      // Keep both stems aligned by applying one shared clamped offset across the
+      // intersection axis for both stem owners.
+      const desiredStemOffset = record.stemOwner._isColumn ? offsetY : offsetX;
+      const sharedCenterMin = this._activeFourWaySharedCenterMin;
+      const sharedCenterMax = this._activeFourWaySharedCenterMax;
+      const baseCenter = this._activeFourWayBaseCenter;
+      const partnerBaseCenter = this._activeFourWayPartnerBaseCenter;
+      if (
+        sharedCenterMin != null &&
+        sharedCenterMax != null &&
+        baseCenter != null &&
+        partnerBaseCenter != null
+      ) {
+        const desiredCenter = baseCenter + desiredStemOffset;
+        const sharedCenter = Math.max(
+          sharedCenterMin,
+          Math.min(sharedCenterMax, desiredCenter)
+        );
+        this._setSplitterDragOffset(
+          record.stemOwner,
+          childSplitter,
+          sharedCenter - baseCenter
+        );
+        this._setSplitterDragOffset(
+          partner.stemOwner,
+          partnerSplitter,
+          sharedCenter - partnerBaseCenter
+        );
+      }
+    } else {
+      record.stemOwner._onSplitterDrag(childSplitter, offsetX, offsetY);
+    }
 
     // Scale the stem line along the parent axis so its junction tip tracks the
     // parent line while its far tip stays put. `_splitterPosition` is the
@@ -1085,6 +1284,36 @@ export default class RowOrColumn extends AbstractContentItem {
       'transform-origin': farEdge,
       transform: this._isColumn ? `scaleY(${scale})` : `scaleX(${scale})`,
     });
+
+    if (partner != null && partnerSplitter != null) {
+      const partnerShift = this._splitterPosition ?? 0;
+      const partnerFullLength =
+        partner.stemOwner.element[this._dimension]() ?? 0;
+      const partnerNewLength = partner.junctionAtNearEdge
+        ? partnerFullLength - partnerShift
+        : partnerFullLength + partnerShift;
+      const partnerMinVisibleLength = Math.max(this._splitterSize, 1);
+      const partnerSafeLength = Math.max(
+        partnerNewLength,
+        partnerMinVisibleLength
+      );
+      const partnerScale =
+        partnerFullLength > 0 ? partnerSafeLength / partnerFullLength : 1;
+      const partnerFarEdge = partner.junctionAtNearEdge
+        ? this._isColumn
+          ? 'bottom'
+          : 'right'
+        : this._isColumn
+        ? 'top'
+        : 'left';
+
+      partnerSplitter.element.css({
+        'transform-origin': partnerFarEdge,
+        transform: this._isColumn
+          ? `scaleY(${partnerScale})`
+          : `scaleX(${partnerScale})`,
+      });
+    }
   }
 
   /**
@@ -1095,16 +1324,63 @@ export default class RowOrColumn extends AbstractContentItem {
   private _onIntersectionSplitterDragStop(record: IntersectionRecord) {
     const parentSplitter = this._splitter[record.parentSplitterIndex];
     const childSplitter = record.stemOwner._splitter[record.stemSplitterIndex];
+    const partner = this._activeFourWayPartner;
+    const partnerSplitter = partner
+      ? partner.stemOwner._splitter[partner.stemSplitterIndex]
+      : null;
 
     this._applySplitterDragStop(parentSplitter);
+
+    // In 4-way mode, enforce one final shared stem offset before applying stop
+    // so both corners land perfectly aligned on drop.
+    if (
+      partner != null &&
+      partnerSplitter != null &&
+      this._activeFourWaySharedCenterMin != null &&
+      this._activeFourWaySharedCenterMax != null &&
+      this._activeFourWayBaseCenter != null &&
+      this._activeFourWayPartnerBaseCenter != null
+    ) {
+      const baseOffset = record.stemOwner._splitterPosition ?? 0;
+      const desiredCenter = this._activeFourWayBaseCenter + baseOffset;
+      const sharedCenter = Math.max(
+        this._activeFourWaySharedCenterMin,
+        Math.min(this._activeFourWaySharedCenterMax, desiredCenter)
+      );
+      this._setSplitterDragOffset(
+        record.stemOwner,
+        childSplitter,
+        sharedCenter - this._activeFourWayBaseCenter
+      );
+      this._setSplitterDragOffset(
+        partner.stemOwner,
+        partnerSplitter,
+        sharedCenter - this._activeFourWayPartnerBaseCenter
+      );
+    }
+
     record.stemOwner._applySplitterDragStop(childSplitter);
+    if (partner != null && partnerSplitter != null) {
+      partner.stemOwner._applySplitterDragStop(partnerSplitter);
+    }
 
     // Clear the stretch transform applied during drag so the stem line falls
     // back to its CSS full-extent size once the layout is reapplied.
     childSplitter.element.css({ transform: '', 'transform-origin': '' });
+    if (partnerSplitter != null) {
+      partnerSplitter.element.css({ transform: '', 'transform-origin': '' });
+    }
 
     this._isIntersectionDragging = false;
     this._setIntersectionHighlight(record, false);
+    if (partner != null) {
+      this._setIntersectionHighlight(partner, false);
+    }
+    this._activeFourWayPartner = null;
+    this._activeFourWaySharedCenterMin = null;
+    this._activeFourWaySharedCenterMax = null;
+    this._activeFourWayBaseCenter = null;
+    this._activeFourWayPartnerBaseCenter = null;
     $(document.body).removeClass('lm_intersection_dragging');
 
     this._scheduleSetSize();
