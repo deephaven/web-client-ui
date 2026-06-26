@@ -9,6 +9,7 @@ import {
 } from '@deephaven/utils';
 import { type ViewportData } from '@deephaven/storage';
 import type { dh } from '@deephaven/jsapi-types';
+import { ShortcutRegistry } from '@deephaven/components';
 import {
   type CommandHistoryStorage,
   type CommandHistoryStorageItem,
@@ -63,6 +64,7 @@ export class ConsoleInput extends PureComponent<
     super(props);
 
     this.handleResize = this.handleResize.bind(this);
+    this.updateShortcuts = this.updateShortcuts.bind(this);
 
     this.commandContainer = React.createRef();
     this.commandHistoryIndex = null;
@@ -84,6 +86,9 @@ export class ConsoleInput extends PureComponent<
     this.initCommandEditor();
 
     this.loadMoreHistory();
+
+    // Re-register the clear shortcut when its keybinding changes in settings
+    ShortcutRegistry.addEventListener('onUpdate', this.updateShortcuts);
   }
 
   componentDidUpdate(): void {
@@ -96,6 +101,9 @@ export class ConsoleInput extends PureComponent<
     if (this.loadingPromise != null) {
       this.loadingPromise.cancel();
     }
+
+    ShortcutRegistry.removeEventListener('onUpdate', this.updateShortcuts);
+    this.clearShortcutCleanup?.dispose();
 
     this.destroyCommandEditor();
   }
@@ -111,6 +119,8 @@ export class ConsoleInput extends PureComponent<
   commandHistoryIndex: number | null;
 
   commandSuggestionContainer?: Element | null;
+
+  clearShortcutCleanup?: monaco.IDisposable;
 
   loadingPromise?:
     | CancelablePromise<ViewportData<CommandHistoryStorageItem>>
@@ -200,17 +210,7 @@ export class ConsoleInput extends PureComponent<
 
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
-    // Clear the console output via the keyboard shortcut. Registering on the
-    // editor (rather than a global/ContextActions listener) means it only fires
-    // while the console input is focused and overrides Monaco's built-in
-    // Ctrl/Cmd+L ("expand line selection"), which would otherwise swallow it.
-    this.commandEditor.addCommand(
-      MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.CONSOLE.CLEAR),
-      () => {
-        const { onClear } = this.props;
-        onClear?.();
-      }
-    );
+    this.registerClearShortcut();
 
     MonacoUtils.setEOL(this.commandEditor);
     MonacoUtils.openDocument(this.commandEditor, session);
@@ -327,6 +327,37 @@ export class ConsoleInput extends PureComponent<
       this.commandEditor.dispose();
       this.commandEditor = undefined;
     }
+  }
+
+  /**
+   * Registers the "clear console" keyboard shortcut on the editor. Registering
+   * it on the editor (rather than a global/ContextActions listener) means it
+   * only fires while the console input is focused and overrides Monaco's
+   * built-in Ctrl/Cmd+L ("expand line selection"), which would otherwise
+   * swallow it. Returns a disposable so it can be re-registered when the
+   * shortcut's keybinding changes (see updateShortcuts).
+   */
+  registerClearShortcut(): void {
+    this.clearShortcutCleanup = this.commandEditor?.addAction({
+      id: 'console-clear',
+      label: 'Clear',
+      keybindings: [
+        MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.CONSOLE.CLEAR),
+      ],
+      run: () => {
+        const { onClear } = this.props;
+        onClear?.();
+      },
+    });
+  }
+
+  /**
+   * Re-registers shortcuts so edits made in the shortcut settings take effect
+   * without a reload. Fired by ShortcutRegistry's `onUpdate` event.
+   */
+  updateShortcuts(): void {
+    this.clearShortcutCleanup?.dispose();
+    this.registerClearShortcut();
   }
 
   handleResize(): void {
