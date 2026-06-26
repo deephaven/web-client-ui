@@ -56,6 +56,13 @@ class MonacoUtils {
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
+    // Register the special console commands (clear/cls) as completions. Uses the
+    // '*' selector so it shares Monaco's low-priority word-based completion group
+    // and coexists with it, instead of suppressing word-based suggestions.
+    monaco.languages.registerCompletionItemProvider('*', {
+      provideCompletionItems: MonacoProviders.provideConsoleCommandCompletions,
+    });
+
     monaco.languages.onLanguage('python', () => {
       monaco.languages.registerCodeActionProvider(
         'python',

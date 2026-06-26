@@ -6,7 +6,7 @@ const CONSOLE = {
     id: 'CONSOLE.CLEAR',
     name: 'Clear',
     shortcut: [MODIFIER.CTRL, KEY.L],
-    macShortcut: [MODIFIER.CTRL, KEY.C],
+    macShortcut: [MODIFIER.CMD, KEY.L],
   }),
   FOCUS_HISTORY: ShortcutRegistry.createAndAdd({
     id: 'CONSOLE.FOCUS_HISTORY',

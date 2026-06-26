@@ -5,6 +5,7 @@ export { Console };
 export type { Settings as ConsoleSettings } from './Console';
 export { default as ConsoleInput } from './ConsoleInput';
 export { default as SHORTCUTS } from './ConsoleShortcuts';
+export * from './ClearCommands';
 export { default as ConsoleStatusBar } from './ConsoleStatusBar';
 export * from './monaco/MonacoThemeProvider';
 export { default as MonacoUtils } from './monaco/MonacoUtils';

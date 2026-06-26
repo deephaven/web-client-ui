@@ -15,6 +15,8 @@ import {
   type CommandHistoryTable,
 } from './command-history';
 import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
+import SHORTCUTS from './ConsoleShortcuts';
+import { isClearConsoleCommand } from './ClearCommands';
 import './ConsoleInput.scss';
 
 const log = Log.module('ConsoleInput');
@@ -31,6 +33,7 @@ interface ConsoleInputProps {
   scope?: string;
   commandHistoryStorage: CommandHistoryStorage;
   onSubmit: (command: string) => void;
+  onClear?: () => void;
   maxHeight?: number;
   disabled?: boolean;
 }
@@ -197,6 +200,18 @@ export class ConsoleInput extends PureComponent<
 
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
+    // Clear the console output via the keyboard shortcut. Registering on the
+    // editor (rather than a global/ContextActions listener) means it only fires
+    // while the console input is focused and overrides Monaco's built-in
+    // Ctrl/Cmd+L ("expand line selection"), which would otherwise swallow it.
+    this.commandEditor.addCommand(
+      MonacoUtils.getMonacoKeyCodeFromShortcut(SHORTCUTS.CONSOLE.CLEAR),
+      () => {
+        const { onClear } = this.props;
+        onClear?.();
+      }
+    );
+
     MonacoUtils.setEOL(this.commandEditor);
     MonacoUtils.openDocument(this.commandEditor, session);
 
@@ -262,14 +277,25 @@ export class ConsoleInput extends PureComponent<
           return;
         }
 
-        if (
-          keyEvent.keyCode === monaco.KeyCode.Enter &&
-          !this.isSuggestionMenuPopulated()
-        ) {
+        if (keyEvent.keyCode === monaco.KeyCode.Enter) {
+          const command = this.commandEditor?.getValue().trim();
+
+          // The suggest widget normally claims Enter to accept a completion, so
+          // we only submit when it's closed. The exception is clear/cls: always
+          // submit those so an open widget can't hijack them with a fuzzy match
+          // (see ClearCommands).
+          const isClearCommand =
+            command !== undefined && isClearConsoleCommand(command);
+
+          if (this.isSuggestionMenuPopulated() && !isClearCommand) {
+            return;
+          }
+
           keyEvent.stopPropagation();
           keyEvent.preventDefault();
+          // Dismiss the suggest widget so it can't alter the command
+          this.commandEditor?.trigger('keyboard', 'hideSuggestWidget', {});
 
-          const command = this.commandEditor?.getValue().trim();
           if (command !== undefined) {
             this.processCommand(command);
             this.commandEditor?.setValue('');
