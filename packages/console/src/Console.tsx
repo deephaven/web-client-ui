@@ -25,6 +25,7 @@ import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
 import { type ConsoleHistoryActionItem } from './console-history/ConsoleHistoryTypes';
 import SHORTCUTS from './ConsoleShortcuts';
+import { isClearConsoleCommand } from './ClearCommands';
 import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
 import CsvOverlay from './csv/CsvOverlay';
@@ -186,7 +187,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.handleCommandResult = this.handleCommandResult.bind(this);
     this.handleCommandStarted = this.handleCommandStarted.bind(this);
     this.handleCommandSubmit = this.handleCommandSubmit.bind(this);
-    this.handleClearShortcut = this.handleClearShortcut.bind(this);
+    this.handleClearConsole = this.handleClearConsole.bind(this);
     this.handleFocusHistory = this.handleFocusHistory.bind(this);
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleOverflowActions = this.handleOverflowActions.bind(this);
@@ -332,11 +333,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     return Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
   }
 
-  handleClearShortcut(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    this.consoleInput.current?.clear();
+  handleClearConsole(): void {
+    this.clearConsoleHistory();
   }
 
   handleCommandStarted(
@@ -927,11 +925,18 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         group: ContextActions.groups.high + 10,
         order: 40,
       },
+      {
+        title: 'Clear',
+        action: this.handleClearConsole,
+        group: ContextActions.groups.high + 20,
+        order: 50,
+        shortcut: SHORTCUTS.CONSOLE.CLEAR,
+      },
     ];
   }
 
   handleCommandSubmit(command: string): void {
-    if (command === 'clear' || command === 'cls') {
+    if (isClearConsoleCommand(command)) {
       this.clearConsoleHistory();
     } else if (command.length > 0) {
       // Result is handled in this.handleCommandStarted
@@ -977,10 +982,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   getContextActions = memoize(
     (actions: DropdownAction[]): ResolvableContextAction[] => [
       ...actions,
-      {
-        action: this.handleClearShortcut,
-        shortcut: SHORTCUTS.CONSOLE.CLEAR,
-      },
       {
         action: this.handleFocusHistory,
         shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
@@ -1136,6 +1137,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
               language={language}
               scope={scope}
               onSubmit={this.handleCommandSubmit}
+              onClear={this.handleClearConsole}
               maxHeight={inputMaxHeight}
               commandHistoryStorage={commandHistoryStorage}
             />

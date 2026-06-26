@@ -8,6 +8,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
 import MonacoUtils from './MonacoUtils';
+import { CLEAR_CONSOLE_COMMANDS } from '../ClearCommands';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -440,6 +441,45 @@ class MonacoProviders extends PureComponent<
         text: MonacoProviders.ruffWorkspace.format(model.getValue()),
       },
     ];
+  }
+
+  /**
+   * Provides the special client-side console commands (clear/cls) as completion
+   * items for the console input. Registered with the '*' selector so it shares
+   * Monaco's low-priority word-based completion group rather than the
+   * higher-priority language provider: Monaco stops at the first provider group
+   * that returns results, so returning these from the language group on every
+   * keystroke would suppress word-based suggestions entirely. Only contributes
+   * for the console model.
+   */
+  static provideConsoleCommandCompletions(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position
+  ): monaco.languages.ProviderResult<monaco.languages.CompletionList> {
+    if (!MonacoUtils.isConsoleModel(model)) {
+      return undefined;
+    }
+
+    const word = model.getWordUntilPosition(position);
+    const range = {
+      startLineNumber: position.lineNumber,
+      startColumn: word.startColumn,
+      endLineNumber: position.lineNumber,
+      endColumn: word.endColumn,
+    };
+
+    return {
+      suggestions: CLEAR_CONSOLE_COMMANDS.map(command => ({
+        label: command,
+        kind: monaco.languages.CompletionItemKind.Keyword,
+        detail: 'Clear the console',
+        // Leading low character ranks the exact match above fuzzy matches
+        sortText: `\x00${command}`,
+        filterText: command,
+        insertText: command,
+        range,
+      })),
+    };
   }
 
   constructor(props: MonacoProviderProps) {
