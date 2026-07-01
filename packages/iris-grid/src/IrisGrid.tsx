@@ -109,6 +109,7 @@ import {
   ClearFilterKeyHandler,
   CopyKeyHandler,
   ReverseKeyHandler,
+  RestrictedEditKeyHandler,
 } from './key-handlers';
 import {
   IrisGridCellOverflowMouseHandler,
@@ -151,9 +152,10 @@ import {
   DownloadServiceWorkerUtils,
   type TableOptionsTransform,
 } from './sidebar';
+import { DEFAULT_REGISTRY } from './CellInputRendererContext';
+import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
-import IrisGridModel from './IrisGridModel';
 import {
   isPartitionedGridModel,
   type PartitionConfig,
@@ -199,7 +201,7 @@ import {
   type UITotalsTableConfig,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
-import { IrisGridThemeContext } from './IrisGridThemeProvider';
+import { IrisGridContext } from './IrisGridContextProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
@@ -534,10 +536,10 @@ export interface IrisGridState {
 }
 
 class IrisGrid extends Component<IrisGridProps, IrisGridState> {
-  static contextType = IrisGridThemeContext;
+  static contextType = IrisGridContext;
 
   // eslint-disable-next-line react/static-property-placement, react/sort-comp
-  declare context: React.ContextType<typeof IrisGridThemeContext>;
+  declare context: React.ContextType<typeof IrisGridContext>;
 
   static minDebounce = 150;
 
@@ -821,6 +823,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new CopyCellKeyHandler(this),
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
+      new RestrictedEditKeyHandler(this),
     ];
     const mouseHandlers: MouseHandlersProp = [
       new IrisGridCellOverflowMouseHandler(this),
@@ -4909,6 +4912,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onCreateChart,
       transformTableOptions,
     } = this.props;
+    const { cellInputRendererRegistry } = this.context;
     const {
       metricCalculator,
       metrics,
@@ -5512,6 +5516,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onSelectionChanged={this.handleSelectionChanged}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
+            cellInputRendererRegistry={
+              cellInputRendererRegistry ?? DEFAULT_REGISTRY
+            }
             stateOverride={stateOverride}
             theme={theme}
           >

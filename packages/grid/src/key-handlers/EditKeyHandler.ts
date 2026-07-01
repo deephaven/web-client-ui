@@ -38,6 +38,11 @@ class EditKeyHandler extends KeyHandler {
       return true;
     }
 
+    if (event.key === 'Enter') {
+      grid.startEditing(column, row);
+      return true;
+    }
+
     if (event.key === 'Backspace') {
       grid.startEditing(column, row, true, undefined, '');
       return true;

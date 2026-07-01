@@ -1,0 +1,58 @@
+.cell-dropdown-field {
+  position: absolute;
+  // Compensate for Spectrum quiet Picker's internal padding so the button
+  // aligns visually with the cell boundary.
+  left: var(--spectrum-picker-quiet-border-side-width, 3px);
+  right: 0;
+  // No extra padding — Spectrum's button internal padding aligns the label
+  // text with the grid canvas text position.
+  padding-right: 5px;
+  padding-left: 3px;
+  // Match the cell's row stripe background so the quiet Picker's transparent
+  // background doesn't show the canvas beneath it.
+  background-color: var(--grid-cell-bg);
+  // Clip to the cell row height; the Picker button is taller than the row.
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  // Override Spectrum Picker sizing to match grid cell dimensions.
+  // --spectrum-dropdown-height drives the button block-size and internal padding.
+  --spectrum-dropdown-height: var(--grid-row-height, 20px);
+  // Remove Spectrum's minimum width so the Picker can be as narrow as the cell.
+  --spectrum-dropdown-quiet-min-width: 0;
+  --spectrum-dropdown-min-width: 0;
+  // Match the grid font size (Spectrum reads this variable for the label text).
+  --spectrum-dropdown-text-size: 12px;
+
+  // Our own chevron rendered as a pseudo-element on the right.
+  // Square element with border-right + border-bottom rotated 45° → symmetric V.
+  &::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentcolor;
+    border-bottom: 2px solid currentcolor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 4px; // shift up to visually center the rotated square
+    opacity: 0.7;
+  }
+
+  .cell-dropdown-field-picker {
+    flex: 1;
+    min-width: 0;
+
+    // Hide Spectrum's built-in chevron since we render our own.
+    svg[class*='spectrum-Dropdown-chevron'] {
+      display: none;
+    }
+
+    // Override font-family: Spectrum sets this via an ancestor i18n class.
+    button {
+      font-family: 'fira sans', sans-serif;
+    }
+  }
+}

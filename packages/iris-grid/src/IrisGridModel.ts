@@ -2,6 +2,7 @@
 import type { Event, EventTarget } from 'event-target-shim';
 import {
   type BoundedAxisRange,
+  type ColumnRestriction,
   type DataBarGridModel,
   type DataBarOptions,
   type GridCell,
@@ -690,6 +691,25 @@ abstract class IrisGridModel<
   tooltipForCell(column: ModelIndex, row: ModelIndex): string | null {
     return null;
   }
+
+  getColumnRestriction(column: ModelIndex): ColumnRestriction[] {
+    const c = this.columns[column];
+    return (
+      (c as { columnRestrictions?: ColumnRestriction[] } | undefined)
+        ?.columnRestrictions ?? []
+    );
+  }
 }
+
+export const STRING_LIST_RESTRICTION_TYPE =
+  'io.deephaven.proto.backplane.grpc.StringListRestriction' as const;
+
+/**
+ * Restriction type for columns whose values must come from a predefined list of strings.
+ */
+export type StringListRestriction = ColumnRestriction & {
+  type: typeof STRING_LIST_RESTRICTION_TYPE;
+  allowedValues: string[];
+};
 
 export default IrisGridModel;

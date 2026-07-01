@@ -55,7 +55,8 @@ import {
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
-import CellInputField from './CellInputField';
+import CellInputField, { type CellInputFieldProps } from './CellInputField';
+import type { ColumnRestriction } from './GridModel';
 import PasteError from './errors/PasteError';
 import {
   type Coordinate,
@@ -78,6 +79,7 @@ import {
   type EditingCell,
   type GridRenderState,
   type EditingCellTextSelectionRange,
+  type CellInputRendererRegistry,
 } from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
@@ -141,6 +143,13 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Renderer for the grid canvas
   renderer?: GridRenderer;
+
+  /**
+   * Registry of cell input renderer functions keyed by column restriction type.
+   * Grid looks up columnRestrictions[0].type at render time and falls back to
+   * its built-in CellInputField when there is no match.
+   */
+  cellInputRendererRegistry?: CellInputRendererRegistry;
 
   // Optional state override to pass in to the metric and render state
   // Can be used to add custom properties as well
@@ -264,6 +273,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         window.open(token.href, '_blank', 'noopener,noreferrer');
       }
     },
+    cellInputRendererRegistry: new Map() as CellInputRendererRegistry,
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -2267,7 +2277,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       allRowHeights,
     } = metrics;
 
-    const { activeCellSelectionBorderWidth } = this.getTheme();
+    const { activeCellSelectionBorderWidth, rowBackgroundColors, maxDepth } =
+      this.getTheme();
 
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
@@ -2280,16 +2291,30 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? activeCellSelectionBorderWidth
         : 0;
 
+    // Compute the stripe color for this visible row, mirroring how the canvas renderer draws row stripes
+    let cellBackgroundColor: string | undefined;
+    if (rowBackgroundColors) {
+      const colorSets = GridRenderer.getCachedBackgroundColors(
+        rowBackgroundColors,
+        maxDepth
+      );
+      const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
+      const colorSet = colorSets[row % colorSets.length];
+      cellBackgroundColor = colorSet[Math.min(depth, colorSet.length - 1)];
+    }
+
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
     const wrapperStyle: CSSProperties =
       x != null && y != null && w != null && h != null
-        ? {
+        ? ({
             position: 'absolute',
             left: gridX + x + leftBorderOffset,
             top: gridY + y,
             width: w - leftBorderOffset,
             height: h,
-          }
+            '--grid-cell-bg': cellBackgroundColor,
+            '--grid-row-height': `${h}px`,
+          } as CSSProperties)
         : { opacity: 0 };
 
     let modelColumn;
@@ -2311,19 +2336,45 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? model.isValidForCell(modelColumn, modelRow, value)
         : false;
 
+    const { cellInputRendererRegistry } = this.props;
+    const columnRestrictions =
+      modelColumn != null ? model.getColumnRestriction(modelColumn) : [];
+
+    const cellInputProps: CellInputFieldProps & {
+      columnRestrictions: ColumnRestriction[];
+    } = {
+      selectionRange,
+      className: classNames({ error: !isValid }),
+      onCancel: this.handleEditCellCancel,
+      onChange: this.handleEditCellChange,
+      onDone: this.handleEditCellCommit,
+      isQuickEdit,
+      style: inputStyle,
+      value,
+      columnRestrictions,
+    };
+
+    const renderer =
+      columnRestrictions.length === 1
+        ? cellInputRendererRegistry?.get(columnRestrictions[0].type)
+        : undefined;
+
     return (
-      <div style={wrapperStyle}>
-        <CellInputField
-          key={`${column},${row}`}
-          selectionRange={selectionRange}
-          className={classNames({ error: !isValid })}
-          onCancel={this.handleEditCellCancel}
-          onChange={this.handleEditCellChange}
-          onDone={this.handleEditCellCommit}
-          isQuickEdit={isQuickEdit}
-          style={inputStyle}
-          value={value}
-        />
+      <div key={`${column},${row}`} style={wrapperStyle}>
+        {renderer != null ? (
+          renderer(cellInputProps)
+        ) : (
+          <CellInputField
+            selectionRange={selectionRange}
+            className={classNames({ error: !isValid })}
+            onCancel={this.handleEditCellCancel}
+            onChange={this.handleEditCellChange}
+            onDone={this.handleEditCellCommit}
+            isQuickEdit={isQuickEdit}
+            style={inputStyle}
+            value={value}
+          />
+        )}
       </div>
     );
   }

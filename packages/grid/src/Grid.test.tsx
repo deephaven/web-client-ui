@@ -11,6 +11,7 @@ import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
 import { type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
+import { type CellInputRendererRegistry } from './GridRendererTypes';
 
 const defaultTheme = { ...GridTheme, autoSizeColumns: false } as GridThemeType;
 
@@ -1437,5 +1438,84 @@ describe('grid-block-events cleanup', () => {
 
     // Should still clean up properly
     expect(hasBlockEventsClass()).toBe(false);
+  });
+});
+
+describe('cellInputRendererRegistry', () => {
+  const RESTRICTION_TYPE = 'test-restriction';
+
+  it('calls the custom renderer and passes columnRestrictions when the model returns a matching restriction type', () => {
+    const model = new MockGridModel({ isEditable: true });
+    jest
+      .spyOn(model, 'getColumnRestriction')
+      .mockReturnValue([{ type: RESTRICTION_TYPE }]);
+
+    const customRenderer = jest.fn(() => (
+      <span data-testid="custom-cell-editor" />
+    ));
+    const registry = new Map([
+      [RESTRICTION_TYPE, customRenderer],
+    ]) as unknown as CellInputRendererRegistry;
+
+    let ref: React.RefObject<Grid>;
+    function GridWithRegistry() {
+      ref = useRef<Grid>(null);
+      return (
+        <div>
+          <Grid
+            model={model}
+            theme={defaultTheme}
+            cellInputRendererRegistry={registry}
+            onSelectionChanged={jest.fn()}
+            ref={ref}
+          />
+        </div>
+      );
+    }
+    render(<GridWithRegistry />);
+    const component = ref!.current!;
+
+    mouseDoubleClick(3, 5, component);
+
+    expect(customRenderer).toHaveBeenCalled();
+    expect(customRenderer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        columnRestrictions: [{ type: RESTRICTION_TYPE }],
+      })
+    );
+  });
+
+  it('falls back to the default CellInputField when no registry entry matches the column restriction', () => {
+    const model = new MockGridModel({ isEditable: true });
+    // getColumnRestriction returns [] by default — no restrictions, no renderer lookup
+
+    const customRenderer = jest.fn(() => (
+      <span data-testid="custom-cell-editor" />
+    ));
+    const registry = new Map([
+      [RESTRICTION_TYPE, customRenderer],
+    ]) as unknown as CellInputRendererRegistry;
+
+    let ref: React.RefObject<Grid>;
+    function GridWithRegistry() {
+      ref = useRef<Grid>(null);
+      return (
+        <div>
+          <Grid
+            model={model}
+            theme={defaultTheme}
+            cellInputRendererRegistry={registry}
+            onSelectionChanged={jest.fn()}
+            ref={ref}
+          />
+        </div>
+      );
+    }
+    render(<GridWithRegistry />);
+    const component = ref!.current!;
+
+    mouseDoubleClick(3, 5, component);
+
+    expect(customRenderer).not.toHaveBeenCalled();
   });
 });
