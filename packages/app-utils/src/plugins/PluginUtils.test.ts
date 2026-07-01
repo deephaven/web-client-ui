@@ -89,7 +89,7 @@ describe('loadModulePlugins', () => {
         name: 'test-plugin-a',
         main: 'index.js',
         version: '1.0.0',
-        package: '@deephaven/js-plugin-test-plugin-a',
+        loader: { package: '@deephaven/js-plugin-test-plugin-a' },
       },
     ]);
 
@@ -127,14 +127,16 @@ describe('loadModulePlugins', () => {
         name: 'test-plugin-a',
         main: 'index.js',
         version: '1.0.0',
-        package: '@deephaven/js-plugin-test-plugin-a',
+        loader: { package: '@deephaven/js-plugin-test-plugin-a' },
       },
       {
         name: 'test-plugin-b',
         main: 'index.js',
         version: '1.0.0',
-        package: '@deephaven/js-plugin-test-plugin-b',
-        dependencies: ['@deephaven/js-plugin-test-plugin-a'],
+        loader: {
+          package: '@deephaven/js-plugin-test-plugin-b',
+          dependencies: ['@deephaven/js-plugin-test-plugin-a'],
+        },
       },
     ]);
 
@@ -185,7 +187,7 @@ describe('loadModulePlugins', () => {
         name: 'test-plugin-a',
         main: 'index.js',
         version: '1.0.0',
-        package: '@deephaven/js-plugin-test-plugin-a',
+        loader: { package: '@deephaven/js-plugin-test-plugin-a' },
       },
     ]);
 
@@ -270,7 +272,7 @@ describe('loadModulePlugins', () => {
         name: 'test-plugin-a',
         main: 'index.js',
         version: '1.0.0',
-        package: '@acme/grid-extras',
+        loader: { package: '@acme/grid-extras' },
       },
     ]);
 
