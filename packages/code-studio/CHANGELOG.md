@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.0](https://github.com/deephaven/web-client-ui/compare/v1.22.1...v1.23.0) (2026-06-25)
+
+### Features
+
+- DH-21476 Configurable TableOptions sidebar ([#2688](https://github.com/deephaven/web-client-ui/issues/2688)) ([9756457](https://github.com/deephaven/web-client-ui/commit/9756457fe2f8c910626d2eb3508a77932d986b91))
+
 ## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
 
 **Note:** Version bump only for package @deephaven/code-studio
