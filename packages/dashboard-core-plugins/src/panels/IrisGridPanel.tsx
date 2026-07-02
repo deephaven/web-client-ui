@@ -27,7 +27,6 @@ import {
   type ColumnName,
   type PendingDataMap,
   type InputFilter,
-  type IrisGridThemeType,
   type ReadonlyAdvancedFilterMap,
   type AggregationSettings,
   type AdvancedSettingsType,
@@ -45,9 +44,9 @@ import {
   type ColumnHeaderGroup,
   type IrisGridContextMenuData,
   type PartitionConfig,
-  type IrisGridRenderer,
-  type MouseHandlersProp,
-  type GetMetricCalculatorType,
+  type IrisGridViewProps,
+  type TableOptionsTransform,
+  type IrisGridModelTransform,
 } from '@deephaven/iris-grid';
 import {
   type RowDataMap,
@@ -157,13 +156,35 @@ export interface OwnProps extends DashboardPanelProps {
   /** Load a plugin defined by the table */
   loadPlugin: (pluginName: string) => TablePluginComponent;
 
-  theme?: Partial<IrisGridThemeType> & Record<string, unknown>;
+  /**
+   * View-concern overrides (theme, renderer, mouse handlers, metric
+   * calculator) forwarded as a single bag to `IrisGrid`. Lets IrisGrid-aware
+   * middleware contribute presentation without this panel knowing each
+   * concern by name. Threaded down the middleware chain.
+   */
+  irisGridProps?: Partial<IrisGridViewProps>;
 
-  mouseHandlers?: MouseHandlersProp;
+  /**
+   * Transform applied to the built-in Table Options items before they are
+   * rendered. Forwarded to `IrisGrid#transformTableOptions`. Threaded down
+   * the middleware chain by IrisGrid-aware plugins.
+   */
+  transformTableOptions?: TableOptionsTransform;
 
-  renderer?: IrisGridRenderer;
+  /**
+   * Called with the resolved `IrisGridModel` once it is initialized, so
+   * middleware can subscribe to model events (e.g. to recompute a
+   * `transformTableOptions` snapshot).
+   */
+  onModelChanged?: (model: IrisGridModel) => void;
 
-  getMetricCalculator?: GetMetricCalculatorType;
+  /**
+   * Transform applied to the model built by `makeModel` before it is handed
+   * to `IrisGrid`. Lets IrisGrid-aware middleware wrap the host-built model
+   * (e.g. in a proxy) without taking over model construction. Applied when
+   * the model is (re)built, so it must be referentially stable.
+   */
+  transformModel?: IrisGridModelTransform;
 }
 
 interface StateProps {
@@ -534,11 +555,26 @@ export class IrisGridPanel extends PureComponent<
       error: null,
       isDisconnected: false,
     });
-    const { makeModel } = this.props;
+    const { makeModel, transformModel } = this.props;
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    this.modelPromise = PromiseUtils.makeCancelable(makeModel(), resolved =>
+    const modelPromise =
+      transformModel != null
+        ? Promise.resolve(makeModel()).then(async model => {
+            try {
+              const transformedModel = await transformModel(model);
+              return transformedModel;
+            } catch (e) {
+              // The host owns the base model's lifecycle; if the transform
+              // rejects it never returns a model for us to close, so close
+              // the base model here to avoid leaking it.
+              model.close();
+              throw e;
+            }
+          })
+        : Promise.resolve(makeModel());
+    this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
       resolved.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
@@ -788,7 +824,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   modelInitialized(model: IrisGridModel): void {
-    const { glEventHub, loadPlugin } = this.props;
+    const { glEventHub, loadPlugin, onModelChanged } = this.props;
 
     this.modelPromise = undefined;
 
@@ -796,6 +832,8 @@ export class IrisGridPanel extends PureComponent<
     this.loadPanelState(model);
 
     this.setState({ isModelReady: true });
+
+    onModelChanged?.(model);
 
     if (isIrisGridTableModelTemplate(model)) {
       const { table } = model;
@@ -1147,13 +1185,11 @@ export class IrisGridPanel extends PureComponent<
       inputFilters,
       links,
       metadata,
-      mouseHandlers,
       panelState,
       user,
-      renderer,
       settings,
-      getMetricCalculator,
-      theme,
+      irisGridProps,
+      transformTableOptions,
     } = this.props;
     const {
       advancedFilters,
@@ -1255,13 +1291,11 @@ export class IrisGridPanel extends PureComponent<
             isSelectingPartition={isSelectingPartition}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
-            mouseHandlers={mouseHandlers}
             movedColumns={movedColumns}
             movedRows={movedRows}
             partitions={partitions}
             partitionConfig={partitionConfig}
             quickFilters={quickFilters}
-            renderer={renderer}
             reverse={reverse}
             rollupConfig={rollupConfig}
             settings={settings}
@@ -1289,9 +1323,10 @@ export class IrisGridPanel extends PureComponent<
             ref={this.irisGrid}
             getDownloadWorker={getDownloadWorker}
             frozenColumns={frozenColumns}
-            theme={theme}
             columnHeaderGroups={columnHeaderGroups}
-            getMetricCalculator={getMetricCalculator}
+            transformTableOptions={transformTableOptions}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...irisGridProps}
           >
             {childrenContent}
           </IrisGrid>

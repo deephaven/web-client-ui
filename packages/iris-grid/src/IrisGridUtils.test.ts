@@ -18,6 +18,8 @@ import IrisGridUtils, {
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
+import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import { type Aggregation } from './sidebar/aggregations/Aggregations';
 
 const irisGridUtils = new IrisGridUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
@@ -1016,5 +1018,124 @@ describe('user column widths persistence by name', () => {
     );
     expect(restored.userColumnWidthsByName.get('name_2')).toBe(0);
     expect(restored.userColumnWidths.get(2)).toBe(0);
+  });
+});
+
+describe('totals config helpers', () => {
+  // makeColumns uses DEFAULT_TYPE (java.lang.String), so COUNT / FIRST / MIN
+  // are all valid operations against these columns.
+  const columns = irisGridTestUtils.makeColumns(3, 'name_');
+
+  function makeAggregation(
+    operation: AggregationOperation,
+    selected: readonly string[],
+    invert = false
+  ): Aggregation {
+    return { operation, selected, invert };
+  }
+
+  describe('getOperationOrder', () => {
+    it('maps aggregations to their operations in order', () => {
+      expect(
+        IrisGridUtils.getOperationOrder([
+          makeAggregation(AggregationOperation.COUNT, ['name_0']),
+          makeAggregation(AggregationOperation.FIRST, ['name_1']),
+        ])
+      ).toEqual([AggregationOperation.COUNT, AggregationOperation.FIRST]);
+    });
+
+    it('returns an empty array for no aggregations', () => {
+      expect(IrisGridUtils.getOperationOrder([])).toEqual([]);
+    });
+  });
+
+  describe('getOperationMap', () => {
+    it('builds a per-column map of operations', () => {
+      const operationMap = IrisGridUtils.getOperationMap(columns, [
+        makeAggregation(AggregationOperation.COUNT, ['name_0']),
+        makeAggregation(AggregationOperation.FIRST, ['name_0', 'name_1']),
+      ]);
+      expect(operationMap).toEqual({
+        name_0: [AggregationOperation.COUNT, AggregationOperation.FIRST],
+        name_1: [AggregationOperation.FIRST],
+      });
+    });
+
+    it('inverts selection when invert is set', () => {
+      const operationMap = IrisGridUtils.getOperationMap(columns, [
+        makeAggregation(AggregationOperation.COUNT, ['name_0'], true),
+      ]);
+      // invert excludes name_0, leaving the other two columns
+      expect(operationMap).toEqual({
+        name_1: [AggregationOperation.COUNT],
+        name_2: [AggregationOperation.COUNT],
+      });
+    });
+
+    it('returns an empty map when nothing is selected', () => {
+      expect(
+        IrisGridUtils.getOperationMap(columns, [
+          makeAggregation(AggregationOperation.COUNT, []),
+        ])
+      ).toEqual({});
+    });
+  });
+
+  describe('getModelTotalsConfig', () => {
+    const aggregationSettings = {
+      aggregations: [makeAggregation(AggregationOperation.COUNT, ['name_0'])],
+      showOnTop: false,
+    };
+
+    it('returns a totals config when aggregations are active and no rollup', () => {
+      const config = IrisGridUtils.getModelTotalsConfig(
+        columns,
+        undefined,
+        aggregationSettings
+      );
+      expect(config).toEqual({
+        operationMap: { name_0: [AggregationOperation.COUNT] },
+        operationOrder: [AggregationOperation.COUNT],
+        showOnTop: false,
+        defaultOperation: AggregationOperation.SKIP,
+      });
+    });
+
+    it('returns null when a rollup with grouping columns is active', () => {
+      expect(
+        IrisGridUtils.getModelTotalsConfig(
+          columns,
+          { columns: ['name_0'] },
+          aggregationSettings
+        )
+      ).toBeNull();
+    });
+
+    it('returns a config when the rollup has no grouping columns', () => {
+      const config = IrisGridUtils.getModelTotalsConfig(
+        columns,
+        { columns: [] },
+        aggregationSettings
+      );
+      expect(config).not.toBeNull();
+    });
+
+    it('returns null when there are no selected/inverted aggregations', () => {
+      expect(
+        IrisGridUtils.getModelTotalsConfig(columns, undefined, {
+          aggregations: [makeAggregation(AggregationOperation.COUNT, [])],
+          showOnTop: false,
+        })
+      ).toBeNull();
+    });
+
+    it('keeps an inverted aggregation even with empty selection', () => {
+      const config = IrisGridUtils.getModelTotalsConfig(columns, undefined, {
+        aggregations: [makeAggregation(AggregationOperation.COUNT, [], true)],
+        showOnTop: true,
+      });
+      expect(config).not.toBeNull();
+      expect(config?.showOnTop).toBe(true);
+    });
   });
 });

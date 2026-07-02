@@ -3633,6 +3633,20 @@ describe('isBigIntegerType', () => {
   });
 });
 
+describe('isArrayType', () => {
+  it('should return true for array types', () => {
+    expect(TableUtils.isArrayType('int[]')).toBe(true);
+    expect(TableUtils.isArrayType('java.lang.String[]')).toBe(true);
+    expect(TableUtils.isArrayType('double[]')).toBe(true);
+  });
+
+  it('should return false for non-array types', () => {
+    expect(TableUtils.isArrayType('int')).toBe(false);
+    expect(TableUtils.isArrayType('java.lang.String')).toBe(false);
+    expect(TableUtils.isArrayType('double')).toBe(false);
+  });
+});
+
 describe('getBaseType', () => {
   it('should return the base column type', () => {
     expect(TableUtils.getBaseType('test')).toBe('test');

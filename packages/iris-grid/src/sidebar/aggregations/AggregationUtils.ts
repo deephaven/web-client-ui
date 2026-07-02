@@ -59,10 +59,11 @@ export const isValidOperation = (
     case AggregationOperation.COUNT:
     case AggregationOperation.FIRST:
     case AggregationOperation.LAST:
+      return true;
     case AggregationOperation.COUNT_DISTINCT:
     case AggregationOperation.DISTINCT:
     case AggregationOperation.UNIQUE:
-      return true;
+      return !TableUtils.isArrayType(columnType);
     case AggregationOperation.MEDIAN:
     case AggregationOperation.MIN:
     case AggregationOperation.MAX:

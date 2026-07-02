@@ -1,6 +1,10 @@
 import { type dh } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
+import {
+  IrisGridModel,
+  IrisGridModelFactory,
+  type IrisGridModelTransform,
+} from '@deephaven/iris-grid';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export type IrisGridModelFetch = () => Promise<dh.Table>;
@@ -29,7 +33,8 @@ export type IrisGridModelFetchResult = (
 
 /** Pass in a table `fetch` function, will load the model and handle any errors */
 export function useIrisGridModel(
-  fetch: IrisGridModelFetch
+  fetch: IrisGridModelFetch,
+  transformModel?: IrisGridModelTransform
 ): IrisGridModelFetchResult {
   const dh = useApi();
   const [model, setModel] = useState<IrisGridModel>();
@@ -38,8 +43,21 @@ export function useIrisGridModel(
 
   const makeModel = useCallback(async () => {
     const table = await fetch();
-    return IrisGridModelFactory.makeModel(dh, table);
-  }, [dh, fetch]);
+    const newModel = await IrisGridModelFactory.makeModel(dh, table);
+    if (transformModel == null) {
+      return newModel;
+    }
+    try {
+      const transformedModel = await transformModel(newModel);
+      return transformedModel;
+    } catch (e) {
+      // The host owns the base model's lifecycle; if the transform rejects it
+      // never returns a model for us to close, so close the base model here to
+      // avoid leaking it.
+      newModel.close();
+      throw e;
+    }
+  }, [dh, fetch, transformModel]);
 
   const reload = useCallback(async () => {
     setIsLoading(true);

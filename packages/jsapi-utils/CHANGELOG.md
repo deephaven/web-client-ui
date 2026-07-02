@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.0](https://github.com/deephaven/web-client-ui/compare/v1.22.1...v1.23.0) (2026-06-25)
+
+### Features
+
+- DH-22956: Worker variables context and store ([#2707](https://github.com/deephaven/web-client-ui/issues/2707)) ([77b0b5a](https://github.com/deephaven/web-client-ui/commit/77b0b5a2f9e45512fa8db4659cb132e81a4e0bb4))
+
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+### Bug Fixes
+
+- DH-13522: exclude some aggs for arrays ([#2697](https://github.com/deephaven/web-client-ui/issues/2697)) ([35bc710](https://github.com/deephaven/web-client-ui/commit/35bc710f4a034da81c1dd99ddaee451465577b31))
+
 ## [1.16.0](https://github.com/deephaven/web-client-ui/compare/v1.15.1...v1.16.0) (2026-03-18)
 
 ### Features

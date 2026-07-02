@@ -15,7 +15,9 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
+import PluginErrorExample from './grid-examples/PluginErrorExample';
 import SampleSection from './SampleSection';
+import { SAMPLE_SECTION_E2E_IGNORE } from './constants';
 
 function Grids(): ReactElement {
   const dh = useApi();
@@ -83,6 +85,16 @@ function Grids(): ReactElement {
         <h2 className="ui-title">Iris Grid Spacious</h2>
         <SampleSection name="grids-iris-spacious" component={Flex} height={500}>
           <IrisGrid model={irisGridSpaciousModel} density="spacious" />
+        </SampleSection>
+        {/* e2e-only: exercises PluginTableOptionsErrorBoundary. Hidden from
+            the section-count snapshot test via SAMPLE_SECTION_E2E_IGNORE. */}
+        <SampleSection
+          name="grids-iris-plugin-error"
+          className={SAMPLE_SECTION_E2E_IGNORE}
+          component={Flex}
+          height={500}
+        >
+          <PluginErrorExample />
         </SampleSection>
       </ThemeContext.Provider>
     </div>

@@ -1167,7 +1167,8 @@ export class GridRenderer {
       floatingLeftColumnCount,
       floatingLeftWidth,
       floatingRightWidth,
-      modelColumns,
+      movedColumns,
+      columnCount,
       columnHeaderMaxDepth,
     } = metrics;
     if (columnHeaderHeight <= 0) {
@@ -1257,15 +1258,13 @@ export class GridRenderer {
       if (highlightedSeparator == null) {
         shouldDrawSeparator = false;
       } else {
-        const columnIndex = modelColumns.get(highlightedSeparator);
-        const nextColumnIndex = modelColumns.get(highlightedSeparator + 1);
-        if (columnIndex == null || nextColumnIndex == null) {
-          shouldDrawSeparator = false;
-        } else {
-          shouldDrawSeparator =
-            model.textForColumnHeader(columnIndex, depth) !==
-            model.textForColumnHeader(nextColumnIndex, depth);
-        }
+        shouldDrawSeparator = GridUtils.hasColumnSeparatorAtDepth(
+          model,
+          depth,
+          highlightedSeparator,
+          columnCount,
+          movedColumns
+        );
       }
 
       if (
@@ -1415,8 +1414,12 @@ export class GridRenderer {
               GridUtils.getModelIndex(prevColumnIndex, movedColumns);
             if (
               prevModelIndex == null ||
-              model.textForColumnHeader(prevModelIndex, depth) !==
-                columnGroupName
+              !GridUtils.isSameColumnGroupAtDepth(
+                model,
+                depth,
+                modelColumn,
+                prevModelIndex
+              )
             ) {
               // Previous column not in the same group
               break;
@@ -1442,8 +1445,12 @@ export class GridRenderer {
               modelColumns.get(nextColumnIndex) ??
               GridUtils.getModelIndex(nextColumnIndex, movedColumns);
             if (
-              model.textForColumnHeader(nextModelIndex, depth) !==
-              columnGroupName
+              !GridUtils.isSameColumnGroupAtDepth(
+                model,
+                depth,
+                modelColumn,
+                nextModelIndex
+              )
             ) {
               // Next column not in the same group
               break;

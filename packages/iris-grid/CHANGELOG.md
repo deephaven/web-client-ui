@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.0](https://github.com/deephaven/web-client-ui/compare/v1.22.1...v1.23.0) (2026-06-25)
+
+### Features
+
+- DH-21476 Configurable TableOptions sidebar ([#2688](https://github.com/deephaven/web-client-ui/issues/2688)) ([9756457](https://github.com/deephaven/web-client-ui/commit/9756457fe2f8c910626d2eb3508a77932d986b91))
+
+## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
+
+### Bug Fixes
+
+- DH-13522: exclude some aggs for arrays ([#2697](https://github.com/deephaven/web-client-ui/issues/2697)) ([35bc710](https://github.com/deephaven/web-client-ui/commit/35bc710f4a034da81c1dd99ddaee451465577b31))
+- DH-22867: Fix Table Options slide animation ([#2698](https://github.com/deephaven/web-client-ui/issues/2698)) ([e0600dd](https://github.com/deephaven/web-client-ui/commit/e0600dd9ff999b48af22d269c9a8b542e8815cd3))
+
 ## [1.22.0](https://github.com/deephaven/web-client-ui/compare/v1.21.1...v1.22.0) (2026-06-10)
 
 ### Features
