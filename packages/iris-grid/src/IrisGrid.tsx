@@ -3023,7 +3023,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   updateQuickFilters(quickFilters: ReadonlyQuickFilterMap | null): void {
     this.startLoading('Filtering...', { resetRanges: true });
     this.setState({
-      quickFilters: quickFilters != null ? new Map(quickFilters) : new Map(),
+      quickFilters: quickFilters ?? EMPTY_MAP,
     });
     this.grid?.forceUpdate();
   }
