@@ -700,6 +700,9 @@ export default class RowOrColumn extends AbstractContentItem {
    * with JS (via `_positionIntersectionSplitter`) during refresh so it stays
    * aligned as the layout changes. Handles are keyed by their splitter indices
    * so existing ones are reused rather than recreated.
+   *
+   * @returns The set of crossing keys that currently exist, so callers can
+   *          sweep handles whose crossing no longer exists.
    */
   private _createIntersectionSplitters(): Set<string> {
     this.childElementContainer.css('position', 'relative');
@@ -858,8 +861,38 @@ export default class RowOrColumn extends AbstractContentItem {
   }
 
   /**
+   * Whether any drag that should suppress intersection hover affordances is in
+   * progress. Covers golden-layout drags (a 1D splitter drag or a panel drag,
+   * both signalled by `lm_dragging` on the body) and grid column/row drags
+   * (signalled by `grid-block-events` on the document element). During these,
+   * the intersection handle must not light up its cross or swap the cursor as
+   * the pointer passes over a crossing.
+   *
+   * @returns True when a foreign drag is active.
+   */
+  private static _isAnyDragInProgress(): boolean {
+    return (
+      $(document.body).hasClass('lm_dragging') ||
+      $(document.body).hasClass('lm_intersection_dragging') ||
+      document.documentElement.classList.contains('grid-block-events')
+    );
+  }
+
+  /**
    * Create a single intersection splitter anchored in this row/column overlay
    * at the given coordinates.
+   *
+   * @param key Unique key identifying this crossing (parent splitter index plus
+   *            the stem's tree path), used to reuse an existing handle instead
+   *            of creating a duplicate.
+   * @param parentSplitterIndex Index into this row/column's `_splitter` array of
+   *                            the "bar" splitter that owns the crossing.
+   * @param stemOwner The RowOrColumn (possibly a descendant) that owns the
+   *                  perpendicular "stem" splitter crossing the bar.
+   * @param stemSplitterIndex Index into `stemOwner._splitter` of the stem
+   *                          splitter.
+   * @param junctionAtNearEdge True when the stem meets the bar at the stem
+   *                           owner's near edge, false at its far edge.
    */
   private _ensureIntersectionSplitter(
     key: string,
@@ -907,12 +940,12 @@ export default class RowOrColumn extends AbstractContentItem {
     // the active line affordance used for 1D splitter drags.
     let hoverPartner: IntersectionRecord | null = null;
     intersectionSplitter.element.on('mouseenter', () => {
-      // Ignore hover state changes during an active 2D drag. Crossing over
-      // other handles while dragging should not transfer or pin highlights.
-      if (
-        this._isIntersectionDragging ||
-        $(document.body).hasClass('lm_intersection_dragging')
-      ) {
+      // Ignore hover state changes while any drag is in progress. This covers
+      // our own active 2D drag (crossing other handles must not transfer or pin
+      // highlights) as well as foreign drags - a 1D golden-layout splitter drag
+      // or a grid column/row drag - which would otherwise flash the cross
+      // highlight as the pointer passes over a crossing mid-drag.
+      if (this._isIntersectionDragging || RowOrColumn._isAnyDragInProgress()) {
         return;
       }
       this._setIntersectionHighlight(record, true);
@@ -947,6 +980,11 @@ export default class RowOrColumn extends AbstractContentItem {
     this._intersectionSplitter.push(record);
   }
 
+  /**
+   * Move an intersection handle to the current centre of its crossing.
+   *
+   * @param record The intersection handle record to reposition.
+   */
   private _positionIntersectionSplitter(record: IntersectionRecord) {
     const position = this._getIntersectionPosition(record);
 
@@ -970,6 +1008,10 @@ export default class RowOrColumn extends AbstractContentItem {
    * on intermediate items, so adding those values together mis-places the
    * handle at some crossings. Rect-based deltas are independent of the offset
    * parent chain and always land on the visual crossing.
+   *
+   * @param record The intersection handle record to locate.
+   * @returns The `{ left, top }` crossing centre relative to this row/column
+   *          container, or null when the geometry is unavailable.
    */
   private _getIntersectionPosition(
     record: IntersectionRecord
@@ -1013,6 +1055,10 @@ export default class RowOrColumn extends AbstractContentItem {
    * affordance is visually identical to the existing 1D drag affordance, and
    * adds `.lm_intersection_line` to lift the lines above pane content so an
    * offset junction renders cleanly instead of being clipped by a neighbour.
+   *
+   * @param record The intersection handle whose two perpendicular lines to
+   *               toggle.
+   * @param highlighted True to add the highlight, false to remove it.
    */
   private _setIntersectionHighlight(
     record: IntersectionRecord,
@@ -1030,6 +1076,9 @@ export default class RowOrColumn extends AbstractContentItem {
   /**
    * Find a nearby sibling intersection on the same parent splitter so a
    * near-aligned 4-way corner can be dragged as one.
+   *
+   * @param record The intersection handle to find a partner for.
+   * @returns The closest sibling handle within tolerance, or null if none.
    */
   private _findNearFourWayPartner(
     record: IntersectionRecord
@@ -1087,6 +1136,11 @@ export default class RowOrColumn extends AbstractContentItem {
 
   /**
    * Clamp and apply one splitter visual drag offset on the owner's active axis.
+   *
+   * @param owner The RowOrColumn that owns the splitter and its min/max bounds.
+   * @param splitter The splitter whose visual position to move.
+   * @param offset The desired pixel offset along the owner's active axis;
+   *               clamped to the owner's min/max drag range before applying.
    */
   private _setSplitterDragOffset(
     owner: RowOrColumn,
@@ -1106,6 +1160,11 @@ export default class RowOrColumn extends AbstractContentItem {
 
   /**
    * Get the splitter line center on the owner's active drag axis.
+   *
+   * @param owner The RowOrColumn that determines the active axis.
+   * @param splitter The splitter to measure.
+   * @returns The line centre in client coordinates on the active axis, or null
+   *          when the element is unavailable.
    */
   private _getSplitterAxisCenter(owner: RowOrColumn, splitter: Splitter) {
     const element = splitter.element[0];
@@ -1123,6 +1182,8 @@ export default class RowOrColumn extends AbstractContentItem {
    * Invoked when an intersection splitter's DragListener fires dragStart.
    * Calculates movement bounds for both axes (via the existing 1D logic) so the
    * drag stays within valid ranges, and highlights both perpendicular lines.
+   *
+   * @param record The intersection handle that started dragging.
    */
   private _onIntersectionSplitterDragStart(record: IntersectionRecord) {
     const parentSplitter = this._splitter[record.parentSplitterIndex];
@@ -1209,6 +1270,10 @@ export default class RowOrColumn extends AbstractContentItem {
    * mutating their box size reflows sibling panes and headers (tabs jump,
    * content shifts, gaps appear). A transform is painted without affecting
    * layout, so the affordance stretches cleanly even for deeply nested grids.
+   *
+   * @param record The intersection handle being dragged.
+   * @param offsetX Horizontal pixels moved from the drag origin. Can be negative.
+   * @param offsetY Vertical pixels moved from the drag origin. Can be negative.
    */
   private _onIntersectionSplitterDrag(
     record: IntersectionRecord,
@@ -1320,6 +1385,8 @@ export default class RowOrColumn extends AbstractContentItem {
    * Invoked when an intersection splitter's DragListener fires dragStop.
    * Applies both axis updates atomically (via the existing 1D logic), clears the
    * highlight unless the pointer is still over the handle, then relayouts once.
+   *
+   * @param record The intersection handle that finished dragging.
    */
   private _onIntersectionSplitterDragStop(record: IntersectionRecord) {
     const parentSplitter = this._splitter[record.parentSplitterIndex];

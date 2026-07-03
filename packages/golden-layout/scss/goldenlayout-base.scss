@@ -89,14 +89,12 @@ $height6: 15px; // Appears 1 time
   }
 }
 
-// Intersection splitter: an invisible grab area at grid crossing points that
-// enables simultaneous (2D) resizing of rows and columns. The visible drag
-// affordance is the two perpendicular splitter lines themselves, which are
-// highlighted (via .lm_dragging) on hover and while dragging.
+// Intersection splitter: invisible grab area at crossing points for 2D resizing.
+// pointer-events intentionally inherits from ancestor so foreign drags (1D splitter,
+// grid column) suppress the handle without needing extra rules here.
 .lm_intersection_splitter {
   position: absolute;
   z-index: 22;
-  pointer-events: auto;
   cursor: move;
 
   .lm_drag_handle {
@@ -105,6 +103,12 @@ $height6: 15px; // Appears 1 time
     height: 100%;
     cursor: move;
   }
+}
+
+// Disable the intersection handle while a golden-layout drag is active.
+// The dark theme sets this on `.lm_dragging` too; this rule covers other themes.
+.lm_dragging .lm_intersection_splitter {
+  pointer-events: none;
 }
 
 // Pane Header (container of Tabs for each pane)

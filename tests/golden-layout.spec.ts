@@ -175,6 +175,67 @@ test.describe('tests golden-layout operations', () => {
     // check new layout
     await expect(page.locator('.lm_root')).toHaveScreenshot();
   });
+
+  test('intersection handle resizes both axes at once', async () => {
+    // The imported nested row/column layout produces at least one crossing
+    // handle where a row splitter meets a column splitter.
+    const handle = page.locator('.lm_intersection_splitter').first();
+    await expect(handle).toBeVisible();
+
+    const before = await handle.boundingBox();
+    expect(before).not.toBeNull();
+    if (before == null) return;
+
+    const startX = before.x + before.width / 2;
+    const startY = before.y + before.height / 2;
+
+    // Drag the crossing diagonally so both the row and column boundaries move.
+    await handle.hover();
+    await page.mouse.down();
+    await page.mouse.move(startX + 80, startY + 80, { steps: 10 });
+    await page.mouse.up();
+
+    // After the drop the crossing - and therefore its handle - has moved on
+    // both axes, proving a simultaneous 2D resize rather than a 1D one.
+    await expect
+      .poll(async () => {
+        const after = await page
+          .locator('.lm_intersection_splitter')
+          .first()
+          .boundingBox();
+        if (after == null) return false;
+        const movedX = Math.abs(after.x - before.x) > 10;
+        const movedY = Math.abs(after.y - before.y) > 10;
+        return movedX && movedY;
+      })
+      .toBe(true);
+  });
+
+  test('dragging a 1D splitter over an intersection does not highlight the cross', async () => {
+    const handle = page.locator('.lm_intersection_splitter').first();
+    await expect(handle).toBeVisible();
+    const handleBox = await handle.boundingBox();
+    expect(handleBox).not.toBeNull();
+    if (handleBox == null) return;
+
+    // Grab a 1D splitter and drag it across the intersection point.
+    const splitter = page.locator('.lm_splitter').first();
+    await splitter.hover();
+    await page.mouse.down();
+    await page.mouse.move(
+      handleBox.x + handleBox.width / 2,
+      handleBox.y + handleBox.height / 2,
+      { steps: 10 }
+    );
+
+    // While a 1D drag passes over a crossing, the intersection handle stays
+    // inert - it must not add its cross highlight (`.lm_intersection_line`).
+    await expect(page.locator('.lm_splitter.lm_intersection_line')).toHaveCount(
+      0
+    );
+
+    await page.mouse.up();
+  });
 });
 
 test('reopen last closed panel', async ({ page }) => {

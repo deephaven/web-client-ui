@@ -894,4 +894,112 @@ describe('intersection splitter drag', () => {
       restoreMocks();
     }
   });
+
+  it('does not highlight the cross while a 1D golden-layout drag is active', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      layout = await createLayout({
+        content: [
+          {
+            type: 'column',
+            content: [
+              { type: 'component', componentName: 'testComponent' },
+              {
+                type: 'row',
+                content: [
+                  {
+                    type: 'column',
+                    content: [
+                      { type: 'component', componentName: 'testComponent' },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                  { type: 'component', componentName: 'testComponent' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const bottomRow = verifyPath('column.1.row', layout) as any;
+      expect(bottomRow).toBeDefined();
+
+      const intersectionHandle = bottomRow.element
+        .find('.lm_intersection_splitter')
+        .first();
+      expect(intersectionHandle.length).toBe(1);
+
+      // Simulate an in-progress golden-layout drag (a 1D splitter drag or a
+      // panel drag), which sets `lm_dragging` on the body.
+      $(document.body).addClass('lm_dragging');
+      try {
+        intersectionHandle.trigger('mouseenter');
+
+        // The crossing must stay inert - no highlight lines added mid-drag.
+        expect(
+          bottomRow.element.find('.lm_splitter.lm_intersection_line').length
+        ).toBe(0);
+      } finally {
+        $(document.body).removeClass('lm_dragging');
+      }
+    } finally {
+      restoreMocks();
+    }
+  });
+
+  it('does not highlight the cross while a grid column drag is active', async () => {
+    const restoreMocks = setupDimensionMocks();
+
+    try {
+      layout = await createLayout({
+        content: [
+          {
+            type: 'column',
+            content: [
+              { type: 'component', componentName: 'testComponent' },
+              {
+                type: 'row',
+                content: [
+                  {
+                    type: 'column',
+                    content: [
+                      { type: 'component', componentName: 'testComponent' },
+                      { type: 'component', componentName: 'testComponent' },
+                    ],
+                  },
+                  { type: 'component', componentName: 'testComponent' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const bottomRow = verifyPath('column.1.row', layout) as any;
+      expect(bottomRow).toBeDefined();
+
+      const intersectionHandle = bottomRow.element
+        .find('.lm_intersection_splitter')
+        .first();
+      expect(intersectionHandle.length).toBe(1);
+
+      // Simulate an in-progress grid column/row drag, which sets
+      // `grid-block-events` on the document element.
+      document.documentElement.classList.add('grid-block-events');
+      try {
+        intersectionHandle.trigger('mouseenter');
+
+        // The crossing must stay inert - no highlight lines added mid-drag.
+        expect(
+          bottomRow.element.find('.lm_splitter.lm_intersection_line').length
+        ).toBe(0);
+      } finally {
+        document.documentElement.classList.remove('grid-block-events');
+      }
+    } finally {
+      restoreMocks();
+    }
+  });
 });
