@@ -717,20 +717,15 @@ export default class RowOrColumn extends AbstractContentItem {
       const beforeItem = this.contentItems[parentSplitterIndex];
       const afterItem = this.contentItems[parentSplitterIndex + 1];
 
-      const stems: {
-        stemOwner: RowOrColumn;
-        stemSplitterIndex: number;
-        junctionAtNearEdge: boolean;
-        path: string;
-      }[] = [];
-
       // A splitter "bar" is crossed by perpendicular splitter lines reaching its
       // shared edge from either side. Those lines can be nested arbitrarily deep
       // (e.g. a row inside a column inside the adjacent row), so walk each
       // adjacent subtree down to the touching edge. The before item meets the
       // bar at its far edge, the after item at its near edge.
-      this._collectEdgeStemSplitters(beforeItem, false, 'b', stems);
-      this._collectEdgeStemSplitters(afterItem, true, 'a', stems);
+      const stems = [
+        ...this._collectEdgeStemSplitters(beforeItem, false, 'b'),
+        ...this._collectEdgeStemSplitters(afterItem, true, 'a'),
+      ];
 
       for (let i = 0; i < stems.length; i++) {
         const stem = stems[i];
@@ -755,30 +750,39 @@ export default class RowOrColumn extends AbstractContentItem {
    * crossing handle can be created for it. Lines can be nested arbitrarily deep,
    * so descend until the edge is no longer shared.
    *
+   * @param item The subtree root to search.
    * @param nearEdge true when the bar sits at the start of `item` along the bar
-   * main axis (junction at the near end), false when at the end.
+   *                 main axis (junction at the near end), false when at the end.
+   * @param path Dot/colon-delimited string uniquely identifying this stem within
+   *             the layout tree, used as part of the intersection handle key.
+   * @returns Array of stem descriptors for each crossing found in the subtree.
    */
   private _collectEdgeStemSplitters(
     item: AbstractContentItem | undefined,
     nearEdge: boolean,
-    path: string,
-    out: {
-      stemOwner: RowOrColumn;
-      stemSplitterIndex: number;
-      junctionAtNearEdge: boolean;
-      path: string;
-    }[]
-  ) {
+    path: string
+  ): {
+    stemOwner: RowOrColumn;
+    stemSplitterIndex: number;
+    junctionAtNearEdge: boolean;
+    path: string;
+  }[] {
     if (!(item instanceof RowOrColumn)) {
-      return;
+      return [];
     }
 
     if (item._isColumn !== this._isColumn) {
       // Perpendicular to the bar: every splitter here crosses it, and every
       // child spans the full cross extent so all share the edge - recurse into
       // each to pick up deeper crossings.
+      const results: {
+        stemOwner: RowOrColumn;
+        stemSplitterIndex: number;
+        junctionAtNearEdge: boolean;
+        path: string;
+      }[] = [];
       for (let i = 0; i < item._splitter.length; i++) {
-        out.push({
+        results.push({
           stemOwner: item,
           stemSplitterIndex: i,
           junctionAtNearEdge: nearEdge,
@@ -786,23 +790,24 @@ export default class RowOrColumn extends AbstractContentItem {
         });
       }
       for (let i = 0; i < item.contentItems.length; i++) {
-        this._collectEdgeStemSplitters(
-          item.contentItems[i],
-          nearEdge,
-          path + '.' + i,
-          out
+        results.push(
+          ...this._collectEdgeStemSplitters(
+            item.contentItems[i],
+            nearEdge,
+            path + '.' + i
+          )
         );
       }
-    } else {
-      // Parallel to the bar: only the child at the shared edge can reach it.
-      const edgeIndex = nearEdge ? 0 : item.contentItems.length - 1;
-      this._collectEdgeStemSplitters(
-        item.contentItems[edgeIndex],
-        nearEdge,
-        path + '.' + edgeIndex,
-        out
-      );
+      return results;
     }
+
+    // Parallel to the bar: only the child at the shared edge can reach it.
+    const edgeIndex = nearEdge ? 0 : item.contentItems.length - 1;
+    return this._collectEdgeStemSplitters(
+      item.contentItems[edgeIndex],
+      nearEdge,
+      path + '.' + edgeIndex
+    );
   }
 
   /**
