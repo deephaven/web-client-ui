@@ -866,20 +866,18 @@ export default class RowOrColumn extends AbstractContentItem {
   }
 
   /**
-   * Whether any drag that should suppress intersection hover affordances is in
-   * progress. Covers golden-layout drags (a 1D splitter drag or a panel drag,
-   * both signalled by `lm_dragging` on the body) and grid column/row drags
-   * (signalled by `grid-block-events` on the document element). During these,
-   * the intersection handle must not light up its cross or swap the cursor as
-   * the pointer passes over a crossing.
+   * Whether any golden-layout drag that should suppress intersection hover
+   * affordances is in progress. Covers a 1D splitter drag or a panel drag
+   * (both signalled by `lm_dragging` on the body) and the 2D intersection drag
+   * itself (`lm_intersection_dragging`). During these the handle must not light
+   * up its cross as the pointer passes over a crossing.
    *
-   * @returns True when a foreign drag is active.
+   * @returns True when a golden-layout drag is active.
    */
   private static _isAnyDragInProgress(): boolean {
     return (
       $(document.body).hasClass('lm_dragging') ||
-      $(document.body).hasClass('lm_intersection_dragging') ||
-      document.documentElement.classList.contains('grid-block-events')
+      $(document.body).hasClass('lm_intersection_dragging')
     );
   }
 
@@ -947,9 +945,9 @@ export default class RowOrColumn extends AbstractContentItem {
     intersectionSplitter.element.on('mouseenter', () => {
       // Ignore hover state changes while any drag is in progress. This covers
       // our own active 2D drag (crossing other handles must not transfer or pin
-      // highlights) as well as foreign drags - a 1D golden-layout splitter drag
-      // or a grid column/row drag - which would otherwise flash the cross
-      // highlight as the pointer passes over a crossing mid-drag.
+      // highlights) as well as 1D golden-layout splitter or panel drags, which
+      // would otherwise flash the cross highlight as the pointer passes over a
+      // crossing mid-drag.
       if (this._isIntersectionDragging || RowOrColumn._isAnyDragInProgress()) {
         return;
       }
