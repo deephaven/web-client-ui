@@ -36,16 +36,27 @@ class RestrictedEditKeyHandler extends KeyHandler {
     if (
       cursorColumn == null ||
       cursorRow == null ||
-      !isEditableGridModel(model) ||
-      !model.isEditableRange(GridRange.makeCell(cursorColumn, cursorRow))
+      !isEditableGridModel(model)
     ) {
+      return false;
+    }
+
+    let modelColumn: number;
+    let modelRow: number;
+    try {
+      modelColumn = grid.getModelColumn(cursorColumn);
+      modelRow = grid.getModelRow(cursorRow);
+    } catch {
+      return false;
+    }
+
+    if (!model.isEditableRange(GridRange.makeCell(modelColumn, modelRow))) {
       return false;
     }
 
     // Read the registry from context at call time (not construction time).
     const registry =
       this.irisGrid.context?.cellInputRendererRegistry ?? DEFAULT_REGISTRY;
-    const modelColumn = grid.getModelColumn(cursorColumn);
     const restrictions = model.getColumnRestriction(modelColumn);
     if (restrictions.length === 1) {
       const renderer = registry.get(restrictions[0].type);
