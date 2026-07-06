@@ -109,7 +109,6 @@ import {
   ClearFilterKeyHandler,
   CopyKeyHandler,
   ReverseKeyHandler,
-  RestrictedEditKeyHandler,
 } from './key-handlers';
 import {
   IrisGridCellOverflowMouseHandler,
@@ -823,7 +822,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new CopyCellKeyHandler(this),
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
-      new RestrictedEditKeyHandler(this),
     ];
     const mouseHandlers: MouseHandlersProp = [
       new IrisGridCellOverflowMouseHandler(this),
