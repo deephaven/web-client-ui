@@ -136,6 +136,8 @@ interface NotebookPanelState {
   itemName?: string;
 
   formatOnSave: boolean;
+
+  isNarrowToolbar: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -148,6 +150,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   static UNSAVED_INDICATOR_CLASS_NAME = 'editor-unsaved-indicator';
 
   static UNSAVED_STATUS_CLASS_NAME = 'is-unsaved';
+
+  // Minimum toolbar width (px) to show Run, Run Selected, and Save buttons inline.
+  // 4 buttons × ~32px + 2×8px padding + 3×4px gaps ≈ 156px, rounded up.
+  static NARROW_TOOLBAR_THRESHOLD = 160;
 
   static handleError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
@@ -252,6 +258,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     this.tabInitOnce = false;
 
+    this.toolbarRef = React.createRef();
+
+    this.toolbarResizeObserver = null;
+
     const { isDashboardActive, session, sessionLanguage, panelState } = props;
 
     let settings: editor.IStandaloneEditorConstructionOptions = {
@@ -309,6 +319,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       scriptCode: '',
 
       formatOnSave: false,
+
+      isNarrowToolbar: true,
     };
 
     log.debug('constructor', props, this.state);
@@ -325,6 +337,19 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       NotebookEvent.PROMOTE_FROM_PREVIEW,
       this.handlePreviewPromotion
     );
+    const toolbar = this.toolbarRef.current;
+    if (toolbar != null) {
+      this.toolbarResizeObserver = new ResizeObserver(entries => {
+        const entry = entries[0];
+        if (entry != null) {
+          this.setState({
+            isNarrowToolbar:
+              entry.contentRect.width < NotebookPanel.NARROW_TOOLBAR_THRESHOLD,
+          });
+        }
+      });
+      this.toolbarResizeObserver.observe(toolbar);
+    }
   }
 
   componentDidUpdate(
@@ -352,6 +377,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   componentWillUnmount(): void {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
+    this.toolbarResizeObserver?.disconnect();
 
     const { glEventHub, glContainer } = this.props;
 
@@ -378,6 +404,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   tabInitOnce: boolean;
 
   editor?: editor.IStandaloneCodeEditor;
+
+  toolbarRef: React.RefObject<HTMLDivElement>;
+
+  toolbarResizeObserver: ResizeObserver | null;
 
   // Called by TabEvent. Happens once when created, but also each time its moved.
   // when moved, need to re-init the unsaved indicators on title elements
@@ -579,9 +609,40 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     (
       isMinimapEnabled: boolean,
       isWordWrapEnabled: boolean,
-      formatOnSave: boolean
+      formatOnSave: boolean,
+      isNarrowToolbar: boolean,
+      runButtonsDisabled: boolean,
+      toolbarDisabled: boolean
     ) => {
       const actions: DropdownAction[] = [
+        ...(isNarrowToolbar
+          ? [
+              {
+                title: 'Run',
+                icon: vsPlay,
+                action: this.handleRunAll,
+                disabled: runButtonsDisabled,
+                group: ContextActions.groups.high,
+                order: 1,
+              },
+              {
+                title: 'Run Selected',
+                icon: dhRunSelection,
+                action: this.handleRunSelected,
+                disabled: runButtonsDisabled,
+                group: ContextActions.groups.high,
+                order: 2,
+              },
+              {
+                title: 'Save',
+                icon: vsSave,
+                action: this.handleSave,
+                disabled: toolbarDisabled,
+                group: ContextActions.groups.high,
+                order: 3,
+              },
+            ]
+          : []),
         {
           title: 'Find',
           icon: dhFileSearch,
@@ -1228,12 +1289,29 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   getDropdownOverflowActions(): DropdownAction[] {
     const { notebookSettings } = this.props;
     const { isMinimapEnabled, formatOnSave } = notebookSettings;
-    const { settings: initialSettings } = this.state;
+    const {
+      settings: initialSettings,
+      isNarrowToolbar,
+      session,
+      sessionLanguage,
+      isLoaded,
+    } = this.state;
+    const settings = this.getSettings(
+      initialSettings,
+      isMinimapEnabled ?? false
+    );
+    const isSessionConnected = session != null;
+    const isLanguageMatching = sessionLanguage === settings.language;
+    const runButtonsDisabled =
+      !isLoaded || !isSessionConnected || !isLanguageMatching;
+    const toolbarDisabled = !isLoaded;
     return this.getOverflowActions(
       isMinimapEnabled ?? false,
-      this.getSettings(initialSettings, isMinimapEnabled ?? false).wordWrap ===
-        'on',
-      formatOnSave ?? false
+      settings.wordWrap === 'on',
+      formatOnSave ?? false,
+      isNarrowToolbar,
+      runButtonsDisabled,
+      toolbarDisabled
     );
   }
 
@@ -1276,6 +1354,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const runButtonsDisabled =
       !isLoaded || !isSessionConnected || !isLanguageMatching;
     const toolbarDisabled = !isLoaded;
+    const { isNarrowToolbar } = this.state;
     const contextActions = [
       {
         action: this.handleSave,
@@ -1355,52 +1434,60 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         >
           {!isMarkdown && (
             <>
-              <div className="notebook-toolbar">
-                <span>
-                  <Button
-                    kind="ghost"
-                    className="btn-play"
-                    onClick={this.handleRunAll}
-                    disabled={runButtonsDisabled}
-                    icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
-                    tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
-                    aria-label="Run"
-                  />
-                  {disabledRunButtonTooltip != null && (
-                    <Tooltip>{disabledRunButtonTooltip}</Tooltip>
-                  )}
-                </span>
-                <span>
-                  <Button
-                    kind="ghost"
-                    className="btn-play"
-                    onClick={this.handleRunSelected}
-                    disabled={runButtonsDisabled}
-                    icon={
-                      <FontAwesomeIcon
-                        icon={dhRunSelection}
-                        transform="grow-4"
+              <div className="notebook-toolbar" ref={this.toolbarRef}>
+                {!isNarrowToolbar && (
+                  <>
+                    <span>
+                      <Button
+                        kind="ghost"
+                        className="btn-play"
+                        onClick={this.handleRunAll}
+                        disabled={runButtonsDisabled}
+                        icon={
+                          <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
+                        }
+                        tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                        aria-label="Run"
                       />
-                    }
-                    tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
-                    aria-label="Run Selected"
-                  />
-                  {disabledRunSelectedButtonTooltip != null && (
-                    <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
-                  )}
-                </span>
+                      {disabledRunButtonTooltip != null && (
+                        <Tooltip>{disabledRunButtonTooltip}</Tooltip>
+                      )}
+                    </span>
+                    <span>
+                      <Button
+                        kind="ghost"
+                        className="btn-play"
+                        onClick={this.handleRunSelected}
+                        disabled={runButtonsDisabled}
+                        icon={
+                          <FontAwesomeIcon
+                            icon={dhRunSelection}
+                            transform="grow-4"
+                          />
+                        }
+                        tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                        aria-label="Run Selected"
+                      />
+                      {disabledRunSelectedButtonTooltip != null && (
+                        <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
+                      )}
+                    </span>
+                    <Button
+                      kind="ghost"
+                      className="mr-auto"
+                      disabled={toolbarDisabled}
+                      onClick={this.handleSave}
+                      icon={vsSave}
+                      tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
+                      aria-label="Save"
+                    />
+                  </>
+                )}
                 <Button
                   kind="ghost"
-                  className="mr-auto"
-                  disabled={toolbarDisabled}
-                  onClick={this.handleSave}
-                  icon={vsSave}
-                  tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
-                  aria-label="Save"
-                />
-                <Button
-                  kind="ghost"
-                  className="btn-overflow"
+                  className={classNames('btn-overflow', {
+                    'ml-auto': isNarrowToolbar,
+                  })}
                   disabled={toolbarDisabled}
                   icon={vsKebabVertical}
                   tooltip="More Actions..."
