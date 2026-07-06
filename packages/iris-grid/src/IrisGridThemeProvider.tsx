@@ -1,5 +1,9 @@
 import { useTheme } from '@deephaven/components';
-import { createContext, type ReactNode, useMemo } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import { type CellInputRendererRegistry } from '@deephaven/grid';
+import CellInputRendererContext, {
+  DEFAULT_REGISTRY,
+} from './CellInputRendererContext';
 import {
   createDefaultIrisGridTheme,
   type IrisGridThemeType,
@@ -15,7 +19,12 @@ export type IrisGridThemeContextValue = IrisGridThemeType;
 export const IrisGridThemeContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
-}>({ theme: null, density: 'regular' });
+  cellInputRendererRegistry: CellInputRendererRegistry;
+}>({
+  theme: null,
+  density: 'regular',
+  cellInputRendererRegistry: DEFAULT_REGISTRY,
+});
 IrisGridThemeContext.displayName = 'IrisGridThemeContext';
 
 export interface IrisGridThemeProviderProps {
@@ -37,9 +46,15 @@ export function IrisGridThemeProvider({
     [activeThemes]
   );
 
+  const cellInputRendererRegistry = useContext(CellInputRendererContext);
+
   const contextValue = useMemo(
-    () => ({ theme: gridTheme, density }),
-    [gridTheme, density]
+    () => ({
+      theme: gridTheme,
+      density,
+      cellInputRendererRegistry,
+    }),
+    [gridTheme, density, cellInputRendererRegistry]
   );
 
   return (

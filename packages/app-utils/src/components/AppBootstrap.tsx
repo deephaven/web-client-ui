@@ -4,7 +4,6 @@ import { store } from '@deephaven/redux';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
-import { IrisGridContextProvider } from '@deephaven/iris-grid';
 import { type Plugin } from '@deephaven/plugin';
 import {
   ContextActions,
@@ -79,24 +78,22 @@ export function AppBootstrap({
           pluginsUrl={pluginsUrl}
         >
           <ThemeBootstrap>
-            <IrisGridContextProvider>
-              <ClientBootstrap
-                serverUrl={serverUrl}
-                options={clientOptions}
-                key={logoutCount}
-              >
-                <AuthBootstrap>
-                  <ServerConfigBootstrap>
-                    <UserBootstrap>
-                      <ConnectionBootstrap>
-                        <FontsLoaded>{children}</FontsLoaded>
-                      </ConnectionBootstrap>
-                    </UserBootstrap>
-                  </ServerConfigBootstrap>
-                </AuthBootstrap>
-                <ContextActions actions={contextActions} />
-              </ClientBootstrap>
-            </IrisGridContextProvider>
+            <ClientBootstrap
+              serverUrl={serverUrl}
+              options={clientOptions}
+              key={logoutCount}
+            >
+              <AuthBootstrap>
+                <ServerConfigBootstrap>
+                  <UserBootstrap>
+                    <ConnectionBootstrap>
+                      <FontsLoaded>{children}</FontsLoaded>
+                    </ConnectionBootstrap>
+                  </UserBootstrap>
+                </ServerConfigBootstrap>
+              </AuthBootstrap>
+              <ContextActions actions={contextActions} />
+            </ClientBootstrap>
           </ThemeBootstrap>
         </PluginsBootstrap>
       </FontBootstrap>
