@@ -25,7 +25,7 @@ const renderStringListRestriction: CellInputRendererFn = ({
   onDone,
   style,
 }: CellInputFieldProps & {
-  columnRestrictions: ColumnRestriction[];
+  columnRestrictions: readonly ColumnRestriction[];
 }): ReactNode => {
   const { allowedValues } = columnRestrictions[0] as StringListRestriction;
   return (
