@@ -55,8 +55,7 @@ import {
   SelectionKeyHandler,
   TreeKeyHandler,
 } from './key-handlers';
-import CellInputField, { type CellInputFieldProps } from './CellInputField';
-import type { ColumnRestriction } from './GridModel';
+import CellInputField from './CellInputField';
 import PasteError from './errors/PasteError';
 import {
   type Coordinate,
@@ -80,6 +79,7 @@ import {
   type GridRenderState,
   type EditingCellTextSelectionRange,
   type CellInputRendererRegistry,
+  type CellInputProps,
 } from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
@@ -2345,14 +2345,12 @@ class Grid extends PureComponent<GridProps, GridState> {
         : false;
 
     const { cellInputRendererRegistry } = this.props;
-    const columnRestrictions =
+    const restrictions =
       modelColumn != null
         ? model.getColumnRestriction(modelColumn)
         : EMPTY_ARRAY;
 
-    const cellInputProps: CellInputFieldProps & {
-      columnRestrictions: readonly ColumnRestriction[];
-    } = {
+    const cellInputProps: CellInputProps = {
       selectionRange,
       className: classNames({ error: !isValid }),
       onCancel: this.handleEditCellCancel,
@@ -2361,12 +2359,12 @@ class Grid extends PureComponent<GridProps, GridState> {
       isQuickEdit,
       style: inputStyle,
       value,
-      columnRestrictions,
+      restrictions,
     };
 
     const renderer =
-      columnRestrictions.length === 1
-        ? cellInputRendererRegistry?.get(columnRestrictions[0].type)
+      restrictions.length === 1
+        ? cellInputRendererRegistry?.get(restrictions[0].type)
         : undefined;
 
     return (

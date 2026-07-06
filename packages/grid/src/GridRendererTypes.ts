@@ -13,6 +13,14 @@ import type { ColumnRestriction } from './GridModel';
 export const DEFAULT_FONT_WIDTH = 10;
 
 /**
+ * Props passed to a cell input renderer, combining the base CellInputField
+ * props with the restrictions that apply to the cell being edited.
+ */
+export type CellInputProps = CellInputFieldProps & {
+  restrictions: readonly ColumnRestriction[];
+};
+
+/**
  * A renderer for a single cell input field based on column restriction type.
  *
  * Set `preservesExistingValue = true` on the function to signal that
@@ -20,9 +28,7 @@ export const DEFAULT_FONT_WIDTH = 10;
  * value rather than replacing it with the typed character.
  */
 export type CellInputRendererFn = ((
-  props: CellInputFieldProps & {
-    columnRestrictions: readonly ColumnRestriction[];
-  }
+  props: CellInputProps
 ) => React.ReactNode) & {
   /**
    * When true, keystroke-initiated edits preserve the existing cell value
@@ -34,7 +40,7 @@ export type CellInputRendererFn = ((
 
 /**
  * A map from column restriction type string to a cell input renderer function.
- * Grid looks up columnRestrictions[0].type in this registry and falls back to
+ * Grid looks up restrictions[0].type in this registry and falls back to
  * CellInputField when there is no match.
  */
 export type CellInputRendererRegistry = ReadonlyMap<

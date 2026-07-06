@@ -1444,7 +1444,7 @@ describe('grid-block-events cleanup', () => {
 describe('cellInputRendererRegistry', () => {
   const RESTRICTION_TYPE = 'test-restriction';
 
-  it('calls the custom renderer and passes columnRestrictions when the model returns a matching restriction type', () => {
+  it('calls the custom renderer and passes restrictions when the model returns a matching restriction type', () => {
     const model = new MockGridModel({ isEditable: true });
     jest
       .spyOn(model, 'getColumnRestriction')
@@ -1480,7 +1480,7 @@ describe('cellInputRendererRegistry', () => {
     expect(customRenderer).toHaveBeenCalled();
     expect(customRenderer).toHaveBeenCalledWith(
       expect.objectContaining({
-        columnRestrictions: [{ type: RESTRICTION_TYPE }],
+        restrictions: [{ type: RESTRICTION_TYPE }],
       })
     );
   });

@@ -20,7 +20,6 @@ export type CellInputFieldProps = {
       fillRange?: boolean;
     }
   ) => void;
-  onContextMenu?: React.MouseEventHandler<HTMLTextAreaElement>;
   style?: React.CSSProperties;
 };
 
@@ -48,7 +47,6 @@ export function CellInputField({
   onChange = EMPTY_FUNCTION,
   onCancel = EMPTY_FUNCTION,
   onDone = EMPTY_FUNCTION,
-  onContextMenu = EMPTY_FUNCTION,
   style,
 }: CellInputFieldProps): JSX.Element {
   const inputField = useRef<HTMLTextAreaElement>(null);
@@ -179,13 +177,6 @@ export function CellInputField({
     ]
   );
 
-  const handleContextMenu = useCallback(
-    (event: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
-      onContextMenu(event);
-    },
-    [onContextMenu]
-  );
-
   return (
     <textarea
       ref={inputField}
@@ -194,7 +185,6 @@ export function CellInputField({
       onBlur={handleBlur}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
-      onContextMenu={handleContextMenu}
       onClick={handleClick}
       autoComplete="off"
       autoCorrect="off"

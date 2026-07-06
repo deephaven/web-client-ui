@@ -1,10 +1,9 @@
 /* eslint-disable react-refresh/only-export-components -- context utility file intentionally exports non-component values */
 import React, { createContext, type ReactNode } from 'react';
 import {
-  type CellInputFieldProps,
   type CellInputRendererFn,
   type CellInputRendererRegistry,
-  type ColumnRestriction,
+  type CellInputProps,
 } from '@deephaven/grid';
 import CellDropdownField from './CellDropdownField';
 import {
@@ -15,7 +14,7 @@ import {
 export type { CellInputRendererFn, CellInputRendererRegistry };
 
 const renderStringListRestriction: CellInputRendererFn = ({
-  columnRestrictions,
+  restrictions,
   className,
   disabled,
   isQuickEdit,
@@ -24,10 +23,8 @@ const renderStringListRestriction: CellInputRendererFn = ({
   onCancel,
   onDone,
   style,
-}: CellInputFieldProps & {
-  columnRestrictions: readonly ColumnRestriction[];
-}): ReactNode => {
-  const { allowedValues } = columnRestrictions[0] as StringListRestriction;
+}: CellInputProps): ReactNode => {
+  const { allowedValues } = restrictions[0] as StringListRestriction;
   return (
     <CellDropdownField
       className={className}
