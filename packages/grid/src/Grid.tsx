@@ -2277,8 +2277,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       allRowHeights,
     } = metrics;
 
+    const theme = this.getTheme();
     const { activeCellSelectionBorderWidth, rowBackgroundColors, maxDepth } =
-      this.getTheme();
+      theme;
 
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
@@ -2291,9 +2292,22 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? activeCellSelectionBorderWidth
         : 0;
 
-    // Compute the stripe color for this visible row, mirroring how the canvas renderer draws row stripes
+    let modelColumn;
+    let modelRow;
+    try {
+      modelColumn = this.getModelColumn(column);
+      modelRow = this.getModelRow(row);
+    } catch (e) {
+      return null;
+    }
+
+    // Per-cell formatting takes priority; only compute the row stripe if there's no cell-specific color
     let cellBackgroundColor: string | undefined;
-    if (rowBackgroundColors) {
+    if (modelColumn != null && modelRow != null) {
+      cellBackgroundColor =
+        model.backgroundColorForCell(modelColumn, modelRow, theme) ?? undefined;
+    }
+    if (cellBackgroundColor == null && rowBackgroundColors) {
       const colorSets = GridRenderer.getCachedBackgroundColors(
         rowBackgroundColors,
         maxDepth
@@ -2316,15 +2330,6 @@ class Grid extends PureComponent<GridProps, GridState> {
             '--grid-row-height': `${h}px`,
           } as CSSProperties)
         : { opacity: 0 };
-
-    let modelColumn;
-    let modelRow;
-    try {
-      modelColumn = this.getModelColumn(column);
-      modelRow = this.getModelRow(row);
-    } catch (e) {
-      return null;
-    }
     const inputStyle: CSSProperties | undefined =
       modelColumn != null && modelRow != null
         ? {
