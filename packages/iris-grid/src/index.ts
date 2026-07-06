@@ -27,6 +27,12 @@ export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { createDefaultIrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
 export * from './IrisGridContextProvider';
+/** @deprecated Use {@link IrisGridContext} */
+export { IrisGridContext as IrisGridThemeContext } from './IrisGridContextProvider';
+/** @deprecated Use {@link IrisGridContextProvider} */
+export { IrisGridContextProvider as IrisGridThemeProvider } from './IrisGridContextProvider';
+/** @deprecated Use {@link IrisGridContextProviderProps} */
+export type { IrisGridContextProviderProps as IrisGridThemeProviderProps } from './IrisGridContextProvider';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';
