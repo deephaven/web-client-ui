@@ -99,7 +99,8 @@ export async function loadModulePlugins(
       // eslint-disable-next-line no-await-in-loop
       const results = await Promise.allSettled(
         level.map(async plugin => {
-          const { name, main, version, package: packageName } = plugin;
+          const { name, main, version, loader } = plugin;
+          const packageName = loader?.package;
           const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
           const pluginExports = await loadModulePlugin(pluginMainUrl);
           return { pluginExports, name, packageName, version };

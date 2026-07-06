@@ -14,8 +14,10 @@ function makeManifestPlugin(
     name,
     main: 'index.js',
     version: '1.0.0',
-    package: opts?.package,
-    dependencies: opts?.dependencies,
+    loader:
+      opts != null
+        ? { package: opts.package, dependencies: opts.dependencies }
+        : undefined,
   };
 }
 

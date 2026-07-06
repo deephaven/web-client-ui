@@ -27,6 +27,7 @@ export * from './useDashboardColumnFilters';
 export * from './useGridLinker';
 export * from './useLoadTablePlugin';
 export * from './useTablePlugin';
+export * from './TablePluginLoaderContext';
 
 export * from './ConsoleEvents';
 export * from './events';

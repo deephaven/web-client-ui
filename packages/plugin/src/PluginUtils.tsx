@@ -379,21 +379,30 @@ export function createWidgetMiddleware<
 export type PluginManifestPluginInfo = {
   name: string;
   main: string;
-  /**
-   * The npm package name for this plugin (e.g. `@deephaven/js-plugin-pivot`).
-   * When provided, the plugin's exports are registered in the module resolve
-   * map under this key, making this plugin importable by other plugins at
-   * runtime. If omitted, the plugin is not available for cross-plugin imports.
-   */
-  package?: string;
-  /**
-   * Package names this plugin depends on at runtime. These must match the
-   * `package` field of other plugins in the manifest. Plugins are
-   * topologically sorted so that dependencies are loaded first. If omitted,
-   * the plugin has no cross-plugin dependencies.
-   */
-  dependencies?: string[];
   version: string;
+  /**
+   * Optional loader namespace, copied verbatim from the plugin package's
+   * `package.json` "loader" field by the manifest packing script. It is kept
+   * as a nested object so plugin authors cannot shadow core manifest fields
+   * like name/version/main.
+   */
+  loader?: {
+    /**
+     * The npm package name for this plugin (e.g. `@deephaven/js-plugin-pivot`).
+     * When provided, the plugin's exports are registered in the module resolve
+     * map under this key, making this plugin importable by other plugins at
+     * runtime. If omitted, the plugin is not available for cross-plugin
+     * imports.
+     */
+    package?: string;
+    /**
+     * Package names this plugin depends on at runtime. These must match the
+     * `package` field of other plugins in the manifest. Plugins are
+     * topologically sorted so that dependencies are loaded first. If omitted,
+     * the plugin has no cross-plugin dependencies.
+     */
+    dependencies?: string[];
+  };
 };
 
 export type PluginManifest = { plugins: PluginManifestPluginInfo[] };
@@ -533,13 +542,13 @@ export function processLoadedModule(
  * @returns An array of levels, where each level is an array of plugins
  */
 export function groupByDependencyLevel<
-  T extends Pick<PluginManifestPluginInfo, 'name' | 'package' | 'dependencies'>,
+  T extends Pick<PluginManifestPluginInfo, 'name' | 'loader'>,
 >(plugins: readonly T[]): T[][] {
   // Map from package name to plugin for dependency resolution
   const packageToPlugin = new Map<string, T>();
   plugins.forEach(p => {
-    if (p.package != null) {
-      packageToPlugin.set(p.package, p);
+    if (p.loader?.package != null) {
+      packageToPlugin.set(p.loader.package, p);
     }
   });
 
@@ -547,8 +556,8 @@ export function groupByDependencyLevel<
   const deps = new Map<T, Set<T>>();
   plugins.forEach(p => {
     const resolved = new Set<T>();
-    if (p.dependencies != null) {
-      p.dependencies.forEach(dep => {
+    if (p.loader?.dependencies != null) {
+      p.loader.dependencies.forEach(dep => {
         const depPlugin = packageToPlugin.get(dep);
         if (depPlugin != null) {
           resolved.add(depPlugin);

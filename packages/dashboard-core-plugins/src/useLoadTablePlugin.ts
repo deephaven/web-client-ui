@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import {
   type TablePluginComponent,
   isTablePlugin,
@@ -6,6 +6,7 @@ import {
   usePlugins,
 } from '@deephaven/plugin';
 import Log from '@deephaven/log';
+import { TablePluginLoaderContext } from './TablePluginLoaderContext';
 
 const log = Log.module('@deephaven/app-utils/useTablePlugin');
 
@@ -15,6 +16,7 @@ const log = Log.module('@deephaven/app-utils/useTablePlugin');
  */
 export function useLoadTablePlugin(): (name: string) => TablePluginComponent {
   const plugins = usePlugins();
+  const loaderFromContext = useContext(TablePluginLoaderContext);
 
   const plugin = useCallback(
     (name: string) => {
@@ -29,11 +31,16 @@ export function useLoadTablePlugin(): (name: string) => TablePluginComponent {
         }
       }
 
+      // Fall back to the loader function provided via context, if any.
+      if (loaderFromContext != null) {
+        return loaderFromContext(name);
+      }
+
       const errorMessage = `Unable to find table plugin ${name}.`;
       log.error(errorMessage);
       throw new Error(errorMessage);
     },
-    [plugins]
+    [plugins, loaderFromContext]
   );
 
   return plugin;
