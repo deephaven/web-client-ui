@@ -10,13 +10,16 @@ import {
 } from './IrisGridTheme';
 
 /**
- * The context value for the IrisGridThemeProvider.
+ * The context value for the IrisGridContextProvider.
  * This must be a full object and not a partial so that we
  * can createDefaultIrisGridTheme once, and not per grid.
  */
 export type IrisGridThemeContextValue = IrisGridThemeType;
 
-export const IrisGridThemeContext = createContext<{
+/**
+ * The context for the IrisGrid, providing the theme, density, and cell input renderer registry.
+ */
+export const IrisGridContext = createContext<{
   theme: IrisGridThemeContextValue | null;
   density: 'compact' | 'regular' | 'spacious';
   cellInputRendererRegistry: CellInputRendererRegistry;
@@ -25,18 +28,18 @@ export const IrisGridThemeContext = createContext<{
   density: 'regular',
   cellInputRendererRegistry: DEFAULT_REGISTRY,
 });
-IrisGridThemeContext.displayName = 'IrisGridThemeContext';
+IrisGridContext.displayName = 'IrisGridContext';
 
-export interface IrisGridThemeProviderProps {
+export interface IrisGridContextProviderProps {
   children: ReactNode;
   /* The density of the grid. Defaults to regular */
   density?: 'compact' | 'regular' | 'spacious';
 }
 
-export function IrisGridThemeProvider({
+export function IrisGridContextProvider({
   children,
   density = 'regular',
-}: IrisGridThemeProviderProps): JSX.Element {
+}: IrisGridContextProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
   const gridTheme = useMemo(
@@ -58,8 +61,8 @@ export function IrisGridThemeProvider({
   );
 
   return (
-    <IrisGridThemeContext.Provider value={contextValue}>
+    <IrisGridContext.Provider value={contextValue}>
       {children}
-    </IrisGridThemeContext.Provider>
+    </IrisGridContext.Provider>
   );
 }
