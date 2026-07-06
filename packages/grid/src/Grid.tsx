@@ -2303,9 +2303,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // Per-cell formatting takes priority; only compute the row stripe if there's no cell-specific color
     let cellBackgroundColor: string | undefined;
+    let cellForegroundColor: string | undefined;
     if (modelColumn != null && modelRow != null) {
       cellBackgroundColor =
         model.backgroundColorForCell(modelColumn, modelRow, theme) ?? undefined;
+      cellForegroundColor = model.colorForCell(modelColumn, modelRow, theme);
     }
     if (cellBackgroundColor == null && rowBackgroundColors) {
       const colorSets = GridRenderer.getCachedBackgroundColors(
@@ -2327,6 +2329,7 @@ class Grid extends PureComponent<GridProps, GridState> {
             width: w - leftBorderOffset,
             height: h,
             '--grid-cell-bg': cellBackgroundColor,
+            '--grid-cell-fg': cellForegroundColor,
             '--grid-row-height': `${h}px`,
           } as CSSProperties)
         : { opacity: 0 };

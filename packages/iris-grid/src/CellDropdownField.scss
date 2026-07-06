@@ -11,6 +11,7 @@
   // Match the cell's row stripe background so the quiet Picker's transparent
   // background doesn't show the canvas beneath it.
   background-color: var(--grid-cell-bg);
+  color: var(--grid-cell-fg, inherit);
   // Clip to the cell row height; the Picker button is taller than the row.
   overflow: hidden;
   display: flex;
@@ -53,6 +54,7 @@
     // Override font-family: Spectrum sets this via an ancestor i18n class.
     button {
       font-family: 'fira sans', sans-serif;
+      color: var(--grid-cell-fg, inherit);
     }
   }
 }
