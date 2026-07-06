@@ -243,7 +243,7 @@ abstract class GridModel<
    * @param column The model index of the column
    * @returns The column restrictions, or an empty array if there are none
    */
-  getColumnRestriction(column: ModelIndex): ColumnRestriction[] {
+  getColumnRestrictions(column: ModelIndex): ColumnRestriction[] {
     return [];
   }
 }

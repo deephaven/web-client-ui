@@ -2347,7 +2347,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { cellInputRendererRegistry } = this.props;
     const restrictions =
       modelColumn != null
-        ? model.getColumnRestriction(modelColumn)
+        ? model.getColumnRestrictions(modelColumn)
         : EMPTY_ARRAY;
 
     const cellInputProps: CellInputProps = {

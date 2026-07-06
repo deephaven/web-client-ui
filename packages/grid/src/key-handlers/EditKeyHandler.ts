@@ -39,7 +39,7 @@ class EditKeyHandler extends KeyHandler {
       // If the renderer for this cell's restriction type preserves the existing
       // value on keystroke (e.g. a dropdown), open the editor without replacing.
       const { cellInputRendererRegistry } = grid.props;
-      const restrictions = model.getColumnRestriction(modelColumn);
+      const restrictions = model.getColumnRestrictions(modelColumn);
       if (restrictions.length === 1) {
         const renderer = cellInputRendererRegistry?.get(restrictions[0].type);
         if (renderer?.preservesExistingValue === true) {

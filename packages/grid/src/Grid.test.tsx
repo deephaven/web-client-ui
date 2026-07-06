@@ -1447,7 +1447,7 @@ describe('cellInputRendererRegistry', () => {
   it('calls the custom renderer and passes restrictions when the model returns a matching restriction type', () => {
     const model = new MockGridModel({ isEditable: true });
     jest
-      .spyOn(model, 'getColumnRestriction')
+      .spyOn(model, 'getColumnRestrictions')
       .mockReturnValue([{ type: RESTRICTION_TYPE }]);
 
     const customRenderer = jest.fn(() => (

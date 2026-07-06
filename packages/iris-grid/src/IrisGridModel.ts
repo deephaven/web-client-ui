@@ -692,7 +692,7 @@ abstract class IrisGridModel<
     return null;
   }
 
-  getColumnRestriction(column: ModelIndex): ColumnRestriction[] {
+  getColumnRestrictions(column: ModelIndex): ColumnRestriction[] {
     const c = this.columns[column];
     return (
       (c as { columnRestrictions?: ColumnRestriction[] } | undefined)
