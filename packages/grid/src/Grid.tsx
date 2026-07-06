@@ -2338,7 +2338,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     const { cellInputRendererRegistry } = this.props;
     const columnRestrictions =
-      modelColumn != null ? model.getColumnRestriction(modelColumn) : [];
+      modelColumn != null ? model.getColumnRestriction(modelColumn) : EMPTY_ARRAY;
 
     const cellInputProps: CellInputFieldProps & {
       columnRestrictions: ColumnRestriction[];
@@ -2365,14 +2365,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           renderer(cellInputProps)
         ) : (
           <CellInputField
-            selectionRange={selectionRange}
-            className={classNames({ error: !isValid })}
-            onCancel={this.handleEditCellCancel}
-            onChange={this.handleEditCellChange}
-            onDone={this.handleEditCellCommit}
-            isQuickEdit={isQuickEdit}
-            style={inputStyle}
-            value={value}
+            {...cellInputProps}
           />
         )}
       </div>
