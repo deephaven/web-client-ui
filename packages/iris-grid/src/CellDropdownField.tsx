@@ -2,29 +2,12 @@ import React, { useCallback, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Item, Picker, type ItemKey } from '@deephaven/components';
-import { SELECTION_DIRECTION } from '@deephaven/grid';
+import { SELECTION_DIRECTION, type CellInputProps } from '@deephaven/grid';
 import './CellDropdownField.scss';
 
-export type CellDropdownFieldProps = {
+export type CellDropdownFieldProps = CellInputProps & {
   /** The list of allowed values to display in the dropdown. */
   options: string[];
-  className?: string;
-  disabled?: boolean;
-  isQuickEdit?: boolean;
-  value?: string;
-  /** Called whenever the selected value changes. */
-  onChange?: (value: string) => void;
-  /** Called when the edit is cancelled, e.g. the user presses Escape. */
-  onCancel?: () => void;
-  /** Called when the edit is committed with the selected value and commit options. */
-  onDone?: (
-    value: string,
-    options: {
-      direction?: SELECTION_DIRECTION | null;
-      fillRange?: boolean;
-    }
-  ) => void;
-  style?: React.CSSProperties;
 };
 
 /**
@@ -37,8 +20,6 @@ export function CellDropdownField({
   options,
   className = '',
   disabled = false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isQuickEdit = false,
   value: propsValue = '',
   onChange = EMPTY_FUNCTION,
   onCancel = EMPTY_FUNCTION,

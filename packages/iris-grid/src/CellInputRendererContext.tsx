@@ -13,31 +13,13 @@ import {
 
 export type { CellInputRendererFn, CellInputRendererRegistry };
 
-const renderStringListRestriction: CellInputRendererFn = ({
-  restrictions,
-  className,
-  disabled,
-  isQuickEdit,
-  value,
-  onChange,
-  onCancel,
-  onDone,
-  style,
-}: CellInputProps): ReactNode => {
+const renderStringListRestriction: CellInputRendererFn = (
+  props: CellInputProps
+): ReactNode => {
+  const { restrictions } = props;
   const { allowedValues } = restrictions[0] as StringListRestriction;
-  return (
-    <CellDropdownField
-      className={className}
-      disabled={disabled}
-      isQuickEdit={isQuickEdit}
-      value={value}
-      options={allowedValues}
-      onChange={onChange}
-      onCancel={onCancel}
-      onDone={onDone}
-      style={style}
-    />
-  );
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  return <CellDropdownField {...props} options={allowedValues} />;
 };
 renderStringListRestriction.preservesExistingValue = true;
 
