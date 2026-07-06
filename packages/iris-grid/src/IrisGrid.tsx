@@ -151,7 +151,7 @@ import {
   DownloadServiceWorkerUtils,
   type TableOptionsTransform,
 } from './sidebar';
-import { DEFAULT_REGISTRY } from './CellInputRendererContext';
+import { DEFAULT_REGISTRY, IrisGridContext } from './IrisGridContextProvider';
 import IrisGridModel from './IrisGridModel';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -200,7 +200,6 @@ import {
   type UITotalsTableConfig,
 } from './CommonTypes';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
-import { IrisGridContext } from './IrisGridContextProvider';
 import { isMissingPartitionError } from './MissingPartitionError';
 import { NoPastePermissionModal } from './NoPastePermissionModal';
 import { isColumnHeaderGroup } from './ColumnHeaderGroup';
