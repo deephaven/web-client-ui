@@ -20,7 +20,9 @@ export const DEFAULT_FONT_WIDTH = 10;
  * value rather than replacing it with the typed character.
  */
 export type CellInputRendererFn = ((
-  props: CellInputFieldProps & { columnRestrictions: ColumnRestriction[] }
+  props: CellInputFieldProps & {
+    columnRestrictions: readonly ColumnRestriction[];
+  }
 ) => React.ReactNode) & {
   /**
    * When true, keystroke-initiated edits preserve the existing cell value

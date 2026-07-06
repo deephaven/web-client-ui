@@ -2338,10 +2338,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     const { cellInputRendererRegistry } = this.props;
     const columnRestrictions =
-      modelColumn != null ? model.getColumnRestriction(modelColumn) : EMPTY_ARRAY;
+      modelColumn != null
+        ? model.getColumnRestriction(modelColumn)
+        : EMPTY_ARRAY;
 
     const cellInputProps: CellInputFieldProps & {
-      columnRestrictions: ColumnRestriction[];
+      columnRestrictions: readonly ColumnRestriction[];
     } = {
       selectionRange,
       className: classNames({ error: !isValid }),
@@ -2364,9 +2366,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         {renderer != null ? (
           renderer(cellInputProps)
         ) : (
-          <CellInputField
-            {...cellInputProps}
-          />
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          <CellInputField {...cellInputProps} />
         )}
       </div>
     );
