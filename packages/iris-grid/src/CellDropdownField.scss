@@ -20,7 +20,7 @@
   --spectrum-dropdown-quiet-min-width: 0;
   --spectrum-dropdown-min-width: 0;
   // Match the grid font size (Spectrum reads this variable for the label text).
-  --spectrum-dropdown-text-size: 12px;
+  --spectrum-dropdown-text-size: var(--grid-font-size, 12px);
 
   // Our own chevron rendered as a pseudo-element on the right.
   // Square element with border-right + border-bottom rotated 45° → symmetric V.

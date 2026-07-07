@@ -2331,6 +2331,7 @@ class Grid extends PureComponent<GridProps, GridState> {
             '--grid-cell-bg': cellBackgroundColor,
             '--grid-cell-fg': cellForegroundColor,
             '--grid-row-height': `${h}px`,
+            '--grid-font-size': theme.font.split(' ')[0],
           } as CSSProperties)
         : { opacity: 0 };
     const inputStyle: CSSProperties | undefined =
