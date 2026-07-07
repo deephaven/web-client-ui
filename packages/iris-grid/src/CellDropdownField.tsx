@@ -121,7 +121,11 @@ export function CellDropdownField({
   return (
     // onKeyDownCapture captures Enter before Spectrum consumes it to set commit direction
     <div
-      className={classNames('cell-dropdown-field', className)}
+      className={classNames(
+        'grid-cell-input-field',
+        'cell-dropdown-field',
+        className
+      )}
       style={style}
       onKeyDownCapture={handleWrapperKeyDownCapture}
     >
