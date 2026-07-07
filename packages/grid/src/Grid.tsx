@@ -2362,6 +2362,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       restrictions,
     };
 
+    // The server supports multiple restrictions on a single column, but the UI does not know how to render multiple restrictions simultaneously
+    // This uses a custom renderer if there is only one restriction and uses the default renderer if there are multiple restrictions
     const renderer =
       restrictions.length === 1
         ? cellInputRendererRegistry?.get(restrictions[0].type)
