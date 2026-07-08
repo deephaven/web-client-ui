@@ -4,7 +4,10 @@
   border: none;
   width: 100%;
   height: 100%;
-  padding: calc((var(--grid-row-height, 19px) - var(--grid-font-size, 12px)) / 2) 5px;
+  padding: calc(
+      (var(--grid-row-height, 19px) - var(--grid-font-size, 12px)) / 2
+    )
+    5px;
   border-radius: 2px;
   font-size: var(--grid-font-size, 12px);
   line-height: 1;
