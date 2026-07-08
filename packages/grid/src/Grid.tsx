@@ -2278,8 +2278,12 @@ class Grid extends PureComponent<GridProps, GridState> {
     } = metrics;
 
     const theme = this.getTheme();
-    const { activeCellSelectionBorderWidth, rowBackgroundColors, maxDepth } =
-      theme;
+    const {
+      activeCellSelectionBorderWidth,
+      rowBackgroundColors,
+      maxDepth,
+      cellHorizontalPadding,
+    } = theme;
 
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
@@ -2332,6 +2336,7 @@ class Grid extends PureComponent<GridProps, GridState> {
             '--grid-cell-fg': cellForegroundColor,
             '--grid-row-height': `${h}px`,
             '--grid-font-size': theme.font.split(' ')[0],
+            '--grid-cell-horizontal-padding': `${cellHorizontalPadding}px`,
           } as CSSProperties)
         : { opacity: 0 };
     const inputStyle: CSSProperties | undefined =

@@ -2,14 +2,16 @@
 
 .cell-dropdown-field {
   position: absolute;
-  // Compensate for Spectrum quiet Picker's internal padding so the button
-  // aligns visually with the cell boundary.
-  left: var(--spectrum-picker-quiet-border-side-width, 3px);
+  // Span the full cell so the focus-ring box-shadow aligns with the cell
+  // boundary, matching the canvas selection border (and the standard
+  // CellInputField). Do not offset with `left`, as that shifts the border.
+  left: 0;
   right: 0;
-  // No extra padding — Spectrum's button internal padding aligns the label
-  // text with the grid canvas text position.
-  padding-right: 5px;
-  padding-left: 3px;
+  // Align the label text with the grid canvas text, which is drawn at
+  // `cellHorizontalPadding` from the cell's left edge (5px regular, 7px
+  // spacious). Driven by the theme so it stays aligned across densities.
+  padding-right: var(--grid-cell-horizontal-padding, 5px);
+  padding-left: var(--grid-cell-horizontal-padding, 5px);
   // Clip to the cell row height; the Picker button is taller than the row.
   overflow: hidden;
   display: flex;
@@ -43,6 +45,15 @@
   .cell-dropdown-field-picker {
     flex: 1;
     min-width: 0;
+    // The canvas centers cell text on rowHeight/2, but Spectrum's quiet Picker
+    // rounds the label to an integer pixel. When (rowHeight - fontSize) is odd
+    // (regular 19-12=7, compact 16-11=5) the label lands 1px above the canvas
+    // text; when even (spacious 28-12=16) it is already aligned. Nudge down by
+    // that parity so the label matches the canvas text across all densities.
+    // Interpolated so Sass emits the CSS `mod()` instead of evaluating its own.
+    transform: translateY(
+      #{'mod(var(--grid-row-height, 19px) - var(--grid-font-size, 12px), 2px)'}
+    );
 
     // Hide Spectrum's built-in chevron since we render our own.
     svg[class*='spectrum-Dropdown-chevron'] {
