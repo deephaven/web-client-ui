@@ -6,6 +6,7 @@
   height: 100%;
   padding: 2px 5px 3px 5px;
   border-radius: 2px;
+  font-size: var(--grid-font-size, 12px);
   resize: none;
 
   &:focus {
