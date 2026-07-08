@@ -1,3 +1,5 @@
+@import './IrisGridTheme.module.scss';
+
 .cell-dropdown-field {
   position: absolute;
   // Compensate for Spectrum quiet Picker's internal padding so the button
@@ -52,5 +54,13 @@
       font-family: 'fira sans', sans-serif;
       color: inherit;
     }
+  }
+
+  // Apply the same focus-ring box-shadow as CellInputField (the textarea)
+  // so the cell outline is visible when a dropdown editor is open.
+  box-shadow: $cell-box-shadow;
+
+  &.error {
+    box-shadow: $cell-invalid-box-shadow;
   }
 }
