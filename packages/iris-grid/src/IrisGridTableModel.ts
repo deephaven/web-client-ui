@@ -447,10 +447,18 @@ class IrisGridTableModel
         const filter = this.tableUtils.makeNullableEqFilter(column, value);
         columnFilters.push(filter);
       }
-      return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);
+      // Use variadic .and() to keep the per-row filter flat (depth 1) rather than
+      // building a deeply nested tree with chained .and() calls.
+      return columnFilters.length === 1
+        ? columnFilters[0]
+        : columnFilters[0].and(...columnFilters.slice(1));
     });
 
-    const filter = filters.reduce((agg, curr) => agg?.or(curr) ?? curr);
+    // Use variadic .or() to keep the combined filter flat (depth 1). Chaining
+    // .or() one-at-a-time via reduce creates a tree N levels deep; for 10 000
+    // rows the recursive toString() in dh-core exceeds the JS call stack limit.
+    const filter =
+      filters.length === 1 ? filters[0] : filters[0].or(...filters.slice(1));
 
     deleteTable.applyFilter([filter]);
 
