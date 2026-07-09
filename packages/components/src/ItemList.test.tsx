@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Range } from '@deephaven/utils';
 import { type ClickOptions, TestUtils } from '@deephaven/test-utils';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';
 
@@ -43,6 +43,52 @@ function makeItemList({
 
 it('mounts and unmounts properly', () => {
   makeItemList();
+});
+
+it('does not send an empty viewport when the panel collapses to 0 height', () => {
+  // Reproduces DH-22991: closing panels causes AutoSizer to briefly report a
+  // height of 0. Sending that through as a viewport collapses top===bottom,
+  // which clears the loaded items and blanks the command history.
+  const ref =
+    React.createRef<ItemList<{ value: number; displayValue: string }>>();
+  const onViewportChange = jest.fn();
+  render(
+    <ItemList
+      ref={ref}
+      itemCount={100}
+      rowHeight={20}
+      offset={0}
+      items={makeItems()}
+      onSelect={jest.fn()}
+      onSelectionChange={jest.fn()}
+      onViewportChange={onViewportChange}
+    />
+  );
+
+  // Establish a scrolled, sized viewport (as after normal use)
+  act(() => {
+    ref.current?.handleResize({ height: 400, width: 500 });
+    ref.current?.handleScroll({
+      scrollOffset: 200,
+      scrollUpdateWasRequested: false,
+    });
+  });
+
+  const lastGoodViewport =
+    onViewportChange.mock.calls[onViewportChange.mock.calls.length - 1];
+  onViewportChange.mockClear();
+
+  // Panel collapses to 0 height during a layout change
+  act(() => {
+    ref.current?.handleResize({ height: 0, width: 500 });
+  });
+
+  // Must not emit a collapsed (empty) viewport for the 0-height event
+  onViewportChange.mock.calls.forEach(([top, bottom]) => {
+    expect(bottom).toBeGreaterThan(top);
+  });
+  // The last known good viewport must still be valid
+  expect(lastGoodViewport[1]).toBeGreaterThan(lastGoodViewport[0]);
 });
 
 describe('mouse', () => {

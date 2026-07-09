@@ -537,6 +537,9 @@ export class ItemList<T> extends PureComponent<
   }
 
   handleResize({ height }: Size): void {
+    if (height == null || height <= 0) {
+      return;
+    }
     this.setState({ height });
   }
 
@@ -783,13 +786,14 @@ export class ItemList<T> extends PureComponent<
       rowHeight,
       'data-testid': dataTestId,
     } = this.props;
-    const { selectedRanges, isStuckToBottom } = this.state;
+    const { selectedRanges, isStuckToBottom, height: lastGoodHeight } =
+      this.state;
     return (
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
         {({ width, height }) => (
           <List
             className="item-list-scroll-pane"
-            height={height}
+            height={height > 0 ? height : lastGoodHeight ?? height}
             width={width}
             initialScrollOffset={isStuckToBottom ? itemCount * rowHeight : 0}
             itemCount={itemCount}
