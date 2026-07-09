@@ -340,17 +340,27 @@ class Chart extends Component<ChartProps, ChartState> {
         ({ type }) => type != null && type.includes('3d')
       );
 
-      const buttons2D = [
-        'zoomIn2d',
-        'zoomOut2d',
-        'autoScale2d',
-        'resetScale2d',
-      ] as const;
-      const buttons3D = [
-        'orbitRotation',
-        'tableRotation',
-        'resetCameraDefault3d',
-      ] as const;
+      // zoom2d and pan2d work for both 2D and 3D charts
+      const interactionButtons: ModeBarButtonAny[] = [
+        'zoom2d',
+        'pan2d',
+        ...(hasSelectionCallbacks && has2D ? ['select2d', 'lasso2d'] : []),
+      ] as ModeBarButtonAny[];
+
+      const dimensionButtons: ModeBarButtonAny[] = [
+        ...(has2D
+          ? ['zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d']
+          : []),
+        ...(has3D
+          ? ['orbitRotation', 'tableRotation', 'resetCameraDefault3d']
+          : []),
+      ] as ModeBarButtonAny[];
+
+      // Display the mode bar persistently if there's an error or downsampling so user can see progress
+      // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
+      const alwaysShowModeBar =
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        isDownsampleInProgress || hasDownsampleError || hasError;
 
       return {
         displaylogo: false,
@@ -359,26 +369,14 @@ class Chart extends Component<ChartProps, ChartState> {
         // https://github.com/plotly/react-plotly.js/issues/102
         responsive: true,
 
-        // Display the mode bar if there's an error or downsampling so user can see progress
-        // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
-        displayModeBar:
-          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          isDownsampleInProgress || hasDownsampleError || hasError
-            ? true
-            : ('hover' as const),
+        displayModeBar: alwaysShowModeBar ? true : ('hover' as const),
 
         // Each array gets grouped together in the mode bar
         modeBarButtons: [
           customButtons,
           ['toImage'],
-          [
-            'zoom2d',
-            'pan2d',
-            ...(hasSelectionCallbacks
-              ? (['select2d', 'lasso2d'] as const)
-              : []),
-          ], // These work the same for both 2d and 3d
-          [...(has2D ? buttons2D : []), ...(has3D ? buttons3D : [])],
+          interactionButtons,
+          dimensionButtons,
         ],
       };
     }
