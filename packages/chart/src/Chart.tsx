@@ -216,7 +216,9 @@ class Chart extends Component<ChartProps, ChartState> {
     this.updateFormatterSettings(settings);
 
     if (model !== prevProps.model) {
+      prevProps.model.setPlotElement(null);
       this.unsubscribe(prevProps.model);
+      model.setPlotElement(this.plotElement);
       this.subscribe(model);
     }
 
@@ -260,6 +262,8 @@ class Chart extends Component<ChartProps, ChartState> {
   integerFormatOptions: IntegerColumnFormatterOptions;
 
   webgl?: boolean;
+
+  plotElement: HTMLElement | null = null;
 
   rect?: DOMRect;
 
@@ -431,11 +435,13 @@ class Chart extends Component<ChartProps, ChartState> {
     // Provide the actual Plotly graph div to the model so it can attach
     // imperative event listeners (needed for some events that Plotly doesn't
     // support in react-plotly.js)
+    this.plotElement = graphDiv;
     const { model } = this.props;
     model.setPlotElement(graphDiv);
   }
 
   handlePlotPurge(): void {
+    this.plotElement = null;
     const { model } = this.props;
     model.setPlotElement(null);
   }
