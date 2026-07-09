@@ -91,6 +91,48 @@ it('does not send an empty viewport when the panel collapses to 0 height', () =>
   expect(lastGoodViewport[1]).toBeGreaterThan(lastGoodViewport[0]);
 });
 
+it('keeps scroll and sticky-bottom state when backgrounded to 0 height', () => {
+  // When the panel is backgrounded (Golden Layout display:none) AutoSizer
+  // reports height 0. That transient value must not reset the scroll offset
+  // or drop the sticky-bottom flag, otherwise the list unpins from the bottom
+  // and jumps to the top when the panel is shown again.
+  const ref =
+    React.createRef<ItemList<{ value: number; displayValue: string }>>();
+  render(
+    <ItemList
+      ref={ref}
+      isStickyBottom
+      itemCount={100}
+      rowHeight={20}
+      offset={0}
+      items={makeItems()}
+      onSelect={jest.fn()}
+      onSelectionChange={jest.fn()}
+      onViewportChange={jest.fn()}
+    />
+  );
+
+  // Size the list and scroll to the bottom
+  act(() => {
+    ref.current?.handleResize({ height: 400, width: 500 });
+    ref.current?.handleScroll({
+      scrollOffset: 100 * 20 - 400,
+      scrollUpdateWasRequested: false,
+    });
+  });
+
+  const scrollOffsetBefore = ref.current?.state.scrollOffset;
+  expect(ref.current?.state.isStuckToBottom).toBe(true);
+
+  // Panel is backgrounded -> AutoSizer reports 0
+  act(() => {
+    ref.current?.handleResize({ height: 0, width: 500 });
+  });
+
+  expect(ref.current?.state.scrollOffset).toBe(scrollOffsetBefore);
+  expect(ref.current?.state.isStuckToBottom).toBe(true);
+});
+
 describe('mouse', () => {
   async function clickItem(
     user: ReturnType<typeof userEvent.setup>,
