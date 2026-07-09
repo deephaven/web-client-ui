@@ -640,6 +640,11 @@ class Chart extends Component<ChartProps, ChartState> {
     return model.onLegendDoubleClick(data);
   }
 
+  handleWebGlContextLost(): void {
+    const { model } = this.props;
+    model.onWebGlContextLost();
+  }
+
   handleResize(): void {
     this.updateDimensions();
   }
@@ -879,6 +884,7 @@ class Chart extends Component<ChartProps, ChartState> {
             onClickAnnotation={this.handleClickAnnotation}
             onLegendClick={this.handleLegendClick}
             onLegendDoubleClick={this.handleLegendDoubleClick}
+            onWebGlContextLost={this.handleWebGlContextLost}
             style={{ height: '100%', width: '100%' }}
           />
         )}

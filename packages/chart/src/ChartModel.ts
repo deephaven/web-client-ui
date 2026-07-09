@@ -177,6 +177,13 @@ class ChartModel {
   }
 
   /**
+   * Called by the Chart component when Plotly fires a WebGL context lost event.
+   * Override to handle WebGL context loss.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onWebGlContextLost(): void {}
+
+  /**
    * Called by the Chart component once Plotly has initialized, providing the
    * actual Plotly graph div element. Models can use this to attach imperative
    * event listeners if needed
