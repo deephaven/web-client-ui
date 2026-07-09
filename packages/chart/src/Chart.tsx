@@ -431,7 +431,8 @@ class Chart extends Component<ChartProps, ChartState> {
 
   handlePlotInitialized(_figure: unknown, graphDiv: HTMLElement): void {
     // Provide the actual Plotly graph div to the model so it can attach
-    // imperative event listeners (needed for events that return a value).
+    // imperative event listeners (needed for some events that Plotly doesn't
+    // support in react-plotly.js)
     const { model } = this.props;
     model.setPlotElement(graphDiv);
   }
