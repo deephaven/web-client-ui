@@ -729,7 +729,7 @@ export class ItemList<T> extends PureComponent<
 
   sendViewportUpdate(): void {
     const { scrollOffset, height } = this.state;
-    if (scrollOffset != null && height != null) {
+    if (scrollOffset != null && height != null && height > 0) {
       const { onViewportChange, rowHeight } = this.props;
       const topRow = Math.floor(scrollOffset / rowHeight);
       const bottomRow = topRow + Math.ceil(height / rowHeight);
@@ -786,8 +786,12 @@ export class ItemList<T> extends PureComponent<
       rowHeight,
       'data-testid': dataTestId,
     } = this.props;
-    const { selectedRanges, isStuckToBottom, height: lastGoodHeight } =
-      this.state;
+    const {
+      selectedRanges,
+      isStuckToBottom,
+      height: lastGoodHeight,
+    } = this.state;
+
     return (
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
         {({ width, height }) => (
