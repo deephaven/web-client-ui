@@ -27,6 +27,10 @@ import {
   type Data,
   type PlotData,
   type ModeBarButtonAny,
+  type PlotMouseEvent,
+  type PlotSelectionEvent,
+  type ClickAnnotationEvent,
+  type LegendClickEvent,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
 import { mergeRefs } from '@deephaven/react-hooks';
@@ -275,7 +279,8 @@ class Chart extends Component<ChartProps, ChartState> {
       isDownsampleInProgress: boolean,
       isDownsamplingDisabled: boolean,
       data: Partial<Data>[],
-      error: unknown
+      error: unknown,
+      hasSelectionCallbacks: boolean
     ): Partial<PlotlyConfig> => {
       const customButtons: ModeBarButtonAny[] = [];
       const hasDownsampleError = Boolean(downsamplingError);
@@ -366,7 +371,13 @@ class Chart extends Component<ChartProps, ChartState> {
         modeBarButtons: [
           customButtons,
           ['toImage'],
-          ['zoom2d', 'pan2d'], // These work the same for both 2d and 3d
+          [
+            'zoom2d',
+            'pan2d',
+            ...(hasSelectionCallbacks
+              ? (['select2d', 'lasso2d'] as const)
+              : []),
+          ], // These work the same for both 2d and 3d
           [...(has2D ? buttons2D : []), ...(has3D ? buttons3D : [])],
         ],
       };
@@ -398,6 +409,7 @@ class Chart extends Component<ChartProps, ChartState> {
       log.debug2('Delaying subscription until model dimensions are set');
       return;
     }
+
     model.subscribe(this.handleModelEvent);
     this.isSubscribed = true;
   }
@@ -415,6 +427,18 @@ class Chart extends Component<ChartProps, ChartState> {
     if (this.plot.current != null) {
       // TODO: Translate whatever Don was doing in plotting.js in the afterplot here so that area graphs show up properly
     }
+  }
+
+  handlePlotInitialized(_figure: unknown, graphDiv: HTMLElement): void {
+    // Provide the actual Plotly graph div to the model so it can attach
+    // imperative event listeners (needed for events that return a value).
+    const { model } = this.props;
+    model.setPlotElement(graphDiv);
+  }
+
+  handlePlotPurge(): void {
+    const { model } = this.props;
+    model.setPlotElement(null);
   }
 
   handleDownsampleClick(): void {
@@ -571,6 +595,44 @@ class Chart extends Component<ChartProps, ChartState> {
     }
 
     this.updateModelDimensions();
+
+    const { model } = this.props;
+    model.onRelayout(changes);
+  }
+
+  handleClick(data: Readonly<PlotMouseEvent>): void {
+    const { model } = this.props;
+    model.onClick(data);
+  }
+
+  handleDoubleClick(): void {
+    const { model } = this.props;
+    model.onDoubleClick();
+  }
+
+  handleSelected(data: Readonly<PlotSelectionEvent> | undefined): void {
+    const { model } = this.props;
+    model.onSelected(data);
+  }
+
+  handleDeselect(): void {
+    const { model } = this.props;
+    model.onDeselect();
+  }
+
+  handleClickAnnotation(data: Readonly<ClickAnnotationEvent>): void {
+    const { model } = this.props;
+    model.onClickAnnotation(data);
+  }
+
+  handleLegendClick(data: Readonly<LegendClickEvent>): boolean {
+    const { model } = this.props;
+    return model.onLegendClick(data);
+  }
+
+  handleLegendDoubleClick(data: Readonly<LegendClickEvent>): boolean {
+    const { model } = this.props;
+    return model.onLegendDoubleClick(data);
   }
 
   handleResize(): void {
@@ -737,15 +799,16 @@ class Chart extends Component<ChartProps, ChartState> {
       revision,
       shownBlocker,
     } = this.state;
+    const { model } = this.props;
     const config = this.getCachedConfig(
       downsamplingError,
       isDownsampleFinished,
       isDownsampleInProgress,
       isDownsamplingDisabled,
       data ?? [],
-      error
+      error,
+      model.hasSelectionCallbacks()
     );
-    const { model } = this.props;
     const isPlotShown = data != null && shownBlocker == null;
 
     let errorOverlay: React.ReactNode = null;
@@ -799,9 +862,18 @@ class Chart extends Component<ChartProps, ChartState> {
             config={config}
             onAfterPlot={this.handleAfterPlot}
             onError={log.error}
+            onInitialized={this.handlePlotInitialized}
+            onPurge={this.handlePlotPurge}
             onRelayout={this.handleRelayout}
             onUpdate={this.handlePlotUpdate}
             onRestyle={this.handleRestyle}
+            onClick={this.handleClick}
+            onDoubleClick={this.handleDoubleClick}
+            onSelected={this.handleSelected}
+            onDeselect={this.handleDeselect}
+            onClickAnnotation={this.handleClickAnnotation}
+            onLegendClick={this.handleLegendClick}
+            onLegendDoubleClick={this.handleLegendDoubleClick}
             style={{ height: '100%', width: '100%' }}
           />
         )}
