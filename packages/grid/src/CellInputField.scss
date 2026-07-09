@@ -4,8 +4,20 @@
   border: none;
   width: 100%;
   height: 100%;
-  padding: 2px 5px 3px 5px;
+  // The canvas draws cell text with `textBaseline: middle`, which sits ~1px
+  // higher than a `line-height: 1` textarea with symmetric vertical padding.
+  // Shift 1px from the top padding to the bottom so the edit text lines up
+  // with the canvas-rendered selection text (matches the legacy 2/3 split).
+  // Horizontal padding uses the theme's `cellHorizontalPadding` so the text
+  // aligns with the canvas across densities (5px regular, 7px spacious).
+  padding: calc(
+      (var(--grid-row-height, 19px) - var(--grid-font-size, 12px)) / 2 - 1px
+    )
+    var(--grid-cell-horizontal-padding, 5px)
+    calc((var(--grid-row-height, 19px) - var(--grid-font-size, 12px)) / 2 + 1px);
   border-radius: 2px;
+  font-size: var(--grid-font-size, 12px);
+  line-height: 1;
   resize: none;
 
   &:focus {

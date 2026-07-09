@@ -78,6 +78,8 @@ import {
   type EditingCell,
   type GridRenderState,
   type EditingCellTextSelectionRange,
+  type CellInputRendererRegistry,
+  type CellInputProps,
 } from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
@@ -141,6 +143,13 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Renderer for the grid canvas
   renderer?: GridRenderer;
+
+  /**
+   * Registry of cell input renderer functions keyed by column restriction type.
+   * Grid looks up columnRestrictions[0].type at render time and falls back to
+   * its built-in CellInputField when there is no match.
+   */
+  cellInputRendererRegistry?: CellInputRendererRegistry;
 
   // Optional state override to pass in to the metric and render state
   // Can be used to add custom properties as well
@@ -264,6 +273,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         window.open(token.href, '_blank', 'noopener,noreferrer');
       }
     },
+    cellInputRendererRegistry: new Map() as CellInputRendererRegistry,
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -2267,7 +2277,13 @@ class Grid extends PureComponent<GridProps, GridState> {
       allRowHeights,
     } = metrics;
 
-    const { activeCellSelectionBorderWidth } = this.getTheme();
+    const theme = this.getTheme();
+    const {
+      activeCellSelectionBorderWidth,
+      rowBackgroundColors,
+      maxDepth,
+      cellHorizontalPadding,
+    } = theme;
 
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
@@ -2280,18 +2296,6 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? activeCellSelectionBorderWidth
         : 0;
 
-    // If the cell isn't visible, we still need to display an invisible cell for focus purposes
-    const wrapperStyle: CSSProperties =
-      x != null && y != null && w != null && h != null
-        ? {
-            position: 'absolute',
-            left: gridX + x + leftBorderOffset,
-            top: gridY + y,
-            width: w - leftBorderOffset,
-            height: h,
-          }
-        : { opacity: 0 };
-
     let modelColumn;
     let modelRow;
     try {
@@ -2300,6 +2304,41 @@ class Grid extends PureComponent<GridProps, GridState> {
     } catch (e) {
       return null;
     }
+
+    // Per-cell formatting takes priority; only compute the row stripe if there's no cell-specific color
+    let cellBackgroundColor: string | undefined;
+    let cellForegroundColor: string | undefined;
+    if (modelColumn != null && modelRow != null) {
+      cellBackgroundColor =
+        model.backgroundColorForCell(modelColumn, modelRow, theme) ?? undefined;
+      cellForegroundColor = model.colorForCell(modelColumn, modelRow, theme);
+    }
+    if (cellBackgroundColor == null && rowBackgroundColors) {
+      const colorSets = GridRenderer.getCachedBackgroundColors(
+        rowBackgroundColors,
+        maxDepth
+      );
+      const depth = isExpandableGridModel(model) ? model.depthForRow(row) : 0;
+      const colorSet = colorSets[row % colorSets.length];
+      cellBackgroundColor = colorSet[Math.min(depth, colorSet.length - 1)];
+    }
+
+    // If the cell isn't visible, we still need to display an invisible cell for focus purposes
+    const wrapperStyle: CSSProperties =
+      x != null && y != null && w != null && h != null
+        ? ({
+            position: 'absolute',
+            left: gridX + x + leftBorderOffset,
+            top: gridY + y,
+            width: w - leftBorderOffset,
+            height: h,
+            '--grid-cell-bg': cellBackgroundColor,
+            '--grid-cell-fg': cellForegroundColor,
+            '--grid-row-height': `${h}px`,
+            '--grid-font-size': theme.font.split(' ')[0],
+            '--grid-cell-horizontal-padding': `${cellHorizontalPadding}px`,
+          } as CSSProperties)
+        : { opacity: 0 };
     const inputStyle: CSSProperties | undefined =
       modelColumn != null && modelRow != null
         ? {
@@ -2311,19 +2350,39 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? model.isValidForCell(modelColumn, modelRow, value)
         : false;
 
+    const { cellInputRendererRegistry } = this.props;
+    const restrictions =
+      modelColumn != null
+        ? model.getColumnRestrictions(modelColumn)
+        : EMPTY_ARRAY;
+
+    const cellInputProps: CellInputProps = {
+      selectionRange,
+      className: classNames({ error: !isValid }),
+      onCancel: this.handleEditCellCancel,
+      onChange: this.handleEditCellChange,
+      onDone: this.handleEditCellCommit,
+      isQuickEdit,
+      style: inputStyle,
+      value,
+      restrictions,
+    };
+
+    // The server supports multiple restrictions on a single column, but the UI does not know how to render multiple restrictions simultaneously
+    // This uses a custom renderer if there is only one restriction and uses the default renderer if there are multiple restrictions
+    const renderer =
+      restrictions.length === 1
+        ? cellInputRendererRegistry?.get(restrictions[0].type)
+        : undefined;
+
     return (
-      <div style={wrapperStyle}>
-        <CellInputField
-          key={`${column},${row}`}
-          selectionRange={selectionRange}
-          className={classNames({ error: !isValid })}
-          onCancel={this.handleEditCellCancel}
-          onChange={this.handleEditCellChange}
-          onDone={this.handleEditCellCommit}
-          isQuickEdit={isQuickEdit}
-          style={inputStyle}
-          value={value}
-        />
+      <div key={`${column},${row}`} style={wrapperStyle}>
+        {renderer != null ? (
+          renderer(cellInputProps)
+        ) : (
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          <CellInputField {...cellInputProps} />
+        )}
       </div>
     );
   }

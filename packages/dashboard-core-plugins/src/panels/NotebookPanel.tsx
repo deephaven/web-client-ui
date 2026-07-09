@@ -579,9 +579,38 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     (
       isMinimapEnabled: boolean,
       isWordWrapEnabled: boolean,
-      formatOnSave: boolean
+      formatOnSave: boolean,
+      runButtonsDisabled: boolean,
+      toolbarDisabled: boolean
     ) => {
       const actions: DropdownAction[] = [
+        {
+          title: 'Run',
+          icon: vsPlay,
+          action: this.handleRunAll,
+          disabled: runButtonsDisabled,
+          shortcut: SHORTCUTS.NOTEBOOK.RUN,
+          group: ContextActions.groups.high,
+          order: 1,
+        },
+        {
+          title: 'Run Selected',
+          icon: dhRunSelection,
+          action: this.handleRunSelected,
+          disabled: runButtonsDisabled,
+          shortcut: SHORTCUTS.NOTEBOOK.RUN_SELECTED,
+          group: ContextActions.groups.high,
+          order: 2,
+        },
+        {
+          title: 'Save',
+          icon: vsSave,
+          action: this.handleSave,
+          disabled: toolbarDisabled,
+          shortcut: GLOBAL_SHORTCUTS.SAVE,
+          group: ContextActions.groups.high,
+          order: 3,
+        },
         {
           title: 'Find',
           icon: dhFileSearch,
@@ -1228,12 +1257,27 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   getDropdownOverflowActions(): DropdownAction[] {
     const { notebookSettings } = this.props;
     const { isMinimapEnabled, formatOnSave } = notebookSettings;
-    const { settings: initialSettings } = this.state;
+    const {
+      settings: initialSettings,
+      session,
+      sessionLanguage,
+      isLoaded,
+    } = this.state;
+    const settings = this.getSettings(
+      initialSettings,
+      isMinimapEnabled ?? false
+    );
+    const isSessionConnected = session != null;
+    const isLanguageMatching = sessionLanguage === settings.language;
+    const runButtonsDisabled =
+      !isLoaded || !isSessionConnected || !isLanguageMatching;
+    const toolbarDisabled = !isLoaded;
     return this.getOverflowActions(
       isMinimapEnabled ?? false,
-      this.getSettings(initialSettings, isMinimapEnabled ?? false).wordWrap ===
-        'on',
-      formatOnSave ?? false
+      settings.wordWrap === 'on',
+      formatOnSave ?? false,
+      runButtonsDisabled,
+      toolbarDisabled
     );
   }
 
@@ -1356,48 +1400,52 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           {!isMarkdown && (
             <>
               <div className="notebook-toolbar">
-                <span>
+                <div className="notebook-toolbar-actions">
+                  <span>
+                    <Button
+                      kind="ghost"
+                      className="btn-play btn-run"
+                      onClick={this.handleRunAll}
+                      disabled={runButtonsDisabled}
+                      icon={
+                        <FontAwesomeIcon icon={vsPlay} transform="grow-4" />
+                      }
+                      tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
+                      aria-label="Run"
+                    />
+                    {disabledRunButtonTooltip != null && (
+                      <Tooltip>{disabledRunButtonTooltip}</Tooltip>
+                    )}
+                  </span>
+                  <span>
+                    <Button
+                      kind="ghost"
+                      className="btn-play btn-run-selected"
+                      onClick={this.handleRunSelected}
+                      disabled={runButtonsDisabled}
+                      icon={
+                        <FontAwesomeIcon
+                          icon={dhRunSelection}
+                          transform="grow-4"
+                        />
+                      }
+                      tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
+                      aria-label="Run Selected"
+                    />
+                    {disabledRunSelectedButtonTooltip != null && (
+                      <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
+                    )}
+                  </span>
                   <Button
                     kind="ghost"
-                    className="btn-play"
-                    onClick={this.handleRunAll}
-                    disabled={runButtonsDisabled}
-                    icon={<FontAwesomeIcon icon={vsPlay} transform="grow-4" />}
-                    tooltip={`Run ${SHORTCUTS.NOTEBOOK.RUN.getDisplayText()}`}
-                    aria-label="Run"
+                    className="btn-save"
+                    disabled={toolbarDisabled}
+                    onClick={this.handleSave}
+                    icon={vsSave}
+                    tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
+                    aria-label="Save"
                   />
-                  {disabledRunButtonTooltip != null && (
-                    <Tooltip>{disabledRunButtonTooltip}</Tooltip>
-                  )}
-                </span>
-                <span>
-                  <Button
-                    kind="ghost"
-                    className="btn-play"
-                    onClick={this.handleRunSelected}
-                    disabled={runButtonsDisabled}
-                    icon={
-                      <FontAwesomeIcon
-                        icon={dhRunSelection}
-                        transform="grow-4"
-                      />
-                    }
-                    tooltip={`Run Selected ${SHORTCUTS.NOTEBOOK.RUN_SELECTED.getDisplayText()}`}
-                    aria-label="Run Selected"
-                  />
-                  {disabledRunSelectedButtonTooltip != null && (
-                    <Tooltip>{disabledRunSelectedButtonTooltip}</Tooltip>
-                  )}
-                </span>
-                <Button
-                  kind="ghost"
-                  className="mr-auto"
-                  disabled={toolbarDisabled}
-                  onClick={this.handleSave}
-                  icon={vsSave}
-                  tooltip={`Save ${GLOBAL_SHORTCUTS.SAVE.getDisplayText()}`}
-                  aria-label="Save"
-                />
+                </div>
                 <Button
                   kind="ghost"
                   className="btn-overflow"

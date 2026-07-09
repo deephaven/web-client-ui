@@ -17,34 +17,57 @@ class EditKeyHandler extends KeyHandler {
     if (
       cursorColumn == null ||
       cursorRow == null ||
-      !isEditableGridModel(model) ||
-      !model.isEditableRange(GridRange.makeCell(cursorColumn, cursorRow))
+      !isEditableGridModel(model)
     ) {
       return false;
     }
-    const column: number | null = cursorColumn;
-    const row: number | null = cursorRow;
-    if (column == null || row == null) {
+
+    let modelColumn: number;
+    let modelRow: number;
+    try {
+      modelColumn = grid.getModelColumn(cursorColumn);
+      modelRow = grid.getModelRow(cursorRow);
+    } catch {
+      return false;
+    }
+
+    if (!model.isEditableRange(GridRange.makeCell(modelColumn, modelRow))) {
       return false;
     }
 
     if (event.key.length === 1) {
-      grid.startEditing(column, row, true, [1, 1], event.key);
+      // If the renderer for this cell's restriction type preserves the existing
+      // value on keystroke (e.g. a dropdown), open the editor without replacing.
+      const { cellInputRendererRegistry } = grid.props;
+      const restrictions = model.getColumnRestrictions(modelColumn);
+      if (restrictions.length === 1) {
+        const renderer = cellInputRendererRegistry?.get(restrictions[0].type);
+        if (renderer?.preservesExistingValue === true) {
+          grid.startEditing(cursorColumn, cursorRow);
+          return true;
+        }
+      }
+      grid.startEditing(cursorColumn, cursorRow, true, [1, 1], event.key);
       return true;
     }
 
     if (event.key === 'F2') {
-      grid.startEditing(column, row);
+      grid.startEditing(cursorColumn, cursorRow);
+      return true;
+    }
+
+    if (event.key === 'Enter') {
+      grid.startEditing(cursorColumn, cursorRow);
       return true;
     }
 
     if (event.key === 'Backspace') {
-      grid.startEditing(column, row, true, undefined, '');
+      grid.startEditing(cursorColumn, cursorRow, true, undefined, '');
       return true;
     }
 
     if (event.key === 'Delete') {
-      grid.setValueForCell(column, row, '');
+      grid.setValueForCell(cursorColumn, cursorRow, '');
       return true;
     }
     return false;
