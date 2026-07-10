@@ -47,6 +47,11 @@ export function parseValueFromNodes(nodes: NodeListOf<ChildNode>): string[][] {
 
 export function parseValueFromText(text: string): string | string[][] {
   const rows = text
+    // Normalize Windows (\r\n) and old Mac (\r) line endings to \n. Some
+    // clipboard sources (e.g. Excel on Windows via navigator.clipboard.readText)
+    // preserve carriage returns, which would otherwise leave stray \r
+    // characters on each row's final cell and produce a trailing empty row.
+    .replace(/\r\n?/g, '\n')
     .trim()
     .split('\n')
     .map(row => row.split('\t'));

@@ -161,4 +161,26 @@ describe('parseValueFromText', () => {
       ['1', '2'],
     ]);
   });
+
+  it('handles Windows CRLF line endings without stray carriage returns or empty rows', () => {
+    // Excel on Windows terminates each row with \r\n. The right-click paste
+    // path reads this verbatim via navigator.clipboard.readText().
+    expect(
+      parseValueFromText('Account A\tA\tPOV\r\nAccount B\tB\tVWAP\r\n')
+    ).toEqual([
+      ['Account A', 'A', 'POV'],
+      ['Account B', 'B', 'VWAP'],
+    ]);
+  });
+
+  it('handles legacy Mac CR line endings', () => {
+    expect(parseValueFromText('A\tB\r1\t2\r')).toEqual([
+      ['A', 'B'],
+      ['1', '2'],
+    ]);
+  });
+
+  it('strips a trailing CRLF for a single value', () => {
+    expect(parseValueFromText('VWAP\r\n')).toBe('VWAP');
+  });
 });

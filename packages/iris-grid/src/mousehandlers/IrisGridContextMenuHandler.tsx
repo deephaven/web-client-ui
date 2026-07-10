@@ -29,6 +29,7 @@ import {
   isExpandableColumnGridModel,
   isExpandableGridModel,
   type ModelIndex,
+  parseValueFromText,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -566,8 +567,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           action: async () => {
             try {
               const text = await readFromClipboard();
-              const items = text.split('\n').map(row => row.split('\t'));
-              await grid.pasteValue(items);
+              const value = parseValueFromText(text);
+              await grid.pasteValue(value);
             } catch (err) {
               if (err instanceof ClipboardUnavailableError) {
                 irisGrid.handleOpenNoPastePermissionModal(
