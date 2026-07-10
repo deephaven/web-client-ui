@@ -18,6 +18,10 @@ export type CommandHistoryViewportUpdaterProps = {
   bottom?: number;
   search?: string;
   isReversed?: boolean;
+  // Whether the command history panel is currently visible. When it's
+  // backgrounded (e.g. another tab is active) we don't need to keep a viewport
+  // subscribed on the table, as nothing is rendered from it.
+  isPanelActive?: boolean;
   onUpdate: ViewportUpdateCallback<CommandHistoryStorageItem>;
 };
 
@@ -34,6 +38,7 @@ function CommandHistoryViewportUpdater({
   bottom = 0,
   search,
   isReversed = false,
+  isPanelActive = true,
   onUpdate,
 }: CommandHistoryViewportUpdaterProps): null {
   const throttledUpdateViewport = useMemo(
@@ -82,13 +87,29 @@ function CommandHistoryViewportUpdater({
   );
   useEffect(
     function updateViewport() {
+      if (!isPanelActive) {
+        // Panel is backgrounded - drop the viewport so the table isn't kept
+        // subscribed / re-fetching while nothing is being displayed.
+        throttledUpdateViewport.cancel();
+        table.setViewport(undefined);
+        return;
+      }
       throttledUpdateViewport({
         top,
         bottom,
         columns,
       });
     },
-    [throttledUpdateViewport, top, bottom, columns, search, isReversed]
+    [
+      throttledUpdateViewport,
+      table,
+      top,
+      bottom,
+      columns,
+      search,
+      isReversed,
+      isPanelActive,
+    ]
   );
   useEffect(
     () => () => {

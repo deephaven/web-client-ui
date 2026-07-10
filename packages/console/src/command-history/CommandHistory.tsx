@@ -51,7 +51,11 @@ interface CommandHistoryProps {
   ) => void;
   table: CommandHistoryTable;
   commandHistoryStorage: CommandHistoryStorage;
+  // Whether the panel is currently visible. When backgrounded we drop the
+  // table viewport subscription instead of keeping it open unnecessarily.
+  isPanelActive?: boolean;
 }
+
 interface CommandHistoryState {
   actions: ItemAction[];
   historyActions: HistoryAction[];
@@ -376,7 +380,7 @@ class CommandHistory extends Component<
   }
 
   render(): ReactElement {
-    const { language, table } = this.props;
+    const { language, table, isPanelActive = true } = this.props;
     const {
       actions,
       historyActions,
@@ -426,6 +430,7 @@ class CommandHistory extends Component<
             top={top}
             bottom={bottom}
             search={debouncedSearchText}
+            isPanelActive={isPanelActive}
             onUpdate={this.handleViewportUpdate}
           />
           <ContextActions actions={actions} />
