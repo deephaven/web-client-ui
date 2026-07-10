@@ -12,6 +12,12 @@ import {
   isFigureChartModel,
 } from '@deephaven/chart';
 import type PlotlyType from 'plotly.js';
+import type {
+  PlotMouseEvent,
+  PlotSelectionEvent,
+  ClickAnnotationEvent,
+  LegendClickEvent,
+} from 'plotly.js';
 import {
   type DashboardPanelProps,
   getOpenedPanelMapForDashboard,
@@ -133,6 +139,21 @@ interface OwnProps extends DashboardPanelProps {
   containerRef?: React.Ref<HTMLDivElement>;
 
   panelState?: GLChartPanelState;
+
+  /**
+   * Optional Plotly event handlers forwarded to the underlying Chart/Plotly
+   * component. Used by plugins (e.g. plotly-express) to receive chart events.
+   */
+  onPlotlyRelayout?: (changes: Record<string, unknown>) => void;
+  onPlotlyClick?: (data: Readonly<PlotMouseEvent>) => void;
+  onPlotlyDoubleClick?: () => void;
+  onPlotlySelected?: (data: Readonly<PlotSelectionEvent> | undefined) => void;
+  onPlotlyDeselect?: () => void;
+  onPlotlyClickAnnotation?: (data: Readonly<ClickAnnotationEvent>) => void;
+  onPlotlyLegendClick?: (data: Readonly<LegendClickEvent>) => boolean;
+  onPlotlyLegendDoubleClick?: (data: Readonly<LegendClickEvent>) => boolean;
+  onPlotlyWebGlContextLost?: () => void;
+  onPlotElementChange?: (element: HTMLElement | null) => void;
 }
 
 interface StateProps {
@@ -1072,6 +1093,16 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       settings,
       Plotly,
       containerRef,
+      onPlotlyRelayout,
+      onPlotlyClick,
+      onPlotlyDoubleClick,
+      onPlotlySelected,
+      onPlotlyDeselect,
+      onPlotlyClickAnnotation,
+      onPlotlyLegendClick,
+      onPlotlyLegendDoubleClick,
+      onPlotlyWebGlContextLost,
+      onPlotElementChange,
     } = this.props;
     const {
       columnMap,
@@ -1147,6 +1178,16 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 onSettingsChanged={this.handleSettingsChanged}
                 Plotly={Plotly}
                 containerRef={containerRef}
+                onPlotlyRelayout={onPlotlyRelayout}
+                onPlotlyClick={onPlotlyClick}
+                onPlotlyDoubleClick={onPlotlyDoubleClick}
+                onPlotlySelected={onPlotlySelected}
+                onPlotlyDeselect={onPlotlyDeselect}
+                onPlotlyClickAnnotation={onPlotlyClickAnnotation}
+                onPlotlyLegendClick={onPlotlyLegendClick}
+                onPlotlyLegendDoubleClick={onPlotlyLegendDoubleClick}
+                onPlotlyWebGlContextLost={onPlotlyWebGlContextLost}
+                onPlotElementChange={onPlotElementChange}
               />
             )}
           </div>

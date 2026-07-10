@@ -3,14 +3,7 @@
 
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter } from '@deephaven/jsapi-utils';
-import type {
-  Layout,
-  Data,
-  PlotMouseEvent,
-  PlotSelectionEvent,
-  ClickAnnotationEvent,
-  LegendClickEvent,
-} from 'plotly.js';
+import type { Layout, Data } from 'plotly.js';
 import { type FilterColumnMap, type FilterMap } from './ChartUtils';
 
 export type ChartEvent = DhType.Event<unknown>;
@@ -104,93 +97,6 @@ class ChartModel {
   hasSelectionCallbacks(): boolean {
     return false;
   }
-
-  /**
-   * Called by the Chart component when Plotly fires a relayout event
-   * (user pan/zoom/axis reset). Override to handle relayout events.
-   * @param changes The layout keys that changed
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-  onRelayout(changes: Record<string, unknown>): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires a double-click event
-   * (e.g. double-clicking to reset axes in zoom/pan mode). Override to handle
-   * double-click events.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onDoubleClick(): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires a click event on a point.
-   * Override to handle click events.
-   * @param event The Plotly click event
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-  onClick(event: PlotMouseEvent): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires a box/lasso selection
-   * event. Override to handle selection events.
-   * @param event The Plotly selection event (undefined when the selection is empty)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-  onSelected(event: PlotSelectionEvent | undefined): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires a deselect event
-   * (selection cleared). Override to handle deselect events.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onDeselect(): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires an annotation click event.
-   * Override to handle annotation click events.
-   * @param event The Plotly annotation click event
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-  onClickAnnotation(event: ClickAnnotationEvent): void {}
-
-  /**
-   * Called by the Chart component when Plotly fires a legend item click.
-   * Override to handle legend clicks. Return false to prevent Plotly's default
-   * visibility toggle.
-   * @param event The Plotly legend click event
-   * @returns False to prevent the default, true (or void) to allow it
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onLegendClick(event: LegendClickEvent): boolean {
-    return true;
-  }
-
-  /**
-   * Called by the Chart component when Plotly fires a legend item double-click.
-   * Override to handle legend double-clicks. Return false to prevent Plotly's
-   * default isolate/show-all behavior.
-   * @param event The Plotly legend click event
-   * @returns False to prevent the default, true (or void) to allow it
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onLegendDoubleClick(event: LegendClickEvent): boolean {
-    return true;
-  }
-
-  /**
-   * Called by the Chart component when Plotly fires a WebGL context lost event.
-   * Override to handle WebGL context loss.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onWebGlContextLost(): void {}
-
-  /**
-   * Called by the Chart component once Plotly has initialized, providing the
-   * actual Plotly graph div element. Models can use this to attach imperative
-   * event listeners if needed
-   * @param plotElement The Plotly graph div element
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-  setPlotElement(plotElement: HTMLElement | null): void {}
 
   isFilterRequired(): boolean {
     return false;

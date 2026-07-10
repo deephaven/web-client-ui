@@ -71,6 +71,27 @@ interface ChartProps {
 
   /** Called when the settings for the ChartModel are changed */
   onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
+
+  /**
+   * Optional Plotly event handlers. When provided, they are forwarded to the
+   * underlying Plotly component.
+   */
+  onPlotlyRelayout?: (changes: Record<string, unknown>) => void;
+  onPlotlyClick?: (data: Readonly<PlotMouseEvent>) => void;
+  onPlotlyDoubleClick?: () => void;
+  onPlotlySelected?: (data: Readonly<PlotSelectionEvent> | undefined) => void;
+  onPlotlyDeselect?: () => void;
+  onPlotlyClickAnnotation?: (data: Readonly<ClickAnnotationEvent>) => void;
+  onPlotlyLegendClick?: (data: Readonly<LegendClickEvent>) => boolean;
+  onPlotlyLegendDoubleClick?: (data: Readonly<LegendClickEvent>) => boolean;
+  onPlotlyWebGlContextLost?: () => void;
+
+  /**
+   * Called with the Plotly graph div element once Plotly has initialized, and
+   * with null when it is purged. Consumers can use this to attach imperative
+   * event listeners that Plotly's React props don't expose.
+   */
+  onPlotElementChange?: (element: HTMLElement | null) => void;
 }
 
 // All of the ChartProps have default values except for model in the Chart
@@ -216,9 +237,9 @@ class Chart extends Component<ChartProps, ChartState> {
     this.updateFormatterSettings(settings);
 
     if (model !== prevProps.model) {
-      prevProps.model.setPlotElement(null);
+      prevProps.onPlotElementChange?.(null);
       this.unsubscribe(prevProps.model);
-      model.setPlotElement(this.plotElement);
+      this.props.onPlotElementChange?.(this.plotElement);
       this.subscribe(model);
     }
 
@@ -432,18 +453,16 @@ class Chart extends Component<ChartProps, ChartState> {
   }
 
   handlePlotInitialized(_figure: unknown, graphDiv: HTMLElement): void {
-    // Provide the actual Plotly graph div to the model so it can attach
+    // Provide the actual Plotly graph div to consumers so they can attach
     // imperative event listeners (needed for some events that Plotly doesn't
     // support in react-plotly.js)
     this.plotElement = graphDiv;
-    const { model } = this.props;
-    model.setPlotElement(graphDiv);
+    this.props.onPlotElementChange?.(graphDiv);
   }
 
   handlePlotPurge(): void {
     this.plotElement = null;
-    const { model } = this.props;
-    model.setPlotElement(null);
+    this.props.onPlotElementChange?.(null);
   }
 
   handleDownsampleClick(): void {
@@ -601,48 +620,49 @@ class Chart extends Component<ChartProps, ChartState> {
 
     this.updateModelDimensions();
 
-    const { model } = this.props;
-    model.onRelayout(changes);
+    const { onPlotlyRelayout } = this.props;
+    onPlotlyRelayout?.(changes);
   }
 
   handleClick(data: Readonly<PlotMouseEvent>): void {
-    const { model } = this.props;
-    model.onClick(data);
+    console.log('handleClick', data, this.props.onPlotlyClick);
+    const { onPlotlyClick } = this.props;
+    onPlotlyClick?.(data);
   }
 
   handleDoubleClick(): void {
-    const { model } = this.props;
-    model.onDoubleClick();
+    const { onPlotlyDoubleClick } = this.props;
+    onPlotlyDoubleClick?.();
   }
 
   handleSelected(data: Readonly<PlotSelectionEvent> | undefined): void {
-    const { model } = this.props;
-    model.onSelected(data);
+    const { onPlotlySelected } = this.props;
+    onPlotlySelected?.(data);
   }
 
   handleDeselect(): void {
-    const { model } = this.props;
-    model.onDeselect();
+    const { onPlotlyDeselect } = this.props;
+    onPlotlyDeselect?.();
   }
 
   handleClickAnnotation(data: Readonly<ClickAnnotationEvent>): void {
-    const { model } = this.props;
-    model.onClickAnnotation(data);
+    const { onPlotlyClickAnnotation } = this.props;
+    onPlotlyClickAnnotation?.(data);
   }
 
   handleLegendClick(data: Readonly<LegendClickEvent>): boolean {
-    const { model } = this.props;
-    return model.onLegendClick(data);
+    const { onPlotlyLegendClick } = this.props;
+    return onPlotlyLegendClick?.(data) ?? true;
   }
 
   handleLegendDoubleClick(data: Readonly<LegendClickEvent>): boolean {
-    const { model } = this.props;
-    return model.onLegendDoubleClick(data);
+    const { onPlotlyLegendDoubleClick } = this.props;
+    return onPlotlyLegendDoubleClick?.(data) ?? true;
   }
 
   handleWebGlContextLost(): void {
-    const { model } = this.props;
-    model.onWebGlContextLost();
+    const { onPlotlyWebGlContextLost } = this.props;
+    onPlotlyWebGlContextLost?.();
   }
 
   handleResize(): void {
