@@ -81,6 +81,16 @@ function makeChartPanelWrapper({
   setDashboardIsolatedLinkerPanelId = jest.fn(),
   source = makeTable(),
   sourcePanel = makeGridPanel(),
+  onPlotlyRelayout,
+  onPlotlyClick,
+  onPlotlyDoubleClick,
+  onPlotlySelected,
+  onPlotlyDeselect,
+  onPlotlyClickAnnotation,
+  onPlotlyLegendClick,
+  onPlotlyLegendDoubleClick,
+  onPlotlyWebGlContextLost,
+  onPlotElementChange,
 }: Partial<PanelProps & ChartPanelProps> = {}) {
   return (
     <ChartPanel
@@ -97,6 +107,16 @@ function makeChartPanelWrapper({
       setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
       source={source}
       sourcePanel={sourcePanel as unknown as PanelComponent}
+      onPlotlyRelayout={onPlotlyRelayout}
+      onPlotlyClick={onPlotlyClick}
+      onPlotlyDoubleClick={onPlotlyDoubleClick}
+      onPlotlySelected={onPlotlySelected}
+      onPlotlyDeselect={onPlotlyDeselect}
+      onPlotlyClickAnnotation={onPlotlyClickAnnotation}
+      onPlotlyLegendClick={onPlotlyLegendClick}
+      onPlotlyLegendDoubleClick={onPlotlyLegendDoubleClick}
+      onPlotlyWebGlContextLost={onPlotlyWebGlContextLost}
+      onPlotElementChange={onPlotElementChange}
     />
   );
 }
@@ -579,4 +599,52 @@ it('adds listeners to the source table when passed in and linked', async () => {
       dh.Table.EVENT_SORTCHANGED,
     ])
   );
+});
+
+it('forwards Plotly event handler props to Chart unchanged', async () => {
+  const onPlotlyRelayout = jest.fn();
+  const onPlotlyClick = jest.fn();
+  const onPlotlyDoubleClick = jest.fn();
+  const onPlotlySelected = jest.fn();
+  const onPlotlyDeselect = jest.fn();
+  const onPlotlyClickAnnotation = jest.fn();
+  const onPlotlyLegendClick = jest.fn();
+  const onPlotlyLegendDoubleClick = jest.fn();
+  const onPlotlyWebGlContextLost = jest.fn();
+  const onPlotElementChange = jest.fn();
+
+  const model = makeChartModel();
+  const modelPromise = Promise.resolve(model);
+  const makeModel = () => modelPromise;
+
+  render(
+    makeChartPanelWrapper({
+      makeModel,
+      onPlotlyRelayout,
+      onPlotlyClick,
+      onPlotlyDoubleClick,
+      onPlotlySelected,
+      onPlotlyDeselect,
+      onPlotlyClickAnnotation,
+      onPlotlyLegendClick,
+      onPlotlyLegendDoubleClick,
+      onPlotlyWebGlContextLost,
+      onPlotElementChange,
+    })
+  );
+
+  await act(() => expect(modelPromise).resolves.toBe(model));
+  callUpdateFunction();
+
+  const chartProps = MockChart.mock.calls[MockChart.mock.calls.length - 1][0];
+  expect(chartProps.onPlotlyRelayout).toBe(onPlotlyRelayout);
+  expect(chartProps.onPlotlyClick).toBe(onPlotlyClick);
+  expect(chartProps.onPlotlyDoubleClick).toBe(onPlotlyDoubleClick);
+  expect(chartProps.onPlotlySelected).toBe(onPlotlySelected);
+  expect(chartProps.onPlotlyDeselect).toBe(onPlotlyDeselect);
+  expect(chartProps.onPlotlyClickAnnotation).toBe(onPlotlyClickAnnotation);
+  expect(chartProps.onPlotlyLegendClick).toBe(onPlotlyLegendClick);
+  expect(chartProps.onPlotlyLegendDoubleClick).toBe(onPlotlyLegendDoubleClick);
+  expect(chartProps.onPlotlyWebGlContextLost).toBe(onPlotlyWebGlContextLost);
+  expect(chartProps.onPlotElementChange).toBe(onPlotElementChange);
 });

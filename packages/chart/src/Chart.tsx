@@ -233,13 +233,14 @@ class Chart extends Component<ChartProps, ChartState> {
   }
 
   componentDidUpdate(prevProps: ChartProps): void {
-    const { isActive, model, settings, theme } = this.props;
+    const { isActive, model, settings, theme, onPlotElementChange } =
+      this.props;
     this.updateFormatterSettings(settings);
 
     if (model !== prevProps.model) {
       prevProps.onPlotElementChange?.(null);
       this.unsubscribe(prevProps.model);
-      this.props.onPlotElementChange?.(this.plotElement);
+      onPlotElementChange?.(this.plotElement);
       this.subscribe(model);
     }
 
@@ -457,12 +458,14 @@ class Chart extends Component<ChartProps, ChartState> {
     // imperative event listeners (needed for some events that Plotly doesn't
     // support in react-plotly.js)
     this.plotElement = graphDiv;
-    this.props.onPlotElementChange?.(graphDiv);
+    const { onPlotElementChange } = this.props;
+    onPlotElementChange?.(graphDiv);
   }
 
   handlePlotPurge(): void {
     this.plotElement = null;
-    this.props.onPlotElementChange?.(null);
+    const { onPlotElementChange } = this.props;
+    onPlotElementChange?.(null);
   }
 
   handleDownsampleClick(): void {
@@ -625,7 +628,6 @@ class Chart extends Component<ChartProps, ChartState> {
   }
 
   handleClick(data: Readonly<PlotMouseEvent>): void {
-    console.log('handleClick', data, this.props.onPlotlyClick);
     const { onPlotlyClick } = this.props;
     onPlotlyClick?.(data);
   }
