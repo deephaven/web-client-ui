@@ -37,7 +37,6 @@ interface CommandHistoryPanelState {
   language?: string;
   contextActions: ContextAction[];
   table?: CommandHistoryTable;
-  isPanelActive: boolean;
 }
 
 class CommandHistoryPanel extends Component<
@@ -59,7 +58,6 @@ class CommandHistoryPanel extends Component<
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
     this.handleSessionClosed = this.handleSessionClosed.bind(this);
     this.handleShow = this.handleShow.bind(this);
-    this.handleHide = this.handleHide.bind(this);
     this.handleSendToConsole = this.handleSendToConsole.bind(this);
     this.handleSendToNotebook = this.handleSendToNotebook.bind(this);
 
@@ -74,7 +72,6 @@ class CommandHistoryPanel extends Component<
       session,
       sessionId,
       language,
-      isPanelActive: true,
       contextActions: [
         {
           action: this.handleFocusHistory,
@@ -85,12 +82,11 @@ class CommandHistoryPanel extends Component<
   }
 
   componentDidMount(): void {
-    const { glContainer, glEventHub, session } = this.props;
+    const { glEventHub, session } = this.props;
     glEventHub.on(ConsoleEvent.FOCUS_HISTORY, this.handleFocusHistory);
     if (session != null) {
       this.loadTable();
     }
-    this.setState({ isPanelActive: !glContainer.isHidden });
   }
 
   componentWillUnmount(): void {
@@ -113,11 +109,6 @@ class CommandHistoryPanel extends Component<
   handleShow(): void {
     // virtual list requires a forced reset to scroll position when picked up and dropped in same place
     this.container.current?.restoreScrollPosition();
-    this.setState({ isPanelActive: true });
-  }
-
-  handleHide(): void {
-    this.setState({ isPanelActive: false });
   }
 
   handleSessionOpened({
@@ -191,7 +182,7 @@ class CommandHistoryPanel extends Component<
 
   render(): JSX.Element {
     const { glContainer, glEventHub, commandHistoryStorage } = this.props;
-    const { language, contextActions, table, isPanelActive } = this.state;
+    const { language, contextActions, table } = this.state;
     return (
       <Panel
         className="command-history-pane"
@@ -201,7 +192,6 @@ class CommandHistoryPanel extends Component<
         onSessionOpen={this.handleSessionOpened}
         onSessionClose={this.handleSessionClosed}
         onShow={this.handleShow}
-        onHide={this.handleHide}
       >
         {!table && (
           <div className="command-history-disconnected-message">
@@ -217,7 +207,6 @@ class CommandHistoryPanel extends Component<
               sendToConsole={this.handleSendToConsole}
               table={table}
               commandHistoryStorage={commandHistoryStorage}
-              isPanelActive={isPanelActive}
             />
             <ContextActions actions={contextActions} />
           </>

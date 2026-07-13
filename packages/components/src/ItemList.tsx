@@ -6,7 +6,6 @@ import {
   type ListOnItemsRenderedProps,
   type ListOnScrollProps,
 } from 'react-window';
-import AutoSizer, { type Size } from 'react-virtualized-auto-sizer';
 import Log from '@deephaven/log';
 import { RangeUtils, type Range } from '@deephaven/utils';
 import ItemListItem from './ItemListItem';
@@ -77,6 +76,7 @@ type ItemListState = {
   mouseDownIndex: number | null;
   selectedRanges: readonly Range[];
   overscanStartIndex: number;
+  width: number | null;
   height: number | null;
   isDragging: boolean;
   isStuckToBottom: boolean;
@@ -99,6 +99,11 @@ export class ItemList<T> extends PureComponent<
 
   // By drawing an additional 10 items on each side, tab/keyboard navigation works better (as the next element exists)
   static DEFAULT_OVERSCAN = 10;
+
+  // An unrequested scroll to the top that arrives within this window of a size
+  // change is treated as the spurious scroll reset Golden Layout triggers when
+  // it re-parents our DOM subtree, rather than a genuine user scroll.
+  static REPARENT_SCROLL_GRACE = 250;
 
   static defaultProps = {
     offset: 0,
@@ -166,10 +171,12 @@ export class ItemList<T> extends PureComponent<
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.handleResizeObserver = this.handleResizeObserver.bind(this);
     this.renderInnerElement = this.renderInnerElement.bind(this);
 
     this.list = React.createRef();
     this.listContainer = React.createRef();
+    this.sizerContainer = React.createRef();
 
     const { isStickyBottom, selectedRanges } = props;
 
@@ -178,6 +185,7 @@ export class ItemList<T> extends PureComponent<
       mouseDownIndex: null,
       selectedRanges,
       overscanStartIndex: 0,
+      width: null,
       height: null,
       isDragging: false,
       isStuckToBottom: isStickyBottom,
@@ -185,6 +193,14 @@ export class ItemList<T> extends PureComponent<
       mouseX: null,
       mouseY: null,
     };
+  }
+
+  componentDidMount(): void {
+    const sizer = this.sizerContainer.current;
+    if (sizer != null) {
+      this.resizeObserver = new ResizeObserver(this.handleResizeObserver);
+      this.resizeObserver.observe(sizer);
+    }
   }
 
   componentDidUpdate(
@@ -228,11 +244,22 @@ export class ItemList<T> extends PureComponent<
 
   componentWillUnmount(): void {
     window.removeEventListener('mouseup', this.handleWindowMouseUp);
+    this.resizeObserver?.disconnect();
   }
 
   list: React.RefObject<List>;
 
   listContainer: React.RefObject<HTMLDivElement>;
+
+  sizerContainer: React.RefObject<HTMLDivElement>;
+
+  resizeObserver: ResizeObserver | null = null;
+
+  // Timestamp of the last size change reported by the ResizeObserver. Golden
+  // Layout re-parents our DOM subtree when a sibling panel is closed, which
+  // fires a resize and also resets the scroll container's scrollTop to 0. We
+  // use this to reject that spurious scroll-to-top (DH-22991).
+  lastResizeTime = 0;
 
   getItemSelected = memoize(
     (index: number, selectedRanges: readonly Range[]) =>
@@ -536,11 +563,18 @@ export class ItemList<T> extends PureComponent<
     this.setState({ overscanStartIndex });
   }
 
-  handleResize({ height }: Size): void {
-    if (height == null || height <= 0) {
+  handleResizeObserver(entries: ResizeObserverEntry[]): void {
+    const entry = entries[0];
+    if (entry == null) {
       return;
     }
-    this.setState({ height });
+    const { width, height } = entry.contentRect;
+    this.lastResizeTime = Date.now();
+    this.handleResize({ width, height });
+  }
+
+  handleResize({ width, height }: { width: number; height: number }): void {
+    this.setState({ width, height });
   }
 
   handleMouseLeave(): void {
@@ -614,6 +648,33 @@ export class ItemList<T> extends PureComponent<
     scrollUpdateWasRequested,
     scrollOffset,
   }: ListOnScrollProps): void {
+    const {
+      scrollOffset: prevScrollOffset,
+      isStuckToBottom,
+      height,
+    } = this.state;
+    // Golden Layout resets the scroll container's scrollTop to 0 when it
+    // re-parents our DOM subtree (which happens when a sibling panel is
+    // closed), which react-window reports as an unrequested scroll to the top.
+    // We only see this immediately after a resize, so if we get an unrequested
+    // scroll to the top right after a size change while we were scrolled well
+    // past the top, treat it as spurious and restore our position rather than
+    // jumping to the top with an out-of-view data window (DH-22991).
+    if (
+      !scrollUpdateWasRequested &&
+      scrollOffset <= 0 &&
+      prevScrollOffset != null &&
+      height != null &&
+      prevScrollOffset > height &&
+      Date.now() - this.lastResizeTime < ItemList.REPARENT_SCROLL_GRACE
+    ) {
+      if (isStuckToBottom) {
+        this.scrollToBottom();
+      } else {
+        this.restoreScrollPosition();
+      }
+      return;
+    }
     this.setState(state => {
       if (scrollUpdateWasRequested) {
         // The scroll was caused by scrollTo() or scrollToItem()
@@ -622,11 +683,15 @@ export class ItemList<T> extends PureComponent<
       }
 
       const { isStickyBottom } = this.props;
-      const { height } = state;
+      const { height: stateHeight } = state;
 
-      const isStuckToBottom =
-        isStickyBottom && this.isListAtBottom({ scrollOffset, height });
-      return { isStuckToBottom, scrollOffset } as ItemListState;
+      const nextIsStuckToBottom =
+        isStickyBottom &&
+        this.isListAtBottom({ scrollOffset, height: stateHeight });
+      return {
+        isStuckToBottom: nextIsStuckToBottom,
+        scrollOffset,
+      } as ItemListState;
     });
   }
 
@@ -729,7 +794,7 @@ export class ItemList<T> extends PureComponent<
 
   sendViewportUpdate(): void {
     const { scrollOffset, height } = this.state;
-    if (scrollOffset != null && height != null && height > 0) {
+    if (scrollOffset != null && height != null) {
       const { onViewportChange, rowHeight } = this.props;
       const topRow = Math.floor(scrollOffset / rowHeight);
       const bottomRow = topRow + Math.ceil(height / rowHeight);
@@ -786,18 +851,18 @@ export class ItemList<T> extends PureComponent<
       rowHeight,
       'data-testid': dataTestId,
     } = this.props;
-    const {
-      selectedRanges,
-      isStuckToBottom,
-      height: lastGoodHeight,
-    } = this.state;
+    const { selectedRanges, isStuckToBottom, width, height } = this.state;
 
     return (
-      <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
-        {({ width, height }) => (
+      <div
+        className="item-list-auto-sizer"
+        ref={this.sizerContainer}
+        style={{ width: '100%', height: '100%', overflow: 'hidden' }}
+      >
+        {width != null && height != null && (
           <List
             className="item-list-scroll-pane"
-            height={height > 0 ? height : lastGoodHeight ?? height}
+            height={height}
             width={width}
             initialScrollOffset={isStuckToBottom ? itemCount * rowHeight : 0}
             itemCount={itemCount}
@@ -818,7 +883,7 @@ export class ItemList<T> extends PureComponent<
             {this.renderInnerElement}
           </List>
         )}
-      </AutoSizer>
+      </div>
     );
   }
 }

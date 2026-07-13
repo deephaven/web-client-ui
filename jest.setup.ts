@@ -44,10 +44,51 @@ Object.defineProperty(window, 'performance', {
   writable: true,
 });
 
+// Report a non-zero size when an element is observed. jsdom has no layout, so
+// getBoundingClientRect returns 0; virtualized components (e.g. ItemList) need
+// a size to render their contents in tests. Mirrors the previous
+// react-virtualized-auto-sizer mock which reported a fixed 500x500.
+class MockResizeObserver {
+  private callback: ResizeObserverCallback;
+
+  private isNotifying = false;
+
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe(target: Element): void {
+    // A real ResizeObserver notifies asynchronously and batches. Guard against
+    // synchronous re-entrancy so consumers that re-observe from within their
+    // own callback (e.g. @tanstack/virtual-core) don't recurse infinitely.
+    if (this.isNotifying) {
+      return;
+    }
+    this.isNotifying = true;
+    try {
+      this.callback(
+        [
+          {
+            target,
+            contentRect: { width: 500, height: 500 },
+          } as unknown as ResizeObserverEntry,
+        ],
+        this as unknown as ResizeObserver
+      );
+    } finally {
+      this.isNotifying = false;
+    }
+  }
+
+  unobserve = jest.fn();
+
+  disconnect = jest.fn();
+}
+
 Object.defineProperty(window, 'ResizeObserver', {
-  value: function () {
-    return TestUtils.createMockProxy<ResizeObserver>();
-  },
+  configurable: true,
+  writable: true,
+  value: MockResizeObserver,
 });
 
 Object.defineProperty(window, 'IntersectionObserver', {

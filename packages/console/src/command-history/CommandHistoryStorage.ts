@@ -1,6 +1,5 @@
 import {
   type StorageTable,
-  type StorageTableViewport,
   type StorageItem,
   type StorageItemListener,
   type StorageListenerRemover,
@@ -22,8 +21,6 @@ export interface CommandHistoryStorageItem extends StorageItem {
 export interface CommandHistoryTable
   extends StorageTable<CommandHistoryStorageItem> {
   setSearch: (search: string) => void;
-  // Allow clearing the viewport (unsubscribe) when the panel is backgrounded.
-  setViewport: (viewport: StorageTableViewport | undefined) => void;
 }
 
 export interface CommandHistoryStorage {
