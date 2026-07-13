@@ -8,6 +8,176 @@ import type Stack from './Stack';
 import type Component from './Component';
 import type Root from './Root';
 
+function sampleChdbgScrollOwner(source: string): void {
+  const root = globalThis as typeof globalThis & {
+    __chdbgRuntime?: {
+      scrollOwnerSampler?: (sampleSource: string) => void;
+    };
+  };
+  root.__chdbgRuntime?.scrollOwnerSampler?.(source);
+}
+
+const REPLACE_CHILD_SCROLL_OWNER_IDS = new WeakMap<Node, number>();
+let nextReplaceChildScrollOwnerId = 1;
+
+let lastReplaceChildProbeSample: {
+  scrollTop: number | null;
+  ownerId: number | null;
+} | null = null;
+
+function getReplaceChildScrollOwnerId(node: Node | null): number | null {
+  if (node == null) {
+    return null;
+  }
+  const existingId = REPLACE_CHILD_SCROLL_OWNER_IDS.get(node);
+  if (existingId != null) {
+    return existingId;
+  }
+  const id = nextReplaceChildScrollOwnerId;
+  nextReplaceChildScrollOwnerId += 1;
+  REPLACE_CHILD_SCROLL_OWNER_IDS.set(node, id);
+  return id;
+}
+
+function resolveReplaceChildScrollOwner(
+  contextNodes: Array<Node | null | undefined>
+): HTMLDivElement | null {
+  const candidates: HTMLDivElement[] = [];
+
+  const addCandidate = (candidate: HTMLDivElement | null) => {
+    if (candidate == null || candidates.indexOf(candidate) !== -1) {
+      return;
+    }
+    candidates.push(candidate);
+  };
+
+  for (let i = 0; i < contextNodes.length; i++) {
+    const node = contextNodes[i];
+    if (!(node instanceof Element)) {
+      continue;
+    }
+
+    if (node instanceof HTMLDivElement && node.classList.contains('item-list-scroll-pane')) {
+      addCandidate(node);
+    }
+
+    addCandidate(node.closest('.item-list-scroll-pane'));
+
+    const descendantCandidates = node.querySelectorAll<HTMLDivElement>(
+      '.item-list-scroll-pane'
+    );
+    for (let j = 0; j < descendantCandidates.length; j++) {
+      addCandidate(descendantCandidates[j]);
+    }
+  }
+
+  if (candidates.length === 0) {
+    const globalCandidates = document.querySelectorAll<HTMLDivElement>(
+      '.item-list-scroll-pane'
+    );
+    for (let i = 0; i < globalCandidates.length; i++) {
+      addCandidate(globalCandidates[i]);
+    }
+  }
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  if (candidates.length === 1) {
+    return candidates[0];
+  }
+
+  for (let i = 0; i < candidates.length; i++) {
+    if (candidates[i].scrollHeight > candidates[i].clientHeight + 1) {
+      return candidates[i];
+    }
+  }
+
+  return candidates[0];
+}
+
+function logReplaceChildSplitProbe(
+  source: string,
+  contextNodes: Array<Node | null | undefined>
+): void {
+  sampleChdbgScrollOwner(source);
+
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  const ownerNode = resolveReplaceChildScrollOwner(contextNodes);
+  const currentScrollTop = ownerNode?.scrollTop ?? null;
+  const previousSampledScrollTop = lastReplaceChildProbeSample?.scrollTop ?? null;
+  const changed =
+    previousSampledScrollTop != null &&
+    currentScrollTop != null &&
+    previousSampledScrollTop !== currentScrollTop;
+  const scrollOwnerId = getReplaceChildScrollOwnerId(ownerNode);
+  const timestamp = performance.now();
+
+  // eslint-disable-next-line no-console
+  console.log('[CHDBG][REPLACE_CHILD_SPLIT]', {
+    source,
+    currentScrollTop,
+    previousSampledScrollTop,
+    changed,
+    scrollOwnerId,
+    timestamp,
+  });
+
+  lastReplaceChildProbeSample = {
+    scrollTop: currentScrollTop,
+    ownerId: scrollOwnerId,
+  };
+}
+
+type PreservedScrollOffset = {
+  element: HTMLElement;
+  scrollTop: number;
+  scrollLeft: number;
+};
+
+function capturePreservedScrollOffsets(
+  rootElement: HTMLElement
+): PreservedScrollOffset[] {
+  const offsets: PreservedScrollOffset[] = [];
+
+  const captureOffset = (element: HTMLElement) => {
+    if (element.scrollTop !== 0 || element.scrollLeft !== 0) {
+      offsets.push({
+        element,
+        scrollTop: element.scrollTop,
+        scrollLeft: element.scrollLeft,
+      });
+    }
+  };
+
+  captureOffset(rootElement);
+  const descendants = rootElement.querySelectorAll<HTMLElement>('*');
+  for (let i = 0; i < descendants.length; i++) {
+    captureOffset(descendants[i]);
+  }
+
+  return offsets;
+}
+
+function restorePreservedScrollOffsets(offsets: PreservedScrollOffset[]): void {
+  for (let i = 0; i < offsets.length; i++) {
+    const { element, scrollTop, scrollLeft } = offsets[i];
+    if (!element.isConnected) {
+      continue;
+    }
+    if (element.scrollTop !== scrollTop) {
+      element.scrollTop = scrollTop;
+    }
+    if (element.scrollLeft !== scrollLeft) {
+      element.scrollLeft = scrollLeft;
+    }
+  }
+}
+
 export function isStack(item: AbstractContentItem): item is Stack {
   return item.isStack;
 }
@@ -232,12 +402,21 @@ export default abstract class AbstractContentItem extends EventEmitter {
 
     const index = this.contentItems.indexOf(oldChild);
     const parentNode = oldChild.element[0].parentNode;
+    const preservedScrollOffsets = capturePreservedScrollOffsets(
+      newChild.element[0]
+    );
 
     if (index === -1) {
       throw new Error("Can't replace child. oldChild is not child of this");
     }
 
+    sampleChdbgScrollOwner('golden-layout:AbstractContentItem.replaceChild.before');
     parentNode?.replaceChild(newChild.element[0], oldChild.element[0]);
+    restorePreservedScrollOffsets(preservedScrollOffsets);
+    logReplaceChildSplitProbe(
+      'golden-layout:AbstractContentItem.replaceChild.after-dom-replaceChild',
+      [parentNode, newChild.element[0], oldChild.element[0]]
+    );
 
     /*
      * Optionally destroy the old content item
@@ -245,6 +424,10 @@ export default abstract class AbstractContentItem extends EventEmitter {
     if (_$destroyOldChild === true) {
       oldChild.parent = null;
       oldChild._$destroy();
+      logReplaceChildSplitProbe(
+        'golden-layout:AbstractContentItem.replaceChild.after-oldChild-destroy',
+        [parentNode, newChild.element[0], oldChild.element[0]]
+      );
     }
 
     /*
@@ -266,9 +449,17 @@ export default abstract class AbstractContentItem extends EventEmitter {
       newChild.isInitialised === false
     ) {
       newChild._$init();
+      logReplaceChildSplitProbe(
+        'golden-layout:AbstractContentItem.replaceChild.after-newChild-init',
+        [parentNode, newChild.element[0], oldChild.element[0]]
+      );
     }
 
     this.callDownwards('setSize');
+    logReplaceChildSplitProbe(
+      'golden-layout:AbstractContentItem.replaceChild.after-callDownwards-setSize',
+      [parentNode, newChild.element[0], oldChild.element[0]]
+    );
   }
 
   /**

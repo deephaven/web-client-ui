@@ -34,6 +34,80 @@ import './Panel.scss';
 
 const log = Log.module('Panel');
 
+type ChdbgBasePanelFlags = {
+  inGoldenLayout?: boolean;
+};
+
+type ChdbgBasePanelContext = {
+  name: string;
+  eventType: string;
+  taskId: number;
+  previousCallbackName: string | null;
+  flags: {
+    inGoldenLayout: boolean;
+  };
+  enteredAt: number;
+};
+
+type ChdbgRuntime = {
+  callbackTaskSeq: number;
+  callbackStack: ChdbgBasePanelContext[];
+  lastCompletedCallbackName: string | null;
+  scrollOwnerSampler?: (source: string) => void;
+};
+
+function getChdbgRuntime(): ChdbgRuntime {
+  const root = globalThis as typeof globalThis & {
+    __chdbgRuntime?: ChdbgRuntime;
+  };
+  if (root.__chdbgRuntime == null) {
+    root.__chdbgRuntime = {
+      callbackTaskSeq: 0,
+      callbackStack: [],
+      lastCompletedCallbackName: null,
+    };
+  }
+  return root.__chdbgRuntime;
+}
+
+function runWithChdbgCallbackContext<R>(
+  callbackName: string,
+  eventType: string,
+  flags: ChdbgBasePanelFlags,
+  run: () => R
+): R {
+  const runtime = getChdbgRuntime();
+  const parentContext =
+    runtime.callbackStack.length > 0
+      ? runtime.callbackStack[runtime.callbackStack.length - 1]
+      : null;
+  runtime.callbackTaskSeq += 1;
+  const callbackContext: ChdbgBasePanelContext = {
+    name: callbackName,
+    eventType,
+    taskId: runtime.callbackTaskSeq,
+    previousCallbackName:
+      parentContext?.name ?? runtime.lastCompletedCallbackName,
+    flags: {
+      inGoldenLayout: flags.inGoldenLayout ?? false,
+    },
+    enteredAt: performance.now(),
+  };
+  runtime.callbackStack.push(callbackContext);
+  runtime.scrollOwnerSampler?.(`callback-enter:${callbackName}`);
+
+  try {
+    return run();
+  } finally {
+    const poppedContext = runtime.callbackStack.pop();
+    if (poppedContext?.name !== callbackContext.name) {
+      runtime.callbackStack.length = 0;
+    }
+    runtime.lastCompletedCallbackName = callbackName;
+    runtime.scrollOwnerSampler?.(`callback-exit:${callbackName}`);
+  }
+}
+
 export type BasePanelProps = {
   /**
    * Reference to the component panel.
@@ -141,22 +215,36 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
   ref: React.RefObject<HTMLDivElement>;
 
   handleTab(tab: Tab): void {
-    if (tab != null) {
-      this.setState({
-        title: LayoutUtils.getTitleFromTab(tab),
-      });
-    }
-    // render after move can happen before tab event, glTab could be null
-    // when tab event is emitted, force a render update
-    this.forceUpdate();
+    runWithChdbgCallbackContext(
+      'BasePanel.handleTab',
+      'golden-layout-tab',
+      { inGoldenLayout: true },
+      () => {
+        if (tab != null) {
+          this.setState({
+            title: LayoutUtils.getTitleFromTab(tab),
+          });
+        }
+        // render after move can happen before tab event, glTab could be null
+        // when tab event is emitted, force a render update
+        this.forceUpdate();
 
-    const { onTab } = this.props;
-    onTab?.(tab);
+        const { onTab } = this.props;
+        onTab?.(tab);
+      }
+    );
   }
 
   handleTabClicked(e: MouseEvent): void {
-    const { onTabClicked } = this.props;
-    onTabClicked?.(e);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleTabClicked',
+      'golden-layout-tab-click',
+      { inGoldenLayout: true },
+      () => {
+        const { onTabClicked } = this.props;
+        onTabClicked?.(e);
+      }
+    );
   }
 
   handleFocus(event: FocusEvent<HTMLDivElement>): void {
@@ -173,33 +261,75 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
   }
 
   handleHide(...args: unknown[]): void {
-    const { onHide } = this.props;
-    onHide?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleHide',
+      'golden-layout-hide',
+      { inGoldenLayout: true },
+      () => {
+        const { onHide } = this.props;
+        onHide?.(...args);
+      }
+    );
   }
 
   handleResize(...args: unknown[]): void {
-    const { onResize } = this.props;
-    onResize?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleResize',
+      'golden-layout-resize',
+      { inGoldenLayout: true },
+      () => {
+        const { onResize } = this.props;
+        onResize?.(...args);
+      }
+    );
   }
 
   handleBeforeShow(...args: unknown[]): void {
-    const { onBeforeShow } = this.props;
-    onBeforeShow?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleBeforeShow',
+      'golden-layout-show',
+      { inGoldenLayout: true },
+      () => {
+        const { onBeforeShow } = this.props;
+        onBeforeShow?.(...args);
+      }
+    );
   }
 
   handleShow(...args: unknown[]): void {
-    const { onShow } = this.props;
-    onShow?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleShow',
+      'golden-layout-shown',
+      { inGoldenLayout: true },
+      () => {
+        const { onShow } = this.props;
+        onShow?.(...args);
+      }
+    );
   }
 
   handleTabBlur(...args: unknown[]): void {
-    const { onTabBlur } = this.props;
-    onTabBlur?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleTabBlur',
+      'golden-layout-tab-blur',
+      { inGoldenLayout: true },
+      () => {
+        const { onTabBlur } = this.props;
+        onTabBlur?.(...args);
+      }
+    );
   }
 
   handleTabFocus(...args: unknown[]): void {
-    const { onTabFocus } = this.props;
-    onTabFocus?.(...args);
+    runWithChdbgCallbackContext(
+      'BasePanel.handleTabFocus',
+      'golden-layout-tab-focus',
+      { inGoldenLayout: true },
+      () => {
+        const { onTabFocus } = this.props;
+        onTabFocus?.(...args);
+      }
+    );
   }
 
   handleRenameCancel(): void {
