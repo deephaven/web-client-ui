@@ -27,12 +27,6 @@ const ROW_BUFFER_PAGES = 3;
 
 const log = Log.module('CommandHistoryViewportUpdater');
 
-function getChdbgSeq(): number {
-  const root = globalThis as typeof globalThis & { __chdbgSeq?: number };
-  root.__chdbgSeq = (root.__chdbgSeq ?? 0) + 1;
-  return root.__chdbgSeq;
-}
-
 function CommandHistoryViewportUpdater({
   table,
   columns,
@@ -52,19 +46,6 @@ function CommandHistoryViewportUpdater({
         );
         const bufferedBottom = viewport.bottom + viewHeight * ROW_BUFFER_PAGES;
 
-        console.log('[CHDBG][S5]', {
-          seq: getChdbgSeq(),
-          t: performance.now(),
-          cb: 'CHVU.throttle.fire',
-          inTop: viewport.top,
-          inBottom: viewport.bottom,
-          bufferedTop,
-          bufferedBottom,
-          columns: viewport.columns,
-          tableType: (table as unknown as { constructor?: { name?: string } })
-            .constructor?.name,
-        });
-
         table.setViewport({
           top: bufferedTop,
           bottom: bufferedBottom,
@@ -78,15 +59,6 @@ function CommandHistoryViewportUpdater({
     function updateTableAndReturnCleanup() {
       const cleanup = table.onUpdate(
         (viewportData: ViewportData<CommandHistoryStorageItem>) => {
-          console.log('[CHDBG][S6]', {
-            seq: getChdbgSeq(),
-            t: performance.now(),
-            cb: 'CHVU.onUpdate.fromTable',
-            offset: viewportData.offset,
-            itemsLength: viewportData.items?.length ?? null,
-            firstId: viewportData.items?.[0]?.id ?? null,
-            tableSize: table.size,
-          });
           onUpdate({
             items: viewportData.items ?? [],
             offset: viewportData.offset ?? 0,

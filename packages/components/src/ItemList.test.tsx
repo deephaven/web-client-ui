@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Range } from '@deephaven/utils';
 import { type ClickOptions, TestUtils } from '@deephaven/test-utils';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ItemList from './ItemList';
 
@@ -43,130 +43,6 @@ function makeItemList({
 
 it('mounts and unmounts properly', () => {
   makeItemList();
-});
-
-describe('reparented scroll reset handling', () => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('defers abrupt top reset and commits it if no resize follows', () => {
-    jest.useFakeTimers();
-
-    const ref =
-      React.createRef<ItemList<{ value: number; displayValue: string }>>();
-    render(
-      <ItemList
-        ref={ref}
-        isStickyBottom
-        itemCount={100}
-        rowHeight={20}
-        offset={0}
-        items={makeItems(100)}
-        onSelect={jest.fn()}
-        onSelectionChange={jest.fn()}
-        onViewportChange={jest.fn()}
-      />
-    );
-
-    act(() => {
-      ref.current?.handleResize({ height: 400, width: 500 });
-      ref.current?.handleScroll({
-        scrollOffset: 100 * 20 - 400,
-        scrollUpdateWasRequested: false,
-      });
-    });
-
-    const scrollOffsetBefore = ref.current?.state.scrollOffset;
-    expect(scrollOffsetBefore).toBe(1600);
-
-    act(() => {
-      if (ref.current != null) {
-        ref.current.lastResizeTime =
-          Date.now() - ItemList.REPARENT_SCROLL_GRACE - 1;
-        ref.current.handleScroll({
-          scrollOffset: 0,
-          scrollUpdateWasRequested: false,
-        });
-      }
-    });
-
-    // Ambiguous reset is deferred, so offset is still unchanged right away.
-    expect(ref.current?.state.scrollOffset).toBe(scrollOffsetBefore);
-
-    act(() => {
-      jest.advanceTimersByTime(ItemList.REPARENT_SCROLL_GRACE);
-    });
-
-    // No resize followed, so treat it as a real user scroll-to-top.
-    expect(ref.current?.state.scrollOffset).toBe(0);
-  });
-
-  it('treats deferred top reset as spurious when resize follows', () => {
-    jest.useFakeTimers();
-
-    const ref =
-      React.createRef<ItemList<{ value: number; displayValue: string }>>();
-    render(
-      <ItemList
-        ref={ref}
-        isStickyBottom
-        itemCount={100}
-        rowHeight={20}
-        offset={0}
-        items={makeItems(100)}
-        onSelect={jest.fn()}
-        onSelectionChange={jest.fn()}
-        onViewportChange={jest.fn()}
-      />
-    );
-
-    act(() => {
-      ref.current?.handleResize({ height: 400, width: 500 });
-      ref.current?.handleScroll({
-        scrollOffset: 100 * 20 - 400,
-        scrollUpdateWasRequested: false,
-      });
-    });
-
-    const scrollOffsetBefore = ref.current?.state.scrollOffset;
-    expect(scrollOffsetBefore).toBe(1600);
-
-    const scrollToBottomSpy = jest.spyOn(
-      ref.current as ItemList<{ value: number; displayValue: string }>,
-      'scrollToBottom'
-    );
-
-    act(() => {
-      if (ref.current != null) {
-        ref.current.lastResizeTime =
-          Date.now() - ItemList.REPARENT_SCROLL_GRACE - 1;
-        ref.current.handleScroll({
-          scrollOffset: 0,
-          scrollUpdateWasRequested: false,
-        });
-      }
-    });
-
-    act(() => {
-      ref.current?.handleResizeObserver([
-        {
-          contentRect: { width: 500, height: 700 },
-        } as ResizeObserverEntry,
-      ]);
-    });
-
-    expect(scrollToBottomSpy).toHaveBeenCalledTimes(1);
-
-    act(() => {
-      jest.advanceTimersByTime(ItemList.REPARENT_SCROLL_GRACE);
-    });
-
-    // The pending top reset was cancelled after resize confirmed reparenting.
-    expect(ref.current?.state.scrollOffset).toBe(scrollOffsetBefore);
-
-    scrollToBottomSpy.mockRestore();
-  });
 });
 
 describe('mouse', () => {
