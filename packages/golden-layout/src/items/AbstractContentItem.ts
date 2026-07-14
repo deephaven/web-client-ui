@@ -14,6 +14,8 @@ type PreservedScrollOffset = {
   scrollLeft: number;
 };
 
+const MAX_PRESERVED_SCROLL_ELEMENTS = 32;
+
 function capturePreservedScrollOffsets(
   rootElement: HTMLElement
 ): PreservedScrollOffset[] {
@@ -30,9 +32,20 @@ function capturePreservedScrollOffsets(
   };
 
   captureOffset(rootElement);
-  const descendants = rootElement.querySelectorAll<HTMLElement>('*');
-  for (let i = 0; i < descendants.length; i++) {
-    captureOffset(descendants[i]);
+  if (offsets.length >= MAX_PRESERVED_SCROLL_ELEMENTS) {
+  }
+
+  // Use TreeWalker so we do not allocate a full descendant list for large subtrees.
+  const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_ELEMENT);
+  while (offsets.length < MAX_PRESERVED_SCROLL_ELEMENTS) {
+    const node = walker.nextNode();
+    if (node == null) {
+      break;
+    }
+
+    if (node instanceof HTMLElement) {
+      captureOffset(node);
+    }
   }
 
   return offsets;
@@ -276,16 +289,18 @@ export default abstract class AbstractContentItem extends EventEmitter {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
 
     const index = this.contentItems.indexOf(oldChild);
-    const parentNode = oldChild.element[0].parentNode;
+    const newChildElement = newChild.element[0];
+    const oldChildElement = oldChild.element[0];
+    const parentNode = oldChildElement.parentNode;
     const preservedScrollOffsets = capturePreservedScrollOffsets(
-      newChild.element[0]
+      newChildElement
     );
 
     if (index === -1) {
       throw new Error("Can't replace child. oldChild is not child of this");
     }
 
-    parentNode?.replaceChild(newChild.element[0], oldChild.element[0]);
+    parentNode?.replaceChild(newChildElement, oldChildElement);
     restorePreservedScrollOffsets(preservedScrollOffsets);
 
     /*
