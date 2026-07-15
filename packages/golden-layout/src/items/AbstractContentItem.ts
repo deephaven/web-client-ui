@@ -289,18 +289,16 @@ export default abstract class AbstractContentItem extends EventEmitter {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
 
     const index = this.contentItems.indexOf(oldChild);
-    const newChildElement = newChild.element[0];
-    const oldChildElement = oldChild.element[0];
-    const parentNode = oldChildElement.parentNode;
+    const parentNode = oldChild.element[0].parentNode;
     const preservedScrollOffsets = capturePreservedScrollOffsets(
-      newChildElement
+      newChild.element[0]
     );
 
     if (index === -1) {
       throw new Error("Can't replace child. oldChild is not child of this");
     }
 
-    parentNode?.replaceChild(newChildElement, oldChildElement);
+    parentNode?.replaceChild(newChild.element[0], oldChild.element[0]);
     restorePreservedScrollOffsets(preservedScrollOffsets);
 
     /*
