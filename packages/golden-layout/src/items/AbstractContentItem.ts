@@ -14,29 +14,69 @@ type PreservedScrollOffset = {
   scrollLeft: number;
 };
 
+/**
+ * Registry of elements that currently have a non-zero scroll offset.
+ *
+ * Detaching and re-attaching a DOM subtree (as `replaceChild` does) resets the
+ * scroll offset of any scroll containers inside it. Rather than walking the
+ * entire subtree to find scrolled elements on every replace - which is O(subtree
+ * size) - we passively record scroll offsets as they change. At replace time we
+ * only need to look at the (usually tiny) set of elements that are actually
+ * scrolled.
+ */
+const scrollOffsetRegistry = new Map<
+  HTMLElement,
+  { scrollTop: number; scrollLeft: number }
+>();
+
+let isScrollListenerInstalled = false;
+
+function handleDocumentScroll(event: Event): void {
+  const element = event.target;
+  if (!(element instanceof HTMLElement)) {
+    // Scroll events from document/window target the document, not an element.
+    return;
+  }
+
+  const { scrollTop, scrollLeft } = element;
+  if (scrollTop !== 0 || scrollLeft !== 0) {
+    scrollOffsetRegistry.set(element, { scrollTop, scrollLeft });
+  } else {
+    scrollOffsetRegistry.delete(element);
+  }
+}
+
+/**
+ * Lazily install a single, global, passive scroll listener that records scroll
+ * offsets into `scrollOffsetRegistry`. Uses the capture phase so it observes
+ * scroll events from every scroll container in the document (scroll events do
+ * not bubble).
+ */
+function ensureScrollListenerInstalled(): void {
+  if (isScrollListenerInstalled || typeof document === 'undefined') {
+    return;
+  }
+  document.addEventListener('scroll', handleDocumentScroll, {
+    capture: true,
+    passive: true,
+  });
+  isScrollListenerInstalled = true;
+}
+
 function capturePreservedScrollOffsets(
   rootElement: HTMLElement
 ): PreservedScrollOffset[] {
   const offsets: PreservedScrollOffset[] = [];
 
-  const captureOffset = (element: HTMLElement) => {
-    if (element.scrollTop !== 0 || element.scrollLeft !== 0) {
-      offsets.push({
-        element,
-        scrollTop: element.scrollTop,
-        scrollLeft: element.scrollLeft,
-      });
+  // Only iterate elements known to be scrolled, not the whole subtree.
+  for (const [element, { scrollTop, scrollLeft }] of scrollOffsetRegistry) {
+    // Prune stale entries so the registry can't retain detached elements.
+    if (!element.isConnected) {
+      scrollOffsetRegistry.delete(element);
+      continue;
     }
-  };
-
-  captureOffset(rootElement);
-
-  // Use TreeWalker so we do not allocate a full descendant list for large subtrees.
-  const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_ELEMENT);
-  let node: Node | null;
-  while ((node = walker.nextNode()) != null) {
-    if (node instanceof HTMLElement) {
-      captureOffset(node);
+    if (rootElement === element || rootElement.contains(element)) {
+      offsets.push({ element, scrollTop, scrollLeft });
     }
   }
 
@@ -132,6 +172,10 @@ export default abstract class AbstractContentItem extends EventEmitter {
   ) {
     super();
     this.element = element;
+
+    // Ensure scroll offsets are tracked so they can be preserved across
+    // replaceChild (which detaches/re-attaches subtrees and resets scroll).
+    ensureScrollListenerInstalled();
 
     // Some GL things expect this config to not change
     this.config = this._extendItemNode(config);
