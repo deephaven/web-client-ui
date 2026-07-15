@@ -14,8 +14,6 @@ type PreservedScrollOffset = {
   scrollLeft: number;
 };
 
-const MAX_PRESERVED_SCROLL_ELEMENTS = 32;
-
 function capturePreservedScrollOffsets(
   rootElement: HTMLElement
 ): PreservedScrollOffset[] {
@@ -32,17 +30,11 @@ function capturePreservedScrollOffsets(
   };
 
   captureOffset(rootElement);
-  if (offsets.length >= MAX_PRESERVED_SCROLL_ELEMENTS) {
-  }
 
   // Use TreeWalker so we do not allocate a full descendant list for large subtrees.
   const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_ELEMENT);
-  while (offsets.length < MAX_PRESERVED_SCROLL_ELEMENTS) {
-    const node = walker.nextNode();
-    if (node == null) {
-      break;
-    }
-
+  let node: Node | null;
+  while ((node = walker.nextNode()) != null) {
     if (node instanceof HTMLElement) {
       captureOffset(node);
     }
