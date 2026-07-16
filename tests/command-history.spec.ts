@@ -123,13 +123,36 @@ test('command history keeps scroll position and items after a sibling panel is r
       .poll(() => scrollPane.evaluate(el => el.scrollHeight - el.clientHeight))
       .toBeGreaterThan(0);
 
+    // Wait for the split layout to finish resizing. While the panel height is
+    // still settling, the sticky-bottom list can be pulled to a transient
+    // bottom, which would clobber the scroll position we set below.
+    let lastHeight = -1;
+    await expect
+      .poll(async () => {
+        const height = await scrollPane.evaluate(el => el.clientHeight);
+        const stable = height === lastHeight;
+        lastHeight = height;
+        return stable;
+      })
+      .toBe(true);
+
     // Scroll into the middle so the offset is larger than the viewport height
     await scrollPane.evaluate(el => {
+      // eslint-disable-next-line no-param-reassign
       el.scrollTop = Math.floor(el.scrollHeight / 2);
     });
 
     scrollBefore = await scrollPane.evaluate(el => el.scrollTop);
     expect(scrollBefore).toBeGreaterThan(0);
+    // react-window reconciles a programmatic scrollTop change on the next
+    // scroll event (a frame later), and only then ingests the new offset into
+    // the list's state. Wait until the middle item (the row at the top of the
+    // viewport after scrolling to scrollHeight/2) has actually rendered, which
+    // guarantees the list has committed the new scroll offset.
+    const middleIndex = Math.floor(commandCount / 2);
+    await expect(
+      items.filter({ hasText: `history_${marker}_${middleIndex}` })
+    ).toBeVisible();
     expect(await visibleItemCount()).toBeGreaterThan(0);
   });
 
