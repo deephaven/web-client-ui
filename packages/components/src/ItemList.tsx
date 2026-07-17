@@ -764,7 +764,7 @@ export class ItemList<T> extends PureComponent<
     }
 
     const { itemCount, rowHeight } = this.props;
-    return scrollOffset + height >= itemCount * rowHeight;
+    return scrollOffset + height >= itemCount * rowHeight - 1; // Use a 1px tolerance
   }
 
   renderInnerElement({
