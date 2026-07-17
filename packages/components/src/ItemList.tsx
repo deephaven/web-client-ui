@@ -347,14 +347,16 @@ export class ItemList<T> extends PureComponent<
 
     // Re-parenting the panel (e.g. removing a sibling panel) resets the scroll
     // container to the top while react-window keeps its internal offset, which
-    // leaves the list blank. Re-assert the scroll position purely from the
-    // current geometry: clamp the last real offset to the current bounds. On a
-    // grow this naturally keeps a bottom-anchored list at the (new) bottom, so
-    // restore never needs to reason about sticky state.
+    // leaves the list blank. Re-assert the scroll position from the current
+    // geometry. If the list is stuck to the bottom, snap to the (new) bottom so
+    // a shrinking panel doesn't cut off the latest items; otherwise clamp the
+    // last real offset to the current bounds.
     const { itemCount, rowHeight } = this.props;
-    const { height } = this.state;
+    const { height, isStuckToBottom } = this.state;
     const maxOffset = Math.max(0, itemCount * rowHeight - (height ?? 0));
-    const newOffset = Math.min(Math.max(scrollOffset, 0), maxOffset);
+    const newOffset = isStuckToBottom
+      ? maxOffset
+      : Math.min(Math.max(scrollOffset, 0), maxOffset);
     container.scrollTo(0, newOffset);
   }
 
