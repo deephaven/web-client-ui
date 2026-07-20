@@ -47,22 +47,30 @@ $toolbar-bg: $content-bg;
   }
 }
 
-// Hide toolbar action buttons one-by-one as the toolbar narrows.
-// Each button is ~32px; breakpoints account for padding (16px) and gaps (4px each).
-// The overflow (⋮) button is always visible.
-@container (width < 128px) {
+// Hide buttons one-by-one (right-to-left) as the toolbar narrows; the overflow
+// (⋮) menu keeps every action reachable.
+$toolbar-btn-width: 32px; // action button incl. gap
+$toolbar-overflow-btn-width: 32px; // always-visible overflow (⋮) button
+
+// Breakpoint at which a button hides: overflow button + $buttons kept visible.
+@function toolbar-breakpoint($buttons) {
+  // stylelint-disable-next-line at-rule-no-unknown
+  @return $toolbar-overflow-btn-width + ($buttons * $toolbar-btn-width);
+}
+
+@container (width < #{toolbar-breakpoint(3)}) {
   .notebook-toolbar .btn-save {
     display: none;
   }
 }
 
-@container (width < 96px) {
+@container (width < #{toolbar-breakpoint(2)}) {
   .notebook-toolbar .btn-run-selected {
     display: none;
   }
 }
 
-@container (width < 64px) {
+@container (width < #{toolbar-breakpoint(1)}) {
   .notebook-toolbar .btn-run {
     display: none;
   }
