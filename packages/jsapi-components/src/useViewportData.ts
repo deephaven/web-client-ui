@@ -97,6 +97,7 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
     viewportPadding,
     viewportSubscriptionOptions
   );
+  const { subscriptionRef } = setPaddedViewport;
 
   const setViewport = useCallback(
     (firstRow: number) => {
@@ -149,7 +150,26 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
     // Hydrate the viewport with real data. This will fetch data from index
     // 0 to the end of the viewport + padding.
     setViewport(0);
-  }, [table, setViewport]);
+
+    // Since DH-20800, TABLE_UPDATED events fire on the subscription object
+    // rather than on the table when createViewportSubscription is used.
+    // Register the listener directly on the subscription after setViewport(0)
+    // creates it synchronously above.
+    const subscription = subscriptionRef.current;
+    if (subscription != null) {
+      return subscription.addEventListener(
+        dh.Table.EVENT_UPDATED,
+        onTableUpdated
+      );
+    }
+    return undefined;
+  }, [
+    dh.Table.EVENT_UPDATED,
+    onTableUpdated,
+    setViewport,
+    subscriptionRef,
+    table,
+  ]);
 
   useEffect(() => {
     setViewport(currentViewportFirstRowRef.current);

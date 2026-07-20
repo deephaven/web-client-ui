@@ -1,10 +1,22 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { type MutableRefObject, useCallback, useEffect, useRef } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   getSize,
   padFirstAndLastRow,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+
+/**
+ * The return type of `useSetPaddedViewportCallback`. It is callable as a
+ * function and also exposes `subscriptionRef` so that callers can register
+ * event listeners directly on the underlying `TableViewportSubscription` when
+ * one is in use (required since DH-20800 severed the table→subscription event
+ * propagation).
+ */
+export type UseSetPaddedViewportCallbackResult = {
+  (firstRow: number): void;
+  subscriptionRef: MutableRefObject<dh.TableViewportSubscription | null>;
+};
 
 /**
  * Creates a callback function that will set a Table viewport. The callback has
@@ -17,14 +29,15 @@ import {
  * @param viewportSubscriptionOptions The viewport subscription options to use. If provided and
  * the table is not a `TreeTable`, the data will be requested using a `TableViewportSubscription`.
  * Rows and columns are filled in when the subscription is created if they are missing.
- * @returns A callback function for setting the viewport.
+ * @returns A callable result with a `subscriptionRef` property exposing the
+ * active `TableViewportSubscription` (if any) so callers can attach listeners.
  */
 export function useSetPaddedViewportCallback(
   table: dh.Table | dh.TreeTable | null,
   viewportSize: number,
   viewportPadding: number,
   viewportSubscriptionOptions: Partial<dh.ViewportSubscriptionOptions> | null = null
-): (firstRow: number) => void {
+): UseSetPaddedViewportCallbackResult {
   const subscriptionRef = useRef<dh.TableViewportSubscription | null>(null);
   const prevTableRef = useRef<dh.Table | dh.TreeTable | null>(null);
   const prevViewportOptionsRef =
@@ -48,8 +61,8 @@ export function useSetPaddedViewportCallback(
 
   useEffect(() => cleanupSubscription, []);
 
-  return useCallback(
-    function setPaddedViewport(firstRow: number) {
+  const setPaddedViewport = useCallback(
+    function setPaddedViewportFn(firstRow: number) {
       if (table == null) {
         return;
       }
@@ -91,6 +104,14 @@ export function useSetPaddedViewportCallback(
     },
     [table, viewportPadding, viewportSize, viewportSubscriptionOptions]
   );
+
+  // Attach subscriptionRef as a property of the returned callback so that
+  // useViewportData can register TABLE_UPDATED listeners directly on the
+  // subscription (since DH-20800 severed table→subscription event propagation).
+  const result =
+    setPaddedViewport as unknown as UseSetPaddedViewportCallbackResult;
+  result.subscriptionRef = subscriptionRef;
+  return result;
 }
 
 export default useSetPaddedViewportCallback;

@@ -12,7 +12,10 @@ import { TestUtils } from '@deephaven/test-utils';
 import useViewportData, { type UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
-import { useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
+import {
+  useSetPaddedViewportCallback,
+  type UseSetPaddedViewportCallbackResult,
+} from './useSetPaddedViewportCallback';
 import { SCROLL_DEBOUNCE_MS } from './Constants';
 
 jest.mock('@deephaven/react-hooks', () => ({
@@ -78,12 +81,16 @@ const optionsTableNull: UseViewportDataProps<unknown, DhType.Table> = {
 
 const wrapper: React.FC<DhType.Table> = makeApiContextWrapper(dh);
 
-const useSetPaddedViewportCallbackResultA = jest
-  .fn()
-  .mockName('useSetPaddedViewportCallbackResultA');
-const useSetPaddedViewportCallbackResultB = jest
-  .fn()
-  .mockName('useSetPaddedViewportCallbackResultB');
+const stubSubscriptionRef: React.MutableRefObject<DhType.TableViewportSubscription | null> =
+  { current: null };
+const useSetPaddedViewportCallbackResultA = Object.assign(
+  jest.fn().mockName('useSetPaddedViewportCallbackResultA'),
+  { subscriptionRef: stubSubscriptionRef }
+) as unknown as UseSetPaddedViewportCallbackResult;
+const useSetPaddedViewportCallbackResultB = Object.assign(
+  jest.fn().mockName('useSetPaddedViewportCallbackResultB'),
+  { subscriptionRef: stubSubscriptionRef }
+) as unknown as UseSetPaddedViewportCallbackResult;
 const mockOnScrollCallback = jest.fn().mockName('mockOnScrollCallback');
 
 beforeEach(() => {
