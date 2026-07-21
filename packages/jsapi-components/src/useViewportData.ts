@@ -8,7 +8,6 @@ import {
   type OnTableUpdatedEvent,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   useOnScrollOffsetChangeCallback,
   type WindowedListData,
@@ -17,7 +16,6 @@ import { type KeyedItem } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableSize from './useTableSize';
-import useTableListener from './useTableListener';
 import { SCROLL_DEBOUNCE_MS } from './Constants';
 
 const log = Log.module('useViewportData');
@@ -91,11 +89,26 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
     reuseItemsOnTableResize
   );
 
+  // Store the memoized callback in a ref so that changes to `viewportData`
+  // don't invalidate the memoization of `onTableUpdated`. This prevents
+  // `useTableListener` from unnecessarily re-subscribing to the same event over
+  // and over.
+  const onTableUpdatedRef = useRef<(event: OnTableUpdatedEvent) => void>();
+  onTableUpdatedRef.current = useMemo(
+    () => createOnTableUpdatedHandler(viewportData, deserializeRow),
+    [deserializeRow, viewportData]
+  );
+
+  const onTableUpdated = useCallback((event: OnTableUpdatedEvent) => {
+    onTableUpdatedRef.current?.(event);
+  }, []);
+
   const setPaddedViewport = useSetPaddedViewportCallback(
     table,
     viewportSize,
     viewportPadding,
-    viewportSubscriptionOptions
+    viewportSubscriptionOptions,
+    onTableUpdated
   );
 
   const setViewport = useCallback(
@@ -122,24 +135,6 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
     },
     [setViewport, table]
   );
-
-  const dh = useApi();
-
-  // Store the memoized callback in a ref so that changes to `viewportData`
-  // don't invalidate the memoization of `onTableUpdated`. This prevents
-  // `useTableListener` from unnecessarily re-subscribing to the same event over
-  // and over.
-  const onTableUpdatedRef = useRef<(event: OnTableUpdatedEvent) => void>();
-  onTableUpdatedRef.current = useMemo(
-    () => createOnTableUpdatedHandler(viewportData, deserializeRow),
-    [deserializeRow, viewportData]
-  );
-
-  const onTableUpdated = useCallback((event: OnTableUpdatedEvent) => {
-    onTableUpdatedRef.current?.(event);
-  }, []);
-
-  useTableListener(table, dh.Table.EVENT_UPDATED, onTableUpdated);
 
   const size = useTableSize(table);
 

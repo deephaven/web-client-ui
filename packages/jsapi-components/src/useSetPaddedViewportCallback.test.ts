@@ -1,8 +1,10 @@
 import { renderHook } from '@testing-library/react';
 import type { dh } from '@deephaven/jsapi-types';
+import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
+import { makeApiContextWrapper } from './HookTestUtils';
 
 let table: dh.Table;
 let table2: dh.Table;
@@ -12,6 +14,7 @@ let viewportOptionsMissingColumns: Partial<dh.ViewportSubscriptionOptions>;
 let viewportOptionsMissingBoth: Partial<dh.ViewportSubscriptionOptions>;
 const viewportSize = 10;
 const viewportPadding = 4;
+const wrapper = makeApiContextWrapper(dh);
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -37,8 +40,10 @@ beforeEach(() => {
 });
 
 it('should create a callback that sets a padded viewport', () => {
-  const { result } = renderHook(() =>
-    useSetPaddedViewportCallback(table, viewportSize, viewportPadding, null)
+  const { result } = renderHook(
+    () =>
+      useSetPaddedViewportCallback(table, viewportSize, viewportPadding, null),
+    { wrapper }
   );
 
   // Call our `setPaddedViewport` callback.
@@ -68,13 +73,15 @@ it('should use TableViewportSubscription if viewport options are provided', () =
     mockSubscription
   );
 
-  const { result } = renderHook(() =>
-    useSetPaddedViewportCallback(
-      table,
-      viewportSize,
-      viewportPadding,
-      viewportOptions
-    )
+  const { result } = renderHook(
+    () =>
+      useSetPaddedViewportCallback(
+        table,
+        viewportSize,
+        viewportPadding,
+        viewportOptions
+      ),
+    { wrapper }
   );
 
   // Call callback for the first time, which should create a subscription
@@ -124,7 +131,7 @@ it('should fill missing rows and columns when creating a subscription', () => {
         viewportPadding,
         options
       ),
-    { initialProps: viewportOptionsMissingRows }
+    { initialProps: viewportOptionsMissingRows, wrapper }
   );
 
   const firstRow = 30;
@@ -169,13 +176,15 @@ it('should fill missing rows and columns when creating a subscription', () => {
 it('should use setViewport if provided a tree table', () => {
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(true);
 
-  const { result } = renderHook(() =>
-    useSetPaddedViewportCallback(
-      table,
-      viewportSize,
-      viewportPadding,
-      viewportOptions
-    )
+  const { result } = renderHook(
+    () =>
+      useSetPaddedViewportCallback(
+        table,
+        viewportSize,
+        viewportPadding,
+        viewportOptions
+      ),
+    { wrapper }
   );
 
   // Call our `setPaddedViewport` callback.
@@ -221,7 +230,7 @@ it('should set update viewport subscription if called in same render as the hook
       // Call the callback in same render
       callback(30);
     },
-    { initialProps: viewportOptions }
+    { initialProps: viewportOptions, wrapper }
   );
 
   expect(table.createViewportSubscription).toHaveBeenCalledWith(
@@ -273,6 +282,7 @@ it('should create a new subscription when viewportSubscriptionOptions or table c
       ),
     {
       initialProps: { table, options: viewportOptions },
+      wrapper,
     }
   );
 
@@ -326,13 +336,15 @@ it('should close subscription on unmount', () => {
     mockSubscription
   );
 
-  const { result, unmount } = renderHook(() =>
-    useSetPaddedViewportCallback(
-      table,
-      viewportSize,
-      viewportPadding,
-      viewportOptions
-    )
+  const { result, unmount } = renderHook(
+    () =>
+      useSetPaddedViewportCallback(
+        table,
+        viewportSize,
+        viewportPadding,
+        viewportOptions
+      ),
+    { wrapper }
   );
 
   result.current(30);
