@@ -1,25 +1,25 @@
 import { renderHook } from '@testing-library/react';
-import type { dh } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import { makeApiContextWrapper } from './HookTestUtils';
 
-let table: dh.Table;
-let table2: dh.Table;
-let viewportOptions: dh.ViewportSubscriptionOptions;
-let viewportOptionsMissingRows: Partial<dh.ViewportSubscriptionOptions>;
-let viewportOptionsMissingColumns: Partial<dh.ViewportSubscriptionOptions>;
-let viewportOptionsMissingBoth: Partial<dh.ViewportSubscriptionOptions>;
+let table: DhType.Table;
+let table2: DhType.Table;
+let viewportOptions: DhType.ViewportSubscriptionOptions;
+let viewportOptionsMissingRows: Partial<DhType.ViewportSubscriptionOptions>;
+let viewportOptionsMissingColumns: Partial<DhType.ViewportSubscriptionOptions>;
+let viewportOptionsMissingBoth: Partial<DhType.ViewportSubscriptionOptions>;
 const viewportSize = 10;
 const viewportPadding = 4;
 const wrapper = makeApiContextWrapper(dh);
 
 beforeEach(() => {
   jest.clearAllMocks();
-  table = TestUtils.createMockProxy<dh.Table>({ size: 100 });
-  table2 = TestUtils.createMockProxy<dh.Table>({ size: 101 });
+  table = TestUtils.createMockProxy<DhType.Table>({ size: 100 });
+  table2 = TestUtils.createMockProxy<DhType.Table>({ size: 101 });
   viewportOptions = {
     rows: {
       first: 0,
@@ -65,6 +65,7 @@ it('should use TableViewportSubscription if viewport options are provided', () =
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
 
   const mockSubscription = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
@@ -115,6 +116,7 @@ it('should fill missing rows and columns when creating a subscription', () => {
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
 
   const mockSubscription = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
@@ -206,10 +208,12 @@ it('should set update viewport subscription if called in same render as the hook
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
 
   const mockSubscription = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
   const mockSubscription2 = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
@@ -259,11 +263,13 @@ it('should create a new subscription when viewportSubscriptionOptions or table c
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
 
   const mockSubscription1 = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
 
   const mockSubscription2 = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };
@@ -311,7 +317,15 @@ it('should create a new subscription when viewportSubscriptionOptions or table c
   expect(mockSubscription2.update).toHaveBeenCalled();
 
   // Change table and rerender
-  const newTable = TestUtils.createMockProxy<dh.Table>({ size: 100 });
+  const mockSubscription3 = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
+    update: jest.fn(),
+    close: jest.fn(),
+  };
+  const newTable = TestUtils.createMockProxy<DhType.Table>({ size: 100 });
+  (newTable.createViewportSubscription as jest.Mock).mockReturnValue(
+    mockSubscription3
+  );
   rerender({ table: newTable, options: newViewportOptions });
   expect(mockSubscription2.close).toHaveBeenCalled();
 
@@ -328,6 +342,7 @@ it('should close subscription on unmount', () => {
   jest.spyOn(TableUtils, 'isTreeTable').mockReturnValue(false);
 
   const mockSubscription = {
+    addEventListener: jest.fn().mockReturnValue(() => undefined),
     update: jest.fn(),
     close: jest.fn(),
   };

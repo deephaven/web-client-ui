@@ -13,6 +13,7 @@ import useViewportData, { type UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
 import { useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
+import useTableListener from './useTableListener';
 import { SCROLL_DEBOUNCE_MS } from './Constants';
 
 jest.mock('@deephaven/react-hooks', () => ({
@@ -93,10 +94,20 @@ beforeEach(() => {
     .mockImplementation(t => t?.size ?? 0);
   TestUtils.asMock(useSetPaddedViewportCallback)
     .mockName('useSetPaddedViewportCallback')
-    .mockImplementation(t =>
-      t === table
-        ? useSetPaddedViewportCallbackResultA
-        : useSetPaddedViewportCallbackResultB
+    .mockImplementation(
+      (t, _size, _padding, viewportSubscriptionOptions, onUpdated) => {
+        // Simulate the listener registration that the real hook performs
+        useTableListener(
+          viewportSubscriptionOptions == null ? t : null,
+          dh.Table.EVENT_UPDATED,
+          onUpdated
+        );
+        return (
+          t === table
+            ? useSetPaddedViewportCallbackResultA
+            : useSetPaddedViewportCallbackResultB
+        ) as UseSetPaddedViewportCallbackResult;
+      }
     );
   TestUtils.asMock(useOnScrollOffsetChangeCallback)
     .mockName('useOnScrollOffsetChangeCallback')
