@@ -351,6 +351,7 @@ class Popper extends Component<PopperProps, PopperState> {
 
     // Redirect nested overlays into this Popper's container.
     const content = containPortals ? (
+      // eslint-disable-next-line react/jsx-pascal-case
       <UNSAFE_PortalProvider getContainer={() => this.element}>
         {children}
       </UNSAFE_PortalProvider>

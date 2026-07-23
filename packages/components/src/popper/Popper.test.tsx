@@ -6,12 +6,9 @@ import Popper from './Popper';
 // (the real provider renders no DOM of its own).
 jest.mock('react-aria', () => ({
   ...jest.requireActual('react-aria'),
-  UNSAFE_PortalProvider: ({
-    children,
-  }: {
-    children: React.ReactNode;
-    getContainer?: () => HTMLElement | null;
-  }) => <div data-testid="portal-provider">{children}</div>,
+  UNSAFE_PortalProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="portal-provider">{children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -75,7 +72,9 @@ it('wraps children in a portal provider when containPortals is true', () => {
   );
   expect(provider).not.toBeNull();
   // The child renders inside the portal provider wrapper.
-  expect(provider?.querySelector('[data-testid="popper-child"]')).not.toBeNull();
+  expect(
+    provider?.querySelector('[data-testid="popper-child"]')
+  ).not.toBeNull();
 });
 
 it('does not isolate popper-content by default', () => {
