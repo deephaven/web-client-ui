@@ -2,8 +2,12 @@
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import {
+  Flex,
   HierarchicalCheckboxMenu,
+  Item,
+  Picker,
   Popper,
+  SpectrumCheckbox,
   type HierarchicalCheckboxValueMap,
   Button,
 } from '@deephaven/components';
@@ -11,6 +15,7 @@ import SampleSection from './SampleSection';
 
 interface DialogState {
   isShown: boolean;
+  isPickerShown: boolean;
   checkBoxMap: HierarchicalCheckboxValueMap;
 }
 
@@ -48,6 +53,7 @@ class Dialog extends Component<unknown, DialogState> {
 
     this.state = {
       isShown: false,
+      isPickerShown: false,
       checkBoxMap: new Map([parentA, parentB, leaf] as Iterable<
         readonly [string, Map<string, boolean>]
       >),
@@ -85,7 +91,7 @@ class Dialog extends Component<unknown, DialogState> {
   }
 
   render(): React.ReactElement {
-    const { isShown, checkBoxMap } = this.state;
+    const { isShown, isPickerShown, checkBoxMap } = this.state;
 
     return (
       <SampleSection name="dialog">
@@ -125,6 +131,46 @@ class Dialog extends Component<unknown, DialogState> {
             {this.renderChild()}
           </Popper>
         </Button>
+        <Button
+          kind="primary"
+          style={{ marginBottom: '1rem', marginRight: '1rem' }}
+          onClick={() => {
+            this.setState(prevState => ({
+              isPickerShown: !prevState.isPickerShown,
+            }));
+          }}
+        >
+          Open Dialog with Picker
+          <Popper
+            options={{ placement: 'bottom' }}
+            isShown={isPickerShown}
+            onExited={() => {
+              this.setState({ isPickerShown: false });
+            }}
+            closeOnBlur
+            interactive
+            containPortals
+          >
+            <div className="p-3">
+              <h4>Sample Picker</h4>
+              <Picker label="Fruit">
+                <Item key="apple">Apple</Item>
+                <Item key="banana">Banana</Item>
+                <Item key="cherry">Cherry</Item>
+              </Picker>
+              <Flex direction="column" marginTop="size-100">
+                <SpectrumCheckbox defaultSelected>Ripe</SpectrumCheckbox>
+                <SpectrumCheckbox>Organic</SpectrumCheckbox>
+                <SpectrumCheckbox>Seedless</SpectrumCheckbox>
+              </Flex>
+            </div>
+          </Popper>
+        </Button>
+        <p>
+          A popover dialog can also contain Spectrum overlay components such as
+          a Picker. The Picker&apos;s own popover should render above the
+          dialog.
+        </p>
         <p>
           The Hierarchical Checkbox Menu uses a popover dialog to display
           hierarchical groups of checkboxes.
