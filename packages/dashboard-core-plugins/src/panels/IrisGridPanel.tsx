@@ -862,13 +862,13 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
+  /**
+   * Called when a user clicks the "Reset" button for an error message on the LoadingOverlay.
+   */
   handleErrorAction(): void {
-    const { isModelReady } = this.state;
-    if (isModelReady && this.irisGrid.current != null) {
-      this.setState({ error: null, isLoading: false });
+    if (this.irisGrid.current != null) {
       this.irisGrid.current.rollback();
-    } else {
-      this.initModel();
+      this.setState({ error: null, isLoading: false });
     }
   }
 
@@ -1262,7 +1262,9 @@ export class IrisGridPanel extends PureComponent<
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        onErrorAction={error != null ? this.handleErrorAction : undefined}
+        onErrorAction={
+          this.irisGrid.current != null ? this.handleErrorAction : undefined
+        }
         className="iris-grid-panel"
         glContainer={glContainer}
         glEventHub={glEventHub}

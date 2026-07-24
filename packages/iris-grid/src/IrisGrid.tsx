@@ -226,6 +226,7 @@ const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 function isEmptyConfig({
   advancedFilters,
   aggregationSettings,
+  conditionalFormats,
   customColumns,
   quickFilters,
   reverse,
@@ -236,6 +237,7 @@ function isEmptyConfig({
 }: {
   advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
+  conditionalFormats: readonly SidebarFormattingRule[];
   customColumns: readonly ColumnName[];
   quickFilters: ReadonlyQuickFilterMap;
   reverse: boolean;
@@ -247,6 +249,7 @@ function isEmptyConfig({
   return (
     advancedFilters.size === 0 &&
     aggregationSettings.aggregations.length === 0 &&
+    conditionalFormats.length === 0 &&
     customColumns.length === 0 &&
     quickFilters.size === 0 &&
     !reverse &&
@@ -1121,6 +1124,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     IrisGridState,
     | 'advancedFilters'
     | 'aggregationSettings'
+    | 'conditionalFormats'
     | 'customColumns'
     | 'quickFilters'
     | 'reverse'
@@ -2552,6 +2556,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const {
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
         customColumns,
         quickFilters,
         reverse,
@@ -2565,7 +2570,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
+        conditionalFormatEditIndex: null,
+        conditionalFormatPreview: undefined,
         customColumns,
+        openOptions: [],
         quickFilters,
         reverse,
         rollupConfig,
@@ -2578,7 +2587,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters: new Map(),
         aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
+        conditionalFormats: [],
+        conditionalFormatEditIndex: null,
+        conditionalFormatPreview: undefined,
         customColumns: [],
+        openOptions: [],
         quickFilters: new Map(),
         reverse: false,
         rollupConfig: undefined,
@@ -3540,6 +3553,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
       customColumns,
       quickFilters,
       reverse,
@@ -3552,6 +3566,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const config = {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
       customColumns,
       quickFilters,
       reverse,
