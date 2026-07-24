@@ -9,6 +9,7 @@ import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import deepEqual from 'fast-deep-equal';
+import deepEqualEs6 from 'fast-deep-equal/es6';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -1056,10 +1057,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (customFilters !== prevProps.customFilters) {
       this.startLoading('Filtering...', { resetRanges: true });
     }
-    if (sorts !== prevProps.sorts) {
+    if (sorts !== prevProps.sorts && !deepEqualEs6(sorts, prevProps.sorts)) {
       this.updateSorts(sorts);
     }
-    if (quickFilters !== prevProps.quickFilters) {
+    if (
+      quickFilters !== prevProps.quickFilters &&
+      !deepEqualEs6(quickFilters, prevProps.quickFilters)
+    ) {
       this.updateQuickFilters(quickFilters);
     }
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
