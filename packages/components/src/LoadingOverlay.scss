@@ -25,6 +25,12 @@ $iris-panel-scrim-bg: bg-opacity(80);
         font-size: inherit;
       }
     }
+    .error-action-button {
+      &:hover,
+      &:focus {
+        background: none;
+      }
+    }
   }
 }
 

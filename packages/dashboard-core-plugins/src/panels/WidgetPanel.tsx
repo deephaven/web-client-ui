@@ -136,6 +136,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       renderTabTooltip,
 
       onClearAllFilters,
+      onErrorAction,
       onHide,
       onFocus,
       onBlur,
@@ -172,6 +173,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={onClearAllFilters}
+        onErrorAction={onErrorAction}
         onHide={onHide}
         onFocus={onFocus}
         onBlur={onBlur}

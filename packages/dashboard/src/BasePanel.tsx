@@ -62,6 +62,7 @@ export type BasePanelProps = {
   isLoaded?: boolean;
   isClonable?: boolean;
   isRenamable?: boolean;
+  onErrorAction?: () => void;
 };
 
 interface BasePanelState {
@@ -284,6 +285,7 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
       isLoading = false,
       isClonable = false,
       isRenamable = false,
+      onErrorAction,
     } = this.props;
 
     const { tab: glTab } = glContainer;
@@ -302,6 +304,7 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
           errorMessage={errorMessage}
           isLoaded={isLoaded}
           isLoading={isLoading}
+          onErrorAction={onErrorAction}
         />
         {!isWithinPanel &&
           glTab != null &&
