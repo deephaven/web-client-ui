@@ -1,10 +1,10 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for AI coding agents (Claude Code, GitHub Copilot, etc.) working in this repository. `CLAUDE.md` imports this file — keep this the single source of truth and don't duplicate its content elsewhere.
 
 ## Repo shape
 
-Lerna + npm workspaces monorepo with ~38 packages under `packages/*`. Nx is used only for build caching (see `nx.json`). Node 24 / npm 11 (`.nvmrc`). Most packages are libraries built with Babel + Sass; the four apps (`code-studio`, `embed-widget`, `embed-chart`, `embed-grid`) are built with Vite.
+Lerna + npm workspaces monorepo with 40 packages under `packages/*`. Nx is used only for build caching (see `nx.json`). Node 24 / npm 11 (`.nvmrc`). Most packages are libraries built with Babel + Sass; the four apps (`code-studio`, `embed-widget`, `embed-chart`, `embed-grid`) are built with Vite.
 
 The web UI does not work standalone — it requires a `deephaven-core` server on port 10000 (override with `VITE_PROXY_URL` in `packages/<app>/.env.local`). For E2E, core must run with anonymous auth and `-Ddeephaven.application.dir=tests/docker-scripts/data/app.d` (see README's E2E section).
 

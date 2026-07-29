@@ -1,14 +1,14 @@
 ---
-applyTo: "packages/**/*.{ts,tsx,js,jsx}"
+applyTo: "packages/**/*.ts,packages/**/*.tsx,packages/**/*.js,packages/**/*.jsx"
 ---
 
 # Code quality review
 
-- Review changed source as a code quality specialist.
-- Check that the change matches established patterns in the same package before recommending a new abstraction.
-- Prefer focused functions/components, descriptive names, and clear data flow over clever or overly dense logic.
-- Flag copy/pasted logic when an existing utility, hook, model, or component would be a better fit.
-- Check for maintainable error handling and cleanup, especially around async code, event listeners, and subscriptions.
-- In React code, prefer patterns already used nearby for hooks, props, memoization, and state ownership.
-- In stateful cross-cutting code, ensure reducers, selectors, and plugin registration remain easy to follow.
-- Avoid nitpicks about formatting or trivial style unless they hide a real maintenance problem.
+- Compare the change against established patterns in the same package before recommending a new abstraction; consistency with neighbors beats novelty.
+- Flag copy/pasted logic when an existing utility, hook, model, or component in a workspace package would be a better fit.
+- Flag missing cleanup around async code, event listeners, timers, and JS API subscriptions — components must release resources on unmount, and async results must not be applied after cancellation/unmount.
+- Flag swallowed errors: empty `catch` blocks, unhandled promise rejections, or errors logged without being surfaced where the user or caller needs them.
+- In React code, prefer the hook, memoization, and state-ownership patterns already used nearby; flag state lifted higher or duplicated wider than necessary.
+- In Redux and plugin code, reducers, selectors, and registrations must remain easy to trace; flag indirection that hides where state changes.
+- Prefer focused functions/components, descriptive names, and clear data flow over clever or dense logic.
+- Do not comment on formatting or trivial style — Prettier/ESLint/Stylelint enforce those in CI.
