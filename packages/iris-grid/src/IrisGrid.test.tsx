@@ -111,47 +111,70 @@ describe('canRollback', () => {
 });
 
 describe('rollback', () => {
-  it('restores state from lastLoadedConfig and clears it', () => {
+  it('restores all config fields from lastLoadedConfig and clears it', () => {
     const component = makeComponent();
-    component.lastLoadedConfig = {
-      advancedFilters: new Map(),
-      aggregationSettings: { aggregations: [], showOnTop: true },
-      conditionalFormats: [],
-      conditionalFormatEditIndex: 1,
-      conditionalFormatPreview: undefined,
-      customColumns: [],
-      quickFilters: new Map(),
-      reverse: false,
-      rollupConfig: undefined,
-      searchFilter: undefined,
-      selectDistinctColumns: [],
-      sorts: [],
+    const config = {
+      advancedFilters: new Map([[0, {} as never]]),
+      aggregationSettings: { aggregations: [{} as never], showOnTop: true },
+      conditionalFormats: [{} as never],
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: {} as never,
+      customColumns: ['col=1'],
+      quickFilters: new Map([[1, {} as never]]),
+      reverse: true,
+      rollupConfig: {
+        columns: ['a'],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+        includeDescriptions: true as const,
+      },
+      searchFilter: {} as never,
+      selectDistinctColumns: ['col0'],
+      sorts: [{} as never],
     };
-    act(() => {
-      component.rollback();
-    });
+    component.lastLoadedConfig = config;
+    // Mock setState to skip re-render so unsafe field values (e.g. reverse: true) don't crash
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
     expect(component.lastLoadedConfig).toBeNull();
-    expect(component.state.aggregationSettings.showOnTop).toBe(true);
-    expect(component.state.conditionalFormats).toEqual([]);
-    expect(component.state.conditionalFormatEditIndex).toBe(1);
-    expect(component.state.conditionalFormatPreview).toBeUndefined();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: config.advancedFilters,
+      aggregationSettings: config.aggregationSettings,
+      conditionalFormats: config.conditionalFormats,
+      conditionalFormatEditIndex: config.conditionalFormatEditIndex,
+      conditionalFormatPreview: config.conditionalFormatPreview,
+      customColumns: config.customColumns,
+      quickFilters: config.quickFilters,
+      reverse: config.reverse,
+      rollupConfig: config.rollupConfig,
+      searchFilter: config.searchFilter,
+      selectDistinctColumns: config.selectDistinctColumns,
+      sorts: config.sorts,
+    });
   });
 
   it('resets all config fields to defaults when lastLoadedConfig is null', () => {
     const component = makeComponent();
     component.lastLoadedConfig = null;
-    // Seed dirty conditional format state without triggering re-render
-    Object.assign(component.state, {
-      conditionalFormats: [{} as never],
-      conditionalFormatEditIndex: 2,
-      conditionalFormatPreview: {} as never,
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
     });
-    act(() => {
-      component.rollback();
-    });
-    expect(component.state.conditionalFormats).toEqual([]);
-    expect(component.state.conditionalFormatEditIndex).toBeNull();
-    expect(component.state.conditionalFormatPreview).toBeUndefined();
   });
 });
 
