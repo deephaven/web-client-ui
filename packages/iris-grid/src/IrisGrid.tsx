@@ -223,43 +223,6 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
 
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
-function isEmptyConfig({
-  advancedFilters,
-  aggregationSettings,
-  conditionalFormats,
-  customColumns,
-  quickFilters,
-  reverse,
-  rollupConfig,
-  searchFilter,
-  selectDistinctColumns,
-  sorts,
-}: {
-  advancedFilters: ReadonlyAdvancedFilterMap;
-  aggregationSettings: AggregationSettings;
-  conditionalFormats: readonly SidebarFormattingRule[];
-  customColumns: readonly ColumnName[];
-  quickFilters: ReadonlyQuickFilterMap;
-  reverse: boolean;
-  rollupConfig?: UIRollupConfig;
-  searchFilter?: DhType.FilterCondition;
-  selectDistinctColumns: readonly ColumnName[];
-  sorts: readonly SortDescriptor[];
-}): boolean {
-  return (
-    advancedFilters.size === 0 &&
-    aggregationSettings.aggregations.length === 0 &&
-    conditionalFormats.length === 0 &&
-    customColumns.length === 0 &&
-    quickFilters.size === 0 &&
-    !reverse &&
-    rollupConfig == null &&
-    searchFilter == null &&
-    selectDistinctColumns.length === 0 &&
-    sorts.length === 0
-  );
-}
-
 export type FilterData = {
   operator?: FilterTypeValue; // Default behavior treats no operator as equals
   text: string;
@@ -2608,7 +2571,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * @returns true if there's a previously known safe state or if some of the current state isn't empty.
    */
   canRollback(): boolean {
-    return this.lastLoadedConfig != null || !isEmptyConfig(this.state);
+    return (
+      this.lastLoadedConfig != null || !IrisGridUtils.isEmptyConfig(this.state)
+    );
   }
 
   startListening(model: IrisGridModel): void {
@@ -3582,7 +3547,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
     };
 
-    if (!isEmptyConfig(config)) {
+    if (!IrisGridUtils.isEmptyConfig(config)) {
       this.lastLoadedConfig = config;
     } else {
       this.lastLoadedConfig = null;
