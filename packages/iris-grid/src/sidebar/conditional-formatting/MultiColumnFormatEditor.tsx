@@ -217,6 +217,11 @@ function MultiColumnFormatEditor(
 
   const columnNames = useMemo(() => columns.map(({ name }) => name), [columns]);
 
+  const selectedFormattedColumnKeys = useMemo(
+    () => selectedFormattedColumns.map(c => c.name),
+    [selectedFormattedColumns]
+  );
+
   return (
     <div className="conditional-rule-editor form">
       <div className="mb-2">
@@ -248,7 +253,7 @@ function MultiColumnFormatEditor(
         <MultiSelect
           aria-label="Select columns to apply formatting to"
           width="100%"
-          selectedKeys={selectedFormattedColumns.map(c => c.name)}
+          selectedKeys={selectedFormattedColumnKeys}
           onChange={handleFormattedColumnsChange}
         >
           {columnNames}
