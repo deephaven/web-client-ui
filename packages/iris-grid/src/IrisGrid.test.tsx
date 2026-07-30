@@ -110,6 +110,51 @@ describe('canRollback', () => {
   });
 });
 
+describe('rollback', () => {
+  it('restores state from lastLoadedConfig and clears it', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: true },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: 1,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      searchFilter: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    };
+    act(() => {
+      component.rollback();
+    });
+    expect(component.lastLoadedConfig).toBeNull();
+    expect(component.state.aggregationSettings.showOnTop).toBe(true);
+    expect(component.state.conditionalFormats).toEqual([]);
+    expect(component.state.conditionalFormatEditIndex).toBe(1);
+    expect(component.state.conditionalFormatPreview).toBeUndefined();
+  });
+
+  it('resets all config fields to defaults when lastLoadedConfig is null', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Seed dirty conditional format state without triggering re-render
+    Object.assign(component.state, {
+      conditionalFormats: [{} as never],
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: {} as never,
+    });
+    act(() => {
+      component.rollback();
+    });
+    expect(component.state.conditionalFormats).toEqual([]);
+    expect(component.state.conditionalFormatEditIndex).toBeNull();
+    expect(component.state.conditionalFormatPreview).toBeUndefined();
+  });
+});
+
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 
