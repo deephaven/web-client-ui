@@ -3,7 +3,13 @@ import classNames from 'classnames';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Select } from '@deephaven/components';
+import {
+  ComboBox,
+  Item,
+  type ItemKey,
+  Picker,
+  Section,
+} from '@deephaven/components';
 import {
   StringCondition,
   DateCondition,
@@ -28,13 +34,17 @@ const log = Log.module('ConditionEditor');
 export interface ConditionEditorProps {
   dh: typeof DhType;
   column: ModelColumn;
+  columns: ModelColumn[];
   config: ConditionConfig;
   onChange?: (config: ConditionConfig, isValid: boolean) => void;
 }
 
 const DEFAULT_CALLBACK = (): void => undefined;
 
-const numberConditionOptions = [
+const VALUE_PREFIX = 'value-';
+const COLUMN_PREFIX = 'column-';
+
+const numberValueConditions = [
   NumberCondition.IS_EQUAL,
   NumberCondition.IS_NOT_EQUAL,
   NumberCondition.IS_BETWEEN,
@@ -44,13 +54,18 @@ const numberConditionOptions = [
   NumberCondition.LESS_THAN_OR_EQUAL,
   NumberCondition.IS_NULL,
   NumberCondition.IS_NOT_NULL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForNumberCondition(option)}
-  </option>
-));
+];
 
-const stringConditions = [
+const numberColumnConditions = [
+  NumberCondition.IS_EQUAL,
+  NumberCondition.IS_NOT_EQUAL,
+  NumberCondition.GREATER_THAN,
+  NumberCondition.GREATER_THAN_OR_EQUAL,
+  NumberCondition.LESS_THAN,
+  NumberCondition.LESS_THAN_OR_EQUAL,
+];
+
+const stringValueConditions = [
   StringCondition.IS_EXACTLY,
   StringCondition.IS_NOT_EXACTLY,
   StringCondition.CONTAINS,
@@ -59,13 +74,18 @@ const stringConditions = [
   StringCondition.ENDS_WITH,
   StringCondition.IS_NULL,
   StringCondition.IS_NOT_NULL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForStringCondition(option)}
-  </option>
-));
+];
 
-const dateConditions = [
+const stringColumnConditions = [
+  StringCondition.IS_EXACTLY,
+  StringCondition.IS_NOT_EXACTLY,
+  StringCondition.CONTAINS,
+  StringCondition.DOES_NOT_CONTAIN,
+  StringCondition.STARTS_WITH,
+  StringCondition.ENDS_WITH,
+];
+
+const dateValueConditions = [
   DateCondition.IS_EXACTLY,
   DateCondition.IS_NOT_EXACTLY,
   DateCondition.IS_BEFORE,
@@ -74,33 +94,42 @@ const dateConditions = [
   DateCondition.IS_AFTER_OR_EQUAL,
   DateCondition.IS_NULL,
   DateCondition.IS_NOT_NULL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForDateCondition(option)}
-  </option>
-));
+];
 
-const booleanConditions = [
+const dateColumnConditions = [
+  DateCondition.IS_EXACTLY,
+  DateCondition.IS_NOT_EXACTLY,
+  DateCondition.IS_BEFORE,
+  DateCondition.IS_BEFORE_OR_EQUAL,
+  DateCondition.IS_AFTER,
+  DateCondition.IS_AFTER_OR_EQUAL,
+];
+
+const booleanValueConditions = [
   BooleanCondition.IS_TRUE,
   BooleanCondition.IS_FALSE,
+  BooleanCondition.IS_EQUAL,
+  BooleanCondition.IS_NOT_EQUAL,
   BooleanCondition.IS_NULL,
   BooleanCondition.IS_NOT_NULL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForBooleanCondition(option)}
-  </option>
-));
+];
 
-const charConditions = [
+const booleanColumnConditions = [
+  BooleanCondition.IS_EQUAL,
+  BooleanCondition.IS_NOT_EQUAL,
+];
+
+const charValueConditions = [
   CharCondition.IS_EQUAL,
   CharCondition.IS_NOT_EQUAL,
   CharCondition.IS_NULL,
   CharCondition.IS_NOT_NULL,
-].map(option => (
-  <option key={option} value={option}>
-    {getLabelForCharCondition(option)}
-  </option>
-));
+];
+
+const charColumnConditions = [
+  CharCondition.IS_EQUAL,
+  CharCondition.IS_NOT_EQUAL,
+];
 
 function isNumberConditionValid(
   condition: NumberCondition,
@@ -136,184 +165,125 @@ function isNumberConditionValid(
   return false;
 }
 
-function getNumberInputs(
-  selectedCondition: NumberCondition,
-  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  handleStartValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  handleEndValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  isInvalid: boolean,
-  conditionValue?: string,
-  startValue?: string,
-  endValue?: string
-): JSX.Element | null {
-  switch (selectedCondition) {
-    case NumberCondition.IS_EQUAL:
-    case NumberCondition.IS_NOT_EQUAL:
-    case NumberCondition.GREATER_THAN:
-    case NumberCondition.GREATER_THAN_OR_EQUAL:
-    case NumberCondition.LESS_THAN:
-    case NumberCondition.LESS_THAN_OR_EQUAL:
-      return (
-        <input
-          type="number"
-          className={classNames('form-control', { 'is-invalid': isInvalid })}
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-    case NumberCondition.IS_BETWEEN:
-      return (
-        <div className="d-flex flex-row">
-          <input
-            type="number"
-            className={classNames('form-control', 'd-flex', 'mr-2', {
-              'is-invalid': isInvalid,
-            })}
-            placeholder="Start value"
-            value={startValue ?? ''}
-            onChange={handleStartValueChange}
-          />
-          <input
-            type="number"
-            className={classNames('form-control', 'd-flex', {
-              'is-invalid': isInvalid,
-            })}
-            placeholder="End value"
-            value={endValue ?? ''}
-            onChange={handleEndValueChange}
-          />
-        </div>
-      );
-    case NumberCondition.IS_NULL:
-    case NumberCondition.IS_NOT_NULL:
-      return null;
-  }
-}
-
-function getStringInputs(
-  selectedCondition: StringCondition,
-  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  isInvalid: boolean,
-  conditionValue?: string
-): JSX.Element | null {
-  switch (selectedCondition) {
-    case StringCondition.IS_NULL:
-    case StringCondition.IS_NOT_NULL:
-      return null;
-    default:
-      return (
-        <input
-          type="text"
-          className={classNames('form-control', { 'is-invalid': isInvalid })}
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-  }
-}
-
-function getDateInputs(
-  selectedCondition: DateCondition,
-  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  isInvalid: boolean,
-  conditionValue?: string
-): JSX.Element | null {
-  switch (selectedCondition) {
-    case DateCondition.IS_NULL:
-    case DateCondition.IS_NOT_NULL:
-      return null;
-    default:
-      return (
-        <input
-          type="text"
-          className={classNames('form-control', { 'is-invalid': isInvalid })}
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-  }
-}
-
-function getBooleanInputs(): null {
-  return null;
-}
-
-function getCharInputs(
-  selectedCondition: CharCondition,
-  handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  isInvalid: boolean,
-  conditionValue?: string
-): JSX.Element | null {
-  switch (selectedCondition) {
-    case CharCondition.IS_NULL:
-    case CharCondition.IS_NOT_NULL:
-      return null;
-    default:
-      return (
-        <input
-          type="text"
-          className={classNames('form-control', { 'is-invalid': isInvalid })}
-          maxLength={1}
-          placeholder="Enter value"
-          value={conditionValue ?? ''}
-          onChange={handleValueChange}
-        />
-      );
-  }
-}
-
 function ConditionEditor(props: ConditionEditorProps): JSX.Element {
-  const { column, config, dh, onChange = DEFAULT_CALLBACK } = props;
+  const { column, columns, config, dh, onChange = DEFAULT_CALLBACK } = props;
   const selectedColumnType = column.type;
   const [prevColumnType, setPrevColumnType] = useState(selectedColumnType);
-  const [selectedCondition, setCondition] = useState(config.condition);
-  const [conditionValue, setValue] = useState(config.value);
+
+  // Encode both condition and RHV mode in a single key: 'value-is-equal' or 'column-is-equal'
+  const [selectedConditionKey, setConditionKey] = useState(
+    () =>
+      `${
+        typeof config.rightHandValue === 'object' ? COLUMN_PREFIX : VALUE_PREFIX
+      }${config.condition}`
+  );
+  const selectedCondition = selectedConditionKey.replace(
+    /^(value|column)-/,
+    ''
+  ) as Condition;
+  const isColumnMode = selectedConditionKey.startsWith(COLUMN_PREFIX);
+
+  const [conditionValue, setValue] = useState<string | ModelColumn | undefined>(
+    config.rightHandValue
+  );
   const [startValue, setStartValue] = useState(config.start);
   const [endValue, setEndValue] = useState(config.end);
   const [isValid, setIsValid] = useState(true);
 
   if (selectedColumnType !== prevColumnType) {
     // Column type changed, reset condition and value fields
-    setCondition(getDefaultConditionForType(selectedColumnType));
+    setConditionKey(
+      `${VALUE_PREFIX}${getDefaultConditionForType(selectedColumnType)}`
+    );
     setValue(getDefaultValueForType(selectedColumnType));
     setStartValue(undefined);
     setEndValue(undefined);
     setPrevColumnType(selectedColumnType);
   }
 
-  const conditions = useMemo(() => {
-    if (selectedColumnType === undefined) {
-      return [];
-    }
+  // Build label helper for any condition enum value
+  const getConditionLabel = useCallback(
+    (condition: Condition): string => {
+      if (TableUtils.isNumberType(selectedColumnType)) {
+        return getLabelForNumberCondition(condition as NumberCondition);
+      }
+      if (TableUtils.isCharType(selectedColumnType)) {
+        return getLabelForCharCondition(condition as CharCondition);
+      }
+      if (TableUtils.isStringType(selectedColumnType)) {
+        return getLabelForStringCondition(condition as StringCondition);
+      }
+      if (TableUtils.isDateType(selectedColumnType)) {
+        return getLabelForDateCondition(condition as DateCondition);
+      }
+      return getLabelForBooleanCondition(condition as BooleanCondition);
+    },
+    [selectedColumnType]
+  );
+
+  const [pickerValueItems, pickerColumnItems] = useMemo(() => {
+    let valueConditions: Condition[] = [];
+    let columnConditions: Condition[] = [];
     if (TableUtils.isNumberType(selectedColumnType)) {
-      return numberConditionOptions;
+      valueConditions = numberValueConditions;
+      columnConditions = numberColumnConditions;
+    } else if (TableUtils.isCharType(selectedColumnType)) {
+      valueConditions = charValueConditions;
+      columnConditions = charColumnConditions;
+    } else if (TableUtils.isStringType(selectedColumnType)) {
+      valueConditions = stringValueConditions;
+      columnConditions = stringColumnConditions;
+    } else if (TableUtils.isDateType(selectedColumnType)) {
+      valueConditions = dateValueConditions;
+      columnConditions = dateColumnConditions;
+    } else if (TableUtils.isBooleanType(selectedColumnType)) {
+      valueConditions = booleanValueConditions;
+      columnConditions = booleanColumnConditions;
     }
-    if (TableUtils.isCharType(selectedColumnType)) {
-      return charConditions;
-    }
-    if (TableUtils.isStringType(selectedColumnType)) {
-      return stringConditions;
-    }
-    if (TableUtils.isDateType(selectedColumnType)) {
-      return dateConditions;
-    }
-    if (TableUtils.isBooleanType(selectedColumnType)) {
-      return booleanConditions;
-    }
-  }, [selectedColumnType]);
+    return [
+      valueConditions.map(c => (
+        <Item key={`${VALUE_PREFIX}${c}`}>{getConditionLabel(c)}</Item>
+      )),
+      columnConditions.map(c => (
+        <Item key={`${COLUMN_PREFIX}${c}`}>{getConditionLabel(c)}</Item>
+      )),
+    ];
+  }, [selectedColumnType, getConditionLabel]);
 
-  const handleConditionChange = useCallback((value: string) => {
-    log.debug('handleConditionChange', value);
-    setCondition(value as Condition);
-  }, []);
+  const handleConditionKeyChange = useCallback(
+    (key: ItemKey | null) => {
+      if (key == null) return;
+      const keyStr = String(key);
+      log.debug('handleConditionKeyChange', keyStr);
+      const nextIsColumn = keyStr.startsWith(COLUMN_PREFIX);
+      if (nextIsColumn && typeof conditionValue !== 'object') {
+        // Switching to column mode — default to first compatible column
+        const firstCompatible = columns.find(c => {
+          if (TableUtils.isNumberType(selectedColumnType)) {
+            return TableUtils.isNumberType(c.type);
+          }
+          return (
+            TableUtils.getNormalizedType(selectedColumnType) ===
+            TableUtils.getNormalizedType(c.type)
+          );
+        });
+        setValue(
+          firstCompatible != null
+            ? { name: firstCompatible.name, type: firstCompatible.type }
+            : undefined
+        );
+      } else if (!nextIsColumn && typeof conditionValue === 'object') {
+        // Switching to value mode — clear the column value
+        setValue(getDefaultValueForType(selectedColumnType));
+      }
+      setConditionKey(keyStr);
+    },
+    [columns, selectedColumnType, conditionValue]
+  );
 
-  const handleValueChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.target;
-      log.debug('handleValueChange', value);
+  const handleRightHandValueChange = useCallback(
+    (value: string | ModelColumn | undefined) => {
+      log.debug('handleRightHandValueChange', value);
       setValue(value);
     },
     []
@@ -348,9 +318,11 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
         isConditionValid = false;
       } else if (
         TableUtils.isNumberType(column.type) &&
+        (selectedCondition === NumberCondition.IS_BETWEEN ||
+          typeof conditionValue !== 'object') &&
         !isNumberConditionValid(
           selectedCondition as NumberCondition,
-          conditionValue,
+          typeof conditionValue === 'string' ? conditionValue : undefined,
           startValue,
           endValue
         )
@@ -362,6 +334,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
         isConditionValid = false;
       } else if (
         TableUtils.isDateType(column.type) &&
+        typeof conditionValue !== 'object' &&
         !isDateConditionValid(
           dh,
           selectedCondition as DateCondition,
@@ -373,13 +346,39 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
           conditionValue
         );
         isConditionValid = false;
+      } else if (
+        TableUtils.isCharType(column.type) &&
+        typeof conditionValue !== 'object' &&
+        selectedCondition !== CharCondition.IS_NULL &&
+        selectedCondition !== CharCondition.IS_NOT_NULL &&
+        (conditionValue === undefined || conditionValue.length !== 1)
+      ) {
+        log.debug(
+          'Unable to create formatting rule. Char value must be a single character',
+          conditionValue
+        );
+        isConditionValid = false;
+      } else if (
+        TableUtils.isBooleanType(column.type) &&
+        typeof conditionValue !== 'object' &&
+        (selectedCondition === BooleanCondition.IS_EQUAL ||
+          selectedCondition === BooleanCondition.IS_NOT_EQUAL) &&
+        conditionValue !== 'true' &&
+        conditionValue !== 'false' &&
+        conditionValue !== 'null'
+      ) {
+        log.debug(
+          'Unable to create formatting rule. Boolean comparison requires a column, true, false, or null',
+          conditionValue
+        );
+        isConditionValid = false;
       }
 
       setIsValid(isConditionValid);
       onChange(
         {
           condition: selectedCondition,
-          value: conditionValue,
+          rightHandValue: conditionValue,
           start: startValue,
           end: endValue,
         },
@@ -403,79 +402,133 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       return null;
     }
 
-    // Show invalid state only when there's a non-empty value that fails validation
+    // IS_NULL/IS_NOT_NULL enum values are identical across all types ('is-null' /
+    // 'is-not-null'), so checking one enum covers all.
+    // Boolean IS_TRUE/IS_FALSE also never need a value input.
+    if (
+      selectedCondition === StringCondition.IS_NULL ||
+      selectedCondition === StringCondition.IS_NOT_NULL ||
+      selectedCondition === BooleanCondition.IS_TRUE ||
+      selectedCondition === BooleanCondition.IS_FALSE
+    ) {
+      return null;
+    }
+
+    // A ModelColumn rightHandValue is always valid (column-vs-column comparison).
+    // For string values, check type-specific validity.
+    const rhvIsColumn = typeof conditionValue === 'object';
     const hasInvalidValue =
-      !isValid && conditionValue !== undefined && conditionValue !== '';
+      !rhvIsColumn &&
+      !isValid &&
+      conditionValue !== undefined &&
+      conditionValue !== '';
 
-    if (TableUtils.isNumberType(selectedColumnType)) {
-      // For IS_BETWEEN, show invalid on each field only if that field has a value
-      const showInvalid =
-        selectedCondition === NumberCondition.IS_BETWEEN
-          ? !isValid &&
-            ((startValue !== undefined && startValue !== '') ||
-              (endValue !== undefined && endValue !== ''))
-          : hasInvalidValue;
+    // Only offer columns that are type-compatible with the condition column so
+    // the generated expression is valid (e.g. prevent startsWith(intColumn)).
+    // Numbers are cross-compatible (int vs double). Everything else requires the same
+    // normalized type. (Note: text types are not compatible (string vs char)
+    const compatibleRhvColumns = columns.filter(c => {
+      if (TableUtils.isNumberType(selectedColumnType)) {
+        return TableUtils.isNumberType(c.type);
+      }
+      return (
+        TableUtils.getNormalizedType(selectedColumnType) ===
+        TableUtils.getNormalizedType(c.type)
+      );
+    });
 
-      return getNumberInputs(
-        selectedCondition as NumberCondition,
-        handleValueChange,
-        handleStartValueChange,
-        handleEndValueChange,
-        showInvalid,
-        conditionValue,
-        startValue,
-        endValue
+    // IS_BETWEEN uses two separate range inputs
+    if (
+      TableUtils.isNumberType(selectedColumnType) &&
+      selectedCondition === NumberCondition.IS_BETWEEN
+    ) {
+      const isInvalid =
+        !rhvIsColumn &&
+        !isValid &&
+        ((startValue !== undefined && startValue !== '') ||
+          (endValue !== undefined && endValue !== ''));
+      return (
+        <div className="d-flex flex-row">
+          <input
+            type="number"
+            className={classNames('form-control', 'd-flex', 'mr-2', {
+              'is-invalid': isInvalid,
+            })}
+            placeholder="Start value"
+            value={startValue ?? ''}
+            onChange={handleStartValueChange}
+          />
+          <input
+            type="number"
+            className={classNames('form-control', 'd-flex', {
+              'is-invalid': isInvalid,
+            })}
+            placeholder="End value"
+            value={endValue ?? ''}
+            onChange={handleEndValueChange}
+          />
+        </div>
       );
     }
-    if (TableUtils.isCharType(selectedColumnType)) {
-      return getCharInputs(
-        selectedCondition as CharCondition,
-        handleValueChange,
-        hasInvalidValue,
-        conditionValue
+
+    if (isColumnMode) {
+      return (
+        <ComboBox
+          aria-label="Select a column"
+          selectedKey={
+            typeof conditionValue === 'object' ? conditionValue.name : null
+          }
+          onChange={key => {
+            if (key == null) return;
+            const col = compatibleRhvColumns.find(c => c.name === String(key));
+            if (col != null) {
+              handleRightHandValueChange({ name: col.name, type: col.type });
+            }
+          }}
+        >
+          {compatibleRhvColumns.map(c => c.name)}
+        </ComboBox>
       );
     }
-    if (TableUtils.isStringType(selectedColumnType)) {
-      return getStringInputs(
-        selectedCondition as StringCondition,
-        handleValueChange,
-        hasInvalidValue,
-        conditionValue
-      );
-    }
-    if (TableUtils.isDateType(selectedColumnType)) {
-      return getDateInputs(
-        selectedCondition as DateCondition,
-        handleValueChange,
-        hasInvalidValue,
-        conditionValue
-      );
-    }
-    if (TableUtils.isBooleanType(selectedColumnType)) {
-      return getBooleanInputs();
-    }
+
+    return (
+      <input
+        type={TableUtils.isNumberType(selectedColumnType) ? 'number' : 'text'}
+        className={classNames('form-control', {
+          'is-invalid': hasInvalidValue,
+        })}
+        value={typeof conditionValue === 'string' ? conditionValue : ''}
+        placeholder="Enter a value"
+        onChange={e => handleRightHandValueChange(e.target.value)}
+      />
+    );
   }, [
+    columns,
     selectedColumnType,
     selectedCondition,
     conditionValue,
     startValue,
     endValue,
     isValid,
-    handleValueChange,
+    handleRightHandValueChange,
     handleStartValueChange,
     handleEndValueChange,
+    isColumnMode,
   ]);
 
   return (
     <div className="condition-editor mb-2">
-      <Select
-        value={selectedCondition}
+      <Picker
+        selectedKey={selectedConditionKey}
+        aria-label="Select condition"
         data-testid="condition-select"
-        className="custom-select mb-2"
-        onChange={handleConditionChange}
+        width="100%"
+        UNSAFE_className="mb-2"
+        onChange={handleConditionKeyChange}
       >
-        {conditions}
-      </Select>
+        <Section title="Value">{pickerValueItems}</Section>
+        <Section title="Column">{pickerColumnItems}</Section>
+      </Picker>
       {conditionInputs}
     </div>
   );

@@ -29,9 +29,10 @@ const DEFAULT_CALLBACK = (): void => undefined;
 
 function makeDefaultConfig(columns: ModelColumn[]): BaseFormatConfig {
   const { type, name } = columns[0];
-  const column = { type, name };
+  const leftHandValue = { type, name };
   const config = {
-    column,
+    leftHandValue,
+    formattedColumns: [] as ModelColumn[],
     style: getDefaultStyleConfig(),
     ...getDefaultConditionConfigForType(type),
   };
@@ -48,7 +49,9 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
 
   const [selectedColumn, setColumn] = useState(
     columns.find(
-      c => c.name === config.column.name && c.type === config.column.type
+      c =>
+        c.name === config.leftHandValue.name &&
+        c.type === config.leftHandValue.type
     ) ?? columns[0]
   );
   const [conditionConfig, setConditionConfig] = useState(
@@ -101,10 +104,11 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
         return;
       }
       const { type, name } = selectedColumn;
-      const column = { type, name };
+      const leftHandValue = { type, name };
       onChange(
         {
-          column,
+          leftHandValue,
+          formattedColumns: [],
           style: selectedStyle,
           ...conditionConfig,
         },
@@ -133,6 +137,7 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
         <>
           <ConditionEditor
             column={selectedColumn}
+            columns={columns}
             config={conditionConfig}
             dh={dh}
             onChange={handleConditionChange}

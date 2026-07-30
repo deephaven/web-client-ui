@@ -152,7 +152,7 @@ function StyleEditor(props: ConditionEditorProps): JSX.Element {
   return (
     <div className="style-editor">
       <div className="mb-2" ref={csContainer}>
-        <label className="mb-0">Style</label>
+        <label className="mb-0 mt-1">Style</label>
         <Button
           kind="inline"
           className="cs-dropdown custom-select"
