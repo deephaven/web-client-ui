@@ -1121,6 +1121,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     IrisGridState,
     | 'advancedFilters'
     | 'aggregationSettings'
+    | 'conditionalFormats'
+    | 'conditionalFormatEditIndex'
+    | 'conditionalFormatPreview'
     | 'customColumns'
     | 'quickFilters'
     | 'reverse'
@@ -2552,6 +2555,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const {
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
         customColumns,
         quickFilters,
         reverse,
@@ -2565,6 +2571,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
         customColumns,
         quickFilters,
         reverse,
@@ -2578,6 +2587,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters: new Map(),
         aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
+        conditionalFormats: [],
+        conditionalFormatEditIndex: null,
+        conditionalFormatPreview: undefined,
         customColumns: [],
         quickFilters: new Map(),
         reverse: false,
@@ -3540,6 +3552,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
       customColumns,
       quickFilters,
       reverse,
@@ -3552,6 +3567,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const config = {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
       customColumns,
       quickFilters,
       reverse,
