@@ -226,6 +226,7 @@ const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 function isEmptyConfig({
   advancedFilters,
   aggregationSettings,
+  conditionalFormats,
   customColumns,
   quickFilters,
   reverse,
@@ -236,6 +237,7 @@ function isEmptyConfig({
 }: {
   advancedFilters: ReadonlyAdvancedFilterMap;
   aggregationSettings: AggregationSettings;
+  conditionalFormats: readonly SidebarFormattingRule[];
   customColumns: readonly ColumnName[];
   quickFilters: ReadonlyQuickFilterMap;
   reverse: boolean;
@@ -247,6 +249,7 @@ function isEmptyConfig({
   return (
     advancedFilters.size === 0 &&
     aggregationSettings.aggregations.length === 0 &&
+    conditionalFormats.length === 0 &&
     customColumns.length === 0 &&
     quickFilters.size === 0 &&
     !reverse &&
