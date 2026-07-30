@@ -335,12 +335,29 @@ export class ItemList<T> extends PureComponent<
   }
 
   restoreScrollPosition(): void {
-    const { scrollOffset } = this.state;
-    if (scrollOffset != null) {
-      // manually restore the scroll containers offset
-      // virtual list doesn't restore scrolloffset in a re-render if it's the same
-      this.listContainer.current?.scrollTo(0, scrollOffset);
+    const container = this.listContainer.current;
+    if (container == null) {
+      return;
     }
+
+    const { scrollOffset } = this.state;
+    if (scrollOffset == null) {
+      return;
+    }
+
+    // Re-parenting the panel (e.g. removing a sibling panel) resets the scroll
+    // container to the top while react-window keeps its internal offset, which
+    // leaves the list blank. Re-assert the scroll position from the current
+    // geometry. If the list is stuck to the bottom, snap to the (new) bottom so
+    // a shrinking panel doesn't cut off the latest items; otherwise clamp the
+    // last real offset to the current bounds.
+    const { itemCount, rowHeight } = this.props;
+    const { height, isStuckToBottom } = this.state;
+    const maxOffset = Math.max(0, itemCount * rowHeight - (height ?? 0));
+    const newOffset = isStuckToBottom
+      ? maxOffset
+      : Math.min(Math.max(scrollOffset, 0), maxOffset);
+    container.scrollTo(0, newOffset);
   }
 
   getElement(itemIndex: number): Element | null {
@@ -537,7 +554,9 @@ export class ItemList<T> extends PureComponent<
   }
 
   handleResize({ height }: Size): void {
-    this.setState({ height });
+    this.setState({ height }, () => {
+      this.restoreScrollPosition();
+    });
   }
 
   handleMouseLeave(): void {
@@ -745,7 +764,7 @@ export class ItemList<T> extends PureComponent<
     }
 
     const { itemCount, rowHeight } = this.props;
-    return scrollOffset + height >= itemCount * rowHeight;
+    return scrollOffset + height >= itemCount * rowHeight - 1; // Use a 1px tolerance
   }
 
   renderInnerElement({
