@@ -74,6 +74,42 @@ it('renders without crashing', () => {
   makeComponent();
 });
 
+describe('canRollback', () => {
+  it('returns true when lastLoadedConfig is set', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      searchFilter: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    };
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns true when lastLoadedConfig is null but state is non-empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Mutate state directly to avoid re-render triggering IrisGridModelUpdater
+    Object.assign(component.state, { reverse: true });
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns false when lastLoadedConfig is null and state is empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Default state after makeComponent has empty config fields
+    expect(component.canRollback()).toBe(false);
+  });
+});
+
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 
