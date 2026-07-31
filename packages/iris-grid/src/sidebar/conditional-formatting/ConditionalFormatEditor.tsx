@@ -154,7 +154,8 @@ function ConditionalFormatEditor(
       {errorMessage != null && errorMessage !== '' && (
         <div className="error-message">
           <p>
-            <FontAwesomeIcon icon={vsWarning} /> Failed to apply custom columns.
+            <FontAwesomeIcon icon={vsWarning} /> Failed to preview conditional
+            formatting.
           </p>
           <div className="error-box">{errorMessage}</div>
         </div>
