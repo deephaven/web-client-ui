@@ -3,6 +3,8 @@ import classNames from 'classnames';
 import { Button } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsWarning } from '@deephaven/icons';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
 import MultiColumnFormatEditor from './MultiColumnFormatEditor';
 import RowFormatEditor from './RowFormatEditor';
@@ -150,7 +152,12 @@ function ConditionalFormatEditor(
       )}
       <hr />
       {errorMessage != null && errorMessage !== '' && (
-        <div className="error-message">{errorMessage}</div>
+        <div className="error-message">
+          <p>
+            <FontAwesomeIcon icon={vsWarning} /> Failed to apply custom columns.
+          </p>
+          <div className="error-box">{errorMessage}</div>
+        </div>
       )}
       <div className="d-flex justify-content-end my-3">
         <Button kind="secondary" onClick={handleCancel} className="mr-2">
