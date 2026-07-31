@@ -178,6 +178,44 @@ describe('rollback', () => {
   });
 });
 
+describe('handleUpdate', () => {
+  it('saves state snapshot to lastLoadedConfig when config is non-empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    const fakeFormats = [{} as never];
+    const fakePreview = {} as never;
+    Object.assign(component.state, {
+      conditionalFormats: fakeFormats,
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: fakePreview,
+      customColumns: ['col=1'],
+    });
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).not.toBeNull();
+    expect(component.lastLoadedConfig?.conditionalFormats).toBe(fakeFormats);
+    expect(component.lastLoadedConfig?.conditionalFormatEditIndex).toBe(2);
+    expect(component.lastLoadedConfig?.conditionalFormatPreview).toBe(
+      fakePreview
+    );
+    expect(component.lastLoadedConfig?.customColumns).toEqual(['col=1']);
+  });
+
+  it('clears lastLoadedConfig when config is empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    // Seed a non-null config to verify it gets cleared
+    component.lastLoadedConfig = {} as never;
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).toBeNull();
+  });
+});
+
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 
