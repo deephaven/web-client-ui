@@ -166,7 +166,7 @@ function ConditionalFormatEditor(
         <Button
           kind="primary"
           onClick={handleSave}
-          disabled={rule === undefined || !isValid}
+          disabled={rule === undefined || !isValid || errorMessage != null}
         >
           Done
         </Button>
