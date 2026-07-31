@@ -27,6 +27,7 @@ export interface ConditionalFormatEditorProps {
   dh: typeof DhType;
   columns: readonly ModelColumn[];
   rule?: FormattingRule;
+  errorMessage?: string;
   onCancel?: CancelCallback;
   onSave?: SaveCallback;
   onUpdate?: UpdateCallback;
@@ -60,6 +61,7 @@ function ConditionalFormatEditor(
   const {
     columns: originalColumns,
     dh,
+    errorMessage,
     onSave = DEFAULT_CALLBACK,
     onUpdate = DEFAULT_CALLBACK,
     onCancel = DEFAULT_CALLBACK,
@@ -147,6 +149,9 @@ function ConditionalFormatEditor(
         />
       )}
       <hr />
+      {errorMessage != null && errorMessage !== '' && (
+        <div className="error-message">{errorMessage}</div>
+      )}
       <div className="d-flex justify-content-end my-3">
         <Button kind="secondary" onClick={handleCancel} className="mr-2">
           Cancel

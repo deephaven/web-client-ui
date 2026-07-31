@@ -445,6 +445,7 @@ export interface IrisGridState {
   conditionalFormats: readonly SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
   conditionalFormatPreview?: SidebarFormattingRule;
+  conditionalFormatError: string | null;
 
   // Column user is hovering over for selection
   hoverSelectColumn: GridRangeIndex;
@@ -897,6 +898,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats,
       conditionalFormatEditIndex: null,
       conditionalFormatPreview: undefined,
+      conditionalFormatError: null,
 
       // Column user is hovering over for selection
       hoverSelectColumn: null,
@@ -3460,12 +3462,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { detail: error } = event as CustomEvent;
     log.error('request failed:', error);
     this.stopLoading();
-    const { partitionConfig } = this.state;
+    const { partitionConfig, conditionalFormatEditIndex } = this.state;
     if (isMissingPartitionError(error) && partitionConfig != null) {
       // We'll try loading the initial partition again
       this.startLoading('Reloading partition...', { resetRanges: true });
       this.setState({ partitionConfig: undefined }, () => {
         this.initState();
+      });
+    } else if (conditionalFormatEditIndex !== null) {
+      // Preview format failed — surface error in the editor instead of rolling back
+      const errorMessage =
+        (error as { errorMessage?: string })?.errorMessage ?? String(error);
+      this.setState({
+        conditionalFormatError: errorMessage,
+        conditionalFormatPreview: undefined,
       });
     } else if (this.canRollback()) {
       this.startLoading('Rolling back changes...', { resetRanges: true });
@@ -3717,10 +3727,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  // Apply live changes
+  // Apply live changes; clear any previous preview error on each new update
   handleConditionalFormatEditorUpdate = debounce(
     (conditionalFormatPreview?: SidebarFormattingRule): void => {
-      this.setState({ conditionalFormatPreview });
+      this.setState({ conditionalFormatPreview, conditionalFormatError: null });
     },
     SET_CONDITIONAL_FORMAT_DEBOUNCE
   );
@@ -3747,7 +3757,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMenuBack();
     // Not resetting conditionalFormatPreview here
     // to prevent editor fields change during the menu transition
-    this.setState({ conditionalFormatEditIndex: null });
+    this.setState({
+      conditionalFormatEditIndex: null,
+      conditionalFormatError: null,
+    });
   }
 
   handleUpdateCustomColumns(customColumns: readonly string[]): void {
@@ -4927,6 +4940,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats,
       conditionalFormatPreview,
       conditionalFormatEditIndex,
+      conditionalFormatError,
 
       columnAlignmentMap,
 
@@ -5316,6 +5330,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               dh={model.dh}
               columns={model.columns}
               rule={conditionalFormatPreview}
+              errorMessage={conditionalFormatError ?? undefined}
               onUpdate={this.handleConditionalFormatEditorUpdate}
               onSave={this.handleConditionalFormatEditorSave}
               onCancel={this.handleConditionalFormatEditorCancel}
