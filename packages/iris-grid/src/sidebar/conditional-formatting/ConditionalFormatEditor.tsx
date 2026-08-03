@@ -4,7 +4,7 @@ import { Button } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
-import ColumnFormatEditor from './ColumnFormatEditor';
+import MultiColumnFormatEditor from './MultiColumnFormatEditor';
 import RowFormatEditor from './RowFormatEditor';
 import {
   type BaseFormatConfig,
@@ -131,7 +131,7 @@ function ConditionalFormatEditor(
         </div>
       </div>
       {selectedFormatter === FormatterType.CONDITIONAL && (
-        <ColumnFormatEditor
+        <MultiColumnFormatEditor
           columns={columns}
           dh={dh}
           config={rule?.config}

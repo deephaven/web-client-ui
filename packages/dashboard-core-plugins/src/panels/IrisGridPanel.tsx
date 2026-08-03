@@ -307,6 +307,7 @@ export class IrisGridPanel extends PureComponent<
     this.handlePluginFilter = this.handlePluginFilter.bind(this);
     this.handlePluginFetchColumns = this.handlePluginFetchColumns.bind(this);
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
+    this.handleErrorAction = this.handleErrorAction.bind(this);
 
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
@@ -861,6 +862,16 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
+  /**
+   * Called when a user clicks the "Reset" button for an error message on the LoadingOverlay.
+   */
+  handleErrorAction(): void {
+    if (this.irisGrid.current != null) {
+      this.irisGrid.current.rollback();
+      this.setState({ error: null, isLoading: false });
+    }
+  }
+
   sendColumnsChange(columns: readonly dh.Column[]): void {
     log.debug2('sendColumnsChange', columns);
     const { glEventHub } = this.props;
@@ -1251,6 +1262,9 @@ export class IrisGridPanel extends PureComponent<
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
+        onErrorAction={
+          this.irisGrid.current != null ? this.handleErrorAction : undefined
+        }
         className="iris-grid-panel"
         glContainer={glContainer}
         glEventHub={glEventHub}

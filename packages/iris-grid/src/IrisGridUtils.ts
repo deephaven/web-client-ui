@@ -45,7 +45,11 @@ import {
   type Aggregation,
   type AggregationSettings,
 } from './sidebar/aggregations/Aggregations';
-import { type FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import {
+  type FormattingRule as SidebarFormattingRule,
+  FormatterType,
+  type ModelColumn,
+} from './sidebar/conditional-formatting/ConditionalFormattingUtils';
 import type IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
@@ -1354,6 +1358,33 @@ class IrisGridUtils {
   }
 
   /**
+   * Migrates a single conditional formatting rule saved in the old format
+   * (`column`/`value`) to the current format (`leftHandValue`/`rightHandValue`/
+   * `formattedColumns`). Rules already in the current format are returned
+   * unchanged.
+   */
+  static migrateConditionalFormattingRule(
+    rule: SidebarFormattingRule
+  ): SidebarFormattingRule {
+    const rawConfig = rule.config as unknown as Record<string, unknown>;
+    if ('column' in rawConfig && !('leftHandValue' in rawConfig)) {
+      const { column: oldColumn, value: oldValue, ...restConfig } = rawConfig;
+      const column = oldColumn as ModelColumn;
+      return {
+        ...rule,
+        config: {
+          ...(restConfig as unknown as SidebarFormattingRule['config']),
+          leftHandValue: column,
+          formattedColumns:
+            rule.type === FormatterType.CONDITIONAL ? [column] : [],
+          rightHandValue: oldValue as string | undefined,
+        },
+      };
+    }
+    return rule;
+  }
+
+  /**
    * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
    * @param model The table model to import the state with
    * @param irisGridState The saved IrisGrid state
@@ -1440,7 +1471,9 @@ class IrisGridUtils {
           )
       ),
       customColumns,
-      conditionalFormats,
+      conditionalFormats: (conditionalFormats ?? []).map(
+        IrisGridUtils.migrateConditionalFormattingRule
+      ),
       userRowHeights: new Map(userRowHeights),
       reverse: reverseType === TableUtils.REVERSE_TYPE.POST_SORT || reverse,
       rollupConfig,

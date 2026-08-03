@@ -17,24 +17,21 @@ async function changeCondFormatComparison(
   column = ''
 ) {
   const formattingRule = page.locator('.formatting-item');
-  const conditionSelect = page.locator('data-testid=condition-select');
+  const conditionPicker = page.locator('data-testid=condition-select');
   const highlightCell = page.getByRole('button', { name: 'Conditional' });
   const doneButton = page.getByRole('button', { name: 'Done' });
-  const columnSelect = page
-    .locator('.conditional-rule-editor')
-    .getByRole('button')
-    .first();
+  const columnCombo = page.getByRole('combobox').first();
 
   await expect(formattingRule).toHaveCount(1);
-  await expect(conditionSelect).toHaveCount(0);
+  await expect(conditionPicker).toHaveCount(0);
   await expect(highlightCell).toHaveCount(0);
 
   await formattingRule.click();
 
   await expect(formattingRule).toHaveCount(0);
-  await expect(conditionSelect).toHaveCount(1);
+  await expect(conditionPicker).toHaveCount(1);
   await expect(highlightCell).toHaveCount(1);
-  await expect(columnSelect).toHaveCount(1);
+  await expect(columnCombo).toHaveCount(1);
   await expect(page.getByText('Edit Formatting Rule')).toHaveCount(1);
 
   await highlightCell.click();
@@ -42,8 +39,11 @@ async function changeCondFormatComparison(
     'btn btn-icon btn-formatter-type active'
   );
   if (column !== '') {
-    await columnSelect.click();
-    await page.getByRole('button', { name: column, exact: true }).click();
+    await columnCombo.fill(column);
+    await expect(
+      page.getByRole('option', { name: column, exact: true })
+    ).toBeVisible();
+    await page.getByRole('option', { name: column, exact: true }).click();
 
     await page.locator('.style-editor').click();
     await page
@@ -51,15 +51,16 @@ async function changeCondFormatComparison(
       .getByRole('button', { name: 'Positive' })
       .click();
   }
-  await conditionSelect.selectOption(condition);
-  await expect(conditionSelect).toHaveValue(condition);
+
+  await conditionPicker.click();
+  await page.getByRole('option', { name: condition }).click();
 
   await doneButton.click();
 
   await expect(formattingRule).toHaveCount(1);
-  await expect(conditionSelect).toHaveCount(0);
+  await expect(conditionPicker).toHaveCount(0);
   await expect(highlightCell).toHaveCount(0);
-  await expect(columnSelect).toHaveCount(0);
+  await expect(columnCombo).toHaveCount(0);
   await waitForLoadingDone(page);
 }
 
@@ -168,65 +169,147 @@ test('search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
-// TODO: Fix flakiness of this test by linking loading status bar to this menu (#1367)
-// test('conditional format', async ({ page }) => {
-//   await openTableOption(page, 'Conditional Formatting');
+test('conditional format', async ({ page }) => {
+  await openTableOption(page, 'Conditional Formatting');
 
-//   await test.step('Setup new formatting rule', async () => {
-//     await page.getByRole('button', { name: 'Add New Rule' }).click();
-//     await page.locator('.style-editor').click();
-//     await page.getByRole('button', { name: 'Positive' }).click();
-//     await page.getByRole('button', { name: 'Done' }).click();
-//   });
+  await test.step('Setup new formatting rule', async () => {
+    await page.getByRole('button', { name: 'Add New Rule' }).click();
+    await page.locator('.style-editor').click();
+    await page.getByRole('button', { name: 'Positive' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
+  });
 
-//   await test.step('Is null', async () => {
-//     await changeCondFormatComparison(page, 'is-null');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Is null', async () => {
+    await changeCondFormatComparison(page, 'is null');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Is not null', async () => {
-//     await changeCondFormatComparison(page, 'is-not-null');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Is not null', async () => {
+    await changeCondFormatComparison(page, 'is not null');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Change column', async () => {
-//     await changeCondFormatComparison(page, 'is-not-null', 'Int');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Change column', async () => {
+    await changeCondFormatComparison(page, 'is not null', 'Int');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Cancel', async () => {
-//     const formattingRule = page.locator('.formatting-item');
-//     const conditionSelect = page.locator('data-testid=condition-select');
+  await test.step('Cross-column comparison', async () => {
+    const formattingRule = page.locator('.formatting-item');
+    const editor = page.locator('.conditional-format-editor').first();
+    const conditionPicker = page.locator('data-testid=condition-select');
+    const highlightCell = editor.getByRole('button', { name: 'Conditional' });
+    const doneButton = editor.getByRole('button', { name: 'Done' });
 
-//     await expect(conditionSelect).toHaveCount(0);
+    await formattingRule.click();
+    await highlightCell.click();
 
-//     await formattingRule.click();
-//     await conditionSelect.selectOption('is-null');
-//     await page
-//       .locator('.conditional-format-editor')
-//       .getByRole('button', { name: 'Cancel' })
-//       .click();
+    // Pick "is equal to" from the Cross-Column section of the condition picker.
+    // The same label appears in both Value (index 0) and Cross-Column (index 1).
+    await conditionPicker.click();
+    await page.getByRole('option', { name: 'is equal to' }).nth(1).click();
 
-//     await waitForLoadingDone(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    // Verify the RHV column picker is visible, confirming cross-column mode is active
+    await expect(
+      page.locator('.condition-editor').getByRole('combobox')
+    ).toBeVisible();
 
-//   await test.step('Delete', async () => {
-//     await page.getByRole('button', { name: 'Delete rule' }).click();
+    await doneButton.click();
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//     await waitForLoadingDone(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
-// });
+  await test.step('Multiple formatted columns', async () => {
+    const formattingRule = page.locator('.formatting-item');
+    const editor = page.locator('.conditional-format-editor').first();
+    const highlightCell = editor.getByRole('button', { name: 'Conditional' });
+    const doneButton = editor.getByRole('button', { name: 'Done' });
+
+    await formattingRule.click();
+    await highlightCell.click();
+
+    // Open the "Apply to Columns" MultiSelect, filter to Double, then select it.
+    // Use click + pressSequentially (not fill) to ensure React's synthetic input
+    // event fires reliably in all browsers, then keyboard-select to avoid DOM
+    // stability issues during filtering.
+    const multiSelectInput = editor.locator('.dh-multi-select-input').first();
+    await multiSelectInput.click();
+    await multiSelectInput.pressSequentially('Double');
+    await expect(page.locator('[data-key="Double"]')).toBeVisible();
+    await page.keyboard.press('ArrowDown'); // Focus first option in the listbox
+    await page.keyboard.press('Enter'); // Toggle/select the focused option
+    await page.keyboard.press('Escape');
+
+    await doneButton.click();
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Cross-column comparison with multiple formatted columns', async () => {
+    // At this point the rule has both: cross-column comparison AND multiple formatted columns.
+    // Open and verify the combined state loads correctly, then re-save.
+    const formattingRule = page.locator('.formatting-item');
+    const editor = page.locator('.conditional-format-editor').first();
+    const conditionPicker = editor.locator('data-testid=condition-select');
+    const highlightCell = editor.getByRole('button', { name: 'Conditional' });
+    const doneButton = editor.getByRole('button', { name: 'Done' });
+
+    await formattingRule.click();
+    await highlightCell.click();
+
+    // Verify the RHV column combobox is visible (cross-column mode loaded)
+    await expect(conditionPicker).toBeVisible();
+    await expect(
+      editor.locator('.condition-editor').getByRole('combobox')
+    ).toBeVisible();
+
+    // Verify multiple column tags are shown in the Apply to Columns MultiSelect
+    await expect(
+      editor.locator('.dh-multi-select-trigger').getByText('Int')
+    ).toBeVisible();
+    await expect(
+      editor.locator('.dh-multi-select-trigger').getByText('Double')
+    ).toBeVisible();
+
+    await doneButton.click();
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Cancel', async () => {
+    const formattingRule = page.locator('.formatting-item');
+    const conditionPicker = page.locator('data-testid=condition-select');
+
+    await expect(conditionPicker).toHaveCount(0);
+
+    await formattingRule.click();
+    await conditionPicker.click();
+    await page.getByRole('option', { name: 'is null' }).click();
+    await page
+      .locator('.conditional-format-editor')
+      .getByRole('button', { name: 'Cancel' })
+      .click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  await test.step('Delete', async () => {
+    await page.getByRole('button', { name: 'Delete rule' }).click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+});
 
 test('organize columns', async ({ page }) => {
   await openTableOption(page, 'Organize Columns');

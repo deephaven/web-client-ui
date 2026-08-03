@@ -16,12 +16,13 @@ import {
   type BaseFormatConfig,
   type FormattingRule,
   FormatterType,
+  BooleanCondition,
+  formatRHV,
   getBackgroundForStyleConfig,
   getColorForStyleConfig,
   getShortLabelForConditionType,
   NumberCondition,
   StringCondition,
-  DateCondition,
 } from './ConditionalFormattingUtils';
 import { type ColumnName } from '../../CommonTypes';
 
@@ -44,51 +45,57 @@ export type ConditionalFormattingMenuProps = {
 const DEFAULT_CALLBACK = (): void => undefined;
 
 function getRuleValue(config: BaseFormatConfig): string {
-  const {
-    column: { type },
-  } = config;
-  if (TableUtils.isNumberType(type)) {
-    return config.condition === NumberCondition.IS_NULL ||
-      config.condition === NumberCondition.IS_NOT_NULL
-      ? ''
-      : `${config.value}`;
-  }
-  if (TableUtils.isCharType(type)) {
-    return config.condition === DateCondition.IS_NULL ||
-      config.condition === DateCondition.IS_NOT_NULL
-      ? ''
-      : `${config.value}`;
-  }
-  if (TableUtils.isStringType(type)) {
-    return config.condition === StringCondition.IS_NULL ||
-      config.condition === StringCondition.IS_NOT_NULL
-      ? ''
-      : `"${config.value}"`;
-  }
-  if (TableUtils.isDateType(type)) {
-    return config.condition === DateCondition.IS_NULL ||
-      config.condition === DateCondition.IS_NOT_NULL
-      ? ''
-      : `${config.value}`;
-  }
-  if (TableUtils.isBooleanType(type)) {
+  const { type } = config.leftHandValue;
+
+  // Null/not-null conditions have no value to display
+  if (
+    config.condition === StringCondition.IS_NULL ||
+    config.condition === StringCondition.IS_NOT_NULL
+  ) {
     return '';
   }
-  throw new Error(`Invalid column type ${type} in getRuleValue`);
+
+  // Boolean IS_TRUE/IS_FALSE have no RHV; IS_EQUAL/IS_NOT_EQUAL do
+  if (
+    TableUtils.isBooleanType(type) &&
+    (config.condition === BooleanCondition.IS_TRUE ||
+      config.condition === BooleanCondition.IS_FALSE)
+  ) {
+    return '';
+  }
+
+  if (
+    !TableUtils.isNumberType(type) &&
+    !TableUtils.isCharType(type) &&
+    !TableUtils.isStringType(type) &&
+    !TableUtils.isDateType(type) &&
+    !TableUtils.isBooleanType(type)
+  ) {
+    throw new Error(`Invalid column type ${type} in getRuleValue`);
+  }
+
+  const quote = TableUtils.isStringType(type) ? '"' : '';
+  return formatRHV(config.rightHandValue, quote) ?? '';
 }
 
 function getRuleTitle(config: BaseFormatConfig): string {
+  const { name: lhvName, type: lhvType } = config.leftHandValue;
+  const { formattedColumns } = config;
+  const prefix =
+    formattedColumns.length > 0
+      ? `[${formattedColumns.map(c => c.name).join(', ')}] = `
+      : '';
   if (
-    TableUtils.isNumberType(config.column.type) &&
+    TableUtils.isNumberType(lhvType) &&
     config.condition === NumberCondition.IS_BETWEEN
   ) {
-    return `${config.start} < ${config.column.name} < ${config.end}`;
+    return `${prefix}${config.start} < ${lhvName} < ${config.end}`;
   }
-  return `${config.column.name} ${getShortLabelForConditionType(
-    (config as BaseFormatConfig).column.type,
-    (config as BaseFormatConfig).condition
+  return `${prefix}${lhvName} ${getShortLabelForConditionType(
+    lhvType,
+    config.condition
   )} 
-    ${getRuleValue(config as BaseFormatConfig)}`;
+    ${getRuleValue(config)}`;
 }
 
 function ConditionalFormattingMenu(

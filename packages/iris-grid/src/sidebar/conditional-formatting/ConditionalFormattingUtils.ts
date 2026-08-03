@@ -23,9 +23,23 @@ export type Condition =
   | CharCondition;
 
 export interface BaseFormatConfig {
-  column: ModelColumn;
+  /**
+   * The columns whose formatting is applied. When set, formatting is applied to
+   * each column while the condition is evaluated against `leftHandValue`. When
+   * absent, `leftHandValue` is used as both the condition column and the format
+   * target.
+   */
+  formattedColumns: ModelColumn[];
+  /**
+   * The column whose value is evaluated as the left-hand side of the condition.
+   */
+  leftHandValue: ModelColumn;
   condition: Condition;
-  value?: string;
+  /**
+   * The right-hand side of the condition. May be a literal string value or a
+   * column reference (`ModelColumn`).
+   */
+  rightHandValue?: string | ModelColumn;
   start?: string;
   end?: string;
   style: FormatStyleConfig;
@@ -33,7 +47,7 @@ export interface BaseFormatConfig {
 
 export interface ConditionConfig {
   condition: Condition;
-  value?: string;
+  rightHandValue?: string | ModelColumn;
   start?: string;
   end?: string;
 }
@@ -90,6 +104,8 @@ export enum DateCondition {
 export enum BooleanCondition {
   IS_TRUE = 'is-true',
   IS_FALSE = 'is-false',
+  IS_EQUAL = 'is-equal',
+  IS_NOT_EQUAL = 'is-not-equal',
   IS_NULL = 'is-null',
   IS_NOT_NULL = 'is-not-null',
 }
@@ -202,75 +218,144 @@ export function getStyleDBString(config: BaseFormatConfig): string | undefined {
   return `bgfg(\`${bg}\`, \`${color}\`)`;
 }
 
+/**
+ * Formats a rightHandValue for use in a condition expression.
+ * - If a ModelColumn: returns the column name as a bare identifier (no quoting)
+ * - If a string: wraps it in the given quote character
+ * - If undefined: returns undefined
+ */
+export function formatRHV(
+  value: string | ModelColumn | undefined,
+  quote: string
+): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === 'object') return value.name;
+  return `${quote}${value}${quote}`;
+}
+
+/**
+ * Formats a date rightHandValue for use in a condition expression.
+ * - If a ModelColumn: returns the column name (no quoting or timezone processing)
+ * - If a string: reformats the timezone and wraps in single quotes
+ */
+function formatDateRHV(
+  dh: typeof DhType,
+  value: string | ModelColumn | undefined
+): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === 'object') return value.name;
+  const [dateTimeString, ...rest] = value.split(' ');
+  const tzCode = rest.join(' ');
+  const tz = dh.i18n.TimeZone.getTimeZone(tzCode);
+  return `'${dateTimeString} ${tz.id}'`;
+}
+
 function getNumberConditionText(config: BaseFormatConfig): string {
-  const { column, value, start, end } = config;
+  const { leftHandValue, rightHandValue, start, end } = config;
   return getTextForNumberCondition(
-    column.name,
+    leftHandValue.name,
     config.condition as NumberCondition,
-    value,
+    formatRHV(rightHandValue, ''),
     start,
     end
   );
 }
 
 function getStringConditionText(config: BaseFormatConfig): string {
-  const { column, value } = config;
-  return getTextForStringCondition(
-    column.name,
-    config.condition as StringCondition,
-    value
-  );
+  const { leftHandValue, rightHandValue } = config;
+  const columnName = leftHandValue.name;
+  const rhv = formatRHV(rightHandValue, '"');
+  switch (config.condition as StringCondition) {
+    case StringCondition.IS_EXACTLY:
+      return `${columnName} == ${rhv}`;
+    case StringCondition.IS_NOT_EXACTLY:
+      return `${columnName} != ${rhv}`;
+    case StringCondition.CONTAINS:
+      return `${columnName} != null && ${columnName}.contains(${rhv})`;
+    case StringCondition.DOES_NOT_CONTAIN:
+      return `${columnName} != null && !${columnName}.contains(${rhv})`;
+    case StringCondition.STARTS_WITH:
+      return `${columnName} != null && ${columnName}.startsWith(${rhv})`;
+    case StringCondition.ENDS_WITH:
+      return `${columnName} != null && ${columnName}.endsWith(${rhv})`;
+    case StringCondition.IS_NULL:
+      return `${columnName} == null`;
+    case StringCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
+  }
 }
 
 function getDateConditionText(
   dh: typeof DhType,
   config: BaseFormatConfig
 ): string {
-  const { column, value } = config;
-  return getTextForDateCondition(
-    dh,
-    column.name,
-    config.condition as DateCondition,
-    value
-  );
+  const { leftHandValue, rightHandValue } = config;
+  const columnName = leftHandValue.name;
+  const rhv = formatDateRHV(dh, rightHandValue);
+  switch (config.condition as DateCondition) {
+    case DateCondition.IS_EXACTLY:
+      return `${columnName} == ${rhv}`;
+    case DateCondition.IS_NOT_EXACTLY:
+      return `${columnName} != ${rhv}`;
+    case DateCondition.IS_BEFORE:
+      return `${columnName} < ${rhv}`;
+    case DateCondition.IS_BEFORE_OR_EQUAL:
+      return `${columnName} <= ${rhv}`;
+    case DateCondition.IS_AFTER:
+      return `${columnName} > ${rhv}`;
+    case DateCondition.IS_AFTER_OR_EQUAL:
+      return `${columnName} >= ${rhv}`;
+    case DateCondition.IS_NULL:
+      return `${columnName} == null`;
+    case DateCondition.IS_NOT_NULL:
+      return `${columnName} != null`;
+  }
 }
 
 function getBooleanConditionText(config: BaseFormatConfig): string {
-  const { column } = config;
+  const { leftHandValue, rightHandValue } = config;
   return getTextForBooleanCondition(
-    column.name,
-    config.condition as BooleanCondition
+    leftHandValue.name,
+    config.condition as BooleanCondition,
+    rightHandValue
   );
 }
 
 function getCharConditionText(config: BaseFormatConfig): string {
-  const { column, value } = config;
-  return getTextForCharCondition(
-    column.name,
-    config.condition as CharCondition,
-    value
-  );
+  const { leftHandValue, rightHandValue } = config;
+  const columnName = leftHandValue.name;
+  const rhv = formatRHV(rightHandValue, "'");
+  switch (config.condition as CharCondition) {
+    case CharCondition.IS_EQUAL:
+      return `${columnName} == ${rhv}`;
+    case CharCondition.IS_NOT_EQUAL:
+      return `${columnName} != ${rhv}`;
+    case CharCondition.IS_NULL:
+      return `isNull(${columnName})`;
+    case CharCondition.IS_NOT_NULL:
+      return `!isNull(${columnName})`;
+  }
 }
 
 export function getConditionDBString(
   dh: typeof DhType,
   config: BaseFormatConfig
 ): string {
-  const { column } = config;
+  const { leftHandValue } = config;
 
-  if (TableUtils.isNumberType(column.type)) {
+  if (TableUtils.isNumberType(leftHandValue.type)) {
     return getNumberConditionText(config);
   }
-  if (TableUtils.isCharType(column.type)) {
+  if (TableUtils.isCharType(leftHandValue.type)) {
     return getCharConditionText(config);
   }
-  if (TableUtils.isStringType(column.type)) {
+  if (TableUtils.isStringType(leftHandValue.type)) {
     return getStringConditionText(config);
   }
-  if (TableUtils.isDateType(column.type)) {
+  if (TableUtils.isDateType(leftHandValue.type)) {
     return getDateConditionText(dh, config);
   }
-  if (TableUtils.isBooleanType(column.type)) {
+  if (TableUtils.isBooleanType(leftHandValue.type)) {
     return getBooleanConditionText(config);
   }
 
@@ -350,6 +435,10 @@ export function getLabelForBooleanCondition(
       return 'is true';
     case BooleanCondition.IS_FALSE:
       return 'is false';
+    case BooleanCondition.IS_EQUAL:
+      return 'is equal to';
+    case BooleanCondition.IS_NOT_EQUAL:
+      return 'is not equal to';
     case BooleanCondition.IS_NULL:
       return 'is null';
     case BooleanCondition.IS_NOT_NULL:
@@ -391,9 +480,6 @@ export function getDefaultConditionForType(columnType: string): Condition {
 }
 
 export function getDefaultValueForType(columnType: string): string | undefined {
-  if (TableUtils.isCharType(columnType)) {
-    return '';
-  }
   if (TableUtils.isStringType(columnType)) {
     return '';
   }
@@ -401,8 +487,8 @@ export function getDefaultValueForType(columnType: string): string | undefined {
 }
 
 export function getConditionConfig(config: BaseFormatConfig): ConditionConfig {
-  const { condition, value, start, end } = config;
-  return { condition, value, start, end };
+  const { condition, rightHandValue, start, end } = config;
+  return { condition, rightHandValue, start, end };
 }
 
 export function getDefaultConditionConfigForType(
@@ -410,7 +496,7 @@ export function getDefaultConditionConfigForType(
 ): ConditionConfig {
   return {
     condition: getDefaultConditionForType(type),
-    value: getDefaultValueForType(type),
+    rightHandValue: getDefaultValueForType(type),
     start: undefined,
     end: undefined,
   };
@@ -470,6 +556,10 @@ function getShortLabelForBooleanCondition(condition: BooleanCondition): string {
       return 'is true';
     case BooleanCondition.IS_FALSE:
       return 'is false';
+    case BooleanCondition.IS_EQUAL:
+      return '==';
+    case BooleanCondition.IS_NOT_EQUAL:
+      return '!=';
     case BooleanCondition.IS_NULL:
       return 'is null';
     case BooleanCondition.IS_NOT_NULL:
@@ -544,98 +634,24 @@ export function getTextForNumberCondition(
   }
 }
 
-export function getTextForStringCondition(
-  columnName: ColumnName,
-  condition: StringCondition,
-  value: unknown
-): string {
-  switch (condition) {
-    case StringCondition.IS_EXACTLY:
-      return `${columnName} == "${value}"`;
-    case StringCondition.IS_NOT_EXACTLY:
-      return `${columnName} != "${value}"`;
-    case StringCondition.CONTAINS:
-      return `${columnName} != null && ${columnName}.contains("${value}")`;
-    case StringCondition.DOES_NOT_CONTAIN:
-      return `${columnName} != null && !${columnName}.contains("${value}")`;
-    case StringCondition.STARTS_WITH:
-      return `${columnName} != null && ${columnName}.startsWith("${value}")`;
-    case StringCondition.ENDS_WITH:
-      return `${columnName} != null && ${columnName}.endsWith("${value}")`;
-    case StringCondition.IS_NULL:
-      return `${columnName} == null`;
-    case StringCondition.IS_NOT_NULL:
-      return `${columnName} != null`;
-  }
-}
-
-export function getTextForDateCondition(
-  dh: typeof DhType,
-  columnName: ColumnName,
-  condition: DateCondition,
-  value: unknown
-): string {
-  let formattedValue = value;
-  if (typeof value === 'string') {
-    // The date time formatting may return a timezone that is not supported by the backend (e.g. 'EDT' instead of 'ET')
-    // so we need to parse the date time string and reformat it with a supported timezone ID.
-    // Note that we know this will be valid because the input value has already been validated with isDateConditionValid.
-    const [dateTimeString, ...rest] = value.split(' ');
-    const tzCode = rest.join(' ');
-    const tz = dh.i18n.TimeZone.getTimeZone(tzCode);
-    formattedValue = `${dateTimeString} ${tz.id}`;
-  }
-
-  switch (condition) {
-    case DateCondition.IS_EXACTLY:
-      return `${columnName} == '${formattedValue}'`;
-    case DateCondition.IS_NOT_EXACTLY:
-      return `${columnName} != '${formattedValue}'`;
-    case DateCondition.IS_BEFORE:
-      return `${columnName} < '${formattedValue}'`;
-    case DateCondition.IS_BEFORE_OR_EQUAL:
-      return `${columnName} <=  '${formattedValue}'`;
-    case DateCondition.IS_AFTER:
-      return `${columnName} > '${formattedValue}'`;
-    case DateCondition.IS_AFTER_OR_EQUAL:
-      return `${columnName} >=  '${formattedValue}'`;
-    case DateCondition.IS_NULL:
-      return `${columnName} == null`;
-    case DateCondition.IS_NOT_NULL:
-      return `${columnName} != null`;
-  }
-}
-
 export function getTextForBooleanCondition(
   columnName: ColumnName,
-  condition: BooleanCondition
+  condition: BooleanCondition,
+  rightHandValue?: string | ModelColumn
 ): string {
   switch (condition) {
     case BooleanCondition.IS_TRUE:
       return `${columnName} == true`;
     case BooleanCondition.IS_FALSE:
       return `${columnName} == false`;
+    case BooleanCondition.IS_EQUAL:
+      return `${columnName} == ${formatRHV(rightHandValue, '') ?? 'null'}`;
+    case BooleanCondition.IS_NOT_EQUAL:
+      return `${columnName} != ${formatRHV(rightHandValue, '') ?? 'null'}`;
     case BooleanCondition.IS_NULL:
       return `${columnName} == null`;
     case BooleanCondition.IS_NOT_NULL:
       return `${columnName} != null`;
-  }
-}
-
-export function getTextForCharCondition(
-  columnName: ColumnName,
-  condition: CharCondition,
-  value: unknown
-): string {
-  switch (condition) {
-    case CharCondition.IS_EQUAL:
-      return `${columnName} == '${value}'`;
-    case CharCondition.IS_NOT_EQUAL:
-      return `${columnName} != '${value}'`;
-    case CharCondition.IS_NULL:
-      return `isNull(${columnName})`;
-    case CharCondition.IS_NOT_NULL:
-      return `!isNull(${columnName})`;
   }
 }
 
@@ -686,44 +702,70 @@ export function getFormatColumns(
     [string, DhType.CustomColumn]
   >();
   rules.forEach(({ config, type: formatterType }) => {
-    const { column } = config;
+    const { leftHandValue, formattedColumns } = config;
+    const isColumnType = formatterType === FormatterType.CONDITIONAL;
+
     // Check both name and type because the type can change
-    const col = columns.find(
-      ({ name, type }) => name === column.name && type === column.type
+    const conditionCol = columns.find(
+      ({ name, type }) =>
+        name === leftHandValue.name && type === leftHandValue.type
     );
-    if (col === undefined) {
+    if (conditionCol === undefined) {
       log.debug(
-        `Column ${column.name}:${column.type} not found. Ignoring format rule.`,
+        `Column ${leftHandValue.name}:${leftHandValue.type} not found. Ignoring format rule.`,
         config
       );
       return;
     }
-    // Stack ternary format conditions by column
-    const [prevRule, prevFormatColumn] = (formatterType ===
-    FormatterType.CONDITIONAL
-      ? columnFormatConfigMap.get(col.name)
-      : rowFormatConfig) ?? ['null', undefined];
-    const rule = makeTernaryFormatRule(dh, config, prevRule);
-    if (rule === undefined) {
-      log.debug(`Ignoring format rule.`, config);
-      return;
-    }
-    // Replace existing formatColumn with the new stacked format
-    const index =
-      prevFormatColumn === undefined ? -1 : result.indexOf(prevFormatColumn);
-    if (index > -1) {
-      result.splice(index, 1);
-    }
-    const formatColumn =
-      formatterType === FormatterType.CONDITIONAL
-        ? makeColumnFormatColumn(col, rule)
+
+    // For COLUMNS rules, format each column in formattedColumns.
+    // When formattedColumns is absent or empty, fall back to the condition column
+    // by using [null] to indicate that the condition column should be used as the format target.
+    const targetColConfigs: (ModelColumn | null)[] =
+      isColumnType && formattedColumns.length > 0 ? formattedColumns : [null];
+
+    targetColConfigs.forEach(targetColConfig => {
+      let formatTargetCol = conditionCol;
+      if (isColumnType && targetColConfig !== null) {
+        const found = columns.find(
+          ({ name, type }) =>
+            name === targetColConfig.name && type === targetColConfig.type
+        );
+        if (found === undefined) {
+          log.debug(
+            `Formatted column ${targetColConfig.name}:${targetColConfig.type} not found. Ignoring format rule.`,
+            config
+          );
+          return;
+        }
+        formatTargetCol = found;
+      }
+
+      // Stack ternary format conditions by formatted column
+      const [prevRule, prevFormatColumn] = (isColumnType
+        ? columnFormatConfigMap.get(formatTargetCol.name)
+        : rowFormatConfig) ?? ['null', undefined];
+      const rule = makeTernaryFormatRule(dh, config, prevRule);
+      if (rule === undefined) {
+        log.debug(`Ignoring format rule.`, config);
+        return;
+      }
+      // Replace existing formatColumn with the new stacked format
+      const index =
+        prevFormatColumn === undefined ? -1 : result.indexOf(prevFormatColumn);
+      if (index > -1) {
+        result.splice(index, 1);
+      }
+      const formatColumn = isColumnType
+        ? makeColumnFormatColumn(formatTargetCol, rule)
         : makeRowFormatColumn(dh, rule);
-    result.push(formatColumn);
-    if (formatterType === FormatterType.CONDITIONAL) {
-      columnFormatConfigMap.set(col.name, [rule, formatColumn]);
-    } else {
-      rowFormatConfig = [rule, formatColumn];
-    }
+      result.push(formatColumn);
+      if (isColumnType) {
+        columnFormatConfigMap.set(formatTargetCol.name, [rule, formatColumn]);
+      } else {
+        rowFormatConfig = [rule, formatColumn];
+      }
+    });
   });
 
   return result;

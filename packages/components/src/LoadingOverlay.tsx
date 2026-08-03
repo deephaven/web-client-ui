@@ -15,6 +15,7 @@ type LoadingOverlayProps = {
   scrimClassName?: string;
   timeout?: number | { enter?: number; exit?: number; appear?: number };
   'data-testid'?: string;
+  onErrorAction?: () => void;
 };
 
 /**
@@ -28,6 +29,7 @@ function LoadingOverlay({
   scrimClassName = 'iris-panel-scrim-background',
   timeout = ThemeExport.transitionMs,
   'data-testid': dataTestId,
+  onErrorAction,
 }: LoadingOverlayProps): JSX.Element {
   const nodeRef = useRef<HTMLDivElement>(null);
   const messageTestId =
@@ -72,6 +74,15 @@ function LoadingOverlay({
               <div className="message-text" data-testid={messageTestId}>
                 {errorMessage}
               </div>
+            )}
+            {onErrorAction != null && errorMessage != null && (
+              <button
+                type="button"
+                className="btn btn-link error-action-button"
+                onClick={onErrorAction}
+              >
+                Reset
+              </button>
             )}
           </div>
         </div>
