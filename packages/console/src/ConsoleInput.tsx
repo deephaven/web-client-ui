@@ -86,14 +86,9 @@ export class ConsoleInput extends PureComponent<
   componentDidUpdate(prevProps: ConsoleInputProps): void {
     const { session } = this.props;
     this.layoutEditor();
-    if (prevProps.session !== session && this.commandEditor != null) {
-      this.openDocumentCleanup?.dispose();
-      this.openDocumentCleanup = undefined;
-      MonacoUtils.closeDocument(this.commandEditor, prevProps.session);
-      this.openDocumentCleanup = MonacoUtils.openDocument(
-        this.commandEditor,
-        session
-      );
+    if (prevProps.session !== session) {
+      this.destroyCommandEditor(prevProps.session);
+      this.initCommandEditor();
     }
   }
 
@@ -104,7 +99,8 @@ export class ConsoleInput extends PureComponent<
       this.loadingPromise.cancel();
     }
 
-    this.destroyCommandEditor();
+    const { session } = this.props;
+    this.destroyCommandEditor(session);
   }
 
   cancelListener?: () => void;
@@ -309,8 +305,12 @@ export class ConsoleInput extends PureComponent<
     this.setState({ model: this.commandEditor.getModel() });
   }
 
-  destroyCommandEditor(): void {
-    const { session } = this.props;
+  /**
+   * Closes the monaco document, disposes the Monaco editor, and clears all associated cleanup state.
+   *
+   * @param session The session that originally received `openDocument` for this editor
+   */
+  destroyCommandEditor(session: dh.IdeSession): void {
     if (this.commandEditor) {
       this.openDocumentCleanup?.dispose();
       this.openDocumentCleanup = undefined;
