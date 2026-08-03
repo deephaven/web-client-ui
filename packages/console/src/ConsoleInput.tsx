@@ -86,6 +86,7 @@ export class ConsoleInput extends PureComponent<
   componentDidUpdate(prevProps: ConsoleInputProps): void {
     const { session } = this.props;
     this.layoutEditor();
+    // If the session has changed, we need to destroy the old command editor and create a new one for the new session
     if (prevProps.session !== session) {
       this.destroyCommandEditor(prevProps.session);
       this.initCommandEditor();
