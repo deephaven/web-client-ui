@@ -83,8 +83,18 @@ export class ConsoleInput extends PureComponent<
     this.loadMoreHistory();
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: ConsoleInputProps): void {
+    const { session } = this.props;
     this.layoutEditor();
+    if (prevProps.session !== session && this.commandEditor != null) {
+      this.openDocumentCleanup?.dispose();
+      this.openDocumentCleanup = undefined;
+      MonacoUtils.closeDocument(this.commandEditor, prevProps.session);
+      this.openDocumentCleanup = MonacoUtils.openDocument(
+        this.commandEditor,
+        session
+      );
+    }
   }
 
   componentWillUnmount(): void {
@@ -98,6 +108,8 @@ export class ConsoleInput extends PureComponent<
   }
 
   cancelListener?: () => void;
+
+  openDocumentCleanup?: monaco.IDisposable;
 
   resizeObserver: ResizeObserver;
 
@@ -198,7 +210,10 @@ export class ConsoleInput extends PureComponent<
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
     MonacoUtils.setEOL(this.commandEditor);
-    MonacoUtils.openDocument(this.commandEditor, session);
+    this.openDocumentCleanup = MonacoUtils.openDocument(
+      this.commandEditor,
+      session
+    );
 
     this.commandEditor.onDidChangeModelContent(() => {
       const value = this.commandEditor?.getValue();
@@ -297,6 +312,8 @@ export class ConsoleInput extends PureComponent<
   destroyCommandEditor(): void {
     const { session } = this.props;
     if (this.commandEditor) {
+      this.openDocumentCleanup?.dispose();
+      this.openDocumentCleanup = undefined;
       MonacoUtils.closeDocument(this.commandEditor, session);
       this.commandEditor.dispose();
       this.commandEditor = undefined;
