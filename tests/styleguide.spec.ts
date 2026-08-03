@@ -229,7 +229,7 @@ test('Dialog with Picker regression test', async ({ page }) => {
     .click();
 
   // Open the Picker's own overlay
-  const picker = page.getByRole('button', { name: 'Fruit' });
+  const picker = page.getByLabel('Fruit');
   await expect(picker).toBeVisible();
   await picker.click();
 
@@ -238,4 +238,10 @@ test('Dialog with Picker regression test', async ({ page }) => {
   await expect(listbox).toBeVisible();
 
   await expect(page).toHaveScreenshot('dialog-with-picker-open.png');
+
+  // Select an option to verify the Picker is interactive (i.e. the outer
+  // Popper does not dismiss on Picker interaction).
+  await listbox.getByRole('option', { name: 'Banana' }).click();
+  await expect(listbox).toBeHidden();
+  await expect(picker).toContainText('Banana');
 });
