@@ -18,6 +18,7 @@ export { default as PandasWidgetPlugin } from './PandasWidgetPlugin';
 export { default as PandasPluginConfig } from './PandasPluginConfig';
 export { default as WidgetLoaderPlugin } from './WidgetLoaderPlugin';
 export { default as WidgetLoaderPluginConfig } from './WidgetLoaderPluginConfig';
+export * from './WidgetLoaderUtils';
 export { default as ControlType } from './controls/ControlType';
 export { default as LinkerUtils } from './linker/LinkerUtils';
 export type { Link } from './linker/LinkerUtils';
