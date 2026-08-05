@@ -13,28 +13,19 @@ import {
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import {
-  isWidgetPlugin,
-  isWidgetMiddlewarePlugin,
   createChainedComponent,
   createChainedPanelComponent,
   usePlugins,
   type WidgetPlugin,
-  type WidgetMiddlewarePlugin,
 } from '@deephaven/plugin';
 import { WidgetPanel } from './panels';
 import { type WidgetPanelDescriptor } from './panels/WidgetPanelTypes';
+import {
+  getSupportedWidgetTypes,
+  getUniqueWidgetPluginInfos,
+} from './WidgetLoaderUtils';
 
 const log = Log.module('WidgetLoaderPlugin');
-
-/**
- * Information about a widget type including its base plugin and any middleware.
- */
-interface WidgetTypeInfo {
-  /** The base plugin that handles this widget type, or null if only middleware registered so far */
-  basePlugin: WidgetPlugin | null;
-  /** Middleware plugins to apply, in order from outermost to innermost */
-  middleware: WidgetMiddlewarePlugin[];
-}
 
 export function WrapWidgetPlugin(
   plugin: WidgetPlugin
@@ -102,87 +93,10 @@ export function WidgetLoaderPlugin(
 ): JSX.Element | null {
   const plugins = usePlugins();
 
-  /**
-   * Build a map of widget types to their plugin chain info.
-   * For each type, we have a base plugin and a list of middleware to apply.
-   */
-  const supportedTypes = useMemo(() => {
-    const typeMap = new Map<string, WidgetTypeInfo>();
-
-    plugins.forEach(plugin => {
-      const isMiddleware = isWidgetMiddlewarePlugin(plugin);
-      if (!isWidgetPlugin(plugin) && !isMiddleware) {
-        return;
-      }
-
-      [plugin.supportedTypes].flat().forEach(supportedType => {
-        if (supportedType == null || supportedType === '') {
-          return;
-        }
-
-        const existing = typeMap.get(supportedType);
-
-        if (isMiddleware) {
-          // Add middleware to existing chain or create pending chain
-          if (existing != null) {
-            existing.middleware.push(plugin);
-            log.debug(
-              `Adding middleware ${plugin.name} to chain for type ${supportedType}`
-            );
-          } else {
-            // No base plugin yet, create entry with just middleware
-            // The base plugin will be set when a non-middleware plugin is registered
-            typeMap.set(supportedType, {
-              basePlugin: null,
-              middleware: [plugin],
-            });
-            log.debug(
-              `Creating pending middleware chain for type ${supportedType} with ${plugin.name}`
-            );
-          }
-        } else {
-          // Non-middleware plugin: becomes the base plugin
-          if (existing != null) {
-            if (existing.basePlugin != null) {
-              // Already have a base plugin, warn about replacement
-              log.warn(
-                `Multiple WidgetPlugins handling type ${supportedType}. ` +
-                  `Replacing ${existing.basePlugin.name} with ${plugin.name} as base plugin`
-              );
-            }
-            // Keep existing middleware, update the base plugin
-            existing.basePlugin = plugin;
-          } else {
-            typeMap.set(supportedType, {
-              basePlugin: plugin,
-              middleware: [],
-            });
-          }
-          log.debug(`Set base plugin ${plugin.name} for type ${supportedType}`);
-        }
-      });
-    });
-
-    // Filter out entries that only have middleware (no base plugin)
-    const validEntries = new Map<
-      string,
-      WidgetTypeInfo & { basePlugin: WidgetPlugin }
-    >();
-    typeMap.forEach((info, type) => {
-      if (info.basePlugin != null) {
-        validEntries.set(
-          type,
-          info as WidgetTypeInfo & { basePlugin: WidgetPlugin }
-        );
-      } else {
-        log.warn(
-          `No base plugin found for type ${type}, middleware will not be applied`
-        );
-      }
-    });
-
-    return validEntries;
-  }, [plugins]);
+  const supportedTypes = useMemo(
+    () => getSupportedWidgetTypes(plugins),
+    [plugins]
+  );
 
   assertIsDashboardPluginProps(props);
   const { id, layout, registerComponent } = props;
@@ -225,29 +139,7 @@ export function WidgetLoaderPlugin(
 
   useEffect(() => {
     // Get unique base plugins (a plugin may handle multiple types)
-    // supportedTypes is already filtered to entries with non-null basePlugin
-    type ValidWidgetTypeInfo = WidgetTypeInfo & { basePlugin: WidgetPlugin };
-    const uniquePluginInfos = new Map<string, ValidWidgetTypeInfo>();
-    supportedTypes.forEach((info, _type) => {
-      // Use the base plugin name as the key to get unique plugins
-      if (!uniquePluginInfos.has(info.basePlugin.name)) {
-        // Clone to avoid mutating the useMemo result
-        uniquePluginInfos.set(info.basePlugin.name, {
-          basePlugin: info.basePlugin,
-          middleware: [...info.middleware],
-        });
-      } else {
-        // Merge middleware from multiple type registrations for the same base plugin
-        const existingInfo = uniquePluginInfos.get(info.basePlugin.name);
-        if (existingInfo != null) {
-          info.middleware.forEach(m => {
-            if (!existingInfo.middleware.includes(m)) {
-              existingInfo.middleware.push(m);
-            }
-          });
-        }
-      }
-    });
+    const uniquePluginInfos = getUniqueWidgetPluginInfos(supportedTypes);
 
     log.debug(
       'Registering widget components',
