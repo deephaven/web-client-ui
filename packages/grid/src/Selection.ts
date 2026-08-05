@@ -16,6 +16,6 @@ export interface Selection {
   cleared: () => Selection;
   /** Returns a new Selection keeping only the last range. */
   trimmed: () => Selection;
-  /** Returns a new Selection with ranges replaced. KeyedSelection ignores this. */
+  /** Returns a new Selection with ranges replaced. */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
 }
