@@ -480,7 +480,7 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    return this.keyColumnSet.size > 0;
+    return this.inputKeyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -582,7 +582,7 @@ class IrisGridTableModelTemplate<
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
     const text = this.textValueForCell(x, y);
-    if (text == null && this.isKeyColumn(x)) {
+    if (text == null && this.isInputKeyColumn(x)) {
       const pendingRow = this.pendingRow(y);
       if (pendingRow != null && this.pendingDataMap.has(pendingRow)) {
         // Asterisk to show a value is required for a key column on a row that has some data entered
@@ -644,7 +644,7 @@ class IrisGridTableModelTemplate<
           value
         );
       }
-    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
+    } else if (this.isPendingRow(y) && this.isInputKeyColumn(x)) {
       assertNotNull(theme.errorTextColor);
       return theme.errorTextColor;
     }
@@ -1638,19 +1638,19 @@ class IrisGridTableModelTemplate<
     ) {
       return false;
     }
-    return !this.isKeyColumn(modelIndex);
+    return !this.isInputKeyColumn(modelIndex);
   }
 
   isColumnSortable(modelIndex: ModelIndex): boolean {
     return this.columns[modelIndex].isSortable ?? true;
   }
 
-  isKeyColumn(x: ModelIndex): boolean {
-    return this.keyColumnSet.has(this.columns[x].name);
+  isInputKeyColumn(x: ModelIndex): boolean {
+    return this.inputKeyColumnSet.has(this.columns[x].name);
   }
 
-  isValueColumn(x: ModelIndex): boolean {
-    return this.valueColumnSet.has(this.columns[x].name);
+  isInputValueColumn(x: ModelIndex): boolean {
+    return this.inputValueColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1674,26 +1674,29 @@ class IrisGridTableModelTemplate<
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
 
-    let isKeyColumnInRange = false;
+    let isInputKeyColumnInRange = false;
     assertNotNull(range.startColumn);
     // Check if any of the columns in grid range are key columns
     const bound = range.endColumn ?? this.table.size;
     for (let column = range.startColumn; column <= bound; column += 1) {
-      const isKey = this.isKeyColumn(column);
-      const isValue = this.isValueColumn(column);
+      const isKey = this.isInputKeyColumn(column);
+      const isValue = this.isInputValueColumn(column);
 
       if (!isKey && !isValue) {
         // If any column is not a key or value column, range is not editable
         return false;
       }
       if (isKey) {
-        isKeyColumnInRange = true;
+        isInputKeyColumnInRange = true;
         break;
       }
     }
 
     if (
-      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
+      !(
+        isPendingRange ||
+        (this.inputKeyColumnSet.size !== 0 && !isInputKeyColumnInRange)
+      )
     ) {
       return false;
     }

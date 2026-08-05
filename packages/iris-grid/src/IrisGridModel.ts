@@ -390,14 +390,14 @@ abstract class IrisGridModel<
   /**
    * @returns Names of key columns
    */
-  get keyColumnSet(): Set<ColumnName> {
+  get inputKeyColumnSet(): Set<ColumnName> {
     return EMPTY_SET;
   }
 
   /**
    * @returns Names of value columns
    */
-  get valueColumnSet(): Set<ColumnName> {
+  get inputValueColumnSet(): Set<ColumnName> {
     return EMPTY_SET;
   }
 
