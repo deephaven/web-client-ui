@@ -16,6 +16,7 @@ export { default as MarkdownPluginConfig } from './MarkdownPluginConfig';
 export { default as PandasPanelPlugin } from './PandasPanelPlugin';
 export { default as PandasWidgetPlugin } from './PandasWidgetPlugin';
 export { default as PandasPluginConfig } from './PandasPluginConfig';
+export { WrapWidgetPlugin } from './WidgetLoaderPlugin';
 export { default as WidgetLoaderPlugin } from './WidgetLoaderPlugin';
 export { default as WidgetLoaderPluginConfig } from './WidgetLoaderPluginConfig';
 export * from './WidgetLoaderUtils';
