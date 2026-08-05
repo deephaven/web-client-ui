@@ -2033,7 +2033,6 @@ export class GridRenderer {
       selection,
       theme,
     } = state;
-    const selectedRanges = selection.toRanges();
     const {
       allColumnWidths,
       allColumnXs,
@@ -2083,51 +2082,93 @@ export class GridRenderer {
       context.clip('evenodd');
     }
 
-    // Draw selection ranges
+    // Column bounds are constant across all rows for full-row selection.
+    const rowSelectionX = Math.max(
+      Math.round(getOrThrow(allColumnXs, left)) + 0.5,
+      minX
+    );
+    const rowSelectionEndX = Math.min(
+      Math.round(
+        getOrThrow(allColumnXs, right) + getOrThrow(allColumnWidths, right)
+      ) - 0.5,
+      maxX
+    );
+
     context.beginPath();
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const selectedRange = selectedRanges[i];
-      const startColumn =
-        selectedRange.startColumn !== null ? selectedRange.startColumn : left;
-      const startRow =
-        selectedRange.startRow !== null ? selectedRange.startRow : top;
-      const endColumn =
-        selectedRange.endColumn !== null ? selectedRange.endColumn : right;
-      const endRow =
-        selectedRange.endRow !== null ? selectedRange.endRow : bottom;
-      if (
-        endRow >= top &&
-        bottom >= startRow &&
-        endColumn >= left &&
-        right >= startColumn
-      ) {
-        // Need to offset the x/y coordinates so that the line draws nice and crisp
-        const x =
-          startColumn >= left && allColumnXs.has(startColumn)
-            ? Math.round(getOrThrow(allColumnXs, startColumn)) + 0.5
-            : minX;
-        const y =
-          startRow >= top && allRowYs.has(startRow)
-            ? Math.max(Math.round(getOrThrow(allRowYs, startRow)) + 0.5, 0.5)
-            : minY;
+    let rowRunStartY: number | null = null;
+    let rowRunEndY = 0;
+    // Flushes the current consecutive-selected-row run as a single rect.
+    const flushRowRun = (): void => {
+      if (rowRunStartY != null && rowSelectionEndX > rowSelectionX) {
+        context.rect(
+          rowSelectionX,
+          rowRunStartY,
+          rowSelectionEndX - rowSelectionX,
+          rowRunEndY - rowRunStartY
+        );
+      }
+      rowRunStartY = null;
+    };
 
-        const endX =
-          endColumn <= right && allColumnXs.has(endColumn)
-            ? Math.round(
-                getOrThrow(allColumnXs, endColumn) +
-                  getOrThrow(allColumnWidths, endColumn)
-              ) - 0.5
-            : maxX;
-        const endY =
-          endRow <= bottom && allRowYs.has(endRow)
-            ? Math.round(
-                getOrThrow(allRowYs, endRow) + getOrThrow(allRowHeights, endRow)
-              ) - 0.5
-            : maxY;
-
-        context.rect(x, y, endX - x, endY - y);
+    for (let r = top; r <= bottom; r += 1) {
+      const rowY = allRowYs.get(r);
+      const rowH = allRowHeights.get(r);
+      if (rowY == null || rowH == null) {
+        flushRowRun();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      const y = Math.max(Math.round(rowY) + 0.5, 0.5);
+      const endY = Math.round(rowY + rowH) - 0.5;
+      if (endY < minY || y > maxY) {
+        flushRowRun();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (selection.isRowSelected(r)) {
+        // Extend or start the full-row run.
+        if (rowRunStartY == null) rowRunStartY = y;
+        rowRunEndY = endY;
+      } else {
+        flushRowRun();
+        // Partial selection — check each cell and coalesce consecutive selected columns.
+        let runStart: VisibleIndex | null = null;
+        for (let c = left; c <= right; c += 1) {
+          if (selection.isSelected(r, c)) {
+            if (runStart === null) runStart = c;
+          } else if (runStart !== null) {
+            const x = Math.max(
+              Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
+              minX
+            );
+            const endX = Math.min(
+              Math.round(
+                getOrThrow(allColumnXs, c - 1) +
+                  getOrThrow(allColumnWidths, c - 1)
+              ) - 0.5,
+              maxX
+            );
+            if (endX > x) context.rect(x, y, endX - x, endY - y);
+            runStart = null;
+          }
+        }
+        if (runStart !== null) {
+          const x = Math.max(
+            Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
+            minX
+          );
+          const endX = Math.min(
+            Math.round(
+              getOrThrow(allColumnXs, right) +
+                getOrThrow(allColumnWidths, right)
+            ) - 0.5,
+            maxX
+          );
+          if (endX > x) context.rect(x, y, endX - x, endY - y);
+        }
       }
     }
+    flushRowRun();
 
     /**
      * Create the path, then draw it once. Fill and
