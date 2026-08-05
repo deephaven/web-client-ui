@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.0](https://github.com/deephaven/web-client-ui/compare/v1.26.1...v1.27.0) (2026-07-30)
+
+### Features
+
+- DH-21538: Add reset button to broken table ([#2727](https://github.com/deephaven/web-client-ui/issues/2727)) ([897f79d](https://github.com/deephaven/web-client-ui/commit/897f79df8576ab1fee13e239cd3b014d6865c41a))
+
+### Bug Fixes
+
+- DH-22961: Use scss function for container width check ([#2721](https://github.com/deephaven/web-client-ui/issues/2721)) ([1a8d5d5](https://github.com/deephaven/web-client-ui/commit/1a8d5d5ba7ba1f6e3a6914793c42f029791bec2a))
+
 ## [1.26.1](https://github.com/deephaven/web-client-ui/compare/v1.26.0...v1.26.1) (2026-07-21)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

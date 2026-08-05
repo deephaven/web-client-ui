@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.0](https://github.com/deephaven/web-client-ui/compare/v1.26.1...v1.27.0) (2026-07-30)
+
+### Features
+
+- DH-21538: Add reset button to broken table ([#2727](https://github.com/deephaven/web-client-ui/issues/2727)) ([897f79d](https://github.com/deephaven/web-client-ui/commit/897f79df8576ab1fee13e239cd3b014d6865c41a))
+
+### Bug Fixes
+
+- DH-22991: Command history is disappearing ([#2720](https://github.com/deephaven/web-client-ui/issues/2720)) ([8088377](https://github.com/deephaven/web-client-ui/commit/808837795f2349742406309450d348ed69a75140))
+
 ## [1.22.1](https://github.com/deephaven/web-client-ui/compare/v1.22.0...v1.22.1) (2026-06-17)
 
 ### Bug Fixes

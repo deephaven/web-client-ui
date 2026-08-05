@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.0](https://github.com/deephaven/web-client-ui/compare/v1.26.1...v1.27.0) (2026-07-30)
+
+### Features
+
+- DH-22220: Allow Conditional Formatting to Compare Columns ([#2725](https://github.com/deephaven/web-client-ui/issues/2725)) ([f9dbd29](https://github.com/deephaven/web-client-ui/commit/f9dbd2994fcb2f3c9f7faa5777a0aa21fb1e169b))
+
 ## [1.26.1](https://github.com/deephaven/web-client-ui/compare/v1.26.0...v1.26.1) (2026-07-21)
 
 **Note:** Version bump only for package @deephaven/iris-grid
