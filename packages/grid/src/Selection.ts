@@ -8,6 +8,8 @@ import type { VisibleIndex } from './GridMetrics';
 export interface Selection {
   isEmpty: () => boolean;
   isSelected: (row: VisibleIndex, column: VisibleIndex) => boolean;
+  /** Returns true if the entire row is part of the selection (any column). */
+  isRowSelected: (row: VisibleIndex) => boolean;
   /** Returns false if any selected range exceeds the given column/row bounds. */
   isValid: (columnCount: number, rowCount: number) => boolean;
   /** Returns the selection as GridRange[]. In keyed mode this synthesizes ranges. */

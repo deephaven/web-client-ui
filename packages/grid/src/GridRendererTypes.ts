@@ -2,12 +2,12 @@ import type React from 'react';
 import { type VisibleIndex, type Coordinate } from './GridMetrics';
 import type GridMetrics from './GridMetrics';
 import type GridModel from './GridModel';
-import type GridRange from './GridRange';
 import { type GridTheme } from './GridTheme';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import type { CellInputFieldProps } from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
+import type { Selection } from './Selection';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;
@@ -90,8 +90,8 @@ export type GridRenderState = {
   cursorColumn: VisibleIndex | null;
   cursorRow: VisibleIndex | null;
 
-  // Currently selected ranges
-  selectedRanges: readonly GridRange[];
+  // Current selection
+  selection: Selection;
 
   // Currently dragged column/row information
   draggingColumn: DraggingColumn | null;

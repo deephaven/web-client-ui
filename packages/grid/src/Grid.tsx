@@ -2425,7 +2425,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       metrics,
       mouseX,
       mouseY,
-      selectedRanges: selection.toRanges(),
+      selection,
       draggingColumn,
       draggingColumnSeparator,
       draggingRow,

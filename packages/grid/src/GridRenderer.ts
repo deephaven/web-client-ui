@@ -819,7 +819,7 @@ export class GridRenderer {
     state: GridRenderState,
     row: VisibleIndex
   ): void {
-    const { metrics, selectedRanges, theme } = state;
+    const { metrics, selection, theme } = state;
     const { allRowHeights, allRowYs, maxX } = metrics;
 
     const y = getOrThrow(allRowYs, row);
@@ -828,18 +828,9 @@ export class GridRenderer {
     if (theme.rowHoverBackgroundColor != null) {
       context.fillStyle = theme.rowHoverBackgroundColor;
     }
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const { startRow, endRow } = selectedRanges[i];
-      if (
-        startRow != null &&
-        endRow != null &&
-        startRow <= row &&
-        endRow >= row
-      ) {
-        if (theme.selectedRowHoverBackgroundColor != null) {
-          context.fillStyle = theme.selectedRowHoverBackgroundColor;
-        }
-        break;
+    if (selection.isRowSelected(row)) {
+      if (theme.selectedRowHoverBackgroundColor != null) {
+        context.fillStyle = theme.selectedRowHoverBackgroundColor;
       }
     }
     context.fillRect(0, y, maxX, rowHeight);
@@ -2039,9 +2030,10 @@ export class GridRenderer {
       editingCell,
       metrics,
       model,
-      selectedRanges,
+      selection,
       theme,
     } = state;
+    const selectedRanges = selection.toRanges();
     const {
       allColumnWidths,
       allColumnXs,
@@ -2060,7 +2052,7 @@ export class GridRenderer {
       minX = -10,
       maxX = width + 10,
     } = viewport;
-    if (selectedRanges.length === 0) {
+    if (selection.isEmpty()) {
       return;
     }
 
@@ -2609,7 +2601,8 @@ export class GridRenderer {
       ) {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
-        const { selectedRanges, cursorColumn } = state;
+        const { cursorColumn } = state;
+        const selectedRanges = state.selection.toRanges();
         const { lastLeft, columnCount } = metrics;
 
         const filteredRanges = [...selectedRanges].filter(
@@ -2717,7 +2710,8 @@ export class GridRenderer {
         scrollBarActiveSelectionTickColor != null
       ) {
         // Scrollbar Selection Tick
-        const { selectedRanges, cursorRow } = state;
+        const { cursorRow } = state;
+        const selectedRanges = state.selection.toRanges();
         const { lastTop, rowCount } = metrics;
 
         const getTickY = (index: number): number => {

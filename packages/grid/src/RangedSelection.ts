@@ -31,6 +31,19 @@ export class RangedSelection implements Selection {
     return false;
   }
 
+  isRowSelected(row: VisibleIndex): boolean {
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const range = this.ranges[i];
+      if (
+        range.startRow === null ||
+        (range.startRow <= row && row <= (range.endRow ?? 0))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   isValid(columnCount: number, rowCount: number): boolean {
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];
