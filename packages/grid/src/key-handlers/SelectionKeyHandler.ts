@@ -96,12 +96,12 @@ class SelectionKeyHandler extends KeyHandler {
         return true;
       }
       case 'Escape':
-        if (grid.state.selectedRanges.length === 0) return false;
+        if (grid.state.selection.isEmpty()) return false;
         grid.clearSelectedRanges();
         // consume the event, and stop propagation only if there were selected ranges to clear
         return { preventDefault: false, stopPropagation: true };
       case 'Enter':
-        if (grid.state.selectedRanges.length > 0) {
+        if (!grid.state.selection.isEmpty()) {
           grid.moveCursorInDirection(
             event.shiftKey
               ? GridRange.SELECTION_DIRECTION.UP
@@ -111,7 +111,7 @@ class SelectionKeyHandler extends KeyHandler {
         }
         break;
       case 'Tab':
-        if (grid.state.selectedRanges.length > 0) {
+        if (!grid.state.selection.isEmpty()) {
           grid.moveCursorInDirection(
             event.shiftKey
               ? GridRange.SELECTION_DIRECTION.LEFT

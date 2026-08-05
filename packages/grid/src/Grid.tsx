@@ -73,6 +73,8 @@ import {
 import { type EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
+import { type Selection } from './Selection';
+import { RangedSelection } from './RangedSelection';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import {
   type EditingCell,
@@ -115,6 +117,9 @@ export type GridProps = typeof Grid.defaultProps & {
   // Optional key and mouse handlers
   keyHandlers?: readonly KeyHandler[];
   mouseHandlers?: readonly GridMouseHandler[];
+
+  // Factory that creates an empty Selection; defaults to an empty RangedSelection.
+  createEmptySelection?: () => Selection;
 
   // Initial state of moved columns or rows
   movedColumns?: readonly MoveOperation[];
@@ -202,11 +207,10 @@ export type GridState = {
   selectionEndRow: VisibleIndex | null;
   selectionEndColumn: VisibleIndex | null;
 
-  // Currently selected ranges and previously selected ranges
-  // Store the previously selected ranges to determine if the new selection should
-  // deselect again (if it's the same range)
-  selectedRanges: readonly GridRange[];
-  lastSelectedRanges: readonly GridRange[];
+  // The current selection
+  selection: Selection;
+  // Previous selection; used for deselect-on-reclick detection in commitSelection.
+  lastSelection: Selection;
 
   // The mouse cursor style to use when hovering over the grid element
   cursor: string | null;
@@ -279,6 +283,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       autoSelectColumn: false,
       autoSelectRow: false,
     } as Partial<GridThemeType>,
+    createEmptySelection: (): Selection => RangedSelection.EMPTY,
   };
 
   // use same constant as chrome source for windows
@@ -495,8 +500,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Currently selected ranges and previously selected ranges
       // Store the previously selected ranges to determine if the new selection should
       // deselect again (if it's the same range)
-      selectedRanges: EMPTY_ARRAY,
-      lastSelectedRanges: EMPTY_ARRAY,
+      selection: props.createEmptySelection(),
+      lastSelection: props.createEmptySelection(),
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -854,32 +859,40 @@ class Grid extends PureComponent<GridProps, GridState> {
   setSelectedRanges(gridRanges: readonly GridRange[]): void {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
-    const { cursorRow, cursorColumn, selectedRanges } = this.state;
-    this.setState({
-      selectedRanges: gridRanges,
-      lastSelectedRanges: selectedRanges,
-    });
-    if (gridRanges.length > 0) {
-      const range = GridRange.boundedRange(
-        gridRanges[0],
-        columnCount,
-        rowCount
-      );
-      let newCursorRow = cursorRow;
-      let newCursorColumn = cursorColumn;
-      if (!range.containsCell(cursorColumn, cursorRow)) {
-        ({ row: newCursorRow, column: newCursorColumn } = range.startCell());
+    this.setState(state => {
+      let {
+        cursorRow,
+        cursorColumn,
+        selectionStartColumn,
+        selectionStartRow,
+        selectionEndColumn,
+        selectionEndRow,
+      } = state;
+      if (gridRanges.length > 0) {
+        const range = GridRange.boundedRange(
+          gridRanges[0],
+          columnCount,
+          rowCount
+        );
+        if (!range.containsCell(cursorColumn, cursorRow)) {
+          ({ row: cursorRow, column: cursorColumn } = range.startCell());
+        }
+        selectionStartColumn = range.startColumn;
+        selectionStartRow = range.startRow;
+        selectionEndColumn = range.endColumn;
+        selectionEndRow = range.endRow;
       }
-
-      this.setState({
-        selectionStartColumn: range.startColumn,
-        selectionStartRow: range.startRow,
-        selectionEndColumn: range.endColumn,
-        selectionEndRow: range.endRow,
-        cursorColumn: newCursorColumn,
-        cursorRow: newCursorRow,
-      });
-    }
+      return {
+        selection: state.selection.withUpdatedRanges(gridRanges),
+        lastSelection: state.selection,
+        selectionStartColumn,
+        selectionStartRow,
+        selectionEndColumn,
+        selectionEndRow,
+        cursorColumn,
+        cursorRow,
+      };
+    });
   }
 
   initContext(): void {
@@ -1020,12 +1033,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param prevState The previous grid state
    */
   checkSelectionChange(prevState: GridState): void {
-    const { selectedRanges: oldSelectedRanges } = prevState;
-    const { selectedRanges } = this.state;
-
-    if (selectedRanges !== oldSelectedRanges) {
+    const { selection } = this.state;
+    if (selection !== prevState.selection) {
       const { onSelectionChanged } = this.props;
-      onSelectionChanged(selectedRanges);
+      onSelectionChanged(selection.toRanges());
     }
   }
 
@@ -1034,20 +1045,15 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @returns True if the selection is valid, false if the selection was invalid and has been reset
    */
   validateSelection(): boolean {
-    const { model } = this.props;
-    const { selectedRanges } = this.state;
+    const { model, createEmptySelection } = this.props;
     const { columnCount, rowCount } = model;
+    const { selection } = this.state;
 
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const range = selectedRanges[i];
-      if (
-        (range.endColumn != null && range.endColumn >= columnCount) ||
-        (range.endRow != null && range.endRow >= rowCount)
-      ) {
-        // Just clear the selection rather than trying to trim it.
-        this.setState({ selectedRanges: [], lastSelectedRanges: [] });
-        return false;
-      }
+    if (!selection.isValid(columnCount, rowCount)) {
+      // Just clear the selection rather than trying to trim it.
+      const empty = createEmptySelection();
+      this.setState({ selection: empty, lastSelection: empty });
+      return false;
     }
     return true;
   }
@@ -1056,27 +1062,22 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Clears all selected ranges
    */
   clearSelectedRanges(): void {
-    const { selectedRanges } = this.state;
-    this.setState({
-      selectedRanges: EMPTY_ARRAY,
-      lastSelectedRanges: selectedRanges,
-    });
+    this.setState(state => ({
+      selection: state.selection.cleared(),
+      lastSelection: state.selection,
+    }));
   }
 
   /** Clears all but the last selected range */
   trimSelectedRanges(): void {
-    const { selectedRanges } = this.state;
-    if (selectedRanges.length > 0) {
-      this.setState({
-        selectedRanges: selectedRanges.slice(selectedRanges.length - 1),
-      });
-    }
+    const { selection } = this.state;
+    this.setState({ selection: selection.trimmed() });
   }
 
   /** Gets the selected ranges */
   getSelectedRanges(): readonly GridRange[] {
-    const { selectedRanges } = this.state;
-    return selectedRanges;
+    const { selection } = this.state;
+    return selection.toRanges();
   }
 
   /**
@@ -1109,7 +1110,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     maximizePreviousRange = false
   ): void {
     this.setState(state => {
-      const { selectedRanges, selectionStartRow, selectionStartColumn } = state;
+      const { selection, selectionStartRow, selectionStartColumn } = state;
+      const selectedRanges = selection.toRanges();
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
 
@@ -1166,7 +1168,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         const newRanges = [...selectedRanges];
         newRanges[newRanges.length - 1] = selectedRange;
         return {
-          selectedRanges: newRanges,
+          selection: selection.withUpdatedRanges(newRanges),
           selectionEndColumn: column,
           selectionEndRow: row,
         };
@@ -1186,7 +1188,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         )
       );
       return {
-        selectedRanges: newRanges,
+        selection: selection.withUpdatedRanges(newRanges),
         selectionEndColumn: column,
         selectionEndRow: row,
       };
@@ -1203,8 +1205,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState((state: GridState) => {
       const { theme } = this.props;
       const { autoSelectRow } = theme;
-      const { selectedRanges, lastSelectedRanges, cursorRow, cursorColumn } =
-        state;
+      const { selection, lastSelection, cursorRow, cursorColumn } = state;
+      const selectedRanges = selection.toRanges();
+      const lastSelectedRanges = lastSelection.toRanges();
 
       if (
         selectedRanges.length === 1 &&
@@ -1216,8 +1219,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         // If it's the exact same single selection, then deselect.
         // For if we click on one cell multiple times.
         return {
-          selectedRanges: EMPTY_ARRAY,
-          lastSelectedRanges: EMPTY_ARRAY,
+          selection: selection.cleared(),
+          lastSelection: selection.cleared(),
           cursorColumn: null,
           cursorRow: null,
         };
@@ -1277,8 +1280,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         // The onSelectionChanged callback has already been called with the selectedRanges at this point.
         // If the selection is not changed (e.g., the user is adding via ctrl+click and not removing),
         // there is no need to change and trigger the callback again.
-        selectedRanges: selectionChanged ? newSelectedRanges : selectedRanges,
-        lastSelectedRanges: selectedRanges,
+        selection: selection.withUpdatedRanges(
+          selectionChanged ? newSelectedRanges : selectedRanges
+        ),
+        lastSelection: state.selection,
       };
     });
   }
@@ -1302,11 +1307,13 @@ class Grid extends PureComponent<GridProps, GridState> {
       focusedRow + 1,
       halfViewportHeight
     );
-    this.setState({
+    this.setState(state => ({
       top: Math.min(lastTop, newTop),
-      selectedRanges: [new GridRange(null, focusedRow, null, focusedRow)],
+      selection: state.selection.withUpdatedRanges([
+        new GridRange(null, focusedRow, null, focusedRow),
+      ]),
       isStuckToBottom: false,
-    });
+    }));
     const { cursorColumn } = this.state;
     this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
   }
@@ -1366,7 +1373,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   moveCursorInDirection(direction = GridRange.SELECTION_DIRECTION.DOWN): void {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
-    const { cursorRow, cursorColumn, selectedRanges } = this.state;
+    const { cursorRow, cursorColumn, selection } = this.state;
+    const selectedRanges = selection.toRanges();
     const ranges =
       selectedRanges.length > 0
         ? selectedRanges
@@ -1396,7 +1404,9 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       if (!GridRange.containsCell(selectedRanges, column, row)) {
         this.setState({
-          selectedRanges: [GridRange.makeCell(column, row)],
+          selection: selection.withUpdatedRanges([
+            GridRange.makeCell(column, row),
+          ]),
           selectionStartColumn: column,
           selectionStartRow: row,
           selectionEndColumn: column,
@@ -1564,7 +1574,8 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   async pasteValue(value: string[][] | string): Promise<void> {
     const { model } = this.props;
-    const { movedColumns, movedRows, selectedRanges } = this.state;
+    const { movedColumns, movedRows, selection } = this.state;
+    const selectedRanges = selection.toRanges();
 
     try {
       assertIsEditableGridModel(model);
@@ -1576,7 +1587,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         throw new PasteError("Can't paste in to read-only area.");
       }
 
-      if (selectedRanges.length <= 0) {
+      if (selection.isEmpty()) {
         throw new PasteError('Select an area to paste to.');
       }
 
@@ -1701,23 +1712,8 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @returns True if the cell is in the current selection, false otherwise
    */
   isSelected(row: VisibleIndex, column: VisibleIndex): boolean {
-    const { selectedRanges } = this.state;
-
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const selectedRange = selectedRanges[i];
-      const rowSelected =
-        selectedRange.startRow === null ||
-        (selectedRange.startRow <= row && row <= (selectedRange.endRow ?? 0));
-      const columnSelected =
-        selectedRange.startColumn === null ||
-        (selectedRange.startColumn <= column &&
-          column <= (selectedRange.endColumn ?? 0));
-      if (rowSelected && columnSelected) {
-        return true;
-      }
-    }
-
-    return false;
+    const { selection } = this.state;
+    return selection.isSelected(row, column);
   }
 
   addDocumentCursor(cursor: string | null = null): void {
@@ -2230,7 +2226,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       fillRange = false,
     }: { direction?: SELECTION_DIRECTION | null; fillRange?: boolean } = {}
   ): void {
-    const { editingCell, selectedRanges } = this.state;
+    const { editingCell, selection } = this.state;
     if (!editingCell) throw new Error('editingCell not set');
 
     const { column, row } = editingCell;
@@ -2244,7 +2240,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (fillRange) {
-      this.setValueForRanges(selectedRanges, value);
+      this.setValueForRanges(selection.toRanges(), value);
     } else {
       this.setValueForCell(column, row, value);
     }
@@ -2409,7 +2405,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       isDragging,
       mouseX,
       mouseY,
-      selectedRanges,
+      selection,
     } = this.state;
     const { model, stateOverride } = this.props;
     const { metrics } = this;
@@ -2429,7 +2425,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       metrics,
       mouseX,
       mouseY,
-      selectedRanges,
+      selectedRanges: selection.toRanges(),
       draggingColumn,
       draggingColumnSeparator,
       draggingRow,
