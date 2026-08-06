@@ -2079,16 +2079,20 @@ export class GridRenderer {
     }
 
     // Column bounds are constant across all rows for full-row selection.
-    const rowSelectionX = Math.max(
-      Math.round(getOrThrow(allColumnXs, left)) + 0.5,
-      minX
-    );
-    const rowSelectionEndX = Math.min(
-      Math.round(
-        getOrThrow(allColumnXs, right) + getOrThrow(allColumnWidths, right)
-      ) - 0.5,
-      maxX
-    );
+    // Guard against missing keys during resize/initial-load when allColumnXs may be empty.
+    const rowSelectionX = allColumnXs.has(left)
+      ? Math.max(Math.round(getOrThrow(allColumnXs, left)) + 0.5, minX)
+      : maxX;
+    const rowSelectionEndX =
+      allColumnXs.has(right) && allColumnWidths.has(right)
+        ? Math.min(
+            Math.round(
+              getOrThrow(allColumnXs, right) +
+                getOrThrow(allColumnWidths, right)
+            ) - 0.5,
+            maxX
+          )
+        : minX;
 
     context.beginPath();
     let rowRunStartY: number | null = null;

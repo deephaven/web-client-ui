@@ -34,6 +34,7 @@ import {
   GridRange,
   type GridRangeIndex,
   GridUtils,
+  type GridModel,
   type KeyHandler,
   type ModelIndex,
   type ModelSizeMap,
@@ -45,6 +46,7 @@ import {
   isExpandableGridModel,
   isDeletableGridModel,
   isExpandableColumnGridModel,
+  type Selection,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -153,6 +155,8 @@ import {
 } from './sidebar';
 import { DEFAULT_REGISTRY, IrisGridContext } from './IrisGridContextProvider';
 import IrisGridModel from './IrisGridModel';
+import { isKeyedGridModel } from './KeyedGridModel';
+import { KeyedSelection, type GetKeyedModel } from './KeyedSelection';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import {
@@ -1214,6 +1218,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (column: ModelIndex) =>
       this.handleAdvancedFilterToggleMaximize.bind(this, column),
     { max: 100 }
+  );
+
+  getCachedCreateEmptySelection = memoize(
+    (model: IrisGridModel) =>
+      isKeyedGridModel(model)
+        ? (getModel: () => GridModel): Selection =>
+            KeyedSelection.empty(getModel as GetKeyedModel)
+        : undefined,
+    { max: 1 }
   );
 
   getCachedAdvancedFilterMenuActions = memoize(
@@ -5500,6 +5513,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.grid = grid;
             }}
             isStickyBottom={!isEditableGridModel(model) || !model.isEditable}
+            createEmptySelection={this.getCachedCreateEmptySelection(model)}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
             metricCalculator={metricCalculator}

@@ -119,7 +119,7 @@ export type GridProps = typeof Grid.defaultProps & {
   mouseHandlers?: readonly GridMouseHandler[];
 
   // Factory that creates an empty Selection; defaults to an empty RangedSelection.
-  createEmptySelection?: () => Selection;
+  createEmptySelection?: (getModel: () => GridModel) => Selection;
 
   // Initial state of moved columns or rows
   movedColumns?: readonly MoveOperation[];
