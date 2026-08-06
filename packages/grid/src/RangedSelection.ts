@@ -1,5 +1,5 @@
 import { EMPTY_ARRAY } from '@deephaven/utils';
-import type GridRange from './GridRange';
+import GridRange from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type { GetModel, Selection } from './Selection';
@@ -10,7 +10,8 @@ export class RangedSelection implements Selection {
     return new RangedSelection(EMPTY_ARRAY, getModel);
   }
 
-  readonly usesMouseSelectionOverlay = false;
+  // eslint-disable-next-line class-methods-use-this
+  readonly mouseOverlaySelection = null;
 
   constructor(
     readonly ranges: readonly GridRange[],
@@ -97,6 +98,49 @@ export class RangedSelection implements Selection {
   withUpdatedRanges(ranges: readonly GridRange[]): RangedSelection {
     if (ranges === this.ranges) return this;
     return new RangedSelection(ranges, this.getModel);
+  }
+
+  // Alias: ranges are committed immediately for RangedSelection
+  withMouseGestureRanges(ranges: readonly GridRange[]): RangedSelection {
+    return this.withUpdatedRanges(ranges);
+  }
+
+  commitMouseGesture(
+    lastCommitted: Selection,
+    autoSelectRow: boolean
+  ): RangedSelection {
+    const selectedRanges = this.ranges;
+    const lastRanges = lastCommitted.toRanges();
+
+    if (
+      selectedRanges.length === 1 &&
+      (autoSelectRow
+        ? GridRange.rowCount(selectedRanges) === 1
+        : GridRange.cellCount(selectedRanges) === 1) &&
+      GridRange.rangeArraysEqual(selectedRanges, lastRanges)
+    ) {
+      return new RangedSelection(EMPTY_ARRAY, this.getModel);
+    }
+
+    let newRanges = selectedRanges.slice();
+    if (newRanges.length > 1) {
+      const lastRange = newRanges[newRanges.length - 1];
+      for (let i = 0; i < newRanges.length - 1; i += 1) {
+        if (newRanges[i].contains(lastRange)) {
+          const remainder = newRanges[i].subtract(lastRange);
+          newRanges.pop();
+          newRanges.splice(i, 1);
+          newRanges = newRanges.concat(remainder);
+          break;
+        }
+      }
+      newRanges = GridRange.consolidate(newRanges);
+    }
+
+    const changed =
+      newRanges.length !== selectedRanges.length ||
+      newRanges.some((r, i) => !r.equals(selectedRanges[i]));
+    return this.withUpdatedRanges(changed ? newRanges : selectedRanges);
   }
 
   // eslint-disable-next-line class-methods-use-this

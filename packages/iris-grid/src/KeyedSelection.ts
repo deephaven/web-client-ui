@@ -6,6 +6,7 @@ import type {
   Selection,
   VisibleIndex,
 } from '@deephaven/grid';
+import { RangedSelection } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
 
@@ -16,18 +17,13 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(getModel, new Set());
   }
 
-  readonly usesMouseSelectionOverlay = true;
-
   constructor(
     private readonly getModel: GetKeyedModel,
-    readonly selectedKeys: ReadonlySet<string>
+    readonly selectedKeys: ReadonlySet<string>,
+    private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY
   ) {}
 
-  /**
-   * Serializes the key for the given row based on the model's selection key columns.
-   * @param row The visible row index to serialize.
-   * @returns A string representing the serialized key for the given row.
-   */
+  /** Visible row == model row in IrisGrid (sorting is server-side; no row moves). */
   private serializeRow(row: VisibleIndex): string {
     const model = this.getModel();
     const values = model.selectionKeyColumnIndices.map((col: ModelIndex) =>
@@ -62,14 +58,30 @@ export class KeyedSelection implements Selection {
 
   // eslint-disable-next-line class-methods-use-this
   getColumnTickRanges(): readonly BoundedAxisRange[] {
-    // Keyed selection does not have column tick ranges
     return EMPTY_ARRAY;
   }
 
   // eslint-disable-next-line class-methods-use-this
   getRowTickRanges(): readonly BoundedAxisRange[] {
-    // Keyed selection does not have row tick ranges
     return EMPTY_ARRAY;
+  }
+
+  get mouseOverlaySelection(): RangedSelection | null {
+    return this.overlayRanges.length > 0
+      ? new RangedSelection(this.overlayRanges, this.getModel)
+      : null;
+  }
+
+  withMouseGestureRanges(ranges: readonly GridRange[]): KeyedSelection {
+    return new KeyedSelection(this.getModel, this.selectedKeys, ranges);
+  }
+
+  commitMouseGesture(
+    _lastCommitted: Selection,
+    _autoSelectRow: boolean
+  ): KeyedSelection {
+    if (this.overlayRanges.length === 0) return this;
+    return this.withUpdatedRanges(this.overlayRanges);
   }
 
   cleared(): KeyedSelection {
@@ -83,7 +95,6 @@ export class KeyedSelection implements Selection {
 
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
     if (ranges.length === 0) return this;
-    // Collect all visible rows from the ranges.
     const rows: VisibleIndex[] = [];
     for (let i = 0; i < ranges.length; i += 1) {
       const { startRow, endRow } = ranges[i];

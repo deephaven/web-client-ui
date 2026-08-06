@@ -32,9 +32,25 @@ export interface Selection {
   /** Returns a new Selection with ranges replaced. */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
   /**
-   * When true, Grid routes mouse drag ranges into mouseSelectionRanges state
-   * instead of calling withUpdatedRanges during moveSelection. withUpdatedRanges
-   * is then called once at commitSelection with the final ranges.
+   * In-progress mouse gesture overlay for rendering; null when there is no pending gesture.
+   * RangedSelection: always null (committed state IS the in-progress state).
+   * KeyedSelection: a RangedSelection built from the pending drag ranges.
    */
-  readonly usesMouseSelectionOverlay: boolean;
+  readonly mouseOverlaySelection: Selection | null;
+  /**
+   * Applies mouse gesture ranges to this selection.
+   * RangedSelection: commits the ranges immediately (same as withUpdatedRanges).
+   * KeyedSelection: stores the ranges as a pending overlay without touching committed keys.
+   */
+  withMouseGestureRanges: (ranges: readonly GridRange[]) => Selection;
+  /**
+   * Commits the current mouse gesture and returns the settled selection.
+   * RangedSelection: consolidates ranges, handles deselect-on-reclick and ctrl+click subtract.
+   * KeyedSelection: converts the overlay ranges to key toggles.
+   * Returns this (identity) when there is nothing to commit.
+   */
+  commitMouseGesture: (
+    lastCommitted: Selection,
+    autoSelectRow: boolean
+  ) => Selection;
 }

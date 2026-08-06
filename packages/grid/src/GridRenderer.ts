@@ -2026,7 +2026,6 @@ export class GridRenderer {
       editingCell,
       metrics,
       model,
-      mouseOverlaySelection,
       selection,
       theme,
     } = state;
@@ -2049,6 +2048,7 @@ export class GridRenderer {
       maxX = width + 10,
     } = viewport;
 
+    const { mouseOverlaySelection } = selection;
     const hasMouseOverlay =
       mouseOverlaySelection != null &&
       mouseOverlaySelection.isEmpty() === false;

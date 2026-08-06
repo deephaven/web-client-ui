@@ -211,8 +211,6 @@ export type GridState = {
   selection: Selection;
   // Previous selection; used for deselect-on-reclick detection in commitSelection.
   lastSelection: Selection;
-  // In-progress mouse drag selection for overlay-mode selections (usesMouseSelectionOverlay === true).
-  mouseOverlaySelection: RangedSelection | null;
 
   // The mouse cursor style to use when hovering over the grid element
   cursor: string | null;
@@ -506,7 +504,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       // deselect again (if it's the same range)
       selection: props.createEmptySelection(this.getModel),
       lastSelection: props.createEmptySelection(this.getModel),
-      mouseOverlaySelection: null,
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -1070,7 +1067,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState(state => ({
       selection: state.selection.cleared(),
       lastSelection: state.selection,
-      mouseOverlaySelection: null,
     }));
   }
 
@@ -1128,31 +1124,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { selection, selectionStartRow, selectionStartColumn } = state;
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
-
-      if (selection.usesMouseSelectionOverlay) {
-        // Don't mutate the committed selection during drag; store in overlay instead.
-        const selectedColumn =
-          autoSelectRow !== undefined && autoSelectRow ? null : column;
-        const selectedRow =
-          autoSelectColumn !== undefined && autoSelectColumn ? null : row;
-        return {
-          selection: state.selection,
-          mouseOverlaySelection: new RangedSelection(
-            [
-              GridRange.makeNormalized(
-                selectedColumn,
-                selectedRow,
-                selectedColumn,
-                selectedRow
-              ),
-            ],
-            this.getModel
-          ),
-          selectionEndColumn: column,
-          selectionEndRow: row,
-        };
-      }
-
       const selectedRanges = selection.toRanges();
 
       if (extendSelection && selectedRanges.length > 0) {
@@ -1208,8 +1179,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         const newRanges = [...selectedRanges];
         newRanges[newRanges.length - 1] = selectedRange;
         return {
-          selection: selection.withUpdatedRanges(newRanges),
-          mouseOverlaySelection: null,
+          selection: selection.withMouseGestureRanges(newRanges),
           selectionEndColumn: column,
           selectionEndRow: row,
         };
@@ -1229,8 +1199,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         )
       );
       return {
-        selection: selection.withUpdatedRanges(newRanges),
-        mouseOverlaySelection: null,
+        selection: selection.withMouseGestureRanges(newRanges),
         selectionEndColumn: column,
         selectionEndRow: row,
       };
@@ -1239,83 +1208,32 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   /**
    * Commits the last selected range to the selected ranges.
-   * First checks if the last range is completely contained within another range, and if it
-   * is then it blows those ranges apart.
-   * Then it consolidates all the selected ranges, reducing them.
+   * Consolidation, deselect-on-reclick, and subtract logic are handled by Selection.commitMouseGesture.
    */
   commitSelection(): void {
     this.setState((state: GridState) => {
       const { theme } = this.props;
       const { autoSelectRow } = theme;
-      const {
-        selection,
+      const { selection, lastSelection, cursorRow, cursorColumn } = state;
+
+      const newSelection = selection.commitMouseGesture(
         lastSelection,
-        cursorRow,
-        cursorColumn,
-        mouseOverlaySelection,
-      } = state;
+        autoSelectRow ?? false
+      );
+      if (newSelection === selection) return null;
 
-      if (selection.usesMouseSelectionOverlay) {
-        const ranges = mouseOverlaySelection?.toRanges() ?? [];
-        if (ranges.length === 0) return null;
-        return {
-          selection: selection.withUpdatedRanges(ranges),
-          mouseOverlaySelection: null,
-          lastSelection: selection,
-          cursorRow,
-          cursorColumn,
-        };
-      }
-
-      const selectedRanges = selection.toRanges();
-      const lastSelectedRanges = lastSelection.toRanges();
-
-      if (
-        selectedRanges.length === 1 &&
-        (autoSelectRow !== undefined && autoSelectRow
-          ? GridRange.rowCount(selectedRanges) === 1
-          : GridRange.cellCount(selectedRanges) === 1) &&
-        GridRange.rangeArraysEqual(selectedRanges, lastSelectedRanges)
-      ) {
-        // If it's the exact same single selection, then deselect.
-        // For if we click on one cell multiple times.
-        return {
-          selection: selection.cleared(),
-          lastSelection: selection.cleared(),
-          mouseOverlaySelection: null,
-          cursorColumn: null,
-          cursorRow: null,
-        };
-      }
-
-      let newSelectedRanges = selectedRanges.slice();
-      if (newSelectedRanges.length > 1) {
-        // Check if the latest selection is entirely within a previously selected range
-        // If that's the case, then deselect that section instead
-        const lastRange = newSelectedRanges[newSelectedRanges.length - 1];
-        for (let i = 0; i < newSelectedRanges.length - 1; i += 1) {
-          const selectedRange = newSelectedRanges[i];
-          if (selectedRange.contains(lastRange)) {
-            // We found a match, now remove the two matching ranges, and add back
-            // the remainder of the two
-            const remainder = selectedRange.subtract(lastRange);
-            newSelectedRanges.pop();
-            newSelectedRanges.splice(i, 1);
-            newSelectedRanges = newSelectedRanges.concat(remainder);
-            break;
-          }
-        }
-
-        newSelectedRanges = GridRange.consolidate(newSelectedRanges);
-      }
-
-      let newCursorColumn = cursorColumn;
+      const newRanges = newSelection.toRanges();
       let newCursorRow = cursorRow;
-      if (!GridRange.containsCell(newSelectedRanges, cursorColumn, cursorRow)) {
+      let newCursorColumn = cursorColumn;
+
+      if (newRanges.length === 0) {
+        newCursorRow = null;
+        newCursorColumn = null;
+      } else if (!GridRange.containsCell(newRanges, cursorColumn, cursorRow)) {
         const { model } = this.props;
         const { columnCount, rowCount } = model;
         const nextCursor = GridRange.nextCell(
-          GridRange.boundedRanges(selectedRanges, columnCount, rowCount)
+          GridRange.boundedRanges(selection.toRanges(), columnCount, rowCount)
         );
         if (nextCursor != null) {
           ({ column: newCursorColumn, row: newCursorRow } = nextCursor);
@@ -1325,28 +1243,18 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
       }
 
-      if (newSelectedRanges.length === 0) {
-        newCursorColumn = null;
-        newCursorRow = null;
-      }
-
-      const selectionChanged =
-        newSelectedRanges.length !== selectedRanges.length ||
-        newSelectedRanges.some(
-          (range, index) => !range.equals(selectedRanges[index])
-        );
+      // After a deselect (non-empty → empty), reset lastSelection to empty so
+      // the next click on the same cell re-selects rather than immediately deselecting again.
+      const newLastSelection =
+        selection.isEmpty() === false && newSelection.isEmpty()
+          ? newSelection
+          : selection;
 
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
-        // The onSelectionChanged callback has already been called with the selectedRanges at this point.
-        // If the selection is not changed (e.g., the user is adding via ctrl+click and not removing),
-        // there is no need to change and trigger the callback again.
-        selection: selection.withUpdatedRanges(
-          selectionChanged ? newSelectedRanges : selectedRanges
-        ),
-        mouseOverlaySelection: null,
-        lastSelection: state.selection,
+        selection: newSelection,
+        lastSelection: newLastSelection,
       };
     });
   }
@@ -2469,7 +2377,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseX,
       mouseY,
       selection,
-      mouseOverlaySelection,
     } = this.state;
     const { model, stateOverride } = this.props;
     const { metrics } = this;
@@ -2490,7 +2397,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseX,
       mouseY,
       selection,
-      mouseOverlaySelection,
       draggingColumn,
       draggingColumnSeparator,
       draggingRow,
