@@ -95,17 +95,31 @@ export class KeyedSelection implements Selection {
       }
     }
     if (rows.length === 0) return this;
-    const serialized = rows.map(r => this.serializeRow(r));
     const next = new Set(this.selectedKeys);
-    // Deselect only when the overlay rows comprised the entire previous selection.
-    // If lastCommitted had more rows, this is a "select only this row" gesture.
-    const wasEntireSelection = lastCommitted
-      .withUpdatedRanges(this.overlayRanges)
-      .isEmpty();
-    if (wasEntireSelection) {
-      serialized.forEach(k => next.delete(k));
+    if (this.selectedKeys.size > 0) {
+      // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
+      // holds the previous committed keys. Toggle each overlay row individually.
+      rows.forEach(r => {
+        const k = this.serializeRow(r);
+        if (lastCommitted.isRowSelected(r)) {
+          next.delete(k);
+        } else {
+          next.add(k);
+        }
+      });
     } else {
-      serialized.forEach(k => next.add(k));
+      // Regular click path: clearSelectedRanges emptied selectedKeys first.
+      const serialized = rows.map(r => this.serializeRow(r));
+      // Deselect only when the overlay rows comprised the entire previous selection.
+      // If lastCommitted had more rows, this is a "select only this row" gesture.
+      const wasEntireSelection = lastCommitted
+        .withUpdatedRanges(this.overlayRanges)
+        .isEmpty();
+      if (wasEntireSelection) {
+        serialized.forEach(k => next.delete(k));
+      } else {
+        serialized.forEach(k => next.add(k));
+      }
     }
     return new KeyedSelection(this.getModel, next);
   }

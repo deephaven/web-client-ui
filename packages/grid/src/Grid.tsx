@@ -1266,18 +1266,13 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
       }
 
-      // After a deselect (non-empty → empty), reset lastSelection to empty so
-      // the next click on the same cell re-selects rather than immediately deselecting again.
-      const newLastSelection =
-        selection.isEmpty() === false && newSelection.isEmpty()
-          ? newSelection
-          : selection;
-
+      // Always use the committed result as lastSelection so the next gesture
+      // sees the actual committed keys, not the transient overlay-phase state.
       return {
         cursorRow: newCursorRow,
         cursorColumn: newCursorColumn,
         selection: newSelection,
-        lastSelection: newLastSelection,
+        lastSelection: newSelection,
       };
     });
   }
