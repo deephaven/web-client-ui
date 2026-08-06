@@ -283,7 +283,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       autoSelectColumn: false,
       autoSelectRow: false,
     } as Partial<GridThemeType>,
-    createEmptySelection: (): Selection => RangedSelection.EMPTY,
+    createEmptySelection: (getModel: () => GridModel): Selection =>
+      RangedSelection.empty(getModel),
   };
 
   // use same constant as chrome source for windows
@@ -400,6 +401,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
     this.getSelectedRanges = this.getSelectedRanges.bind(this);
+    this.getModel = this.getModel.bind(this);
 
     const {
       isStuckToBottom,
@@ -500,8 +502,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Currently selected ranges and previously selected ranges
       // Store the previously selected ranges to determine if the new selection should
       // deselect again (if it's the same range)
-      selection: props.createEmptySelection(),
-      lastSelection: props.createEmptySelection(),
+      selection: props.createEmptySelection(this.getModel),
+      lastSelection: props.createEmptySelection(this.getModel),
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -1051,7 +1053,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     if (!selection.isValid(columnCount, rowCount)) {
       // Just clear the selection rather than trying to trim it.
-      const empty = createEmptySelection();
+      const empty = createEmptySelection(this.getModel);
       this.setState({ selection: empty, lastSelection: empty });
       return false;
     }
@@ -1078,6 +1080,15 @@ class Grid extends PureComponent<GridProps, GridState> {
   getSelectedRanges(): readonly GridRange[] {
     const { selection } = this.state;
     return selection.toRanges();
+  }
+
+  /**
+   * Queries the current grid model.
+   * @returns The current GridModel instance.
+   */
+  getModel(): GridModel {
+    const { model } = this.props;
+    return model;
   }
 
   /**

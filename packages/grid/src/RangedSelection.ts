@@ -1,15 +1,18 @@
 import { EMPTY_ARRAY } from '@deephaven/utils';
 import type GridRange from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
-import type { Selection } from './Selection';
+import type { GetModel, Selection } from './Selection';
 
-/**
- * Immutable selection implementation based on grid ranges.
- */
+/** Immutable selection implementation based on grid ranges. */
 export class RangedSelection implements Selection {
-  static readonly EMPTY = new RangedSelection(EMPTY_ARRAY);
+  static empty(getModel: GetModel): RangedSelection {
+    return new RangedSelection(EMPTY_ARRAY, getModel);
+  }
 
-  constructor(readonly ranges: readonly GridRange[]) {}
+  constructor(
+    readonly ranges: readonly GridRange[],
+    private readonly getModel: GetModel
+  ) {}
 
   isEmpty(): boolean {
     return this.ranges.length === 0;
@@ -32,14 +35,17 @@ export class RangedSelection implements Selection {
   }
 
   isRowSelected(row: VisibleIndex): boolean {
+    const { columnCount } = this.getModel();
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];
-      // Only true when the range covers all columns (startColumn === null),
-      if (
-        range.startColumn === null &&
-        (range.startRow === null ||
-          (range.startRow <= row && row <= (range.endRow ?? 0)))
-      ) {
+      const rowInRange =
+        range.startRow === null ||
+        (range.startRow <= row && row <= (range.endRow ?? 0));
+      const allColumnsSelected =
+        range.startColumn === null ||
+        (range.startColumn === 0 &&
+          (range.endColumn ?? -1) === columnCount - 1);
+      if (rowInRange && allColumnsSelected) {
         return true;
       }
     }
@@ -65,17 +71,20 @@ export class RangedSelection implements Selection {
 
   withUpdatedRanges(ranges: readonly GridRange[]): RangedSelection {
     if (ranges === this.ranges) return this;
-    return new RangedSelection(ranges);
+    return new RangedSelection(ranges, this.getModel);
   }
 
   // eslint-disable-next-line class-methods-use-this
   cleared(): RangedSelection {
-    return RangedSelection.EMPTY;
+    return new RangedSelection(EMPTY_ARRAY, this.getModel);
   }
 
   trimmed(): RangedSelection {
     if (this.ranges.length > 0) {
-      return new RangedSelection(this.ranges.slice(this.ranges.length - 1));
+      return new RangedSelection(
+        this.ranges.slice(this.ranges.length - 1),
+        this.getModel
+      );
     }
     return this;
   }

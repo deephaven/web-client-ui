@@ -1,5 +1,9 @@
 import type GridRange from './GridRange';
+import type GridModel from './GridModel';
 import type { VisibleIndex } from './GridMetrics';
+
+/** Provides current model data to Selection instances without holding a stale reference. */
+export type GetModel = () => GridModel;
 
 /**
  * Immutable value object representing the current selection state of the grid.
