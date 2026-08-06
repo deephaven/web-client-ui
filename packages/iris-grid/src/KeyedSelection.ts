@@ -23,7 +23,11 @@ export class KeyedSelection implements Selection {
     readonly selectedKeys: ReadonlySet<string>
   ) {}
 
-  /** Visible row == model row in IrisGrid (sorting is server-side; no row moves). */
+  /**
+   * Serializes the key for the given row based on the model's selection key columns.
+   * @param row The visible row index to serialize.
+   * @returns A string representing the serialized key for the given row.
+   */
   private serializeRow(row: VisibleIndex): string {
     const model = this.getModel();
     const values = model.selectionKeyColumnIndices.map((col: ModelIndex) =>
@@ -77,7 +81,6 @@ export class KeyedSelection implements Selection {
     return this;
   }
 
-  // Range-based updates are ignored for keyed selection
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
     if (ranges.length === 0) return this;
     // Collect all visible rows from the ranges.
