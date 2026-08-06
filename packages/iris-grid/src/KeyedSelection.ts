@@ -81,11 +81,33 @@ export class KeyedSelection implements Selection {
   }
 
   commitMouseGesture(
-    _lastCommitted: Selection,
+    lastCommitted: Selection,
     _autoSelectRow: boolean
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
-    return this.withUpdatedRanges(this.overlayRanges);
+    const rows: VisibleIndex[] = [];
+    for (let i = 0; i < this.overlayRanges.length; i += 1) {
+      const { startRow, endRow } = this.overlayRanges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const last = endRow ?? startRow;
+      for (let r = startRow; r <= last; r += 1) {
+        rows.push(r);
+      }
+    }
+    if (rows.length === 0) return this;
+    const serialized = rows.map(r => this.serializeRow(r));
+    const next = new Set(this.selectedKeys);
+    // Deselect only when the overlay rows comprised the entire previous selection.
+    // If lastCommitted had more rows, this is a "select only this row" gesture.
+    const wasEntireSelection = lastCommitted
+      .withUpdatedRanges(this.overlayRanges)
+      .isEmpty();
+    if (wasEntireSelection) {
+      serialized.forEach(k => next.delete(k));
+    } else {
+      serialized.forEach(k => next.add(k));
+    }
+    return new KeyedSelection(this.getModel, next);
   }
 
   cleared(): KeyedSelection {
