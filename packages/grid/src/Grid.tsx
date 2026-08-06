@@ -1724,7 +1724,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   isSelected(row: VisibleIndex, column: VisibleIndex): boolean {
     const { selection } = this.state;
-    return selection.isSelected(row, column);
+    return selection.isCellSelected(row, column);
   }
 
   addDocumentCursor(cursor: string | null = null): void {

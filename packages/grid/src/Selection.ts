@@ -11,9 +11,11 @@ export type GetModel = () => GridModel;
  * Mutations return new instances; Grid stores the result in React state.
  */
 export interface Selection {
+  /** Returns true if no cells are selected. */
   isEmpty: () => boolean;
-  isSelected: (row: VisibleIndex, column: VisibleIndex) => boolean;
-  /** Returns true if the entire row is part of the selection (any column). */
+  /** Returns true if the specified cell is part of the selection. */
+  isCellSelected: (row: VisibleIndex, column: VisibleIndex) => boolean;
+  /** Returns true if the entire row is part of the selection. */
   isRowSelected: (row: VisibleIndex) => boolean;
   /** Returns false if any selected range exceeds the given column/row bounds. */
   isValid: (columnCount: number, rowCount: number) => boolean;

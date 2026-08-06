@@ -2130,7 +2130,7 @@ export class GridRenderer {
         // Partial selection — check each cell and coalesce consecutive selected columns.
         let runStart: VisibleIndex | null = null;
         for (let c = left; c <= right; c += 1) {
-          if (selection.isSelected(r, c)) {
+          if (selection.isCellSelected(r, c)) {
             if (runStart === null) runStart = c;
           } else if (runStart !== null) {
             const x = Math.max(
