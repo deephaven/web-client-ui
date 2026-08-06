@@ -8,6 +8,7 @@ import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import type { CellInputFieldProps } from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
 import type { Selection } from './Selection';
+import type { RangedSelection } from './RangedSelection';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;
@@ -92,6 +93,8 @@ export type GridRenderState = {
 
   // Current selection
   selection: Selection;
+  // In-progress mouse drag selection; drawn as a visual overlay when usesMouseSelectionOverlay is true.
+  mouseOverlaySelection: RangedSelection | null;
 
   // Currently dragged column/row information
   draggingColumn: DraggingColumn | null;

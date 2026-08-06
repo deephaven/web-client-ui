@@ -31,4 +31,10 @@ export interface Selection {
   trimmed: () => Selection;
   /** Returns a new Selection with ranges replaced. */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
+  /**
+   * When true, Grid routes mouse drag ranges into mouseSelectionRanges state
+   * instead of calling withUpdatedRanges during moveSelection. withUpdatedRanges
+   * is then called once at commitSelection with the final ranges.
+   */
+  readonly usesMouseSelectionOverlay: boolean;
 }

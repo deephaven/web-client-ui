@@ -211,6 +211,8 @@ export type GridState = {
   selection: Selection;
   // Previous selection; used for deselect-on-reclick detection in commitSelection.
   lastSelection: Selection;
+  // In-progress mouse drag selection for overlay-mode selections (usesMouseSelectionOverlay === true).
+  mouseOverlaySelection: RangedSelection | null;
 
   // The mouse cursor style to use when hovering over the grid element
   cursor: string | null;
@@ -504,6 +506,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       // deselect again (if it's the same range)
       selection: props.createEmptySelection(this.getModel),
       lastSelection: props.createEmptySelection(this.getModel),
+      mouseOverlaySelection: null,
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -1067,6 +1070,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState(state => ({
       selection: state.selection.cleared(),
       lastSelection: state.selection,
+      mouseOverlaySelection: null,
     }));
   }
 
@@ -1122,9 +1126,34 @@ class Grid extends PureComponent<GridProps, GridState> {
   ): void {
     this.setState(state => {
       const { selection, selectionStartRow, selectionStartColumn } = state;
-      const selectedRanges = selection.toRanges();
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
+
+      if (selection.usesMouseSelectionOverlay) {
+        // Don't mutate the committed selection during drag; store in overlay instead.
+        const selectedColumn =
+          autoSelectRow !== undefined && autoSelectRow ? null : column;
+        const selectedRow =
+          autoSelectColumn !== undefined && autoSelectColumn ? null : row;
+        return {
+          selection: state.selection,
+          mouseOverlaySelection: new RangedSelection(
+            [
+              GridRange.makeNormalized(
+                selectedColumn,
+                selectedRow,
+                selectedColumn,
+                selectedRow
+              ),
+            ],
+            this.getModel
+          ),
+          selectionEndColumn: column,
+          selectionEndRow: row,
+        };
+      }
+
+      const selectedRanges = selection.toRanges();
 
       if (extendSelection && selectedRanges.length > 0) {
         const lastSelectedRange = selectedRanges[selectedRanges.length - 1];
@@ -1180,6 +1209,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         newRanges[newRanges.length - 1] = selectedRange;
         return {
           selection: selection.withUpdatedRanges(newRanges),
+          mouseOverlaySelection: null,
           selectionEndColumn: column,
           selectionEndRow: row,
         };
@@ -1200,6 +1230,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       );
       return {
         selection: selection.withUpdatedRanges(newRanges),
+        mouseOverlaySelection: null,
         selectionEndColumn: column,
         selectionEndRow: row,
       };
@@ -1216,7 +1247,26 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState((state: GridState) => {
       const { theme } = this.props;
       const { autoSelectRow } = theme;
-      const { selection, lastSelection, cursorRow, cursorColumn } = state;
+      const {
+        selection,
+        lastSelection,
+        cursorRow,
+        cursorColumn,
+        mouseOverlaySelection,
+      } = state;
+
+      if (selection.usesMouseSelectionOverlay) {
+        const ranges = mouseOverlaySelection?.toRanges() ?? [];
+        if (ranges.length === 0) return null;
+        return {
+          selection: selection.withUpdatedRanges(ranges),
+          mouseOverlaySelection: null,
+          lastSelection: selection,
+          cursorRow,
+          cursorColumn,
+        };
+      }
+
       const selectedRanges = selection.toRanges();
       const lastSelectedRanges = lastSelection.toRanges();
 
@@ -1232,6 +1282,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         return {
           selection: selection.cleared(),
           lastSelection: selection.cleared(),
+          mouseOverlaySelection: null,
           cursorColumn: null,
           cursorRow: null,
         };
@@ -1294,6 +1345,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         selection: selection.withUpdatedRanges(
           selectionChanged ? newSelectedRanges : selectedRanges
         ),
+        mouseOverlaySelection: null,
         lastSelection: state.selection,
       };
     });
@@ -2417,6 +2469,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseX,
       mouseY,
       selection,
+      mouseOverlaySelection,
     } = this.state;
     const { model, stateOverride } = this.props;
     const { metrics } = this;
@@ -2437,6 +2490,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseX,
       mouseY,
       selection,
+      mouseOverlaySelection,
       draggingColumn,
       draggingColumnSeparator,
       draggingRow,

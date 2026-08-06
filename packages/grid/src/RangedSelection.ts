@@ -10,6 +10,8 @@ export class RangedSelection implements Selection {
     return new RangedSelection(EMPTY_ARRAY, getModel);
   }
 
+  readonly usesMouseSelectionOverlay = false;
+
   constructor(
     readonly ranges: readonly GridRange[],
     private readonly getModel: GetModel

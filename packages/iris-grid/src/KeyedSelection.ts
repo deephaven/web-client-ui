@@ -16,6 +16,8 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(getModel, new Set());
   }
 
+  readonly usesMouseSelectionOverlay = true;
+
   constructor(
     private readonly getModel: GetKeyedModel,
     readonly selectedKeys: ReadonlySet<string>
@@ -76,8 +78,28 @@ export class KeyedSelection implements Selection {
   }
 
   // Range-based updates are ignored for keyed selection
-  withUpdatedRanges(_ranges: readonly GridRange[]): KeyedSelection {
-    return this;
+  withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
+    if (ranges.length === 0) return this;
+    // Collect all visible rows from the ranges.
+    const rows: VisibleIndex[] = [];
+    for (let i = 0; i < ranges.length; i += 1) {
+      const { startRow, endRow } = ranges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const last = endRow ?? startRow;
+      for (let r = startRow; r <= last; r += 1) {
+        rows.push(r);
+      }
+    }
+    if (rows.length === 0) return this;
+    const serialized = rows.map(r => this.serializeRow(r));
+    const next = new Set(this.selectedKeys);
+    // Toggle: if every row is already selected, remove them; otherwise add all.
+    if (serialized.every(k => next.has(k))) {
+      serialized.forEach(k => next.delete(k));
+    } else {
+      serialized.forEach(k => next.add(k));
+    }
+    return new KeyedSelection(this.getModel, next);
   }
 
   /** Returns a new selection with the given row's key toggled. */
