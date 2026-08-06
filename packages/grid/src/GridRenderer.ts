@@ -19,10 +19,6 @@ import type CellRenderer from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
 
-type NoneNullColumnRange = { startColumn: number; endColumn: number };
-
-type NoneNullRowRange = { startRow: number; endRow: number };
-
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
 /* eslint no-param-reassign: "off" */
@@ -2643,20 +2639,13 @@ export class GridRenderer {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
         const { cursorColumn } = state;
-        const selectedRanges = state.selection.toRanges();
         const { lastLeft, columnCount } = metrics;
 
-        const filteredRanges = [...selectedRanges].filter(
-          value => value.startColumn != null && value.endColumn != null
-        ) as NoneNullColumnRange[];
-
-        const sortedRanges = filteredRanges
-          .map(
-            (value): BoundedAxisRange => [value.startColumn, value.endColumn]
+        const mergedRanges = GridUtils.mergeSortedRanges(
+          [...state.selection.getColumnTickRanges()].sort(
+            GridUtils.compareRanges
           )
-          .sort(GridUtils.compareRanges);
-
-        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
+        );
 
         const getTickX = (index: number): number => {
           if (index <= lastLeft) {
@@ -2752,7 +2741,6 @@ export class GridRenderer {
       ) {
         // Scrollbar Selection Tick
         const { cursorRow } = state;
-        const selectedRanges = state.selection.toRanges();
         const { lastTop, rowCount } = metrics;
 
         const getTickY = (index: number): number => {
@@ -2768,15 +2756,9 @@ export class GridRenderer {
 
         context.fillStyle = scrollBarSelectionTickColor;
 
-        const filteredRanges = [...selectedRanges].filter(
-          value => value.startRow != null && value.endRow != null
-        ) as NoneNullRowRange[];
-
-        const sortedRanges = filteredRanges
-          .map((value): BoundedAxisRange => [value.startRow, value.endRow])
-          .sort(GridUtils.compareRanges);
-
-        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
+        const mergedRanges = GridUtils.mergeSortedRanges(
+          [...state.selection.getRowTickRanges()].sort(GridUtils.compareRanges)
+        );
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];

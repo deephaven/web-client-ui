@@ -1,6 +1,7 @@
 import { EMPTY_ARRAY } from '@deephaven/utils';
 import type GridRange from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
+import { type BoundedAxisRange } from './GridAxisRange';
 import type { GetModel, Selection } from './Selection';
 
 /** Immutable selection implementation based on grid ranges. */
@@ -67,6 +68,28 @@ export class RangedSelection implements Selection {
 
   toRanges(): readonly GridRange[] {
     return this.ranges;
+  }
+
+  getColumnTickRanges(): readonly BoundedAxisRange[] {
+    const result: BoundedAxisRange[] = [];
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const { startColumn, endColumn } = this.ranges[i];
+      if (startColumn != null && endColumn != null) {
+        result.push([startColumn, endColumn]);
+      }
+    }
+    return result;
+  }
+
+  getRowTickRanges(): readonly BoundedAxisRange[] {
+    const result: BoundedAxisRange[] = [];
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const { startRow, endRow } = this.ranges[i];
+      if (startRow != null && endRow != null) {
+        result.push([startRow, endRow]);
+      }
+    }
+    return result;
   }
 
   withUpdatedRanges(ranges: readonly GridRange[]): RangedSelection {

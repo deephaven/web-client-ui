@@ -1,6 +1,7 @@
 import type GridRange from './GridRange';
 import type GridModel from './GridModel';
 import type { VisibleIndex } from './GridMetrics';
+import type { BoundedAxisRange } from './GridAxisRange';
 
 /** Provides current model data to Selection instances without holding a stale reference. */
 export type GetModel = () => GridModel;
@@ -18,6 +19,10 @@ export interface Selection {
   isValid: (columnCount: number, rowCount: number) => boolean;
   /** Returns the selection as GridRange[]. In keyed mode this synthesizes ranges. */
   toRanges: () => readonly GridRange[];
+  /** Returns column [start, end] pairs for scrollbar tick rendering. */
+  getColumnTickRanges: () => readonly BoundedAxisRange[];
+  /** Returns row [start, end] pairs for scrollbar tick rendering. */
+  getRowTickRanges: () => readonly BoundedAxisRange[];
   /** Returns a new Selection with all ranges cleared. */
   cleared: () => Selection;
   /** Returns a new Selection keeping only the last range. */
