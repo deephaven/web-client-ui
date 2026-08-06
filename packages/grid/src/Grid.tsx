@@ -1125,9 +1125,21 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
       const selectedRanges = selection.toActiveRanges();
+      // When extendSelection is true but there are no active ranges, fall back to the
+      // cursor anchor (selectionStartRow/Column) so shift+click works after trimming.
+      const hasCursorAnchor =
+        selectionStartRow != null || selectionStartColumn != null;
 
-      if (extendSelection && selectedRanges.length > 0) {
-        const lastSelectedRange = selectedRanges[selectedRanges.length - 1];
+      if (extendSelection && (selectedRanges.length > 0 || hasCursorAnchor)) {
+        const lastSelectedRange =
+          selectedRanges.length > 0
+            ? selectedRanges[selectedRanges.length - 1]
+            : GridRange.makeNormalized(
+                selectionStartColumn,
+                selectionStartRow,
+                selectionStartColumn,
+                selectionStartRow
+              );
         let left = null;
         let top = null;
         let right = null;
@@ -1177,7 +1189,11 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
 
         const newRanges = [...selectedRanges];
-        newRanges[newRanges.length - 1] = selectedRange;
+        if (newRanges.length > 0) {
+          newRanges[newRanges.length - 1] = selectedRange;
+        } else {
+          newRanges.push(selectedRange);
+        }
         return {
           selection: selection.withMouseGestureRanges(newRanges),
           selectionEndColumn: column,

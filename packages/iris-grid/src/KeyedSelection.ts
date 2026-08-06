@@ -114,9 +114,9 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(this.getModel, new Set());
   }
 
-  // Trimming has no meaning for key-based selection
+  // Shift+click needs a clean slate so the range replaces rather than extends the old keys.
   trimmed(): KeyedSelection {
-    return this;
+    return new KeyedSelection(this.getModel, new Set());
   }
 
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
