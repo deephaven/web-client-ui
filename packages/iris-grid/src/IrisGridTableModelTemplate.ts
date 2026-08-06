@@ -29,6 +29,7 @@ import {
   type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+import { type KeyedGridModel } from './KeyedGridModel';
 
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -67,7 +68,7 @@ class IrisGridTableModelTemplate<
     R extends UIRow = UIRow,
   >
   extends IrisGridModel
-  implements DeletableGridModel, EditableGridModel
+  implements DeletableGridModel, EditableGridModel, KeyedGridModel
 {
   static ROW_BUFFER_PAGES = 1;
 
@@ -240,6 +241,30 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
+  }
+
+  getMemoizedSelectionKeyColumnIndices = memoize(
+    (columns: DhType.Column[], raw: unknown): readonly ModelIndex[] => {
+      if (raw == null || typeof raw !== 'string' || raw.trim() === '') {
+        return [];
+      }
+      return raw.split(',').map(name => {
+        const idx = columns.findIndex(c => c.name === name.trim());
+        if (idx < 0) throw new Error(`Selection key column not found: ${name}`);
+        return idx;
+      });
+    }
+  );
+
+  get selectionKeyColumnIndices(): readonly ModelIndex[] {
+    return this.getMemoizedSelectionKeyColumnIndices(
+      this.columns,
+      (this.table as DhType.Table).getAttribute?.('keyColumns')
+    );
+  }
+
+  get hasUniqueSelectionKeys(): boolean {
+    return (this.table as DhType.Table).getAttribute?.('uniqueKeys') === 'true';
   }
 
   close(): void {

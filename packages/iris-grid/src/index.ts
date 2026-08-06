@@ -38,6 +38,7 @@ export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';
 export * from './IrisGridMetricCalculator';
 export * from './IrisGridRenderer';
+export * from './KeyedGridModel';
 export * from './IrisGridCacheUtils';
 export { default as IrisGridCellRendererUtils } from './IrisGridCellRendererUtils';
 export { default as CellDropdownField } from './CellDropdownField';
