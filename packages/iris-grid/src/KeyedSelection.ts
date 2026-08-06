@@ -56,6 +56,10 @@ export class KeyedSelection implements Selection {
     return EMPTY_ARRAY;
   }
 
+  toActiveRanges(): readonly GridRange[] {
+    return this.overlayRanges;
+  }
+
   // eslint-disable-next-line class-methods-use-this
   getColumnTickRanges(): readonly BoundedAxisRange[] {
     return EMPTY_ARRAY;

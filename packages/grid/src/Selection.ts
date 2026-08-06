@@ -21,6 +21,12 @@ export interface Selection {
   isValid: (columnCount: number, rowCount: number) => boolean;
   /** Returns the selection as GridRange[]. In keyed mode this synthesizes ranges. */
   toRanges: () => readonly GridRange[];
+  /**
+   * Returns the ranges Grid uses for cursor positioning, extend-selection, and keyboard navigation.
+   * RangedSelection: committed ranges (same as toRanges).
+   * KeyedSelection: the pending overlay ranges during a gesture, empty otherwise.
+   */
+  toActiveRanges: () => readonly GridRange[];
   /** Returns column [start, end] pairs for scrollbar tick rendering. */
   getColumnTickRanges: () => readonly BoundedAxisRange[];
   /** Returns row [start, end] pairs for scrollbar tick rendering. */

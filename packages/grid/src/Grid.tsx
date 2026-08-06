@@ -1124,7 +1124,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { selection, selectionStartRow, selectionStartColumn } = state;
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
-      const selectedRanges = selection.toRanges();
+      const selectedRanges = selection.toActiveRanges();
 
       if (extendSelection && selectedRanges.length > 0) {
         const lastSelectedRange = selectedRanges[selectedRanges.length - 1];
@@ -1226,14 +1226,21 @@ class Grid extends PureComponent<GridProps, GridState> {
       let newCursorRow = cursorRow;
       let newCursorColumn = cursorColumn;
 
-      if (newRanges.length === 0) {
+      if (newSelection.isEmpty()) {
         newCursorRow = null;
         newCursorColumn = null;
-      } else if (!GridRange.containsCell(newRanges, cursorColumn, cursorRow)) {
+      } else if (
+        newRanges.length > 0 &&
+        !GridRange.containsCell(newRanges, cursorColumn, cursorRow)
+      ) {
         const { model } = this.props;
         const { columnCount, rowCount } = model;
         const nextCursor = GridRange.nextCell(
-          GridRange.boundedRanges(selection.toRanges(), columnCount, rowCount)
+          GridRange.boundedRanges(
+            selection.toActiveRanges(),
+            columnCount,
+            rowCount
+          )
         );
         if (nextCursor != null) {
           ({ column: newCursorColumn, row: newCursorRow } = nextCursor);
@@ -1345,7 +1352,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     const { cursorRow, cursorColumn, selection } = this.state;
-    const selectedRanges = selection.toRanges();
+    const selectedRanges = selection.toActiveRanges();
     const ranges =
       selectedRanges.length > 0
         ? selectedRanges

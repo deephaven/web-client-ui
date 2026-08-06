@@ -73,6 +73,10 @@ export class RangedSelection implements Selection {
     return this.ranges;
   }
 
+  toActiveRanges(): readonly GridRange[] {
+    return this.ranges;
+  }
+
   getColumnTickRanges(): readonly BoundedAxisRange[] {
     const result: BoundedAxisRange[] = [];
     for (let i = 0; i < this.ranges.length; i += 1) {
