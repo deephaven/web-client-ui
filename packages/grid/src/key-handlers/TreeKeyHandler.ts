@@ -18,9 +18,9 @@ class TreeKeyHandler extends KeyHandler {
   }
 
   handleExpandKey(event: KeyboardEvent, grid: Grid): boolean {
-    const { selectedRanges } = grid.state;
-    if (selectedRanges.length === 1) {
-      const range = selectedRanges[0] as GridRange;
+    const ranges = grid.state.selection.toRanges();
+    if (ranges.length === 1) {
+      const range = ranges[0] as GridRange;
       if (
         range.startRow === range.endRow &&
         range.startColumn === range.endColumn
