@@ -2048,11 +2048,7 @@ export class GridRenderer {
       maxX = width + 10,
     } = viewport;
 
-    const { mouseOverlaySelection } = selection;
-    const hasMouseOverlay =
-      mouseOverlaySelection != null &&
-      mouseOverlaySelection.isEmpty() === false;
-    if (selection.isEmpty() && !hasMouseOverlay) {
+    if (selection.isEmpty()) {
       return;
     }
 
@@ -2130,10 +2126,7 @@ export class GridRenderer {
         // eslint-disable-next-line no-continue
         continue;
       }
-      if (
-        selection.isRowSelected(r) ||
-        (hasMouseOverlay && mouseOverlaySelection?.isRowSelected(r) === true)
-      ) {
+      if (selection.isRowSelected(r)) {
         // Extend or start the full-row run.
         if (rowRunStartY == null) rowRunStartY = y;
         rowRunEndY = endY;

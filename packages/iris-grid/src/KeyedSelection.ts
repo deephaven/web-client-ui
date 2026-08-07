@@ -16,13 +16,31 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(getModel, new Set());
   }
 
+  private readonly gestureKeys: ReadonlySet<string>;
+
   constructor(
     private readonly getModel: GetKeyedModel,
     readonly selectedKeys: ReadonlySet<string>,
     private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY,
     // When true, selectedKeys is an exclusion set: all rows are selected EXCEPT those in the set.
     readonly invertedSelection: boolean = false
-  ) {}
+  ) {
+    // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
+    if (overlayRanges.length === 0) {
+      this.gestureKeys = new Set();
+    } else {
+      const keys = new Set<string>();
+      for (let i = 0; i < overlayRanges.length; i += 1) {
+        const { startRow, endRow } = overlayRanges[i];
+        if (startRow == null) continue; // eslint-disable-line no-continue
+        const last = endRow ?? startRow;
+        for (let r = startRow; r <= last; r += 1) {
+          keys.add(this.serializeRow(r));
+        }
+      }
+      this.gestureKeys = keys;
+    }
+  }
 
   /** Visible row == model row in IrisGrid (sorting is server-side; no row moves). */
   private serializeRow(row: VisibleIndex): string {
@@ -35,7 +53,8 @@ export class KeyedSelection implements Selection {
 
   isEmpty(): boolean {
     // Inverted selection means all rows are selected — never empty.
-    return this.invertedSelection ? false : this.selectedKeys.size === 0;
+    if (this.invertedSelection) return false;
+    return this.selectedKeys.size === 0 && this.gestureKeys.size === 0;
   }
 
   // Keyed selection is always full-row; column is irrelevant
@@ -44,8 +63,10 @@ export class KeyedSelection implements Selection {
   }
 
   isRowSelected(row: VisibleIndex): boolean {
-    const has = this.selectedKeys.has(this.serializeRow(row));
-    return this.invertedSelection ? !has : has;
+    const k = this.serializeRow(row);
+    if (this.invertedSelection) return !this.selectedKeys.has(k);
+    // Include gesture preview keys so key-siblings highlight on mousedown without waiting for commit.
+    return this.selectedKeys.has(k) || this.gestureKeys.has(k);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -71,27 +92,6 @@ export class KeyedSelection implements Selection {
   // eslint-disable-next-line class-methods-use-this
   getRowTickRanges(): readonly BoundedAxisRange[] {
     return EMPTY_ARRAY;
-  }
-
-  get mouseOverlaySelection(): KeyedSelection | null {
-    if (this.overlayRanges.length === 0) return null;
-    // Build a key-based preview so all rows sharing the same key highlight together
-    // on mousedown, not just after the commit cycle completes.
-    const previewKeys = new Set(this.selectedKeys);
-    for (let i = 0; i < this.overlayRanges.length; i += 1) {
-      const { startRow, endRow } = this.overlayRanges[i];
-      if (startRow == null) continue; // eslint-disable-line no-continue
-      const last = endRow ?? startRow;
-      for (let r = startRow; r <= last; r += 1) {
-        previewKeys.add(this.serializeRow(r));
-      }
-    }
-    return new KeyedSelection(
-      this.getModel,
-      previewKeys,
-      EMPTY_ARRAY,
-      this.invertedSelection
-    );
   }
 
   // Preserve invertedSelection through gesture overlay changes

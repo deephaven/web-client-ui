@@ -38,12 +38,6 @@ export interface Selection {
   /** Returns a new Selection with ranges replaced. */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
   /**
-   * In-progress mouse gesture overlay for rendering; null when there is no pending gesture.
-   * RangedSelection: always null (committed state IS the in-progress state).
-   * KeyedSelection: a RangedSelection built from the pending drag ranges.
-   */
-  readonly mouseOverlaySelection: Selection | null;
-  /**
    * Applies mouse gesture ranges to this selection.
    * RangedSelection: commits the ranges immediately (same as withUpdatedRanges).
    * KeyedSelection: stores the ranges as a pending overlay without touching committed keys.
