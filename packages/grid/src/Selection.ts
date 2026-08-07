@@ -19,13 +19,9 @@ export interface Selection {
   isRowSelected: (row: VisibleIndex) => boolean;
   /** Returns false if any selected range exceeds the given column/row bounds. */
   isValid: (columnCount: number, rowCount: number) => boolean;
-  /** Returns the selection as GridRange[]. In keyed mode this synthesizes ranges. */
+  /** Returns the selection as GridRange[]. */
   toRanges: () => readonly GridRange[];
-  /**
-   * Returns the ranges Grid uses for cursor positioning, extend-selection, and keyboard navigation.
-   * RangedSelection: committed ranges (same as toRanges).
-   * KeyedSelection: the pending overlay ranges during a gesture, empty otherwise.
-   */
+  /** Returns the ranges Grid uses for cursor positioning, extend-selection, and keyboard navigation. */
   toActiveRanges: () => readonly GridRange[];
   /** Returns column [start, end] pairs for scrollbar tick rendering. */
   getColumnTickRanges: () => readonly BoundedAxisRange[];
@@ -37,26 +33,16 @@ export interface Selection {
   trimmed: () => Selection;
   /** Returns a new Selection with ranges replaced. */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
-  /**
-   * Applies mouse gesture ranges to this selection.
-   * RangedSelection: commits the ranges immediately (same as withUpdatedRanges).
-   * KeyedSelection: stores the ranges as a pending overlay without touching committed keys.
-   */
+  /** Applies mouse gesture ranges to this selection. */
   withMouseGestureRanges: (ranges: readonly GridRange[]) => Selection;
   /**
    * Commits the current mouse gesture and returns the settled selection.
-   * RangedSelection: consolidates ranges, handles deselect-on-reclick and ctrl+click subtract.
-   * KeyedSelection: converts the overlay ranges to key toggles.
    * Returns this (identity) when there is nothing to commit.
    */
   commitMouseGesture: (
     lastCommitted: Selection,
     autoSelectRow: boolean
   ) => Selection;
-  /**
-   * Returns a new Selection representing the entire grid selected.
-   * RangedSelection: stores the range directly.
-   * KeyedSelection: sets invertedSelection=true so all rows are selected without enumerating keys.
-   */
+  /** Returns a new Selection representing the entire grid selected. */
   selectAll: () => Selection;
 }
