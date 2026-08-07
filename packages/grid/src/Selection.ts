@@ -59,4 +59,10 @@ export interface Selection {
     lastCommitted: Selection,
     autoSelectRow: boolean
   ) => Selection;
+  /**
+   * Returns a new Selection representing the entire grid selected.
+   * RangedSelection: stores the range directly.
+   * KeyedSelection: sets invertedSelection=true so all rows are selected without enumerating keys.
+   */
+  selectAll: () => Selection;
 }

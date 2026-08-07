@@ -109,6 +109,11 @@ export class RangedSelection implements Selection {
     return this.withUpdatedRanges(ranges);
   }
 
+  selectAll(): RangedSelection {
+    const { rowCount } = this.getModel();
+    return this.withUpdatedRanges([new GridRange(null, 0, null, rowCount - 1)]);
+  }
+
   commitMouseGesture(
     lastCommitted: Selection,
     autoSelectRow: boolean

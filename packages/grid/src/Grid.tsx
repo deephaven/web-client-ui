@@ -1311,20 +1311,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Set the selection to the entire grid
    */
   selectAll(): void {
-    const { model, theme } = this.props;
-    const { autoSelectRow, autoSelectColumn } = theme;
-
-    const top = autoSelectColumn !== undefined && autoSelectColumn ? null : 0;
-    const bottom =
-      autoSelectColumn !== undefined && autoSelectColumn
-        ? null
-        : model.rowCount - 1;
-    const left = autoSelectRow !== undefined && autoSelectRow ? null : 0;
-    const right =
-      autoSelectRow !== undefined && autoSelectRow
-        ? null
-        : model.columnCount - 1;
-    this.setSelectedRanges([new GridRange(left, top, right, bottom)]);
+    this.setState(state => {
+      const newSelection = state.selection.selectAll();
+      return { selection: newSelection, lastSelection: newSelection };
+    });
   }
 
   /**

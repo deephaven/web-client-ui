@@ -20,7 +20,9 @@ export class KeyedSelection implements Selection {
   constructor(
     private readonly getModel: GetKeyedModel,
     readonly selectedKeys: ReadonlySet<string>,
-    private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY
+    private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY,
+    // When true, selectedKeys is an exclusion set: all rows are selected EXCEPT those in the set.
+    readonly invertedSelection: boolean = false
   ) {}
 
   /** Visible row == model row in IrisGrid (sorting is server-side; no row moves). */
@@ -33,7 +35,8 @@ export class KeyedSelection implements Selection {
   }
 
   isEmpty(): boolean {
-    return this.selectedKeys.size === 0;
+    // Inverted selection means all rows are selected — never empty.
+    return this.invertedSelection ? false : this.selectedKeys.size === 0;
   }
 
   // Keyed selection is always full-row; column is irrelevant
@@ -42,7 +45,8 @@ export class KeyedSelection implements Selection {
   }
 
   isRowSelected(row: VisibleIndex): boolean {
-    return this.selectedKeys.has(this.serializeRow(row));
+    const has = this.selectedKeys.has(this.serializeRow(row));
+    return this.invertedSelection ? !has : has;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -76,8 +80,14 @@ export class KeyedSelection implements Selection {
       : null;
   }
 
+  // Preserve invertedSelection through gesture overlay changes
   withMouseGestureRanges(ranges: readonly GridRange[]): KeyedSelection {
-    return new KeyedSelection(this.getModel, this.selectedKeys, ranges);
+    return new KeyedSelection(
+      this.getModel,
+      this.selectedKeys,
+      ranges,
+      this.invertedSelection
+    );
   }
 
   commitMouseGesture(
@@ -96,30 +106,41 @@ export class KeyedSelection implements Selection {
     }
     if (rows.length === 0) return this;
     const next = new Set(this.selectedKeys);
-    if (this.selectedKeys.size > 0) {
+
+    if (this.selectedKeys.size > 0 || this.invertedSelection) {
       // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
       // holds the previous committed keys. Toggle each overlay row individually.
       rows.forEach(r => {
         const k = this.serializeRow(r);
         if (lastCommitted.isRowSelected(r)) {
-          next.delete(k);
+          // Row was selected → deselect it: add to exclusion set (inverted) or remove from selected (normal)
+          if (this.invertedSelection) next.add(k);
+          else next.delete(k); // eslint-disable-line no-else-return
+        } else if (this.invertedSelection) {
+          next.delete(k); // remove from exclusion set
         } else {
-          next.add(k);
+          next.add(k); // add to selected set
         }
       });
+      return new KeyedSelection(
+        this.getModel,
+        next,
+        EMPTY_ARRAY,
+        this.invertedSelection
+      );
+    }
+
+    // Regular click path: clearSelectedRanges emptied selectedKeys first.
+    const serialized = rows.map(r => this.serializeRow(r));
+    // Deselect only when the overlay rows comprised the entire previous selection.
+    // If lastCommitted had more rows, this is a "select only this row" gesture.
+    const wasEntireSelection = lastCommitted
+      .withUpdatedRanges(this.overlayRanges)
+      .isEmpty();
+    if (wasEntireSelection) {
+      serialized.forEach(k => next.delete(k));
     } else {
-      // Regular click path: clearSelectedRanges emptied selectedKeys first.
-      const serialized = rows.map(r => this.serializeRow(r));
-      // Deselect only when the overlay rows comprised the entire previous selection.
-      // If lastCommitted had more rows, this is a "select only this row" gesture.
-      const wasEntireSelection = lastCommitted
-        .withUpdatedRanges(this.overlayRanges)
-        .isEmpty();
-      if (wasEntireSelection) {
-        serialized.forEach(k => next.delete(k));
-      } else {
-        serialized.forEach(k => next.add(k));
-      }
+      serialized.forEach(k => next.add(k));
     }
     return new KeyedSelection(this.getModel, next);
   }
@@ -133,6 +154,7 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(this.getModel, new Set());
   }
 
+  // Always returns non-inverted; switching to a new selection exits inverted mode.
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
     if (ranges.length === 0) return this;
     const rows: VisibleIndex[] = [];
@@ -156,6 +178,12 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(this.getModel, next);
   }
 
+  // Sets invertedSelection=true with an empty exclusion set (all rows selected).
+  // eslint-disable-next-line class-methods-use-this
+  selectAll(): KeyedSelection {
+    return new KeyedSelection(this.getModel, new Set(), EMPTY_ARRAY, true);
+  }
+
   /** Returns a new selection with the given row's key toggled. */
   withToggledRow(row: VisibleIndex): KeyedSelection {
     const key = this.serializeRow(row);
@@ -165,7 +193,12 @@ export class KeyedSelection implements Selection {
     } else {
       next.add(key);
     }
-    return new KeyedSelection(this.getModel, next);
+    return new KeyedSelection(
+      this.getModel,
+      next,
+      EMPTY_ARRAY,
+      this.invertedSelection
+    );
   }
 }
 
