@@ -86,11 +86,13 @@ export class KeyedSelection implements Selection {
 
   // eslint-disable-next-line class-methods-use-this
   getColumnTickRanges(): readonly BoundedAxisRange[] {
+    // Keyed selection does not support column-specific tick ranges.
     return EMPTY_ARRAY;
   }
 
   // eslint-disable-next-line class-methods-use-this
   getRowTickRanges(): readonly BoundedAxisRange[] {
+    // Keyed selection does not support row-specific tick ranges.
     return EMPTY_ARRAY;
   }
 
