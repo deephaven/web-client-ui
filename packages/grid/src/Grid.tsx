@@ -1238,7 +1238,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       );
       if (newSelection === selection) return null;
 
-      const newRanges = newSelection.toRanges();
       let newCursorRow = cursorRow;
       let newCursorColumn = cursorColumn;
 
@@ -1246,8 +1245,8 @@ class Grid extends PureComponent<GridProps, GridState> {
         newCursorRow = null;
         newCursorColumn = null;
       } else if (
-        newRanges.length > 0 &&
-        !GridRange.containsCell(newRanges, cursorColumn, cursorRow)
+        cursorRow == null ||
+        !newSelection.isCellSelected(cursorRow, cursorColumn ?? 0)
       ) {
         const { model } = this.props;
         const { columnCount, rowCount } = model;
