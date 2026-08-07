@@ -23,7 +23,9 @@ export class KeyedSelection implements Selection {
     readonly selectedKeys: ReadonlySet<string>,
     private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY,
     // When true, selectedKeys is an exclusion set: all rows are selected EXCEPT those in the set.
-    readonly invertedSelection: boolean = false
+    readonly invertedSelection: boolean = false,
+    // Last committed single-row position; best-effort, may be stale after table ticks.
+    private readonly lastSingleRow: VisibleIndex | null = null
   ) {
     // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
     if (overlayRanges.length === 0) {
@@ -78,6 +80,11 @@ export class KeyedSelection implements Selection {
   toRanges(): readonly GridRange[] {
     // TODO: synthesize ranges from selectedKeys for onSelectionChanged compat
     return EMPTY_ARRAY;
+  }
+
+  getSingleSelectedRow(): VisibleIndex | null {
+    if (this.invertedSelection || this.selectedKeys.size !== 1) return null;
+    return this.lastSingleRow;
   }
 
   toActiveRanges(): readonly GridRange[] {
@@ -158,7 +165,15 @@ export class KeyedSelection implements Selection {
     } else {
       serialized.forEach(k => next.add(k));
     }
-    return new KeyedSelection(this.getModel, next);
+    // Store the single committed row so getSingleSelectedRow() works for gotoRow sync.
+    const singleRow = next.size === 1 && rows.length === 1 ? rows[0] : null;
+    return new KeyedSelection(
+      this.getModel,
+      next,
+      EMPTY_ARRAY,
+      false,
+      singleRow
+    );
   }
 
   clear(): KeyedSelection {

@@ -3650,22 +3650,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleSelectionChanged(selectedRanges?: readonly GridRange[]): void {
     assertNotNull(selectedRanges);
     const { onSelectionChanged } = this.props;
-    const { copyOperation } = this.state;
-    this.setState({ selectedRanges });
-    if (copyOperation != null) {
-      this.setState({ copyOperation: null });
-    }
-
-    // We get 2 identical ranges here,
-    // but consolidating in `Grid#moveSelection` causes
-    // deselection to break, so just consolidate here.
-    // This will only update the goto row input for row index
-    if (
-      GridRange.rowCount(GridRange.consolidate(selectedRanges)) === 1 &&
-      selectedRanges[0].startRow != null
-    ) {
-      this.setState({ gotoRow: `${selectedRanges[0].startRow + 1}` });
-    }
     onSelectionChanged?.(selectedRanges);
   }
 
@@ -3676,13 +3660,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
-    // TODO go to row input update for keyed tables
-    const ranges = selection.toRanges();
-    if (
-      GridRange.rowCount(GridRange.consolidate(ranges)) === 1 &&
-      ranges[0].startRow != null
-    ) {
-      this.setState({ gotoRow: `${ranges[0].startRow + 1}` });
+    const singleRow = selection.getSingleSelectedRow();
+    if (singleRow != null) {
+      this.setState({ gotoRow: `${singleRow + 1}` });
     }
     onSelectionChange?.(selection);
   }

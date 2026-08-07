@@ -45,4 +45,6 @@ export interface Selection {
   ) => Selection;
   /** Returns a new Selection representing the entire grid selected. */
   selectAll: () => Selection;
+  /** Returns the single selected visible row, or null if zero or multiple rows are selected. */
+  getSingleSelectedRow: () => VisibleIndex | null;
 }
