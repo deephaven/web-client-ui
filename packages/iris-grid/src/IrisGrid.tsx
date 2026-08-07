@@ -3647,6 +3647,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ metrics, pendingRowCount });
   }
 
+  /** @deprecated Use `handleGridSelectionChange` instead. */
   handleSelectionChanged(selectedRanges?: readonly GridRange[]): void {
     assertNotNull(selectedRanges);
     const { onSelectionChanged } = this.props;
