@@ -1076,7 +1076,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState({ selection: selection.trimmed() });
   }
 
-  /** Gets the selected ranges */
+  /** Gets the current selection */
+  getSelection(): Selection {
+    const { selection } = this.state;
+    return selection;
+  }
+
+  /** @deprecated Use getSelection() instead */
   getSelectedRanges(): readonly GridRange[] {
     const { selection } = this.state;
     return selection.toRanges();

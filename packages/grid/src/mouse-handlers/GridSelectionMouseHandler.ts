@@ -262,20 +262,18 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     grid: Grid,
     event: GridMouseEvent
   ): EventHandlerResult {
-    // check if the selected is already in the selected range
-    const selectedRanges = grid.getSelectedRanges();
-    const isInRange = GridRange.containsCell(
-      selectedRanges,
-      gridPoint.column,
-      gridPoint.row
-    );
+    const { row, column } = gridPoint;
+    const isInRange =
+      row != null &&
+      column != null &&
+      grid.getSelection().isCellSelected(row, column);
 
-    // only change the selected range if the selected cell is not in the selected range
-    if (!isInRange && gridPoint.row !== null && gridPoint.column !== null) {
+    // only change the selected range if the clicked cell is not already selected
+    if (!isInRange && row != null && column != null) {
       this.startPoint = undefined;
       this.stopTimer();
       grid.clearSelectedRanges();
-      grid.moveCursorToPosition(gridPoint.column, gridPoint.row);
+      grid.moveCursorToPosition(column, row);
     }
 
     return false;
