@@ -6,7 +6,6 @@ import type {
   Selection,
   VisibleIndex,
 } from '@deephaven/grid';
-import { RangedSelection } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
 
@@ -74,10 +73,25 @@ export class KeyedSelection implements Selection {
     return EMPTY_ARRAY;
   }
 
-  get mouseOverlaySelection(): RangedSelection | null {
-    return this.overlayRanges.length > 0
-      ? new RangedSelection(this.overlayRanges, this.getModel)
-      : null;
+  get mouseOverlaySelection(): KeyedSelection | null {
+    if (this.overlayRanges.length === 0) return null;
+    // Build a key-based preview so all rows sharing the same key highlight together
+    // on mousedown, not just after the commit cycle completes.
+    const previewKeys = new Set(this.selectedKeys);
+    for (let i = 0; i < this.overlayRanges.length; i += 1) {
+      const { startRow, endRow } = this.overlayRanges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const last = endRow ?? startRow;
+      for (let r = startRow; r <= last; r += 1) {
+        previewKeys.add(this.serializeRow(r));
+      }
+    }
+    return new KeyedSelection(
+      this.getModel,
+      previewKeys,
+      EMPTY_ARRAY,
+      this.invertedSelection
+    );
   }
 
   // Preserve invertedSelection through gesture overlay changes
