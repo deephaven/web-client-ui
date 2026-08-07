@@ -128,8 +128,11 @@ export type GridProps = typeof Grid.defaultProps & {
   // Callback for if an error occurs
   onError?: (e: Error) => void;
 
-  // Callback when the selection within the grid changes
+  /** @deprecated Use onSelectionChange instead. */
   onSelectionChanged?: (ranges: readonly GridRange[]) => void;
+
+  // Callback when the selection within the grid changes
+  onSelectionChange?: (selection: Selection) => void;
 
   // Callback when the moved columns or rows have changed
   onMovedColumnsChanged?: (movedColumns: readonly MoveOperation[]) => void;
@@ -266,6 +269,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     movedRows: EMPTY_ARRAY as readonly MoveOperation[],
     onError: (): void => undefined,
     onSelectionChanged: (): void => undefined,
+    onSelectionChange: (_selection: Selection): void => undefined,
     onMovedColumnsChanged: (moveOperations: readonly MoveOperation[]): void =>
       undefined,
     onMoveColumnComplete: (): void => undefined,
@@ -1037,8 +1041,9 @@ class Grid extends PureComponent<GridProps, GridState> {
   checkSelectionChange(prevState: GridState): void {
     const { selection } = this.state;
     if (selection !== prevState.selection) {
-      const { onSelectionChanged } = this.props;
+      const { onSelectionChanged, onSelectionChange } = this.props;
       onSelectionChanged(selection.toRanges());
+      onSelectionChange(selection);
     }
   }
 

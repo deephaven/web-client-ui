@@ -363,7 +363,9 @@ export interface IrisGridProps {
    */
   userColumnWidthsByName?: ReadonlyMap<ColumnName, number>;
   userRowHeights: ReadonlyMap<ModelIndex, number>;
-  onSelectionChanged: (gridRanges: readonly GridRange[]) => void;
+  /** @deprecated Use onSelectionChange instead. */
+  onSelectionChanged?: (gridRanges: readonly GridRange[]) => void;
+  onSelectionChange?: (selection: Selection) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
 
@@ -458,6 +460,8 @@ export interface IrisGridState {
 
   // selected range in table
   selectedRanges: readonly GridRange[];
+  // polymorphic selection object; source of truth for keyed tables
+  gridSelection: Selection | null;
 
   // Current ongoing copy operation
   copyOperation: CopyOperation | null;
@@ -581,6 +585,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     userColumnWidthsByName: undefined,
     userRowHeights: EMPTY_MAP,
     onSelectionChanged: (): void => undefined,
+    onSelectionChange: (): void => undefined,
     isSelectingColumn: false,
     isSelectingPartition: false,
     isStuckToBottom: false,
@@ -655,6 +660,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handlePending = this.handlePending.bind(this);
     this.handlePendingCleared = this.handlePendingCleared.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
+    this.handleGridSelectionChange = this.handleGridSelectionChange.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
@@ -911,6 +917,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       // selected range in table
       selectedRanges: [],
+      gridSelection: null,
 
       // Current ongoing copy operation
       copyOperation: null,
@@ -3659,7 +3666,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ) {
       this.setState({ gotoRow: `${selectedRanges[0].startRow + 1}` });
     }
-    onSelectionChanged(selectedRanges);
+    onSelectionChanged?.(selectedRanges);
+  }
+
+  handleGridSelectionChange(selection: Selection): void {
+    const { onSelectionChange } = this.props;
+    const { copyOperation } = this.state;
+    this.setState({ gridSelection: selection });
+    if (copyOperation != null) {
+      this.setState({ copyOperation: null });
+    }
+    // TODO go to row input update for keyed tables
+    const ranges = selection.toRanges();
+    if (
+      GridRange.rowCount(GridRange.consolidate(ranges)) === 1 &&
+      ranges[0].startRow != null
+    ) {
+      this.setState({ gotoRow: `${ranges[0].startRow + 1}` });
+    }
+    onSelectionChange?.(selection);
   }
 
   handleMovedColumnsChanged(
@@ -5525,6 +5550,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onError={this.handleGridError}
             onViewChanged={this.handleViewChanged}
             onSelectionChanged={this.handleSelectionChanged}
+            onSelectionChange={this.handleGridSelectionChange}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
             cellInputRendererRegistry={
