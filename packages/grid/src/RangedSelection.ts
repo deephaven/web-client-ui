@@ -150,7 +150,7 @@ export class RangedSelection implements Selection {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  cleared(): RangedSelection {
+  clear(): RangedSelection {
     return new RangedSelection(EMPTY_ARRAY, this.getModel);
   }
 

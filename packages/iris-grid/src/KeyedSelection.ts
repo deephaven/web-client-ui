@@ -161,7 +161,7 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection(this.getModel, next);
   }
 
-  cleared(): KeyedSelection {
+  clear(): KeyedSelection {
     return new KeyedSelection(this.getModel, new Set());
   }
 

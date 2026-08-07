@@ -1065,7 +1065,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   clearSelectedRanges(): void {
     this.setState(state => ({
-      selection: state.selection.cleared(),
+      selection: state.selection.clear(),
       lastSelection: state.selection,
     }));
   }

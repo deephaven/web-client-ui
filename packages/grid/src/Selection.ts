@@ -27,11 +27,11 @@ export interface Selection {
   getColumnTickRanges: () => readonly BoundedAxisRange[];
   /** Returns row [start, end] pairs for scrollbar tick rendering. */
   getRowTickRanges: () => readonly BoundedAxisRange[];
-  /** Returns a new Selection with all ranges cleared. */
-  cleared: () => Selection;
+  /** Returns a new Selection with selection cleared. */
+  clear: () => Selection;
   /** Returns a new Selection keeping only the last range. */
   trimmed: () => Selection;
-  /** Returns a new Selection with ranges replaced. */
+  /** Returns a new Selection generated from the supplied ranges */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
   /** Applies mouse gesture ranges to this selection. */
   withMouseGestureRanges: (ranges: readonly GridRange[]) => Selection;
