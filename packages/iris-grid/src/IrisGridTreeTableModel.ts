@@ -271,8 +271,7 @@ class IrisGridTreeTableModel
         const key = i + (depth - 1) + (this.virtualColumns.length - 1);
         // The root/total row (depth 1) has no grouping key, so `key` points at
         // a virtual column rather than a real grouped source column. Skip it
-        // instead of warning. Grouped rows start at depth 2 (D at index 1,
-        // E at index 2, ...), where `key >= virtualColumns.length`.
+        // instead of warning.
         if (key >= this.virtualColumns.length) {
           const cellData = modifiedData.get(key);
           if (cellData == null) {
