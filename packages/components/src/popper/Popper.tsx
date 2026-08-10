@@ -20,6 +20,7 @@ import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
+import { UNSAFE_PortalProvider } from 'react-aria';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
@@ -71,6 +72,12 @@ interface PopperProps {
   closeOnBlur: boolean;
   interactive: boolean;
   keepInParent: boolean;
+  /**
+   * When true, portals nested overlays (e.g. a `Picker`'s listbox) into this
+   * `Popper`'s own container instead of `document.body`, so `closeOnBlur`
+   * treats them as inside. Default false.
+   */
+  containPortals: boolean;
   referenceObject: ReferenceObject | null;
   'data-testid'?: string;
 }
@@ -100,6 +107,7 @@ class Popper extends Component<PopperProps, PopperState> {
     interactive: false,
     closeOnBlur: false,
     keepInParent: false,
+    containPortals: false,
     referenceObject: null,
     'data-testid': undefined,
   };
@@ -331,9 +339,25 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   renderContent(): JSX.Element {
-    const { className, children, timeout, interactive, closeOnBlur } =
-      this.props;
+    const {
+      className,
+      children,
+      timeout,
+      interactive,
+      closeOnBlur,
+      containPortals,
+    } = this.props;
     const { show } = this.state;
+
+    // Redirect nested overlays into this Popper's container.
+    const content = containPortals ? (
+      // eslint-disable-next-line react/jsx-pascal-case
+      <UNSAFE_PortalProvider getContainer={() => this.element}>
+        {children}
+      </UNSAFE_PortalProvider>
+    ) : (
+      children
+    );
 
     return (
       <SpectrumThemeProvider isPortal>
@@ -363,8 +387,14 @@ class Popper extends Component<PopperProps, PopperState> {
             tabIndex={closeOnBlur ? -1 : undefined}
             role="presentation"
           >
-            <div className="popper-content">
-              {children}
+            <div
+              className={classNames('popper-content', {
+                // Isolates stray positive z-index (e.g. Bootstrap checkboxes)
+                // so it can't paint over the portaled overlay sibling.
+                'popper-content--contain-portals': containPortals,
+              })}
+            >
+              {content}
               {/* eslint-disable-next-line react/no-unknown-property */}
               <div className="popper-arrow" x-arrow="" />
             </div>

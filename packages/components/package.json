@@ -58,6 +58,7 @@
     "memoizee": "^0.4.15",
     "nanoid": "^5.0.7",
     "popper.js": "^1.16.1",
+    "react-aria": "3.48.0",
     "react-reverse-portal": "^2.3.0",
     "react-transition-group": "^4.4.2",
     "react-virtualized-auto-sizer": "1.0.7",
