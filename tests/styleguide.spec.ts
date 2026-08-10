@@ -228,8 +228,11 @@ test('Dialog with Picker regression test', async ({ page }) => {
     .getByRole('button', { name: 'Open Dialog with Picker' })
     .click();
 
-  // Open the Picker's own overlay
-  const picker = page.getByLabel('Fruit');
+  // Open the Picker's own overlay. Spectrum Picker renders a hidden native
+  // <select> that shares the "Fruit" label with the trigger button, so
+  // narrow to the button role. The name contains "Fruit" both before
+  // ("Select… Fruit") and after selection ("<value> Fruit").
+  const picker = page.getByRole('button', { name: /Fruit/ });
   await expect(picker).toBeVisible();
   await picker.click();
 
