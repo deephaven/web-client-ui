@@ -111,7 +111,7 @@ export class RangedSelection implements Selection {
     return this.withUpdatedRanges([new GridRange(null, 0, null, rowCount - 1)]);
   }
 
-  getSingleSelectedRow(): VisibleIndex | null {
+  getLastSingleSelectedRow(): VisibleIndex | null {
     const consolidated = GridRange.consolidate(this.ranges);
     if (GridRange.rowCount(consolidated) !== 1) return null;
     return consolidated[0]?.startRow ?? null;

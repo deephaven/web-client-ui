@@ -82,7 +82,7 @@ export class KeyedSelection implements Selection {
     return EMPTY_ARRAY;
   }
 
-  getSingleSelectedRow(): VisibleIndex | null {
+  getLastSingleSelectedRow(): VisibleIndex | null {
     if (this.invertedSelection || this.selectedKeys.size !== 1) return null;
     return this.lastSingleRow;
   }
