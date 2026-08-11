@@ -19,8 +19,6 @@ export interface Selection {
   isRowSelected: (row: VisibleIndex) => boolean;
   /** Returns false if any selected range exceeds the given column/row bounds. */
   isValid: (columnCount: number, rowCount: number) => boolean;
-  /** Returns the selection as GridRange[]. */
-  toRanges: () => readonly GridRange[];
   /** Returns the ranges Grid uses for cursor positioning, extend-selection, and keyboard navigation. */
   toActiveRanges: () => readonly GridRange[];
   /** Returns column [start, end] pairs for scrollbar tick rendering. */

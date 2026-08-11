@@ -122,6 +122,8 @@ export class RangedSelection implements Selection {
     autoSelectRow: boolean
   ): RangedSelection {
     const selectedRanges = this.ranges;
+    // lastCommitted is always a RangedSelection when this method is called
+    assertIsRangedSelection(lastCommitted);
     const lastRanges = lastCommitted.toRanges();
 
     if (
@@ -168,6 +170,22 @@ export class RangedSelection implements Selection {
       );
     }
     return this;
+  }
+}
+
+export function isRangedSelection(
+  selection: Selection
+): selection is RangedSelection {
+  return selection instanceof RangedSelection;
+}
+
+export function assertIsRangedSelection(
+  selection: Selection
+): asserts selection is RangedSelection {
+  if (!(selection instanceof RangedSelection)) {
+    throw new Error(
+      `Expected a RangedSelection but got ${selection.constructor.name}`
+    );
   }
 }
 

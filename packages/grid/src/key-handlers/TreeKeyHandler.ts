@@ -2,6 +2,7 @@
 import { isExpandableGridModel } from '../ExpandableGridModel';
 import type Grid from '../Grid';
 import type GridRange from '../GridRange';
+import { assertIsRangedSelection } from '../RangedSelection';
 import KeyHandler from '../KeyHandler';
 
 class TreeKeyHandler extends KeyHandler {
@@ -18,6 +19,8 @@ class TreeKeyHandler extends KeyHandler {
   }
 
   handleExpandKey(event: KeyboardEvent, grid: Grid): boolean {
+    // toRanges() is only available on RangedSelection; keyed tables have no expandable rows
+    assertIsRangedSelection(grid.state.selection);
     const ranges = grid.state.selection.toRanges();
     if (ranges.length === 1) {
       const range = ranges[0] as GridRange;

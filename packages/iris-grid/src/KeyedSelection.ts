@@ -76,12 +76,6 @@ export class KeyedSelection implements Selection {
     return true;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  toRanges(): readonly GridRange[] {
-    // TODO: synthesize ranges from selectedKeys for onSelectionChanged compat
-    return EMPTY_ARRAY;
-  }
-
   getLastSingleSelectedRow(): VisibleIndex | null {
     if (this.invertedSelection || this.selectedKeys.size !== 1) return null;
     return this.lastSingleRow;

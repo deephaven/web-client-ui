@@ -74,7 +74,11 @@ import { type EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
 import { type Selection } from './Selection';
-import { RangedSelection } from './RangedSelection';
+import {
+  RangedSelection,
+  isRangedSelection,
+  assertIsRangedSelection,
+} from './RangedSelection';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import {
   type EditingCell,
@@ -1042,7 +1046,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { selection } = this.state;
     if (selection !== prevState.selection) {
       const { onSelectionChanged, onSelectionChange } = this.props;
-      onSelectionChanged(selection.toRanges());
+      // toRanges() is RangedSelection-only; skip the deprecated callback for keyed selections
+      if (isRangedSelection(selection)) {
+        onSelectionChanged(selection.toRanges());
+      }
       onSelectionChange(selection);
     }
   }
@@ -1090,7 +1097,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   /** @deprecated Use getSelection() instead */
   getSelectedRanges(): readonly GridRange[] {
     const { selection } = this.state;
-    return selection.toRanges();
+    // toRanges() is RangedSelection-only; returns [] for keyed selections
+    return isRangedSelection(selection) ? selection.toRanges() : EMPTY_ARRAY;
   }
 
   /**
@@ -1564,6 +1572,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   async pasteValue(value: string[][] | string): Promise<void> {
     const { model } = this.props;
     const { movedColumns, movedRows, selection } = this.state;
+    // pasteValue is only reachable for editable (non-keyed) tables
+    assertIsRangedSelection(selection);
     const selectedRanges = selection.toRanges();
 
     try {
@@ -2229,6 +2239,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (fillRange) {
+      // fillRange is only reachable for editable (non-keyed) tables
+      assertIsRangedSelection(selection);
       this.setValueForRanges(selection.toRanges(), value);
     } else {
       this.setValueForCell(column, row, value);
