@@ -216,3 +216,35 @@ test('Inputs regression test', async ({ page }) => {
     }
   }
 });
+
+test('Dialog with Picker regression test', async ({ page }) => {
+  await page.goto('/ide/styleguide?isolateSection=true#sample-section-dialog');
+
+  const sampleSection = page.locator('#sample-section-dialog');
+  await expect(sampleSection).toBeVisible({ timeout: 45000 });
+
+  // Open the popover dialog that contains a Picker
+  await sampleSection
+    .getByRole('button', { name: 'Open Dialog with Picker' })
+    .click();
+
+  // Open the Picker's own overlay. Spectrum Picker renders a hidden native
+  // <select> that shares the "Fruit" label with the trigger button, so
+  // narrow to the button role. The name contains "Fruit" both before
+  // ("Select… Fruit") and after selection ("<value> Fruit").
+  const picker = page.getByRole('button', { name: /Fruit/ });
+  await expect(picker).toBeVisible();
+  await picker.click();
+
+  // The Picker listbox renders in a portal, so screenshot the whole page
+  const listbox = page.getByRole('listbox');
+  await expect(listbox).toBeVisible();
+
+  await expect(page).toHaveScreenshot('dialog-with-picker-open.png');
+
+  // Select an option to verify the Picker is interactive (i.e. the outer
+  // Popper does not dismiss on Picker interaction).
+  await listbox.getByRole('option', { name: 'Banana' }).click();
+  await expect(listbox).toBeHidden();
+  await expect(picker).toContainText('Banana');
+});

@@ -44,6 +44,12 @@ $animation-offset: 10px;
     position: relative;
     max-height: inherit;
 
+    // Only with containPortals: traps stray positive z-index (e.g. Bootstrap
+    // checkboxes) so it can't paint over the portaled overlay sibling.
+    &.popper-content--contain-portals {
+      isolation: isolate;
+    }
+
     .tooltip-content {
       text-align: center;
       padding: $tooltip-padding-y $tooltip-padding-x;
