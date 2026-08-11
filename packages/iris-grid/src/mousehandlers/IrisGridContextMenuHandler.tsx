@@ -23,13 +23,15 @@ import {
   type GridPoint,
   GridRange,
   GridRenderer,
-  GridSelectionMouseHandler,
   isDeletableGridModel,
   isEditableGridModel,
   isExpandableColumnGridModel,
   isExpandableGridModel,
+  isRangedSelection,
   type ModelIndex,
   parseValueFromText,
+  RangedSelection,
+  type Selection,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -927,14 +929,30 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       isFilterBarShown,
       quickFilters,
       advancedFilters,
-      selectedRanges: stateSelectedRanges,
+      gridSelection,
     } = irisGrid.state;
 
-    const selectedRanges = GridSelectionMouseHandler.getLatestSelection(
-      stateSelectedRanges,
-      columnIndex,
-      rowIndex
-    );
+    // If the clicked cell is in the current selection keep it; otherwise treat as a single-cell selection.
+    const clickedInSelection =
+      rowIndex != null &&
+      columnIndex != null &&
+      (gridSelection?.isCellSelected(rowIndex, columnIndex) ?? false);
+    let effectiveSelection: Selection | null;
+    if (clickedInSelection) {
+      effectiveSelection = gridSelection;
+    } else if (rowIndex != null && columnIndex != null) {
+      effectiveSelection = new RangedSelection(
+        [GridRange.makeCell(columnIndex, rowIndex)],
+        () => model
+      );
+    } else {
+      effectiveSelection = null;
+    }
+    // Only ranged selections support row-range operations (delete).
+    const effectiveRanges =
+      effectiveSelection != null && isRangedSelection(effectiveSelection)
+        ? effectiveSelection.toRanges()
+        : [];
 
     assertNotNull(metrics);
 
@@ -1011,14 +1029,18 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       }
 
       // blank space context menu options
-      if (canCopy && selectedRanges.length > 0) {
+      if (
+        canCopy &&
+        effectiveSelection != null &&
+        !effectiveSelection.isEmpty()
+      ) {
         actions.push({
           title: 'Copy Selection',
           shortcut: GLOBAL_SHORTCUTS.COPY,
           group: IrisGridContextMenuHandler.GROUP_COPY,
           order: 30,
           action: () => {
-            irisGrid.copyRanges(selectedRanges);
+            irisGrid.copySelection(effectiveSelection);
           },
         });
 
@@ -1027,7 +1049,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           group: IrisGridContextMenuHandler.GROUP_COPY,
           order: 40,
           action: () => {
-            irisGrid.copyRanges(selectedRanges, true);
+            irisGrid.copySelection(effectiveSelection, true);
           },
         });
       }
@@ -1035,17 +1057,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (
         isEditableGridModel(model) &&
         model.isEditable &&
-        selectedRanges.length > 0 &&
+        effectiveRanges.length > 0 &&
         isDeletableGridModel(model) &&
         model.isDeletable
       ) {
         actions.push({
           title: 'Delete Selected Rows',
           group: IrisGridContextMenuHandler.GROUP_EDIT,
-          disabled: !model.isDeletableRanges(selectedRanges),
+          disabled: !model.isDeletableRanges(effectiveRanges),
           order: 50,
           action: () => {
-            this.irisGrid.deleteRanges(selectedRanges);
+            this.irisGrid.deleteRanges(effectiveRanges);
           },
         });
       }
