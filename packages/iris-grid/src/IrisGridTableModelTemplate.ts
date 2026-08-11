@@ -1569,13 +1569,19 @@ class IrisGridTableModelTemplate<
 
   /**
    * Builds a filter condition matching any row whose key columns equal one of the provided key value sets.
-   * Returns null when keyValues is empty (no filter needed — snapshot all or none).
+   *
+   * @param keyValues A map of key column names to their corresponding values
+   * @param keyColumns The key columns to filter by
+   * @returns A filter condition matching the provided key values, or null if no filter is needed
    */
   private buildKeyFilter(
     keyValues: ReadonlyMap<string, readonly unknown[]>,
     keyColumns: readonly DhType.Column[]
   ): DhType.FilterCondition | null {
+    // Return null if there are no key values to filter by
     if (keyValues.size === 0) return null;
+
+    // Create an AND filter for each set of key values
     const keyFilters: DhType.FilterCondition[] = [];
     keyValues.forEach(values => {
       const colFilters = values.map((val, i) => {
@@ -1589,11 +1595,17 @@ class IrisGridTableModelTemplate<
           : colFilters[0].and(...colFilters.slice(1))
       );
     });
+
+    // Combine the key filters with OR logic
     return keyFilters.length === 1
       ? keyFilters[0]
       : keyFilters[0].or(...keyFilters.slice(1));
   }
 
+  /**
+   * Implementation of snapshotByKeys.
+   * This works by filtering the table based on the key values and then taking a snapshot of the entire filtered table.
+   */
   async snapshotByKeys(
     columns: readonly DhType.Column[],
     keyValues: ReadonlyMap<string, readonly unknown[]>,
@@ -1601,20 +1613,28 @@ class IrisGridTableModelTemplate<
     includeHeaders = false,
     formatValue: (value: unknown, column: DhType.Column) => unknown = v => v
   ): Promise<unknown[][]> {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error('snapshotByKeys is not supported on tree tables');
+    }
+
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
     let filter: DhType.FilterCondition[];
     if (keyFilter == null) {
+      if (!invertedSelection) {
+        // Empty normal selection — nothing to copy
+        return includeHeaders ? [columns.map(c => c.name)] : [];
+      }
+      // Inverted + empty exclusion set = all rows selected
       filter = [];
     } else if (invertedSelection) {
+      // For inverted selection, negate the key filter
       filter = [keyFilter.not()];
     } else {
       filter = [keyFilter];
     }
 
-    if (TableUtils.isTreeTable(this.table)) {
-      throw new Error('snapshotByKeys is not supported on tree tables');
-    }
+    // Create a copy of the table to apply the filter and retrieve the snapshot
     const copy = await this.table.copy();
     try {
       await this.tableUtils.applyFilter(copy, filter);
@@ -1623,6 +1643,7 @@ class IrisGridTableModelTemplate<
         result.push(columns.map(c => c.name));
       }
       if (copy.size > 0) {
+        // Snapshot the entire filtered table
         const sub = copy.createViewportSubscription({
           rows: { first: 0, last: copy.size - 1 },
           columns: [...columns],

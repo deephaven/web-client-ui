@@ -7,6 +7,7 @@ export interface KeyedGridModel {
   readonly selectionKeyColumnIndices: readonly ModelIndex[];
   /** True if each key uniquely identifies at most one row. */
   readonly hasUniqueSelectionKeys: boolean;
+
   /**
    * Snapshots rows matching the given key values.
    * For invertedSelection=true, snapshots all rows EXCEPT those matching the keys.
@@ -19,6 +20,7 @@ export interface KeyedGridModel {
     includeHeaders?: boolean,
     formatValue?: (value: unknown, column: DhType.Column) => unknown
   ) => Promise<unknown[][]>;
+
   /** Text version of snapshotByKeys: rows tab-separated, columns newline-separated. */
   textSnapshotByKeys: (
     columns: readonly DhType.Column[],
