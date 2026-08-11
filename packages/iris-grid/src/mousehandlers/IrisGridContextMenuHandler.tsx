@@ -64,8 +64,11 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import type IrisGrid from '../IrisGrid';
+import type IrisGridModel from '../IrisGridModel';
 import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
+import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
+import { KeyedSelection, type GetKeyedModel } from '../KeyedSelection';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -941,10 +944,34 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (clickedInSelection) {
       effectiveSelection = gridSelection;
     } else if (rowIndex != null && columnIndex != null) {
-      effectiveSelection = new RangedSelection(
-        [GridRange.makeCell(columnIndex, rowIndex)],
-        () => model
-      );
+      if (isKeyedGridModel(model) && modelRow != null) {
+        // Construct a committed single-row KeyedSelection from the model's key columns.
+        const getModel = () => model as IrisGridModel & KeyedGridModel;
+        const keyIndices = model.selectionKeyColumnIndices;
+        const values = keyIndices.map(i => model.valueForCell(i, modelRow));
+        const key = JSON.stringify(values);
+        const keyValues = new Map<string, readonly unknown[]>([[key, values]]);
+        effectiveSelection = new KeyedSelection(
+          getModel as GetKeyedModel,
+          new Set([key]),
+          [],
+          false,
+          rowIndex,
+          keyValues
+        );
+      } else if (isEditableGridModel(model) && model.isEditable) {
+        // Input tables: single-cell selection (editable rows are cell-granular).
+        effectiveSelection = new RangedSelection(
+          [GridRange.makeCell(columnIndex, rowIndex)],
+          () => model
+        );
+      } else {
+        // Regular tables: full-row selection so all visible columns are included.
+        effectiveSelection = new RangedSelection(
+          [new GridRange(null, rowIndex, null, rowIndex)],
+          () => model
+        );
+      }
     } else {
       effectiveSelection = null;
     }
