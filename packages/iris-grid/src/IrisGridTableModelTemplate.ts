@@ -1586,12 +1586,12 @@ class IrisGridTableModelTemplate<
       keyFilters.push(
         colFilters.length === 1
           ? colFilters[0]
-          : colFilters.reduce((a, b) => a.and(b))
+          : colFilters[0].and(...colFilters.slice(1))
       );
     });
     return keyFilters.length === 1
       ? keyFilters[0]
-      : keyFilters.reduce((a, b) => a.or(b));
+      : keyFilters[0].or(...keyFilters.slice(1));
   }
 
   async snapshotByKeys(
