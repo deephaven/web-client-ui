@@ -71,6 +71,7 @@ import {
 import { type ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
+  isRangedSelection,
   type GridState,
   type ModelIndex,
   type ModelSizeMap,
@@ -485,6 +486,10 @@ export class IrisGridPanel extends PureComponent<
         panel: this,
       };
 
+      const gridSel = this.irisGrid.current?.state.gridSelection;
+      const selectedRanges =
+        gridSel != null && isRangedSelection(gridSel) ? gridSel.toRanges() : [];
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -494,7 +499,7 @@ export class IrisGridPanel extends PureComponent<
             model={model}
             table={model.table}
             tableName={this.getTableName()}
-            selectedRanges={this.irisGrid.current?.state.selectedRanges}
+            selectedRanges={selectedRanges}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
             // eslint-disable-next-line react/jsx-props-no-spreading
