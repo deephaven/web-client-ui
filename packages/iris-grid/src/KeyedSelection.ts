@@ -1,4 +1,4 @@
-import { EMPTY_ARRAY } from '@deephaven/utils';
+import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import type {
   BoundedAxisRange,
   GridRange,
@@ -25,7 +25,12 @@ export class KeyedSelection implements Selection {
     // When true, selectedKeys is an exclusion set: all rows are selected EXCEPT those in the set.
     readonly invertedSelection: boolean = false,
     // Last committed single-row position; best-effort, may be stale after table ticks.
-    private readonly lastSingleRow: VisibleIndex | null = null
+    private readonly lastSingleRow: VisibleIndex | null = null,
+    // Raw key-column values for each committed key; used for server-side filter construction.
+    readonly selectedKeyValues: ReadonlyMap<
+      string,
+      readonly unknown[]
+    > = EMPTY_MAP
   ) {
     // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
     if (overlayRanges.length === 0) {
@@ -37,20 +42,23 @@ export class KeyedSelection implements Selection {
         if (startRow == null) continue; // eslint-disable-line no-continue
         const last = endRow ?? startRow;
         for (let r = startRow; r <= last; r += 1) {
-          keys.add(this.serializeRow(r));
+          keys.add(this.getRowKeyData(r).key);
         }
       }
       this.gestureKeys = keys;
     }
   }
 
-  /** Visible row == model row in IrisGrid (sorting is server-side; no row moves). */
-  private serializeRow(row: VisibleIndex): string {
+  /** Returns both the serialized key and the raw values for a visible row. */
+  private getRowKeyData(row: VisibleIndex): {
+    key: string;
+    values: readonly unknown[];
+  } {
     const model = this.getModel();
     const values = model.selectionKeyColumnIndices.map((col: ModelIndex) =>
       model.valueForCell(col, row)
     );
-    return JSON.stringify(values);
+    return { key: JSON.stringify(values), values };
   }
 
   isEmpty(): boolean {
@@ -65,10 +73,10 @@ export class KeyedSelection implements Selection {
   }
 
   isRowSelected(row: VisibleIndex): boolean {
-    const k = this.serializeRow(row);
-    if (this.invertedSelection) return !this.selectedKeys.has(k);
+    const { key } = this.getRowKeyData(row);
+    if (this.invertedSelection) return !this.selectedKeys.has(key);
     // Include gesture preview keys so key-siblings highlight on mousedown without waiting for commit.
-    return this.selectedKeys.has(k) || this.gestureKeys.has(k);
+    return this.selectedKeys.has(key) || this.gestureKeys.has(key);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -103,7 +111,9 @@ export class KeyedSelection implements Selection {
       this.getModel,
       this.selectedKeys,
       ranges,
-      this.invertedSelection
+      this.invertedSelection,
+      null,
+      this.selectedKeyValues
     );
   }
 
@@ -127,46 +137,64 @@ export class KeyedSelection implements Selection {
     if (this.selectedKeys.size > 0 || this.invertedSelection) {
       // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
       // holds the previous committed keys. Toggle each overlay row individually.
+      const nextKeyValues = new Map(this.selectedKeyValues);
       rows.forEach(r => {
-        const k = this.serializeRow(r);
+        const { key: k, values } = this.getRowKeyData(r);
         if (lastCommitted.isRowSelected(r)) {
-          // Row was selected → deselect it: add to exclusion set (inverted) or remove from selected (normal)
-          if (this.invertedSelection) next.add(k);
-          else next.delete(k); // eslint-disable-line no-else-return
+          if (this.invertedSelection) {
+            next.add(k);
+            nextKeyValues.set(k, values);
+          } else {
+            next.delete(k);
+            nextKeyValues.delete(k);
+          }
         } else if (this.invertedSelection) {
-          next.delete(k); // remove from exclusion set
+          next.delete(k);
+          nextKeyValues.delete(k);
         } else {
-          next.add(k); // add to selected set
+          next.add(k);
+          nextKeyValues.set(k, values);
         }
       });
       return new KeyedSelection(
         this.getModel,
         next,
         EMPTY_ARRAY,
-        this.invertedSelection
+        this.invertedSelection,
+        null,
+        nextKeyValues
       );
     }
 
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
-    const serialized = rows.map(r => this.serializeRow(r));
+    const rowKeyData = rows.map(r => this.getRowKeyData(r));
+    const serialized = rowKeyData.map(({ key }) => key);
+    const nextKeyValues = new Map(this.selectedKeyValues);
     // Deselect only when the overlay rows comprised the entire previous selection.
     // If lastCommitted had more rows, this is a "select only this row" gesture.
     const wasEntireSelection = lastCommitted
       .withUpdatedRanges(this.overlayRanges)
       .isEmpty();
     if (wasEntireSelection) {
-      serialized.forEach(k => next.delete(k));
+      serialized.forEach(k => {
+        next.delete(k);
+        nextKeyValues.delete(k);
+      });
     } else {
-      serialized.forEach(k => next.add(k));
+      rowKeyData.forEach(({ key: k, values }) => {
+        next.add(k);
+        nextKeyValues.set(k, values);
+      });
     }
-    // Store the single committed row so getSingleSelectedRow() works for gotoRow sync.
+    // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
     const singleRow = next.size === 1 && rows.length === 1 ? rows[0] : null;
     return new KeyedSelection(
       this.getModel,
       next,
       EMPTY_ARRAY,
       false,
-      singleRow
+      singleRow,
+      nextKeyValues
     );
   }
 
@@ -192,15 +220,29 @@ export class KeyedSelection implements Selection {
       }
     }
     if (rows.length === 0) return this;
-    const serialized = rows.map(r => this.serializeRow(r));
+    const rowKeyData = rows.map(r => this.getRowKeyData(r));
     const next = new Set(this.selectedKeys);
+    const nextKeyValues = new Map(this.selectedKeyValues);
     // Toggle: if every row is already selected, remove them; otherwise add all.
-    if (serialized.every(k => next.has(k))) {
-      serialized.forEach(k => next.delete(k));
+    if (rowKeyData.every(({ key }) => next.has(key))) {
+      rowKeyData.forEach(({ key: k }) => {
+        next.delete(k);
+        nextKeyValues.delete(k);
+      });
     } else {
-      serialized.forEach(k => next.add(k));
+      rowKeyData.forEach(({ key: k, values }) => {
+        next.add(k);
+        nextKeyValues.set(k, values);
+      });
     }
-    return new KeyedSelection(this.getModel, next);
+    return new KeyedSelection(
+      this.getModel,
+      next,
+      EMPTY_ARRAY,
+      false,
+      null,
+      nextKeyValues
+    );
   }
 
   // Sets invertedSelection=true with an empty exclusion set (all rows selected).
@@ -211,18 +253,23 @@ export class KeyedSelection implements Selection {
 
   /** Returns a new selection with the given row's key toggled. */
   withToggledRow(row: VisibleIndex): KeyedSelection {
-    const key = this.serializeRow(row);
+    const { key, values } = this.getRowKeyData(row);
     const next = new Set(this.selectedKeys);
+    const nextKeyValues = new Map(this.selectedKeyValues);
     if (next.has(key)) {
       next.delete(key);
+      nextKeyValues.delete(key);
     } else {
       next.add(key);
+      nextKeyValues.set(key, values);
     }
     return new KeyedSelection(
       this.getModel,
       next,
       EMPTY_ARRAY,
-      this.invertedSelection
+      this.invertedSelection,
+      null,
+      nextKeyValues
     );
   }
 }

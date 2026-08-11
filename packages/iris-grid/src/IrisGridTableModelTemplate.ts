@@ -1567,6 +1567,104 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
+  /**
+   * Builds a filter condition matching any row whose key columns equal one of the provided key value sets.
+   * Returns null when keyValues is empty (no filter needed — snapshot all or none).
+   */
+  private buildKeyFilter(
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    keyColumns: readonly DhType.Column[]
+  ): DhType.FilterCondition | null {
+    if (keyValues.size === 0) return null;
+    const keyFilters: DhType.FilterCondition[] = [];
+    keyValues.forEach(values => {
+      const colFilters = values.map((val, i) => {
+        const col = keyColumns[i];
+        const filterVal = this.tableUtils.makeFilterRawValue(col.type, val);
+        return col.filter().eq(filterVal);
+      });
+      keyFilters.push(
+        colFilters.length === 1
+          ? colFilters[0]
+          : colFilters.reduce((a, b) => a.and(b))
+      );
+    });
+    return keyFilters.length === 1
+      ? keyFilters[0]
+      : keyFilters.reduce((a, b) => a.or(b));
+  }
+
+  async snapshotByKeys(
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders = false,
+    formatValue: (value: unknown, column: DhType.Column) => unknown = v => v
+  ): Promise<unknown[][]> {
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
+    let filter: DhType.FilterCondition[];
+    if (keyFilter == null) {
+      filter = [];
+    } else if (invertedSelection) {
+      filter = [keyFilter.not()];
+    } else {
+      filter = [keyFilter];
+    }
+
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error('snapshotByKeys is not supported on tree tables');
+    }
+    const copy = await this.table.copy();
+    try {
+      await this.tableUtils.applyFilter(copy, filter);
+      const result: unknown[][] = [];
+      if (includeHeaders) {
+        result.push(columns.map(c => c.name));
+      }
+      if (copy.size > 0) {
+        const sub = copy.createViewportSubscription({
+          rows: { first: 0, last: copy.size - 1 },
+          columns: [...columns],
+        });
+        try {
+          const data = await sub.getViewportData();
+          result.push(
+            ...data.rows.map((rowData: DhType.Row) =>
+              columns.map(col => formatValue(rowData.get(col), col))
+            )
+          );
+        } finally {
+          sub.close();
+        }
+      }
+      return result;
+    } finally {
+      copy.close();
+    }
+  }
+
+  async textSnapshotByKeys(
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders = false,
+    formatValue: (
+      value: unknown,
+      column: DhType.Column,
+      row?: DhType.Row
+    ) => string = v => `${v}`
+  ): Promise<string> {
+    const data = await this.snapshotByKeys(
+      columns,
+      keyValues,
+      invertedSelection,
+      includeHeaders,
+      formatValue
+    );
+    return data.map(row => row.join('\t')).join('\n');
+  }
+
   async valuesTable(
     columns: DhType.Column | readonly DhType.Column[]
   ): Promise<DhType.Table> {

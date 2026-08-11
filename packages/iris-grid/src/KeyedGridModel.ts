@@ -1,3 +1,4 @@
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { ModelIndex } from '@deephaven/grid';
 
 /** Model that exposes key-column metadata for selection purposes. */
@@ -6,6 +7,30 @@ export interface KeyedGridModel {
   readonly selectionKeyColumnIndices: readonly ModelIndex[];
   /** True if each key uniquely identifies at most one row. */
   readonly hasUniqueSelectionKeys: boolean;
+  /**
+   * Snapshots rows matching the given key values.
+   * For invertedSelection=true, snapshots all rows EXCEPT those matching the keys.
+   * For invertedSelection=true with empty keyValues, snapshots the entire table.
+   */
+  snapshotByKeys: (
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders?: boolean,
+    formatValue?: (value: unknown, column: DhType.Column) => unknown
+  ) => Promise<unknown[][]>;
+  /** Text version of snapshotByKeys: rows tab-separated, columns newline-separated. */
+  textSnapshotByKeys: (
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders?: boolean,
+    formatValue?: (
+      value: unknown,
+      column: DhType.Column,
+      row?: DhType.Row
+    ) => string
+  ) => Promise<string>;
 }
 
 /**
