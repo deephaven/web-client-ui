@@ -47,6 +47,7 @@ import {
   isDeletableGridModel,
   isExpandableColumnGridModel,
   type Selection,
+  RangedSelection,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -2482,27 +2483,38 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     formatValues = true,
     error?: string
   ): void {
-    const { model, canCopy } = this.props;
+    const { model } = this.props;
+    const bounded = GridRange.boundedRanges(
+      ranges,
+      model.columnCount,
+      model.rowCount
+    );
+    const selection = new RangedSelection(bounded, () => model);
+    this.copySelection(selection, includeHeaders, formatValues, error);
+  }
+
+  copySelection(
+    selection: Selection,
+    includeHeaders = false,
+    formatValues = true,
+    error?: string
+  ): void {
+    const { canCopy } = this.props;
     const { metricCalculator, movedColumns } = this.state;
     const userColumnWidths = metricCalculator.getUserColumnWidths();
 
     if (canCopy) {
       const copyOperation = {
-        ranges: GridRange.boundedRanges(
-          ranges,
-          model.columnCount,
-          model.rowCount
-        ),
+        selection,
         includeHeaders,
         formatValues,
         movedColumns,
         userColumnWidths,
         error,
       };
-
       this.setState({ copyOperation });
     } else {
-      log.error('Attempted copyRanges for user without copy permission.');
+      log.error('Attempted copySelection for user without copy permission.');
     }
   }
 

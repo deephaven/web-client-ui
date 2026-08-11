@@ -4,8 +4,10 @@ import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,
+  isRangedSelection,
   type ModelSizeMap,
   type MoveOperation,
+  type Selection,
 } from '@deephaven/grid';
 import {
   type CancelablePromise,
@@ -15,10 +17,10 @@ import {
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
-import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
 import type IrisGridModel from './IrisGridModel';
+import { textSnapshotFromSelection } from './IrisGridSelectionUtils';
 
 const log = Log.module('IrisGridCopyHandler');
 
@@ -31,8 +33,8 @@ type CommonCopyOperation = {
   error?: string;
 };
 
-export type CopyRangesOperation = CommonCopyOperation & {
-  ranges: readonly GridRange[];
+export type CopySelectionOperation = CommonCopyOperation & {
+  selection: Selection;
   includeHeaders: boolean;
   formatValues?: boolean;
   userColumnWidths: ModelSizeMap;
@@ -43,13 +45,7 @@ export type CopyHeaderOperation = CommonCopyOperation & {
   columnDepth: number;
 };
 
-export type CopyOperation = CopyRangesOperation | CopyHeaderOperation;
-
-function isCopyRangesOperation(
-  copyOperation: CopyOperation
-): copyOperation is CopyRangesOperation {
-  return (copyOperation as CopyRangesOperation).ranges != null;
-}
+export type CopyOperation = CopySelectionOperation | CopyHeaderOperation;
 
 function isCopyHeaderOperation(
   copyOperation: CopyOperation
@@ -226,9 +222,11 @@ class IrisGridCopyHandler extends Component<
 
     this.setState({ isShown: true, error: undefined });
 
-    if (isCopyRangesOperation(copyOperation)) {
-      const { ranges } = copyOperation;
-      const rowCount = GridRange.rowCount(ranges);
+    if (
+      !isCopyHeaderOperation(copyOperation) &&
+      isRangedSelection(copyOperation.selection)
+    ) {
+      const rowCount = GridRange.rowCount(copyOperation.selection.toRanges());
       this.setState({ rowCount });
 
       if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
@@ -331,30 +329,19 @@ class IrisGridCopyHandler extends Component<
       this.fetchPromise = PromiseUtils.makeCancelable(copyText);
     } else {
       const {
-        ranges,
+        selection,
         includeHeaders,
         userColumnWidths,
         movedColumns,
         formatValues,
-      } = copyOperation;
-      log.debug('startFetch copyRanges', ranges);
+      } = copyOperation as CopySelectionOperation;
+      log.debug('startFetch copySelection', selection);
 
       this.setState({
         buttonState: IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS,
         copyState: IrisGridCopyHandler.COPY_STATES.FETCH_RANGES_IN_PROGRESS,
       });
 
-      const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
-      let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
-      if (hiddenColumns.length > 0) {
-        const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
-        modelRanges = GridRange.subtractRangesFromRanges(
-          modelRanges,
-          subtractRanges
-        );
-      }
-
-      // Remove the hidden columns from the snapshot
       const formatValue =
         formatValues != null && formatValues
           ? (value: unknown, column: dh.Column) =>
@@ -362,7 +349,14 @@ class IrisGridCopyHandler extends Component<
           : (value: unknown) => `${value}`;
 
       this.fetchPromise = PromiseUtils.makeCancelable(
-        model.textSnapshot(modelRanges, includeHeaders, formatValue)
+        textSnapshotFromSelection(
+          selection,
+          model,
+          includeHeaders,
+          formatValue,
+          movedColumns,
+          userColumnWidths
+        )
       );
     }
 
