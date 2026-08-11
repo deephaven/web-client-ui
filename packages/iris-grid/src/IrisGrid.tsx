@@ -2218,7 +2218,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       movedColumns: readonly MoveOperation[],
       floatingLeftColumnCount: number,
       floatingRightColumnCount: number,
-      keyColumnIndices: readonly ModelIndex[],
+      model: IrisGridModel,
       draggingRange?: BoundedAxisRange
     ): readonly ColumnName[] => {
       const floatingColumns: ColumnName[] = [];
@@ -2244,6 +2244,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
       }
 
+      const keyColumnIndices = isKeyedGridModel(model)
+        ? model.selectionKeyColumnIndices
+        : EMPTY_ARRAY;
       const keyColumns = keyColumnIndices
         .map(i => columns[i]?.name)
         .filter((n): n is ColumnName => n != null);
@@ -5587,9 +5590,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   movedColumns,
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount,
-                  isKeyedGridModel(model)
-                    ? model.selectionKeyColumnIndices
-                    : EMPTY_ARRAY,
+                  model,
                   this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
