@@ -12,6 +12,13 @@ export interface KeyedGridModel {
    * Snapshots rows matching the given key values.
    * For invertedSelection=true, snapshots all rows EXCEPT those matching the keys.
    * For invertedSelection=true with empty keyValues, snapshots the entire table.
+   *
+   * @param columns The columns to include in the snapshot.
+   * @param keyValues A map of key column names to their corresponding values.
+   * @param invertedSelection Whether to invert the selection.
+   * @param includeHeaders Whether to include the headers in the snapshot.
+   * @param formatValue Function for formatting the raw value into a string.
+   * @returns A promise that resolves to a 2D array of the snapshot data.
    */
   snapshotByKeys: (
     columns: readonly DhType.Column[],
@@ -21,7 +28,15 @@ export interface KeyedGridModel {
     formatValue?: (value: unknown, column: DhType.Column) => unknown
   ) => Promise<unknown[][]>;
 
-  /** Text version of snapshotByKeys: rows tab-separated, columns newline-separated. */
+  /**
+   * Text version of snapshotByKeys: rows tab-separated, columns newline-separated.
+   * @param columns The columns to include in the snapshot.
+   * @param keyValues A map of key column names to their corresponding values.
+   * @param invertedSelection Whether to invert the selection.
+   * @param includeHeaders Whether to include the headers in the snapshot.
+   * @param formatValue Function for formatting the raw value into a string.
+   * @returns A promise that resolves to a string representation of the snapshot.
+   */
   textSnapshotByKeys: (
     columns: readonly DhType.Column[],
     keyValues: ReadonlyMap<string, readonly unknown[]>,
