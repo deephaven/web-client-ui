@@ -92,6 +92,9 @@ class IrisGridCopyHandler extends Component<
     // Large copy operation, confirmation required
     CONFIRMATION_REQUIRED: 'CONFIRMATION_REQUIRED',
 
+    // Large keyed copy, row count is an estimate
+    KEYED_CONFIRMATION_REQUIRED: 'KEYED_CONFIRMATION_REQUIRED',
+
     // Fetch is currently in progress for copy ranges operation
     FETCH_RANGES_IN_PROGRESS: 'FETCH_RANGES_IN_PROGRESS',
 
@@ -127,6 +130,8 @@ class IrisGridCopyHandler extends Component<
     switch (copyState) {
       case IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED:
         return `Are you sure you want to copy ${rowCount.toLocaleString()} rows to your clipboard?`;
+      case IrisGridCopyHandler.COPY_STATES.KEYED_CONFIRMATION_REQUIRED:
+        return `Keyed selection may be up to ${rowCount.toLocaleString()} rows. Copy to clipboard?`;
       case IrisGridCopyHandler.COPY_STATES.CLICK_REQUIRED:
         return `Fetched ${rowCount.toLocaleString()} rows!`;
       case IrisGridCopyHandler.COPY_STATES.FETCH_ERROR:
@@ -201,7 +206,7 @@ class IrisGridCopyHandler extends Component<
 
     this.stopCopy();
 
-    const { copyOperation } = this.props;
+    const { copyOperation, model } = this.props;
     if (copyOperation == null) {
       log.debug2('No copy operation set, cancelling out');
       this.setState({ isShown: false });
@@ -233,6 +238,17 @@ class IrisGridCopyHandler extends Component<
         this.setState({
           buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
           copyState: IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED,
+        });
+        return;
+      }
+    } else if (!isCopyHeaderOperation(copyOperation)) {
+      const { rowCount } = model;
+      if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
+        this.setState({
+          rowCount,
+          buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
+          copyState:
+            IrisGridCopyHandler.COPY_STATES.KEYED_CONFIRMATION_REQUIRED,
         });
         return;
       }
