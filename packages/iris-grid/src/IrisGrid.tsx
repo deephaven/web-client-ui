@@ -46,6 +46,7 @@ import {
   isExpandableGridModel,
   isDeletableGridModel,
   isExpandableColumnGridModel,
+  isRangedSelection,
   type Selection,
   RangedSelection,
 } from '@deephaven/grid';
@@ -459,9 +460,7 @@ export interface IrisGridState {
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
 
-  // selected range in table
-  selectedRanges: readonly GridRange[];
-  // polymorphic selection object; source of truth for keyed tables
+  // polymorphic selection object; source of truth
   gridSelection: Selection | null;
 
   // Current ongoing copy operation
@@ -916,8 +915,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customColumns: [],
       selectDistinctColumns,
 
-      // selected range in table
-      selectedRanges: [],
       gridSelection: null,
 
       // Current ongoing copy operation
@@ -4991,7 +4988,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       reverse,
       customColumns,
 
-      selectedRanges,
+      gridSelection,
       isTableDownloading,
       tableDownloadStatus,
       tableDownloadProgress,
@@ -5438,7 +5435,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onDownload={this.handleDownloadTable}
               onDownloadStart={this.handleDownloadTableStart}
               onCancel={this.handleCancelDownloadTable}
-              selectedRanges={selectedRanges}
+              selectedRanges={
+                gridSelection != null && isRangedSelection(gridSelection)
+                  ? gridSelection.toRanges()
+                  : []
+              }
               key={OptionType.TABLE_EXPORTER}
             />
           );
