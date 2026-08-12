@@ -1,4 +1,4 @@
-import { EMPTY_ARRAY } from '@deephaven/utils';
+import { EMPTY_ARRAY, assertNotNaN, assertNotNull } from '@deephaven/utils';
 import GridRange from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
@@ -170,6 +170,33 @@ export class RangedSelection implements Selection {
       );
     }
     return this;
+  }
+
+  truncate(maxRows: number): RangedSelection {
+    let rowCount = GridRange.rowCount(this.ranges);
+    if (rowCount <= maxRows) return this;
+    const ranges = [...this.ranges];
+    while (rowCount > maxRows) {
+      const lastRow = ranges.pop();
+      // should never occur, sanity check
+      assertNotNull(lastRow, 'Selected ranges should not be empty');
+      const lastRowSize = GridRange.rowCount([lastRow]);
+      // should never occur, sanity check
+      assertNotNaN(lastRowSize, 'Selected ranges should not be unbounded');
+      if (rowCount - lastRowSize < maxRows) {
+        ranges.push(
+          new GridRange(
+            lastRow.startColumn,
+            lastRow.startRow,
+            lastRow.endColumn,
+            (lastRow.endRow ?? 0) - (rowCount - maxRows)
+          )
+        );
+        break;
+      }
+      rowCount -= lastRowSize;
+    }
+    return new RangedSelection(ranges, this.getModel);
   }
 }
 

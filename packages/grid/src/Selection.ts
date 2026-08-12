@@ -45,4 +45,8 @@ export interface Selection {
   selectAll: () => Selection;
   /** Returns the single selected visible row, or null if zero or multiple rows are selected. */
   getLastSingleSelectedRow: () => VisibleIndex | null;
+  /**
+   * Returns a new Selection containing at most maxRows rows.
+   */
+  truncate: (maxRows: number) => Selection;
 }

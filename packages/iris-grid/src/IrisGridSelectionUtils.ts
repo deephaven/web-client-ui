@@ -75,7 +75,8 @@ export async function textSnapshotFromSelection(
       selection.selectedKeyValues,
       selection.invertedSelection,
       includeHeaders,
-      formatValue
+      formatValue,
+      selection.maxRows
     );
   }
 

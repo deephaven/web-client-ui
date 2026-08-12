@@ -30,7 +30,9 @@ export class KeyedSelection implements Selection {
     readonly selectedKeyValues: ReadonlyMap<
       string,
       readonly unknown[]
-    > = EMPTY_MAP
+    > = EMPTY_MAP,
+    // When non-null, limits snapshot results to this many rows via the viewport subscription.
+    readonly maxRows: number | null = null
   ) {
     // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
     if (overlayRanges.length === 0) {
@@ -249,6 +251,19 @@ export class KeyedSelection implements Selection {
   // eslint-disable-next-line class-methods-use-this
   selectAll(): KeyedSelection {
     return new KeyedSelection(this.getModel, new Set(), EMPTY_ARRAY, true);
+  }
+
+  truncate(maxRows: number): KeyedSelection {
+    if (maxRows === this.maxRows) return this;
+    return new KeyedSelection(
+      this.getModel,
+      this.selectedKeys,
+      this.overlayRanges,
+      this.invertedSelection,
+      this.lastSingleRow,
+      this.selectedKeyValues,
+      maxRows
+    );
   }
 
   /** Returns a new selection with the given row's key toggled. */

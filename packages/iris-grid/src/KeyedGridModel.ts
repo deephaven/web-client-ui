@@ -25,7 +25,8 @@ export interface KeyedGridModel {
     keyValues: ReadonlyMap<string, readonly unknown[]>,
     invertedSelection: boolean,
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: DhType.Column) => unknown
+    formatValue?: (value: unknown, column: DhType.Column) => unknown,
+    maxRows?: number | null
   ) => Promise<unknown[][]>;
 
   /**
@@ -46,7 +47,8 @@ export interface KeyedGridModel {
       value: unknown,
       column: DhType.Column,
       row?: DhType.Row
-    ) => string
+    ) => string,
+    maxRows?: number | null
   ) => Promise<string>;
 
   /**

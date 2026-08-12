@@ -1634,8 +1634,12 @@ class IrisGridTableModelTemplate<
     keyValues: ReadonlyMap<string, readonly unknown[]>,
     invertedSelection: boolean,
     includeHeaders = false,
-    formatValue: (value: unknown, column: DhType.Column) => unknown = v => v
+    formatValue: (value: unknown, column: DhType.Column) => unknown = v => v,
+    maxRows: number | null = null
   ): Promise<unknown[][]> {
+    if (maxRows != null && maxRows < 1) {
+      throw new Error(`maxRows must be at least 1, got ${maxRows}`);
+    }
     if (TableUtils.isTreeTable(this.table)) {
       throw new Error('snapshotByKeys is not supported on tree tables');
     }
@@ -1657,8 +1661,12 @@ class IrisGridTableModelTemplate<
         result.push(columns.map(c => c.name));
       }
       if (filteredTable.size > 0) {
+        const lastRow =
+          maxRows != null
+            ? Math.min(filteredTable.size - 1, maxRows - 1)
+            : filteredTable.size - 1;
         const sub = filteredTable.createViewportSubscription({
-          rows: { first: 0, last: filteredTable.size - 1 },
+          rows: { first: 0, last: lastRow },
           columns: [...columns],
         });
         try {
@@ -1687,14 +1695,16 @@ class IrisGridTableModelTemplate<
       value: unknown,
       column: DhType.Column,
       row?: DhType.Row
-    ) => string = v => `${v}`
+    ) => string = v => `${v}`,
+    maxRows: number | null = null
   ): Promise<string> {
     const data = await this.snapshotByKeys(
       columns,
       keyValues,
       invertedSelection,
       includeHeaders,
-      formatValue
+      formatValue,
+      maxRows
     );
     return data.map(row => row.join('\t')).join('\n');
   }
