@@ -48,6 +48,16 @@ export interface KeyedGridModel {
       row?: DhType.Row
     ) => string
   ) => Promise<string>;
+
+  /**
+   * Returns a filtered copy of the table containing only the rows identified by
+   * `keyValues` (or all rows except those, when `invertedSelection` is true).
+   * Ownership transfers to the caller; pass to `TableSaver` and it will close it.
+   */
+  createFilteredByKeysTable: (
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean
+  ) => Promise<DhType.Table>;
 }
 
 /**

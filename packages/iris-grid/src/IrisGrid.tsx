@@ -46,7 +46,6 @@ import {
   isExpandableGridModel,
   isDeletableGridModel,
   isExpandableColumnGridModel,
-  isRangedSelection,
   type Selection,
   RangedSelection,
 } from '@deephaven/grid';
@@ -5435,11 +5434,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onDownload={this.handleDownloadTable}
               onDownloadStart={this.handleDownloadTableStart}
               onCancel={this.handleCancelDownloadTable}
-              selectedRanges={
-                gridSelection != null && isRangedSelection(gridSelection)
-                  ? gridSelection.toRanges()
-                  : []
-              }
+              selection={gridSelection}
               key={OptionType.TABLE_EXPORTER}
             />
           );

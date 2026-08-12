@@ -15,8 +15,10 @@ import {
 import {
   GridRange,
   GridUtils,
+  isRangedSelection,
   type ModelSizeMap,
   type MoveOperation,
+  type Selection,
 } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -26,6 +28,8 @@ import './TableCsvExporter.scss';
 import Log from '@deephaven/log';
 import type IrisGridModel from '../IrisGridModel';
 import IrisGridUtils from '../IrisGridUtils';
+import { KeyedSelection } from '../KeyedSelection';
+import { isKeyedGridModel } from '../KeyedGridModel';
 
 const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
@@ -48,7 +52,7 @@ interface TableCsvExporterProps {
     useUnformattedValues: boolean
   ) => void;
   onCancel: () => void;
-  selectedRanges: readonly GridRange[];
+  selection: Selection | null;
 }
 
 interface TableCsvExporterState {
@@ -97,7 +101,7 @@ class TableCsvExporter extends Component<
     tableDownloadStatus: '',
     tableDownloadProgress: 0,
     tableDownloadEstimatedTime: null,
-    selectedRanges: [],
+    selection: null,
   };
 
   static getDateString(dh: typeof DhType): string {
@@ -143,7 +147,7 @@ class TableCsvExporter extends Component<
   }
 
   getSnapshotRanges(): GridRange[] {
-    const { model, selectedRanges } = this.props;
+    const { model, selection } = this.props;
     const {
       downloadRowOption,
       customizedDownloadRowOption,
@@ -156,18 +160,22 @@ class TableCsvExporter extends Component<
         snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS:
-        snapshotRanges = selectedRanges
-          .map(range => ({
-            ...range,
-            startColumn: 0,
-            endColumn: columnCount - 1,
-          }))
-          .sort((rangeA, rangeB) => {
-            if (rangeA.startRow != null && rangeB.startRow != null) {
-              return rangeA.startRow - rangeB.startRow;
-            }
-            return 0;
-          }) as GridRange[];
+        // KeyedSelection is handled separately in handleDownloadClick
+        if (selection != null && isRangedSelection(selection)) {
+          snapshotRanges = selection
+            .toRanges()
+            .map(range => ({
+              ...range,
+              startColumn: 0,
+              endColumn: columnCount - 1,
+            }))
+            .sort((a, b) => {
+              if (a.startRow != null && b.startRow != null) {
+                return a.startRow - b.startRow;
+              }
+              return 0;
+            }) as GridRange[];
+        }
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS:
         switch (customizedDownloadRowOption) {
@@ -221,8 +229,14 @@ class TableCsvExporter extends Component<
   }
 
   async handleDownloadClick(): Promise<void> {
-    const { model, isDownloading, onDownloadStart, onDownload, onCancel } =
-      this.props;
+    const {
+      model,
+      selection,
+      isDownloading,
+      onDownloadStart,
+      onDownload,
+      onCancel,
+    } = this.props;
     const { fileName, includeColumnHeaders, useUnformattedValues } = this.state;
 
     if (isDownloading) {
@@ -231,6 +245,52 @@ class TableCsvExporter extends Component<
     }
 
     this.resetDownloadState();
+
+    const { downloadRowOption } = this.state;
+
+    // Keyed selection: filter the table by keys and use the all-rows TableSaver path
+    if (
+      downloadRowOption ===
+        TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
+      selection instanceof KeyedSelection &&
+      isKeyedGridModel(model)
+    ) {
+      if (!this.validateOptionInput()) return;
+      onDownloadStart();
+      try {
+        const filteredTable = await model.createFilteredByKeysTable(
+          selection.selectedKeyValues,
+          selection.invertedSelection
+        );
+        // filteredTable ownership transfers to TableSaver; it closes it in finishDownload/cancelDownload
+        const snapshotRanges = [
+          new GridRange(0, 0, model.columnCount - 1, filteredTable.size - 1),
+        ];
+        const modelRanges = this.getModelRanges(snapshotRanges);
+        const tableSubscription = filteredTable.setViewport(0, 0);
+        await tableSubscription.getViewportData();
+        onDownload(
+          fileName,
+          filteredTable,
+          tableSubscription,
+          snapshotRanges,
+          modelRanges,
+          includeColumnHeaders,
+          useUnformattedValues
+        );
+      } catch (error) {
+        log.error('CSV download failed', error);
+        this.setState({
+          errorMessage: (
+            <p>
+              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
+            </p>
+          ),
+        });
+        onCancel();
+      }
+      return;
+    }
 
     const snapshotRanges = this.getSnapshotRanges();
     const modelRanges = this.getModelRanges(snapshotRanges);
@@ -297,13 +357,13 @@ class TableCsvExporter extends Component<
   }
 
   validateOptionInput(): boolean {
-    const { selectedRanges } = this.props;
+    const { selection } = this.props;
     const { downloadRowOption, customizedDownloadRows } = this.state;
 
     if (
       downloadRowOption ===
         TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
-      selectedRanges.length === 0
+      (selection == null || selection.isEmpty())
     ) {
       this.setState({
         errorMessage: (
@@ -340,7 +400,7 @@ class TableCsvExporter extends Component<
       isDownloading,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
-      selectedRanges,
+      selection,
       tableDownloadStatus,
     } = this.props;
     const {
@@ -384,8 +444,10 @@ class TableCsvExporter extends Component<
             >
               Only Selected Rows
               <span className="text-muted ml-2">
-                {selectedRanges.length > 0
-                  ? `(${GridRange.rowCount(selectedRanges)
+                {selection != null &&
+                isRangedSelection(selection) &&
+                !selection.isEmpty()
+                  ? `(${GridRange.rowCount(selection.toRanges())
                       .toString()
                       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`
                   : null}

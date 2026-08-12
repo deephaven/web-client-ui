@@ -1602,6 +1602,29 @@ class IrisGridTableModelTemplate<
       : keyFilters[0].or(...keyFilters.slice(1));
   }
 
+  async createFilteredByKeysTable(
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean
+  ): Promise<DhType.Table> {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error(
+        'createFilteredByKeysTable is not supported on tree tables'
+      );
+    }
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
+    let filter: DhType.FilterCondition[];
+    if (keyFilter == null) {
+      // Inverted + empty exclusion = all rows; normal + empty = no rows (filter clears everything)
+      filter = [];
+    } else {
+      filter = invertedSelection ? [keyFilter.not()] : [keyFilter];
+    }
+    const copy = await (this.table as DhType.Table).copy();
+    await this.tableUtils.applyFilter(copy, filter);
+    return copy;
+  }
+
   /**
    * Implementation of snapshotByKeys.
    * This works by filtering the table based on the key values and then taking a snapshot of the entire filtered table.
@@ -1619,33 +1642,23 @@ class IrisGridTableModelTemplate<
 
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
-    let filter: DhType.FilterCondition[];
-    if (keyFilter == null) {
-      if (!invertedSelection) {
-        // Empty normal selection — nothing to copy
-        return includeHeaders ? [columns.map(c => c.name)] : [];
-      }
-      // Inverted + empty exclusion set = all rows selected
-      filter = [];
-    } else if (invertedSelection) {
-      // For inverted selection, negate the key filter
-      filter = [keyFilter.not()];
-    } else {
-      filter = [keyFilter];
+    if (keyFilter == null && !invertedSelection) {
+      // Empty normal selection — nothing to copy
+      return includeHeaders ? [columns.map(c => c.name)] : [];
     }
 
-    // Create a copy of the table to apply the filter and retrieve the snapshot
-    const copy = await this.table.copy();
+    const filteredTable = await this.createFilteredByKeysTable(
+      keyValues,
+      invertedSelection
+    );
     try {
-      await this.tableUtils.applyFilter(copy, filter);
       const result: unknown[][] = [];
       if (includeHeaders) {
         result.push(columns.map(c => c.name));
       }
-      if (copy.size > 0) {
-        // Snapshot the entire filtered table
-        const sub = copy.createViewportSubscription({
-          rows: { first: 0, last: copy.size - 1 },
+      if (filteredTable.size > 0) {
+        const sub = filteredTable.createViewportSubscription({
+          rows: { first: 0, last: filteredTable.size - 1 },
           columns: [...columns],
         });
         try {
@@ -1661,7 +1674,7 @@ class IrisGridTableModelTemplate<
       }
       return result;
     } finally {
-      copy.close();
+      filteredTable.close();
     }
   }
 
