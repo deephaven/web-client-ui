@@ -49,8 +49,6 @@ import {
   ClipboardPermissionsDeniedError,
   ClipboardUnavailableError,
   TextUtils,
-  assertNotEmpty,
-  assertNotNaN,
   assertNotNull,
   copyToClipboard,
   readFromClipboard,
@@ -65,10 +63,12 @@ import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import type IrisGrid from '../IrisGrid';
 import type IrisGridModel from '../IrisGridModel';
+import IrisGridUtils from '../IrisGridUtils';
 import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
 import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
 import { KeyedSelection, type GetKeyedModel } from '../KeyedSelection';
+import { snapshotFromSelection } from '../IrisGridSelectionUtils';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -624,94 +624,68 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   // moved out of getCellActions since snapshots are async
   async getCellFilterActions(
     modelColumn: ModelIndex,
-    grid: Grid,
     gridPoint: GridPoint
   ): Promise<ContextAction[]> {
     const { dh, irisGrid } = this;
-    const { row: rowIndex } = gridPoint;
+    const { row: rowIndex, column: columnIndex } = gridPoint;
     const { model } = irisGrid.props;
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
-    const { getSelectedRanges } = grid;
     assertNotNull(modelRow);
     const sourceCell = model.sourceForCell(modelColumn, modelRow);
     const { column: sourceColumn, row: sourceRow } = sourceCell;
     const column = columns[sourceColumn];
 
-    if (column == null || rowIndex == null) return [];
+    if (column == null || rowIndex == null || columnIndex == null) return [];
     if (!model.isFilterable(sourceColumn)) return [];
 
-    const { quickFilters } = irisGrid.state;
+    const { quickFilters, movedColumns } = irisGrid.state;
+    const userColumnWidths =
+      irisGrid.state.metricCalculator.getUserColumnWidths();
+    // Read directly from Grid state to avoid the React-async lag between grid.state.selection and irisGrid.state.gridSelection
+    const gridSelection = irisGrid.grid?.getSelection() ?? null;
     const theme = irisGrid.getTheme();
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
-    let selectedRanges = [...getSelectedRanges()];
-    // no selected range (i.e. right clicked a cell without highlighting it)
-    // although GridSelectionMouseHandler does change selectedRanges, state isn't updated in
-    //   time for getSelectedRanges to show the selected cell
-    if (selectedRanges.length === 0) {
-      selectedRanges.push(
-        new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow)
+    const makeSingleCellSelection = (): RangedSelection =>
+      new RangedSelection(
+        [new GridRange(columnIndex, rowIndex, columnIndex, rowIndex)],
+        () => model
       );
-    }
 
-    // - this block truncates the selected ranges to MAX_MULTISELECT_ROWS rows
-    //   - NOT first MAX_MULTISELECT_ROWS rows after the first row
-    //   - NOT first MAX_MULTISELECT_ROWS unique values (prevent case where there are a small
-    //     amount of values, but a large amount of rows with those values)
-    if (GridRange.containsCell(selectedRanges, sourceColumn, sourceRow)) {
-      let rowCount = GridRange.rowCount(selectedRanges);
-      while (rowCount > MAX_MULTISELECT_ROWS) {
-        const lastRow = selectedRanges.pop();
-        // should never occur, sanity check
-        assertNotNull(lastRow, 'Selected ranges should not be empty');
-
-        const lastRowSize = GridRange.rowCount([lastRow]);
-        // should never occur, sanity check
-        assertNotNaN(lastRowSize, 'Selected ranges should not be unbounded');
-
-        // if removing the last rows makes it dip below the max, then need to
-        //   bring it back but truncated
-        if (rowCount - lastRowSize < MAX_MULTISELECT_ROWS) {
-          // nullish operator to make TS happy, but the check above should prevent this
-          selectedRanges.push(
-            new GridRange(
-              lastRow.startColumn,
-              lastRow.startRow,
-              lastRow.endColumn,
-              (lastRow.endRow ?? 0) - (rowCount - MAX_MULTISELECT_ROWS)
-            )
-          );
-          break;
-        }
-        rowCount -= lastRowSize;
-      }
+    let effectiveSelection: Selection;
+    if (gridSelection == null || gridSelection.isEmpty()) {
+      effectiveSelection = makeSingleCellSelection();
+    } else if (gridSelection.isCellSelected(rowIndex, columnIndex)) {
+      effectiveSelection = gridSelection.truncate(MAX_MULTISELECT_ROWS);
     } else {
-      // if the block is not in the selected ranges, meaning the user must've right-clicked
-      // outside the selected ranges`
-      selectedRanges = [
-        new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow),
-      ];
+      effectiveSelection = makeSingleCellSelection();
     }
 
-    // this should be non empty
-    //  - valid selected ranges will always have a startRow and endRow
-    //  - if there are no selected ranges, then one with sourceColumn/Row is added
-    assertNotEmpty(selectedRanges);
+    const snapshot = await snapshotFromSelection(
+      effectiveSelection,
+      model,
+      movedColumns,
+      userColumnWidths
+    );
+
+    // For full-row snapshots, computeModelRanges removes hidden columns so the
+    // model-index sourceColumn must be offset by the count of hidden columns before it.
+    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+    const snapshotColumnIndex =
+      sourceColumn - hiddenColumns.filter(h => h < sourceColumn).length;
 
     // get the snapshot values, but ignore all null/undefined values
-    const snapshot = await model.snapshot(selectedRanges);
     const snapshotValues = new Set();
     for (let i = 0; i < snapshot.length; i += 1) {
       if (snapshot[i].length === 1) {
-        // if the selected range has start/end columns defined, so the snapshot is a 1D array of the row
+        // single-column snapshot (single-cell selection path)
         if (snapshot[i][0] != null) {
           snapshotValues.add(snapshot[i][0]);
         }
-      } else if (snapshot[i][sourceColumn] != null) {
-        // if the selected range is an entire row
-        snapshotValues.add(snapshot[i][sourceColumn]);
+      } else if (snapshot[i][snapshotColumnIndex] != null) {
+        snapshotValues.add(snapshot[i][snapshotColumnIndex]);
       }
     }
     // if snapshotValues is empty here, it means all of the snapshot's values were null/undefined
@@ -1052,7 +1026,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       // grid body context menu options
       if (modelColumn != null && modelRow != null) {
         actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
-        actions.push(this.getCellFilterActions(modelColumn, grid, gridPoint));
+        actions.push(this.getCellFilterActions(modelColumn, gridPoint));
       }
 
       // blank space context menu options
