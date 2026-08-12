@@ -83,8 +83,14 @@ export class ConsoleInput extends PureComponent<
     this.loadMoreHistory();
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: ConsoleInputProps): void {
+    const { session } = this.props;
     this.layoutEditor();
+    // If the session has changed, we need to destroy the old command editor and create a new one for the new session
+    if (prevProps.session !== session) {
+      this.destroyCommandEditor(prevProps.session);
+      this.initCommandEditor();
+    }
   }
 
   componentWillUnmount(): void {
@@ -94,10 +100,13 @@ export class ConsoleInput extends PureComponent<
       this.loadingPromise.cancel();
     }
 
-    this.destroyCommandEditor();
+    const { session } = this.props;
+    this.destroyCommandEditor(session);
   }
 
   cancelListener?: () => void;
+
+  openDocumentCleanup?: monaco.IDisposable;
 
   resizeObserver: ResizeObserver;
 
@@ -198,7 +207,10 @@ export class ConsoleInput extends PureComponent<
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
     MonacoUtils.setEOL(this.commandEditor);
-    MonacoUtils.openDocument(this.commandEditor, session);
+    this.openDocumentCleanup = MonacoUtils.openDocument(
+      this.commandEditor,
+      session
+    );
 
     this.commandEditor.onDidChangeModelContent(() => {
       const value = this.commandEditor?.getValue();
@@ -294,9 +306,15 @@ export class ConsoleInput extends PureComponent<
     this.setState({ model: this.commandEditor.getModel() });
   }
 
-  destroyCommandEditor(): void {
-    const { session } = this.props;
+  /**
+   * Closes the monaco document, disposes the Monaco editor, and clears all associated cleanup state.
+   *
+   * @param session The session that originally received `openDocument` for this editor
+   */
+  destroyCommandEditor(session: dh.IdeSession): void {
     if (this.commandEditor) {
+      this.openDocumentCleanup?.dispose();
+      this.openDocumentCleanup = undefined;
       MonacoUtils.closeDocument(this.commandEditor, session);
       this.commandEditor.dispose();
       this.commandEditor = undefined;
