@@ -269,11 +269,16 @@ class IrisGridTreeTableModel
     if (hasChildren) {
       for (let i = 0; i < this.virtualColumns.length; i += 1) {
         const key = i + (depth - 1) + (this.virtualColumns.length - 1);
-        const cellData = modifiedData.get(key);
-        if (cellData == null) {
-          log.warn('Missing key data for virtual column', i, depth, key, row);
-        } else {
-          modifiedData.set(i, cellData);
+        // The root/total row (depth 1) has no grouping key, so `key` points at
+        // a virtual column rather than a real grouped source column. Skip it
+        // instead of warning.
+        if (key >= this.virtualColumns.length) {
+          const cellData = modifiedData.get(key);
+          if (cellData == null) {
+            log.warn('Missing key data for virtual column', i, depth, key, row);
+          } else {
+            modifiedData.set(i, cellData);
+          }
         }
       }
     }
@@ -359,17 +364,26 @@ class IrisGridTreeTableModel
     if (column >= this.virtualColumns.length) {
       return { column, row };
     }
-    const depth = this.depthForRow(row);
-    return { column: column + depth, row };
+    return { column: this.virtualSourceColumnIndex(column, row), row };
   }
 
   sourceColumn(column: ModelIndex, row: ModelIndex): DhType.Column {
     if (column >= this.virtualColumns.length) {
       return super.sourceColumn(column, row);
     }
+    return this.columns[this.virtualSourceColumnIndex(column, row)];
+  }
 
+  /**
+   * Get the index of the grouped column that the virtual group column proxies
+   * for the given cell.
+   */
+  private virtualSourceColumnIndex(
+    column: ModelIndex,
+    row: ModelIndex
+  ): ModelIndex {
     const depth = this.depthForRow(row);
-    return this.columns[column + depth];
+    return Math.min(column + depth, this.groupedColumns.length - 1);
   }
 
   getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {

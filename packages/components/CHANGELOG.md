@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.2](https://github.com/deephaven/web-client-ui/compare/v1.27.1...v1.27.2) (2026-08-12)
+
+### Bug Fixes
+
+- DH-23165: Fix spectrum Picker closing Popper dialogs on open ([#2726](https://github.com/deephaven/web-client-ui/issues/2726)) ([f385acf](https://github.com/deephaven/web-client-ui/commit/f385acf99bd54217fc46ca6e8ce85f85d71af2ea))
+
 ## [1.27.0](https://github.com/deephaven/web-client-ui/compare/v1.26.1...v1.27.0) (2026-07-30)
 
 ### Features

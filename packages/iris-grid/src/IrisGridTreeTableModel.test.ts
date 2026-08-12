@@ -63,6 +63,93 @@ describe('IrisGridTreeTableModel virtual columns', () => {
   });
 });
 
+describe('IrisGridTreeTableModel extractViewportRow group column', () => {
+  const columns = irisGridTestUtils.makeColumns();
+  const groupedColumns = columns.slice(0, 2);
+
+  function makeTreeRow(
+    depth: number,
+    hasChildren: boolean,
+    values: Record<string, unknown> = {}
+  ): DhType.TreeRow {
+    return {
+      depth,
+      hasChildren,
+      isExpanded: false,
+      get: jest.fn((column: DhType.Column) => values[column.name] ?? null),
+      getFormat: jest.fn(() => ({})),
+    } as unknown as DhType.TreeRow;
+  }
+
+  it('leaves the group column empty for the root/total row (depth 1)', () => {
+    const table = irisGridTestUtils.makeTreeTable(columns, [], groupedColumns);
+    const model = new IrisGridTreeTableModel(dh, table);
+
+    const row = makeTreeRow(1, true);
+    const result = model.extractViewportRow(row, groupedColumns);
+
+    // Virtual group column (index 0) has no source column for the root row
+    expect(result.data.get(0)).toBeUndefined();
+  });
+
+  it('copies the depth-appropriate grouped value into the group column for grouped rows', () => {
+    const table = irisGridTestUtils.makeTreeTable(columns, [], groupedColumns);
+    const model = new IrisGridTreeTableModel(dh, table);
+
+    // depth 2 => first grouped column (model index 1)
+    const row = makeTreeRow(2, true, {
+      [groupedColumns[0].name]: 'group-value',
+    });
+    const result = model.extractViewportRow(row, groupedColumns);
+
+    expect(result.data.get(0)?.value).toBe('group-value');
+  });
+});
+
+describe('IrisGridTreeTableModel virtual group column source', () => {
+  const columns = irisGridTestUtils.makeColumns();
+  const groupedColumns = columns.slice(0, 2);
+
+  function makeModel(): IrisGridTreeTableModel {
+    const table = irisGridTestUtils.makeTreeTable(columns, [], groupedColumns);
+    return new IrisGridTreeTableModel(dh, table);
+  }
+
+  it('maps the group column to the depth-appropriate grouped column', () => {
+    const model = makeModel();
+    // model.columns = [virtual, col0, col1, ...]; model.groupedColumns length is 3
+    jest.spyOn(model, 'depthForRow').mockReturnValue(0); // root
+    expect(model.sourceColumn(0, 0)).toBe(model.columns[0]);
+
+    jest.spyOn(model, 'depthForRow').mockReturnValue(1); // first grouped level
+    expect(model.sourceColumn(0, 0)).toBe(model.columns[1]);
+
+    jest.spyOn(model, 'depthForRow').mockReturnValue(2); // second grouped level
+    expect(model.sourceColumn(0, 0)).toBe(model.columns[2]);
+  });
+
+  it('clamps sourceColumn to the deepest grouped column for leaf rows', () => {
+    const model = makeModel();
+    // Leaf rows have a depth beyond the last grouped column
+    jest.spyOn(model, 'depthForRow').mockReturnValue(3);
+    const column = model.sourceColumn(0, 0);
+    expect(column).toBeDefined();
+    expect(column).toBe(model.columns[2]);
+  });
+
+  it('clamps sourceForCell to the deepest grouped column for leaf rows', () => {
+    const model = makeModel();
+    jest.spyOn(model, 'depthForRow').mockReturnValue(5);
+    expect(model.sourceForCell(0, 0)).toEqual({ column: 2, row: 0 });
+  });
+
+  it('does not throw in textAlignForCell for the group column on leaf rows', () => {
+    const model = makeModel();
+    jest.spyOn(model, 'depthForRow').mockReturnValue(3);
+    expect(() => model.textAlignForCell(0, 0)).not.toThrow();
+  });
+});
+
 describe('IrisGridTreeTableModel layoutHints', () => {
   test('null layout hints by default', () => {
     const columns = irisGridTestUtils.makeColumns();
