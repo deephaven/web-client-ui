@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.2](https://github.com/deephaven/web-client-ui/compare/v1.27.1...v1.27.2) (2026-08-12)
+
+### Bug Fixes
+
+- DH-20535: Fix missing key data warning in IrisGridTreeTableModel ([#2733](https://github.com/deephaven/web-client-ui/issues/2733)) ([3b8ff7f](https://github.com/deephaven/web-client-ui/commit/3b8ff7f91d6a13944e25b9eed2567eda693e7961))
+- DH-23165: Fix spectrum Picker closing Popper dialogs on open ([#2726](https://github.com/deephaven/web-client-ui/issues/2726)) ([f385acf](https://github.com/deephaven/web-client-ui/commit/f385acf99bd54217fc46ca6e8ce85f85d71af2ea))
+
 ## [1.27.1](https://github.com/deephaven/web-client-ui/compare/v1.27.0...v1.27.1) (2026-08-05)
 
 **Note:** Version bump only for package @deephaven/web-client-ui
