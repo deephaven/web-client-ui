@@ -268,11 +268,15 @@ export class KeyedSelection implements Selection {
 
   /**
    * Returns the exact committed row count when each key maps to one row,
-   * or null when the count is unknown (inverted selection or non-unique keys).
+   * or null when the count is unknown (non-unique keys).
+   * For inverted selections the count is approximate on ticking tables.
    */
   getUniqueRowCount(): number | null {
-    if (this.invertedSelection || !this.getModel().hasUniqueSelectionKeys) {
+    if (!this.getModel().hasUniqueSelectionKeys) {
       return null;
+    }
+    if (this.invertedSelection) {
+      return this.getModel().rowCount - this.selectedKeys.size;
     }
     return this.selectedKeys.size;
   }
