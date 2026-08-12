@@ -12,6 +12,80 @@ import { isKeyedGridModel } from './KeyedGridModel';
 import { KeyedSelection } from './KeyedSelection';
 import IrisGridUtils from './IrisGridUtils';
 
+/** Applies moved-column and hidden-column logic to produce model ranges. */
+function computeModelRanges(
+  ranges: readonly GridRange[],
+  movedColumns: readonly MoveOperation[],
+  userColumnWidths: ModelSizeMap
+): readonly GridRange[] {
+  const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+  let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
+  if (hiddenColumns.length > 0) {
+    const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
+    modelRanges = GridRange.subtractRangesFromRanges(
+      modelRanges,
+      subtractRanges
+    );
+  }
+  return modelRanges;
+}
+
+/** Returns the ordered visible columns after applying moved and hidden column logic. */
+function computeVisibleColumns(
+  model: IrisGridModel,
+  movedColumns: readonly MoveOperation[],
+  userColumnWidths: ModelSizeMap
+): readonly DhType.Column[] {
+  const allColumnsRange = [new GridRange(0, 0, model.columnCount - 1, 0)];
+  const columnRanges = computeModelRanges(
+    allColumnsRange,
+    movedColumns,
+    userColumnWidths
+  );
+  return IrisGridUtils.columnsFromRanges(columnRanges, model.columns);
+}
+
+/**
+ * Takes a snapshot of the current selection as a 2-D array of raw values.
+ * No formatValue or includeHeaders — use textSnapshotFromSelection for formatted output.
+ */
+export async function snapshotFromSelection(
+  selection: Selection,
+  model: IrisGridModel,
+  movedColumns: readonly MoveOperation[],
+  userColumnWidths: ModelSizeMap
+): Promise<readonly unknown[][]> {
+  if (isRangedSelection(selection)) {
+    const modelRanges = computeModelRanges(
+      selection.toRanges(),
+      movedColumns,
+      userColumnWidths
+    );
+    return model.snapshot(modelRanges);
+  }
+
+  if (selection instanceof KeyedSelection) {
+    if (!isKeyedGridModel(model)) {
+      throw new Error('KeyedSelection requires a KeyedGridModel');
+    }
+    const columns = computeVisibleColumns(
+      model,
+      movedColumns,
+      userColumnWidths
+    );
+    return model.snapshotByKeys(
+      columns,
+      selection.selectedKeyValues,
+      selection.invertedSelection,
+      false,
+      v => v,
+      selection.maxRows
+    );
+  }
+
+  throw new Error(`Unsupported selection type for snapshotFromSelection`);
+}
+
 /**
  * Takes a snapshot of the current selection as a tab/newline-separated string.
  *
@@ -38,16 +112,11 @@ export async function textSnapshotFromSelection(
   userColumnWidths: ModelSizeMap
 ): Promise<string> {
   if (isRangedSelection(selection)) {
-    const ranges = selection.toRanges();
-    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
-    let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
-    if (hiddenColumns.length > 0) {
-      const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
-      modelRanges = GridRange.subtractRangesFromRanges(
-        modelRanges,
-        subtractRanges
-      );
-    }
+    const modelRanges = computeModelRanges(
+      selection.toRanges(),
+      movedColumns,
+      userColumnWidths
+    );
     return model.textSnapshot(modelRanges, includeHeaders, formatValue);
   }
 
@@ -55,20 +124,10 @@ export async function textSnapshotFromSelection(
     if (!isKeyedGridModel(model)) {
       throw new Error('KeyedSelection requires a KeyedGridModel');
     }
-    // Compute ordered, visible columns (same hidden/moved logic as the ranged path)
-    const allColumnsRange = [new GridRange(0, 0, model.columnCount - 1, 0)];
-    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
-    let columnRanges = GridUtils.getModelRanges(allColumnsRange, movedColumns);
-    if (hiddenColumns.length > 0) {
-      const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
-      columnRanges = GridRange.subtractRangesFromRanges(
-        columnRanges,
-        subtractRanges
-      );
-    }
-    const columns = IrisGridUtils.columnsFromRanges(
-      columnRanges,
-      model.columns
+    const columns = computeVisibleColumns(
+      model,
+      movedColumns,
+      userColumnWidths
     );
     return model.textSnapshotByKeys(
       columns,
