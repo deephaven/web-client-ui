@@ -969,6 +969,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       settings,
       model,
       customFilters,
+      quickFilters,
       sorts,
       getMetricCalculator,
     } = this.props;
@@ -1025,6 +1026,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
     if (sorts !== prevProps.sorts) {
       this.updateSorts(sorts);
+    }
+    if (quickFilters !== prevProps.quickFilters) {
+      this.updateQuickFilters(quickFilters);
     }
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
     if (loadingScrimStartTime != null && loadingScrimFinishTime != null) {
@@ -2995,6 +2999,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   updateSorts(sorts: readonly SortDescriptor[]): void {
     this.startLoading('Sorting...');
     this.setState({ sorts });
+    this.grid?.forceUpdate();
+  }
+
+  updateQuickFilters(quickFilters: ReadonlyQuickFilterMap | null): void {
+    const { quickFilters: currentQuickFilters } = this.state;
+    if (quickFilters == null) {
+      if (currentQuickFilters.size === 0) {
+        return;
+      }
+    } else if (quickFilters === currentQuickFilters) {
+      return;
+    }
+
+    this.startLoading('Filtering...', { resetRanges: true });
+    this.setState({ quickFilters: quickFilters ?? EMPTY_MAP });
     this.grid?.forceUpdate();
   }
 

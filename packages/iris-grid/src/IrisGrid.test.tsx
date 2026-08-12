@@ -12,6 +12,7 @@ import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import type IrisGridProxyModel from './IrisGridProxyModel';
 import { isPartitionedGridModel } from './PartitionedGridModel';
+import { type ReadonlyQuickFilterMap } from './CommonTypes';
 
 jest.mock('@deephaven/grid', () => ({
   ...jest.requireActual('@deephaven/grid'),
@@ -791,4 +792,101 @@ describe('Advanced Filter', () => {
       expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
     }
   );
+});
+
+describe('updateQuickFilters', () => {
+  it('stores the map reference directly (no cloning) when called with a map', () => {
+    const component = makeComponent();
+    const filterMap: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    act(() => {
+      component.updateQuickFilters(filterMap);
+    });
+    expect(component.state.quickFilters).toBe(filterMap);
+  });
+
+  it('stores EMPTY_MAP when called with null', () => {
+    const component = makeComponent();
+    // Seed a non-empty map first so we can confirm it is replaced
+    act(() => {
+      component.updateQuickFilters(
+        new Map([[0, { text: 'foo', filter: null }]])
+      );
+    });
+    act(() => {
+      component.updateQuickFilters(null);
+    });
+    expect(component.state.quickFilters.size).toBe(0);
+  });
+
+  it('re-applies quickFilters when the prop reference changes', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const filter1: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const filter2: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'b', filter: null }],
+    ]);
+
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter1}
+      />
+    );
+
+    act(() => undefined); // flush
+
+    // Swap to a new reference — componentDidUpdate should call updateQuickFilters
+    jest.spyOn(ref.current!, 'updateQuickFilters');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter2}
+      />
+    );
+
+    expect(ref.current!.updateQuickFilters).toHaveBeenCalledWith(filter2);
+    expect(ref.current!.state.quickFilters).toBe(filter2);
+  });
+
+  it('does NOT re-apply quickFilters when the same reference is passed again', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const filter: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter}
+      />
+    );
+
+    act(() => undefined);
+
+    jest.spyOn(ref.current!, 'updateQuickFilters');
+
+    // Re-render with the exact same reference — should be a no-op
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter}
+      />
+    );
+
+    expect(ref.current!.updateQuickFilters).not.toHaveBeenCalled();
+  });
 });
