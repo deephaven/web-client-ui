@@ -1,10 +1,10 @@
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
-import type {
-  BoundedAxisRange,
+import {
+  type BoundedAxisRange,
   GridRange,
-  ModelIndex,
-  Selection,
-  VisibleIndex,
+  type ModelIndex,
+  type Selection,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
@@ -32,7 +32,9 @@ export class KeyedSelection implements Selection {
       readonly unknown[]
     > = EMPTY_MAP,
     // When non-null, limits snapshot results to this many rows via the viewport subscription.
-    readonly maxRows: number | null = null
+    readonly maxRows: number | null = null,
+    // When non-null, key values for this row range are being resolved asynchronously.
+    readonly pendingRows: GridRange | null = null
   ) {
     // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
     if (overlayRanges.length === 0) {
@@ -66,6 +68,8 @@ export class KeyedSelection implements Selection {
   isEmpty(): boolean {
     // Inverted selection means all rows are selected — never empty.
     if (this.invertedSelection) return false;
+    // Pending resolution means a selection is in progress — not empty.
+    if (this.pendingRows != null) return false;
     return this.selectedKeys.size === 0 && this.gestureKeys.size === 0;
   }
 
@@ -169,6 +173,20 @@ export class KeyedSelection implements Selection {
     }
 
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
+    // Multi-row shift selections may span out-of-viewport rows where valueForCell
+    // returns null. Defer those to async resolution in IrisGrid.
+    if (rows.length > 1) {
+      return new KeyedSelection(
+        this.getModel,
+        new Set(),
+        EMPTY_ARRAY,
+        false,
+        null,
+        EMPTY_MAP,
+        this.maxRows,
+        new GridRange(null, rows[0], null, rows[rows.length - 1])
+      );
+    }
     const rowKeyData = rows.map(r => this.getRowKeyData(r));
     const serialized = rowKeyData.map(({ key }) => key);
     const nextKeyValues = new Map(this.selectedKeyValues);
@@ -266,13 +284,25 @@ export class KeyedSelection implements Selection {
     );
   }
 
+  /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
+  resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
+    return new KeyedSelection(
+      this.getModel,
+      new Set(keyValues.keys()),
+      EMPTY_ARRAY,
+      false,
+      null,
+      keyValues
+    );
+  }
+
   /**
    * Returns the exact committed row count when each key maps to one row,
-   * or null when the count is unknown (non-unique keys).
+   * or null when the count is unknown (non-unique keys or pending resolution).
    * For inverted selections the count is approximate on ticking tables.
    */
   getUniqueRowCount(): number | null {
-    if (!this.getModel().hasUniqueSelectionKeys) {
+    if (this.pendingRows != null || !this.getModel().hasUniqueSelectionKeys) {
       return null;
     }
     if (this.invertedSelection) {

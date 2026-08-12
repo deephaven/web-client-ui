@@ -60,6 +60,16 @@ export interface KeyedGridModel {
     keyValues: ReadonlyMap<string, readonly unknown[]>,
     invertedSelection: boolean
   ) => Promise<DhType.Table>;
+
+  /**
+   * Fetches the key-column values for every row in [startRow, endRow] from the
+   * live table. Used to resolve pending shift-click selections that span
+   * out-of-viewport rows.
+   */
+  fetchKeyValuesForRowRange: (
+    startRow: number,
+    endRow: number
+  ) => Promise<ReadonlyMap<string, readonly unknown[]>>;
 }
 
 /**

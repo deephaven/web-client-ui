@@ -1623,6 +1623,29 @@ class IrisGridTableModelTemplate<
     return copy;
   }
 
+  async fetchKeyValuesForRowRange(
+    startRow: number,
+    endRow: number
+  ): Promise<ReadonlyMap<string, readonly unknown[]>> {
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    // Use a secondary viewport subscription on the live table to avoid a copy/filter round-trip.
+    const sub = (this.table as DhType.Table).createViewportSubscription({
+      rows: { first: startRow, last: endRow },
+      columns: keyColumns,
+    });
+    try {
+      const data = await sub.getViewportData();
+      const result = new Map<string, readonly unknown[]>();
+      data.rows.forEach((row: DhType.Row) => {
+        const values = keyColumns.map(col => row.get(col));
+        result.set(JSON.stringify(values), values);
+      });
+      return result;
+    } finally {
+      sub.close();
+    }
+  }
+
   /**
    * Implementation of snapshotByKeys.
    * This works by filtering the table based on the key values and then taking a snapshot of the entire filtered table.

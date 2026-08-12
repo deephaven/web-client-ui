@@ -1088,6 +1088,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState({ selection: selection.trimmed() });
   }
 
+  /** Sets the selection directly, bypassing mouse/keyboard gesture state. */
+  setSelection(selection: Selection): void {
+    this.setState({ selection });
+  }
+
   /** Gets the current selection */
   getSelection(): Selection {
     const { selection } = this.state;

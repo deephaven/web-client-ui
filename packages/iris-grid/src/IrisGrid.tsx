@@ -3686,6 +3686,29 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({ gotoRow: `${singleRow + 1}` });
     }
     onSelectionChange?.(selection);
+    if (selection instanceof KeyedSelection && selection.pendingRows != null) {
+      this.resolveKeyedSelection(selection);
+    }
+  }
+
+  /** Resolves a pending shift-click KeyedSelection by fetching key values from the server. */
+  async resolveKeyedSelection(pending: KeyedSelection): Promise<void> {
+    const { model } = this.props;
+    if (!isKeyedGridModel(model)) return;
+    const { pendingRows } = pending;
+    if (pendingRows?.startRow == null || pendingRows?.endRow == null) return;
+    try {
+      const keyValues = await model.fetchKeyValuesForRowRange(
+        pendingRows.startRow,
+        pendingRows.endRow
+      );
+      // Bail if the user changed the selection while we were fetching.
+      if (this.grid?.getSelection() !== pending) return;
+      const resolved = pending.resolve(keyValues);
+      this.grid.setSelection(resolved);
+    } catch (e) {
+      log.error('resolveKeyedSelection failed', e);
+    }
   }
 
   handleMovedColumnsChanged(
