@@ -104,6 +104,10 @@ class TableCsvExporter extends Component<
     selection: null,
   };
 
+  static formatRowCount(count: number): string {
+    return count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+  }
+
   static getDateString(dh: typeof DhType): string {
     return dh.i18n.DateTimeFormat.format(
       TableCsvExporter.FILENAME_DATE_FORMAT,
@@ -144,6 +148,22 @@ class TableCsvExporter extends Component<
       errorMessage: null,
       id: nanoid(),
     };
+  }
+
+  /** Returns the exact selected row count when known, or null for unknown-size keyed selections. */
+  get selectedRowCount(): number | null {
+    const { selection } = this.props;
+    if (
+      selection != null &&
+      isRangedSelection(selection) &&
+      !selection.isEmpty()
+    ) {
+      return GridRange.rowCount(selection.toRanges());
+    }
+    if (selection instanceof KeyedSelection) {
+      return selection.getUniqueRowCount();
+    }
+    return null;
   }
 
   getSnapshotRanges(keyedTableSize: number): GridRange[] {
@@ -386,7 +406,6 @@ class TableCsvExporter extends Component<
       isDownloading,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
-      selection,
       tableDownloadStatus,
     } = this.props;
     const {
@@ -419,9 +438,7 @@ class TableCsvExporter extends Component<
             >
               All Rows
               <span className="text-muted ml-2">
-                {`(${rowCount
-                  .toString()
-                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`}
+                {`(${TableCsvExporter.formatRowCount(rowCount)} rows)`}
               </span>
             </Radio>
             <Radio
@@ -430,12 +447,10 @@ class TableCsvExporter extends Component<
             >
               Only Selected Rows
               <span className="text-muted ml-2">
-                {selection != null &&
-                isRangedSelection(selection) &&
-                !selection.isEmpty()
-                  ? `(${GridRange.rowCount(selection.toRanges())
-                      .toString()
-                      .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`
+                {this.selectedRowCount != null
+                  ? `(${TableCsvExporter.formatRowCount(
+                      this.selectedRowCount
+                    )} rows)`
                   : null}
               </span>
             </Radio>

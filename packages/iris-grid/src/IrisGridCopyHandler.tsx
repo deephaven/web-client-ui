@@ -21,6 +21,7 @@ import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
 import type IrisGridModel from './IrisGridModel';
 import { textSnapshotFromSelection } from './IrisGridSelectionUtils';
+import { KeyedSelection } from './KeyedSelection';
 
 const log = Log.module('IrisGridCopyHandler');
 
@@ -242,13 +243,19 @@ class IrisGridCopyHandler extends Component<
         return;
       }
     } else if (!isCopyHeaderOperation(copyOperation)) {
-      const { rowCount } = model;
+      const uniqueCount =
+        copyOperation.selection instanceof KeyedSelection
+          ? copyOperation.selection.getUniqueRowCount()
+          : null;
+      const rowCount = uniqueCount ?? model.rowCount;
       if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
         this.setState({
           rowCount,
           buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
           copyState:
-            IrisGridCopyHandler.COPY_STATES.KEYED_CONFIRMATION_REQUIRED,
+            uniqueCount != null
+              ? IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED
+              : IrisGridCopyHandler.COPY_STATES.KEYED_CONFIRMATION_REQUIRED,
         });
         return;
       }

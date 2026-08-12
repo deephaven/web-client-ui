@@ -266,6 +266,17 @@ export class KeyedSelection implements Selection {
     );
   }
 
+  /**
+   * Returns the exact committed row count when each key maps to one row,
+   * or null when the count is unknown (inverted selection or non-unique keys).
+   */
+  getUniqueRowCount(): number | null {
+    if (this.invertedSelection || !this.getModel().hasUniqueSelectionKeys) {
+      return null;
+    }
+    return this.selectedKeys.size;
+  }
+
   /** Returns a new selection with the given row's key toggled. */
   withToggledRow(row: VisibleIndex): KeyedSelection {
     const { key, values } = this.getRowKeyData(row);
