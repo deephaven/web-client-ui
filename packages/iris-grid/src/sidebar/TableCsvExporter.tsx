@@ -146,7 +146,7 @@ class TableCsvExporter extends Component<
     };
   }
 
-  getSnapshotRanges(): GridRange[] {
+  getSnapshotRanges(keyedTableSize: number): GridRange[] {
     const { model, selection } = this.props;
     const {
       downloadRowOption,
@@ -154,27 +154,39 @@ class TableCsvExporter extends Component<
       customizedDownloadRows,
     } = this.state;
     const { rowCount, columnCount } = model;
-    let snapshotRanges = [] as GridRange[];
+    const snapshotRanges: GridRange[] = [];
     switch (downloadRowOption) {
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS:
         snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS:
-        // KeyedSelection is handled separately in handleDownloadClick
         if (selection != null && isRangedSelection(selection)) {
-          snapshotRanges = selection
-            .toRanges()
-            .map(range => ({
-              ...range,
-              startColumn: 0,
-              endColumn: columnCount - 1,
-            }))
-            .sort((a, b) => {
-              if (a.startRow != null && b.startRow != null) {
-                return a.startRow - b.startRow;
-              }
-              return 0;
-            }) as GridRange[];
+          snapshotRanges.push(
+            ...selection
+              .toRanges()
+              .map(
+                range =>
+                  new GridRange(
+                    0,
+                    range.startRow,
+                    columnCount - 1,
+                    range.endRow
+                  )
+              )
+              .sort((a, b) => {
+                if (a.startRow != null && b.startRow != null) {
+                  return a.startRow - b.startRow;
+                }
+                return 0;
+              })
+          );
+        } else if (selection instanceof KeyedSelection) {
+          // keyed: the frozenTable is already filtered; snapshot all its rows
+          snapshotRanges.push(
+            new GridRange(0, 0, columnCount - 1, keyedTableSize - 1)
+          );
+        } else {
+          throw new Error('Unsupported selection type for snapshot ranges.');
         }
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS:
@@ -237,7 +249,12 @@ class TableCsvExporter extends Component<
       onDownload,
       onCancel,
     } = this.props;
-    const { fileName, includeColumnHeaders, useUnformattedValues } = this.state;
+    const {
+      fileName,
+      includeColumnHeaders,
+      useUnformattedValues,
+      downloadRowOption,
+    } = this.state;
 
     if (isDownloading) {
       onCancel();
@@ -245,82 +262,51 @@ class TableCsvExporter extends Component<
     }
 
     this.resetDownloadState();
+    if (!this.validateOptionInput()) return;
 
-    const { downloadRowOption } = this.state;
-
-    // Keyed selection: filter the table by keys and use the all-rows TableSaver path
-    if (
+    const isKeyedSelectedRows =
       downloadRowOption ===
         TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
       selection instanceof KeyedSelection &&
-      isKeyedGridModel(model)
-    ) {
-      if (!this.validateOptionInput()) return;
-      onDownloadStart();
-      try {
+      isKeyedGridModel(model);
+
+    onDownloadStart();
+    try {
+      let frozenTable: DhType.Table;
+      if (isKeyedSelectedRows) {
         const filteredTable = await model.createFilteredByKeysTable(
           selection.selectedKeyValues,
           selection.invertedSelection
         );
-        // filteredTable ownership transfers to TableSaver; it closes it in finishDownload/cancelDownload
-        const snapshotRanges = [
-          new GridRange(0, 0, model.columnCount - 1, filteredTable.size - 1),
-        ];
-        const modelRanges = this.getModelRanges(snapshotRanges);
-        const tableSubscription = filteredTable.setViewport(0, 0);
-        await tableSubscription.getViewportData();
-        onDownload(
-          fileName,
-          filteredTable,
-          tableSubscription,
-          snapshotRanges,
-          modelRanges,
-          includeColumnHeaders,
-          useUnformattedValues
-        );
-      } catch (error) {
-        log.error('CSV download failed', error);
-        this.setState({
-          errorMessage: (
-            <p>
-              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
-            </p>
-          ),
-        });
-        onCancel();
+        // freeze to static snapshot; TableSaver closes frozenTable in finishDownload/cancelDownload
+        frozenTable = await filteredTable.freeze();
+        filteredTable.close();
+      } else {
+        frozenTable = await model.export();
       }
-      return;
-    }
-
-    const snapshotRanges = this.getSnapshotRanges();
-    const modelRanges = this.getModelRanges(snapshotRanges);
-    if (this.validateOptionInput()) {
-      onDownloadStart();
-      try {
-        const frozenTable = await model.export();
-        const tableSubscription = frozenTable.setViewport(0, 0);
-        await tableSubscription.getViewportData();
-        onDownload(
-          fileName,
-          frozenTable,
-          tableSubscription,
-          snapshotRanges,
-          modelRanges,
-          includeColumnHeaders,
-          useUnformattedValues
-        );
-      } catch (error) {
-        log.error('CSV download failed', error);
-
-        this.setState({
-          errorMessage: (
-            <p>
-              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
-            </p>
-          ),
-        });
-        onCancel();
-      }
+      const snapshotRanges = this.getSnapshotRanges(frozenTable.size);
+      const modelRanges = this.getModelRanges(snapshotRanges);
+      const tableSubscription = frozenTable.setViewport(0, 0);
+      await tableSubscription.getViewportData();
+      onDownload(
+        fileName,
+        frozenTable,
+        tableSubscription,
+        snapshotRanges,
+        modelRanges,
+        includeColumnHeaders,
+        useUnformattedValues
+      );
+    } catch (error) {
+      log.error('CSV download failed', error);
+      this.setState({
+        errorMessage: (
+          <p>
+            <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
+          </p>
+        ),
+      });
+      onCancel();
     }
   }
 
