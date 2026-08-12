@@ -1613,15 +1613,13 @@ class IrisGridTableModelTemplate<
     }
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
-    let filter: DhType.FilterCondition[];
-    if (keyFilter == null) {
-      // Inverted + empty exclusion = all rows; normal + empty = no rows (filter clears everything)
-      filter = [];
-    } else {
-      filter = invertedSelection ? [keyFilter.not()] : [keyFilter];
-    }
     const copy = await (this.table as DhType.Table).copy();
-    await this.tableUtils.applyFilter(copy, filter);
+    // Skip applyFilter when no filter is needed — an empty filter array on a fresh copy
+    // produces no filterchanged event, causing applyFilter to time out.
+    if (keyFilter != null) {
+      const filter = invertedSelection ? [keyFilter.not()] : [keyFilter];
+      await this.tableUtils.applyFilter(copy, filter);
+    }
     return copy;
   }
 
