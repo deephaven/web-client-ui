@@ -1146,6 +1146,57 @@ describe('totals config helpers', () => {
   });
 });
 
+const EMPTY_CONFIG = {
+  advancedFilters: new Map(),
+  aggregationSettings: { aggregations: [], showOnTop: false },
+  conditionalFormats: [],
+  customColumns: [],
+  quickFilters: new Map(),
+  reverse: false,
+  rollupConfig: undefined,
+  searchFilter: undefined,
+  selectDistinctColumns: [],
+  sorts: [],
+};
+
+describe('isEmptyConfig', () => {
+  it('returns true for an all-empty config', () => {
+    expect(IrisGridUtils.isEmptyConfig(EMPTY_CONFIG)).toBe(true);
+  });
+
+  it('returns false for a non-empty config', () => {
+    const nonEmptyOverrides = [
+      { advancedFilters: new Map([[0, {} as never]]) },
+      {
+        aggregationSettings: {
+          aggregations: [{} as never],
+          showOnTop: false,
+        },
+      },
+      { conditionalFormats: [{} as never] },
+      { customColumns: ['col=1'] },
+      { quickFilters: new Map([[0, {} as never]]) },
+      { reverse: true },
+      {
+        rollupConfig: {
+          columns: [],
+          showConstituents: false,
+          showNonAggregatedColumns: false,
+          includeDescriptions: true as const,
+        },
+      },
+      { searchFilter: {} as never },
+      { selectDistinctColumns: ['col'] },
+      { sorts: [{} as never] },
+    ];
+    nonEmptyOverrides.forEach(overrides => {
+      expect(
+        IrisGridUtils.isEmptyConfig({ ...EMPTY_CONFIG, ...overrides })
+      ).toBe(false);
+    });
+  });
+});
+
 describe('migrateConditionalFormattingRule', () => {
   const column = { name: 'ColA', type: 'int' };
   const style = { type: FormatStyleType.POSITIVE };

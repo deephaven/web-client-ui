@@ -74,6 +74,148 @@ it('renders without crashing', () => {
   makeComponent();
 });
 
+describe('canRollback', () => {
+  it('returns true when lastLoadedConfig is set', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      searchFilter: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    };
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns true when lastLoadedConfig is null but state is non-empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Mutate state directly to avoid re-render triggering IrisGridModelUpdater
+    Object.assign(component.state, { reverse: true });
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns false when lastLoadedConfig is null and state is empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Default state after makeComponent has empty config fields
+    expect(component.canRollback()).toBe(false);
+  });
+});
+
+describe('rollback', () => {
+  it('restores all config fields from lastLoadedConfig and clears it', () => {
+    const component = makeComponent();
+    const config = {
+      advancedFilters: new Map([[0, {} as never]]),
+      aggregationSettings: { aggregations: [{} as never], showOnTop: true },
+      conditionalFormats: [{} as never],
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: {} as never,
+      customColumns: ['col=1'],
+      quickFilters: new Map([[1, {} as never]]),
+      reverse: true,
+      rollupConfig: {
+        columns: ['a'],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+        includeDescriptions: true as const,
+      },
+      searchFilter: {} as never,
+      selectDistinctColumns: ['col0'],
+      sorts: [{} as never],
+    };
+    component.lastLoadedConfig = config;
+    // Mock setState to skip re-render so unsafe field values (e.g. reverse: true) don't crash
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
+    expect(component.lastLoadedConfig).toBeNull();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: config.advancedFilters,
+      aggregationSettings: config.aggregationSettings,
+      conditionalFormats: config.conditionalFormats,
+      conditionalFormatEditIndex: config.conditionalFormatEditIndex,
+      conditionalFormatPreview: config.conditionalFormatPreview,
+      customColumns: config.customColumns,
+      quickFilters: config.quickFilters,
+      reverse: config.reverse,
+      rollupConfig: config.rollupConfig,
+      searchFilter: config.searchFilter,
+      selectDistinctColumns: config.selectDistinctColumns,
+      sorts: config.sorts,
+    });
+  });
+
+  it('resets all config fields to defaults when lastLoadedConfig is null', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    });
+  });
+});
+
+describe('handleUpdate', () => {
+  it('saves state snapshot to lastLoadedConfig when config is non-empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    const fakeFormats = [{} as never];
+    const fakePreview = {} as never;
+    Object.assign(component.state, {
+      conditionalFormats: fakeFormats,
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: fakePreview,
+      customColumns: ['col=1'],
+    });
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).not.toBeNull();
+    expect(component.lastLoadedConfig?.conditionalFormats).toBe(fakeFormats);
+    expect(component.lastLoadedConfig?.conditionalFormatEditIndex).toBe(2);
+    expect(component.lastLoadedConfig?.conditionalFormatPreview).toBe(
+      fakePreview
+    );
+    expect(component.lastLoadedConfig?.customColumns).toEqual(['col=1']);
+  });
+
+  it('clears lastLoadedConfig when config is empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    // Seed a non-null config to verify it gets cleared
+    component.lastLoadedConfig = {} as never;
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).toBeNull();
+  });
+});
+
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 

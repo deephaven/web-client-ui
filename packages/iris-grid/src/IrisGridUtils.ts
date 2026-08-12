@@ -968,6 +968,47 @@ class IrisGridUtils {
   }
 
   /**
+   * Returns true when all rollback-tracked config fields are at their default
+   * (empty) values, meaning there is no meaningful state to save or restore.
+   */
+  static isEmptyConfig({
+    advancedFilters,
+    aggregationSettings,
+    conditionalFormats,
+    customColumns,
+    quickFilters,
+    reverse,
+    rollupConfig,
+    searchFilter,
+    selectDistinctColumns,
+    sorts,
+  }: {
+    advancedFilters: ReadonlyAdvancedFilterMap;
+    aggregationSettings: AggregationSettings;
+    conditionalFormats: readonly SidebarFormattingRule[];
+    customColumns: readonly ColumnName[];
+    quickFilters: ReadonlyQuickFilterMap;
+    reverse: boolean;
+    rollupConfig?: UIRollupConfig;
+    searchFilter?: DhType.FilterCondition;
+    selectDistinctColumns: readonly ColumnName[];
+    sorts: readonly SortDescriptor[];
+  }): boolean {
+    return (
+      advancedFilters.size === 0 &&
+      aggregationSettings.aggregations.length === 0 &&
+      conditionalFormats.length === 0 &&
+      customColumns.length === 0 &&
+      quickFilters.size === 0 &&
+      !reverse &&
+      rollupConfig == null &&
+      searchFilter == null &&
+      selectDistinctColumns.length === 0 &&
+      sorts.length === 0
+    );
+  }
+
+  /**
    * @param  pendingDataMap Map of pending data
    * @returns A map with the errors in the pending data
    */
