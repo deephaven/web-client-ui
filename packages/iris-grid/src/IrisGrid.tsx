@@ -286,6 +286,7 @@ export interface IrisGridContextMenuData {
   columnIndex: GridRangeIndex;
   modelRow: GridRangeIndex;
   modelColumn: GridRangeIndex;
+  selection: Selection | null;
 }
 
 export type MouseHandlersProp = readonly (

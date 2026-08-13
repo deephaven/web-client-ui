@@ -981,6 +981,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             columnIndex,
             modelRow,
             modelColumn,
+            selection: effectiveSelection,
           })
         );
       }
