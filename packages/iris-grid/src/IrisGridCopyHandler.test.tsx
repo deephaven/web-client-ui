@@ -1,13 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GridTestUtils } from '@deephaven/grid';
+import { GridTestUtils, RangedSelection } from '@deephaven/grid';
 import { copyToClipboard } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, {
   type CopyOperation,
   type CopyHeaderOperation,
-  type CopyRangesOperation,
+  type CopySelectionOperation,
 } from './IrisGridCopyHandler';
 import type IrisGridProxyModel from './IrisGridProxyModel';
 
@@ -42,14 +42,15 @@ function makeDelayedSnapshotFn() {
   );
 }
 
-function makeCopyRangesOperation(
+function makeCopySelectionOperation(
   ranges = GridTestUtils.makeRanges(),
   includeHeaders = false,
   movedColumns = [],
   userColumnWidths = IrisGridTestUtils.makeUserColumnWidths()
-): CopyRangesOperation {
+): CopySelectionOperation {
   return {
-    ranges,
+    // getModel is not invoked during copy; ranges only need to be iterable
+    selection: new RangedSelection(ranges, () => ({}) as never),
     includeHeaders,
     movedColumns,
     userColumnWidths,
@@ -77,7 +78,7 @@ function makeModel(delayed = false) {
 
 function mountCopySelection({
   model = makeModel(),
-  copyOperation = makeCopyRangesOperation(),
+  copyOperation = makeCopySelectionOperation(),
 }: { model?: IrisGridProxyModel; copyOperation?: CopyOperation } = {}) {
   return render(
     <IrisGridCopyHandler model={model} copyOperation={copyOperation} />
@@ -105,7 +106,7 @@ it('copies column header', async () => {
 
 it('copies immediately if less than 10,000 rows of data', async () => {
   const ranges = GridTestUtils.makeRanges(1, 10000);
-  const copyOperation = makeCopyRangesOperation(ranges);
+  const copyOperation = makeCopySelectionOperation(ranges);
   const model = makeModel();
   mountCopySelection({ copyOperation, model });
   screen.getByRole('progressbar', { hidden: true });
@@ -121,7 +122,7 @@ it('prompts to copy if more than 10,000 rows of data', async () => {
   const user = userEvent.setup({ delay: null });
   const model = makeModel(true);
   const ranges = GridTestUtils.makeRanges(1, 10001);
-  const copyOperation = makeCopyRangesOperation(ranges);
+  const copyOperation = makeCopySelectionOperation(ranges);
   mountCopySelection({ copyOperation, model });
   const copyBtn = screen.getByText('Copy');
   expect(
@@ -148,7 +149,7 @@ it('shows click to copy if async copy fails', async () => {
   mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
   const ranges = GridTestUtils.makeRanges();
-  const copyOperation = makeCopyRangesOperation(ranges);
+  const copyOperation = makeCopySelectionOperation(ranges);
   mountCopySelection({ copyOperation });
 
   await waitFor(() =>
@@ -174,7 +175,7 @@ it('shows click to copy if async copy fails', async () => {
 it('retry option available if fetching fails', async () => {
   const user = userEvent.setup({ delay: null });
   const ranges = GridTestUtils.makeRanges();
-  const copyOperation = makeCopyRangesOperation(ranges);
+  const copyOperation = makeCopySelectionOperation(ranges);
   const model = makeModel();
   model.textSnapshot = jest.fn(() => Promise.reject());
 
@@ -202,7 +203,7 @@ it('shows an error if the copy fails permissions', async () => {
   mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
   const ranges = GridTestUtils.makeRanges();
-  const copyOperation = makeCopyRangesOperation(ranges);
+  const copyOperation = makeCopySelectionOperation(ranges);
   mountCopySelection({ copyOperation });
 
   await waitFor(() =>
