@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.4](https://github.com/deephaven/web-client-ui/compare/v1.27.3...v1.27.4) (2026-08-13)
+
+### Bug Fixes
+
+- DH-22976: re-apply the quickFilters prop on change ([#2712](https://github.com/deephaven/web-client-ui/issues/2712)) ([254bb39](https://github.com/deephaven/web-client-ui/commit/254bb39935a31b902a0a99d1277bf7a012da8117))
+- DH-23176: Better Error Handling for Conditional Formatting ([#2731](https://github.com/deephaven/web-client-ui/issues/2731)) ([a65905d](https://github.com/deephaven/web-client-ui/commit/a65905de63824783801ab7138f3bf739cc78c2c9))
+
 ## [1.27.3](https://github.com/deephaven/web-client-ui/compare/v1.27.2...v1.27.3) (2026-08-12)
 
 ### Bug Fixes
