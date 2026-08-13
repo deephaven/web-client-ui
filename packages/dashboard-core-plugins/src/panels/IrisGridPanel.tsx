@@ -500,6 +500,7 @@ export class IrisGridPanel extends PureComponent<
             table={model.table}
             tableName={this.getTableName()}
             selectedRanges={selectedRanges}
+            selection={gridSel ?? null}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
             // eslint-disable-next-line react/jsx-props-no-spreading
