@@ -219,6 +219,12 @@ export type GridState = {
   // Previous selection; used for deselect-on-reclick detection in commitSelection.
   lastSelection: Selection;
 
+  /**
+   * @deprecated Use `selection` instead. Kept for backward compat with consumers
+   * that read `grid.state.selectedRanges` directly.
+   */
+  selectedRanges: readonly GridRange[];
+
   // The mouse cursor style to use when hovering over the grid element
   cursor: string | null;
 
@@ -512,6 +518,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       // deselect again (if it's the same range)
       selection: props.createEmptySelection(this.getModel),
       lastSelection: props.createEmptySelection(this.getModel),
+      selectedRanges: [],
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -1047,10 +1054,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (selection !== prevState.selection) {
       const { onSelectionChanged, onSelectionChange } = this.props;
       // toRanges() is RangedSelection-only; skip the deprecated callback for keyed selections
+      const ranges = isRangedSelection(selection) ? selection.toRanges() : [];
       if (isRangedSelection(selection)) {
-        onSelectionChanged(selection.toRanges());
+        onSelectionChanged(ranges);
       }
       onSelectionChange(selection);
+      // Keep the deprecated selectedRanges field in sync for backward compat.
+      this.setState({ selectedRanges: ranges });
     }
   }
 
