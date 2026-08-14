@@ -247,6 +247,11 @@ export type GridState = {
   updateRevision: number;
 };
 
+/** Returns `selection.toRanges()` for a RangedSelection, otherwise `[]`. */
+function selectionToRanges(selection: Selection): readonly GridRange[] {
+  return isRangedSelection(selection) ? selection.toRanges() : EMPTY_ARRAY;
+}
+
 /**
  * High performance, extendible, themeable grid component.
  * Architectured to be fast and handle billions of rows/columns by default.
@@ -899,8 +904,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectionEndColumn = range.endColumn;
         selectionEndRow = range.endRow;
       }
+      const selection = state.selection.withUpdatedRanges(gridRanges);
       return {
-        selection: state.selection.withUpdatedRanges(gridRanges),
+        selection,
+        selectedRanges: selectionToRanges(selection),
         lastSelection: state.selection,
         selectionStartColumn,
         selectionStartRow,
@@ -1053,14 +1060,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { selection } = this.state;
     if (selection !== prevState.selection) {
       const { onSelectionChanged, onSelectionChange } = this.props;
-      // toRanges() is RangedSelection-only; skip the deprecated callback for keyed selections
-      const ranges = isRangedSelection(selection) ? selection.toRanges() : [];
       if (isRangedSelection(selection)) {
-        onSelectionChanged(ranges);
+        onSelectionChanged(selection.toRanges());
       }
       onSelectionChange(selection);
-      // Keep the deprecated selectedRanges field in sync for backward compat.
-      this.setState({ selectedRanges: ranges });
     }
   }
 
@@ -1076,7 +1079,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!selection.isValid(columnCount, rowCount)) {
       // Just clear the selection rather than trying to trim it.
       const empty = createEmptySelection(this.getModel);
-      this.setState({ selection: empty, lastSelection: empty });
+      this.setState({
+        selection: empty,
+        lastSelection: empty,
+        selectedRanges: EMPTY_ARRAY,
+      });
       return false;
     }
     return true;
@@ -1089,18 +1096,26 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.setState(state => ({
       selection: state.selection.clear(),
       lastSelection: state.selection,
+      selectedRanges: EMPTY_ARRAY,
     }));
   }
 
   /** Clears all but the last selected range */
   trimSelectedRanges(): void {
     const { selection } = this.state;
-    this.setState({ selection: selection.trimmed() });
+    const trimmed = selection.trimmed();
+    this.setState({
+      selection: trimmed,
+      selectedRanges: selectionToRanges(trimmed),
+    });
   }
 
   /** Sets the selection directly, bypassing mouse/keyboard gesture state. */
   setSelection(selection: Selection): void {
-    this.setState({ selection });
+    this.setState({
+      selection,
+      selectedRanges: selectionToRanges(selection),
+    });
   }
 
   /** Gets the current selection */
@@ -1113,7 +1128,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   getSelectedRanges(): readonly GridRange[] {
     const { selection } = this.state;
     // toRanges() is RangedSelection-only; returns [] for keyed selections
-    return isRangedSelection(selection) ? selection.toRanges() : EMPTY_ARRAY;
+    return selectionToRanges(selection);
   }
 
   /**
@@ -1230,6 +1245,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         }
         return {
           selection: selection.withMouseGestureRanges(newRanges),
+          selectedRanges: selectionToRanges(selection),
           selectionEndColumn: column,
           selectionEndRow: row,
         };
@@ -1250,6 +1266,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       );
       return {
         selection: selection.withMouseGestureRanges(newRanges),
+        selectedRanges: selectionToRanges(selection),
         selectionEndColumn: column,
         selectionEndRow: row,
       };
@@ -1306,6 +1323,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         cursorColumn: newCursorColumn,
         selection: newSelection,
         lastSelection: newSelection,
+        selectedRanges: selectionToRanges(newSelection),
       };
     });
   }
@@ -1329,13 +1347,17 @@ class Grid extends PureComponent<GridProps, GridState> {
       focusedRow + 1,
       halfViewportHeight
     );
-    this.setState(state => ({
-      top: Math.min(lastTop, newTop),
-      selection: state.selection.withUpdatedRanges([
+    this.setState(state => {
+      const newSel = state.selection.withUpdatedRanges([
         new GridRange(null, focusedRow, null, focusedRow),
-      ]),
-      isStuckToBottom: false,
-    }));
+      ]);
+      return {
+        top: Math.min(lastTop, newTop),
+        selection: newSel,
+        selectedRanges: selectionToRanges(newSel),
+        isStuckToBottom: false,
+      };
+    });
     const { cursorColumn } = this.state;
     this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
   }
@@ -1346,7 +1368,11 @@ class Grid extends PureComponent<GridProps, GridState> {
   selectAll(): void {
     this.setState(state => {
       const newSelection = state.selection.selectAll();
-      return { selection: newSelection, lastSelection: newSelection };
+      return {
+        selection: newSelection,
+        lastSelection: newSelection,
+        selectedRanges: selectionToRanges(newSelection),
+      };
     });
   }
 
@@ -1415,10 +1441,12 @@ class Grid extends PureComponent<GridProps, GridState> {
       });
 
       if (!GridRange.containsCell(selectedRanges, column, row)) {
+        const newSel = selection.withUpdatedRanges([
+          GridRange.makeCell(column, row),
+        ]);
         this.setState({
-          selection: selection.withUpdatedRanges([
-            GridRange.makeCell(column, row),
-          ]),
+          selection: newSel,
+          selectedRanges: selectionToRanges(newSel),
           selectionStartColumn: column,
           selectionStartRow: row,
           selectionEndColumn: column,
