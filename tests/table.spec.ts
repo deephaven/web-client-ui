@@ -50,6 +50,59 @@ test('can make a non-contiguous table row selection', async ({ page }) => {
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
+test('clicking a row in a keyed table selects all rows with the same key', async ({
+  page,
+}) => {
+  await gotoPage(page, '');
+  await openTable(page, 'keyed_table');
+
+  const grid = page.locator('.iris-grid-panel .iris-grid');
+  const gridLocation = await grid.boundingBox();
+  expect(gridLocation).not.toBeNull();
+  if (gridLocation === null) return;
+
+  const rowHeight = 19;
+  const columnHeaderHeight = 30;
+
+  // Click row 0 (Key=0). Rows 0, 5, 10, 15 all share Key=0 and should be selected.
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight + 0.5 * rowHeight
+  );
+
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
+test('ctrl+clicking rows in a keyed table selects multiple key groups', async ({
+  page,
+}) => {
+  await gotoPage(page, '');
+  await openTable(page, 'keyed_table');
+
+  const grid = page.locator('.iris-grid-panel .iris-grid');
+  const gridLocation = await grid.boundingBox();
+  expect(gridLocation).not.toBeNull();
+  if (gridLocation === null) return;
+
+  const rowHeight = 19;
+  const columnHeaderHeight = 30;
+
+  // Click row 0 (Key=0), then ctrl+click row 1 (Key=1).
+  // All rows for Key=0 and Key=1 should be selected.
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight + 0.5 * rowHeight
+  );
+  await page.keyboard.down('Control');
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight + 1.5 * rowHeight
+  );
+  await page.keyboard.up('Control');
+
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
 test('can open a table with column header groups', async ({ page }) => {
   await gotoPage(page, '');
   await openTable(page, 'simple_table_header_group');
