@@ -128,6 +128,14 @@ pre {
   padding: 1rem;
 }
 
+.style-guide-table-view {
+  height: 320px;
+
+  &.style-guide-table-view-windowed {
+    height: 400px;
+  }
+}
+
 h5.sub-title {
   color: $gray-200;
   padding-bottom: 10px;
