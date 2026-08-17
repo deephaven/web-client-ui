@@ -14,6 +14,7 @@ import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import type IrisGridProxyModel from './IrisGridProxyModel';
 import { isPartitionedGridModel } from './PartitionedGridModel';
+import { type ReadonlyQuickFilterMap } from './CommonTypes';
 
 jest.mock('@deephaven/grid', () => ({
   ...jest.requireActual('@deephaven/grid'),
@@ -74,6 +75,148 @@ function keyDown(
 
 it('renders without crashing', () => {
   makeComponent();
+});
+
+describe('canRollback', () => {
+  it('returns true when lastLoadedConfig is set', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      searchFilter: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    };
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns true when lastLoadedConfig is null but state is non-empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Mutate state directly to avoid re-render triggering IrisGridModelUpdater
+    Object.assign(component.state, { reverse: true });
+    expect(component.canRollback()).toBe(true);
+  });
+
+  it('returns false when lastLoadedConfig is null and state is empty', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    // Default state after makeComponent has empty config fields
+    expect(component.canRollback()).toBe(false);
+  });
+});
+
+describe('rollback', () => {
+  it('restores all config fields from lastLoadedConfig and clears it', () => {
+    const component = makeComponent();
+    const config = {
+      advancedFilters: new Map([[0, {} as never]]),
+      aggregationSettings: { aggregations: [{} as never], showOnTop: true },
+      conditionalFormats: [{} as never],
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: {} as never,
+      customColumns: ['col=1'],
+      quickFilters: new Map([[1, {} as never]]),
+      reverse: true,
+      rollupConfig: {
+        columns: ['a'],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+        includeDescriptions: true as const,
+      },
+      searchFilter: {} as never,
+      selectDistinctColumns: ['col0'],
+      sorts: [{} as never],
+    };
+    component.lastLoadedConfig = config;
+    // Mock setState to skip re-render so unsafe field values (e.g. reverse: true) don't crash
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
+    expect(component.lastLoadedConfig).toBeNull();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: config.advancedFilters,
+      aggregationSettings: config.aggregationSettings,
+      conditionalFormats: config.conditionalFormats,
+      conditionalFormatEditIndex: config.conditionalFormatEditIndex,
+      conditionalFormatPreview: config.conditionalFormatPreview,
+      customColumns: config.customColumns,
+      quickFilters: config.quickFilters,
+      reverse: config.reverse,
+      rollupConfig: config.rollupConfig,
+      searchFilter: config.searchFilter,
+      selectDistinctColumns: config.selectDistinctColumns,
+      sorts: config.sorts,
+    });
+  });
+
+  it('resets all config fields to defaults when lastLoadedConfig is null', () => {
+    const component = makeComponent();
+    component.lastLoadedConfig = null;
+    const setStateSpy = jest
+      .spyOn(component, 'setState')
+      .mockImplementation(() => undefined);
+    component.rollback();
+    expect(setStateSpy).toHaveBeenCalledWith({
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      conditionalFormats: [],
+      conditionalFormatEditIndex: null,
+      conditionalFormatPreview: undefined,
+      customColumns: [],
+      quickFilters: new Map(),
+      reverse: false,
+      rollupConfig: undefined,
+      selectDistinctColumns: [],
+      sorts: [],
+    });
+  });
+});
+
+describe('handleUpdate', () => {
+  it('saves state snapshot to lastLoadedConfig when config is non-empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    const fakeFormats = [{} as never];
+    const fakePreview = {} as never;
+    Object.assign(component.state, {
+      conditionalFormats: fakeFormats,
+      conditionalFormatEditIndex: 2,
+      conditionalFormatPreview: fakePreview,
+      customColumns: ['col=1'],
+    });
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).not.toBeNull();
+    expect(component.lastLoadedConfig?.conditionalFormats).toBe(fakeFormats);
+    expect(component.lastLoadedConfig?.conditionalFormatEditIndex).toBe(2);
+    expect(component.lastLoadedConfig?.conditionalFormatPreview).toBe(
+      fakePreview
+    );
+    expect(component.lastLoadedConfig?.customColumns).toEqual(['col=1']);
+  });
+
+  it('clears lastLoadedConfig when config is empty', () => {
+    const component = makeComponent();
+    jest.spyOn(component, 'stopLoading').mockImplementation(() => undefined);
+    jest
+      .spyOn(component.grid!, 'forceUpdate')
+      .mockImplementation(() => undefined);
+    // Seed a non-null config to verify it gets cleared
+    component.lastLoadedConfig = {} as never;
+    component.handleUpdate();
+    expect(component.lastLoadedConfig).toBeNull();
+  });
 });
 
 it('handles ctrl+shift+e to clear filters', () => {
@@ -665,4 +808,101 @@ describe('Advanced Filter', () => {
       expect(advancedFilterButtons.length > 0).toBe(expectedVisibility);
     }
   );
+});
+
+describe('updateQuickFilters', () => {
+  it('stores the map reference directly (no cloning) when called with a map', () => {
+    const component = makeComponent();
+    const filterMap: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    act(() => {
+      component.updateQuickFilters(filterMap);
+    });
+    expect(component.state.quickFilters).toBe(filterMap);
+  });
+
+  it('stores EMPTY_MAP when called with null', () => {
+    const component = makeComponent();
+    // Seed a non-empty map first so we can confirm it is replaced
+    act(() => {
+      component.updateQuickFilters(
+        new Map([[0, { text: 'foo', filter: null }]])
+      );
+    });
+    act(() => {
+      component.updateQuickFilters(null);
+    });
+    expect(component.state.quickFilters.size).toBe(0);
+  });
+
+  it('re-applies quickFilters when the prop reference changes', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const filter1: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const filter2: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'b', filter: null }],
+    ]);
+
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter1}
+      />
+    );
+
+    act(() => undefined); // flush
+
+    // Swap to a new reference — componentDidUpdate should call updateQuickFilters
+    jest.spyOn(ref.current!, 'updateQuickFilters');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter2}
+      />
+    );
+
+    expect(ref.current!.updateQuickFilters).toHaveBeenCalledWith(filter2);
+    expect(ref.current!.state.quickFilters).toBe(filter2);
+  });
+
+  it('does NOT re-apply quickFilters when the same reference is passed again', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const filter: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter}
+      />
+    );
+
+    act(() => undefined);
+
+    jest.spyOn(ref.current!, 'updateQuickFilters');
+
+    // Re-render with the exact same reference — should be a no-op
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={filter}
+      />
+    );
+
+    expect(ref.current!.updateQuickFilters).not.toHaveBeenCalled();
+  });
 });

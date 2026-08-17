@@ -3,6 +3,8 @@ import classNames from 'classnames';
 import { Button } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsWarning } from '@deephaven/icons';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
 import MultiColumnFormatEditor from './MultiColumnFormatEditor';
 import RowFormatEditor from './RowFormatEditor';
@@ -27,6 +29,7 @@ export interface ConditionalFormatEditorProps {
   dh: typeof DhType;
   columns: readonly ModelColumn[];
   rule?: FormattingRule;
+  errorMessage?: string;
   onCancel?: CancelCallback;
   onSave?: SaveCallback;
   onUpdate?: UpdateCallback;
@@ -60,6 +63,7 @@ function ConditionalFormatEditor(
   const {
     columns: originalColumns,
     dh,
+    errorMessage,
     onSave = DEFAULT_CALLBACK,
     onUpdate = DEFAULT_CALLBACK,
     onCancel = DEFAULT_CALLBACK,
@@ -147,6 +151,15 @@ function ConditionalFormatEditor(
         />
       )}
       <hr />
+      {errorMessage != null && errorMessage !== '' && (
+        <div className="error-message">
+          <p>
+            <FontAwesomeIcon icon={vsWarning} /> Failed to preview conditional
+            formatting.
+          </p>
+          <div className="error-box">{errorMessage}</div>
+        </div>
+      )}
       <div className="d-flex justify-content-end my-3">
         <Button kind="secondary" onClick={handleCancel} className="mr-2">
           Cancel
@@ -154,7 +167,7 @@ function ConditionalFormatEditor(
         <Button
           kind="primary"
           onClick={handleSave}
-          disabled={rule === undefined || !isValid}
+          disabled={rule === undefined || !isValid || errorMessage != null}
         >
           Done
         </Button>

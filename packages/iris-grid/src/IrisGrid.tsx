@@ -228,40 +228,6 @@ const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
 
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
-function isEmptyConfig({
-  advancedFilters,
-  aggregationSettings,
-  customColumns,
-  quickFilters,
-  reverse,
-  rollupConfig,
-  searchFilter,
-  selectDistinctColumns,
-  sorts,
-}: {
-  advancedFilters: ReadonlyAdvancedFilterMap;
-  aggregationSettings: AggregationSettings;
-  customColumns: readonly ColumnName[];
-  quickFilters: ReadonlyQuickFilterMap;
-  reverse: boolean;
-  rollupConfig?: UIRollupConfig;
-  searchFilter?: DhType.FilterCondition;
-  selectDistinctColumns: readonly ColumnName[];
-  sorts: readonly SortDescriptor[];
-}): boolean {
-  return (
-    advancedFilters.size === 0 &&
-    aggregationSettings.aggregations.length === 0 &&
-    customColumns.length === 0 &&
-    quickFilters.size === 0 &&
-    !reverse &&
-    rollupConfig == null &&
-    searchFilter == null &&
-    selectDistinctColumns.length === 0 &&
-    sorts.length === 0
-  );
-}
-
 export type FilterData = {
   operator?: FilterTypeValue; // Default behavior treats no operator as equals
   text: string;
@@ -487,6 +453,7 @@ export interface IrisGridState {
   conditionalFormats: readonly SidebarFormattingRule[];
   conditionalFormatEditIndex: number | null;
   conditionalFormatPreview?: SidebarFormattingRule;
+  conditionalFormatError: string | null;
 
   // Column user is hovering over for selection
   hoverSelectColumn: GridRangeIndex;
@@ -940,6 +907,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats,
       conditionalFormatEditIndex: null,
       conditionalFormatPreview: undefined,
+      conditionalFormatError: null,
 
       // Column user is hovering over for selection
       hoverSelectColumn: null,
@@ -1010,6 +978,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       settings,
       model,
       customFilters,
+      quickFilters,
       sorts,
       getMetricCalculator,
     } = this.props;
@@ -1066,6 +1035,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
     if (sorts !== prevProps.sorts) {
       this.updateSorts(sorts);
+    }
+    if (quickFilters !== prevProps.quickFilters) {
+      this.updateQuickFilters(quickFilters);
     }
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
     if (loadingScrimStartTime != null && loadingScrimFinishTime != null) {
@@ -1130,6 +1102,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     IrisGridState,
     | 'advancedFilters'
     | 'aggregationSettings'
+    | 'conditionalFormats'
+    | 'conditionalFormatEditIndex'
+    | 'conditionalFormatPreview'
     | 'customColumns'
     | 'quickFilters'
     | 'reverse'
@@ -2593,6 +2568,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const {
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
         customColumns,
         quickFilters,
         reverse,
@@ -2606,6 +2584,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters,
         aggregationSettings,
+        conditionalFormats,
+        conditionalFormatEditIndex,
+        conditionalFormatPreview,
         customColumns,
         quickFilters,
         reverse,
@@ -2619,6 +2600,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         advancedFilters: new Map(),
         aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
+        conditionalFormats: [],
+        conditionalFormatEditIndex: null,
+        conditionalFormatPreview: undefined,
         customColumns: [],
         quickFilters: new Map(),
         reverse: false,
@@ -2634,7 +2618,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * @returns true if there's a previously known safe state or if some of the current state isn't empty.
    */
   canRollback(): boolean {
-    return this.lastLoadedConfig != null || !isEmptyConfig(this.state);
+    return (
+      this.lastLoadedConfig != null || !IrisGridUtils.isEmptyConfig(this.state)
+    );
   }
 
   startListening(model: IrisGridModel): void {
@@ -3054,6 +3040,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   updateSorts(sorts: readonly SortDescriptor[]): void {
     this.startLoading('Sorting...');
     this.setState({ sorts });
+    this.grid?.forceUpdate();
+  }
+
+  updateQuickFilters(quickFilters: ReadonlyQuickFilterMap | null): void {
+    const { quickFilters: currentQuickFilters } = this.state;
+    if (quickFilters == null) {
+      if (currentQuickFilters.size === 0) {
+        return;
+      }
+    } else if (quickFilters === currentQuickFilters) {
+      return;
+    }
+
+    this.startLoading('Filtering...', { resetRanges: true });
+    this.setState({ quickFilters: quickFilters ?? EMPTY_MAP });
     this.grid?.forceUpdate();
   }
 
@@ -3521,12 +3522,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { detail: error } = event as CustomEvent;
     log.error('request failed:', error);
     this.stopLoading();
-    const { partitionConfig } = this.state;
+    const { partitionConfig, conditionalFormatEditIndex } = this.state;
     if (isMissingPartitionError(error) && partitionConfig != null) {
       // We'll try loading the initial partition again
       this.startLoading('Reloading partition...', { resetRanges: true });
       this.setState({ partitionConfig: undefined }, () => {
         this.initState();
+      });
+    } else if (conditionalFormatEditIndex !== null) {
+      // Preview format failed — surface error in the editor instead of rolling back
+      const errorMessage =
+        (error as { errorMessage?: string })?.errorMessage ?? String(error);
+      this.setState({
+        conditionalFormatError: errorMessage,
+        conditionalFormatPreview: undefined,
       });
     } else if (this.canRollback()) {
       this.startLoading('Rolling back changes...', { resetRanges: true });
@@ -3581,6 +3590,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
       customColumns,
       quickFilters,
       reverse,
@@ -3593,6 +3605,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const config = {
       advancedFilters,
       aggregationSettings,
+      conditionalFormats,
+      conditionalFormatEditIndex,
+      conditionalFormatPreview,
       customColumns,
       quickFilters,
       reverse,
@@ -3602,7 +3617,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
     };
 
-    if (!isEmptyConfig(config)) {
+    if (!IrisGridUtils.isEmptyConfig(config)) {
       this.lastLoadedConfig = config;
     } else {
       this.lastLoadedConfig = null;
@@ -3794,10 +3809,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  // Apply live changes
+  // Apply live changes; clear any previous preview error on each new update
   handleConditionalFormatEditorUpdate = debounce(
     (conditionalFormatPreview?: SidebarFormattingRule): void => {
-      this.setState({ conditionalFormatPreview });
+      this.setState({ conditionalFormatPreview, conditionalFormatError: null });
     },
     SET_CONDITIONAL_FORMAT_DEBOUNCE
   );
@@ -3824,7 +3839,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleMenuBack();
     // Not resetting conditionalFormatPreview here
     // to prevent editor fields change during the menu transition
-    this.setState({ conditionalFormatEditIndex: null });
+    this.setState({
+      conditionalFormatEditIndex: null,
+      conditionalFormatError: null,
+    });
   }
 
   handleUpdateCustomColumns(customColumns: readonly string[]): void {
@@ -5004,6 +5022,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       conditionalFormats,
       conditionalFormatPreview,
       conditionalFormatEditIndex,
+      conditionalFormatError,
 
       columnAlignmentMap,
 
@@ -5393,6 +5412,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               dh={model.dh}
               columns={model.columns}
               rule={conditionalFormatPreview}
+              errorMessage={conditionalFormatError ?? undefined}
               onUpdate={this.handleConditionalFormatEditorUpdate}
               onSave={this.handleConditionalFormatEditorSave}
               onCancel={this.handleConditionalFormatEditorCancel}
