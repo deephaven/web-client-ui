@@ -1,5 +1,7 @@
 .dh-table-view-wrapper {
-  .spectrum-Table-columnResizer {
+  [class*='spectrum-Table-columnResizer']:not(
+      [class*='spectrum-Table-columnResizerPlaceholder']
+    ) {
     display: block !important;
   }
 }

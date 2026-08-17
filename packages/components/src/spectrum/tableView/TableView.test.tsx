@@ -60,10 +60,15 @@ describe('TableView', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders a resizer for resizable columns', () => {
-    renderTable();
+  it('matches the persistent resizer selector for resizable columns', () => {
+    const { container } = renderTable();
 
-    expect(screen.getByLabelText('Column resizer')).toBeInTheDocument();
+    const resizer = screen.getByLabelText('Column resizer').parentElement;
+    expect(
+      container.querySelector(
+        ".dh-table-view-wrapper [class*='spectrum-Table-columnResizer']:not([class*='spectrum-Table-columnResizerPlaceholder'])"
+      )
+    ).toBe(resizer);
   });
 
   it('reports the visible row range when the table scrolls', () => {
@@ -81,5 +86,22 @@ describe('TableView', () => {
     fireEvent.scroll(scrollElement as Element);
 
     expect(onViewportChange).toHaveBeenLastCalledWith(2, 5);
+  });
+
+  it('clamps the inclusive viewport range to the final row', () => {
+    const onViewportChange = jest.fn();
+    renderTable({ itemCount: 10, offset: 0, onViewportChange });
+    onViewportChange.mockClear();
+
+    const scrollElement = screen.getByRole('grid').lastElementChild;
+    expect(scrollElement).toBeInstanceOf(HTMLElement);
+    Object.defineProperties(scrollElement, {
+      clientHeight: { configurable: true, value: TABLE_ROW_HEIGHT * 3 },
+      scrollTop: { configurable: true, value: TABLE_ROW_HEIGHT * 9 },
+    });
+
+    fireEvent.scroll(scrollElement as Element);
+
+    expect(onViewportChange).toHaveBeenLastCalledWith(9, 9);
   });
 });
