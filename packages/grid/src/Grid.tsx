@@ -1357,6 +1357,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       focusedRow + 1,
       halfViewportHeight
     );
+    const { cursorColumn } = this.state;
     this.setState(state => {
       const newSel = state.selection.withUpdatedRanges([
         new GridRange(null, focusedRow, null, focusedRow),
@@ -1364,12 +1365,14 @@ class Grid extends PureComponent<GridProps, GridState> {
       return {
         top: Math.min(lastTop, newTop),
         selection: newSel,
+        lastSelection: newSel,
         selectedRanges: selectionToRanges(newSel),
         isStuckToBottom: false,
       };
     });
-    const { cursorColumn } = this.state;
-    this.moveCursorToPosition(cursorColumn, focusedRow, false, false);
+    // Update cursor coordinates only — no gesture/commit cycle so deselect-on-reclick cannot fire.
+    this.beginSelection(cursorColumn, focusedRow);
+    this.moveViewToCell(cursorColumn, focusedRow);
   }
 
   /**
