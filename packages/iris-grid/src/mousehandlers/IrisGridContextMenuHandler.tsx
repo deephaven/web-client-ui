@@ -71,6 +71,7 @@ import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
 import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
 import { KeyedSelection, type GetKeyedModel } from '../KeyedSelection';
+import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -672,16 +673,23 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       userColumnWidths
     );
 
-    // Locate sourceColumn in the exact ordered visible column list used by the snapshot.
-    // Hidden columns and column moves both affect this order.
-    const visibleColumns = computeVisibleColumns(
-      model,
-      movedColumns,
-      userColumnWidths
-    );
-    const snapshotColumnIndex = visibleColumns.findIndex(
-      col => model.getColumnIndexByName(col.name) === sourceColumn
-    );
+    // Locate sourceColumn in the exact ordered column list used by the snapshot.
+    // KeyedSelection snapshots use visual (moved) order; RangedSelection snapshots use model order.
+    let snapshotColumnIndex: number;
+    if (effectiveSelection instanceof KeyedSelection) {
+      const visibleColumns = computeVisibleColumns(
+        model,
+        movedColumns,
+        userColumnWidths
+      );
+      snapshotColumnIndex = visibleColumns.findIndex(
+        col => model.getColumnIndexByName(col.name) === sourceColumn
+      );
+    } else {
+      const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+      snapshotColumnIndex =
+        sourceColumn - hiddenColumns.filter(h => h < sourceColumn).length;
+    }
 
     // get the snapshot values, but ignore all null/undefined values
     const snapshotValues = new Set();
