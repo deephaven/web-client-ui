@@ -185,7 +185,7 @@ export class KeyedSelection implements Selection {
       return new KeyedSelection(
         this.getModel,
         new Set(),
-        EMPTY_ARRAY,
+        this.overlayRanges,
         false,
         null,
         EMPTY_MAP,
