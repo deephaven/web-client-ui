@@ -1251,9 +1251,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         } else {
           newRanges.push(selectedRange);
         }
+        const newSelection = selection.withMouseGestureRanges(newRanges);
         return {
-          selection: selection.withMouseGestureRanges(newRanges),
-          selectedRanges: selectionToRanges(selection),
+          selection: newSelection,
+          selectedRanges: selectionToRanges(newSelection),
           selectionEndColumn: column,
           selectionEndRow: row,
         };
@@ -1272,9 +1273,10 @@ class Grid extends PureComponent<GridProps, GridState> {
           selectedRow
         )
       );
+      const newSelection = selection.withMouseGestureRanges(newRanges);
       return {
-        selection: selection.withMouseGestureRanges(newRanges),
-        selectedRanges: selectionToRanges(selection),
+        selection: newSelection,
+        selectedRanges: selectionToRanges(newSelection),
         selectionEndColumn: column,
         selectionEndRow: row,
       };
