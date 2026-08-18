@@ -1613,6 +1613,16 @@ class IrisGridTableModelTemplate<
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
     const copy = await (this.table as DhType.Table).copy();
+    if (keyFilter == null && !invertedSelection) {
+      // Empty non-inverted selection means zero rows match; filter to nothing so
+      // callers (e.g. CSV exporter) see size=0 rather than the full unfiltered table.
+      const neverMatch = keyColumns[0]
+        .filter()
+        .isNull()
+        .and(keyColumns[0].filter().isNull().not());
+      await this.tableUtils.applyFilter(copy, [neverMatch]);
+      return copy;
+    }
     // Skip applyFilter when no filter is needed — an empty filter array on a fresh copy
     // produces no filterchanged event, causing applyFilter to time out.
     if (keyFilter != null) {
