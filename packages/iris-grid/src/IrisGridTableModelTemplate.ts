@@ -1586,8 +1586,7 @@ class IrisGridTableModelTemplate<
     keyValues.forEach(values => {
       const colFilters = values.map((val, i) => {
         const col = keyColumns[i];
-        const filterVal = this.tableUtils.makeFilterRawValue(col.type, val);
-        return col.filter().eq(filterVal);
+        return this.tableUtils.makeNullableEqFilter(col, val);
       });
       keyFilters.push(
         colFilters.length === 1
