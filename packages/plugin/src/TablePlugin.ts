@@ -50,7 +50,7 @@ export interface TablePluginProps<S = unknown> {
   /**
    * The current grid selection, including keyed selections for tables with key columns.
    */
-  selection: Selection | null | undefined;
+  selection?: Selection | null;
 
   /**
    * Notify of a state change in the plugin state. Will be saved with the panel data.
