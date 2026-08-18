@@ -100,8 +100,12 @@ describe('createFilteredByKeysTable', () => {
     expect((model.table as DhType.Table).copy).toHaveBeenCalled();
   });
 
-  it('does NOT call applyFilter when keyValues is empty (inverted or not)', async () => {
+  it('calls applyFilter with a never-match filter for an empty non-inverted selection', async () => {
     await model.createFilteredByKeysTable(new Map(), false);
+    expect(model.tableUtils.applyFilter).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT call applyFilter when keyValues is empty and inverted (select all)', async () => {
     await model.createFilteredByKeysTable(new Map(), true);
     expect(model.tableUtils.applyFilter).not.toHaveBeenCalled();
   });
