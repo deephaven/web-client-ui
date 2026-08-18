@@ -36,16 +36,22 @@ export class KeyedSelection implements Selection {
     // When non-null, key values for this row range are being resolved asynchronously.
     readonly pendingRows: GridRange | null = null
   ) {
-    // Pre-serialize gesture rows so isRowSelected is O(1) and key-siblings are included immediately.
+    // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
+    // and construction is O(viewport) regardless of total table size.
     if (overlayRanges.length === 0) {
       this.gestureKeys = new Set();
     } else {
+      const model = this.getModel();
+      const viewTop = model.viewport?.top ?? 0;
+      const viewBottom = model.viewport?.bottom ?? 0;
       const keys = new Set<string>();
       for (let i = 0; i < overlayRanges.length; i += 1) {
         const { startRow, endRow } = overlayRanges[i];
         if (startRow == null) continue; // eslint-disable-line no-continue
         const last = endRow ?? startRow;
-        for (let r = startRow; r <= last; r += 1) {
+        const clampedStart = Math.max(startRow, viewTop);
+        const clampedEnd = Math.min(last, viewBottom);
+        for (let r = clampedStart; r <= clampedEnd; r += 1) {
           keys.add(this.getRowKeyData(r).key);
         }
       }

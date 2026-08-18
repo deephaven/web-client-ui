@@ -7,6 +7,8 @@ export interface KeyedGridModel {
   readonly selectionKeyColumnIndices: readonly ModelIndex[];
   /** True if each key uniquely identifies at most one row. */
   readonly hasUniqueSelectionKeys: boolean;
+  /** Current viewport row bounds; used to clamp gesture-key enumeration to visible rows. */
+  readonly viewport: { top: number; bottom: number } | null;
 
   /**
    * Snapshots rows matching the given key values.
