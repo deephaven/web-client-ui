@@ -6,6 +6,7 @@ import GridTheme from './GridTheme';
 import type TextCellRenderer from './TextCellRenderer';
 import { type LinkToken } from './GridUtils';
 import { type GridRenderState } from './GridRendererTypes';
+import { RangedSelection } from './RangedSelection';
 
 const makeMockContext = (): CanvasRenderingContext2D =>
   // Just return a partial mock
@@ -89,7 +90,7 @@ const makeMockGridRenderState = ({
   mouseY: 0,
   cursorColumn: 0,
   cursorRow: 0,
-  selectedRanges: [],
+  selection: RangedSelection.empty(() => model),
   draggingColumn: null,
   draggingColumnSeparator: null,
   draggingRow: null,
