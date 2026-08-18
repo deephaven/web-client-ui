@@ -201,10 +201,13 @@ class TableCsvExporter extends Component<
               })
           );
         } else if (selection instanceof KeyedSelection) {
-          // keyed: the frozenTable is already filtered; snapshot all its rows
-          snapshotRanges.push(
-            new GridRange(0, 0, columnCount - 1, keyedTableSize - 1)
-          );
+          // keyed: the frozenTable is already filtered; snapshot all its rows.
+          // Guard against zero — a ticking table can remove all selected rows before export.
+          if (keyedTableSize > 0) {
+            snapshotRanges.push(
+              new GridRange(0, 0, columnCount - 1, keyedTableSize - 1)
+            );
+          }
         } else {
           throw new Error('Unsupported selection type for snapshot ranges.');
         }
@@ -305,6 +308,12 @@ class TableCsvExporter extends Component<
         frozenTable = await model.export();
       }
       const snapshotRanges = this.getSnapshotRanges(frozenTable.size);
+      if (snapshotRanges.length === 0) {
+        // All selected rows were removed from the ticking table before export.
+        frozenTable.close();
+        onCancel();
+        return;
+      }
       const modelRanges = this.getModelRanges(snapshotRanges);
       const tableSubscription = frozenTable.setViewport(0, 0);
       await tableSubscription.getViewportData();
