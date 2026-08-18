@@ -1372,7 +1372,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     });
     // Update cursor coordinates only — no gesture/commit cycle so deselect-on-reclick cannot fire.
     this.beginSelection(cursorColumn, focusedRow);
-    this.moveViewToCell(cursorColumn, focusedRow);
   }
 
   /**
