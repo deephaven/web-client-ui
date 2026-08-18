@@ -25,7 +25,11 @@ import {
 } from '@deephaven/dashboard';
 import { assertNotNull, getErrorMessage } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { type GridRange, type GridState } from '@deephaven/grid';
+import {
+  type GridRange,
+  type GridState,
+  type Selection,
+} from '@deephaven/grid';
 import { useIrisGridModel } from './useIrisGridModel';
 import useDashboardColumnFilters from './useDashboardColumnFilters';
 import { InputFilterEvent } from './events';
@@ -155,7 +159,10 @@ export function GridWidgetPlugin({
     handleClearAllFilters
   );
 
-  const [selection, setSelection] = useState<readonly GridRange[]>([]);
+  const [selectedRanges, setSelectedRanges] = useState<readonly GridRange[]>(
+    []
+  );
+  const [selection, setSelection] = useState<Selection | null>(null);
 
   const {
     Plugin,
@@ -166,7 +173,8 @@ export function GridWidgetPlugin({
     model,
     irisGridRef,
     irisGridUtils,
-    selectedRanges: selection,
+    selectedRanges,
+    selection,
   });
 
   const alwaysFetchColumns = useMemo(() => {
@@ -201,7 +209,8 @@ export function GridWidgetPlugin({
       model={model}
       settings={settings}
       onStateChange={handleIrisGridChange}
-      onSelectionChanged={setSelection}
+      onSelectionChanged={setSelectedRanges}
+      onSelectionChange={setSelection}
       onContextMenu={onContextMenu}
       inputFilters={inputFilters}
       customFilters={customFilters}

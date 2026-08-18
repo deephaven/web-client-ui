@@ -5,7 +5,7 @@ import type {
   IrisGridContextMenuData,
   IrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
-import { type GridRange } from '@deephaven/grid';
+import { type GridRange, type Selection } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 
@@ -43,8 +43,14 @@ export interface TablePluginProps<S = unknown> {
 
   /**
    * The currently selected ranges in the table.
+   * @deprecated Use `selection` instead.
    */
   selectedRanges: readonly GridRange[] | undefined;
+
+  /**
+   * The current grid selection, including keyed selections for tables with key columns.
+   */
+  selection?: Selection | null;
 
   /**
    * Notify of a state change in the plugin state. Will be saved with the panel data.

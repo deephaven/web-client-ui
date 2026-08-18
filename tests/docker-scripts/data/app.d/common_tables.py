@@ -6,6 +6,9 @@ scale = 999
 
 simple_table = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])
 
+# 5 unique Key values (0-4), each repeated 4 times across 20 rows
+keyed_table = empty_table(20).update(["Key=i%5", "Value=i"]).with_attributes({"keyColumns": "Key"})
+
 column_groups = [
     {"name": "YandZ", "children": ["y", "z"]},
     {"name": "All", "children": ["x", "YandZ"], "color": "white"},

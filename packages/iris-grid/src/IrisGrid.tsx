@@ -34,6 +34,7 @@ import {
   GridRange,
   type GridRangeIndex,
   GridUtils,
+  type GridModel,
   type KeyHandler,
   type ModelIndex,
   type ModelSizeMap,
@@ -45,6 +46,8 @@ import {
   isExpandableGridModel,
   isDeletableGridModel,
   isExpandableColumnGridModel,
+  type Selection,
+  RangedSelection,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -153,6 +156,8 @@ import {
 } from './sidebar';
 import { DEFAULT_REGISTRY, IrisGridContext } from './IrisGridContextProvider';
 import IrisGridModel from './IrisGridModel';
+import { isKeyedGridModel } from './KeyedGridModel';
+import { KeyedSelection, type GetKeyedModel } from './KeyedSelection';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import {
@@ -247,6 +252,7 @@ export interface IrisGridContextMenuData {
   columnIndex: GridRangeIndex;
   modelRow: GridRangeIndex;
   modelColumn: GridRangeIndex;
+  selection: Selection | null;
 }
 
 export type MouseHandlersProp = readonly (
@@ -325,7 +331,9 @@ export interface IrisGridProps {
    */
   userColumnWidthsByName?: ReadonlyMap<ColumnName, number>;
   userRowHeights: ReadonlyMap<ModelIndex, number>;
-  onSelectionChanged: (gridRanges: readonly GridRange[]) => void;
+  /** @deprecated Use onSelectionChange instead. */
+  onSelectionChanged?: (gridRanges: readonly GridRange[]) => void;
+  onSelectionChange?: (selection: Selection) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
 
@@ -418,8 +426,8 @@ export interface IrisGridState {
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
 
-  // selected range in table
-  selectedRanges: readonly GridRange[];
+  // polymorphic selection object; source of truth
+  gridSelection: Selection | null;
 
   // Current ongoing copy operation
   copyOperation: CopyOperation | null;
@@ -544,6 +552,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     userColumnWidthsByName: undefined,
     userRowHeights: EMPTY_MAP,
     onSelectionChanged: (): void => undefined,
+    onSelectionChange: (): void => undefined,
     isSelectingColumn: false,
     isSelectingPartition: false,
     isStuckToBottom: false,
@@ -618,6 +627,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handlePending = this.handlePending.bind(this);
     this.handlePendingCleared = this.handlePendingCleared.bind(this);
     this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
+    this.handleGridSelectionChange = this.handleGridSelectionChange.bind(this);
     this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
     this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
@@ -872,8 +882,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customColumns: [],
       selectDistinctColumns,
 
-      // selected range in table
-      selectedRanges: [],
+      gridSelection: null,
 
       // Current ongoing copy operation
       copyOperation: null,
@@ -1189,6 +1198,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (column: ModelIndex) =>
       this.handleAdvancedFilterToggleMaximize.bind(this, column),
     { max: 100 }
+  );
+
+  getCachedCreateEmptySelection = memoize(
+    (model: IrisGridModel) =>
+      isKeyedGridModel(model)
+        ? (getModel: () => GridModel): Selection =>
+            KeyedSelection.empty(getModel as GetKeyedModel)
+        : undefined,
+    { max: 1 }
   );
 
   getCachedAdvancedFilterMenuActions = memoize(
@@ -2172,6 +2190,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       movedColumns: readonly MoveOperation[],
       floatingLeftColumnCount: number,
       floatingRightColumnCount: number,
+      model: IrisGridModel,
       draggingRange?: BoundedAxisRange
     ): readonly ColumnName[] => {
       const floatingColumns: ColumnName[] = [];
@@ -2197,7 +2216,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
       }
 
-      const columnSet = new Set([...alwaysFetchColumns, ...floatingColumns]);
+      const keyColumnIndices = isKeyedGridModel(model)
+        ? model.selectionKeyColumnIndices
+        : EMPTY_ARRAY;
+      const keyColumns = keyColumnIndices
+        .map(i => columns[i]?.name)
+        .filter((n): n is ColumnName => n != null);
+
+      const columnSet = new Set([
+        ...alwaysFetchColumns,
+        ...floatingColumns,
+        ...keyColumns,
+      ]);
 
       return Object.freeze([...columnSet]);
     },
@@ -2437,27 +2467,45 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     formatValues = true,
     error?: string
   ): void {
-    const { model, canCopy } = this.props;
+    const { model } = this.props;
+    const bounded = GridRange.boundedRanges(
+      ranges,
+      model.columnCount,
+      model.rowCount
+    );
+    const selection = new RangedSelection(bounded, () => model);
+    this.copySelection(selection, includeHeaders, formatValues, error);
+  }
+
+  copySelection(
+    selection: Selection,
+    includeHeaders = false,
+    formatValues = true,
+    error?: string
+  ): void {
+    const { canCopy } = this.props;
     const { metricCalculator, movedColumns } = this.state;
     const userColumnWidths = metricCalculator.getUserColumnWidths();
 
     if (canCopy) {
+      // Skip copy while keyed selection is still resolving — selectedKeyValues is empty.
+      if (
+        selection instanceof KeyedSelection &&
+        selection.pendingRows != null
+      ) {
+        return;
+      }
       const copyOperation = {
-        ranges: GridRange.boundedRanges(
-          ranges,
-          model.columnCount,
-          model.rowCount
-        ),
+        selection,
         includeHeaders,
         formatValues,
         movedColumns,
         userColumnWidths,
         error,
       };
-
       this.setState({ copyOperation });
     } else {
-      log.error('Attempted copyRanges for user without copy permission.');
+      log.error('Attempted copySelection for user without copy permission.');
     }
   }
 
@@ -3642,26 +3690,52 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ metrics, pendingRowCount });
   }
 
+  /** @deprecated Use `handleGridSelectionChange` instead. */
   handleSelectionChanged(selectedRanges?: readonly GridRange[]): void {
     assertNotNull(selectedRanges);
     const { onSelectionChanged } = this.props;
+    onSelectionChanged?.(selectedRanges);
+  }
+
+  handleGridSelectionChange(selection: Selection): void {
+    const { onSelectionChange } = this.props;
     const { copyOperation } = this.state;
-    this.setState({ selectedRanges });
+    this.setState({ gridSelection: selection });
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
-
-    // We get 2 identical ranges here,
-    // but consolidating in `Grid#moveSelection` causes
-    // deselection to break, so just consolidate here.
-    // This will only update the goto row input for row index
-    if (
-      GridRange.rowCount(GridRange.consolidate(selectedRanges)) === 1 &&
-      selectedRanges[0].startRow != null
-    ) {
-      this.setState({ gotoRow: `${selectedRanges[0].startRow + 1}` });
+    const singleRow = selection.getLastSingleSelectedRow();
+    if (singleRow != null) {
+      this.setState({ gotoRow: `${singleRow + 1}` });
     }
-    onSelectionChanged(selectedRanges);
+    onSelectionChange?.(selection);
+    if (selection instanceof KeyedSelection && selection.pendingRows != null) {
+      this.resolveKeyedSelection(selection);
+    }
+  }
+
+  /** Resolves a pending shift-click KeyedSelection by fetching key values from the server. */
+  async resolveKeyedSelection(pending: KeyedSelection): Promise<void> {
+    const { model } = this.props;
+    if (!isKeyedGridModel(model)) return;
+    const { pendingRows } = pending;
+    if (pendingRows?.startRow == null || pendingRows?.endRow == null) return;
+    try {
+      const keyValues = await model.fetchKeyValuesForRowRange(
+        pendingRows.startRow,
+        pendingRows.endRow
+      );
+      // Bail if the user changed the selection while we were fetching.
+      if (this.grid?.getSelection() !== pending) return;
+      const resolved = pending.resolve(keyValues);
+      this.grid.setSelection(resolved);
+    } catch (e) {
+      log.error('resolveKeyedSelection failed', e);
+      // Prevent the unusable pending selection from remaining installed indefinitely.
+      if (this.grid?.getSelection() === pending) {
+        this.grid.setSelection(pending.clear());
+      }
+    }
   }
 
   handleMovedColumnsChanged(
@@ -4967,7 +5041,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       reverse,
       customColumns,
 
-      selectedRanges,
+      gridSelection,
       isTableDownloading,
       tableDownloadStatus,
       tableDownloadProgress,
@@ -5415,7 +5489,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onDownload={this.handleDownloadTable}
               onDownloadStart={this.handleDownloadTableStart}
               onCancel={this.handleCancelDownloadTable}
-              selectedRanges={selectedRanges}
+              selection={gridSelection}
               key={OptionType.TABLE_EXPORTER}
             />
           );
@@ -5520,6 +5594,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.grid = grid;
             }}
             isStickyBottom={!isEditableGridModel(model) || !model.isEditable}
+            createEmptySelection={this.getCachedCreateEmptySelection(model)}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
             metricCalculator={metricCalculator}
@@ -5531,6 +5606,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onError={this.handleGridError}
             onViewChanged={this.handleViewChanged}
             onSelectionChanged={this.handleSelectionChanged}
+            onSelectionChange={this.handleGridSelectionChange}
             onMovedColumnsChanged={this.handleMovedColumnsChanged}
             renderer={this.renderer}
             cellInputRendererRegistry={
@@ -5565,6 +5641,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   movedColumns,
                   model.floatingLeftColumnCount,
                   model.floatingRightColumnCount,
+                  model,
                   this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(

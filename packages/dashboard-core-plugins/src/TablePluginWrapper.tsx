@@ -19,6 +19,7 @@ export const TablePluginWrapper = forwardRef(
       filter,
       fetchColumns,
       selectedRanges,
+      selection,
       irisGridRef,
       pluginState,
       onStateChange,
@@ -28,6 +29,7 @@ export const TablePluginWrapper = forwardRef(
       | 'filter'
       | 'fetchColumns'
       | 'selectedRanges'
+      | 'selection'
       | 'pluginState'
       | 'onStateChange'
     > & {
@@ -72,6 +74,7 @@ export const TablePluginWrapper = forwardRef(
           table={model.table}
           tableName={panelName}
           selectedRanges={selectedRanges}
+          selection={selection}
           onStateChange={onStateChange}
           pluginState={pluginState}
           // Mimic the panel containing `irisGrid.current` for backwards compatibility

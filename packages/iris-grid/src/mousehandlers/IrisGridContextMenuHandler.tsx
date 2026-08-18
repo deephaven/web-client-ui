@@ -23,13 +23,15 @@ import {
   type GridPoint,
   GridRange,
   GridRenderer,
-  GridSelectionMouseHandler,
   isDeletableGridModel,
   isEditableGridModel,
   isExpandableColumnGridModel,
   isExpandableGridModel,
+  isRangedSelection,
   type ModelIndex,
   parseValueFromText,
+  RangedSelection,
+  type Selection,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -47,8 +49,6 @@ import {
   ClipboardPermissionsDeniedError,
   ClipboardUnavailableError,
   TextUtils,
-  assertNotEmpty,
-  assertNotNaN,
   assertNotNull,
   copyToClipboard,
   readFromClipboard,
@@ -62,8 +62,20 @@ import {
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import type IrisGrid from '../IrisGrid';
+import type IrisGridModel from '../IrisGridModel';
+import {
+  snapshotFromSelection,
+  computeVisibleColumns,
+} from '../IrisGridSelectionUtils';
 import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
+import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
+import {
+  KeyedSelection,
+  type GetKeyedModel,
+  serializeKeyValues,
+} from '../KeyedSelection';
+import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -426,7 +438,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     assertNotNull(modelRow);
     const sourceCell = model.sourceForCell(modelColumn, modelRow);
     const { column: sourceColumn, row: sourceRow } = sourceCell;
-    const { selectedRanges } = irisGrid.state;
+    const { gridSelection } = irisGrid.state;
 
     const column = columns[sourceColumn];
 
@@ -539,18 +551,18 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     }
 
     if (isEditableGridModel(model) && model.isEditable) {
-      // selectedRanges is updated by GridSelectionMouseHandler in the same cycle so can't access the updated value here
+      // gridSelection is updated by GridSelectionMouseHandler in the same cycle so can't access the updated value here
       // so need to handle cases where a cell is right clicked without highlighting it first
-      const canPasteInOriginalRange = selectedRanges.every(range =>
-        model.isEditableRange(range)
-      );
+      const canPasteInOriginalRange =
+        gridSelection != null &&
+        isRangedSelection(gridSelection) &&
+        gridSelection.toRanges().every(range => model.isEditableRange(range));
 
       // To account for how when a cell outside of a selection is right clicked, that selection gets cleared
-      const isCellInOriginalRange = GridRange.containsCell(
-        selectedRanges,
-        columnIndex,
-        rowIndex
-      );
+      const isCellInOriginalRange =
+        rowIndex != null &&
+        columnIndex != null &&
+        (gridSelection?.isCellSelected(rowIndex, columnIndex) ?? false);
 
       const canPasteInCell = model.isEditableRange(
         GridRange.makeCell(columnIndex, rowIndex)
@@ -619,94 +631,80 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   // moved out of getCellActions since snapshots are async
   async getCellFilterActions(
     modelColumn: ModelIndex,
-    grid: Grid,
     gridPoint: GridPoint
   ): Promise<ContextAction[]> {
     const { dh, irisGrid } = this;
-    const { row: rowIndex } = gridPoint;
+    const { row: rowIndex, column: columnIndex } = gridPoint;
     const { model } = irisGrid.props;
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
-    const { getSelectedRanges } = grid;
     assertNotNull(modelRow);
     const sourceCell = model.sourceForCell(modelColumn, modelRow);
     const { column: sourceColumn, row: sourceRow } = sourceCell;
     const column = columns[sourceColumn];
 
-    if (column == null || rowIndex == null) return [];
+    if (column == null || rowIndex == null || columnIndex == null) return [];
     if (!model.isFilterable(sourceColumn)) return [];
 
-    const { quickFilters } = irisGrid.state;
+    const { quickFilters, movedColumns } = irisGrid.state;
+    const userColumnWidths =
+      irisGrid.state.metricCalculator.getUserColumnWidths();
+    // Read directly from Grid state to avoid the React-async lag between grid.state.selection and irisGrid.state.gridSelection
+    const gridSelection = irisGrid.grid?.getSelection() ?? null;
     const theme = irisGrid.getTheme();
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
-    let selectedRanges = [...getSelectedRanges()];
-    // no selected range (i.e. right clicked a cell without highlighting it)
-    // although GridSelectionMouseHandler does change selectedRanges, state isn't updated in
-    //   time for getSelectedRanges to show the selected cell
-    if (selectedRanges.length === 0) {
-      selectedRanges.push(
-        new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow)
+    const makeSingleCellSelection = (): RangedSelection =>
+      new RangedSelection(
+        [new GridRange(columnIndex, rowIndex, columnIndex, rowIndex)],
+        () => model
       );
-    }
 
-    // - this block truncates the selected ranges to MAX_MULTISELECT_ROWS rows
-    //   - NOT first MAX_MULTISELECT_ROWS rows after the first row
-    //   - NOT first MAX_MULTISELECT_ROWS unique values (prevent case where there are a small
-    //     amount of values, but a large amount of rows with those values)
-    if (GridRange.containsCell(selectedRanges, sourceColumn, sourceRow)) {
-      let rowCount = GridRange.rowCount(selectedRanges);
-      while (rowCount > MAX_MULTISELECT_ROWS) {
-        const lastRow = selectedRanges.pop();
-        // should never occur, sanity check
-        assertNotNull(lastRow, 'Selected ranges should not be empty');
-
-        const lastRowSize = GridRange.rowCount([lastRow]);
-        // should never occur, sanity check
-        assertNotNaN(lastRowSize, 'Selected ranges should not be unbounded');
-
-        // if removing the last rows makes it dip below the max, then need to
-        //   bring it back but truncated
-        if (rowCount - lastRowSize < MAX_MULTISELECT_ROWS) {
-          // nullish operator to make TS happy, but the check above should prevent this
-          selectedRanges.push(
-            new GridRange(
-              lastRow.startColumn,
-              lastRow.startRow,
-              lastRow.endColumn,
-              (lastRow.endRow ?? 0) - (rowCount - MAX_MULTISELECT_ROWS)
-            )
-          );
-          break;
-        }
-        rowCount -= lastRowSize;
-      }
+    let effectiveSelection: Selection;
+    if (gridSelection == null || gridSelection.isEmpty()) {
+      effectiveSelection = makeSingleCellSelection();
+    } else if (gridSelection.isCellSelected(rowIndex, columnIndex)) {
+      effectiveSelection = gridSelection.truncate(MAX_MULTISELECT_ROWS);
     } else {
-      // if the block is not in the selected ranges, meaning the user must've right-clicked
-      // outside the selected ranges`
-      selectedRanges = [
-        new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow),
-      ];
+      effectiveSelection = makeSingleCellSelection();
     }
 
-    // this should be non empty
-    //  - valid selected ranges will always have a startRow and endRow
-    //  - if there are no selected ranges, then one with sourceColumn/Row is added
-    assertNotEmpty(selectedRanges);
+    const snapshot = await snapshotFromSelection(
+      effectiveSelection,
+      model,
+      movedColumns,
+      userColumnWidths
+    );
+
+    // Locate sourceColumn in the exact ordered column list used by the snapshot.
+    // KeyedSelection snapshots use visual (moved) order; RangedSelection snapshots use model order.
+    let snapshotColumnIndex: number;
+    if (effectiveSelection instanceof KeyedSelection) {
+      const visibleColumns = computeVisibleColumns(
+        model,
+        movedColumns,
+        userColumnWidths
+      );
+      snapshotColumnIndex = visibleColumns.findIndex(
+        col => model.getColumnIndexByName(col.name) === sourceColumn
+      );
+    } else {
+      const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+      snapshotColumnIndex =
+        sourceColumn - hiddenColumns.filter(h => h < sourceColumn).length;
+    }
 
     // get the snapshot values, but ignore all null/undefined values
-    const snapshot = await model.snapshot(selectedRanges);
     const snapshotValues = new Set();
     for (let i = 0; i < snapshot.length; i += 1) {
       if (snapshot[i].length === 1) {
-        // if the selected range has start/end columns defined, so the snapshot is a 1D array of the row
+        // single-column snapshot (single-cell selection path)
         if (snapshot[i][0] != null) {
           snapshotValues.add(snapshot[i][0]);
         }
-      } else if (snapshot[i][sourceColumn] != null) {
-        // if the selected range is an entire row
-        snapshotValues.add(snapshot[i][sourceColumn]);
+      } else if (snapshot[i][snapshotColumnIndex] != null) {
+        snapshotValues.add(snapshot[i][snapshotColumnIndex]);
       }
     }
     // if snapshotValues is empty here, it means all of the snapshot's values were null/undefined
@@ -927,14 +925,54 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       isFilterBarShown,
       quickFilters,
       advancedFilters,
-      selectedRanges: stateSelectedRanges,
+      gridSelection,
     } = irisGrid.state;
 
-    const selectedRanges = GridSelectionMouseHandler.getLatestSelection(
-      stateSelectedRanges,
-      columnIndex,
-      rowIndex
-    );
+    // If the clicked cell is in the current selection keep it; otherwise treat as a single-cell selection.
+    const clickedInSelection =
+      rowIndex != null &&
+      columnIndex != null &&
+      (gridSelection?.isCellSelected(rowIndex, columnIndex) ?? false);
+    let effectiveSelection: Selection | null;
+    if (clickedInSelection) {
+      effectiveSelection = gridSelection;
+    } else if (rowIndex != null && columnIndex != null) {
+      if (isKeyedGridModel(model) && modelRow != null) {
+        // Construct a committed single-row KeyedSelection from the model's key columns.
+        const getModel = () => model as IrisGridModel & KeyedGridModel;
+        const keyIndices = model.selectionKeyColumnIndices;
+        const values = keyIndices.map(i => model.valueForCell(i, modelRow));
+        const key = serializeKeyValues(values);
+        const keyValues = new Map<string, readonly unknown[]>([[key, values]]);
+        effectiveSelection = new KeyedSelection(
+          getModel as GetKeyedModel,
+          new Set([key]),
+          [],
+          false,
+          rowIndex,
+          keyValues
+        );
+      } else if (isEditableGridModel(model) && model.isEditable) {
+        // Input tables: single-cell selection (editable rows are cell-granular).
+        effectiveSelection = new RangedSelection(
+          [GridRange.makeCell(columnIndex, rowIndex)],
+          () => model
+        );
+      } else {
+        // Regular tables: full-row selection so all visible columns are included.
+        effectiveSelection = new RangedSelection(
+          [new GridRange(null, rowIndex, null, rowIndex)],
+          () => model
+        );
+      }
+    } else {
+      effectiveSelection = null;
+    }
+    // Only ranged selections support row-range operations (delete).
+    const effectiveRanges =
+      effectiveSelection != null && isRangedSelection(effectiveSelection)
+        ? effectiveSelection.toRanges()
+        : [];
 
     assertNotNull(metrics);
 
@@ -962,6 +1000,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             columnIndex,
             modelRow,
             modelColumn,
+            selection: effectiveSelection,
           })
         );
       }
@@ -1007,18 +1046,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       // grid body context menu options
       if (modelColumn != null && modelRow != null) {
         actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
-        actions.push(this.getCellFilterActions(modelColumn, grid, gridPoint));
+        actions.push(this.getCellFilterActions(modelColumn, gridPoint));
       }
 
       // blank space context menu options
-      if (canCopy && selectedRanges.length > 0) {
+      if (
+        canCopy &&
+        effectiveSelection != null &&
+        !effectiveSelection.isEmpty()
+      ) {
         actions.push({
           title: 'Copy Selection',
           shortcut: GLOBAL_SHORTCUTS.COPY,
           group: IrisGridContextMenuHandler.GROUP_COPY,
           order: 30,
           action: () => {
-            irisGrid.copyRanges(selectedRanges);
+            irisGrid.copySelection(effectiveSelection);
           },
         });
 
@@ -1027,7 +1070,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           group: IrisGridContextMenuHandler.GROUP_COPY,
           order: 40,
           action: () => {
-            irisGrid.copyRanges(selectedRanges, true);
+            irisGrid.copySelection(effectiveSelection, true);
           },
         });
       }
@@ -1035,17 +1078,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (
         isEditableGridModel(model) &&
         model.isEditable &&
-        selectedRanges.length > 0 &&
+        effectiveRanges.length > 0 &&
         isDeletableGridModel(model) &&
         model.isDeletable
       ) {
         actions.push({
           title: 'Delete Selected Rows',
           group: IrisGridContextMenuHandler.GROUP_EDIT,
-          disabled: !model.isDeletableRanges(selectedRanges),
+          disabled: !model.isDeletableRanges(effectiveRanges),
           order: 50,
           action: () => {
-            this.irisGrid.deleteRanges(selectedRanges);
+            this.irisGrid.deleteRanges(effectiveRanges);
           },
         });
       }

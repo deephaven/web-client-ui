@@ -10,7 +10,7 @@ import {
   type IrisGridType,
   type IrisGridContextMenuData,
 } from '@deephaven/iris-grid';
-import { type GridRange } from '@deephaven/grid';
+import { type GridRange, type Selection } from '@deephaven/grid';
 import { TablePluginWrapper } from './TablePluginWrapper';
 
 interface UseTablePluginProps {
@@ -30,8 +30,13 @@ interface UseTablePluginProps {
   irisGridUtils: IrisGridUtils | undefined;
   /**
    * The currently selected ranges in the grid.
+   * @deprecated Use `selection` instead.
    */
   selectedRanges: readonly GridRange[] | undefined;
+  /**
+   * The current grid selection, including keyed selections.
+   */
+  selection: Selection | null | undefined;
 }
 
 /**
@@ -48,6 +53,7 @@ export function useTablePlugin({
   irisGridRef,
   irisGridUtils,
   selectedRanges,
+  selection,
 }: UseTablePluginProps): {
   Plugin: JSX.Element | null;
 } & Pick<
@@ -89,12 +95,13 @@ export function useTablePlugin({
           filter={setPluginFilters}
           fetchColumns={setAlwaysFetchColumns}
           selectedRanges={selectedRanges}
+          selection={selection}
           irisGridRef={irisGridRef}
           pluginState={pluginState}
           onStateChange={setPluginState}
         />
       ) : null,
-    [model, selectedRanges, irisGridRef, pluginState, setPluginState]
+    [model, selectedRanges, selection, irisGridRef, pluginState, setPluginState]
   );
 
   const onContextMenu = useCallback(

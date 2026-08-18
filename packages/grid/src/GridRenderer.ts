@@ -19,10 +19,6 @@ import type CellRenderer from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
 
-type NoneNullColumnRange = { startColumn: number; endColumn: number };
-
-type NoneNullRowRange = { startRow: number; endRow: number };
-
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
 /* eslint no-param-reassign: "off" */
@@ -819,7 +815,7 @@ export class GridRenderer {
     state: GridRenderState,
     row: VisibleIndex
   ): void {
-    const { metrics, selectedRanges, theme } = state;
+    const { metrics, selection, theme } = state;
     const { allRowHeights, allRowYs, maxX } = metrics;
 
     const y = getOrThrow(allRowYs, row);
@@ -828,18 +824,9 @@ export class GridRenderer {
     if (theme.rowHoverBackgroundColor != null) {
       context.fillStyle = theme.rowHoverBackgroundColor;
     }
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const { startRow, endRow } = selectedRanges[i];
-      if (
-        startRow != null &&
-        endRow != null &&
-        startRow <= row &&
-        endRow >= row
-      ) {
-        if (theme.selectedRowHoverBackgroundColor != null) {
-          context.fillStyle = theme.selectedRowHoverBackgroundColor;
-        }
-        break;
+    if (selection.isRowSelected(row)) {
+      if (theme.selectedRowHoverBackgroundColor != null) {
+        context.fillStyle = theme.selectedRowHoverBackgroundColor;
       }
     }
     context.fillRect(0, y, maxX, rowHeight);
@@ -2039,7 +2026,7 @@ export class GridRenderer {
       editingCell,
       metrics,
       model,
-      selectedRanges,
+      selection,
       theme,
     } = state;
     const {
@@ -2060,7 +2047,8 @@ export class GridRenderer {
       minX = -10,
       maxX = width + 10,
     } = viewport;
-    if (selectedRanges.length === 0) {
+
+    if (selection.isEmpty()) {
       return;
     }
 
@@ -2091,51 +2079,97 @@ export class GridRenderer {
       context.clip('evenodd');
     }
 
-    // Draw selection ranges
+    // Column bounds are constant across all rows for full-row selection.
+    // Guard against missing keys during resize/initial-load when allColumnXs may be empty.
+    const rowSelectionX = allColumnXs.has(left)
+      ? Math.max(Math.round(getOrThrow(allColumnXs, left)) + 0.5, minX)
+      : maxX;
+    const rowSelectionEndX =
+      allColumnXs.has(right) && allColumnWidths.has(right)
+        ? Math.min(
+            Math.round(
+              getOrThrow(allColumnXs, right) +
+                getOrThrow(allColumnWidths, right)
+            ) - 0.5,
+            maxX
+          )
+        : minX;
+
     context.beginPath();
-    for (let i = 0; i < selectedRanges.length; i += 1) {
-      const selectedRange = selectedRanges[i];
-      const startColumn =
-        selectedRange.startColumn !== null ? selectedRange.startColumn : left;
-      const startRow =
-        selectedRange.startRow !== null ? selectedRange.startRow : top;
-      const endColumn =
-        selectedRange.endColumn !== null ? selectedRange.endColumn : right;
-      const endRow =
-        selectedRange.endRow !== null ? selectedRange.endRow : bottom;
-      if (
-        endRow >= top &&
-        bottom >= startRow &&
-        endColumn >= left &&
-        right >= startColumn
-      ) {
-        // Need to offset the x/y coordinates so that the line draws nice and crisp
-        const x =
-          startColumn >= left && allColumnXs.has(startColumn)
-            ? Math.round(getOrThrow(allColumnXs, startColumn)) + 0.5
-            : minX;
-        const y =
-          startRow >= top && allRowYs.has(startRow)
-            ? Math.max(Math.round(getOrThrow(allRowYs, startRow)) + 0.5, 0.5)
-            : minY;
+    let rowRunStartY: number | null = null;
+    let rowRunEndY = 0;
+    // Flushes the current consecutive-selected-row run as a single rect.
+    const flushRowRun = (): void => {
+      if (rowRunStartY != null && rowSelectionEndX > rowSelectionX) {
+        context.rect(
+          rowSelectionX,
+          rowRunStartY,
+          rowSelectionEndX - rowSelectionX,
+          rowRunEndY - rowRunStartY
+        );
+      }
+      rowRunStartY = null;
+    };
 
-        const endX =
-          endColumn <= right && allColumnXs.has(endColumn)
-            ? Math.round(
-                getOrThrow(allColumnXs, endColumn) +
-                  getOrThrow(allColumnWidths, endColumn)
-              ) - 0.5
-            : maxX;
-        const endY =
-          endRow <= bottom && allRowYs.has(endRow)
-            ? Math.round(
-                getOrThrow(allRowYs, endRow) + getOrThrow(allRowHeights, endRow)
-              ) - 0.5
-            : maxY;
-
-        context.rect(x, y, endX - x, endY - y);
+    for (let r = top; r <= bottom; r += 1) {
+      const rowY = allRowYs.get(r);
+      const rowH = allRowHeights.get(r);
+      if (rowY == null || rowH == null) {
+        flushRowRun();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      const y = Math.max(Math.round(rowY) + 0.5, 0.5);
+      const endY = Math.round(rowY + rowH) - 0.5;
+      if (endY < minY || y > maxY) {
+        flushRowRun();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (selection.isRowSelected(r)) {
+        // Extend or start the full-row run.
+        if (rowRunStartY == null) rowRunStartY = y;
+        rowRunEndY = endY;
+      } else {
+        flushRowRun();
+        // Partial selection — check each cell and coalesce consecutive selected columns.
+        let runStart: VisibleIndex | null = null;
+        for (let c = left; c <= right; c += 1) {
+          if (selection.isCellSelected(r, c)) {
+            if (runStart === null) runStart = c;
+          } else if (runStart !== null) {
+            const x = Math.max(
+              Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
+              minX
+            );
+            const endX = Math.min(
+              Math.round(
+                getOrThrow(allColumnXs, c - 1) +
+                  getOrThrow(allColumnWidths, c - 1)
+              ) - 0.5,
+              maxX
+            );
+            if (endX > x) context.rect(x, y, endX - x, endY - y);
+            runStart = null;
+          }
+        }
+        if (runStart !== null) {
+          const x = Math.max(
+            Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
+            minX
+          );
+          const endX = Math.min(
+            Math.round(
+              getOrThrow(allColumnXs, right) +
+                getOrThrow(allColumnWidths, right)
+            ) - 0.5,
+            maxX
+          );
+          if (endX > x) context.rect(x, y, endX - x, endY - y);
+        }
       }
     }
+    flushRowRun();
 
     /**
      * Create the path, then draw it once. Fill and
@@ -2609,20 +2643,14 @@ export class GridRenderer {
       ) {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
-        const { selectedRanges, cursorColumn } = state;
+        const { cursorColumn } = state;
         const { lastLeft, columnCount } = metrics;
 
-        const filteredRanges = [...selectedRanges].filter(
-          value => value.startColumn != null && value.endColumn != null
-        ) as NoneNullColumnRange[];
-
-        const sortedRanges = filteredRanges
-          .map(
-            (value): BoundedAxisRange => [value.startColumn, value.endColumn]
+        const mergedRanges = GridUtils.mergeSortedRanges(
+          [...state.selection.getColumnTickRanges()].sort(
+            GridUtils.compareRanges
           )
-          .sort(GridUtils.compareRanges);
-
-        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
+        );
 
         const getTickX = (index: number): number => {
           if (index <= lastLeft) {
@@ -2717,7 +2745,7 @@ export class GridRenderer {
         scrollBarActiveSelectionTickColor != null
       ) {
         // Scrollbar Selection Tick
-        const { selectedRanges, cursorRow } = state;
+        const { cursorRow } = state;
         const { lastTop, rowCount } = metrics;
 
         const getTickY = (index: number): number => {
@@ -2733,15 +2761,9 @@ export class GridRenderer {
 
         context.fillStyle = scrollBarSelectionTickColor;
 
-        const filteredRanges = [...selectedRanges].filter(
-          value => value.startRow != null && value.endRow != null
-        ) as NoneNullRowRange[];
-
-        const sortedRanges = filteredRanges
-          .map((value): BoundedAxisRange => [value.startRow, value.endRow])
-          .sort(GridUtils.compareRanges);
-
-        const mergedRanges = GridUtils.mergeSortedRanges(sortedRanges);
+        const mergedRanges = GridUtils.mergeSortedRanges(
+          [...state.selection.getRowTickRanges()].sort(GridUtils.compareRanges)
+        );
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];

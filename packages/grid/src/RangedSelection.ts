@@ -1,0 +1,219 @@
+import { EMPTY_ARRAY, assertNotNaN, assertNotNull } from '@deephaven/utils';
+import GridRange from './GridRange';
+import type { VisibleIndex } from './GridMetrics';
+import { type BoundedAxisRange } from './GridAxisRange';
+import type { GetModel, Selection } from './Selection';
+
+/** Immutable selection implementation based on grid ranges. */
+export class RangedSelection implements Selection {
+  static empty(getModel: GetModel): RangedSelection {
+    return new RangedSelection(EMPTY_ARRAY, getModel);
+  }
+
+  constructor(
+    readonly ranges: readonly GridRange[],
+    private readonly getModel: GetModel
+  ) {}
+
+  isEmpty(): boolean {
+    return this.ranges.length === 0;
+  }
+
+  isCellSelected(row: VisibleIndex, column: VisibleIndex): boolean {
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const range = this.ranges[i];
+      const rowSelected =
+        range.startRow === null ||
+        (range.startRow <= row && row <= (range.endRow ?? 0));
+      const columnSelected =
+        range.startColumn === null ||
+        (range.startColumn <= column && column <= (range.endColumn ?? 0));
+      if (rowSelected && columnSelected) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isRowSelected(row: VisibleIndex): boolean {
+    const { columnCount } = this.getModel();
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const range = this.ranges[i];
+      const rowInRange =
+        range.startRow === null ||
+        (range.startRow <= row && row <= (range.endRow ?? 0));
+      const allColumnsSelected =
+        range.startColumn === null ||
+        (range.startColumn === 0 &&
+          (range.endColumn ?? -1) === columnCount - 1);
+      if (rowInRange && allColumnsSelected) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isValid(columnCount: number, rowCount: number): boolean {
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const range = this.ranges[i];
+      if (
+        (range.endColumn != null && range.endColumn >= columnCount) ||
+        (range.endRow != null && range.endRow >= rowCount)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  toRanges(): readonly GridRange[] {
+    return this.ranges;
+  }
+
+  toActiveRanges(): readonly GridRange[] {
+    return this.ranges;
+  }
+
+  getColumnTickRanges(): readonly BoundedAxisRange[] {
+    const result: BoundedAxisRange[] = [];
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const { startColumn, endColumn } = this.ranges[i];
+      if (startColumn != null && endColumn != null) {
+        result.push([startColumn, endColumn]);
+      }
+    }
+    return result;
+  }
+
+  getRowTickRanges(): readonly BoundedAxisRange[] {
+    const result: BoundedAxisRange[] = [];
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const { startRow, endRow } = this.ranges[i];
+      if (startRow != null && endRow != null) {
+        result.push([startRow, endRow]);
+      }
+    }
+    return result;
+  }
+
+  withUpdatedRanges(ranges: readonly GridRange[]): RangedSelection {
+    if (ranges === this.ranges) return this;
+    return new RangedSelection(ranges, this.getModel);
+  }
+
+  // Alias: ranges are committed immediately for RangedSelection
+  withMouseGestureRanges(ranges: readonly GridRange[]): RangedSelection {
+    return this.withUpdatedRanges(ranges);
+  }
+
+  selectAll(): RangedSelection {
+    const { rowCount } = this.getModel();
+    return this.withUpdatedRanges([new GridRange(null, 0, null, rowCount - 1)]);
+  }
+
+  getLastSingleSelectedRow(): VisibleIndex | null {
+    const consolidated = GridRange.consolidate(this.ranges);
+    if (GridRange.rowCount(consolidated) !== 1) return null;
+    return consolidated[0]?.startRow ?? null;
+  }
+
+  commitMouseGesture(
+    lastCommitted: Selection,
+    autoSelectRow: boolean
+  ): RangedSelection {
+    const selectedRanges = this.ranges;
+    // lastCommitted is always a RangedSelection when this method is called
+    assertIsRangedSelection(lastCommitted);
+    const lastRanges = lastCommitted.toRanges();
+
+    if (
+      selectedRanges.length === 1 &&
+      (autoSelectRow
+        ? GridRange.rowCount(selectedRanges) === 1
+        : GridRange.cellCount(selectedRanges) === 1) &&
+      GridRange.rangeArraysEqual(selectedRanges, lastRanges)
+    ) {
+      return new RangedSelection(EMPTY_ARRAY, this.getModel);
+    }
+
+    let newRanges = selectedRanges.slice();
+    if (newRanges.length > 1) {
+      const lastRange = newRanges[newRanges.length - 1];
+      for (let i = 0; i < newRanges.length - 1; i += 1) {
+        if (newRanges[i].contains(lastRange)) {
+          const remainder = newRanges[i].subtract(lastRange);
+          newRanges.pop();
+          newRanges.splice(i, 1);
+          newRanges = newRanges.concat(remainder);
+          break;
+        }
+      }
+      newRanges = GridRange.consolidate(newRanges);
+    }
+
+    const changed =
+      newRanges.length !== selectedRanges.length ||
+      newRanges.some((r, i) => !r.equals(selectedRanges[i]));
+    return this.withUpdatedRanges(changed ? newRanges : selectedRanges);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  clear(): RangedSelection {
+    return new RangedSelection(EMPTY_ARRAY, this.getModel);
+  }
+
+  trimmed(): RangedSelection {
+    if (this.ranges.length > 0) {
+      return new RangedSelection(
+        this.ranges.slice(this.ranges.length - 1),
+        this.getModel
+      );
+    }
+    return this;
+  }
+
+  truncate(maxRows: number): RangedSelection {
+    let rowCount = GridRange.rowCount(this.ranges);
+    if (rowCount <= maxRows) return this;
+    const ranges = [...this.ranges];
+    while (rowCount > maxRows) {
+      const lastRow = ranges.pop();
+      // should never occur, sanity check
+      assertNotNull(lastRow, 'Selected ranges should not be empty');
+      const lastRowSize = GridRange.rowCount([lastRow]);
+      // should never occur, sanity check
+      assertNotNaN(lastRowSize, 'Selected ranges should not be unbounded');
+      if (rowCount - lastRowSize < maxRows) {
+        ranges.push(
+          new GridRange(
+            lastRow.startColumn,
+            lastRow.startRow,
+            lastRow.endColumn,
+            (lastRow.endRow ?? 0) - (rowCount - maxRows)
+          )
+        );
+        break;
+      }
+      rowCount -= lastRowSize;
+    }
+    return new RangedSelection(ranges, this.getModel);
+  }
+}
+
+export function isRangedSelection(
+  selection: Selection
+): selection is RangedSelection {
+  return selection instanceof RangedSelection;
+}
+
+export function assertIsRangedSelection(
+  selection: Selection
+): asserts selection is RangedSelection {
+  if (!(selection instanceof RangedSelection)) {
+    throw new Error(
+      `Expected a RangedSelection but got ${selection.constructor.name}`
+    );
+  }
+}
+
+export default RangedSelection;
