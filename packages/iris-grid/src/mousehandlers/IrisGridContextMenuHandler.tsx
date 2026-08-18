@@ -63,12 +63,14 @@ import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import type IrisGrid from '../IrisGrid';
 import type IrisGridModel from '../IrisGridModel';
-import IrisGridUtils from '../IrisGridUtils';
+import {
+  snapshotFromSelection,
+  computeVisibleColumns,
+} from '../IrisGridSelectionUtils';
 import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
 import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
 import { KeyedSelection, type GetKeyedModel } from '../KeyedSelection';
-import { snapshotFromSelection } from '../IrisGridSelectionUtils';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -670,11 +672,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       userColumnWidths
     );
 
-    // For full-row snapshots, computeModelRanges removes hidden columns so the
-    // model-index sourceColumn must be offset by the count of hidden columns before it.
-    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
-    const snapshotColumnIndex =
-      sourceColumn - hiddenColumns.filter(h => h < sourceColumn).length;
+    // Locate sourceColumn in the exact ordered visible column list used by the snapshot.
+    // Hidden columns and column moves both affect this order.
+    const visibleColumns = computeVisibleColumns(
+      model,
+      movedColumns,
+      userColumnWidths
+    );
+    const snapshotColumnIndex = visibleColumns.findIndex(
+      col => model.getColumnIndexByName(col.name) === sourceColumn
+    );
 
     // get the snapshot values, but ignore all null/undefined values
     const snapshotValues = new Set();

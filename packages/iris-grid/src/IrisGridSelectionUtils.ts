@@ -31,7 +31,7 @@ function computeModelRanges(
 }
 
 /** Returns the ordered visible columns after applying moved and hidden column logic. */
-function computeVisibleColumns(
+export function computeVisibleColumns(
   model: IrisGridModel,
   movedColumns: readonly MoveOperation[],
   userColumnWidths: ModelSizeMap
