@@ -79,7 +79,12 @@ class FilterInputField extends PureComponent<
   }
 
   componentDidUpdate(prevProps: FilterInputFieldProps): void {
-    const { debounceMs } = this.props;
+    const { debounceMs, value } = this.props;
+    if (prevProps.value !== value) {
+      this.debouncedSendUpdate.cancel();
+      this.initialValue = value;
+      this.setState({ value, isChanged: false });
+    }
     if (prevProps.debounceMs !== debounceMs) {
       this.debouncedSendUpdate.flush();
       this.debouncedSendUpdate = debounce(

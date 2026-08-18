@@ -263,8 +263,12 @@ it('handles copy key handler', () => {
 
 it('handles value: undefined in setFilterMap, clears column filter', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
-  component.removeQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
+  act(() => {
+    component.setState({
+      quickFilters: new Map([[2, { text: 'any', filter: null }]]),
+    });
+  });
   component.setFilterMap(
     new Map([
       [
@@ -283,13 +287,14 @@ it('handles value: undefined in setFilterMap, clears column filter', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).not.toHaveBeenCalled();
-  expect(component.removeQuickFilter).toHaveBeenCalledWith(2);
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.has(2)).toBe(false);
 });
 
 it('handles value: null in setFilterMap', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
   component.setFilterMap(
     new Map([
       [
@@ -303,16 +308,17 @@ it('handles value: null in setFilterMap', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).toHaveBeenCalledWith(
-    2,
-    expect.anything(),
-    '=null'
-  );
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.get(2)).toEqual({
+    filter: expect.anything(),
+    text: '=null',
+  });
 });
 
 it('handles undefined operator, should default to eq', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
   component.setFilterMap(
     new Map([
       [
@@ -331,11 +337,12 @@ it('handles undefined operator, should default to eq', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).toHaveBeenCalledWith(
-    2,
-    expect.anything(),
-    'any'
-  );
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.get(2)).toEqual({
+    filter: expect.anything(),
+    text: 'any',
+  });
 });
 
 it('should set gotoValueSelectedColumnName to empty string if no columns are given', () => {
@@ -888,5 +895,95 @@ describe('updateQuickFilters', () => {
     );
 
     expect(ref.current!.updateQuickFilters).not.toHaveBeenCalled();
+  });
+});
+
+describe('controlled sorts and quick filters', () => {
+  it('applies new parent sorts while controlled', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isSortsControlled
+        sorts={[]}
+      />
+    );
+    jest.spyOn(ref.current!, 'updateSorts');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isSortsControlled
+        sorts={sorts}
+      />
+    );
+
+    expect(ref.current!.updateSorts).toHaveBeenCalledWith(sorts);
+  });
+
+  it('reports controlled sort changes without updating internal state', () => {
+    const onSortsChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isSortsControlled: true,
+      onSortsChange,
+    });
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    jest.spyOn(component, 'updateSorts');
+
+    act(() => component.requestSortsChange(sorts));
+
+    expect(onSortsChange).toHaveBeenCalledWith(sorts);
+    expect(component.updateSorts).not.toHaveBeenCalled();
+  });
+
+  it('updates internal sort state when uncontrolled', () => {
+    const onSortsChange = jest.fn();
+    const component = makeComponent(undefined, undefined, { onSortsChange });
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    jest.spyOn(component, 'updateSorts');
+
+    component.requestSortsChange(sorts);
+
+    expect(onSortsChange).toHaveBeenCalledWith(sorts);
+    expect(component.updateSorts).toHaveBeenCalledWith(sorts);
+  });
+
+  it('reports controlled quick-filter changes without updating internal state', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersControlled: true,
+      onQuickFiltersChange,
+    });
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    jest.spyOn(component, 'updateQuickFilters');
+
+    act(() => component.requestQuickFiltersChange(quickFilters));
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
+    expect(component.updateQuickFilters).not.toHaveBeenCalled();
+  });
+
+  it('updates internal quick filters when uncontrolled', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      onQuickFiltersChange,
+    });
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    jest.spyOn(component, 'updateQuickFilters');
+
+    component.requestQuickFiltersChange(quickFilters);
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
+    expect(component.updateQuickFilters).toHaveBeenCalledWith(quickFilters);
   });
 });
