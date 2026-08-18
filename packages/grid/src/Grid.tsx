@@ -1486,6 +1486,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     this.moveSelection(column, row, extendSelection, maximizePreviousRange);
+    // Commit after every keyboard move so KeyedSelection resolves keys immediately.
+    this.commitSelection();
 
     if (keepCursorInView) {
       this.moveViewToCell(column, row);
