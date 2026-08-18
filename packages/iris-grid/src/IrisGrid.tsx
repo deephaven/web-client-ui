@@ -2488,6 +2488,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const userColumnWidths = metricCalculator.getUserColumnWidths();
 
     if (canCopy) {
+      // Skip copy while keyed selection is still resolving — selectedKeyValues is empty.
+      if (
+        selection instanceof KeyedSelection &&
+        selection.pendingRows != null
+      ) {
+        return;
+      }
       const copyOperation = {
         selection,
         includeHeaders,
@@ -3724,6 +3731,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.grid.setSelection(resolved);
     } catch (e) {
       log.error('resolveKeyedSelection failed', e);
+      // Prevent the unusable pending selection from remaining installed indefinitely.
+      if (this.grid?.getSelection() === pending) {
+        this.grid.setSelection(pending.clear());
+      }
     }
   }
 
