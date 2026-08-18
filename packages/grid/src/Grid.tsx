@@ -595,6 +595,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       onMoveRowComplete,
       renderer,
       metricCalculator,
+      createEmptySelection,
     } = this.props;
 
     const {
@@ -656,6 +657,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
     if (metricCalculator !== prevProps.metricCalculator) {
       this.metricCalculator = metricCalculator ?? new GridMetricCalculator();
+    }
+
+    if (prevProps.createEmptySelection !== createEmptySelection) {
+      const empty = createEmptySelection(this.getModel);
+      stateUpdates.selection = empty;
+      stateUpdates.lastSelection = empty;
+      stateUpdates.selectedRanges = EMPTY_ARRAY;
     }
 
     const updatedState = { ...this.state, ...stateUpdates };
