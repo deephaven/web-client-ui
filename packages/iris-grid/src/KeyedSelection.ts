@@ -193,24 +193,21 @@ export class KeyedSelection implements Selection {
         new GridRange(null, rows[0], null, rows[rows.length - 1])
       );
     }
-    const rowKeyData = rows.map(r => this.getRowKeyData(r));
-    const serialized = rowKeyData.map(({ key }) => key);
+    const [row] = rows;
+    const { key: k, values } = this.getRowKeyData(row);
     const nextKeyValues = new Map(this.selectedKeyValues);
-    // Deselect only when the overlay rows comprised the entire previous selection.
-    // If lastCommitted had more rows, this is a "select only this row" gesture.
-    const wasEntireSelection = lastCommitted
-      .withUpdatedRanges(this.overlayRanges)
-      .isEmpty();
+    // Deselect only when the clicked row was the entire previous committed selection.
+    const wasEntireSelection =
+      lastCommitted instanceof KeyedSelection &&
+      !lastCommitted.invertedSelection &&
+      lastCommitted.selectedKeys.size === 1 &&
+      lastCommitted.selectedKeys.has(k);
     if (wasEntireSelection) {
-      serialized.forEach(k => {
-        next.delete(k);
-        nextKeyValues.delete(k);
-      });
+      next.delete(k);
+      nextKeyValues.delete(k);
     } else {
-      rowKeyData.forEach(({ key: k, values }) => {
-        next.add(k);
-        nextKeyValues.set(k, values);
-      });
+      next.add(k);
+      nextKeyValues.set(k, values);
     }
     // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
     const singleRow = next.size === 1 && rows.length === 1 ? rows[0] : null;

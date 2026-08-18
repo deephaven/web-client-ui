@@ -13,6 +13,7 @@ const mockModel = {
   columnCount: COLUMN_COUNT,
   rowCount: ROW_COUNT,
   valueForCell: (_col: number, row: number) => row,
+  viewport: { top: 0, bottom: ROW_COUNT - 1 },
 };
 
 const getKeyedModel: GetKeyedModel = () => mockModel as never;
@@ -207,16 +208,16 @@ describe('withUpdatedRanges', () => {
     expect(sel.isRowSelected(3)).toBe(true);
   });
 
-  it('deselects a row that was already the entire selection', () => {
+  it('replaces the selection — keeps a row already selected (no toggle)', () => {
     const sel = singleRow(3).withUpdatedRanges([
       new GridRange(null, 3, null, 3),
     ]);
-    expect(sel.isRowSelected(3)).toBe(false);
+    expect(sel.isRowSelected(3)).toBe(true);
   });
 
-  it('returns the same instance for empty ranges', () => {
+  it('returns an empty selection for empty ranges', () => {
     const sel = singleRow();
-    expect(sel.withUpdatedRanges([])).toBe(sel);
+    expect(sel.withUpdatedRanges([]).isEmpty()).toBe(true);
   });
 });
 
