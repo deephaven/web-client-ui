@@ -30,6 +30,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import { type KeyedGridModel } from './KeyedGridModel';
+import { serializeKeyValues } from './KeyedSelection';
 
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -1647,7 +1648,7 @@ class IrisGridTableModelTemplate<
       const result = new Map<string, readonly unknown[]>();
       data.rows.forEach((row: DhType.Row) => {
         const values = keyColumns.map(col => row.get(col));
-        result.set(JSON.stringify(values), values);
+        result.set(serializeKeyValues(values), values);
       });
       return result;
     } finally {

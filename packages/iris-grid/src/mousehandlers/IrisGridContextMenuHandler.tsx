@@ -70,7 +70,11 @@ import {
 import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
 import { isKeyedGridModel, type KeyedGridModel } from '../KeyedGridModel';
-import { KeyedSelection, type GetKeyedModel } from '../KeyedSelection';
+import {
+  KeyedSelection,
+  type GetKeyedModel,
+  serializeKeyValues,
+} from '../KeyedSelection';
 import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('IrisGridContextMenuHandler');
@@ -938,7 +942,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const getModel = () => model as IrisGridModel & KeyedGridModel;
         const keyIndices = model.selectionKeyColumnIndices;
         const values = keyIndices.map(i => model.valueForCell(i, modelRow));
-        const key = JSON.stringify(values);
+        const key = serializeKeyValues(values);
         const keyValues = new Map<string, readonly unknown[]>([[key, values]]);
         effectiveSelection = new KeyedSelection(
           getModel as GetKeyedModel,

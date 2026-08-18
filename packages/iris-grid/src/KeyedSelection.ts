@@ -11,6 +11,22 @@ import type { KeyedGridModel } from './KeyedGridModel';
 
 export type GetKeyedModel = () => IrisGridModel & KeyedGridModel;
 
+/**
+ * Serializes key-column values to a stable string for use as a Map/Set key.
+ * JSON.stringify encodes NaN, Infinity, and -Infinity as null, so we
+ * substitute sentinel strings to preserve their distinct identities.
+ */
+export function serializeKeyValues(values: readonly unknown[]): string {
+  return JSON.stringify(values, (_key, value) => {
+    if (typeof value === 'number') {
+      if (Number.isNaN(value)) return '__NaN__';
+      if (value === Infinity) return '__Infinity__';
+      if (value === -Infinity) return '__-Infinity__';
+    }
+    return value;
+  });
+}
+
 export class KeyedSelection implements Selection {
   static empty(getModel: GetKeyedModel): KeyedSelection {
     return new KeyedSelection(getModel, new Set());
@@ -68,7 +84,7 @@ export class KeyedSelection implements Selection {
     const values = model.selectionKeyColumnIndices.map((col: ModelIndex) =>
       model.valueForCell(col, row)
     );
-    return { key: JSON.stringify(values), values };
+    return { key: serializeKeyValues(values), values };
   }
 
   isEmpty(): boolean {
