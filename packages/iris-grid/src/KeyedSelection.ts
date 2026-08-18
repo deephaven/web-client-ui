@@ -235,7 +235,10 @@ export class KeyedSelection implements Selection {
 
   // Always returns non-inverted; switching to a new selection exits inverted mode.
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
-    if (ranges.length === 0) return this;
+    // Replacement semantics: discard previous selection and select exactly these rows.
+    if (ranges.length === 0) {
+      return new KeyedSelection(this.getModel, new Set());
+    }
     const rows: VisibleIndex[] = [];
     for (let i = 0; i < ranges.length; i += 1) {
       const { startRow, endRow } = ranges[i];
@@ -245,22 +248,16 @@ export class KeyedSelection implements Selection {
         rows.push(r);
       }
     }
-    if (rows.length === 0) return this;
-    const rowKeyData = rows.map(r => this.getRowKeyData(r));
-    const next = new Set(this.selectedKeys);
-    const nextKeyValues = new Map(this.selectedKeyValues);
-    // Toggle: if every row is already selected, remove them; otherwise add all.
-    if (rowKeyData.every(({ key }) => next.has(key))) {
-      rowKeyData.forEach(({ key: k }) => {
-        next.delete(k);
-        nextKeyValues.delete(k);
-      });
-    } else {
-      rowKeyData.forEach(({ key: k, values }) => {
-        next.add(k);
-        nextKeyValues.set(k, values);
-      });
+    if (rows.length === 0) {
+      return new KeyedSelection(this.getModel, new Set());
     }
+    const next = new Set<string>();
+    const nextKeyValues = new Map<string, readonly unknown[]>();
+    rows.forEach(r => {
+      const { key: k, values } = this.getRowKeyData(r);
+      next.add(k);
+      nextKeyValues.set(k, values);
+    });
     return new KeyedSelection(
       this.getModel,
       next,
