@@ -68,6 +68,7 @@ function makeMockIrisGrid({
         userColumnWidths: new Map(
           model.columns.map((_col, index) => [index, 100] as [number, number])
         ),
+        gridY: 0,
       }),
       advancedFilters: new Map(),
       quickFilters: new Map(),
