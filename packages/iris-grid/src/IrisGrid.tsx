@@ -2113,6 +2113,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
+    this.startLoading('Rebuilding filters...', { resetRanges: true });
     this.requestQuickFiltersChange(newQuickFilters);
     this.setState({ advancedFilters: newAdvancedFilters });
   }
