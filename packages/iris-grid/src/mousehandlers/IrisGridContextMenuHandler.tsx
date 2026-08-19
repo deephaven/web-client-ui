@@ -942,7 +942,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions: ResolvableContextAction[] = [];
 
-    if (modelColumn != null && modelRow != null) {
+    if (modelColumn != null) {
       const sourceCell = model.sourceForCell(modelColumn, modelRow ?? 0);
       const { column: sourceColumn, row: sourceRow } = sourceCell;
       const value = model.valueForCell(sourceColumn, sourceRow);
@@ -965,9 +965,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           })
         );
       }
-    }
 
-    if (modelColumn != null) {
       const clearFilterRange = model.getClearFilterRange(modelColumn);
       if (clearFilterRange != null && clearFilterRange.length > 0) {
         // Clear column filter should still be available after last row
