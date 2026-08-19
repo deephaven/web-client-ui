@@ -978,6 +978,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters,
       quickFilters,
       sorts,
+      isQuickFiltersControlled,
+      isSortsControlled,
       getMetricCalculator,
     } = this.props;
 
@@ -1031,10 +1033,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (customFilters !== prevProps.customFilters) {
       this.startLoading('Filtering...', { resetRanges: true });
     }
-    if (sorts !== prevProps.sorts) {
+    if (
+      sorts !== prevProps.sorts ||
+      (!prevProps.isSortsControlled && isSortsControlled)
+    ) {
       this.updateSorts(sorts);
     }
-    if (quickFilters !== prevProps.quickFilters) {
+    if (
+      quickFilters !== prevProps.quickFilters ||
+      (!prevProps.isQuickFiltersControlled && isQuickFiltersControlled)
+    ) {
       this.updateQuickFilters(quickFilters);
     }
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
@@ -1807,28 +1815,30 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : new Map(advancedFilters);
     const newQuickFilters = replaceExisting ? new Map() : new Map(quickFilters);
 
-    let isChanged = replaceExisting && advancedFilters.size > 0;
+    let didAdvancedFiltersChange = replaceExisting && advancedFilters.size > 0;
+    let didQuickFiltersChange = replaceExisting && quickFilters.size > 0;
     inputFilters.forEach(({ name, type, value }) => {
       const modelIndex = model.columns.findIndex(
         ({ name: columnName, type: columnType }) =>
           columnName === name && columnType === type
       );
       if (modelIndex >= 0) {
-        isChanged = newAdvancedFilters.delete(modelIndex) || isChanged;
-        isChanged =
+        didAdvancedFiltersChange =
+          newAdvancedFilters.delete(modelIndex) || didAdvancedFiltersChange;
+        didQuickFiltersChange =
           this.applyQuickFilter(modelIndex, value, newQuickFilters) ||
-          isChanged;
+          didQuickFiltersChange;
       } else {
         log.error('Unable to find column for inputFilter', name, type, value);
       }
     });
-    if (isChanged) {
-      this.setState({
-        quickFilters: newQuickFilters,
-        advancedFilters: newAdvancedFilters,
-      });
+    if (didQuickFiltersChange) {
+      this.requestQuickFiltersChange(newQuickFilters);
     }
-    return isChanged;
+    if (didAdvancedFiltersChange) {
+      this.setState({ advancedFilters: newAdvancedFilters });
+    }
+    return didQuickFiltersChange || didAdvancedFiltersChange;
   }
 
   /**
@@ -2103,22 +2113,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
-    this.startLoading('Rebuilding filters...', { resetRanges: true });
-
-    this.setState({
-      quickFilters: newQuickFilters,
-      advancedFilters: newAdvancedFilters,
-    });
+    this.requestQuickFiltersChange(newQuickFilters);
+    this.setState({ advancedFilters: newAdvancedFilters });
   }
 
   setFilters({
     quickFilters,
     advancedFilters,
   }: Pick<IrisGridState, 'quickFilters' | 'advancedFilters'>): void {
-    this.setState({
-      quickFilters,
-      advancedFilters,
-    });
+    this.requestQuickFiltersChange(quickFilters);
+    this.setState({ advancedFilters });
   }
 
   updateFormatterSettings(settings?: Settings, forceUpdate = true): void {
@@ -3860,17 +3864,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
       if (newSorts.length !== sorts.length) {
         log.debug('removing sorts from removed custom columns...');
-        this.setState({ sorts: newSorts });
+        this.requestSortsChange(newSorts);
       }
       if (
         newQuickFilters.size !== quickFilters.size ||
         newAdvancedFilters.size !== advancedFilters.size
       ) {
         log.debug(`removing filters from removed custom columns...`);
-        this.setState({
-          quickFilters: newQuickFilters,
-          advancedFilters: newAdvancedFilters,
-        });
+        if (newQuickFilters.size !== quickFilters.size) {
+          this.requestQuickFiltersChange(newQuickFilters);
+        }
+        if (newAdvancedFilters.size !== advancedFilters.size) {
+          this.setState({ advancedFilters: newAdvancedFilters });
+        }
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
@@ -4132,6 +4138,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       `Grouping by columns ${rollupConfig?.columns?.join(', ') ?? ''}...`
     );
 
+    this.requestSortsChange(EMPTY_ARRAY);
+
     // Have to clear select distinct since rollup uses the original columns, not the current ones.
     // IrisGridProxyModel has a check to prevent model update
     // when selectDistinctModel is cleared and the rollupConfig is set on the model.
@@ -4139,7 +4147,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       rollupConfig,
       movedColumns: EMPTY_ARRAY,
       frozenColumns: EMPTY_ARRAY,
-      sorts: EMPTY_ARRAY,
       reverse: false,
       selectDistinctColumns: EMPTY_ARRAY,
     });
@@ -4160,10 +4167,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }...`
     );
 
+    this.requestSortsChange(EMPTY_ARRAY);
+
     this.setState({
       selectDistinctColumns: columnNames,
       movedColumns: [],
-      sorts: [],
       reverse: false,
     });
   }
