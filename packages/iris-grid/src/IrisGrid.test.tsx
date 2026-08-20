@@ -679,6 +679,24 @@ describe('handleResizeAllColumns', () => {
       expect(component.setState).toBeCalled();
     });
 
+    it('does not propose unchanged empty quick filters', () => {
+      const component = makeComponent();
+      component.tableUtils.makeAdvancedFilter = jest.fn();
+      act(() => {
+        component.setState({ advancedFilters: new Map([[0, {} as never]]) });
+      });
+      const requestQuickFiltersChange = jest.spyOn(
+        component,
+        'requestQuickFiltersChange'
+      );
+
+      act(() => {
+        component.rebuildFilters();
+      });
+
+      expect(requestQuickFiltersChange).not.toHaveBeenCalled();
+    });
+
     it('does not update state for empty filters', () => {
       const component = makeComponent();
       jest.spyOn(component, 'setState');

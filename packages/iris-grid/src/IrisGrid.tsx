@@ -2114,7 +2114,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       });
     });
     this.startLoading('Rebuilding filters...', { resetRanges: true });
-    this.requestQuickFiltersChange(newQuickFilters);
+    if (quickFilters.size > 0) {
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
     this.setState({ advancedFilters: newAdvancedFilters });
   }
 
