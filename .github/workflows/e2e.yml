@@ -171,7 +171,7 @@ jobs:
 
             [Download the videos](${{ steps.upload.outputs.artifact-url }}) - expires in 14 days.
 
-            GitHub can't play videos straight from an artifact link. Unzip the archive and drag an `.mp4` into a comment to embed it.
+            Unzip the archive and open `index.html` to watch them.
 
       - name: Remove stale recordings comment
         if: ${{ steps.specs.outputs.spec-files == '' && github.event.pull_request.head.repo.full_name == github.repository }}

@@ -17,18 +17,28 @@
  *                     `playwright-record-ci.config.ts`.
  *
  * It runs the tests using the recording Playwright config (video + slowMo),
- * streams the test output to the console, and then prints where the video(s)
- * were saved under the gitignored test-results/e2e-video directory.
+ * streams the test output to the console, and then writes the video(s) plus an
+ * index.html that plays them inline to the gitignored test-results/e2e-video
+ * directory.
  */
 /* eslint-disable no-console, no-restricted-syntax */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, '..');
 const outputDir = path.join(rootDir, 'test-results', 'e2e-video');
+const reportJsonPath = path.join(outputDir, 'report.json');
+const reportHtmlPath = path.join(outputDir, 'index.html');
 const configPath =
   process.env.E2E_RECORD_CONFIG || 'playwright-record.config.ts';
 
@@ -148,6 +158,141 @@ function exportTrimmedMp4(video, startSec) {
   return !ret.error && ret.status === 0 ? outPath : null;
 }
 
+/**
+ * Maps each recorded video back to the test that produced it, using the json
+ * reporter output. Videos from specs that build their own context aren't
+ * attached to a test and so won't appear here.
+ *
+ * @returns {Map<string, { file: string; title: string }>} Keyed by video path.
+ */
+function readVideoLabels() {
+  /** @type {Map<string, { file: string; title: string }>} */
+  const labels = new Map();
+
+  if (!existsSync(reportJsonPath)) {
+    return labels;
+  }
+
+  /** @type {any} */
+  let report;
+  try {
+    report = JSON.parse(readFileSync(reportJsonPath, 'utf8'));
+  } catch {
+    return labels;
+  }
+
+  /**
+   * @param {any} suite
+   * @param {string} file
+   * @param {string[]} titles
+   */
+  function walk(suite, file, titles) {
+    const suiteFile = suite.file ?? file;
+    for (const spec of suite.specs ?? []) {
+      const title = [...titles, spec.title].filter(Boolean).join(' > ');
+      for (const test of spec.tests ?? []) {
+        for (const testResult of test.results ?? []) {
+          for (const attachment of testResult.attachments ?? []) {
+            if (attachment.name === 'video' && attachment.path != null) {
+              labels.set(path.resolve(attachment.path), {
+                file: suiteFile,
+                title,
+              });
+            }
+          }
+        }
+      }
+    }
+    for (const child of suite.suites ?? []) {
+      // The outermost suite per file is titled with the file itself.
+      const childTitles =
+        child.file != null && child.title === child.file
+          ? titles
+          : [...titles, child.title];
+      walk(child, suiteFile, childTitles);
+    }
+  }
+
+  for (const suite of report.suites ?? []) {
+    walk(suite, suite.file ?? suite.title ?? '', []);
+  }
+
+  return labels;
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Writes a standalone page that plays every recording inline, so the artifact
+ * can be reviewed by opening one file instead of hunting through hashed names.
+ *
+ * @param {{ src: string; file: string; title: string }[]} entries
+ */
+function writeHtmlReport(entries) {
+  const sections = entries
+    .map(
+      entry => `    <section>
+      <h2>${escapeHtml(entry.title)}</h2>
+      <p>${escapeHtml(entry.file)}</p>
+      <video controls preload="metadata" src="${escapeHtml(entry.src)}"></video>
+    </section>`
+    )
+    .join('\n');
+
+  const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>e2e recordings</title>
+    <style>
+      body {
+        margin: 0 auto;
+        max-width: 1000px;
+        padding: 24px;
+        background: #1a1a1a;
+        color: #f0f0f0;
+        font-family: system-ui, sans-serif;
+      }
+      section {
+        margin-bottom: 32px;
+      }
+      h2 {
+        margin-bottom: 4px;
+        font-size: 1.1rem;
+      }
+      p {
+        margin-top: 0;
+        color: #a0a0a0;
+        font-family: monospace;
+      }
+      video {
+        width: 100%;
+        border-radius: 4px;
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>e2e recordings</h1>
+${sections}
+  </body>
+</html>
+`;
+
+  writeFileSync(reportHtmlPath, html);
+}
+
 // Record which videos already existed so we can highlight the new ones.
 const previousVideos = new Set(collectVideos(outputDir));
 
@@ -157,6 +302,8 @@ const playwrightArgs = [
   `--config=${configPath}`,
   // Snapshot diffs shouldn't cut a recording short.
   '--ignore-snapshots',
+  // json is used to label each video with the test that produced it.
+  '--reporter=list,json',
   ...fileNames,
 ];
 if (searchName) {
@@ -172,43 +319,72 @@ console.log(
 const result = spawnSync('npx', playwrightArgs, {
   cwd: rootDir,
   stdio: 'inherit',
-  env: process.env,
+  env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: reportJsonPath },
 });
 
 const allVideos = collectVideos(outputDir);
 const newVideos = allVideos.filter(v => !previousVideos.has(v));
 const videos = newVideos.length > 0 ? newVideos : allVideos;
 
+const labels = readVideoLabels();
+rmSync(reportJsonPath, { force: true });
+
 const divider = '-'.repeat(60);
 console.log(`\n${divider}`);
+
+/** @type {{ src: string; file: string; title: string }[]} */
+const entries = [];
+const ffmpegAvailable = hasFfmpeg();
 
 if (videos.length === 0) {
   console.log(`No video files were found in ${outputDir}`);
   console.log('(The test may not have started a browser context.)');
-} else if (!hasFfmpeg()) {
-  // No ffmpeg: just report the raw recordings (with the leading load screen).
-  console.log('Recorded video(s) (raw - includes initial load screen):');
-  for (const video of videos) {
-    console.log(`  ${path.relative(rootDir, video)}`);
-  }
-  console.log(
-    '\nInstall ffmpeg to auto-trim the leading load screen and export an mp4.'
-  );
 } else {
-  console.log('Recorded video(s):');
-  for (const video of videos) {
-    const blankEnd = detectLeadingBlankEnd(video);
-    const mp4 = exportTrimmedMp4(video, blankEnd);
-    if (mp4) {
-      const trimNote =
-        blankEnd > 0.3
-          ? ` (trimmed ${blankEnd.toFixed(1)}s of leading load screen)`
-          : '';
-      console.log(`  ${path.relative(rootDir, mp4)}${trimNote}`);
-    } else {
-      console.log(`  ${path.relative(rootDir, video)} (mp4 export failed)`);
-    }
+  if (!ffmpegAvailable) {
+    // No ffmpeg: just report the raw recordings (with the leading load screen).
+    console.log('Recorded video(s) (raw - includes initial load screen):');
+  } else {
+    console.log('Recorded video(s):');
   }
+
+  for (const video of videos) {
+    let output = video;
+    let note = '';
+
+    if (ffmpegAvailable) {
+      const blankEnd = detectLeadingBlankEnd(video);
+      const mp4 = exportTrimmedMp4(video, blankEnd);
+      if (mp4) {
+        output = mp4;
+        note =
+          blankEnd > 0.3
+            ? ` (trimmed ${blankEnd.toFixed(1)}s of leading load screen)`
+            : '';
+      } else {
+        note = ' (mp4 export failed)';
+      }
+    }
+
+    const label = labels.get(path.resolve(video));
+    entries.push({
+      src: path.relative(outputDir, output),
+      file: label?.file ?? path.relative(rootDir, output),
+      title: label?.title ?? path.basename(output),
+    });
+
+    console.log(`  ${path.relative(rootDir, output)}${note}`);
+  }
+
+  if (!ffmpegAvailable) {
+    console.log(
+      '\nInstall ffmpeg to auto-trim the leading load screen and export an mp4.'
+    );
+  }
+
+  writeHtmlReport(entries);
+  console.log(
+    `\nOpen ${path.relative(rootDir, reportHtmlPath)} to watch them.`
+  );
 }
 console.log(`${divider}\n`);
 
