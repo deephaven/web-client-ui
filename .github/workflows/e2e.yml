@@ -95,6 +95,91 @@ jobs:
           path: /tmp/server-log.txt
           retention-days: 14
 
+  record-new-tests:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-22.04
+    needs: build
+    # Recording is informational only - never block the PR on it.
+    continue-on-error: true
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-record-new-tests
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find added or modified e2e specs
+        id: specs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CHANGED=$(git diff --name-only --diff-filter=AM "$BASE_SHA...$HEAD_SHA" -- 'tests/*.spec.ts')
+          echo "Specs to record: ${CHANGED:-<none>}"
+          echo "spec-files=$(echo "$CHANGED" | tr '\n' ' ' | sed 's/ *$//')" >> "$GITHUB_OUTPUT"
+          {
+            echo 'spec-list<<SPEC_LIST_EOF'
+            echo "$CHANGED" | sed 's/^/- `/; s/$/`/'
+            echo 'SPEC_LIST_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download docker image
+        if: steps.specs.outputs.spec-files != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: image-cache
+
+      - name: Load docker image
+        if: steps.specs.outputs.spec-files != ''
+        run: docker load -i e2e-ci.tar.gz
+
+      - name: Record specs
+        if: steps.specs.outputs.spec-files != ''
+        env:
+          SPEC_FILES: ${{ steps.specs.outputs.spec-files }}
+        run: './tests/docker-scripts/run.sh e2e-record'
+
+      - name: Upload recordings
+        id: upload
+        if: ${{ steps.specs.outputs.spec-files != '' && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-new-test-videos
+          path: test-results/e2e-video
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Comment with recordings
+        # Forked PRs get a read-only token, so the comment would fail.
+        if: ${{ steps.upload.outputs.artifact-url != '' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: e2e-new-test-recordings
+          message: |
+            ### New e2e test recordings
+
+            Recorded the e2e specs added or modified in this PR (chromium only):
+
+            ${{ steps.specs.outputs.spec-list }}
+
+            [Download the videos](${{ steps.upload.outputs.artifact-url }}) - expires in 14 days.
+
+            GitHub can't play videos straight from an artifact link. Unzip the archive and drag an `.mp4` into a comment to embed it.
+
+      - name: Remove stale recordings comment
+        if: ${{ steps.specs.outputs.spec-files == '' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: e2e-new-test-recordings
+          delete: true
+
   merge-reports:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-22.04

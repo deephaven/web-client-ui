@@ -18,9 +18,10 @@ import DefaultConfig from './playwright.config';
  */
 
 /** Delay (ms) added before each Playwright action so the video is followable. */
+const DEFAULT_SLOW_MO_MS = 500;
 const slowMoEnv = Number(process.env.E2E_RECORD_SLOWMO);
 const SLOW_MO_MS =
-  Number.isFinite(slowMoEnv) && slowMoEnv >= 0 ? slowMoEnv : 250;
+  Number.isFinite(slowMoEnv) && slowMoEnv >= 0 ? slowMoEnv : DEFAULT_SLOW_MO_MS;
 
 const VIDEO_SIZE = { width: 1280, height: 720 };
 const OUTPUT_DIR = path.resolve(__dirname, 'test-results/e2e-video');

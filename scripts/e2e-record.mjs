@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 // @ts-check
 /**
- * Records a single e2e test as a video for attaching to a PR or Jira ticket.
+ * Records e2e tests as videos for attaching to a PR or Jira ticket.
  *
  * Usage:
- *   npm run e2e:record <file-name> [search-name]
+ *   npm run e2e:record <file-name> [...file-name] [--grep=<search-name>]
  *
- *   <file-name>    A test file (or path fragment) to run, e.g.
- *                  `table-gotorow` or `tests/table-gotorow.spec.ts`.
- *   [search-name]  Optional test-title filter passed to Playwright's `-g`,
- *                  e.g. "Go to row works".
+ *   <file-name>       One or more test files (or path fragments) to run, e.g.
+ *                     `table-gotorow` or `tests/table-gotorow.spec.ts`.
+ *   --grep=<name>     Optional test-title filter passed to Playwright's `-g`,
+ *                     e.g. --grep="Go to row works".
  *
- * It runs the test using the recording Playwright config (video + slowMo),
+ * Env:
+ *   E2E_RECORD_CONFIG Playwright config to record with. Defaults to
+ *                     `playwright-record.config.ts` (local dev server). CI uses
+ *                     `playwright-record-ci.config.ts`.
+ *
+ * It runs the tests using the recording Playwright config (video + slowMo),
  * streams the test output to the console, and then prints where the video(s)
  * were saved under the gitignored test-results/e2e-video directory.
  */
@@ -24,15 +29,22 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, '..');
 const outputDir = path.join(rootDir, 'test-results', 'e2e-video');
-const configPath = 'playwright-record.config.ts';
+const configPath =
+  process.env.E2E_RECORD_CONFIG || 'playwright-record.config.ts';
 
-const [fileName, searchName] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const searchName = args
+  .find(arg => arg.startsWith('--grep='))
+  ?.slice('--grep='.length);
+const fileNames = args.filter(arg => !arg.startsWith('--'));
 
-if (!fileName) {
-  console.error('Usage: npm run e2e:record <file-name> [search-name]');
-  console.error('  <file-name>    Test file to run, e.g. table-gotorow');
+if (fileNames.length === 0) {
   console.error(
-    '  [search-name]  Optional test title to filter with -g, e.g. "Go to row"'
+    'Usage: npm run e2e:record <file-name> [...file-name] [--grep=<search-name>]'
+  );
+  console.error('  <file-name>     Test file to run, e.g. table-gotorow');
+  console.error(
+    '  --grep=<name>   Optional test title to filter with -g, e.g. --grep="Go to row"'
   );
   process.exit(1);
 }
@@ -145,14 +157,14 @@ const playwrightArgs = [
   `--config=${configPath}`,
   // Snapshot diffs shouldn't cut a recording short.
   '--ignore-snapshots',
-  fileName,
+  ...fileNames,
 ];
 if (searchName) {
   playwrightArgs.push('-g', searchName);
 }
 
 console.log(
-  `\nRecording e2e test: ${fileName}${
+  `\nRecording e2e test(s): ${fileNames.join(', ')}${
     searchName ? ` (grep: "${searchName}")` : ''
   }\n`
 );
