@@ -1,7 +1,0 @@
-.dh-table-view-wrapper {
-  [class*='spectrum-Table-columnResizer']:not(
-      [class*='spectrum-Table-columnResizerPlaceholder']
-    ) {
-    display: block !important;
-  }
-}

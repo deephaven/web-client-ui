@@ -60,15 +60,13 @@ describe('TableView', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('matches the persistent resizer selector for resizable columns', () => {
-    const { container } = renderTable();
+  it('fills its parent by default', () => {
+    renderTable();
 
-    const resizer = screen.getByLabelText('Column resizer').parentElement;
-    expect(
-      container.querySelector(
-        ".dh-table-view-wrapper [class*='spectrum-Table-columnResizer']:not([class*='spectrum-Table-columnResizerPlaceholder'])"
-      )
-    ).toBe(resizer);
+    expect(screen.getByRole('grid')).toHaveStyle({
+      width: '100%',
+      height: '100%',
+    });
   });
 
   it('reports the visible row range when the table scrolls', () => {
