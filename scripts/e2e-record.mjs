@@ -103,6 +103,22 @@ const BLANK_EDGE_ENERGY = 0.3;
 const CONTENT_EDGE_RATIO = 0.25;
 /** Frames that must stay above the threshold before we call it content. */
 const CONTENT_FRAME_RUN = 3;
+/** How close a frame's energy must be to the loading screen's to match it. */
+const LOADING_LEVEL_TOLERANCE = 0.2;
+/** Cap on how far back we rewind toward the last loading-screen frame. */
+const MAX_REWIND_FRAMES = 10;
+
+/**
+ * @param {number[]} values
+ * @param {number} p Percentile in the range 0-1.
+ * @returns {number}
+ */
+function percentile(values, p) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return (
+    sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))] ?? 0
+  );
+}
 
 /**
  * Detects how long the recording sits on a blank page or the app's loading
@@ -148,18 +164,41 @@ function detectContentStart(video) {
     return 0;
   }
 
-  const sorted = [...frames].map(f => f.energy).sort((a, b) => a - b);
-  const peak = sorted[Math.floor(sorted.length * 0.95)] ?? 0;
+  const peak = percentile(
+    frames.map(f => f.energy),
+    0.95
+  );
   const threshold = Math.max(BLANK_EDGE_ENERGY, peak * CONTENT_EDGE_RATIO);
 
-  const start = frames.findIndex((_, i) =>
+  const firstContent = frames.findIndex((_, i) =>
     frames
       .slice(i, i + CONTENT_FRAME_RUN)
       .every(frame => frame.energy >= threshold)
   );
 
-  // Never trim everything - a run that never reaches content is left as-is.
-  return start > 0 ? frames[start].time : 0;
+  if (firstContent <= 0) {
+    // Never trim everything - a run that never reaches content is left as-is.
+    return 0;
+  }
+
+  // The UI paints over a few frames once the spinner goes away, so rewind past
+  // those to start on the first frame that no longer looks like the loading
+  // screen.
+  const loadingLevel = percentile(
+    frames.slice(0, firstContent).map(f => f.energy),
+    0.5
+  );
+  const tolerance = loadingLevel * LOADING_LEVEL_TOLERANCE;
+  const limit = Math.max(1, firstContent - MAX_REWIND_FRAMES);
+  let start = firstContent;
+  while (
+    start > limit &&
+    Math.abs(frames[start - 1].energy - loadingLevel) > tolerance
+  ) {
+    start -= 1;
+  }
+
+  return frames[start].time;
 }
 
 /**
