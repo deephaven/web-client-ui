@@ -49,15 +49,12 @@ function renderTable({
 
 describe('TableView', () => {
   it('renders loaded rows at their absolute viewport offset', () => {
-    const { container } = renderTable();
+    renderTable();
 
-    expect(screen.getByText('Dashboard B')).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-table-view-key="2"]')
-    ).toHaveTextContent('Dashboard B');
-    expect(
-      container.querySelector('[data-table-view-key="0"]')
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole('row', { name: 'Dashboard B' })).toHaveAttribute(
+      'aria-rowindex',
+      '4'
+    );
   });
 
   it('fills its parent by default', () => {
