@@ -10,6 +10,7 @@ import {
 } from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import IrisGridUtils from './IrisGridUtils';
 import type IrisGridProxyModel from './IrisGridProxyModel';
 import { isPartitionedGridModel } from './PartitionedGridModel';
 import { type ReadonlyQuickFilterMap } from './CommonTypes';
@@ -263,8 +264,12 @@ it('handles copy key handler', () => {
 
 it('handles value: undefined in setFilterMap, clears column filter', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
-  component.removeQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
+  act(() => {
+    component.setState({
+      quickFilters: new Map([[2, { text: 'any', filter: null }]]),
+    });
+  });
   component.setFilterMap(
     new Map([
       [
@@ -283,13 +288,14 @@ it('handles value: undefined in setFilterMap, clears column filter', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).not.toHaveBeenCalled();
-  expect(component.removeQuickFilter).toHaveBeenCalledWith(2);
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.has(2)).toBe(false);
 });
 
 it('handles value: null in setFilterMap', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
   component.setFilterMap(
     new Map([
       [
@@ -303,16 +309,17 @@ it('handles value: null in setFilterMap', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).toHaveBeenCalledWith(
-    2,
-    expect.anything(),
-    '=null'
-  );
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.get(2)).toEqual({
+    filter: expect.anything(),
+    text: '=null',
+  });
 });
 
 it('handles undefined operator, should default to eq', () => {
   const component = makeComponent();
-  component.setQuickFilter = jest.fn();
+  component.requestQuickFiltersChange = jest.fn();
   component.setFilterMap(
     new Map([
       [
@@ -331,11 +338,12 @@ it('handles undefined operator, should default to eq', () => {
       ],
     ])
   );
-  expect(component.setQuickFilter).toHaveBeenCalledWith(
-    2,
-    expect.anything(),
-    'any'
-  );
+  const quickFilters = jest.mocked(component.requestQuickFiltersChange).mock
+    .calls[0][0];
+  expect(quickFilters.get(2)).toEqual({
+    filter: expect.anything(),
+    text: 'any',
+  });
 });
 
 it('should set gotoValueSelectedColumnName to empty string if no columns are given', () => {
@@ -671,6 +679,24 @@ describe('handleResizeAllColumns', () => {
       expect(component.setState).toBeCalled();
     });
 
+    it('does not propose unchanged empty quick filters', () => {
+      const component = makeComponent();
+      component.tableUtils.makeAdvancedFilter = jest.fn();
+      act(() => {
+        component.setState({ advancedFilters: new Map([[0, {} as never]]) });
+      });
+      const requestQuickFiltersChange = jest.spyOn(
+        component,
+        'requestQuickFiltersChange'
+      );
+
+      act(() => {
+        component.rebuildFilters();
+      });
+
+      expect(requestQuickFiltersChange).not.toHaveBeenCalled();
+    });
+
     it('does not update state for empty filters', () => {
       const component = makeComponent();
       jest.spyOn(component, 'setState');
@@ -888,5 +914,220 @@ describe('updateQuickFilters', () => {
     );
 
     expect(ref.current!.updateQuickFilters).not.toHaveBeenCalled();
+  });
+});
+
+describe('controlled sorts and quick filters', () => {
+  it('applies new parent sorts while controlled', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isSortsControlled
+        sorts={[]}
+      />
+    );
+    jest.spyOn(ref.current!, 'updateSorts');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isSortsControlled
+        sorts={sorts}
+      />
+    );
+
+    expect(ref.current!.updateSorts).toHaveBeenCalledWith(sorts);
+  });
+
+  it('reports controlled sort changes without updating internal state', () => {
+    const onSortsChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isSortsControlled: true,
+      onSortsChange,
+    });
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    jest.spyOn(component, 'updateSorts');
+
+    act(() => component.requestSortsChange(sorts));
+
+    expect(onSortsChange).toHaveBeenCalledWith(sorts);
+    expect(component.updateSorts).not.toHaveBeenCalled();
+  });
+
+  it('updates internal sort state when uncontrolled', () => {
+    const onSortsChange = jest.fn();
+    const component = makeComponent(undefined, undefined, { onSortsChange });
+    const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
+    jest.spyOn(component, 'updateSorts');
+
+    component.requestSortsChange(sorts);
+
+    expect(onSortsChange).toHaveBeenCalledWith(sorts);
+    expect(component.updateSorts).toHaveBeenCalledWith(sorts);
+  });
+
+  it('reports controlled quick-filter changes without updating internal state', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersControlled: true,
+      onQuickFiltersChange,
+    });
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    jest.spyOn(component, 'updateQuickFilters');
+
+    act(() => component.requestQuickFiltersChange(quickFilters));
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
+    expect(component.updateQuickFilters).not.toHaveBeenCalled();
+  });
+
+  it('updates internal quick filters when uncontrolled', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      onQuickFiltersChange,
+    });
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'foo', filter: null }],
+    ]);
+    jest.spyOn(component, 'updateQuickFilters');
+
+    component.requestQuickFiltersChange(quickFilters);
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
+    expect(component.updateQuickFilters).toHaveBeenCalledWith(quickFilters);
+  });
+});
+
+describe('controlled state regression paths', () => {
+  it('synchronizes controlled values when entering controlled mode', () => {
+    const model = irisGridTestUtils.makeModel();
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const sorts = [model.columns[0].sort().asc()];
+    const ref = React.createRef<IrisGrid>();
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={quickFilters}
+        sorts={sorts}
+      />
+    );
+
+    act(() => {
+      ref.current?.setState({ quickFilters: new Map(), sorts: [] });
+    });
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={quickFilters}
+        sorts={sorts}
+        isQuickFiltersControlled
+        isSortsControlled
+      />
+    );
+
+    expect(ref.current?.state.quickFilters).toBe(quickFilters);
+    expect(ref.current?.state.sorts).toBe(sorts);
+  });
+
+  it('proposes input-filter quick-filter changes without applying them', () => {
+    const model = irisGridTestUtils.makeModel();
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isQuickFiltersControlled: true,
+      onQuickFiltersChange,
+    });
+
+    act(() => {
+      component.applyInputFilters([
+        {
+          name: model.columns[0].name,
+          type: model.columns[0].type,
+          value: 'a',
+        },
+      ]);
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(expect.any(Map));
+    expect(onQuickFiltersChange.mock.calls[0][0].get(0)?.text).toBe('a');
+    expect(component.state.quickFilters.size).toBe(0);
+  });
+
+  it('proposes custom-column filter and sort removals without applying them', () => {
+    const model = irisGridTestUtils.makeModel();
+    const columnName = model.columns[0].name;
+    jest
+      .spyOn(IrisGridUtils, 'getRemovedCustomColumnNames')
+      .mockReturnValue([columnName]);
+    jest
+      .spyOn(IrisGridUtils, 'removeFiltersInColumns')
+      .mockReturnValue(new Map());
+    jest.spyOn(IrisGridUtils, 'removeSortsInColumns').mockReturnValue([]);
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const sorts = [model.columns[0].sort().asc()];
+    const onQuickFiltersChange = jest.fn();
+    const onSortsChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isQuickFiltersControlled: true,
+      isSortsControlled: true,
+      onQuickFiltersChange,
+      onSortsChange,
+      quickFilters,
+      sorts,
+    });
+
+    act(() => {
+      component.handleUpdateCustomColumns([]);
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(expect.any(Map));
+    expect(
+      onQuickFiltersChange.mock.calls.some(([filters]) => filters.size === 0)
+    ).toBe(true);
+    expect(onSortsChange).toHaveBeenCalledWith([]);
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+    expect(component.state.sorts).toBe(sorts);
+  });
+
+  it('proposes sort clears from rollup and select-distinct changes', () => {
+    const model = irisGridTestUtils.makeModel();
+    const sorts = [model.columns[0].sort().asc()];
+    const onSortsChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isSortsControlled: true,
+      onSortsChange,
+      sorts,
+    });
+
+    act(() => {
+      component.handleRollupChange({
+        columns: [],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+      component.handleSelectDistinctChanged([model.columns[0].name]);
+    });
+
+    expect(onSortsChange).toHaveBeenCalledTimes(2);
+    expect(onSortsChange).toHaveBeenNthCalledWith(1, []);
+    expect(onSortsChange).toHaveBeenNthCalledWith(2, []);
+    expect(component.state.sorts).toBe(sorts);
   });
 });
