@@ -21,11 +21,13 @@ function renderTable({
   items = [{ name: 'Dashboard B' }],
   itemCount = 4,
   offset = 2,
+  onAction,
   onViewportChange = jest.fn(),
 }: {
   items?: TestItem[];
   itemCount?: number;
   offset?: number;
+  onAction?: (item: TestItem) => void;
   onViewportChange?: jest.Mock;
 } = {}) {
   const result = render(
@@ -36,6 +38,7 @@ function renderTable({
         items={items}
         itemCount={itemCount}
         offset={offset}
+        onAction={onAction}
         onViewportChange={onViewportChange}
         renderCell={(item, columnKey) =>
           columnKey === 'name' ? item.name : null
@@ -64,6 +67,15 @@ describe('TableView', () => {
       width: '100%',
       height: '100%',
     });
+  });
+
+  it('calls onAction with the activated item', () => {
+    const onAction = jest.fn();
+    renderTable({ onAction });
+
+    fireEvent.click(screen.getByRole('row', { name: 'Dashboard B' }));
+
+    expect(onAction).toHaveBeenCalledWith({ name: 'Dashboard B' });
   });
 
   it('reports the visible row range when the table scrolls', () => {

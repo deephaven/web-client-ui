@@ -1,6 +1,5 @@
-import React, { type ReactNode, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import {
   Grid,
   Icon,
@@ -21,6 +20,7 @@ import {
 import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
 import { generateNormalizedItems } from './utils';
 import SampleSection from './SampleSection';
+import LabeledFlexContainer from './LabeledFlexContainer';
 
 // Generate enough items to require scrolling
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
@@ -36,12 +36,6 @@ function AccountIllustration(): JSX.Element {
   );
 }
 
-interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
-  label: string;
-  direction?: 'row' | 'column';
-  children: ReactNode;
-}
-
 const LABELED_FLEX_CONTAINER_HEIGHTS = {
   gap: 10,
   label: {
@@ -49,25 +43,6 @@ const LABELED_FLEX_CONTAINER_HEIGHTS = {
     large: 25.5,
   },
 };
-
-function LabeledFlexContainer({
-  label,
-  direction = 'column',
-  children,
-  ...styleProps
-}: LabeledProps) {
-  return (
-    <Flex
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...styleProps}
-      direction={direction}
-      gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
-    >
-      <Text>{label}</Text>
-      {children}
-    </Flex>
-  );
-}
 
 export function ListViews(): JSX.Element {
   const { scale } = useSpectrumThemeProvider();

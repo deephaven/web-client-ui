@@ -1,41 +1,8 @@
-import React, { type ReactNode } from 'react';
-import type {
-  BoxAlignmentStyleProps,
-  Key,
-  StyleProps,
-} from '@react-types/shared';
-import {
-  Flex,
-  Grid,
-  TableView,
-  Text,
-  type TableViewColumn,
-} from '@deephaven/components';
+import React from 'react';
+import type { Key } from '@react-types/shared';
+import { Grid, TableView, type TableViewColumn } from '@deephaven/components';
 import SampleSection from './SampleSection';
-
-interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
-  label: string;
-  children: ReactNode;
-}
-
-function LabeledFlexContainer({
-  label,
-  children,
-  ...styleProps
-}: LabeledProps): JSX.Element {
-  return (
-    <Flex
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...styleProps}
-      direction="column"
-      gap={10}
-      minWidth={0}
-    >
-      <Text>{label}</Text>
-      {children}
-    </Flex>
-  );
-}
+import LabeledFlexContainer from './LabeledFlexContainer';
 
 interface SampleRow {
   name: string;
@@ -73,22 +40,32 @@ function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
   return item[columnKey as keyof SampleRow];
 }
 
+function handleAction(item: SampleRow): void {
+  // eslint-disable-next-line no-alert
+  alert(`Opened ${item.name}`);
+}
+
 export function TableViews(): JSX.Element {
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
       <Grid gap={14} height="size-6000" columns="1fr 1fr" rows="1fr">
-        <LabeledFlexContainer label="Resizable columns" height="100%">
+        <LabeledFlexContainer
+          label="Resizable columns"
+          height="100%"
+          minWidth={0}
+        >
           <TableView
             aria-label="Resizable columns"
             columns={columns}
             items={rows}
             itemCount={rows.length}
+            onAction={handleAction}
             renderCell={renderCell}
           />
         </LabeledFlexContainer>
 
-        <LabeledFlexContainer label="Windowed rows" height="100%">
+        <LabeledFlexContainer label="Windowed rows" height="100%" minWidth={0}>
           <TableView
             aria-label="Windowed rows"
             columns={columns}

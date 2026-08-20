@@ -44,8 +44,9 @@ export function TableViewNormalized<T>({
 }: TableViewNormalizedProps<T>): JSX.Element {
   const handleAction = useCallback(
     (key: Key) => {
-      const item = normalizedItems.find(candidate => candidate.key === key)
-        ?.item;
+      const item = normalizedItems.find(
+        candidate => String(candidate.key) === String(key)
+      )?.item;
       if (item != null) {
         onAction?.(item);
       }
