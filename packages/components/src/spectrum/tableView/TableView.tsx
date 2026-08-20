@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
-import type { Key, SortDescriptor } from '@react-types/shared';
+import type { SpectrumTableProps } from '@adobe/react-spectrum';
+import type { Key } from '@react-types/shared';
 import type { KeyedItem } from '@deephaven/utils';
 import { TableViewNormalized } from './TableViewNormalized';
 
@@ -17,23 +18,25 @@ export interface TableViewColumn {
   hideHeader?: boolean;
 }
 
-export interface TableViewProps<T> {
+type WindowedItem<T> = KeyedItem<T, number>;
+
+export type TableViewProps<T> = Pick<
+  SpectrumTableProps<WindowedItem<T>>,
+  | 'sortDescriptor'
+  | 'onSortChange'
+  | 'renderEmptyState'
+  | 'aria-label'
+  | 'UNSAFE_className'
+> & {
   columns: TableViewColumn[];
   items: readonly T[];
   itemCount: number;
   offset?: number;
-  sortDescriptor?: SortDescriptor;
   onAction?: (item: T) => void;
-  onSortChange?: (descriptor: SortDescriptor) => void;
   onViewportChange?: (top: number, bottom: number) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
   getTextValue?: (item: T) => string;
-  renderEmptyState?: () => JSX.Element;
-  'aria-label'?: string;
-  UNSAFE_className?: string;
-}
-
-type WindowedItem<T> = KeyedItem<T, number>;
+};
 
 /**
  * A resizable Spectrum table for small, potentially windowed data sets.
