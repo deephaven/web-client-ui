@@ -244,7 +244,7 @@ export interface IrisGridContextMenuData {
   column: DhType.Column;
   rowIndex: GridRangeIndex;
   columnIndex: GridRangeIndex;
-  modelRow: GridRangeIndex;
+  modelRow?: GridRangeIndex;
   modelColumn: GridRangeIndex;
 }
 
