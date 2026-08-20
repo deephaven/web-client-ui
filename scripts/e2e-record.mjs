@@ -97,48 +97,74 @@ function hasFfmpeg() {
   return !probe.error && probe.status === 0;
 }
 
+/** Edge energy below this counts as a blank or loading screen. */
+const BLANK_EDGE_ENERGY = 0.3;
+/** Fraction of the recording's peak edge energy that also counts as content. */
+const CONTENT_EDGE_RATIO = 0.25;
+/** Frames that must stay above the threshold before we call it content. */
+const CONTENT_FRAME_RUN = 3;
+
 /**
- * Detects how long the recording stays on a blank/white screen at the start.
+ * Detects how long the recording sits on a blank page or the app's loading
+ * spinner before the real UI shows up.
  *
- * The app is dark-themed once loaded, so the only near-white frames are the
- * blank page shown while the dev server loads/authenticates. We negate the
- * video (turning white into black) and use ffmpeg's blackdetect to find that
- * leading blank segment, returning the timestamp (seconds) where it ends.
+ * Both of those screens are nearly featureless, so we measure per-frame "edge
+ * energy" - the mean intensity of an edge-detected, downscaled frame. A blank
+ * page scores ~0, the loading spinner ~0.15, and a rendered app screen upwards
+ * of 0.5, which separates them far more reliably than brightness does (the app
+ * is dark-themed, so the loading screen isn't white).
  *
  * @param {string} video Path to the raw .webm recording.
- * @returns {number} Seconds of leading blank screen (0 if none detected).
+ * @returns {number} Seconds of leading blank/loading screen (0 if none).
  */
-function detectLeadingBlankEnd(video) {
+function detectContentStart(video) {
   const probe = spawnSync(
     'ffmpeg',
     [
       '-hide_banner',
       '-nostats',
+      '-loglevel',
+      'error',
       '-i',
       video,
       '-vf',
-      'negate,blackdetect=d=0.2:pix_th=0.10',
+      'scale=320:-2,format=gray,edgedetect=low=0.1:high=0.4,signalstats,metadata=mode=print:key=lavfi.signalstats.YAVG:file=-',
       '-an',
       '-f',
       'null',
       '-',
     ],
-    { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
   );
 
-  const output = `${probe.stderr ?? ''}`;
-  const matches = [
-    ...output.matchAll(/black_start:([\d.]+)[^\n]*?black_end:([\d.]+)/g),
-  ];
+  /** @type {{ time: number; energy: number }[]} */
+  const frames = [
+    ...`${probe.stdout ?? ''}`.matchAll(
+      /pts_time:([\d.]+)\s*\n\s*lavfi\.signalstats\.YAVG=([\d.]+)/g
+    ),
+  ].map(m => ({ time: Number(m[1]), energy: Number(m[2]) }));
 
-  // Only trim a blank segment that begins at (or very near) the start.
-  const leading = matches.find(m => Number(m[1]) < 0.5);
-  return leading ? Number(leading[2]) : 0;
+  if (frames.length === 0) {
+    return 0;
+  }
+
+  const sorted = [...frames].map(f => f.energy).sort((a, b) => a - b);
+  const peak = sorted[Math.floor(sorted.length * 0.95)] ?? 0;
+  const threshold = Math.max(BLANK_EDGE_ENERGY, peak * CONTENT_EDGE_RATIO);
+
+  const start = frames.findIndex((_, i) =>
+    frames
+      .slice(i, i + CONTENT_FRAME_RUN)
+      .every(frame => frame.energy >= threshold)
+  );
+
+  // Never trim everything - a run that never reaches content is left as-is.
+  return start > 0 ? frames[start].time : 0;
 }
 
 /**
- * Trims the leading blank screen and exports an mp4 next to the source video.
- * mp4 is widely supported for attaching to GitHub PRs and Jira tickets.
+ * Trims the leading blank/loading screen and exports an mp4 next to the source
+ * video. mp4 is widely supported for attaching to GitHub PRs and Jira tickets.
  *
  * @param {string} video Path to the raw .webm recording.
  * @param {number} startSec Seconds to skip from the start.
@@ -352,13 +378,13 @@ if (videos.length === 0) {
     let note = '';
 
     if (ffmpegAvailable) {
-      const blankEnd = detectLeadingBlankEnd(video);
-      const mp4 = exportTrimmedMp4(video, blankEnd);
+      const contentStart = detectContentStart(video);
+      const mp4 = exportTrimmedMp4(video, contentStart);
       if (mp4) {
         output = mp4;
         note =
-          blankEnd > 0.3
-            ? ` (trimmed ${blankEnd.toFixed(1)}s of leading load screen)`
+          contentStart > 0.3
+            ? ` (trimmed ${contentStart.toFixed(1)}s of leading load screen)`
             : '';
       } else {
         note = ' (mp4 export failed)';
