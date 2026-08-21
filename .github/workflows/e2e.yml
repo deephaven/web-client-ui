@@ -158,7 +158,7 @@ jobs:
 
       - name: Comment with recordings
         # Forked PRs get a read-only token, so the comment would fail.
-        if: ${{ steps.upload.outputs.artifact-url != '' && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ steps.upload.outputs.artifact-url != '' && !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: e2e-new-test-recordings
