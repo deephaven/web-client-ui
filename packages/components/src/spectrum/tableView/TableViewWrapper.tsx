@@ -9,6 +9,8 @@ import {
   useOnScrollRef,
 } from '@deephaven/react-hooks';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
+import classNames from 'classnames';
+import './TableViewWrapper.scss';
 
 export interface TableViewWrapperProps<T> extends SpectrumTableProps<T> {
   /** Total number of logical rows represented by a windowed collection. */
@@ -34,6 +36,7 @@ export function TableViewWrapper<T>(
     onScroll = EMPTY_FUNCTION,
     onViewportChange,
     rowHeight,
+    UNSAFE_className,
     ...tableViewProps
   } = props;
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
@@ -96,6 +99,7 @@ export function TableViewWrapper<T>(
       ref={tableViewRef}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...tableViewProps}
+      UNSAFE_className={classNames('dh-table-view-wrapper', UNSAFE_className)}
       width={tableViewProps.width ?? '100%'}
       height={tableViewProps.height ?? '100%'}
     />
