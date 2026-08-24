@@ -2,6 +2,6 @@
   [class*='spectrum-Table-columnResizer']:not(
       [class*='spectrum-Table-columnResizerPlaceholder']
     ) {
-    display: block !important;
+    display: flex !important;
   }
 }
