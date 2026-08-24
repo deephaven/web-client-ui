@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import type { Key, SortDescriptor } from '@react-types/shared';
 import {
+  Flex,
   Grid,
   Radio,
   RadioGroup,
@@ -10,13 +11,11 @@ import {
   type TableViewProps,
 } from '@deephaven/components';
 import SampleSection from './SampleSection';
-import { LabeledFlexContainer } from './LabeledFlexContainer';
+import LabeledFlexContainer from './LabeledFlexContainer';
 
 interface SampleRow {
-  id: number;
   name: string;
   owner: string;
-  modified: string;
 }
 
 const columns: TableViewColumn[] = [
@@ -35,12 +34,6 @@ const columns: TableViewColumn[] = [
     defaultWidth: '1fr',
     minWidth: 100,
     allowsResizing: true,
-    allowsSorting: true,
-  },
-  {
-    key: 'modified',
-    name: 'Modified',
-    width: 120,
     allowsSorting: true,
   },
 ];
@@ -65,29 +58,26 @@ const NAMES = [
 const OWNERS = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank'];
 
 const rows: SampleRow[] = Array.from({ length: 52 }, (_, index) => ({
-  id: index,
   name: `${NAMES[index % NAMES.length]} ${
     Math.floor(index / NAMES.length) > 0
       ? Math.floor(index / NAMES.length) + 1
       : ''
   }`.trim(),
   owner: OWNERS[index % OWNERS.length],
-  modified: `2026-08-${String((index % 28) + 1).padStart(2, '0')}`,
 }));
 
 function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
-  return item[columnKey as keyof Omit<SampleRow, 'id'>];
+  return item[columnKey as keyof SampleRow];
 }
 
 export function TableViews(): JSX.Element {
+  const [density, setDensity] =
+    useState<TableViewProps<SampleRow>['density']>('compact');
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'name',
     direction: 'ascending',
   });
-  const [lastAction, setLastAction] = useState('None');
-  const [viewport, setViewport] = useState('0–0');
-  const [density, setDensity] =
-    useState<TableViewProps<SampleRow>['density']>('compact');
+  const [lastOpenedName, setLastOpenedName] = useState('');
 
   const onDensityChange = useCallback((value: string) => {
     setDensity(value as TableViewProps<SampleRow>['density']);
@@ -96,21 +86,26 @@ export function TableViews(): JSX.Element {
   const sortedRows = useMemo(() => {
     const { column, direction } = sortDescriptor;
     return [...rows].sort((first, second) => {
-      const firstValue = first[column as keyof Omit<SampleRow, 'id'>];
-      const secondValue = second[column as keyof Omit<SampleRow, 'id'>];
-      const comparison = String(firstValue).localeCompare(String(secondValue));
+      const comparison = String(first[column as keyof SampleRow]).localeCompare(
+        String(second[column as keyof SampleRow])
+      );
       return direction === 'descending' ? -comparison : comparison;
     });
   }, [sortDescriptor]);
 
-  const handleViewportChange = useCallback((top: number, bottom: number) => {
-    setViewport(`${top}–${bottom}`);
+  const handleAction = useCallback((item: SampleRow): void => {
+    setLastOpenedName(item.name);
   }, []);
 
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
-      <Grid gap={14}>
+      <Grid
+        gap={14}
+        height="size-6000"
+        columns="1fr 1fr"
+        rows="auto minmax(0, 1fr) auto"
+      >
         <LabeledFlexContainer
           alignItems="center"
           direction="row"
@@ -129,44 +124,50 @@ export function TableViews(): JSX.Element {
             <Radio value="spacious">Spacious</Radio>
           </RadioGroup>
         </LabeledFlexContainer>
+
         <LabeledFlexContainer
           gap={10}
-          label="Resizable and sortable"
-          height="size-6000"
+          label="Resizable columns"
+          height="100%"
+          minHeight={0}
+          minWidth={0}
         >
           <TableView
-            aria-label="Resizable and sortable table"
+            aria-label="Resizable columns"
             columns={columns}
+            density={density}
+            items={rows.slice(0, 6)}
+            itemCount={6}
+            onAction={handleAction}
+            renderCell={renderCell}
+            getTextValue={item => item.name}
+          />
+        </LabeledFlexContainer>
+
+        <LabeledFlexContainer
+          gap={10}
+          label="Many rows"
+          height="100%"
+          minHeight={0}
+          minWidth={0}
+        >
+          <TableView
+            aria-label="Many rows"
+            columns={columns}
+            density={density}
             items={sortedRows}
             itemCount={sortedRows.length}
-            density={density}
             sortDescriptor={sortDescriptor}
             onSortChange={setSortDescriptor}
-            onAction={item => setLastAction(item.name)}
-            onViewportChange={handleViewportChange}
-            renderCell={renderCell}
-            getTextValue={item => item.name}
-          />
-          <Text>
-            Last action: {lastAction} | Visible rows: {viewport}
-          </Text>
-        </LabeledFlexContainer>
-        <LabeledFlexContainer
-          gap={10}
-          label="Windowed (offset 3 of 12 rows)"
-          height="size-6000"
-        >
-          <TableView
-            aria-label="Windowed data table"
-            columns={columns}
-            density={density}
-            items={rows.slice(3, 9)}
-            itemCount={12}
-            offset={3}
+            onAction={handleAction}
             renderCell={renderCell}
             getTextValue={item => item.name}
           />
         </LabeledFlexContainer>
+
+        <Flex gridColumn="span 2">
+          <Text>Last opened: {lastOpenedName}</Text>
+        </Flex>
       </Grid>
     </SampleSection>
   );
