@@ -106,8 +106,8 @@ export function TableViews(): JSX.Element {
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
-      <Grid gap={14} columns="1fr 1fr">
-        <LabeledFlexContainer label="Resizable and sortable">
+      <Grid gap={14} columns="1fr 1fr" height="size-6000">
+        <LabeledFlexContainer label="Resizable and sortable" height="50%">
           <TableView
             aria-label="Resizable and sortable table"
             columns={columns}
@@ -124,7 +124,10 @@ export function TableViews(): JSX.Element {
             Last action: {lastAction} | Visible rows: {viewport}
           </Text>
         </LabeledFlexContainer>
-        <LabeledFlexContainer label="Windowed (offset 3 of 12 rows)">
+        <LabeledFlexContainer
+          label="Windowed (offset 3 of 12 rows)"
+          height="50%"
+        >
           <TableView
             aria-label="Windowed data table"
             columns={columns}
