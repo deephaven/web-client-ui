@@ -98,13 +98,7 @@ export function TableViewNormalized<T>({
             textValue={item == null ? '' : getTextValue?.(item) ?? ''}
           >
             {columnKey => (
-              <Cell>
-                {item == null ? null : (
-                  <div className="dh-table-view-cell" data-table-view-key={key}>
-                    {renderCell(item, columnKey)}
-                  </div>
-                )}
-              </Cell>
+              <Cell>{item == null ? null : renderCell(item, columnKey)}</Cell>
             )}
           </Row>
         )}
