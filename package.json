@@ -65,6 +65,7 @@
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/log": "file:../log",
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/playwright-grid": "file:../playwright-grid",
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/redux": "file:../redux",
     "@deephaven/stylelint-config": "file:../stylelint-config",

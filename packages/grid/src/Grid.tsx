@@ -81,6 +81,13 @@ import {
   type CellInputRendererRegistry,
   type CellInputProps,
 } from './GridRendererTypes';
+import {
+  createGridA11ySnapshot,
+  GRID_A11Y_ATTRIBUTES,
+  getGridA11ySummary,
+  type GridA11ySnapshot,
+} from './GridA11yUtils';
+import GridA11yFallback from './GridA11yFallback';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -228,6 +235,12 @@ export type GridState = {
 
   /** What revision the grid is drawing. Automatically increments when a forceUpdate is called. */
   updateRevision: number;
+
+  /** The viewport described in the canvas fallback content, or null if the user has not asked for one */
+  a11ySnapshot: GridA11ySnapshot | null;
+
+  /** Increments each time an accessibility snapshot is generated, so external tooling can tell when it is up to date */
+  a11yRevision: number;
 };
 
 /**
@@ -394,6 +407,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
+    this.handleA11yDescribe = this.handleA11yDescribe.bind(this);
     this.getSelectedRanges = this.getSelectedRanges.bind(this);
 
     const {
@@ -510,6 +524,9 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       /** What revision the grid is drawing. Automatically increments when a forceUpdate is called. */
       updateRevision: 0,
+
+      a11ySnapshot: null,
+      a11yRevision: 0,
     };
   }
 
@@ -579,15 +596,35 @@ class Grid extends PureComponent<GridProps, GridState> {
     const {
       movedColumns: prevStateMovedColumns,
       movedRows: prevStateMovedRows,
+      top: prevTop,
+      left: prevLeft,
+      topOffset: prevTopOffset,
+      leftOffset: prevLeftOffset,
     } = prevState;
     const {
       draggingColumn,
       draggingRow,
       movedColumns: currentStateMovedColumns,
       movedRows: currentStateMovedRows,
+      a11ySnapshot,
+      top: currentTop,
+      left: currentLeft,
+      topOffset: currentTopOffset,
+      leftOffset: currentLeftOffset,
     } = this.state;
 
     const stateUpdates: Partial<GridState> = {};
+
+    // A snapshot describes a single viewport, so it is stale as soon as the grid scrolls
+    if (
+      a11ySnapshot != null &&
+      (prevTop !== currentTop ||
+        prevLeft !== currentLeft ||
+        prevTopOffset !== currentTopOffset ||
+        prevLeftOffset !== currentLeftOffset)
+    ) {
+      stateUpdates.a11ySnapshot = null;
+    }
 
     if (prevPropMovedColumns !== movedColumns) {
       stateUpdates.movedColumns = movedColumns;
@@ -1978,6 +2015,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
+  /**
+   * Describe the current viewport in the canvas fallback content.
+   * Generated on request rather than on every render, as walking the viewport
+   * is far too expensive to do while scrolling.
+   */
+  handleA11yDescribe(): void {
+    const { model } = this.props;
+    const { metrics } = this;
+    this.setState(({ selectedRanges, a11yRevision }) => ({
+      a11ySnapshot:
+        metrics != null
+          ? createGridA11ySnapshot(model, metrics, selectedRanges)
+          : null,
+      a11yRevision: a11yRevision + 1,
+    }));
+  }
+
   handleResize(): void {
     /**
      * We need to always redraw the canvas in the same frame as the updateCanvasScale
@@ -2448,8 +2502,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   render(): ReactNode {
-    const { children } = this.props;
-    const { cursor } = this.state;
+    const { children, model } = this.props;
+    const { cursor, selectedRanges, a11ySnapshot, a11yRevision } = this.state;
 
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>
@@ -2467,8 +2521,13 @@ class Grid extends PureComponent<GridProps, GridState> {
           onMouseMove={this.handleMouseMove}
           onMouseLeave={this.handleMouseLeave}
           tabIndex={0}
+          {...{ [GRID_A11Y_ATTRIBUTES.revision]: a11yRevision }}
         >
-          Your browser does not support HTML canvas. Update your browser?
+          <GridA11yFallback
+            summary={getGridA11ySummary(model, selectedRanges)}
+            snapshot={a11ySnapshot}
+            onDescribe={this.handleA11yDescribe}
+          />
         </canvas>
         {this.renderInputField()}
         {children}

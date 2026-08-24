@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
@@ -1517,5 +1517,89 @@ describe('cellInputRendererRegistry', () => {
     mouseDoubleClick(3, 5, component);
 
     expect(customRenderer).not.toHaveBeenCalled();
+  });
+});
+
+describe('accessibility fallback content', () => {
+  function getFallback(component: Grid) {
+    return within(component.canvas as unknown as HTMLElement);
+  }
+
+  function describeContents(component: Grid) {
+    fireEvent.click(
+      getFallback(component).getByRole('button', {
+        name: 'Describe the grid contents',
+      })
+    );
+  }
+
+  it('summarizes the size of the grid', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    expect(
+      getFallback(component).getByText('Grid with 100 rows and 3 columns.')
+    ).toBeInTheDocument();
+  });
+
+  it('summarizes the current selection', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    mouseClick(0, 0, component);
+    mouseClick(1, 1, component, { ctrlKey: true });
+
+    expect(
+      getFallback(component).getByText(
+        'Grid with 100 rows and 3 columns. 2 cells selected.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('describes the visible contents on request', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    expect(getFallback(component).queryByRole('table')).toBeNull();
+
+    describeContents(component);
+
+    const table = getFallback(component).getByRole('table');
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map(header => header.textContent)
+    ).toEqual(['0', '1', '2']);
+    expect(within(table).getByText('0,0')).toHaveAttribute('data-grid-rect');
+  });
+
+  it('increments the revision each time the contents are described', () => {
+    const component = makeGridComponent();
+    const canvas = component.canvas as unknown as HTMLElement;
+
+    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '0');
+
+    describeContents(component);
+    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '1');
+
+    describeContents(component);
+    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '2');
+  });
+
+  it('discards the description once the grid scrolls away from it', () => {
+    const component = makeGridComponent();
+
+    describeContents(component);
+    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+
+    fireEvent.wheel(component.canvas as unknown as HTMLElement, {
+      deltaY: 500,
+    });
+
+    expect(component.state.top).toBeGreaterThan(0);
+    expect(getFallback(component).queryByRole('table')).toBeNull();
   });
 });
