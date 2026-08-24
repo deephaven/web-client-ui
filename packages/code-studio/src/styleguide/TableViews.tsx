@@ -91,6 +91,7 @@ export function TableViews(): JSX.Element {
         <LabeledFlexContainer
           alignItems="center"
           direction="row"
+          gap={10}
           label="Density"
           gridColumn="span 2"
         >
@@ -105,7 +106,11 @@ export function TableViews(): JSX.Element {
             <Radio value="spacious">Spacious</Radio>
           </RadioGroup>
         </LabeledFlexContainer>
-        <LabeledFlexContainer label="Resizable and sortable" height="size-3600">
+        <LabeledFlexContainer
+          gap={10}
+          label="Resizable and sortable"
+          height="size-3600"
+        >
           <TableView
             aria-label="Resizable and sortable table"
             columns={columns}
@@ -124,6 +129,7 @@ export function TableViews(): JSX.Element {
           </Text>
         </LabeledFlexContainer>
         <LabeledFlexContainer
+          gap={10}
           label="Windowed (offset 3 of 12 rows)"
           height="size-3600"
         >

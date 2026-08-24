@@ -20,10 +20,15 @@ import {
 import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
 import { generateNormalizedItems } from './utils';
 import SampleSection from './SampleSection';
-import {
-  LabeledFlexContainer,
-  LABELED_FLEX_CONTAINER_HEIGHTS,
-} from './LabeledFlexContainer';
+import { LabeledFlexContainer } from './LabeledFlexContainer';
+
+const LABELED_FLEX_CONTAINER_HEIGHTS = {
+  gap: 10,
+  label: {
+    medium: 21,
+    large: 25.5,
+  },
+};
 
 // Generate enough items to require scrolling
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
@@ -85,6 +90,7 @@ export function ListViews(): JSX.Element {
         <LabeledFlexContainer
           alignItems="center"
           direction="row"
+          gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
           label="Density"
           gridColumn="span 3"
         >
@@ -101,6 +107,7 @@ export function ListViews(): JSX.Element {
         </LabeledFlexContainer>
 
         <LabeledFlexContainer
+          gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
           label="Single Child"
           gridColumn="span 3"
           height="100%"
@@ -114,7 +121,11 @@ export function ListViews(): JSX.Element {
           </ListView>
         </LabeledFlexContainer>
 
-        <LabeledFlexContainer label="Icons" gridColumn="span 2">
+        <LabeledFlexContainer
+          gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
+          label="Icons"
+          gridColumn="span 2"
+        >
           <ListView
             aria-label="Icon"
             density={density}
@@ -143,7 +154,10 @@ export function ListViews(): JSX.Element {
           </ListView>
         </LabeledFlexContainer>
 
-        <LabeledFlexContainer label="Mixed Children Types">
+        <LabeledFlexContainer
+          gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
+          label="Mixed Children Types"
+        >
           <ListView
             aria-label="Mixed Children Types"
             density={density}
@@ -193,7 +207,11 @@ export function ListViews(): JSX.Element {
           </Checkbox>
         </Flex>
 
-        <LabeledFlexContainer label="Controlled" gridColumn="span 2">
+        <LabeledFlexContainer
+          gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
+          label="Controlled"
+          gridColumn="span 2"
+        >
           <ListViewNormalized
             aria-label="Controlled"
             density={density}

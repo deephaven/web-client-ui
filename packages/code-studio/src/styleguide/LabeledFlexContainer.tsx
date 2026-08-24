@@ -1,16 +1,6 @@
-import React from 'react';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import { Flex, Text } from '@deephaven/components';
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const LABELED_FLEX_CONTAINER_HEIGHTS = {
-  gap: 10,
-  label: {
-    medium: 21,
-    large: 25.5,
-  },
-};
 
 interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
   label: string;
@@ -29,7 +19,6 @@ export function LabeledFlexContainer({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...styleProps}
       direction={direction}
-      gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
     >
       <Text>{label}</Text>
       {children}
