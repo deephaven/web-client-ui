@@ -7,10 +7,12 @@ import type {
 } from '@react-types/shared';
 import {
   Flex,
-  Grid,
+  Radio,
+  RadioGroup,
   TableView,
   Text,
   type TableViewColumn,
+  type TableViewProps,
 } from '@deephaven/components';
 import SampleSection from './SampleSection';
 
@@ -60,11 +62,13 @@ function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
 
 interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
   label: string;
+  direction?: 'row' | 'column';
   children: ReactNode;
 }
 
 function LabeledFlexContainer({
   label,
+  direction = 'column',
   children,
   ...styleProps
 }: LabeledProps): JSX.Element {
@@ -72,7 +76,7 @@ function LabeledFlexContainer({
     <Flex
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...styleProps}
-      direction="column"
+      direction={direction}
       gap={10}
     >
       <Text>{label}</Text>
@@ -88,6 +92,12 @@ export function TableViews(): JSX.Element {
   });
   const [lastAction, setLastAction] = useState('None');
   const [viewport, setViewport] = useState('0–0');
+  const [density, setDensity] =
+    useState<TableViewProps<SampleRow>['density']>('compact');
+
+  const onDensityChange = useCallback((value: string) => {
+    setDensity(value as TableViewProps<SampleRow>['density']);
+  }, []);
 
   const sortedRows = useMemo(() => {
     const { column, direction } = sortDescriptor;
@@ -106,13 +116,31 @@ export function TableViews(): JSX.Element {
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
-      <Grid gap={14} columns="1fr 1fr" height="size-6000">
-        <LabeledFlexContainer label="Resizable and sortable" height="50%">
+      <Flex gap={14} direction="column">
+        <LabeledFlexContainer
+          alignItems="center"
+          direction="row"
+          label="Density"
+          gridColumn="span 2"
+        >
+          <RadioGroup
+            aria-label="Density"
+            orientation="horizontal"
+            value={density ?? 'compact'}
+            onChange={onDensityChange}
+          >
+            <Radio value="compact">Compact</Radio>
+            <Radio value="regular">Regular</Radio>
+            <Radio value="spacious">Spacious</Radio>
+          </RadioGroup>
+        </LabeledFlexContainer>
+        <LabeledFlexContainer label="Resizable and sortable" height="size-3600">
           <TableView
             aria-label="Resizable and sortable table"
             columns={columns}
             items={sortedRows}
             itemCount={sortedRows.length}
+            density={density}
             sortDescriptor={sortDescriptor}
             onSortChange={setSortDescriptor}
             onAction={item => setLastAction(item.name)}
@@ -126,11 +154,12 @@ export function TableViews(): JSX.Element {
         </LabeledFlexContainer>
         <LabeledFlexContainer
           label="Windowed (offset 3 of 12 rows)"
-          height="50%"
+          height="size-3600"
         >
           <TableView
             aria-label="Windowed data table"
             columns={columns}
+            density={density}
             items={rows.slice(3, 9)}
             itemCount={12}
             offset={3}
@@ -138,7 +167,7 @@ export function TableViews(): JSX.Element {
             getTextValue={item => item.name}
           />
         </LabeledFlexContainer>
-      </Grid>
+      </Flex>
     </SampleSection>
   );
 }
