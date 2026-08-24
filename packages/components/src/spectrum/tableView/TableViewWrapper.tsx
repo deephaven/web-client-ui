@@ -45,7 +45,12 @@ export function TableViewWrapper<T>(
 
   const updateViewport = useCallback(
     (element: HTMLElement) => {
-      if (onViewportChange == null || rowHeight == null) {
+      if (
+        onViewportChange == null ||
+        rowHeight == null ||
+        rowHeight <= 0 ||
+        itemCount <= 0
+      ) {
         return;
       }
       const top = Math.max(0, Math.floor(element.scrollTop / rowHeight));
