@@ -29,6 +29,7 @@ export interface TableViewProps<T>
     | 'defaultSelectedKeys'
     | 'disabledKeys'
     | 'onSelectionChange'
+    | 'overflowMode'
   > {
   columns: TableViewColumn[];
   items: readonly T[];

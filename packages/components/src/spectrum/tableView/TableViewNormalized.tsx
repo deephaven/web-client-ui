@@ -25,6 +25,7 @@ export interface TableViewNormalizedProps<T>
     | 'defaultSelectedKeys'
     | 'disabledKeys'
     | 'onSelectionChange'
+    | 'overflowMode'
   > {
   columns: TableViewColumn[];
   normalizedItems: readonly KeyedItem<T, Key>[];
