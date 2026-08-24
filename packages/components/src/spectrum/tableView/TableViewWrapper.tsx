@@ -2,7 +2,7 @@ import {
   TableView as SpectrumTableView,
   type SpectrumTableProps,
 } from '@adobe/react-spectrum';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DOMRefValue } from '@react-types/shared';
 import {
   extractSpectrumLastChildHTMLElement,
@@ -43,10 +43,15 @@ export function TableViewWrapper<T>(
   const { scale } = useSpectrumThemeProvider();
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 
+  // Ref so callback identity changes don't retrigger updateViewport or the effect
+  const onViewportChangeRef = useRef(onViewportChange);
+  onViewportChangeRef.current = onViewportChange;
+  const lastRangeRef = useRef<readonly [number, number] | null>(null);
+
   const updateViewport = useCallback(
     (element: HTMLElement) => {
       if (
-        onViewportChange == null ||
+        onViewportChangeRef.current == null ||
         rowHeight == null ||
         rowHeight <= 0 ||
         itemCount <= 0
@@ -62,9 +67,14 @@ export function TableViewWrapper<T>(
         top,
         Math.min(itemCount - 1, top + visibleRowCount)
       );
-      onViewportChange(top, bottom);
+      const last = lastRangeRef.current;
+      if (last != null && last[0] === top && last[1] === bottom) {
+        return;
+      }
+      lastRangeRef.current = [top, bottom];
+      onViewportChangeRef.current(top, bottom);
     },
-    [itemCount, onViewportChange, rowHeight]
+    [itemCount, rowHeight]
   );
 
   const handleScroll = useCallback(
@@ -88,9 +98,10 @@ export function TableViewWrapper<T>(
   );
 
   useEffect(() => {
-    if (scrollElement == null || onViewportChange == null) {
+    if (scrollElement == null) {
       return undefined;
     }
+    lastRangeRef.current = null;
     updateViewport(scrollElement);
     const resizeObserver = new ResizeObserver(() => {
       updateViewport(scrollElement);
@@ -99,7 +110,7 @@ export function TableViewWrapper<T>(
     return () => {
       resizeObserver.disconnect();
     };
-  }, [onViewportChange, scrollElement, updateViewport]);
+  }, [scrollElement, updateViewport]);
 
   return (
     <SpectrumTableView
