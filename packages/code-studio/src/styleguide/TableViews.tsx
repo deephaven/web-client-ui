@@ -45,11 +45,34 @@ const columns: TableViewColumn[] = [
   },
 ];
 
-const rows: SampleRow[] = Array.from({ length: 24 }, (_, index) => ({
+const NAMES = [
+  'Sales Overview',
+  'Revenue Tracker',
+  'Inventory Status',
+  'User Analytics',
+  'Order Pipeline',
+  'Support Queue',
+  'Marketing Funnel',
+  'Risk Dashboard',
+  'Compliance Report',
+  'Performance Monitor',
+  'Trade Blotter',
+  'Portfolio Summary',
+  'P&L Attribution',
+  'Exposure Heatmap',
+];
+
+const OWNERS = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank'];
+
+const rows: SampleRow[] = Array.from({ length: 52 }, (_, index) => ({
   id: index,
-  name: `Dashboard ${index + 1}`,
-  owner: ['Alice', 'Bob', 'Carol'][index % 3],
-  modified: `2026-08-${String((index % 17) + 1).padStart(2, '0')}`,
+  name: `${NAMES[index % NAMES.length]} ${
+    Math.floor(index / NAMES.length) > 0
+      ? Math.floor(index / NAMES.length) + 1
+      : ''
+  }`.trim(),
+  owner: OWNERS[index % OWNERS.length],
+  modified: `2026-08-${String((index % 28) + 1).padStart(2, '0')}`,
 }));
 
 function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
