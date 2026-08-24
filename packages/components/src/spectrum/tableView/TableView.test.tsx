@@ -29,7 +29,7 @@ function renderTable({
   onViewportChange?: jest.Mock;
 } = {}) {
   const result = render(
-    <Provider theme={defaultTheme}>
+    <Provider theme={defaultTheme} scale="medium">
       <TableView
         aria-label="Dashboards"
         columns={columns}
