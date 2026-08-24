@@ -1,7 +1,13 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import type { Key, SortDescriptor } from '@react-types/shared';
+import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
+import type {
+  BoxAlignmentStyleProps,
+  Key,
+  SortDescriptor,
+  StyleProps,
+} from '@react-types/shared';
 import {
   Flex,
+  Grid,
   TableView,
   Text,
   type TableViewColumn,
@@ -52,6 +58,29 @@ function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
   return item[columnKey as keyof Omit<SampleRow, 'id'>];
 }
 
+interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
+  label: string;
+  children: ReactNode;
+}
+
+function LabeledFlexContainer({
+  label,
+  children,
+  ...styleProps
+}: LabeledProps): JSX.Element {
+  return (
+    <Flex
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...styleProps}
+      direction="column"
+      gap={10}
+    >
+      <Text>{label}</Text>
+      {children}
+    </Flex>
+  );
+}
+
 export function TableViews(): JSX.Element {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'name',
@@ -77,43 +106,36 @@ export function TableViews(): JSX.Element {
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
-      <Flex direction="column" gap={24}>
-        <Flex direction="column" gap={8}>
-          <Text>Resizable and sortable</Text>
-          <div className="style-guide-table-view">
-            <TableView
-              aria-label="Resizable and sortable table"
-              columns={columns}
-              items={sortedRows}
-              itemCount={sortedRows.length}
-              sortDescriptor={sortDescriptor}
-              onSortChange={setSortDescriptor}
-              onAction={item => setLastAction(item.name)}
-              onViewportChange={handleViewportChange}
-              renderCell={renderCell}
-              getTextValue={item => item.name}
-            />
-          </div>
+      <Grid gap={14} columns="1fr 1fr">
+        <LabeledFlexContainer label="Resizable and sortable">
+          <TableView
+            aria-label="Resizable and sortable table"
+            columns={columns}
+            items={sortedRows}
+            itemCount={sortedRows.length}
+            sortDescriptor={sortDescriptor}
+            onSortChange={setSortDescriptor}
+            onAction={item => setLastAction(item.name)}
+            onViewportChange={handleViewportChange}
+            renderCell={renderCell}
+            getTextValue={item => item.name}
+          />
           <Text>
-            Last action: {lastAction}; visible rows: {viewport}
+            Last action: {lastAction} | Visible rows: {viewport}
           </Text>
-        </Flex>
-
-        <Flex direction="column" gap={8}>
-          <Text>Windowed data at offset 3 of 12 rows</Text>
-          <div className="style-guide-table-view style-guide-table-view-windowed">
-            <TableView
-              aria-label="Windowed data table"
-              columns={columns}
-              items={rows.slice(3, 9)}
-              itemCount={12}
-              offset={3}
-              renderCell={renderCell}
-              getTextValue={item => item.name}
-            />
-          </div>
-        </Flex>
-      </Flex>
+        </LabeledFlexContainer>
+        <LabeledFlexContainer label="Windowed (offset 3 of 12 rows)">
+          <TableView
+            aria-label="Windowed data table"
+            columns={columns}
+            items={rows.slice(3, 9)}
+            itemCount={12}
+            offset={3}
+            renderCell={renderCell}
+            getTextValue={item => item.name}
+          />
+        </LabeledFlexContainer>
+      </Grid>
     </SampleSection>
   );
 }
