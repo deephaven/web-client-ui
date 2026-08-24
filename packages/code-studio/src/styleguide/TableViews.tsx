@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import type { Key, SortDescriptor } from '@react-types/shared';
 import {
-  Flex,
+  Grid,
   Radio,
   RadioGroup,
   TableView,
@@ -110,7 +110,7 @@ export function TableViews(): JSX.Element {
   return (
     <SampleSection name="table-views">
       <h2 className="ui-title">Table View</h2>
-      <Flex gap={14} direction="column">
+      <Grid gap={14}>
         <LabeledFlexContainer
           alignItems="center"
           direction="row"
@@ -132,7 +132,7 @@ export function TableViews(): JSX.Element {
         <LabeledFlexContainer
           gap={10}
           label="Resizable and sortable"
-          height="size-3600"
+          height="size-6000"
         >
           <TableView
             aria-label="Resizable and sortable table"
@@ -154,7 +154,7 @@ export function TableViews(): JSX.Element {
         <LabeledFlexContainer
           gap={10}
           label="Windowed (offset 3 of 12 rows)"
-          height="size-3600"
+          height="size-6000"
         >
           <TableView
             aria-label="Windowed data table"
@@ -167,7 +167,7 @@ export function TableViews(): JSX.Element {
             getTextValue={item => item.name}
           />
         </LabeledFlexContainer>
-      </Flex>
+      </Grid>
     </SampleSection>
   );
 }
