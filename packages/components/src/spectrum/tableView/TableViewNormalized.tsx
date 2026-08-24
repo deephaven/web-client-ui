@@ -5,42 +5,47 @@ import {
   Row,
   TableBody,
   TableHeader,
+  type SpectrumTableProps,
 } from '@adobe/react-spectrum';
-import type { Key, SortDescriptor } from '@react-types/shared';
+import type { Key } from '@react-types/shared';
 import type { KeyedItem } from '@deephaven/utils';
 import { TABLE_ROW_HEIGHT } from '../../UIConstants';
 import type { TableViewColumn } from './TableView';
 import { TableViewWrapper } from './TableViewWrapper';
 
-export interface TableViewNormalizedProps<T> {
+export interface TableViewNormalizedProps<T>
+  extends Omit<
+    SpectrumTableProps<T>,
+    | 'children'
+    | 'items'
+    | 'onAction'
+    | 'selectionMode'
+    | 'selectedKeys'
+    | 'defaultSelectedKeys'
+    | 'disabledKeys'
+    | 'onSelectionChange'
+  > {
   columns: TableViewColumn[];
   normalizedItems: readonly KeyedItem<T, Key>[];
-  sortDescriptor?: SortDescriptor;
   onAction?: (item: T) => void;
   onScroll?: (event: Event) => void;
-  onSortChange?: (descriptor: SortDescriptor) => void;
   onViewportChange?: (top: number, bottom: number) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
   getTextValue?: (item: T) => string;
-  renderEmptyState?: () => JSX.Element;
-  'aria-label'?: string;
-  UNSAFE_className?: string;
 }
 
 /** Renders normalized, keyed row data in a resizable Spectrum TableView. */
 export function TableViewNormalized<T>({
   columns,
   normalizedItems,
-  sortDescriptor,
   onAction,
   onScroll,
-  onSortChange,
   onViewportChange,
   renderCell,
   getTextValue,
-  renderEmptyState,
   'aria-label': ariaLabel = 'Table',
-  UNSAFE_className,
+  density = 'compact',
+  ...spectrumProps
 }: TableViewNormalizedProps<T>): JSX.Element {
   const handleAction = useCallback(
     (key: Key) => {
@@ -58,17 +63,15 @@ export function TableViewNormalized<T>({
   return (
     <TableViewWrapper
       aria-label={ariaLabel}
-      density="compact"
+      density={density}
       selectionMode="none"
-      sortDescriptor={sortDescriptor}
-      onSortChange={onSortChange}
-      onAction={handleAction}
+      onAction={onAction != null ? handleAction : undefined}
       onScroll={onScroll}
-      renderEmptyState={renderEmptyState}
       itemCount={normalizedItems.length}
       rowHeight={TABLE_ROW_HEIGHT}
       onViewportChange={onViewportChange}
-      UNSAFE_className={UNSAFE_className}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...spectrumProps}
     >
       <TableHeader columns={columns}>
         {column => (

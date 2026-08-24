@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
-import type { Key, SortDescriptor } from '@react-types/shared';
+import type { SpectrumTableProps } from '@adobe/react-spectrum';
+import type { Key } from '@react-types/shared';
 import type { KeyedItem } from '@deephaven/utils';
 import { TableViewNormalized } from './TableViewNormalized';
 
@@ -17,20 +18,26 @@ export interface TableViewColumn {
   hideHeader?: boolean;
 }
 
-export interface TableViewProps<T> {
+export interface TableViewProps<T>
+  extends Omit<
+    SpectrumTableProps<T>,
+    | 'children'
+    | 'items'
+    | 'onAction'
+    | 'selectionMode'
+    | 'selectedKeys'
+    | 'defaultSelectedKeys'
+    | 'disabledKeys'
+    | 'onSelectionChange'
+  > {
   columns: TableViewColumn[];
   items: readonly T[];
   itemCount: number;
   offset?: number;
-  sortDescriptor?: SortDescriptor;
   onAction?: (item: T) => void;
-  onSortChange?: (descriptor: SortDescriptor) => void;
   onViewportChange?: (top: number, bottom: number) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
   getTextValue?: (item: T) => string;
-  renderEmptyState?: () => JSX.Element;
-  'aria-label'?: string;
-  UNSAFE_className?: string;
 }
 
 type WindowedItem<T> = KeyedItem<T, number>;
@@ -44,15 +51,12 @@ export function TableView<T>({
   items,
   itemCount,
   offset = 0,
-  sortDescriptor,
   onAction,
-  onSortChange,
   onViewportChange,
   renderCell,
   getTextValue,
-  renderEmptyState,
   'aria-label': ariaLabel = 'Table',
-  UNSAFE_className,
+  ...spectrumProps
 }: TableViewProps<T>): JSX.Element {
   const rowCount = Math.max(0, itemCount);
   const tableItems = useMemo<WindowedItem<T>[]>(() => {
@@ -76,14 +80,12 @@ export function TableView<T>({
       aria-label={ariaLabel}
       columns={columns}
       normalizedItems={tableItems}
-      sortDescriptor={sortDescriptor}
-      onSortChange={onSortChange}
       onAction={onAction}
-      renderEmptyState={renderEmptyState}
       onViewportChange={onViewportChange}
       renderCell={renderCell}
       getTextValue={getTextValue}
-      UNSAFE_className={UNSAFE_className}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...spectrumProps}
     />
   );
 }
