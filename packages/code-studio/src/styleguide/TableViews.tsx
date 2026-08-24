@@ -1,10 +1,5 @@
-import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
-import type {
-  BoxAlignmentStyleProps,
-  Key,
-  SortDescriptor,
-  StyleProps,
-} from '@react-types/shared';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { Key, SortDescriptor } from '@react-types/shared';
 import {
   Flex,
   Radio,
@@ -15,6 +10,7 @@ import {
   type TableViewProps,
 } from '@deephaven/components';
 import SampleSection from './SampleSection';
+import { LabeledFlexContainer } from './LabeledFlexContainer';
 
 interface SampleRow {
   id: number;
@@ -58,31 +54,6 @@ const rows: SampleRow[] = Array.from({ length: 24 }, (_, index) => ({
 
 function renderCell(item: SampleRow, columnKey: Key): React.ReactNode {
   return item[columnKey as keyof Omit<SampleRow, 'id'>];
-}
-
-interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
-  label: string;
-  direction?: 'row' | 'column';
-  children: ReactNode;
-}
-
-function LabeledFlexContainer({
-  label,
-  direction = 'column',
-  children,
-  ...styleProps
-}: LabeledProps): JSX.Element {
-  return (
-    <Flex
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...styleProps}
-      direction={direction}
-      gap={10}
-    >
-      <Text>{label}</Text>
-      {children}
-    </Flex>
-  );
 }
 
 export function TableViews(): JSX.Element {
