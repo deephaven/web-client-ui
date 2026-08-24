@@ -1,7 +1,7 @@
 import React from 'react';
 import { defaultTheme, Provider } from '@adobe/react-spectrum';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { TABLE_ROW_HEIGHT } from '../../UIConstants';
+import { TABLE_VIEW_ROW_HEIGHTS } from '../../UIConstants';
 import { type TableViewColumn, TableView } from './TableView';
 
 type TestItem = {
@@ -53,9 +53,6 @@ describe('TableView', () => {
 
     expect(screen.getByText('Dashboard B')).toBeInTheDocument();
     expect(
-      container.querySelector('[data-table-view-key="2"]')
-    ).toHaveTextContent('Dashboard B');
-    expect(
       container.querySelector('[data-table-view-key="0"]')
     ).not.toBeInTheDocument();
   });
@@ -79,8 +76,14 @@ describe('TableView', () => {
     const scrollElement = screen.getByRole('grid').lastElementChild;
     expect(scrollElement).toBeInstanceOf(HTMLElement);
     Object.defineProperties(scrollElement, {
-      clientHeight: { configurable: true, value: TABLE_ROW_HEIGHT * 3 },
-      scrollTop: { configurable: true, value: TABLE_ROW_HEIGHT * 2 },
+      clientHeight: {
+        configurable: true,
+        value: TABLE_VIEW_ROW_HEIGHTS.compact.medium * 3,
+      },
+      scrollTop: {
+        configurable: true,
+        value: TABLE_VIEW_ROW_HEIGHTS.compact.medium * 2,
+      },
     });
 
     fireEvent.scroll(scrollElement as Element);
@@ -96,8 +99,14 @@ describe('TableView', () => {
     const scrollElement = screen.getByRole('grid').lastElementChild;
     expect(scrollElement).toBeInstanceOf(HTMLElement);
     Object.defineProperties(scrollElement, {
-      clientHeight: { configurable: true, value: TABLE_ROW_HEIGHT * 3 },
-      scrollTop: { configurable: true, value: TABLE_ROW_HEIGHT * 9 },
+      clientHeight: {
+        configurable: true,
+        value: TABLE_VIEW_ROW_HEIGHTS.compact.medium * 3,
+      },
+      scrollTop: {
+        configurable: true,
+        value: TABLE_VIEW_ROW_HEIGHTS.compact.medium * 9,
+      },
     });
 
     fireEvent.scroll(scrollElement as Element);

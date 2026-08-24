@@ -9,7 +9,8 @@ import {
 } from '@adobe/react-spectrum';
 import type { Key } from '@react-types/shared';
 import type { KeyedItem } from '@deephaven/utils';
-import { TABLE_ROW_HEIGHT } from '../../UIConstants';
+import { TABLE_VIEW_ROW_HEIGHTS } from '../../UIConstants';
+import { useSpectrumThemeProvider } from '../../theme';
 import type { TableViewColumn } from './TableView';
 import { TableViewWrapper } from './TableViewWrapper';
 
@@ -47,6 +48,8 @@ export function TableViewNormalized<T>({
   density = 'compact',
   ...spectrumProps
 }: TableViewNormalizedProps<T>): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
+
   const handleAction = useCallback(
     (key: Key) => {
       // Spectrum stringifies numeric keys before calling onAction
@@ -68,7 +71,7 @@ export function TableViewNormalized<T>({
       onAction={onAction != null ? handleAction : undefined}
       onScroll={onScroll}
       itemCount={normalizedItems.length}
-      rowHeight={TABLE_ROW_HEIGHT}
+      rowHeight={TABLE_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale]}
       onViewportChange={onViewportChange}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumProps}
