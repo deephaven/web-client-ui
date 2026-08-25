@@ -123,6 +123,22 @@ async function runRequest(
   });
 }
 
+/** Collect `error` level log messages emitted while `run` executes. */
+async function captureErrors(run: () => Promise<unknown>): Promise<string[]> {
+  const onLogMessage = jest.fn();
+  const removeHandler = NodeHttp2gRPCTransport.onLogMessage(onLogMessage);
+
+  try {
+    await run();
+  } finally {
+    removeHandler();
+  }
+
+  return onLogMessage.mock.calls
+    .filter(([level]) => level === 'error')
+    .map(([, message]) => String(message));
+}
+
 afterEach(async () => {
   NodeHttp2gRPCTransport.dispose();
 
@@ -197,34 +213,6 @@ describe('window sizes', () => {
     expect(session.state.localWindowSize).toEqual(2 * 1024 * 1024);
   });
 
-  it('should log an error when sessionWindowSize is below initialWindowSize', async () => {
-    const origin = await startServer();
-    const onLogMessage = jest.fn();
-    const removeHandler = NodeHttp2gRPCTransport.onLogMessage(onLogMessage);
-
-    try {
-      await createConnectedTransport(
-        NodeHttp2gRPCTransport.createFactory({
-          initialWindowSize: 4 * 1024 * 1024,
-          sessionWindowSize: 1024 * 1024,
-        }),
-        origin
-      );
-
-      const errors = onLogMessage.mock.calls.filter(
-        ([level]) => level === 'error'
-      );
-
-      expect(
-        errors.some(([, message]) =>
-          String(message).includes('is below initialWindowSize')
-        )
-      ).toBe(true);
-    } finally {
-      removeHandler();
-    }
-  });
-
   it('should apply configured window sizes', async () => {
     const origin = await startServer();
     const transport = await createConnectedTransport(
@@ -258,6 +246,39 @@ describe('window sizes', () => {
 
     expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
     expect(session.localSettings.headerTableSize).toEqual(8192);
+  });
+});
+
+describe('config validation', () => {
+  it('should log an error when sessionWindowSize is below initialWindowSize', async () => {
+    const origin = await startServer();
+    const factory = NodeHttp2gRPCTransport.createFactory({
+      initialWindowSize: 4 * 1024 * 1024,
+      sessionWindowSize: 1024 * 1024,
+    });
+
+    const errors = await captureErrors(() =>
+      createConnectedTransport(factory, origin)
+    );
+
+    expect(
+      errors.some(message => message.includes('is below initialWindowSize'))
+    ).toBe(true);
+  });
+
+  it('should validate once per origin, not per create()', async () => {
+    const origin = await startServer();
+    const factory = NodeHttp2gRPCTransport.createFactory({
+      initialWindowSize: 4 * 1024 * 1024,
+      sessionWindowSize: 1024 * 1024,
+    });
+
+    const errors = await captureErrors(async () => {
+      factory.create(createTransportOptions(origin));
+      factory.create(createTransportOptions(origin));
+    });
+
+    expect(errors).toHaveLength(1);
   });
 });
 
@@ -347,7 +368,7 @@ describe('dispose', () => {
 });
 
 describe('metrics', () => {
-  it('should not do any timing work when no callbacks are supplied', async () => {
+  it('should not do any timing work without a metricsConfig', async () => {
     const origin = await startServer();
     const factory = NodeHttp2gRPCTransport.createFactory();
 
@@ -370,7 +391,9 @@ describe('metrics', () => {
   it('should emit stream metrics on stream end', async () => {
     const origin = await startServer();
     const onStreamMetrics = jest.fn<void, [NodeHttp2StreamMetrics]>();
-    const factory = NodeHttp2gRPCTransport.createFactory({ onStreamMetrics });
+    const factory = NodeHttp2gRPCTransport.createFactory({
+      metricsConfig: { onStreamMetrics, onSessionMetrics: jest.fn() },
+    });
 
     await runRequest(factory, origin);
 
@@ -395,7 +418,9 @@ describe('metrics', () => {
       stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
     });
     const onStreamMetrics = jest.fn<void, [NodeHttp2StreamMetrics]>();
-    const factory = NodeHttp2gRPCTransport.createFactory({ onStreamMetrics });
+    const factory = NodeHttp2gRPCTransport.createFactory({
+      metricsConfig: { onStreamMetrics, onSessionMetrics: jest.fn() },
+    });
 
     await expect(runRequest(factory, origin)).rejects.toBeDefined();
 
@@ -409,9 +434,9 @@ describe('metrics', () => {
 
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        onSessionMetrics,
         sessionWindowSize: 2 * 1024 * 1024,
         sessionOptions: { maxSessionMemory: 32 },
+        metricsConfig: { onSessionMetrics, onStreamMetrics: jest.fn() },
       }),
       origin
     );

@@ -108,23 +108,34 @@ const transportFactory = NodeHttp2gRPCTransport.createFactory(origin => ({
 
 ### Diagnostics
 
-`onSessionMetrics` and `onStreamMetrics` report the negotiated window sizes and
-per-stream throughput. `consumerTimeMs` measures time spent inside the JS API's
-own chunk handler, which distinguishes a slow connection from a slow consumer.
-Both are entirely opt in — no accounting happens when they are not supplied.
+`metricsConfig` reports the negotiated window sizes and per-stream throughput.
+`consumerTimeMs` measures time spent inside the JS API's own chunk handler, which
+distinguishes a slow connection from a slow consumer. It is entirely opt in — no
+accounting happens when `metricsConfig` is omitted. Supplying it enables both
+session and stream metrics; pass a no-op to ignore either one.
 
 ```typescript
 const transportFactory = NodeHttp2gRPCTransport.createFactory({
-  onSessionMetrics: metrics => {
-    console.log(metrics.event, metrics.origin, metrics.localInitialWindowSize);
-  },
-  // Required to observe long lived streams that never end
-  metricsIntervalMs: 5000,
-  onStreamMetrics: ({ path, byteCount, bytesPerSecond, consumerTimeMs }) => {
-    console.log(path, byteCount, bytesPerSecond, consumerTimeMs);
+  metricsConfig: {
+    onSessionMetrics: metrics => {
+      console.log(
+        metrics.event,
+        metrics.origin,
+        metrics.localInitialWindowSize
+      );
+    },
+    onStreamMetrics: ({ path, byteCount, bytesPerSecond, consumerTimeMs }) => {
+      console.log(path, byteCount, bytesPerSecond, consumerTimeMs);
+    },
+    // Required to observe long lived streams that never end
+    intervalMs: 5000,
   },
 });
 ```
+
+A `sessionWindowSize` below `initialWindowSize` is logged as an error rather
+than silently limiting throughput. It is checked once per origin, when the config
+for that origin is resolved.
 
 The same session parameters are also logged on connect via
 `NodeHttp2gRPCTransport.onLogMessage` at the `debug` level:

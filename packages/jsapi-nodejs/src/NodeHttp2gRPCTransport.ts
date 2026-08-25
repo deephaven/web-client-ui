@@ -42,15 +42,23 @@ export interface NodeHttp2TransportConfig {
   sessionWindowSize?: number;
   /** Merged into the `http2.connect` options. */
   sessionOptions?: http2.SecureClientSessionOptions;
+  metricsConfig?: NodeHttp2MetricsConfig;
+}
 
-  onSessionMetrics?: (metrics: NodeHttp2SessionMetrics) => void;
-  onStreamMetrics?: (metrics: NodeHttp2StreamMetrics) => void;
+/**
+ * Opt-in diagnostics. Supplying this enables both session and stream metrics;
+ * pass a no-op to ignore either one.
+ */
+export interface NodeHttp2MetricsConfig {
+  onSessionMetrics: (metrics: NodeHttp2SessionMetrics) => void;
+  onStreamMetrics: (metrics: NodeHttp2StreamMetrics) => void;
   /**
-   * Emit an `'interval'` stream-metrics event this often. Required to observe
-   * long-lived streams that never end, such as a table subscription.
+   * Also emit an `'interval'` stream-metrics event this often while a stream is
+   * open. Required to observe long-lived streams that never end, such as a
+   * table subscription.
    * @default undefined (end-of-stream events only)
    */
-  metricsIntervalMs?: number;
+  intervalMs?: number;
 }
 
 /**
@@ -92,9 +100,9 @@ export interface NodeHttp2StreamMetrics {
   maxChunkBytes: number;
   bytesPerSecond: number;
   /**
-   * Wall-clock spent inside `options.onChunk`. A small ratio to `durationMs`
-   * means the transport is waiting on the wire, a large one means the consumer
-   * is the bottleneck.
+   * Wall-clock spent handing chunks to the JS API. A small ratio to
+   * `durationMs` means the transport is waiting on the wire, a large one means
+   * the consumer is the bottleneck.
    */
   consumerTimeMs: number;
 }
@@ -134,6 +142,26 @@ function createSessionMetrics(
     ),
     ...(error == null ? {} : { error }),
   };
+}
+
+/** Log config that is accepted but cannot do what it looks like it does. */
+function validateConfig(
+  origin: string,
+  { initialWindowSize, sessionWindowSize }: NodeHttp2TransportConfig
+): void {
+  if (
+    sessionWindowSize != null &&
+    initialWindowSize != null &&
+    sessionWindowSize < initialWindowSize
+  ) {
+    NodeHttp2gRPCTransport.logMessage(
+      'error',
+      `sessionWindowSize (${sessionWindowSize}) is below initialWindowSize ` +
+        `(${initialWindowSize}) for ${origin}. The connection window caps ` +
+        `every stream, so the stream window is unreachable and throughput ` +
+        `is limited to the smaller value.`
+    );
+  }
 }
 
 /** Mutable accounting for a single in-flight stream. */
@@ -204,6 +232,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       if (resolved == null) {
         resolved =
           (typeof config === 'function' ? config(origin) : config) ?? {};
+        validateConfig(origin, resolved);
         configMap.set(origin, resolved);
       }
 
@@ -218,7 +247,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         initialWindowSize,
         sessionWindowSize,
         sessionOptions,
-        onSessionMetrics,
+        metricsConfig,
       } = transportConfig;
 
       // Every DATA frame debits both windows, so a stream's throughput is the
@@ -226,20 +255,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       // reverse is not derived: a large connection window over a small stream
       // window is a valid way to share a session between many streams.
       const resolvedSessionWindowSize = sessionWindowSize ?? initialWindowSize;
-
-      if (
-        sessionWindowSize != null &&
-        initialWindowSize != null &&
-        sessionWindowSize < initialWindowSize
-      ) {
-        NodeHttp2gRPCTransport.logMessage(
-          'error',
-          `sessionWindowSize (${sessionWindowSize}) is below initialWindowSize ` +
-            `(${initialWindowSize}) for ${origin}. The connection window caps ` +
-            `every stream, so the stream window is unreachable and throughput ` +
-            `is limited to the smaller value.`
-        );
-      }
 
       // Only override `settings` when configured, so an unconfigured factory
       // behaves exactly as a bare `http2.connect(origin)` would.
@@ -254,7 +269,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         event: NodeHttp2SessionMetrics['event'],
         error?: Error
       ): void => {
-        onSessionMetrics?.(
+        metricsConfig?.onSessionMetrics(
           createSessionMetrics(origin, session, transportConfig, event, error)
         );
       };
@@ -428,9 +443,9 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       this.options.onHeaders(headersRecord, Number(responseHeaders[':status']));
     });
 
-    const { onStreamMetrics, metricsIntervalMs } = this.config;
+    const { metricsConfig } = this.config;
 
-    if (onStreamMetrics == null) {
+    if (metricsConfig == null) {
       // `onChunk` can run tens of thousands of times on a single stream, so
       // accounting is skipped entirely when unobserved.
 
@@ -442,6 +457,8 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         this.options.onChunk(chunk);
       });
     } else {
+      const { onStreamMetrics, intervalMs } = metricsConfig;
+
       const tracker: StreamMetricsTracker = {
         startTime: performance.now(),
         firstChunkTime: undefined,
@@ -490,10 +507,10 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         emitStreamMetrics('end');
       };
 
-      if (metricsIntervalMs != null) {
+      if (intervalMs != null) {
         tracker.intervalId = setInterval(() => {
           emitStreamMetrics('interval');
-        }, metricsIntervalMs);
+        }, intervalMs);
         // Otherwise the timer holds the event loop open and consumers hang on exit.
         tracker.intervalId.unref?.();
       }
