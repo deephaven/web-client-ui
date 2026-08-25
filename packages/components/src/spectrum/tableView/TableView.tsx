@@ -23,7 +23,6 @@ export interface TableViewProps<T>
     SpectrumTableProps<T>,
     | 'children'
     | 'items'
-    | 'onAction'
     | 'selectionMode'
     | 'selectedKeys'
     | 'defaultSelectedKeys'
@@ -35,7 +34,6 @@ export interface TableViewProps<T>
   items: readonly T[];
   itemCount: number;
   offset?: number;
-  onAction?: (item: T) => void;
   onViewportChange?: (top: number, bottom: number) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
   getTextValue?: (item: T) => string;
@@ -52,7 +50,6 @@ export function TableView<T>({
   items,
   itemCount,
   offset = 0,
-  onAction,
   onViewportChange,
   renderCell,
   getTextValue,
@@ -81,7 +78,6 @@ export function TableView<T>({
       aria-label={ariaLabel}
       columns={columns}
       normalizedItems={tableItems}
-      onAction={onAction}
       onViewportChange={onViewportChange}
       renderCell={renderCell}
       getTextValue={getTextValue}

@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import {
   Cell,
   Column,
@@ -19,7 +19,6 @@ export interface TableViewNormalizedProps<T>
     SpectrumTableProps<T>,
     | 'children'
     | 'items'
-    | 'onAction'
     | 'selectionMode'
     | 'selectedKeys'
     | 'defaultSelectedKeys'
@@ -29,7 +28,6 @@ export interface TableViewNormalizedProps<T>
   > {
   columns: TableViewColumn[];
   normalizedItems: readonly KeyedItem<T, Key>[];
-  onAction?: (item: T) => void;
   onScroll?: (event: Event) => void;
   onViewportChange?: (top: number, bottom: number) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
@@ -40,7 +38,6 @@ export interface TableViewNormalizedProps<T>
 export function TableViewNormalized<T>({
   columns,
   normalizedItems,
-  onAction,
   onScroll,
   onViewportChange,
   renderCell,
@@ -51,25 +48,11 @@ export function TableViewNormalized<T>({
 }: TableViewNormalizedProps<T>): JSX.Element {
   const { scale } = useSpectrumThemeProvider();
 
-  const handleAction = useCallback(
-    (key: Key) => {
-      // Spectrum stringifies numeric keys before calling onAction
-      const item = normalizedItems.find(
-        candidate => String(candidate.key) === String(key)
-      )?.item;
-      if (item != null) {
-        onAction?.(item);
-      }
-    },
-    [normalizedItems, onAction]
-  );
-
   return (
     <TableViewWrapper
       aria-label={ariaLabel}
       density={density}
       selectionMode="none"
-      onAction={onAction != null ? handleAction : undefined}
       onScroll={onScroll}
       itemCount={normalizedItems.length}
       rowHeight={TABLE_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale]}

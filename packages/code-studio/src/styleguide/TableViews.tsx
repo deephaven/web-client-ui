@@ -93,9 +93,16 @@ export function TableViews(): JSX.Element {
     });
   }, [sortDescriptor]);
 
-  const handleAction = useCallback((item: SampleRow): void => {
-    setLastOpenedName(item.name);
+  const handleResizableAction = useCallback((key: Key): void => {
+    setLastOpenedName(rows[Number(key)]?.name ?? '');
   }, []);
+
+  const handleSortableAction = useCallback(
+    (key: Key): void => {
+      setLastOpenedName(sortedRows[Number(key)]?.name ?? '');
+    },
+    [sortedRows]
+  );
 
   return (
     <SampleSection name="table-views">
@@ -138,7 +145,7 @@ export function TableViews(): JSX.Element {
             density={density}
             items={rows.slice(0, 6)}
             itemCount={6}
-            onAction={handleAction}
+            onAction={handleResizableAction}
             renderCell={renderCell}
             getTextValue={item => item.name}
           />
@@ -159,7 +166,7 @@ export function TableViews(): JSX.Element {
             itemCount={sortedRows.length}
             sortDescriptor={sortDescriptor}
             onSortChange={setSortDescriptor}
-            onAction={handleAction}
+            onAction={handleSortableAction}
             renderCell={renderCell}
             getTextValue={item => item.name}
           />
