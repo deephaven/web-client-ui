@@ -233,13 +233,19 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     };
   }
 
+  private static defaultFactory: GrpcTransportFactory | null = null;
+
   /**
    * Factory for creating new NodeHttp2gRPCTransport instances.
    * @deprecated Use {@link NodeHttp2gRPCTransport.createFactory} instead, which
    * supports configuration.
    */
-  static readonly factory: GrpcTransportFactory =
-    NodeHttp2gRPCTransport.createFactory();
+  static get factory(): GrpcTransportFactory {
+    NodeHttp2gRPCTransport.defaultFactory ??=
+      NodeHttp2gRPCTransport.createFactory();
+
+    return NodeHttp2gRPCTransport.defaultFactory;
+  }
 
   /**
    * Register a log message handler.
@@ -313,7 +319,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     req.on('data', (chunk: Uint8Array) => {
       this.options.onChunk(chunk);
     });
-
     req.on('end', () => {
       this.options.onEnd();
     });
