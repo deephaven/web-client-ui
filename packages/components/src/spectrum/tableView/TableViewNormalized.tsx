@@ -59,7 +59,15 @@ export function TableViewNormalized<T>({
         onSelectionChange('all');
         return;
       }
-      onSelectionChange(new Set([...keys].map(Number)));
+      // Recover numeric type where possible; keep strings for non-numeric keys
+      onSelectionChange(
+        new Set(
+          [...keys].map(k => {
+            const n = Number(k);
+            return Number.isNaN(n) ? k : n;
+          })
+        )
+      );
     },
     [onSelectionChange]
   );
