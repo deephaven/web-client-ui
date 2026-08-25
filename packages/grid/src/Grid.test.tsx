@@ -1603,4 +1603,16 @@ describe('accessibility fallback content', () => {
     expect(component.state.top).toBeGreaterThan(0);
     expect(getFallback(component).queryByRole('table')).toBeNull();
   });
+
+  it('describes the new viewport after the grid scrolls', () => {
+    const component = makeGridComponent();
+
+    fireEvent.wheel(component.canvas as unknown as HTMLElement, {
+      deltaY: 500,
+    });
+    describeContents(component);
+
+    const table = getFallback(component).getByRole('table');
+    expect(within(table).queryByText('0,0')).toBeNull();
+  });
 });

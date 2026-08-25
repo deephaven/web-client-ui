@@ -81,7 +81,7 @@ import {
   type CellInputRendererRegistry,
   type CellInputProps,
 } from './GridRendererTypes';
-import GridA11yFallback, { type GridA11yViewport } from './GridA11yFallback';
+import GridA11yFallback from './GridA11yFallback';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -760,15 +760,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     return this.getCachedMouseHandlers(mouseHandlers);
   }
 
-  getCachedA11yViewport = memoize(
-    (
-      top: VisibleIndex,
-      left: VisibleIndex,
-      topOffset: number,
-      leftOffset: number
-    ): GridA11yViewport => ({ top, left, topOffset, leftOffset })
-  );
-
   /**
    * Translate from the provided visible index to the model index
    * @param columnIndex The column index to get the model for
@@ -1085,7 +1076,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /** Gets the metrics of the most recent render, or null if the grid has not drawn yet */
-  getMetrics(): GridMetrics | null {
+  private getMetrics(): GridMetrics | null {
     return this.metrics;
   }
 
@@ -2465,8 +2456,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   render(): ReactNode {
     const { children, model } = this.props;
-    const { cursor, selectedRanges, top, left, topOffset, leftOffset } =
-      this.state;
+    const { cursor, selectedRanges, updateRevision } = this.state;
 
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>
@@ -2487,14 +2477,9 @@ class Grid extends PureComponent<GridProps, GridState> {
         >
           <GridA11yFallback
             model={model}
-            getMetrics={this.getMetrics}
-            viewport={this.getCachedA11yViewport(
-              top,
-              left,
-              topOffset,
-              leftOffset
-            )}
+            metrics={this.metrics}
             selectedRanges={selectedRanges}
+            revision={updateRevision}
           />
         </canvas>
         {this.renderInputField()}

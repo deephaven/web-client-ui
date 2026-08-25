@@ -1,7 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { EMPTY_ARRAY } from '@deephaven/utils';
 import type GridMetrics from './GridMetrics';
-import { type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
 import type GridRange from './GridRange';
 import {
@@ -9,44 +8,20 @@ import {
   formatGridA11yRect,
   getGridA11ySummary,
   GRID_A11Y_ATTRIBUTES,
-  type GridA11ySnapshot,
 } from './GridA11yUtils';
-
-/** Where the grid is scrolled to */
-export type GridA11yViewport = {
-  top: VisibleIndex;
-  left: VisibleIndex;
-  topOffset: number;
-  leftOffset: number;
-};
 
 export type GridA11yFallbackProps = {
   /** The model being displayed */
   model: GridModel;
 
-  /**
-   * Metrics of the most recent render, or null if the grid has not drawn yet.
-   * Read through a callback rather than taken as a prop, as the grid
-   * recalculates its metrics after rendering.
-   */
-  getMetrics: () => GridMetrics | null;
-
-  /** Where the grid is scrolled to */
-  viewport: GridA11yViewport;
+  /** The metrics of the most recent render, or null if the grid has not drawn yet */
+  metrics: GridMetrics | null;
 
   /** The currently selected ranges */
   selectedRanges?: readonly GridRange[];
-};
 
-/** Identifies the viewport a snapshot describes */
-function getViewportKey({
-  top,
-  left,
-  topOffset,
-  leftOffset,
-}: GridA11yViewport): string {
-  return `${top},${left},${topOffset},${leftOffset}`;
-}
+  revision: number;
+};
 
 /**
  * The fallback content of the grid canvas. Never painted, but assistive
@@ -64,33 +39,18 @@ function getViewportKey({
  */
 export function GridA11yFallback({
   model,
-  getMetrics,
-  viewport,
+  metrics,
   selectedRanges = EMPTY_ARRAY,
+  revision,
 }: GridA11yFallbackProps): JSX.Element {
-  const [held, setHeld] = useState<{
-    viewportKey: string;
-    snapshot: GridA11ySnapshot;
-  } | null>(null);
-  const [revision, setRevision] = useState(0);
-
-  const viewportKey = getViewportKey(viewport);
-
-  const handleDescribe = useCallback(() => {
-    const metrics = getMetrics();
-    setHeld(
-      metrics != null
-        ? {
-            viewportKey,
-            snapshot: createGridA11ySnapshot(model, metrics, selectedRanges),
-          }
-        : null
-    );
-    setRevision(current => current + 1);
-  }, [getMetrics, model, selectedRanges, viewportKey]);
-
-  const snapshot =
-    held != null && held.viewportKey === viewportKey ? held.snapshot : null;
+  const [showSnapshot, setShowSnapshot] = useState(false);
+  const snapshot = useMemo(
+    () =>
+      showSnapshot && metrics != null
+        ? createGridA11ySnapshot(model, metrics, selectedRanges)
+        : null,
+    [showSnapshot, metrics, model, selectedRanges]
+  );
 
   return (
     <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>
@@ -99,10 +59,11 @@ export function GridA11yFallback({
       <button
         type="button"
         tabIndex={-1}
-        onClick={handleDescribe}
+        aria-pressed={showSnapshot}
+        onClick={() => setShowSnapshot(prevShowSnapshot => !prevShowSnapshot)}
         {...{ [GRID_A11Y_ATTRIBUTES.describe]: '' }}
       >
-        Describe the grid contents
+        {showSnapshot ? 'Hide the grid contents' : 'Describe the grid contents'}
       </button>
       {snapshot != null && (
         <div {...{ [GRID_A11Y_ATTRIBUTES.snapshot]: '' }}>
