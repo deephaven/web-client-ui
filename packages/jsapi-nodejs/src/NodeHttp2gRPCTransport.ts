@@ -21,18 +21,18 @@ export interface NodeHttp2TransportConfig {
    *
    * Must be >= `sessionOptions.settings.initialWindowSize`. Can be increased
    * above it to account for multiple streams sharing a session.
-   * @default `sessionOptions.settings.initialWindowSize`
    */
   sessionLocalWindowSize?: number;
   /**
    * Passed through to `http2.connect`.
    *
-   * `settings.initialWindowSize` is the per-stream receive window. Node defaults
-   * to 64KB and, unlike browsers, never grows it. Only one window of data can be
-   * in flight before the sender waits for the receiver to acknowledge it, so a
-   * single stream is capped at roughly `window / RTT` (round-trip time)
-   * regardless of bandwidth — ~819KB/s at 80ms. Sizing is left to the consumer,
-   * since a larger window costs buffer memory and weakens backpressure.
+   * Note that `sessionOptions.settings.initialWindowSize` is the per-stream
+   * receive window. Node defaults to 64KB and, unlike browsers, never grows it.
+   * Only one window of data can be in flight before the sender waits for the
+   * receiver to acknowledge it, so a single stream is capped at roughly
+   * `window / RTT` (round-trip time) regardless of bandwidth — ~819KB/s at 80ms.
+   * Sizing is left to the consumer, since a larger window costs buffer memory
+   * and weakens backpressure.
    */
   sessionOptions?: http2.SecureClientSessionOptions;
 }
@@ -47,31 +47,10 @@ export interface NodeHttp2TransportConfig {
 export interface NodeHttp2SessionInfo {
   origin: string;
   event: 'connect' | 'localSettings' | 'remoteSettings' | 'close' | 'error';
-  /**
-   * `'connect'` only: the connection-level window in effect once
-   * {@link NodeHttp2TransportConfig.sessionLocalWindowSize} has been applied.
-   * Not to be confused with `session.state.localWindowSize`, which is the
-   * credit remaining against this.
-   */
   effectiveLocalWindowSize?: number;
-  /**
-   * `'localSettings'` only: the per-stream window we advertise. Settings apply
-   * asynchronously, so this is still Node's default before the event.
-   */
   localInitialWindowSize?: number;
-  /** `'remoteSettings'` only: the peer's per-stream window for data we send. */
   remoteInitialWindowSize?: number;
-  /**
-   * `'remoteSettings'` only: the peer's stream cap. Read here rather than on
-   * `'connect'`, where Node reports its own assumption rather than anything the
-   * peer advertised.
-   */
   remoteMaxConcurrentStreams?: number;
-  /**
-   * `'error'` only. A failure to apply
-   * {@link NodeHttp2TransportConfig.sessionLocalWindowSize} is reported here
-   * too, wrapping the original in its `cause`.
-   */
   error?: Error;
 }
 
@@ -132,6 +111,26 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
   };
 
   /**
+   * Log a session lifecycle event and whatever it updated. Each event reads its
+   * own values at the call site, so nothing here touches the session.
+   * @param origin Origin of the session the event came from.
+   * @param event The event that fired.
+   * @param updated The values that event updated.
+   */
+  private static logSession(
+    origin: string,
+    event: NodeHttp2SessionInfo['event'],
+    updated: Omit<NodeHttp2SessionInfo, 'origin' | 'event'> = {}
+  ): void {
+    const info: NodeHttp2SessionInfo = { origin, event, ...updated };
+
+    NodeHttp2gRPCTransport.logMessage(
+      event === 'error' ? 'error' : 'debug',
+      info
+    );
+  }
+
+  /**
    * Create a factory for creating new NodeHttp2gRPCTransport instances. Each
    * factory owns its sessions, memoized by origin, and applies one config to all
    * of them. Use a factory per config when origins need to differ.
@@ -152,19 +151,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
       const session = http2.connect(origin, sessionOptions);
 
-      /** Log a session lifecycle event and whatever it updated. */
-      const logSession = (
-        event: NodeHttp2SessionInfo['event'],
-        updated: Omit<NodeHttp2SessionInfo, 'origin' | 'event'> = {}
-      ): void => {
-        const info: NodeHttp2SessionInfo = { origin, event, ...updated };
-
-        NodeHttp2gRPCTransport.logMessage(
-          event === 'error' ? 'error' : 'debug',
-          info
-        );
-      };
-
       session.on('connect', () => {
         const localWindowSize =
           sessionLocalWindowSize ?? sessionOptions?.settings?.initialWindowSize;
@@ -174,26 +160,26 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
             session.setLocalWindowSize(localWindowSize);
           }
         } catch (err) {
-          logSession('error', {
+          NodeHttp2gRPCTransport.logSession(origin, 'error', {
             error: new Error('Failed to set session window size', {
               cause: err,
             }),
           });
         }
 
-        logSession('connect', {
+        NodeHttp2gRPCTransport.logSession(origin, 'connect', {
           effectiveLocalWindowSize: session.state.effectiveLocalWindowSize,
         });
       });
 
       session.on('localSettings', () => {
-        logSession('localSettings', {
+        NodeHttp2gRPCTransport.logSession(origin, 'localSettings', {
           localInitialWindowSize: session.localSettings.initialWindowSize,
         });
       });
 
       session.on('remoteSettings', () => {
-        logSession('remoteSettings', {
+        NodeHttp2gRPCTransport.logSession(origin, 'remoteSettings', {
           remoteInitialWindowSize: session.remoteSettings.initialWindowSize,
           remoteMaxConcurrentStreams:
             session.remoteSettings.maxConcurrentStreams,
@@ -201,12 +187,12 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       });
 
       session.on('error', err => {
-        logSession('error', { error: err });
+        NodeHttp2gRPCTransport.logSession(origin, 'error', { error: err });
       });
 
       session.on('close', () => {
         sessionMap.delete(origin);
-        logSession('close');
+        NodeHttp2gRPCTransport.logSession(origin, 'close');
       });
 
       return session;
