@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import {
   Cell,
   Column,
@@ -34,15 +34,47 @@ export function TableViewNormalized<T>({
   getTextValue,
   'aria-label': ariaLabel = 'Table',
   density = 'compact',
+  selectedKeys,
+  defaultSelectedKeys,
+  disabledKeys,
+  onSelectionChange,
   ...spectrumProps
 }: TableViewNormalizedProps<T>): JSX.Element {
   const { scale } = useSpectrumThemeProvider();
+
+  // Row keys are numeric indices; Spectrum stringifies JSX keys, so we must
+  // convert selection props to strings and convert results back to numbers.
+  const toStringSet = (
+    keys: 'all' | Iterable<Key> | undefined
+  ): 'all' | Set<string> | undefined => {
+    if (keys == null) return undefined;
+    if (keys === 'all') return 'all';
+    return new Set([...keys].map(String));
+  };
+
+  const handleSelectionChange = useCallback(
+    (keys: 'all' | Set<Key>): void => {
+      if (onSelectionChange == null) return;
+      if (keys === 'all') {
+        onSelectionChange('all');
+        return;
+      }
+      onSelectionChange(new Set([...keys].map(Number)));
+    },
+    [onSelectionChange]
+  );
 
   return (
     <TableViewWrapper
       aria-label={ariaLabel}
       density={density}
       selectionMode="none"
+      selectedKeys={toStringSet(selectedKeys)}
+      defaultSelectedKeys={toStringSet(defaultSelectedKeys)}
+      disabledKeys={toStringSet(disabledKeys)}
+      onSelectionChange={
+        onSelectionChange != null ? handleSelectionChange : undefined
+      }
       onScroll={onScroll}
       itemCount={normalizedItems.length}
       rowHeight={TABLE_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale]}

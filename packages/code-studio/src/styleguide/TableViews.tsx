@@ -82,7 +82,7 @@ export function TableViews(): JSX.Element {
     'all' | Set<Key>
   >(() => new Set(['0']));
   const [multiSelectedKeys, setMultiSelectedKeys] = useState<'all' | Set<Key>>(
-    () => new Set(['0', '3'])
+    () => new Set([0, 3])
   );
 
   const onDensityChange = useCallback((value: string) => {
@@ -196,7 +196,7 @@ export function TableViews(): JSX.Element {
             items={rows.slice(0, 8)}
             itemCount={8}
             selectionMode="single"
-            defaultSelectedKeys={['0']}
+            defaultSelectedKeys={[0]}
             onSelectionChange={keys => setSingleSelectedKeys(keys)}
             renderCell={renderCell}
             getTextValue={item => item.name}
@@ -218,7 +218,7 @@ export function TableViews(): JSX.Element {
             itemCount={rows.length}
             selectionMode="multiple"
             selectedKeys={multiSelectedKeys}
-            disabledKeys={['2', '5']}
+            disabledKeys={[2, 5]}
             onSelectionChange={keys => setMultiSelectedKeys(keys)}
             renderCell={renderCell}
             getTextValue={item => item.name}
