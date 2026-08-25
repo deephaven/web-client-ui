@@ -56,8 +56,11 @@ The static `NodeHttp2gRPCTransport.factory` is deprecated in favor of
 ### Flow control windows
 
 Unlike browsers, Node never grows its HTTP/2 receive windows past the 64KB
-protocol default, which caps a single stream at roughly `window / RTT`. At 80ms
-RTT that is about 819KB/s, regardless of available bandwidth.
+protocol default. A sender may only have one window of data in flight before it
+has to wait for the receiver to acknowledge it, and recovering that credit costs
+one round trip, so a single stream is capped at roughly `window / RTT` (RTT being
+the round-trip time to the server). At 80ms RTT that is about 819KB/s, no matter
+how much bandwidth is available.
 
 | Option              | Default                         | Applied via                                               |
 | ------------------- | ------------------------------- | --------------------------------------------------------- |
@@ -68,7 +71,8 @@ Neither is set by default, so an unconfigured factory behaves exactly like a
 bare `http2.connect(origin)`. Sizing is left to the consumer because the right
 value depends on the deployment: a larger window costs buffer memory and weakens
 backpressure, and the useful size is the bandwidth-delay product of the link
-(`throughput x RTT`).
+(`bandwidth x RTT`) — enough data in flight to keep the pipe full while waiting
+for credit to return.
 
 Setting `initialWindowSize` alone is enough:
 

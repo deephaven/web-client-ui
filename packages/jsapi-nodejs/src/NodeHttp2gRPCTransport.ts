@@ -18,13 +18,11 @@ export interface NodeHttp2TransportConfig {
   /**
    * Per-stream receive window, sent as `settings.initialWindowSize` on
    * `http2.connect`. Node defaults to 64KB and, unlike browsers, never grows
-   * it, which caps a single stream at roughly `window / RTT` (~819KB/s at 80ms
-   * RTT). Sizing is left to the consumer, since a larger window costs buffer
-   * memory and weakens backpressure.
-   *
-   * Setting this alone is sufficient;
-   * {@link NodeHttp2TransportConfig.sessionWindowSize} defaults to the same
-   * value.
+   * it. Only one window of data can be in flight before the sender waits for the
+   * receiver to acknowledge it, so a single stream is capped at roughly
+   * `window / RTT` (round-trip time) regardless of bandwidth — ~819KB/s at 80ms.
+   * Sizing is left to the consumer, since a larger window costs buffer memory
+   * and weakens backpressure.
    * @default undefined (Node's 65535)
    */
   initialWindowSize?: number;
@@ -33,21 +31,21 @@ export interface NodeHttp2TransportConfig {
    * Per RFC 9113 6.9.2 the connection window cannot be changed via SETTINGS, so
    * this is not an `http2.connect` option.
    *
-   * Raise it above {@link NodeHttp2TransportConfig.initialWindowSize} when
-   * several heavy streams share the session, since this budget is shared across
-   * all of them. A value below `initialWindowSize` is logged as an error, since
-   * the connection window caps every stream.
+   * Must be >= {@link NodeHttp2TransportConfig.initialWindowSize}. Can be
+   * increased to account for multiple streams sharing a session.
    * @default `initialWindowSize` when that is set, otherwise undefined
    */
   sessionWindowSize?: number;
   /** Merged into the `http2.connect` options. */
   sessionOptions?: http2.SecureClientSessionOptions;
+  /**
+   * Opt-in diagnostics. Supplying this enables both session and stream metrics;
+   */
   metricsConfig?: NodeHttp2MetricsConfig;
 }
 
 /**
- * Opt-in diagnostics. Supplying this enables both session and stream metrics;
- * pass a no-op to ignore either one.
+ * Diagnostics configuration.
  */
 export interface NodeHttp2MetricsConfig {
   onSessionMetrics: (metrics: NodeHttp2SessionMetrics) => void;
@@ -61,30 +59,21 @@ export interface NodeHttp2MetricsConfig {
   intervalMs?: number;
 }
 
-/**
- * A {@link NodeHttp2TransportConfig}, or a function resolving one per origin.
- * Consumers commonly connect to multiple origins (e.g. a server plus one per
- * worker) whose TLS material may legitimately differ.
- */
-export type NodeHttp2TransportConfigResolver =
-  | NodeHttp2TransportConfig
-  | ((origin: string) => NodeHttp2TransportConfig);
-
 export interface NodeHttp2SessionMetrics {
   origin: string;
   event: 'connect' | 'remoteSettings' | 'close' | 'error';
   /** Per-stream window we advertise. */
-  localInitialWindowSize: number | undefined;
+  localInitialWindowSize?: number;
   /** Connection-level window. */
-  localWindowSize: number | undefined;
-  remoteInitialWindowSize: number | undefined;
+  localWindowSize?: number;
+  remoteInitialWindowSize?: number;
   /** Echo of `sessionOptions.maxSessionMemory`; not readable from the session. */
-  maxSessionMemoryMb: number | undefined;
+  maxSessionMemoryMb?: number;
   /**
    * What the peer advertised, as opposed to `peerMaxConcurrentStreams`, which is
    * the local assumption used until the peer says otherwise.
    */
-  remoteMaxConcurrentStreams: number | undefined;
+  remoteMaxConcurrentStreams?: number;
   error?: Error;
 }
 
@@ -94,7 +83,8 @@ export interface NodeHttp2StreamMetrics {
   path: string;
   event: 'interval' | 'end';
   durationMs: number;
-  timeToFirstChunkMs: number | undefined;
+  /** Absent when the stream ended without ever delivering a chunk. */
+  timeToFirstChunkMs?: number;
   chunkCount: number;
   byteCount: number;
   maxChunkBytes: number;
@@ -108,14 +98,36 @@ export interface NodeHttp2StreamMetrics {
 }
 
 /**
- * The `close` / `error` handlers read session state after the session is
- * destroyed, where Node does not guarantee these getters stay readable.
+ * A {@link NodeHttp2TransportConfig}, or a function resolving one per origin.
  */
-function safeRead<T>(read: () => T): T | undefined {
+export type NodeHttp2TransportConfigResolver =
+  | NodeHttp2TransportConfig
+  | ((origin: string) => NodeHttp2TransportConfig);
+
+/** The {@link NodeHttp2SessionMetrics} fields that are read off the session. */
+type SessionState = Pick<
+  NodeHttp2SessionMetrics,
+  | 'localInitialWindowSize'
+  | 'localWindowSize'
+  | 'remoteInitialWindowSize'
+  | 'remoteMaxConcurrentStreams'
+>;
+
+/**
+ * The `close` / `error` handlers report state after the session is destroyed,
+ * where Node does not guarantee these getters stay readable. They all read
+ * through the same session handle, so they succeed or fail as a group.
+ */
+function readSessionState(session: http2.ClientHttp2Session): SessionState {
   try {
-    return read() ?? undefined;
+    return {
+      localInitialWindowSize: session.localSettings.initialWindowSize,
+      localWindowSize: session.state.localWindowSize,
+      remoteInitialWindowSize: session.remoteSettings.initialWindowSize,
+      remoteMaxConcurrentStreams: session.remoteSettings.maxConcurrentStreams,
+    };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -129,17 +141,8 @@ function createSessionMetrics(
   return {
     origin,
     event,
-    localInitialWindowSize: safeRead(
-      () => session.localSettings.initialWindowSize
-    ),
-    localWindowSize: safeRead(() => session.state.localWindowSize),
-    remoteInitialWindowSize: safeRead(
-      () => session.remoteSettings.initialWindowSize
-    ),
+    ...readSessionState(session),
     maxSessionMemoryMb: config.sessionOptions?.maxSessionMemory,
-    remoteMaxConcurrentStreams: safeRead(
-      () => session.remoteSettings.maxConcurrentStreams
-    ),
     ...(error == null ? {} : { error }),
   };
 }
@@ -213,9 +216,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
   /**
    * Create a factory for creating new NodeHttp2gRPCTransport instances. Each
-   * factory owns its sessions, memoized by origin. Config is never hashed (it
-   * can contain functions and Buffers), so sessions are shared by reusing a
-   * factory and in no other way.
+   * factory owns its sessions, memoized by origin.
    * @param config Optional config, or a function resolving config for an origin.
    * The resolver is called once per origin, not per created transport.
    * @returns A gRPC transport factory
