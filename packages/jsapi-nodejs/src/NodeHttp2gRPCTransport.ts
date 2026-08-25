@@ -1,8 +1,11 @@
 import http2 from 'node:http2';
-import { performance } from 'node:perf_hooks';
 import type { dh as DhcType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
+import {
+  StreamMetricsTracker,
+  type NodeHttp2StreamMetrics,
+} from './StreamMetricsTracker.js';
 
 const logger = Log.module('@deephaven/jsapi-nodejs.NodeHttp2gRPCTransport');
 
@@ -10,6 +13,8 @@ type LogLevel = 'debug' | 'error';
 type GrpcTransport = DhcType.grpc.GrpcTransport;
 type GrpcTransportFactory = DhcType.grpc.GrpcTransportFactory;
 type GrpcTransportOptions = DhcType.grpc.GrpcTransportOptions;
+
+export type { NodeHttp2StreamMetrics };
 
 /**
  * Configuration for a {@link NodeHttp2gRPCTransport} factory.
@@ -83,26 +88,6 @@ export interface NodeHttp2SessionMetrics {
   error?: Error;
 }
 
-export interface NodeHttp2StreamMetrics {
-  origin: string;
-  /** gRPC method path, e.g. `/<package>.<Service>/<method>`. */
-  path: string;
-  event: 'interval' | 'end';
-  durationMs: number;
-  /** Absent when the stream ended without ever delivering a chunk. */
-  timeToFirstChunkMs?: number;
-  chunkCount: number;
-  byteCount: number;
-  maxChunkBytes: number;
-  bytesPerSecond: number;
-  /**
-   * Wall-clock spent handing chunks to the JS API. A small ratio to
-   * `durationMs` means the transport is waiting on the wire, a large one means
-   * the consumer is the bottleneck.
-   */
-  consumerTimeMs: number;
-}
-
 /** The {@link NodeHttp2SessionMetrics} fields that are read off the session. */
 type SessionState = Pick<
   NodeHttp2SessionMetrics,
@@ -147,18 +132,6 @@ function assertValidConfig({
         `smaller value.`
     );
   }
-}
-
-/** Mutable accounting for a single in-flight stream. */
-interface StreamMetricsTracker {
-  startTime: number;
-  firstChunkTime: number | undefined;
-  chunkCount: number;
-  byteCount: number;
-  maxChunkBytes: number;
-  consumerTimeMs: number;
-  intervalId: ReturnType<typeof setInterval> | undefined;
-  isEnded: boolean;
 }
 
 /**
@@ -416,83 +389,22 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         this.options.onChunk(chunk);
       });
     } else {
-      const { onStreamMetrics, intervalMs } = metricsConfig;
-
-      const tracker: StreamMetricsTracker = {
-        startTime: performance.now(),
-        firstChunkTime: undefined,
-        chunkCount: 0,
-        byteCount: 0,
-        maxChunkBytes: 0,
-        consumerTimeMs: 0,
-        intervalId: undefined,
-        isEnded: false,
-      };
-
-      const emitStreamMetrics = (
-        event: NodeHttp2StreamMetrics['event']
-      ): void => {
-        const durationMs = performance.now() - tracker.startTime;
-
-        onStreamMetrics({
-          origin: url.origin,
-          path: url.pathname,
-          event,
-          durationMs,
-          timeToFirstChunkMs:
-            tracker.firstChunkTime == null
-              ? undefined
-              : tracker.firstChunkTime - tracker.startTime,
-          chunkCount: tracker.chunkCount,
-          byteCount: tracker.byteCount,
-          maxChunkBytes: tracker.maxChunkBytes,
-          bytesPerSecond:
-            durationMs > 0 ? (tracker.byteCount * 1000) / durationMs : 0,
-          consumerTimeMs: tracker.consumerTimeMs,
-        });
-      };
-
-      const finishStreamMetrics = (): void => {
-        if (tracker.isEnded) {
-          return;
-        }
-        tracker.isEnded = true;
-
-        if (tracker.intervalId != null) {
-          clearInterval(tracker.intervalId);
-          tracker.intervalId = undefined;
-        }
-
-        emitStreamMetrics('end');
-      };
-
-      if (intervalMs != null) {
-        tracker.intervalId = setInterval(() => {
-          emitStreamMetrics('interval');
-        }, intervalMs);
-        // Otherwise the timer holds the event loop open and consumers hang on exit.
-        tracker.intervalId.unref?.();
-      }
-
-      req.on('data', (chunk: Uint8Array) => {
-        const now = performance.now();
-
-        tracker.firstChunkTime ??= now;
-        tracker.chunkCount += 1;
-        tracker.byteCount += chunk.length;
-        tracker.maxChunkBytes = Math.max(tracker.maxChunkBytes, chunk.length);
-
-        try {
-          this.options.onChunk(chunk);
-        } finally {
-          tracker.consumerTimeMs += performance.now() - now;
-        }
+      const tracker = new StreamMetricsTracker({
+        origin: url.origin,
+        path: url.pathname,
+        onChunk: chunk => this.options.onChunk(chunk),
+        onMetrics: metricsConfig.onStreamMetrics,
+        intervalMs: metricsConfig.intervalMs,
       });
 
-      req.on('end', finishStreamMetrics);
-      req.on('error', finishStreamMetrics);
+      req.on('data', (chunk: Uint8Array) => {
+        tracker.recordChunk(chunk);
+      });
+
+      req.on('end', () => tracker.finish());
+      req.on('error', () => tracker.finish());
       // Cancelled streams neither end nor error, and would leak the interval.
-      req.on('close', finishStreamMetrics);
+      req.on('close', () => tracker.finish());
     }
 
     req.on('end', () => {
