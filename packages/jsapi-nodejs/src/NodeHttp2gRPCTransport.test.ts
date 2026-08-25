@@ -1,12 +1,10 @@
 import http2 from 'node:http2';
 import type { AddressInfo } from 'node:net';
-import { performance } from 'node:perf_hooks';
 import type { dh as DhcType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   NodeHttp2gRPCTransport,
-  type NodeHttp2SessionMetrics,
-  type NodeHttp2StreamMetrics,
+  type NodeHttp2SessionInfo,
 } from './NodeHttp2gRPCTransport';
 
 Log.setLogLevel(-1);
@@ -330,124 +328,98 @@ describe('dispose', () => {
   });
 });
 
-describe('metrics', () => {
-  it('should not do any timing work without a metricsConfig', async () => {
+describe('requests', () => {
+  it('should pass response chunks through to onChunk', async () => {
     const origin = await startServer();
-    const factory = NodeHttp2gRPCTransport.createFactory();
+    const onChunk = jest.fn();
 
-    // Establish the session before spying so only request handling is measured
-    await createConnectedTransport(factory, origin);
+    await runRequest(NodeHttp2gRPCTransport.createFactory(), origin, onChunk);
 
-    const nowSpy = jest.spyOn(performance, 'now');
+    const byteCount = onChunk.mock.calls.reduce(
+      (total, [chunk]: [Uint8Array]) => total + chunk.length,
+      0
+    );
+    expect(byteCount).toEqual(RESPONSE_CHUNK.length * 2);
+  });
+});
+
+describe('session logging', () => {
+  /**
+   * Session state is logged as the second arg of each session log message, so
+   * that is how a consumer observes it.
+   */
+  function trackSessionInfo(): {
+    infoByEvent: (
+      event: NodeHttp2SessionInfo['event']
+    ) => NodeHttp2SessionInfo | undefined;
+    unsubscribe: () => void;
+  } {
+    const infos: NodeHttp2SessionInfo[] = [];
+
+    const unsubscribe = NodeHttp2gRPCTransport.onLogMessage(
+      (_level, ...args) => {
+        const [, info] = args as [string, NodeHttp2SessionInfo?];
+        if (info != null && typeof info === 'object' && 'event' in info) {
+          infos.push(info);
+        }
+      }
+    );
+
+    return {
+      infoByEvent: event => infos.find(info => info.event === event),
+      unsubscribe,
+    };
+  }
+
+  it('should log the configured window only from localSettings onward', async () => {
+    const origin = await startServer();
+    const { infoByEvent, unsubscribe } = trackSessionInfo();
 
     try {
-      const onChunk = jest.fn();
-      await runRequest(factory, origin, onChunk);
+      await createConnectedTransport(
+        NodeHttp2gRPCTransport.createFactory({
+          initialWindowSize: 1024 * 1024,
+        }),
+        origin
+      );
 
-      expect(onChunk).toHaveBeenCalled();
-      expect(nowSpy).not.toHaveBeenCalled();
+      // Settings have not been applied yet at `connect`
+      expect(infoByEvent('connect')?.localInitialWindowSize).toEqual(
+        NODE_DEFAULT_WINDOW_SIZE
+      );
+      expect(infoByEvent('localSettings')?.localInitialWindowSize).toEqual(
+        1024 * 1024
+      );
     } finally {
-      nowSpy.mockRestore();
+      unsubscribe();
     }
   });
 
-  it('should emit stream metrics on stream end', async () => {
+  it('should log session state on connect and close', async () => {
     const origin = await startServer();
-    const onStreamMetrics = jest.fn<void, [NodeHttp2StreamMetrics]>();
-    const factory = NodeHttp2gRPCTransport.createFactory({
-      metricsConfig: { onStreamMetrics, onSessionMetrics: jest.fn() },
-    });
+    const { infoByEvent, unsubscribe } = trackSessionInfo();
 
-    await runRequest(factory, origin);
+    try {
+      const transport = await createConnectedTransport(
+        NodeHttp2gRPCTransport.createFactory({
+          sessionWindowSize: 2 * 1024 * 1024,
+        }),
+        origin
+      );
+      const session = getSession(transport);
 
-    expect(onStreamMetrics).toHaveBeenCalled();
+      expect(infoByEvent('connect')?.origin).toEqual(origin);
+      expect(infoByEvent('connect')?.localWindowSize).toEqual(2 * 1024 * 1024);
 
-    const metrics = onStreamMetrics.mock.calls[0][0];
-    expect(metrics.event).toEqual('end');
-    expect(metrics.origin).toEqual(origin);
-    expect(metrics.path).toEqual('/test.Service/method');
-    expect(metrics.byteCount).toEqual(RESPONSE_CHUNK.length * 2);
-    expect(metrics.chunkCount).toBeGreaterThan(0);
-    expect(metrics.maxChunkBytes).toBeGreaterThan(0);
-    expect(metrics.durationMs).toBeGreaterThanOrEqual(0);
-    expect(metrics.consumerTimeMs).toBeGreaterThanOrEqual(0);
-    expect(metrics.timeToFirstChunkMs).toBeGreaterThanOrEqual(0);
-  });
+      const closed = new Promise<void>(resolve => {
+        session.once('close', () => resolve());
+      });
+      session.close();
+      await closed;
 
-  it('should emit stream metrics when the stream is reset', async () => {
-    const origin = await startServer(stream => {
-      // The reset surfaces on both ends; only the client side is under test
-      stream.on('error', () => undefined);
-      stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
-    });
-    const onStreamMetrics = jest.fn<void, [NodeHttp2StreamMetrics]>();
-    const factory = NodeHttp2gRPCTransport.createFactory({
-      metricsConfig: { onStreamMetrics, onSessionMetrics: jest.fn() },
-    });
-
-    await expect(runRequest(factory, origin)).rejects.toBeDefined();
-
-    expect(onStreamMetrics).toHaveBeenCalledTimes(1);
-    expect(onStreamMetrics.mock.calls[0][0].event).toEqual('end');
-  });
-
-  it('should report the configured window only from localSettings onward', async () => {
-    const origin = await startServer();
-    const onSessionMetrics = jest.fn<void, [NodeHttp2SessionMetrics]>();
-
-    await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory({
-        initialWindowSize: 1024 * 1024,
-        metricsConfig: { onSessionMetrics, onStreamMetrics: jest.fn() },
-      }),
-      origin
-    );
-
-    const byEvent = (event: NodeHttp2SessionMetrics['event']) =>
-      onSessionMetrics.mock.calls
-        .map(([metrics]) => metrics)
-        .find(metrics => metrics.event === event);
-
-    // Settings have not been applied yet at `connect`
-    expect(byEvent('connect')?.localInitialWindowSize).toEqual(
-      NODE_DEFAULT_WINDOW_SIZE
-    );
-    expect(byEvent('localSettings')?.localInitialWindowSize).toEqual(
-      1024 * 1024
-    );
-  });
-
-  it('should emit session metrics for connect and close', async () => {
-    const origin = await startServer();
-    const onSessionMetrics = jest.fn<void, [NodeHttp2SessionMetrics]>();
-
-    const transport = await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory({
-        sessionWindowSize: 2 * 1024 * 1024,
-        sessionOptions: { maxSessionMemory: 32 },
-        metricsConfig: { onSessionMetrics, onStreamMetrics: jest.fn() },
-      }),
-      origin
-    );
-    const session = getSession(transport);
-
-    const connectMetrics = onSessionMetrics.mock.calls
-      .map(([metrics]) => metrics)
-      .find(metrics => metrics.event === 'connect');
-
-    expect(connectMetrics).toBeDefined();
-    expect(connectMetrics?.origin).toEqual(origin);
-    expect(connectMetrics?.localWindowSize).toEqual(2 * 1024 * 1024);
-    expect(connectMetrics?.maxSessionMemoryMb).toEqual(32);
-
-    const closed = new Promise<void>(resolve => {
-      session.once('close', () => resolve());
-    });
-    session.close();
-    await closed;
-
-    expect(
-      onSessionMetrics.mock.calls.some(([metrics]) => metrics.event === 'close')
-    ).toBe(true);
+      expect(infoByEvent('close')).toBeDefined();
+    } finally {
+      unsubscribe();
+    }
   });
 });

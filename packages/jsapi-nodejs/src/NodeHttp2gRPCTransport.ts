@@ -2,10 +2,6 @@ import http2 from 'node:http2';
 import type { dh as DhcType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import {
-  StreamMetricsTracker,
-  type NodeHttp2StreamMetrics,
-} from './StreamMetricsTracker.js';
 
 const logger = Log.module('@deephaven/jsapi-nodejs.NodeHttp2gRPCTransport');
 
@@ -13,8 +9,6 @@ type LogLevel = 'debug' | 'error';
 type GrpcTransport = DhcType.grpc.GrpcTransport;
 type GrpcTransportFactory = DhcType.grpc.GrpcTransportFactory;
 type GrpcTransportOptions = DhcType.grpc.GrpcTransportOptions;
-
-export type { NodeHttp2StreamMetrics };
 
 /**
  * Configuration for a {@link NodeHttp2gRPCTransport} factory.
@@ -43,29 +37,13 @@ export interface NodeHttp2TransportConfig {
   sessionWindowSize?: number;
   /** Merged into the `http2.connect` options. */
   sessionOptions?: http2.SecureClientSessionOptions;
-  /**
-   * Opt-in diagnostics. Supplying this enables both session and stream metrics;
-   * pass a no-op to ignore either one.
-   */
-  metricsConfig?: NodeHttp2MetricsConfig;
 }
 
 /**
- * Diagnostics configuration.
+ * Session state logged via {@link NodeHttp2gRPCTransport.logMessage} on each
+ * session lifecycle event, as the second argument to the log message.
  */
-export interface NodeHttp2MetricsConfig {
-  onSessionMetrics: (metrics: NodeHttp2SessionMetrics) => void;
-  onStreamMetrics: (metrics: NodeHttp2StreamMetrics) => void;
-  /**
-   * Also emit an `'interval'` stream-metrics event this often while a stream is
-   * open. Required to observe long-lived streams that never end, such as a
-   * table subscription.
-   * @default undefined (end-of-stream events only)
-   */
-  intervalMs?: number;
-}
-
-export interface NodeHttp2SessionMetrics {
+export interface NodeHttp2SessionInfo {
   origin: string;
   event: 'connect' | 'localSettings' | 'remoteSettings' | 'close' | 'error';
   /**
@@ -78,8 +56,6 @@ export interface NodeHttp2SessionMetrics {
   /** Connection-level window. */
   localWindowSize?: number;
   remoteInitialWindowSize?: number;
-  /** Echo of `sessionOptions.maxSessionMemory`; not readable from the session. */
-  maxSessionMemoryMb?: number;
   /**
    * What the peer advertised, as opposed to `peerMaxConcurrentStreams`, which is
    * the local assumption used until the peer says otherwise.
@@ -88,9 +64,9 @@ export interface NodeHttp2SessionMetrics {
   error?: Error;
 }
 
-/** The {@link NodeHttp2SessionMetrics} fields that are read off the session. */
+/** The {@link NodeHttp2SessionInfo} fields that are read off the session. */
 type SessionState = Pick<
-  NodeHttp2SessionMetrics,
+  NodeHttp2SessionInfo,
   | 'localInitialWindowSize'
   | 'localWindowSize'
   | 'remoteInitialWindowSize'
@@ -186,12 +162,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     assertValidConfig(config);
 
     function createSession(origin: string): http2.ClientHttp2Session {
-      const {
-        initialWindowSize,
-        sessionWindowSize,
-        sessionOptions,
-        metricsConfig,
-      } = config;
+      const { initialWindowSize, sessionWindowSize, sessionOptions } = config;
 
       // Only override `settings` when configured, so an unconfigured factory
       // behaves exactly as a bare `http2.connect(origin)` would.
@@ -202,23 +173,21 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
           : { settings: { ...sessionOptions?.settings, initialWindowSize } }),
       });
 
-      /** Log the session's current state and report it to `onSessionMetrics`. */
-      const reportSession = (
-        event: NodeHttp2SessionMetrics['event'],
+      /** Log the session's current state. */
+      const logSession = (
+        event: NodeHttp2SessionInfo['event'],
         logLevel: LogLevel,
         message: string,
         error?: Error
       ): void => {
-        const metrics: NodeHttp2SessionMetrics = {
+        const info: NodeHttp2SessionInfo = {
           origin,
           event,
           ...readSessionState(session),
-          maxSessionMemoryMb: sessionOptions?.maxSessionMemory,
           ...(error == null ? {} : { error }),
         };
 
-        NodeHttp2gRPCTransport.logMessage(logLevel, message, metrics);
-        metricsConfig?.onSessionMetrics(metrics);
+        NodeHttp2gRPCTransport.logMessage(logLevel, message, info);
       };
 
       session.on('connect', () => {
@@ -229,7 +198,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
             session.setLocalWindowSize(localWindowSize);
           }
         } catch (err) {
-          reportSession(
+          logSession(
             'error',
             'error',
             'Failed to set session window size',
@@ -237,26 +206,26 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
           );
         }
 
-        reportSession('connect', 'debug', 'Session connected');
+        logSession('connect', 'debug', 'Session connected');
       });
 
       // Settings apply asynchronously, so this is the first point where the
       // negotiated local values can be read.
       session.on('localSettings', () => {
-        reportSession('localSettings', 'debug', 'Session settings applied');
+        logSession('localSettings', 'debug', 'Session settings applied');
       });
 
       session.on('remoteSettings', () => {
-        reportSession('remoteSettings', 'debug', 'Remote settings received');
+        logSession('remoteSettings', 'debug', 'Remote settings received');
       });
 
       session.on('error', err => {
-        reportSession('error', 'error', 'Session error', err);
+        logSession('error', 'error', 'Session error', err);
       });
 
       session.on('close', () => {
         sessionMap.delete(origin);
-        reportSession('close', 'debug', 'Session closed');
+        logSession('close', 'debug', 'Session closed');
       });
 
       return session;
@@ -281,7 +250,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
           NodeHttp2gRPCTransport.sessionMaps.add(sessionMap);
         }
 
-        return new NodeHttp2gRPCTransport(options, session, config);
+        return new NodeHttp2gRPCTransport(options, session);
       },
 
       /**
@@ -300,7 +269,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
   /**
    * Factory for creating new NodeHttp2gRPCTransport instances.
    * @deprecated Use {@link NodeHttp2gRPCTransport.createFactory} instead, which
-   * supports configuration and diagnostics.
+   * supports configuration.
    */
   static readonly factory: GrpcTransportFactory =
     NodeHttp2gRPCTransport.createFactory();
@@ -323,23 +292,18 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
    * Private constructor to limit instantiation to the static factory method.
    * @param options Transport options.
    * @param session node:http2 session to use for data transport.
-   * @param config Resolved config for the session's origin.
    */
   private constructor(
     options: GrpcTransportOptions,
-    session: http2.ClientHttp2Session,
-    config: NodeHttp2TransportConfig
+    session: http2.ClientHttp2Session
   ) {
     this.options = options;
     this.session = session;
-    this.config = config;
   }
 
   private readonly options: GrpcTransportOptions;
 
   private readonly session: http2.ClientHttp2Session;
-
-  private readonly config: NodeHttp2TransportConfig;
 
   private request: http2.ClientHttp2Stream | null = null;
 
@@ -375,37 +339,13 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       this.options.onHeaders(headersRecord, Number(responseHeaders[':status']));
     });
 
-    const { metricsConfig } = this.config;
-
-    if (metricsConfig == null) {
-      // `onChunk` can run tens of thousands of times on a single stream, so
-      // accounting is skipped entirely when unobserved.
-
-      // Note that `chunk` is technically a `Buffer`, but the `Buffer` type defined
-      // in @types/pouchdb-core is outdated and incompatible with latest `Uint8Array`
-      // types. Since `Buffer` inherits from `Uint8Array`, we can get around this
-      // by just declaring it as a `Uint8Array`.
-      req.on('data', (chunk: Uint8Array) => {
-        this.options.onChunk(chunk);
-      });
-    } else {
-      const tracker = new StreamMetricsTracker({
-        origin: url.origin,
-        path: url.pathname,
-        onChunk: chunk => this.options.onChunk(chunk),
-        onMetrics: metricsConfig.onStreamMetrics,
-        intervalMs: metricsConfig.intervalMs,
-      });
-
-      req.on('data', (chunk: Uint8Array) => {
-        tracker.recordChunk(chunk);
-      });
-
-      req.on('end', () => tracker.finish());
-      req.on('error', () => tracker.finish());
-      // Cancelled streams neither end nor error, and would leak the interval.
-      req.on('close', () => tracker.finish());
-    }
+    // Note that `chunk` is technically a `Buffer`, but the `Buffer` type defined
+    // in @types/pouchdb-core is outdated and incompatible with latest `Uint8Array`
+    // types. Since `Buffer` inherits from `Uint8Array`, we can get around this
+    // by just declaring it as a `Uint8Array`.
+    req.on('data', (chunk: Uint8Array) => {
+      this.options.onChunk(chunk);
+    });
 
     req.on('end', () => {
       this.options.onEnd();

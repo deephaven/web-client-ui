@@ -103,40 +103,23 @@ A factory applies one config to every origin it connects to. When origins need
 different settings — different TLS material, say — create a factory per config.
 Factories never share sessions, so each keeps its own.
 
-### Diagnostics
-
-`metricsConfig` reports the negotiated window sizes and per-stream throughput.
-`consumerTimeMs` measures time spent inside the JS API's own chunk handler, which
-distinguishes a slow connection from a slow consumer. It is entirely opt in — no
-accounting happens when `metricsConfig` is omitted. Supplying it enables both
-session and stream metrics; pass a no-op to ignore either one.
-
-```typescript
-const transportFactory = NodeHttp2gRPCTransport.createFactory({
-  metricsConfig: {
-    onSessionMetrics: metrics => {
-      console.log(
-        metrics.event,
-        metrics.origin,
-        metrics.localInitialWindowSize
-      );
-    },
-    onStreamMetrics: ({ path, byteCount, bytesPerSecond, consumerTimeMs }) => {
-      console.log(path, byteCount, bytesPerSecond, consumerTimeMs);
-    },
-    // Required to observe long lived streams that never end
-    intervalMs: 5000,
-  },
-});
-```
+### Logging
 
 `createFactory` throws on a `sessionWindowSize` below `initialWindowSize` rather
 than silently limiting throughput. The check runs at factory creation, before any
 connection is attempted.
 
-Every session event is also logged via `NodeHttp2gRPCTransport.onLogMessage`,
-with the same metrics object passed as the second argument — `debug` for
-`connect` / `localSettings` / `remoteSettings` / `close`, `error` for `error`.
+Each session lifecycle event is logged through
+`NodeHttp2gRPCTransport.onLogMessage`, with a `NodeHttp2SessionInfo` object as the
+second argument — `debug` for `connect` / `localSettings` / `remoteSettings` /
+`close`, `error` for `error`. It carries the negotiated window sizes, so it is
+also the hook to use to record them elsewhere.
+
+```typescript
+NodeHttp2gRPCTransport.onLogMessage((level, message, info) => {
+  console.log(level, message, info);
+});
+```
 
 Note that HTTP/2 settings are applied asynchronously, so `localInitialWindowSize`
 still reports Node's default on `connect`. Read it from `localSettings` onward to
