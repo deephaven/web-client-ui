@@ -391,6 +391,32 @@ describe('metrics', () => {
     expect(onStreamMetrics.mock.calls[0][0].event).toEqual('end');
   });
 
+  it('should report the configured window only from localSettings onward', async () => {
+    const origin = await startServer();
+    const onSessionMetrics = jest.fn<void, [NodeHttp2SessionMetrics]>();
+
+    await createConnectedTransport(
+      NodeHttp2gRPCTransport.createFactory({
+        initialWindowSize: 1024 * 1024,
+        metricsConfig: { onSessionMetrics, onStreamMetrics: jest.fn() },
+      }),
+      origin
+    );
+
+    const byEvent = (event: NodeHttp2SessionMetrics['event']) =>
+      onSessionMetrics.mock.calls
+        .map(([metrics]) => metrics)
+        .find(metrics => metrics.event === event);
+
+    // Settings have not been applied yet at `connect`
+    expect(byEvent('connect')?.localInitialWindowSize).toEqual(
+      NODE_DEFAULT_WINDOW_SIZE
+    );
+    expect(byEvent('localSettings')?.localInitialWindowSize).toEqual(
+      1024 * 1024
+    );
+  });
+
   it('should emit session metrics for connect and close', async () => {
     const origin = await startServer();
     const onSessionMetrics = jest.fn<void, [NodeHttp2SessionMetrics]>();

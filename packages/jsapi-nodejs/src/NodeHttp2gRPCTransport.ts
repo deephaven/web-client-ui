@@ -62,8 +62,13 @@ export interface NodeHttp2MetricsConfig {
 
 export interface NodeHttp2SessionMetrics {
   origin: string;
-  event: 'connect' | 'remoteSettings' | 'close' | 'error';
-  /** Per-stream window we advertise. */
+  event: 'connect' | 'localSettings' | 'remoteSettings' | 'close' | 'error';
+  /**
+   * Per-stream window we advertise. Settings apply asynchronously, so this is
+   * still Node's default on `'connect'`, and only reflects
+   * {@link NodeHttp2TransportConfig.initialWindowSize} from `'localSettings'`
+   * onward.
+   */
   localInitialWindowSize?: number;
   /** Connection-level window. */
   localWindowSize?: number;
@@ -123,22 +128,6 @@ function readSessionState(session: http2.ClientHttp2Session): SessionState {
   } catch {
     return {};
   }
-}
-
-function createSessionMetrics(
-  origin: string,
-  session: http2.ClientHttp2Session,
-  config: NodeHttp2TransportConfig,
-  event: NodeHttp2SessionMetrics['event'],
-  error?: Error
-): NodeHttp2SessionMetrics {
-  return {
-    origin,
-    event,
-    ...readSessionState(session),
-    maxSessionMemoryMb: config.sessionOptions?.maxSessionMemory,
-    ...(error == null ? {} : { error }),
-  };
 }
 
 /** Reject config that cannot do what it looks like it does. */
@@ -231,12 +220,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         metricsConfig,
       } = config;
 
-      // Every DATA frame debits both windows, so a stream's throughput is the
-      // lesser of the two and `initialWindowSize` alone would be inert. The
-      // reverse is not derived: a large connection window over a small stream
-      // window is a valid way to share a session between many streams.
-      const resolvedSessionWindowSize = sessionWindowSize ?? initialWindowSize;
-
       // Only override `settings` when configured, so an unconfigured factory
       // behaves exactly as a bare `http2.connect(origin)` would.
       const session = http2.connect(origin, {
@@ -246,65 +229,61 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
           : { settings: { ...sessionOptions?.settings, initialWindowSize } }),
       });
 
-      const emitSessionMetrics = (
+      /** Log the session's current state and report it to `onSessionMetrics`. */
+      const reportSession = (
         event: NodeHttp2SessionMetrics['event'],
+        logLevel: LogLevel,
+        message: string,
         error?: Error
       ): void => {
-        metricsConfig?.onSessionMetrics(
-          createSessionMetrics(origin, session, config, event, error)
-        );
+        const metrics: NodeHttp2SessionMetrics = {
+          origin,
+          event,
+          ...readSessionState(session),
+          maxSessionMemoryMb: sessionOptions?.maxSessionMemory,
+          ...(error == null ? {} : { error }),
+        };
+
+        NodeHttp2gRPCTransport.logMessage(logLevel, message, metrics);
+        metricsConfig?.onSessionMetrics(metrics);
       };
 
       session.on('connect', () => {
-        // `setLocalWindowSize` sends a WINDOW_UPDATE, which requires an
-        // established session, so this cannot happen any earlier.
+        const localWindowSize = sessionWindowSize ?? initialWindowSize;
+
         try {
-          if (resolvedSessionWindowSize != null) {
-            session.setLocalWindowSize(resolvedSessionWindowSize);
+          if (localWindowSize != null) {
+            session.setLocalWindowSize(localWindowSize);
           }
         } catch (err) {
-          const error = err instanceof Error ? err : new Error(String(err));
-          NodeHttp2gRPCTransport.logMessage(
+          reportSession(
+            'error',
             'error',
             'Failed to set session window size',
-            origin,
-            error
+            err instanceof Error ? err : new Error(String(err))
           );
-          emitSessionMetrics('error', error);
         }
 
-        emitSessionMetrics('connect');
+        reportSession('connect', 'debug', 'Session connected');
       });
 
-      // Settings are applied asynchronously, so `localSettings` is the first
-      // point where the negotiated values can be read.
+      // Settings apply asynchronously, so this is the first point where the
+      // negotiated local values can be read.
       session.on('localSettings', () => {
-        const metrics = createSessionMetrics(
-          origin,
-          session,
-          config,
-          'connect'
-        );
-
-        NodeHttp2gRPCTransport.logMessage(
-          'debug',
-          `session connected ${origin} localInitialWindowSize=${metrics.localInitialWindowSize} localWindowSize=${metrics.localWindowSize} maxSessionMemoryMb=${metrics.maxSessionMemoryMb} remoteMaxConcurrentStreams=${metrics.remoteMaxConcurrentStreams}`
-        );
+        reportSession('localSettings', 'debug', 'Session settings applied');
       });
 
       session.on('remoteSettings', () => {
-        emitSessionMetrics('remoteSettings');
+        reportSession('remoteSettings', 'debug', 'Remote settings received');
       });
 
       session.on('error', err => {
-        NodeHttp2gRPCTransport.logMessage('error', 'Session error', err);
-        emitSessionMetrics('error', err);
+        reportSession('error', 'error', 'Session error', err);
       });
 
       session.on('close', () => {
-        NodeHttp2gRPCTransport.logMessage('debug', 'Session closed');
         sessionMap.delete(origin);
-        emitSessionMetrics('close');
+        reportSession('close', 'debug', 'Session closed');
       });
 
       return session;

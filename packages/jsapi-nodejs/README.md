@@ -134,9 +134,10 @@ const transportFactory = NodeHttp2gRPCTransport.createFactory({
 than silently limiting throughput. The check runs at factory creation, before any
 connection is attempted.
 
-The same session parameters are also logged on connect via
-`NodeHttp2gRPCTransport.onLogMessage` at the `debug` level:
+Every session event is also logged via `NodeHttp2gRPCTransport.onLogMessage`,
+with the same metrics object passed as the second argument — `debug` for
+`connect` / `localSettings` / `remoteSettings` / `close`, `error` for `error`.
 
-```
-session connected https://myserver:8123 localInitialWindowSize=65535 localWindowSize=65535 maxSessionMemoryMb=undefined remoteMaxConcurrentStreams=100
-```
+Note that HTTP/2 settings are applied asynchronously, so `localInitialWindowSize`
+still reports Node's default on `connect`. Read it from `localSettings` onward to
+see the value `initialWindowSize` actually negotiated.
