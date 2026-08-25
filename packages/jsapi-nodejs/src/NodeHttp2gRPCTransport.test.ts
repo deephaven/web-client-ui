@@ -283,6 +283,34 @@ describe('session sharing', () => {
   });
 });
 
+describe('deprecated `factory`', () => {
+  it('should memoize the lazily created factory', () => {
+    expect(NodeHttp2gRPCTransport.factory).toBe(NodeHttp2gRPCTransport.factory);
+  });
+
+  it('should share one session across the transports it creates', async () => {
+    const origin = await startServer();
+
+    // Would regress to a session per access if the getter stopped memoizing
+    const transportA = NodeHttp2gRPCTransport.factory.create(
+      createTransportOptions(origin)
+    );
+    const transportB = NodeHttp2gRPCTransport.factory.create(
+      createTransportOptions(origin)
+    );
+
+    expect(getSession(transportB)).toBe(getSession(transportA));
+  });
+});
+
+describe('client streaming', () => {
+  it('should signal that multiple messages can be sent per stream', () => {
+    expect(NodeHttp2gRPCTransport.createFactory().supportsClientStreaming).toBe(
+      true
+    );
+  });
+});
+
 describe('dispose', () => {
   it('should close sessions belonging to every factory', async () => {
     const origin = await startServer();
@@ -398,6 +426,29 @@ describe('session logging', () => {
 
       expect(levelByEvent('error')).toEqual('error');
       expect(infoByEvent('error')?.error).toBeDefined();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('should report a failed window change with its cause', async () => {
+    const origin = await startServer();
+    const { infoByEvent, unsubscribe } = trackSessionInfo();
+
+    try {
+      await createConnectedTransport(
+        // Above the protocol max, so `setLocalWindowSize` throws
+        NodeHttp2gRPCTransport.createFactory({
+          sessionLocalWindowSize: 2 ** 31,
+        }),
+        origin
+      );
+
+      const { error } = infoByEvent('error') ?? {};
+      expect(error?.message).toEqual('Failed to set session window size');
+      expect((error?.cause as NodeJS.ErrnoException | undefined)?.code).toEqual(
+        'ERR_OUT_OF_RANGE'
+      );
     } finally {
       unsubscribe();
     }
