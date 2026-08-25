@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import GridA11yFallback, { type GridA11yViewport } from './GridA11yFallback';
+import GridA11yFallback from './GridA11yFallback';
 import type GridMetrics from './GridMetrics';
 import MockGridModel from './MockGridModel';
 
@@ -12,17 +12,12 @@ const ROW_HEADER_WIDTH = 30;
 
 const MODEL = new MockGridModel({ rowCount: 100, columnCount: 3 });
 const SUMMARY = 'Grid with 100 rows and 3 columns.';
-const VIEWPORT: GridA11yViewport = {
-  top: 0,
-  left: 0,
-  topOffset: 0,
-  leftOffset: 0,
-};
 
 /** Make metrics for a viewport laid out left to right and top to bottom */
-function makeMetrics(): GridMetrics {
-  const columns = [0, 1];
-  const rows = [0, 1];
+function makeMetrics({
+  columns = [0, 1],
+  rows = [0, 1],
+}: { columns?: number[]; rows?: number[] } = {}): GridMetrics {
   const allColumnWidths = new Map<number, number>();
   const allColumnXs = new Map<number, number>();
   const modelColumns = new Map<number, number>();
@@ -59,22 +54,45 @@ function makeMetrics(): GridMetrics {
 }
 
 function renderFallback({
-  metrics = makeMetrics(),
-  viewport = VIEWPORT,
-}: { metrics?: GridMetrics | null; viewport?: GridA11yViewport } = {}) {
-  return render(
+  getMetrics = () => makeMetrics(),
+  revision = 0,
+}: {
+  getMetrics?: () => GridMetrics | null;
+  revision?: number;
+} = {}) {
+  const { rerender, ...rest } = render(
     <GridA11yFallback
       model={MODEL}
-      getMetrics={() => metrics}
-      viewport={viewport}
+      getMetrics={getMetrics}
+      revision={revision}
     />
   );
+
+  return {
+    ...rest,
+    /** Rerender with the same metrics getter, as the grid does when it updates */
+    rerender: (nextRevision: number) =>
+      rerender(
+        <GridA11yFallback
+          model={MODEL}
+          getMetrics={getMetrics}
+          revision={nextRevision}
+        />
+      ),
+  };
 }
 
 async function describeContents() {
   const user = userEvent.setup();
   await user.click(
     screen.getByRole('button', { name: 'Describe the grid contents' })
+  );
+}
+
+async function hideContents() {
+  const user = userEvent.setup();
+  await user.click(
+    screen.getByRole('button', { name: 'Hide the grid contents' })
   );
 }
 
@@ -136,38 +154,48 @@ it('announces the description of the viewport', async () => {
   );
 });
 
-it('increments the revision each time the contents are described', async () => {
-  const { container } = renderFallback();
+it('exposes the revision of the most recent grid update', () => {
+  const { container, rerender } = renderFallback();
   const fallback = container.firstElementChild;
 
   expect(fallback).toHaveAttribute('data-grid-a11y-revision', '0');
 
-  await describeContents();
+  rerender(1);
   expect(fallback).toHaveAttribute('data-grid-a11y-revision', '1');
-
-  await describeContents();
-  expect(fallback).toHaveAttribute('data-grid-a11y-revision', '2');
 });
 
-it('discards the snapshot once the grid scrolls away from it', async () => {
-  const { rerender } = renderFallback();
+it('describes the new contents each time the grid updates', async () => {
+  let metrics = makeMetrics();
+  const { rerender } = renderFallback({ getMetrics: () => metrics });
+
+  await describeContents();
+  expect(screen.getByText('0,0')).toBeInTheDocument();
+
+  metrics = makeMetrics({ rows: [2, 3] });
+  rerender(1);
+
+  expect(screen.queryByText('0,0')).toBeNull();
+  expect(screen.getByText('0,2')).toBeInTheDocument();
+});
+
+it('stops describing the contents when toggled off', async () => {
+  renderFallback();
 
   await describeContents();
   expect(screen.getByRole('table')).toBeInTheDocument();
+  expect(
+    screen.getByRole('button', { name: 'Hide the grid contents' })
+  ).toHaveAttribute('aria-pressed', 'true');
 
-  rerender(
-    <GridA11yFallback
-      model={MODEL}
-      getMetrics={makeMetrics}
-      viewport={{ ...VIEWPORT, top: 5 }}
-    />
-  );
-
+  await hideContents();
   expect(screen.queryByRole('table')).toBeNull();
+  expect(
+    screen.getByRole('button', { name: 'Describe the grid contents' })
+  ).toHaveAttribute('aria-pressed', 'false');
 });
 
 it('describes nothing when the grid has not drawn yet', async () => {
-  renderFallback({ metrics: null });
+  renderFallback({ getMetrics: () => null });
 
   await describeContents();
 

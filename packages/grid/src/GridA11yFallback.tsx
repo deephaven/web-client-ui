@@ -14,8 +14,8 @@ export type GridA11yFallbackProps = {
   /** The model being displayed */
   model: GridModel;
 
-  /** The metrics of the most recent render, or null if the grid has not drawn yet */
-  metrics: GridMetrics | null;
+  /** Get the metrics of the most recent render, or null if the grid has not drawn yet */
+  getMetrics: () => GridMetrics | null;
 
   /** The currently selected ranges */
   selectedRanges?: readonly GridRange[];
@@ -39,18 +39,25 @@ export type GridA11yFallbackProps = {
  */
 export function GridA11yFallback({
   model,
-  metrics,
+  getMetrics,
   selectedRanges = EMPTY_ARRAY,
   revision,
 }: GridA11yFallbackProps): JSX.Element {
   const [showSnapshot, setShowSnapshot] = useState(false);
-  const snapshot = useMemo(
-    () =>
-      showSnapshot && metrics != null
-        ? createGridA11ySnapshot(model, metrics, selectedRanges)
-        : null,
-    [showSnapshot, metrics, model, selectedRanges]
-  );
+  const snapshot = useMemo(() => {
+    if (!showSnapshot) {
+      return;
+    }
+    const metrics = getMetrics();
+    if (metrics == null) {
+      return;
+    }
+
+    return createGridA11ySnapshot(model, metrics, selectedRanges);
+    // `revision` changes whenever the grid redraws, which is what makes the
+    // metrics read above stale
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSnapshot, getMetrics, model, selectedRanges, revision]);
 
   return (
     <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>
