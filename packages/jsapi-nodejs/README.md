@@ -62,10 +62,10 @@ one round trip, so a single stream is capped at roughly `window / RTT` (RTT bein
 the round-trip time to the server). At 80ms RTT that is about 819KB/s, no matter
 how much bandwidth is available.
 
-| Option              | Default                         | Applied via                                               |
-| ------------------- | ------------------------------- | --------------------------------------------------------- |
-| `initialWindowSize` | unset (Node 64KB)               | `http2.connect` `settings.initialWindowSize` (per stream) |
-| `sessionWindowSize` | `initialWindowSize`, else unset | `session.setLocalWindowSize()` (per connection)           |
+| Option                                      | Default                                     | Applied via                                     |
+| ------------------------------------------- | ------------------------------------------- | ----------------------------------------------- |
+| `sessionOptions.settings.initialWindowSize` | unset (Node 64KB)                           | `http2.connect` (per stream)                    |
+| `sessionLocalWindowSize`                    | `sessionOptions.settings.initialWindowSize` | `session.setLocalWindowSize()` (per connection) |
 
 Neither is set by default, so an unconfigured factory behaves exactly like a
 bare `http2.connect(origin)`. Sizing is left to the consumer because the right
@@ -74,30 +74,35 @@ backpressure, and the useful size is the bandwidth-delay product of the link
 (`bandwidth x RTT`) — enough data in flight to keep the pipe full while waiting
 for credit to return.
 
-Setting `initialWindowSize` alone is enough:
+The per-stream window is not a discrete config property, since `sessionOptions`
+is passed through to `http2.connect` and already carries it. Setting it alone is
+enough:
 
 ```typescript
 // e.g. sized for a high bandwidth-delay-product link
 const transportFactory = NodeHttp2gRPCTransport.createFactory({
-  initialWindowSize: 4 * 1024 * 1024,
+  sessionOptions: { settings: { initialWindowSize: 4 * 1024 * 1024 } },
 });
 ```
 
 Every DATA frame debits both the stream window and the connection window, so a
-stream's usable throughput is the lesser of the two. `sessionWindowSize`
-therefore defaults to `initialWindowSize`; a value _below_ it is rejected, since
-the stream window could never be reached. Raise it above
-`initialWindowSize` when several heavy streams share one session, since that
-budget is shared across all of them.
+stream's usable throughput is the lesser of the two. `sessionLocalWindowSize`
+therefore defaults to `settings.initialWindowSize`; a value _below_ it is
+rejected, since the stream window could never be reached. Raise it above
+`settings.initialWindowSize` when several heavy streams share one session, since
+that budget is shared across all of them.
+
+`sessionLocalWindowSize` is a discrete property because, per RFC 9113 6.9.2, the
+connection window cannot be changed via SETTINGS — it is applied with
+`session.setLocalWindowSize()` once the session connects, not through
+`http2.connect`.
 
 The reverse is not derived. A large connection window over a small stream window
-is a valid way to share a session between many streams, so `initialWindowSize` is
+is a valid way to share a session between many streams, so the stream window is
 left at Node's default unless you set it.
 
-`sessionOptions` is merged into the `http2.connect` options, which allows any
-`http2.SecureClientSessionOptions` (TLS material, `maxSessionMemory`, etc.) to
-be passed through. An explicit `initialWindowSize` takes precedence over
-`sessionOptions.settings.initialWindowSize`.
+`sessionOptions` is passed through to `http2.connect`, which allows any
+`http2.SecureClientSessionOptions` (TLS material, `maxSessionMemory`, etc.).
 
 A factory applies one config to every origin it connects to. When origins need
 different settings — different TLS material, say — create a factory per config.
@@ -105,22 +110,35 @@ Factories never share sessions, so each keeps its own.
 
 ### Logging
 
-`createFactory` throws on a `sessionWindowSize` below `initialWindowSize` rather
-than silently limiting throughput. The check runs at factory creation, before any
+`createFactory` throws on a `sessionLocalWindowSize` below
+`sessionOptions.settings.initialWindowSize` rather than silently limiting
+throughput. The check runs at factory creation, before any
 connection is attempted.
 
 Each session lifecycle event is logged through
-`NodeHttp2gRPCTransport.onLogMessage`, with a `NodeHttp2SessionInfo` object as the
-second argument — `debug` for `connect` / `localSettings` / `remoteSettings` /
-`close`, `error` for `error`. It carries the negotiated window sizes, so it is
-also the hook to use to record them elsewhere.
+`NodeHttp2gRPCTransport.onLogMessage` as a lone `NodeHttp2SessionInfo` object,
+whose `event` names the event — at `error` level for `error`, `debug` otherwise.
+It carries the negotiated window sizes, so it is also the hook to use to record
+them elsewhere.
+
+Every event reports `origin` and `event`, plus only the values that event
+updated:
+
+| Event            | Also reports                                            |
+| ---------------- | ------------------------------------------------------- |
+| `connect`        | `effectiveLocalWindowSize` (the connection window)      |
+| `localSettings`  | `localInitialWindowSize` (our per-stream window)        |
+| `remoteSettings` | `remoteInitialWindowSize`, `remoteMaxConcurrentStreams` |
+| `error`          | `error` — a failed window change wraps its cause here   |
+| `close`          | nothing — a destroyed session reports no state          |
 
 ```typescript
-NodeHttp2gRPCTransport.onLogMessage((level, message, info) => {
-  console.log(level, message, info);
+NodeHttp2gRPCTransport.onLogMessage((level, info) => {
+  console.log(level, info);
 });
 ```
 
-Note that HTTP/2 settings are applied asynchronously, so `localInitialWindowSize`
-still reports Node's default on `connect`. Read it from `localSettings` onward to
-see the value `initialWindowSize` actually negotiated.
+HTTP/2 settings are applied asynchronously, which is why the windows are split
+across events rather than reported on each one: on `connect` our own settings are
+not yet in effect and the peer has not sent its own, so Node would report its
+default for one and an assumption of its own for the other.

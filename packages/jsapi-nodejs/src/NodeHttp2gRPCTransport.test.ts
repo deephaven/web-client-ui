@@ -22,9 +22,10 @@ function respondWithChunks(stream: http2.ServerHttp2Stream): void {
 }
 
 async function startServer(
-  handleStream: (stream: http2.ServerHttp2Stream) => void = respondWithChunks
+  handleStream: (stream: http2.ServerHttp2Stream) => void = respondWithChunks,
+  serverSettings?: http2.Settings
 ): Promise<string> {
-  const server = http2.createServer();
+  const server = http2.createServer({ settings: serverSettings });
   servers.push(server);
 
   server.on('stream', handleStream);
@@ -145,7 +146,9 @@ describe('window sizes', () => {
     expect(session.localSettings.initialWindowSize).toEqual(
       NODE_DEFAULT_WINDOW_SIZE
     );
-    expect(session.state.localWindowSize).toEqual(NODE_DEFAULT_WINDOW_SIZE);
+    expect(session.state.effectiveLocalWindowSize).toEqual(
+      NODE_DEFAULT_WINDOW_SIZE
+    );
   });
 
   it('should leave both windows at Node defaults through the deprecated `factory`', async () => {
@@ -159,13 +162,17 @@ describe('window sizes', () => {
     expect(session.localSettings.initialWindowSize).toEqual(
       NODE_DEFAULT_WINDOW_SIZE
     );
-    expect(session.state.localWindowSize).toEqual(NODE_DEFAULT_WINDOW_SIZE);
+    expect(session.state.effectiveLocalWindowSize).toEqual(
+      NODE_DEFAULT_WINDOW_SIZE
+    );
   });
 
-  it('should derive the session window from initialWindowSize when unset', async () => {
+  it('should derive the session window from settings.initialWindowSize when unset', async () => {
     const origin = await startServer();
     const transport = await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory({ initialWindowSize: 1024 * 1024 }),
+      NodeHttp2gRPCTransport.createFactory({
+        sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
+      }),
       origin
     );
     const session = getSession(transport);
@@ -173,14 +180,14 @@ describe('window sizes', () => {
     // A connection window left at 64KB would cap every stream, making the
     // configured stream window unreachable.
     expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
-    expect(session.state.localWindowSize).toEqual(1024 * 1024);
+    expect(session.state.effectiveLocalWindowSize).toEqual(1024 * 1024);
   });
 
-  it('should not derive the stream window from sessionWindowSize', async () => {
+  it('should not derive the stream window from sessionLocalWindowSize', async () => {
     const origin = await startServer();
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        sessionWindowSize: 2 * 1024 * 1024,
+        sessionLocalWindowSize: 2 * 1024 * 1024,
       }),
       origin
     );
@@ -191,53 +198,33 @@ describe('window sizes', () => {
     expect(session.localSettings.initialWindowSize).toEqual(
       NODE_DEFAULT_WINDOW_SIZE
     );
-    expect(session.state.localWindowSize).toEqual(2 * 1024 * 1024);
+    expect(session.state.effectiveLocalWindowSize).toEqual(2 * 1024 * 1024);
   });
 
   it('should apply configured window sizes', async () => {
     const origin = await startServer();
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        initialWindowSize: 1024 * 1024,
-        sessionWindowSize: 2 * 1024 * 1024,
+        sessionLocalWindowSize: 2 * 1024 * 1024,
+        sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
       }),
       origin
     );
     const session = getSession(transport);
 
     expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
-    expect(session.state.localWindowSize).toEqual(2 * 1024 * 1024);
-  });
-
-  it('should give `initialWindowSize` precedence over `sessionOptions.settings` while preserving other settings', async () => {
-    const origin = await startServer();
-    const transport = await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory({
-        initialWindowSize: 1024 * 1024,
-        sessionOptions: {
-          settings: {
-            initialWindowSize: NODE_DEFAULT_WINDOW_SIZE,
-            headerTableSize: 8192,
-          },
-        },
-      }),
-      origin
-    );
-    const session = getSession(transport);
-
-    expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
-    expect(session.localSettings.headerTableSize).toEqual(8192);
+    expect(session.state.effectiveLocalWindowSize).toEqual(2 * 1024 * 1024);
   });
 });
 
 describe('config validation', () => {
-  it('should throw when sessionWindowSize is below initialWindowSize', () => {
+  it('should throw when sessionLocalWindowSize is below the stream window', () => {
     expect(() =>
       NodeHttp2gRPCTransport.createFactory({
-        initialWindowSize: 4 * 1024 * 1024,
-        sessionWindowSize: 1024 * 1024,
+        sessionLocalWindowSize: 1024 * 1024,
+        sessionOptions: { settings: { initialWindowSize: 4 * 1024 * 1024 } },
       })
-    ).toThrow('is below initialWindowSize');
+    ).toThrow('is below sessionOptions.settings.initialWindowSize');
   });
 });
 
@@ -256,12 +243,14 @@ describe('session sharing', () => {
     const origin = await startServer();
 
     const transportA = await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory({ initialWindowSize: 1024 * 1024 }),
+      NodeHttp2gRPCTransport.createFactory({
+        sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
+      }),
       origin
     );
     const transportB = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        initialWindowSize: 2 * 1024 * 1024,
+        sessionOptions: { settings: { initialWindowSize: 2 * 1024 * 1024 } },
       }),
       origin
     );
@@ -278,7 +267,7 @@ describe('session sharing', () => {
     const originA = await startServer();
     const originB = await startServer();
     const factory = NodeHttp2gRPCTransport.createFactory({
-      initialWindowSize: 1024 * 1024,
+      sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
     });
 
     const sessionA = getSession(
@@ -344,52 +333,124 @@ describe('requests', () => {
 });
 
 describe('session logging', () => {
-  /**
-   * Session state is logged as the second arg of each session log message, so
-   * that is how a consumer observes it.
-   */
+  /** Session events are logged as a bare {@link NodeHttp2SessionInfo}. */
   function trackSessionInfo(): {
     infoByEvent: (
       event: NodeHttp2SessionInfo['event']
     ) => NodeHttp2SessionInfo | undefined;
+    levelByEvent: (event: NodeHttp2SessionInfo['event']) => string | undefined;
     unsubscribe: () => void;
   } {
-    const infos: NodeHttp2SessionInfo[] = [];
+    const logged: { level: string; info: NodeHttp2SessionInfo }[] = [];
 
     const unsubscribe = NodeHttp2gRPCTransport.onLogMessage(
-      (_level, ...args) => {
-        const [, info] = args as [string, NodeHttp2SessionInfo?];
+      (level, ...args) => {
+        const [info] = args as [NodeHttp2SessionInfo?];
         if (info != null && typeof info === 'object' && 'event' in info) {
-          infos.push(info);
+          logged.push({ level, info });
         }
       }
     );
 
+    const find = (event: NodeHttp2SessionInfo['event']) =>
+      logged.find(entry => entry.info.event === event);
+
     return {
-      infoByEvent: event => infos.find(info => info.event === event),
+      infoByEvent: event => find(event)?.info,
+      levelByEvent: event => find(event)?.level,
       unsubscribe,
     };
   }
 
-  it('should log the configured window only from localSettings onward', async () => {
+  it('should log at a level derived from the event', async () => {
+    const origin = await startServer();
+    const { levelByEvent, unsubscribe } = trackSessionInfo();
+
+    try {
+      await createConnectedTransport(
+        NodeHttp2gRPCTransport.createFactory(),
+        origin
+      );
+
+      expect(levelByEvent('connect')).toEqual('debug');
+      expect(levelByEvent('localSettings')).toEqual('debug');
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('should log a session error at error level', async () => {
+    const { infoByEvent, levelByEvent, unsubscribe } = trackSessionInfo();
+
+    try {
+      // Nothing is listening, so the session errors instead of connecting
+      const factory = NodeHttp2gRPCTransport.createFactory();
+      factory.create(createTransportOptions('http://127.0.0.1:1'));
+
+      await new Promise<void>(resolve => {
+        const intervalId = setInterval(() => {
+          if (infoByEvent('error') != null) {
+            clearInterval(intervalId);
+            resolve();
+          }
+        }, 10);
+      });
+
+      expect(levelByEvent('error')).toEqual('error');
+      expect(infoByEvent('error')?.error).toBeDefined();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('should log the stream window only once it has been applied', async () => {
     const origin = await startServer();
     const { infoByEvent, unsubscribe } = trackSessionInfo();
 
     try {
       await createConnectedTransport(
         NodeHttp2gRPCTransport.createFactory({
-          initialWindowSize: 1024 * 1024,
+          sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
         }),
         origin
       );
 
-      // Settings have not been applied yet at `connect`
-      expect(infoByEvent('connect')?.localInitialWindowSize).toEqual(
-        NODE_DEFAULT_WINDOW_SIZE
-      );
+      // Omitted at `connect`, where it would still report Node's default
+      expect(infoByEvent('connect')).toBeDefined();
+      expect(infoByEvent('connect')?.localInitialWindowSize).toBeUndefined();
       expect(infoByEvent('localSettings')?.localInitialWindowSize).toEqual(
         1024 * 1024
       );
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('should log the peer settings the peer actually advertised', async () => {
+    const origin = await startServer(respondWithChunks, {
+      initialWindowSize: 3 * 1024 * 1024,
+      maxConcurrentStreams: 77,
+    });
+    const { infoByEvent, unsubscribe } = trackSessionInfo();
+
+    try {
+      // The peer's SETTINGS arrive ahead of the ack of our own
+      await createConnectedTransport(
+        NodeHttp2gRPCTransport.createFactory(),
+        origin
+      );
+
+      expect(infoByEvent('remoteSettings')?.remoteInitialWindowSize).toEqual(
+        3 * 1024 * 1024
+      );
+      expect(infoByEvent('remoteSettings')?.remoteMaxConcurrentStreams).toEqual(
+        77
+      );
+
+      // Node reports an assumption of its own before the peer has spoken
+      expect(
+        infoByEvent('connect')?.remoteMaxConcurrentStreams
+      ).toBeUndefined();
     } finally {
       unsubscribe();
     }
@@ -402,14 +463,19 @@ describe('session logging', () => {
     try {
       const transport = await createConnectedTransport(
         NodeHttp2gRPCTransport.createFactory({
-          sessionWindowSize: 2 * 1024 * 1024,
+          sessionLocalWindowSize: 2 * 1024 * 1024,
         }),
         origin
       );
       const session = getSession(transport);
 
       expect(infoByEvent('connect')?.origin).toEqual(origin);
-      expect(infoByEvent('connect')?.localWindowSize).toEqual(2 * 1024 * 1024);
+      expect(infoByEvent('connect')?.effectiveLocalWindowSize).toEqual(
+        2 * 1024 * 1024
+      );
+
+      // Nothing is readable off a destroyed session, so `close` reports none of it
+      expect(infoByEvent('close')?.effectiveLocalWindowSize).toBeUndefined();
 
       const closed = new Promise<void>(resolve => {
         session.once('close', () => resolve());
