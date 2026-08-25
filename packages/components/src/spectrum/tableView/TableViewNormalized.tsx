@@ -15,17 +15,7 @@ import type { TableViewColumn } from './TableView';
 import { TableViewWrapper } from './TableViewWrapper';
 
 export interface TableViewNormalizedProps<T>
-  extends Omit<
-    SpectrumTableProps<T>,
-    | 'children'
-    | 'items'
-    | 'selectionMode'
-    | 'selectedKeys'
-    | 'defaultSelectedKeys'
-    | 'disabledKeys'
-    | 'onSelectionChange'
-    | 'overflowMode'
-  > {
+  extends Omit<SpectrumTableProps<T>, 'children' | 'items' | 'overflowMode'> {
   columns: TableViewColumn[];
   normalizedItems: readonly KeyedItem<T, Key>[];
   onScroll?: (event: Event) => void;

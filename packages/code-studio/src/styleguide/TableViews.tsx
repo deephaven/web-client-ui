@@ -78,6 +78,12 @@ export function TableViews(): JSX.Element {
     direction: 'ascending',
   });
   const [lastOpenedName, setLastOpenedName] = useState('');
+  const [singleSelectedKeys, setSingleSelectedKeys] = useState<
+    'all' | Set<Key>
+  >(() => new Set([]));
+  const [multiSelectedKeys, setMultiSelectedKeys] = useState<'all' | Set<Key>>(
+    () => new Set([0, 3])
+  );
 
   const onDensityChange = useCallback((value: string) => {
     setDensity(value as TableViewProps<SampleRow>['density']);
@@ -111,7 +117,7 @@ export function TableViews(): JSX.Element {
         gap={14}
         height="size-6000"
         columns="1fr 1fr"
-        rows="auto minmax(0, 1fr) auto"
+        rows="auto minmax(0, 1fr) auto minmax(0, 1fr) auto"
       >
         <LabeledFlexContainer
           alignItems="center"
@@ -174,6 +180,64 @@ export function TableViews(): JSX.Element {
 
         <Flex gridColumn="span 2">
           <Text>Last opened: {lastOpenedName}</Text>
+        </Flex>
+
+        <LabeledFlexContainer
+          gap={10}
+          label="Single select (uncontrolled)"
+          height="100%"
+          minHeight={0}
+          minWidth={0}
+        >
+          <TableView
+            aria-label="Single select"
+            columns={columns}
+            density={density}
+            items={rows.slice(0, 8)}
+            itemCount={8}
+            selectionMode="single"
+            defaultSelectedKeys={[0]}
+            onSelectionChange={keys => setSingleSelectedKeys(keys)}
+            renderCell={renderCell}
+            getTextValue={item => item.name}
+          />
+        </LabeledFlexContainer>
+
+        <LabeledFlexContainer
+          gap={10}
+          label="Multiple select (controlled) with disabled rows"
+          height="100%"
+          minHeight={0}
+          minWidth={0}
+        >
+          <TableView
+            aria-label="Multiple select"
+            columns={columns}
+            density={density}
+            items={rows.slice(0, 8)}
+            itemCount={8}
+            selectionMode="multiple"
+            selectedKeys={multiSelectedKeys}
+            disabledKeys={[2, 5]}
+            onSelectionChange={keys => setMultiSelectedKeys(keys)}
+            renderCell={renderCell}
+            getTextValue={item => item.name}
+          />
+        </LabeledFlexContainer>
+
+        <Flex gridColumn="span 2" gap={14}>
+          <Text>
+            Single selected:{' '}
+            {singleSelectedKeys === 'all'
+              ? 'all'
+              : [...singleSelectedKeys].join(', ') || 'none'}
+          </Text>
+          <Text>
+            Multiple selected:{' '}
+            {multiSelectedKeys === 'all'
+              ? 'all'
+              : [...multiSelectedKeys].join(', ') || 'none'}
+          </Text>
         </Flex>
       </Grid>
     </SampleSection>

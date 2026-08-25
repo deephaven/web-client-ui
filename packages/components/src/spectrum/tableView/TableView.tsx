@@ -19,17 +19,7 @@ export interface TableViewColumn {
 }
 
 export interface TableViewProps<T>
-  extends Omit<
-    SpectrumTableProps<T>,
-    | 'children'
-    | 'items'
-    | 'selectionMode'
-    | 'selectedKeys'
-    | 'defaultSelectedKeys'
-    | 'disabledKeys'
-    | 'onSelectionChange'
-    | 'overflowMode'
-  > {
+  extends Omit<SpectrumTableProps<T>, 'children' | 'items' | 'overflowMode'> {
   columns: TableViewColumn[];
   items: readonly T[];
   itemCount: number;
