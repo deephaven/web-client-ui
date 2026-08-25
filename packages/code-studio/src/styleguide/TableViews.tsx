@@ -115,7 +115,7 @@ export function TableViews(): JSX.Element {
       <h2 className="ui-title">Table View</h2>
       <Grid
         gap={14}
-        height="size-6000"
+        height="960px"
         columns="1fr 1fr"
         rows="auto minmax(0, 1fr) auto minmax(0, 1fr) auto"
       >
