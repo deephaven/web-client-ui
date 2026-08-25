@@ -214,8 +214,8 @@ export function TableViews(): JSX.Element {
             aria-label="Multiple select"
             columns={columns}
             density={density}
-            items={rows.slice(0, 8)}
-            itemCount={8}
+            items={rows}
+            itemCount={rows.length}
             selectionMode="multiple"
             selectedKeys={multiSelectedKeys}
             disabledKeys={['2', '5']}
