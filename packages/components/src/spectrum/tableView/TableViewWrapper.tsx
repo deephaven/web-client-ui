@@ -58,7 +58,10 @@ export function TableViewWrapper<T>(
       ) {
         return;
       }
-      const top = Math.max(0, Math.floor(element.scrollTop / rowHeight));
+      const top = Math.min(
+        itemCount - 1,
+        Math.max(0, Math.floor(element.scrollTop / rowHeight))
+      );
       const visibleRowCount = Math.max(
         1,
         Math.ceil(element.clientHeight / rowHeight)
