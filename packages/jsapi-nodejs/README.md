@@ -59,10 +59,10 @@ Unlike browsers, Node never grows its HTTP/2 receive windows past the 64KB
 protocol default, which caps a single stream at roughly `window / RTT`. At 80ms
 RTT that is about 819KB/s, regardless of available bandwidth.
 
-| Option              | Default                            | Applied via                                     |
-| ------------------- | ---------------------------------- | ----------------------------------------------- |
-| `initialWindowSize` | unset (Node 64KB)                  | `SETTINGS_INITIAL_WINDOW_SIZE` (per stream)     |
-| `sessionWindowSize` | `initialWindowSize`, else unset    | `session.setLocalWindowSize()` (per connection) |
+| Option              | Default                         | Applied via                                               |
+| ------------------- | ------------------------------- | --------------------------------------------------------- |
+| `initialWindowSize` | unset (Node 64KB)               | `http2.connect` `settings.initialWindowSize` (per stream) |
+| `sessionWindowSize` | `initialWindowSize`, else unset | `session.setLocalWindowSize()` (per connection)           |
 
 Neither is set by default, so an unconfigured factory behaves exactly like a
 bare `http2.connect(origin)`. Sizing is left to the consumer because the right
@@ -81,13 +81,10 @@ const transportFactory = NodeHttp2gRPCTransport.createFactory({
 
 Every DATA frame debits both the stream window and the connection window, so a
 stream's usable throughput is the lesser of the two. `sessionWindowSize`
-therefore defaults to `initialWindowSize` — a connection window left at 64KB
-would cap every stream and make the configured stream window unreachable.
-
-Raise `sessionWindowSize` above `initialWindowSize` when several heavy streams
-share one session, since that budget is shared across all of them. Setting it
-*below* `initialWindowSize` is logged as an error: the stream window could never
-be reached, and throughput is silently limited to the smaller value.
+therefore defaults to `initialWindowSize`; a value _below_ it is logged as an
+error, since the stream window could never be reached. Raise it above
+`initialWindowSize` when several heavy streams share one session, since that
+budget is shared across all of them.
 
 The reverse is not derived. A large connection window over a small stream window
 is a valid way to share a session between many streams, so `initialWindowSize` is

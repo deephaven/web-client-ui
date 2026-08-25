@@ -12,41 +12,32 @@ type GrpcTransportFactory = DhcType.grpc.GrpcTransportFactory;
 type GrpcTransportOptions = DhcType.grpc.GrpcTransportOptions;
 
 /**
- * Node defaults both HTTP/2 receive windows to 64KB and, unlike browsers, never
- * grows them, which caps a single stream at roughly `window / RTT`.
- */
-
-/**
  * Configuration for a {@link NodeHttp2gRPCTransport} factory.
  */
 export interface NodeHttp2TransportConfig {
   /**
-   * Per-stream receive window (SETTINGS_INITIAL_WINDOW_SIZE).
+   * Per-stream receive window, sent as `settings.initialWindowSize` on
+   * `http2.connect`. Node defaults to 64KB and, unlike browsers, never grows
+   * it, which caps a single stream at roughly `window / RTT` (~819KB/s at 80ms
+   * RTT). Sizing is left to the consumer, since a larger window costs buffer
+   * memory and weakens backpressure.
    *
-   * Unset by default — Node's 64KB applies, which caps a single stream at
-   * roughly `window / RTT`. Size it from the bandwidth-delay product you need:
-   * at 80ms RTT, 64KB allows ~819KB/s and 4MiB allows ~52MB/s. Raising it costs
-   * buffer memory and weakens backpressure, so the right value depends on the
-   * deployment and is left to the consumer.
-   *
-   * Setting this alone is sufficient:
+   * Setting this alone is sufficient;
    * {@link NodeHttp2TransportConfig.sessionWindowSize} defaults to the same
-   * value, since a connection window below it would make it unreachable.
+   * value.
    * @default undefined (Node's 65535)
    */
   initialWindowSize?: number;
   /**
    * Connection-level receive window, applied via `session.setLocalWindowSize()`.
-   * NOT an `http2.connect` option: per RFC 9113 6.9.2,
-   * SETTINGS_INITIAL_WINDOW_SIZE cannot alter the connection window, which
-   * changes only via a WINDOW_UPDATE on stream 0.
+   * Per RFC 9113 6.9.2 the connection window cannot be changed via SETTINGS, so
+   * this is not an `http2.connect` option.
    *
-   * Defaults to {@link NodeHttp2TransportConfig.initialWindowSize} when that is
-   * set. Raise it above that when several heavy streams share the session, since
-   * this budget is shared across all of them. Setting it *below*
-   * `initialWindowSize` is logged as an error — the connection window caps every
-   * stream, so the larger stream window could never be reached.
-   * @default undefined, or `initialWindowSize` when that is set
+   * Raise it above {@link NodeHttp2TransportConfig.initialWindowSize} when
+   * several heavy streams share the session, since this budget is shared across
+   * all of them. A value below `initialWindowSize` is logged as an error, since
+   * the connection window caps every stream.
+   * @default `initialWindowSize` when that is set, otherwise undefined
    */
   sessionWindowSize?: number;
   /** Merged into the `http2.connect` options. */
@@ -56,7 +47,7 @@ export interface NodeHttp2TransportConfig {
   onStreamMetrics?: (metrics: NodeHttp2StreamMetrics) => void;
   /**
    * Emit an `'interval'` stream-metrics event this often. Required to observe
-   * long-lived streams that never end (e.g. a controller subscription).
+   * long-lived streams that never end, such as a table subscription.
    * @default undefined (end-of-stream events only)
    */
   metricsIntervalMs?: number;
@@ -74,19 +65,16 @@ export type NodeHttp2TransportConfigResolver =
 export interface NodeHttp2SessionMetrics {
   origin: string;
   event: 'connect' | 'remoteSettings' | 'close' | 'error';
-  /** `session.localSettings.initialWindowSize` — per-stream, what we advertise. */
+  /** Per-stream window we advertise. */
   localInitialWindowSize: number | undefined;
-  /** `session.state.localWindowSize` — connection level. */
+  /** Connection-level window. */
   localWindowSize: number | undefined;
-  /** `session.remoteSettings.initialWindowSize`. */
   remoteInitialWindowSize: number | undefined;
-  /** Echo of the resolved config value; not readable from the session. */
+  /** Echo of `sessionOptions.maxSessionMemory`; not readable from the session. */
   maxSessionMemoryMb: number | undefined;
   /**
-   * `session.remoteSettings.maxConcurrentStreams` — what the peer advertised.
-   * Deliberately not named after the `peerMaxConcurrentStreams` connect option,
-   * which is the opposite thing: a local assumption applied until the peer says
-   * otherwise.
+   * What the peer advertised, as opposed to `peerMaxConcurrentStreams`, which is
+   * the local assumption used until the peer says otherwise.
    */
   remoteMaxConcurrentStreams: number | undefined;
   error?: Error;
@@ -94,7 +82,7 @@ export interface NodeHttp2SessionMetrics {
 
 export interface NodeHttp2StreamMetrics {
   origin: string;
-  /** Request path, e.g. `/io.deephaven.proto.controller.grpc.ControllerApi/subscribe`. */
+  /** gRPC method path, e.g. `/<package>.<Service>/<method>`. */
   path: string;
   event: 'interval' | 'end';
   durationMs: number;
@@ -104,16 +92,16 @@ export interface NodeHttp2StreamMetrics {
   maxChunkBytes: number;
   bytesPerSecond: number;
   /**
-   * Wall-clock spent inside `options.onChunk`. Compare against `durationMs`: a
-   * small ratio means the transport is waiting on the wire, a large one means
-   * the consumer is the bottleneck.
+   * Wall-clock spent inside `options.onChunk`. A small ratio to `durationMs`
+   * means the transport is waiting on the wire, a large one means the consumer
+   * is the bottleneck.
    */
   consumerTimeMs: number;
 }
 
 /**
- * Session state getters can throw once a session is destroyed, which races with
- * the `close` / `error` handlers that report them.
+ * The `close` / `error` handlers read session state after the session is
+ * destroyed, where Node does not guarantee these getters stay readable.
  */
 function safeRead<T>(read: () => T): T | undefined {
   try {
@@ -176,10 +164,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     (logLevel: LogLevel, ...args: unknown[]) => void
   >();
 
-  /**
-   * Session maps of factories created by {@link createFactory}, so that the
-   * static {@link dispose} can still close every session across all factories.
-   */
+  /** Every factory's session map, so {@link dispose} can close all of them. */
   private static readonly sessionMaps = new Set<
     Map<string, http2.ClientHttp2Session>
   >();
@@ -213,8 +198,6 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     const sessionMap = new Map<string, http2.ClientHttp2Session>();
     const configMap = new Map<string, NodeHttp2TransportConfig>();
 
-    NodeHttp2gRPCTransport.sessionMaps.add(sessionMap);
-
     function resolveConfig(origin: string): NodeHttp2TransportConfig {
       let resolved = configMap.get(origin);
 
@@ -238,13 +221,10 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         onSessionMetrics,
       } = transportConfig;
 
-      // Every DATA frame debits both the stream window and the connection
-      // window, so a stream's usable throughput is the lesser of the two. A
-      // stream window above the connection window is therefore unreachable, and
-      // setting `initialWindowSize` alone would be silently inert. Derive the
-      // connection window from it so the setting means something on its own; the
-      // reverse is NOT derived, because a large connection window over a small
-      // stream window is a valid way to share a session between many streams.
+      // Every DATA frame debits both windows, so a stream's throughput is the
+      // lesser of the two and `initialWindowSize` alone would be inert. The
+      // reverse is not derived: a large connection window over a small stream
+      // window is a valid way to share a session between many streams.
       const resolvedSessionWindowSize = sessionWindowSize ?? initialWindowSize;
 
       if (
@@ -261,21 +241,13 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         );
       }
 
-      // Both windows are left at Node's defaults unless configured, so an
-      // unconfigured factory behaves exactly as a bare `http2.connect(origin)`
-      // would. `initialWindowSize` is spread in only when set, so it neither
-      // overrides nor introduces a `settings` key that the caller did not ask
-      // for.
+      // Only override `settings` when configured, so an unconfigured factory
+      // behaves exactly as a bare `http2.connect(origin)` would.
       const session = http2.connect(origin, {
         ...sessionOptions,
-        ...(sessionOptions?.settings != null || initialWindowSize != null
-          ? {
-              settings: {
-                ...sessionOptions?.settings,
-                ...(initialWindowSize != null ? { initialWindowSize } : {}),
-              },
-            }
-          : {}),
+        ...(initialWindowSize == null
+          ? {}
+          : { settings: { ...sessionOptions?.settings, initialWindowSize } }),
       });
 
       const emitSessionMetrics = (
@@ -288,10 +260,8 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       };
 
       session.on('connect', () => {
-        // SETTINGS_INITIAL_WINDOW_SIZE applies to streams only. Per RFC 9113
-        // 6.9.2 the connection level window can only change via a WINDOW_UPDATE
-        // on stream 0, which is what `setLocalWindowSize` sends. The session is
-        // not established until `connect`, so this cannot happen any earlier.
+        // `setLocalWindowSize` sends a WINDOW_UPDATE, which requires an
+        // established session, so this cannot happen any earlier.
         try {
           if (resolvedSessionWindowSize != null) {
             session.setLocalWindowSize(resolvedSessionWindowSize);
@@ -310,19 +280,19 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         emitSessionMetrics('connect');
       });
 
-      // `settings.initialWindowSize` applies asynchronously, so `localSettings`
-      // still reports the Node default at `connect` time.
+      // Settings are applied asynchronously, so `localSettings` is the first
+      // point where the negotiated values can be read.
       session.on('localSettings', () => {
-        const {
-          localInitialWindowSize,
-          localWindowSize,
-          maxSessionMemoryMb,
-          remoteMaxConcurrentStreams,
-        } = createSessionMetrics(origin, session, transportConfig, 'connect');
+        const metrics = createSessionMetrics(
+          origin,
+          session,
+          transportConfig,
+          'connect'
+        );
 
         NodeHttp2gRPCTransport.logMessage(
           'debug',
-          `session connected ${origin} localInitialWindowSize=${localInitialWindowSize} localWindowSize=${localWindowSize} maxSessionMemoryMb=${maxSessionMemoryMb} remoteMaxConcurrentStreams=${remoteMaxConcurrentStreams}`
+          `session connected ${origin} localInitialWindowSize=${metrics.localInitialWindowSize} localWindowSize=${metrics.localWindowSize} maxSessionMemoryMb=${metrics.maxSessionMemoryMb} remoteMaxConcurrentStreams=${metrics.remoteMaxConcurrentStreams}`
         );
       });
 
@@ -359,7 +329,8 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         if (session == null) {
           session = createSession(origin, transportConfig);
           sessionMap.set(origin, session);
-          // `dispose` clears the registry, but a factory can outlive it.
+          // Re-registered on every session, since a factory can outlive the
+          // `dispose` that cleared the registry.
           NodeHttp2gRPCTransport.sessionMaps.add(sessionMap);
         }
 
@@ -410,7 +381,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
   private constructor(
     options: GrpcTransportOptions,
     session: http2.ClientHttp2Session,
-    config: NodeHttp2TransportConfig = {}
+    config: NodeHttp2TransportConfig
   ) {
     this.options = options;
     this.session = session;
@@ -460,9 +431,8 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
     const { onStreamMetrics, metricsIntervalMs } = this.config;
 
     if (onStreamMetrics == null) {
-      // Accounting is skipped entirely when unobserved. `onChunk` can run tens
-      // of thousands of times on a single stream, so instrumenting it
-      // unconditionally would slow down the path being measured.
+      // `onChunk` can run tens of thousands of times on a single stream, so
+      // accounting is skipped entirely when unobserved.
 
       // Note that `chunk` is technically a `Buffer`, but the `Buffer` type defined
       // in @types/pouchdb-core is outdated and incompatible with latest `Uint8Array`
@@ -545,8 +515,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
       req.on('end', finishStreamMetrics);
       req.on('error', finishStreamMetrics);
-      // `close` covers streams that are cancelled instead of ending, which would
-      // otherwise leak the interval timer.
+      // Cancelled streams neither end nor error, and would leak the interval.
       req.on('close', finishStreamMetrics);
     }
 

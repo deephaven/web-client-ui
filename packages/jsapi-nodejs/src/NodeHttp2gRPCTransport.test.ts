@@ -18,15 +18,19 @@ const RESPONSE_CHUNK = Buffer.alloc(1024, 1);
 
 const servers: http2.Http2Server[] = [];
 
-async function startServer(): Promise<string> {
+function respondWithChunks(stream: http2.ServerHttp2Stream): void {
+  stream.respond({ ':status': 200, 'content-type': 'application/grpc' });
+  stream.write(RESPONSE_CHUNK);
+  stream.end(RESPONSE_CHUNK);
+}
+
+async function startServer(
+  handleStream: (stream: http2.ServerHttp2Stream) => void = respondWithChunks
+): Promise<string> {
   const server = http2.createServer();
   servers.push(server);
 
-  server.on('stream', stream => {
-    stream.respond({ ':status': 200, 'content-type': 'application/grpc' });
-    stream.write(RESPONSE_CHUNK);
-    stream.end(RESPONSE_CHUNK);
-  });
+  server.on('stream', handleStream);
 
   await new Promise<void>(resolve => {
     server.listen(0, '127.0.0.1', resolve);
@@ -59,8 +63,8 @@ function getSession(
 }
 
 /**
- * Settings are applied asynchronously, so `localSettings` still reports Node's
- * defaults at `connect` time.
+ * Settings are applied asynchronously, so `localSettings` is the first point
+ * where the negotiated values can be read.
  */
 async function waitForLocalSettings(
   session: http2.ClientHttp2Session
@@ -147,34 +151,18 @@ describe('window sizes', () => {
     expect(session.state.localWindowSize).toEqual(NODE_DEFAULT_WINDOW_SIZE);
   });
 
-  it('should behave identically through the deprecated `factory`', async () => {
+  it('should leave both windows at Node defaults through the deprecated `factory`', async () => {
     const origin = await startServer();
-
-    const createFactoryTransport = await createConnectedTransport(
-      NodeHttp2gRPCTransport.createFactory(),
-      origin
-    );
-    const deprecatedFactoryTransport = await createConnectedTransport(
+    const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.factory,
       origin
     );
+    const session = getSession(transport);
 
-    const createFactorySession = getSession(createFactoryTransport);
-    const deprecatedFactorySession = getSession(deprecatedFactoryTransport);
-
-    expect(deprecatedFactorySession).not.toBe(createFactorySession);
-    expect(deprecatedFactorySession.localSettings.initialWindowSize).toEqual(
-      createFactorySession.localSettings.initialWindowSize
-    );
-    expect(deprecatedFactorySession.state.localWindowSize).toEqual(
-      createFactorySession.state.localWindowSize
-    );
-    expect(deprecatedFactorySession.localSettings.initialWindowSize).toEqual(
+    expect(session.localSettings.initialWindowSize).toEqual(
       NODE_DEFAULT_WINDOW_SIZE
     );
-    expect(deprecatedFactorySession.state.localWindowSize).toEqual(
-      NODE_DEFAULT_WINDOW_SIZE
-    );
+    expect(session.state.localWindowSize).toEqual(NODE_DEFAULT_WINDOW_SIZE);
   });
 
   it('should derive the session window from initialWindowSize when unset', async () => {
@@ -284,7 +272,7 @@ describe('session sharing', () => {
     expect(getSession(transportB)).toBe(getSession(transportA));
   });
 
-  it('should not share sessions across factories with distinct configs', async () => {
+  it('should not share sessions across factories', async () => {
     const origin = await startServer();
 
     const transportA = await createConnectedTransport(
@@ -386,11 +374,6 @@ describe('metrics', () => {
 
     await runRequest(factory, origin);
 
-    // `end` can trail the transport's own `onEnd` by a tick
-    await new Promise<void>(resolve => {
-      setImmediate(resolve);
-    });
-
     expect(onStreamMetrics).toHaveBeenCalled();
 
     const metrics = onStreamMetrics.mock.calls[0][0];
@@ -403,6 +386,21 @@ describe('metrics', () => {
     expect(metrics.durationMs).toBeGreaterThanOrEqual(0);
     expect(metrics.consumerTimeMs).toBeGreaterThanOrEqual(0);
     expect(metrics.timeToFirstChunkMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should emit stream metrics when the stream is reset', async () => {
+    const origin = await startServer(stream => {
+      // The reset surfaces on both ends; only the client side is under test
+      stream.on('error', () => undefined);
+      stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+    });
+    const onStreamMetrics = jest.fn<void, [NodeHttp2StreamMetrics]>();
+    const factory = NodeHttp2gRPCTransport.createFactory({ onStreamMetrics });
+
+    await expect(runRequest(factory, origin)).rejects.toBeDefined();
+
+    expect(onStreamMetrics).toHaveBeenCalledTimes(1);
+    expect(onStreamMetrics.mock.calls[0][0].event).toEqual('end');
   });
 
   it('should emit session metrics for connect and close', async () => {
