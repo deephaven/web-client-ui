@@ -1,24 +1,60 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { EMPTY_ARRAY } from '@deephaven/utils';
+import type GridMetrics from './GridMetrics';
+import { type VisibleIndex } from './GridMetrics';
+import type GridModel from './GridModel';
+import type GridRange from './GridRange';
 import {
+  createGridA11ySnapshot,
   formatGridA11yRect,
+  getGridA11ySummary,
   GRID_A11Y_ATTRIBUTES,
   type GridA11ySnapshot,
 } from './GridA11yUtils';
 
-export type GridA11yFallbackProps = {
-  /** A sentence describing the grid size and selection */
-  summary: string;
-
-  /** The viewport to describe, or null if the user has not asked for one */
-  snapshot: GridA11ySnapshot | null;
-
-  /** Called when the user asks for the grid contents to be described */
-  onDescribe: () => void;
+/** Where the grid is scrolled to */
+export type GridA11yViewport = {
+  top: VisibleIndex;
+  left: VisibleIndex;
+  topOffset: number;
+  leftOffset: number;
 };
+
+export type GridA11yFallbackProps = {
+  /** The model being displayed */
+  model: GridModel;
+
+  /**
+   * Metrics of the most recent render, or null if the grid has not drawn yet.
+   * Read through a callback rather than taken as a prop, as the grid
+   * recalculates its metrics after rendering.
+   */
+  getMetrics: () => GridMetrics | null;
+
+  /** Where the grid is scrolled to */
+  viewport: GridA11yViewport;
+
+  /** The currently selected ranges */
+  selectedRanges?: readonly GridRange[];
+};
+
+/** Identifies the viewport a snapshot describes */
+function getViewportKey({
+  top,
+  left,
+  topOffset,
+  leftOffset,
+}: GridA11yViewport): string {
+  return `${top},${left},${topOffset},${leftOffset}`;
+}
 
 /**
  * The fallback content of the grid canvas. Never painted, but assistive
  * technology and browser automation read it in place of the pixels.
+ *
+ * The summary only reads values the grid already has on hand, so it is
+ * regenerated on every render. The snapshot walks every visible cell, so it is
+ * generated on request and discarded as soon as the grid scrolls away from it.
  *
  * The snapshot is a plain table rather than divs with ARIA roles, as fallback
  * content is never laid out and native table semantics come with the column
@@ -27,18 +63,43 @@ export type GridA11yFallbackProps = {
  * implements.
  */
 export function GridA11yFallback({
-  summary,
-  snapshot,
-  onDescribe,
+  model,
+  getMetrics,
+  viewport,
+  selectedRanges = EMPTY_ARRAY,
 }: GridA11yFallbackProps): JSX.Element {
+  const [held, setHeld] = useState<{
+    viewportKey: string;
+    snapshot: GridA11ySnapshot;
+  } | null>(null);
+  const [revision, setRevision] = useState(0);
+
+  const viewportKey = getViewportKey(viewport);
+
+  const handleDescribe = useCallback(() => {
+    const metrics = getMetrics();
+    setHeld(
+      metrics != null
+        ? {
+            viewportKey,
+            snapshot: createGridA11ySnapshot(model, metrics, selectedRanges),
+          }
+        : null
+    );
+    setRevision(current => current + 1);
+  }, [getMetrics, model, selectedRanges, viewportKey]);
+
+  const snapshot =
+    held != null && held.viewportKey === viewportKey ? held.snapshot : null;
+
   return (
-    <>
-      <p>{summary}</p>
+    <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>
+      <p>{getGridA11ySummary(model, selectedRanges)}</p>
       {/* Kept out of the tab order so sighted keyboard users are not sent to an element they cannot see */}
       <button
         type="button"
         tabIndex={-1}
-        onClick={onDescribe}
+        onClick={handleDescribe}
         {...{ [GRID_A11Y_ATTRIBUTES.describe]: '' }}
       >
         Describe the grid contents
@@ -90,7 +151,7 @@ export function GridA11yFallback({
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

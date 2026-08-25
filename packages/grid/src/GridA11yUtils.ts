@@ -9,7 +9,7 @@ import GridRange from './GridRange';
  * treat them as a public contract.
  */
 export const GRID_A11Y_ATTRIBUTES = {
-  /** On the canvas. Incremented each time a snapshot is generated */
+  /** On the root of the fallback content. Incremented each time a snapshot is generated */
   revision: 'data-grid-a11y-revision',
 
   /** On the button that generates a snapshot */

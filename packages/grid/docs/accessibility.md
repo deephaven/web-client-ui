@@ -21,42 +21,44 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
 ## Snapshot markup
 
 ```html
-<canvas class="grid-canvas" data-grid-a11y-revision="1">
-  <p>Grid with 100 rows and 3 columns.</p>
-  <button type="button" tabindex="-1" data-grid-a11y-describe>
-    Describe the grid contents
-  </button>
-  <div data-grid-a11y-snapshot>
-    <p role="status">
-      Grid with 100 rows and 3 columns. Showing rows 1 to 20, columns x, y, z.
-    </p>
-    <table aria-rowcount="101" aria-colcount="3">
-      <thead>
-        <tr aria-rowindex="1">
-          <th
-            scope="col"
-            aria-colindex="1"
-            data-grid-column="0"
-            data-grid-header="x"
-            data-grid-rect="30,0,100,30"
-          >
-            x
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr aria-rowindex="2">
-          <td
-            aria-colindex="1"
-            data-grid-column="0"
-            data-grid-row="0"
-            data-grid-rect="30,30,100,19"
-          >
-            0
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<canvas class="grid-canvas">
+  <div data-grid-a11y-revision="1">
+    <p>Grid with 100 rows and 3 columns.</p>
+    <button type="button" tabindex="-1" data-grid-a11y-describe>
+      Describe the grid contents
+    </button>
+    <div data-grid-a11y-snapshot>
+      <p role="status">
+        Grid with 100 rows and 3 columns. Showing rows 1 to 20, columns x, y, z.
+      </p>
+      <table aria-rowcount="101" aria-colcount="3">
+        <thead>
+          <tr aria-rowindex="1">
+            <th
+              scope="col"
+              aria-colindex="1"
+              data-grid-column="0"
+              data-grid-header="x"
+              data-grid-rect="30,0,100,30"
+            >
+              x
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr aria-rowindex="2">
+            <td
+              aria-colindex="1"
+              data-grid-column="0"
+              data-grid-row="0"
+              data-grid-rect="30,30,100,19"
+            >
+              0
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </canvas>
 ```
@@ -65,7 +67,7 @@ The attribute names are exported as `GRID_A11Y_ATTRIBUTES` and typed as `GridA11
 
 | Attribute                 | On                | Description                                                              |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| `data-grid-a11y-revision` | canvas            | Incremented each time a snapshot is generated                            |
+| `data-grid-a11y-revision` | fallback root     | Incremented each time a snapshot is generated                            |
 | `data-grid-a11y-describe` | button            | The button that generates a snapshot                                     |
 | `data-grid-a11y-snapshot` | snapshot root     | Present only while a snapshot is held                                    |
 | `data-grid-column`        | headers and cells | Visible column index                                                     |

@@ -1578,15 +1578,16 @@ describe('accessibility fallback content', () => {
 
   it('increments the revision each time the contents are described', () => {
     const component = makeGridComponent();
-    const canvas = component.canvas as unknown as HTMLElement;
+    const fallback = (component.canvas as unknown as HTMLElement)
+      .firstElementChild;
 
-    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '0');
-
-    describeContents(component);
-    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '1');
+    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '0');
 
     describeContents(component);
-    expect(canvas).toHaveAttribute('data-grid-a11y-revision', '2');
+    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '1');
+
+    describeContents(component);
+    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '2');
   });
 
   it('discards the description once the grid scrolls away from it', () => {

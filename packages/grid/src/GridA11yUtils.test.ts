@@ -39,8 +39,8 @@ function makeMetrics({
   });
 
   return {
-    allColumns: columns,
-    allRows: rows,
+    visibleColumns: columns,
+    visibleRows: rows,
     allColumnWidths,
     allColumnXs,
     allRowHeights,

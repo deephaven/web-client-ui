@@ -80,18 +80,20 @@ function parseRect(value: string | null): GridA11yRect | null {
  * @returns Locator for the rendered snapshot
  */
 async function refreshSnapshot(canvas: Locator): Promise<Locator> {
-  const revision = await canvas.getAttribute(ATTRIBUTES.revision);
-  if (revision == null) {
+  const fallback = canvas.locator(`[${ATTRIBUTES.revision}]`);
+  if ((await fallback.count()) === 0) {
     throw new Error(
       'No Deephaven grid found. Ensure the locator resolves to a grid canvas.'
     );
   }
 
   // The button is canvas fallback content, so it is never painted and cannot be clicked
-  const observedRevision = Number(revision);
+  const observedRevision = Number(
+    await fallback.getAttribute(ATTRIBUTES.revision)
+  );
   await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
   await expect
-    .poll(async () => Number(await canvas.getAttribute(ATTRIBUTES.revision)))
+    .poll(async () => Number(await fallback.getAttribute(ATTRIBUTES.revision)))
     .toBeGreaterThan(observedRevision);
 
   return canvas.locator(`[${ATTRIBUTES.snapshot}]`);
