@@ -25,6 +25,7 @@ export interface TableViewProps<T>
   itemCount: number;
   offset?: number;
   onViewportChange?: (top: number, bottom: number) => void;
+  onScroll?: (event: Event) => void;
   renderCell: (item: T, columnKey: Key) => ReactNode;
   getTextValue?: (item: T) => string;
 }
@@ -41,6 +42,7 @@ export function TableView<T>({
   itemCount,
   offset = 0,
   onViewportChange,
+  onScroll,
   renderCell,
   getTextValue,
   'aria-label': ariaLabel = 'Table',
@@ -69,6 +71,7 @@ export function TableView<T>({
       columns={columns}
       normalizedItems={tableItems}
       onViewportChange={onViewportChange}
+      onScroll={onScroll}
       renderCell={renderCell}
       getTextValue={getTextValue}
       // eslint-disable-next-line react/jsx-props-no-spreading
