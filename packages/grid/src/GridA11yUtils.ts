@@ -169,7 +169,9 @@ function getSelectionDescription(ranges: readonly GridRange[]): string {
       : `${columnCount} columns selected.`;
   }
 
-  return 'Everything selected.';
+  return ranges.length === 1
+    ? 'Everything selected.'
+    : `${ranges.length} selection ranges selected.`;
 }
 
 /**
@@ -210,7 +212,7 @@ export function createGridA11ySnapshot(
 
   // Hidden columns and rows are collapsed to nothing on screen, so leave them
   // out rather than describing something the user cannot see
-  const snapshotColumns = metrics.allColumns.filter(
+  const snapshotColumns = metrics.visibleColumns.filter(
     column => (metrics.allColumnWidths.get(column) ?? 0) > 0
   );
 
@@ -227,7 +229,7 @@ export function createGridA11ySnapshot(
     });
   });
 
-  metrics.allRows.forEach(row => {
+  metrics.visibleRows.forEach(row => {
     if ((metrics.allRowHeights.get(row) ?? 0) <= 0) {
       return;
     }

@@ -88,11 +88,11 @@ async function refreshSnapshot(canvas: Locator): Promise<Locator> {
   }
 
   // The button is canvas fallback content, so it is never painted and cannot be clicked
+  const observedRevision = Number(revision);
   await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
-  await expect(canvas).toHaveAttribute(
-    ATTRIBUTES.revision,
-    String(Number(revision) + 1)
-  );
+  await expect
+    .poll(async () => Number(await canvas.getAttribute(ATTRIBUTES.revision)))
+    .toBeGreaterThan(observedRevision);
 
   return canvas.locator(`[${ATTRIBUTES.snapshot}]`);
 }

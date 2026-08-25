@@ -52,11 +52,11 @@ export function GridA11yFallback({
           >
             <thead>
               <tr aria-rowindex={1}>
-                {snapshot.columns.map(({ column, text, rect }, columnIndex) => (
+                {snapshot.columns.map(({ column, text, rect }) => (
                   <th
                     key={column}
                     scope="col"
-                    aria-colindex={columnIndex + 1}
+                    aria-colindex={column + 1}
                     {...{
                       [GRID_A11Y_ATTRIBUTES.column]: column,
                       [GRID_A11Y_ATTRIBUTES.header]: text,
@@ -71,10 +71,10 @@ export function GridA11yFallback({
             <tbody>
               {snapshot.rows.map(({ row, cells }) => (
                 <tr key={row} aria-rowindex={row + 2}>
-                  {cells.map(({ column, text, rect }, columnIndex) => (
+                  {cells.map(({ column, text, rect }) => (
                     <td
                       key={column}
-                      aria-colindex={columnIndex + 1}
+                      aria-colindex={column + 1}
                       {...{
                         [GRID_A11Y_ATTRIBUTES.column]: column,
                         [GRID_A11Y_ATTRIBUTES.row]: row,
