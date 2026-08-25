@@ -7,7 +7,6 @@ import {
   NodeHttp2gRPCTransport,
   type NodeHttp2SessionMetrics,
   type NodeHttp2StreamMetrics,
-  type NodeHttp2TransportConfig,
 } from './NodeHttp2gRPCTransport';
 
 Log.setLogLevel(-1);
@@ -123,22 +122,6 @@ async function runRequest(
   });
 }
 
-/** Collect `error` level log messages emitted while `run` executes. */
-async function captureErrors(run: () => Promise<unknown>): Promise<string[]> {
-  const onLogMessage = jest.fn();
-  const removeHandler = NodeHttp2gRPCTransport.onLogMessage(onLogMessage);
-
-  try {
-    await run();
-  } finally {
-    removeHandler();
-  }
-
-  return onLogMessage.mock.calls
-    .filter(([level]) => level === 'error')
-    .map(([, message]) => String(message));
-}
-
 afterEach(async () => {
   NodeHttp2gRPCTransport.dispose();
 
@@ -250,35 +233,13 @@ describe('window sizes', () => {
 });
 
 describe('config validation', () => {
-  it('should log an error when sessionWindowSize is below initialWindowSize', async () => {
-    const origin = await startServer();
-    const factory = NodeHttp2gRPCTransport.createFactory({
-      initialWindowSize: 4 * 1024 * 1024,
-      sessionWindowSize: 1024 * 1024,
-    });
-
-    const errors = await captureErrors(() =>
-      createConnectedTransport(factory, origin)
-    );
-
-    expect(
-      errors.some(message => message.includes('is below initialWindowSize'))
-    ).toBe(true);
-  });
-
-  it('should validate once per origin, not per create()', async () => {
-    const origin = await startServer();
-    const factory = NodeHttp2gRPCTransport.createFactory({
-      initialWindowSize: 4 * 1024 * 1024,
-      sessionWindowSize: 1024 * 1024,
-    });
-
-    const errors = await captureErrors(async () => {
-      factory.create(createTransportOptions(origin));
-      factory.create(createTransportOptions(origin));
-    });
-
-    expect(errors).toHaveLength(1);
+  it('should throw when sessionWindowSize is below initialWindowSize', () => {
+    expect(() =>
+      NodeHttp2gRPCTransport.createFactory({
+        initialWindowSize: 4 * 1024 * 1024,
+        sessionWindowSize: 1024 * 1024,
+      })
+    ).toThrow('is below initialWindowSize');
   });
 });
 
@@ -315,21 +276,23 @@ describe('session sharing', () => {
     expect(sessionB.localSettings.initialWindowSize).toEqual(2 * 1024 * 1024);
   });
 
-  it('should call a config resolver once per origin, not per create()', async () => {
+  it('should apply one config to every origin it connects to', async () => {
     const originA = await startServer();
     const originB = await startServer();
+    const factory = NodeHttp2gRPCTransport.createFactory({
+      initialWindowSize: 1024 * 1024,
+    });
 
-    const resolver = jest.fn<NodeHttp2TransportConfig, [string]>(() => ({}));
-    const factory = NodeHttp2gRPCTransport.createFactory(resolver);
+    const sessionA = getSession(
+      await createConnectedTransport(factory, originA)
+    );
+    const sessionB = getSession(
+      await createConnectedTransport(factory, originB)
+    );
 
-    factory.create(createTransportOptions(originA));
-    factory.create(createTransportOptions(originA));
-    factory.create(createTransportOptions(originB));
-    factory.create(createTransportOptions(originB));
-
-    expect(resolver).toHaveBeenCalledTimes(2);
-    expect(resolver).toHaveBeenCalledWith(new URL(originA).origin);
-    expect(resolver).toHaveBeenCalledWith(new URL(originB).origin);
+    expect(sessionB).not.toBe(sessionA);
+    expect(sessionA.localSettings.initialWindowSize).toEqual(1024 * 1024);
+    expect(sessionB.localSettings.initialWindowSize).toEqual(1024 * 1024);
   });
 });
 

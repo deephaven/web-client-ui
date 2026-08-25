@@ -40,6 +40,7 @@ export interface NodeHttp2TransportConfig {
   sessionOptions?: http2.SecureClientSessionOptions;
   /**
    * Opt-in diagnostics. Supplying this enables both session and stream metrics;
+   * pass a no-op to ignore either one.
    */
   metricsConfig?: NodeHttp2MetricsConfig;
 }
@@ -97,13 +98,6 @@ export interface NodeHttp2StreamMetrics {
   consumerTimeMs: number;
 }
 
-/**
- * A {@link NodeHttp2TransportConfig}, or a function resolving one per origin.
- */
-export type NodeHttp2TransportConfigResolver =
-  | NodeHttp2TransportConfig
-  | ((origin: string) => NodeHttp2TransportConfig);
-
 /** The {@link NodeHttp2SessionMetrics} fields that are read off the session. */
 type SessionState = Pick<
   NodeHttp2SessionMetrics,
@@ -147,22 +141,21 @@ function createSessionMetrics(
   };
 }
 
-/** Log config that is accepted but cannot do what it looks like it does. */
-function validateConfig(
-  origin: string,
-  { initialWindowSize, sessionWindowSize }: NodeHttp2TransportConfig
-): void {
+/** Reject config that cannot do what it looks like it does. */
+function assertValidConfig({
+  initialWindowSize,
+  sessionWindowSize,
+}: NodeHttp2TransportConfig): void {
   if (
     sessionWindowSize != null &&
     initialWindowSize != null &&
     sessionWindowSize < initialWindowSize
   ) {
-    NodeHttp2gRPCTransport.logMessage(
-      'error',
+    throw new Error(
       `sessionWindowSize (${sessionWindowSize}) is below initialWindowSize ` +
-        `(${initialWindowSize}) for ${origin}. The connection window caps ` +
-        `every stream, so the stream window is unreachable and throughput ` +
-        `is limited to the smaller value.`
+        `(${initialWindowSize}). The connection window caps every stream, so ` +
+        `the stream window is unreachable and throughput is limited to the ` +
+        `smaller value.`
     );
   }
 }
@@ -216,40 +209,27 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
   /**
    * Create a factory for creating new NodeHttp2gRPCTransport instances. Each
-   * factory owns its sessions, memoized by origin.
-   * @param config Optional config, or a function resolving config for an origin.
-   * The resolver is called once per origin, not per created transport.
+   * factory owns its sessions, memoized by origin, and applies one config to all
+   * of them. Use a factory per config when origins need to differ.
+   * @param config Optional config applied to every origin this factory connects
+   * to.
    * @returns A gRPC transport factory
+   * @throws If the config is internally contradictory.
    */
   static createFactory(
-    config?: NodeHttp2TransportConfigResolver
+    config: NodeHttp2TransportConfig = {}
   ): GrpcTransportFactory {
     const sessionMap = new Map<string, http2.ClientHttp2Session>();
-    const configMap = new Map<string, NodeHttp2TransportConfig>();
 
-    function resolveConfig(origin: string): NodeHttp2TransportConfig {
-      let resolved = configMap.get(origin);
+    assertValidConfig(config);
 
-      if (resolved == null) {
-        resolved =
-          (typeof config === 'function' ? config(origin) : config) ?? {};
-        validateConfig(origin, resolved);
-        configMap.set(origin, resolved);
-      }
-
-      return resolved;
-    }
-
-    function createSession(
-      origin: string,
-      transportConfig: NodeHttp2TransportConfig
-    ): http2.ClientHttp2Session {
+    function createSession(origin: string): http2.ClientHttp2Session {
       const {
         initialWindowSize,
         sessionWindowSize,
         sessionOptions,
         metricsConfig,
-      } = transportConfig;
+      } = config;
 
       // Every DATA frame debits both windows, so a stream's throughput is the
       // lesser of the two and `initialWindowSize` alone would be inert. The
@@ -271,7 +251,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         error?: Error
       ): void => {
         metricsConfig?.onSessionMetrics(
-          createSessionMetrics(origin, session, transportConfig, event, error)
+          createSessionMetrics(origin, session, config, event, error)
         );
       };
 
@@ -302,7 +282,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
         const metrics = createSessionMetrics(
           origin,
           session,
-          transportConfig,
+          config,
           'connect'
         );
 
@@ -338,19 +318,18 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
        */
       create: (options: GrpcTransportOptions): GrpcTransport => {
         const { origin } = new URL(options.url);
-        const transportConfig = resolveConfig(origin);
 
         let session = sessionMap.get(origin);
 
         if (session == null) {
-          session = createSession(origin, transportConfig);
+          session = createSession(origin);
           sessionMap.set(origin, session);
           // Re-registered on every session, since a factory can outlive the
           // `dispose` that cleared the registry.
           NodeHttp2gRPCTransport.sessionMaps.add(sessionMap);
         }
 
-        return new NodeHttp2gRPCTransport(options, session, transportConfig);
+        return new NodeHttp2gRPCTransport(options, session, config);
       },
 
       /**

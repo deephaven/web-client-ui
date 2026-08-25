@@ -85,8 +85,8 @@ const transportFactory = NodeHttp2gRPCTransport.createFactory({
 
 Every DATA frame debits both the stream window and the connection window, so a
 stream's usable throughput is the lesser of the two. `sessionWindowSize`
-therefore defaults to `initialWindowSize`; a value _below_ it is logged as an
-error, since the stream window could never be reached. Raise it above
+therefore defaults to `initialWindowSize`; a value _below_ it is rejected, since
+the stream window could never be reached. Raise it above
 `initialWindowSize` when several heavy streams share one session, since that
 budget is shared across all of them.
 
@@ -99,16 +99,9 @@ left at Node's default unless you set it.
 be passed through. An explicit `initialWindowSize` takes precedence over
 `sessionOptions.settings.initialWindowSize`.
 
-Config can also be a function, which is called once per origin. This is useful
-when connecting to multiple servers that need different TLS material.
-
-```typescript
-const transportFactory = NodeHttp2gRPCTransport.createFactory(origin => ({
-  initialWindowSize: 4 * 1024 * 1024,
-  sessionWindowSize: 8 * 1024 * 1024,
-  sessionOptions: { ca: caForOrigin(origin) },
-}));
-```
+A factory applies one config to every origin it connects to. When origins need
+different settings — different TLS material, say — create a factory per config.
+Factories never share sessions, so each keeps its own.
 
 ### Diagnostics
 
@@ -137,9 +130,9 @@ const transportFactory = NodeHttp2gRPCTransport.createFactory({
 });
 ```
 
-A `sessionWindowSize` below `initialWindowSize` is logged as an error rather
-than silently limiting throughput. It is checked once per origin, when the config
-for that origin is resolved.
+`createFactory` throws on a `sessionWindowSize` below `initialWindowSize` rather
+than silently limiting throughput. The check runs at factory creation, before any
+connection is attempted.
 
 The same session parameters are also logged on connect via
 `NodeHttp2gRPCTransport.onLogMessage` at the `debug` level:
