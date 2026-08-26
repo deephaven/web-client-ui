@@ -40,6 +40,7 @@ import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
 import ListViews from './ListViews';
+import TableViews from './TableViews';
 import ErrorViews from './ErrorViews';
 import XComponents from './XComponents';
 import CheckboxGroups from './CheckboxGroups';
@@ -117,6 +118,7 @@ function StyleGuide(): React.ReactElement {
         <Progress />
         <Inputs />
         <ListViews />
+        <TableViews />
         <Pickers />
         <ItemListInputs />
         <DraggableLists />
