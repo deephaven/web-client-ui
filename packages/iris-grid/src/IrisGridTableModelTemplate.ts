@@ -1656,6 +1656,20 @@ class IrisGridTableModelTemplate<
     }
   }
 
+  async fetchRowForKey(values: readonly unknown[]): Promise<number | null> {
+    // seekRow only matches on one column, so multi-column keys are not supported.
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    if (keyColumns.length !== 1 || values.length !== 1) return null;
+    const table = this.table as DhType.Table;
+    if (table.seekRow == null) return null;
+    const col = keyColumns[0];
+    const valueType = this.tableUtils.getValueType(
+      col.type
+    ) as DhType.ValueTypeType;
+    const rowIndex = await table.seekRow(0, col, valueType, values[0]);
+    return rowIndex < 0 ? null : rowIndex;
+  }
+
   /**
    * Implementation of snapshotByKeys.
    * This works by filtering the table based on the key values and then taking a snapshot of the entire filtered table.

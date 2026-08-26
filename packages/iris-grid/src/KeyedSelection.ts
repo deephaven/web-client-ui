@@ -62,7 +62,12 @@ export class KeyedSelection implements Selection {
     readonly endpointKeyData: ReadonlyMap<
       string,
       readonly unknown[]
-    > = EMPTY_MAP
+    > = EMPTY_MAP,
+    // Non-null when the anchor scrolled out of the viewport: resolveKeyedSelection uses this to seekRow before fetching.
+    readonly pendingAnchorLookup: {
+      values: readonly unknown[];
+      targetRow: VisibleIndex;
+    } | null = null
   ) {
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
@@ -186,7 +191,9 @@ export class KeyedSelection implements Selection {
       this.pendingRows,
       nextKey,
       nextValues,
-      row
+      row,
+      this.endpointKeyData,
+      this.pendingAnchorLookup
     );
   }
 
@@ -196,17 +203,22 @@ export class KeyedSelection implements Selection {
   } | null {
     if (this.anchorKey == null && this.anchorRow == null) return null;
     if (this.anchorKey != null) {
-      const model = this.getModel();
-      const viewTop = model.viewport?.top ?? 0;
-      const viewBottom = model.viewport?.bottom ?? 0;
-      for (let r = viewTop; r <= viewBottom; r += 1) {
-        if (this.getRowKeyData(r).key === this.anchorKey) {
-          return { row: r, column: null };
-        }
-      }
+      const viewportRow = this.findKeyInViewport(this.anchorKey);
+      if (viewportRow != null) return { row: viewportRow, column: null };
     }
     // Anchor key is not in the viewport; fall back to the click-time row hint.
     return { row: this.anchorRow, column: null };
+  }
+
+  /** Returns the current visible row of `key` or `null` if it's not in the viewport. */
+  private findKeyInViewport(key: string): VisibleIndex | null {
+    const model = this.getModel();
+    const viewTop = model.viewport?.top ?? 0;
+    const viewBottom = model.viewport?.bottom ?? 0;
+    for (let r = viewTop; r <= viewBottom; r += 1) {
+      if (this.getRowKeyData(r).key === key) return r;
+    }
+    return null;
   }
 
   commitMouseGesture(
@@ -304,10 +316,22 @@ export class KeyedSelection implements Selection {
       if (this.anchorKey != null && this.anchorValues != null) {
         endpoints.set(this.anchorKey, this.anchorValues);
       }
+      const anchorInViewport =
+        this.anchorKey != null &&
+        this.findKeyInViewport(this.anchorKey) != null;
       const anchorNow = this.getGestureAnchor()?.row;
       const targetRow = anchorNow === last ? first : last;
       const { key: tKey, values: tValues } = this.getRowKeyData(targetRow);
       endpoints.set(tKey, tValues);
+
+      // If the anchor scrolled out of the viewport the row-hint range is
+      // probably stale; ask the resolver to seek the anchor's current row
+      // before fetching so the range endpoints line up with the user's intent.
+      const pendingAnchorLookup =
+        !anchorInViewport && this.anchorKey != null && this.anchorValues != null
+          ? { values: this.anchorValues, targetRow }
+          : null;
+
       return new KeyedSelection(
         this.getModel,
         new Set(),
@@ -320,7 +344,8 @@ export class KeyedSelection implements Selection {
         this.anchorKey,
         this.anchorValues,
         this.anchorRow,
-        endpoints
+        endpoints,
+        pendingAnchorLookup
       );
     }
     const [row] = rows;
@@ -432,7 +457,9 @@ export class KeyedSelection implements Selection {
       this.pendingRows,
       this.anchorKey,
       this.anchorValues,
-      this.anchorRow
+      this.anchorRow,
+      this.endpointKeyData,
+      this.pendingAnchorLookup
     );
   }
 

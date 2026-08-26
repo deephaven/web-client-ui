@@ -435,6 +435,51 @@ describe('commitMouseGesture', () => {
     const result = withOverlay.commitMouseGesture(last, false);
     expect(result.isRowSelected(3)).toBe(false);
   });
+
+  it('sets pendingAnchorLookup when the anchor is out of viewport', () => {
+    // Viewport 20..30. Anchor key was captured at row 5 (now out of viewport);
+    // user shift-clicks row 25 (in viewport). Slow path fires with lookup.
+    mockModel.viewport = { top: 20, bottom: 30 };
+    const anchoredOverlay = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [new GridRange(null, 5, null, 25)],
+      false,
+      null,
+      new Map(),
+      null,
+      null,
+      keyOf(5),
+      [5],
+      5
+    );
+    const result = anchoredOverlay.commitMouseGesture(empty(), false);
+    expect(result.pendingRows).not.toBeNull();
+    expect(result.pendingAnchorLookup).not.toBeNull();
+    expect(result.pendingAnchorLookup?.values).toEqual([5]);
+    expect(result.pendingAnchorLookup?.targetRow).toBe(25);
+  });
+
+  it('leaves pendingAnchorLookup null when the anchor is in viewport', () => {
+    // Viewport 0..10 contains the anchor row 5. Overlay extends to row 50 (OOV).
+    mockModel.viewport = { top: 0, bottom: 10 };
+    const anchoredOverlay = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [new GridRange(null, 5, null, 50)],
+      false,
+      null,
+      new Map(),
+      null,
+      null,
+      keyOf(5),
+      [5],
+      5
+    );
+    const result = anchoredOverlay.commitMouseGesture(empty(), false);
+    expect(result.pendingRows).not.toBeNull();
+    expect(result.pendingAnchorLookup).toBeNull();
+  });
 });
 
 // ─── withToggledRow ───────────────────────────────────────────────────────────

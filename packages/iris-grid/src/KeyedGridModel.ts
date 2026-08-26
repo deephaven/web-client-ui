@@ -72,6 +72,14 @@ export interface KeyedGridModel {
     startRow: number,
     endRow: number
   ) => Promise<ReadonlyMap<string, readonly unknown[]>>;
+
+  /**
+   * Returns the current row index of the row whose key columns hold the given
+   * values, or `null` when the model can't resolve it (multi-column key,
+   * `seekRow` unavailable, or no matching row). Used to recover an accurate
+   * shift-click range when the anchor has ticked out of the viewport.
+   */
+  fetchRowForKey?: (values: readonly unknown[]) => Promise<number | null>;
 }
 
 /**

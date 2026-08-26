@@ -3722,13 +3722,27 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   async resolveKeyedSelection(pending: KeyedSelection): Promise<void> {
     const { model } = this.props;
     if (!isKeyedGridModel(model)) return;
-    const { pendingRows } = pending;
+    const { pendingRows, pendingAnchorLookup } = pending;
     if (pendingRows?.startRow == null || pendingRows?.endRow == null) return;
     try {
-      const keyValues = await model.fetchKeyValuesForRowRange(
-        pendingRows.startRow,
-        pendingRows.endRow
-      );
+      let { startRow, endRow } = pendingRows as {
+        startRow: number;
+        endRow: number;
+      };
+      // Anchor drifted out of the viewport: seek its current row so the fetch
+      // range matches the user's intent. Fall through to the row-hint range on
+      // any failure (multi-column key, seekRow unavailable, key not found).
+      if (pendingAnchorLookup != null && model.fetchRowForKey != null) {
+        const anchorRow = await model.fetchRowForKey(
+          pendingAnchorLookup.values
+        );
+        if (anchorRow != null) {
+          const { targetRow } = pendingAnchorLookup;
+          startRow = Math.min(anchorRow, targetRow);
+          endRow = Math.max(anchorRow, targetRow);
+        }
+      }
+      const keyValues = await model.fetchKeyValuesForRowRange(startRow, endRow);
       // Bail if the user changed the selection while we were fetching.
       if (this.grid?.getSelection() !== pending) return;
       const resolved = pending.resolve(keyValues);
