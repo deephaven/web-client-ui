@@ -274,4 +274,18 @@ export function assertIsRangedSelection(
   }
 }
 
+/**
+ * Returns `selection.toRanges()` when `selection` is a `RangedSelection`,
+ * otherwise `EMPTY_ARRAY`. Handy for consumers that only care about the
+ * range-form projection of a selection (e.g. legacy `selectedRanges`
+ * callbacks) and want a stable empty array for keyed / null selections.
+ */
+export function selectionToRanges(
+  selection: Selection | null | undefined
+): readonly GridRange[] {
+  return selection != null && isRangedSelection(selection)
+    ? selection.toRanges()
+    : EMPTY_ARRAY;
+}
+
 export default RangedSelection;

@@ -35,6 +35,7 @@ export {
   RangedSelection,
   isRangedSelection,
   assertIsRangedSelection,
+  selectionToRanges,
 } from './RangedSelection';
 export * from './errors';
 export * from './EventHandlerResult';

@@ -78,6 +78,7 @@ import {
   RangedSelection,
   isRangedSelection,
   assertIsRangedSelection,
+  selectionToRanges,
 } from './RangedSelection';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import {
@@ -246,11 +247,6 @@ export type GridState = {
   /** What revision the grid is drawing. Automatically increments when a forceUpdate is called. */
   updateRevision: number;
 };
-
-/** Returns `selection.toRanges()` for a RangedSelection, otherwise `[]`. */
-function selectionToRanges(selection: Selection): readonly GridRange[] {
-  return isRangedSelection(selection) ? selection.toRanges() : EMPTY_ARRAY;
-}
 
 /**
  * High performance, extendible, themeable grid component.
