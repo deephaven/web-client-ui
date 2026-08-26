@@ -210,15 +210,28 @@ export class KeyedSelection implements Selection {
     return { row: this.anchorRow, column: null };
   }
 
-  /** Returns the current visible row of `key` or `null` if it's not in the viewport. */
+  /**
+   * Returns the visible row of `key`, or `null` if it's not in the viewport.
+   * When multiple rows share the key (non-unique key columns), prefers the one
+   * closest to `anchorRow` so we track the row the user actually clicked.
+   */
   private findKeyInViewport(key: string): VisibleIndex | null {
     const model = this.getModel();
     const viewTop = model.viewport?.top ?? 0;
     const viewBottom = model.viewport?.bottom ?? 0;
+    const hint = this.anchorRow;
+    let best: VisibleIndex | null = null;
+    let bestDist = Infinity;
     for (let r = viewTop; r <= viewBottom; r += 1) {
-      if (this.getRowKeyData(r).key === key) return r;
+      if (this.getRowKeyData(r).key !== key) continue; // eslint-disable-line no-continue
+      if (hint == null) return r;
+      const dist = Math.abs(r - hint);
+      if (dist < bestDist) {
+        best = r;
+        bestDist = dist;
+      }
     }
-    return null;
+    return best;
   }
 
   commitMouseGesture(
@@ -464,11 +477,17 @@ export class KeyedSelection implements Selection {
   }
 
   /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
-  resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
+  resolve(
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    excludedEndpoints?: ReadonlySet<string>
+  ): KeyedSelection {
     // Guarantee the click-time endpoints survive: fetches over a ticking table
     // can miss the anchor / target rows if they scrolled between click and reply.
+    // Callers pass `excludedEndpoints` when an endpoint is known to no longer
+    // exist (e.g. anchor row deleted) so we don't leave phantom keys behind.
     const merged = new Map(keyValues);
     this.endpointKeyData.forEach((values, key) => {
+      if (excludedEndpoints?.has(key) === true) return;
       if (!merged.has(key)) merged.set(key, values);
     });
     return new KeyedSelection(

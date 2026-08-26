@@ -322,6 +322,31 @@ describe('resolve', () => {
     const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
     expect(resolved.selectedKeyValues.get(keyOf(0))).toEqual(['fresh']);
   });
+
+  it('skips endpoints listed in excludedEndpoints (removed rows)', () => {
+    const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
+    const pending = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [],
+      false,
+      null,
+      new Map(),
+      null,
+      new GridRange(null, 1, null, 4),
+      null,
+      null,
+      null,
+      endpoints
+    );
+    const resolved = pending.resolve(
+      new Map([keyValuesOf(1), keyValuesOf(4)]),
+      new Set([keyOf(0)])
+    );
+    expect(resolved.isRowSelected(0)).toBe(false);
+    expect(resolved.isRowSelected(1)).toBe(true);
+    expect(resolved.isRowSelected(4)).toBe(true);
+  });
 });
 
 // ─── getUniqueRowCount ────────────────────────────────────────────────────────
@@ -373,6 +398,53 @@ describe('getUniqueRowCount', () => {
       new Map([keyValuesOf(0)])
     );
     expect(sel.getUniqueRowCount()).toBeNull();
+  });
+});
+
+// ─── withGestureAnchor / getGestureAnchor ────────────────────────────────────
+
+describe('getGestureAnchor', () => {
+  const originalValueForCell = mockModel.valueForCell;
+
+  afterEach(() => {
+    mockModel.viewport = { top: 0, bottom: ROW_COUNT - 1 };
+    mockModel.valueForCell = originalValueForCell;
+  });
+
+  it('returns null when no anchor was set', () => {
+    expect(empty().getGestureAnchor()).toBeNull();
+  });
+
+  it('returns the current viewport row of the anchor key after ticks', () => {
+    // Anchor captured at row 5 with key [5]. Then the table "ticks": the row
+    // at position 5 now has key [42] (arbitrary), and the anchor key [5] has
+    // moved to row 7.
+    const sel = empty().withGestureAnchor(5, 0);
+    mockModel.valueForCell = (_col, row) => {
+      if (row === 5) return 42;
+      if (row === 7) return 5;
+      return row;
+    };
+    expect(sel.getGestureAnchor()).toEqual({ row: 7, column: null });
+  });
+
+  it('falls back to the row hint when the anchor key is out of viewport', () => {
+    const sel = empty().withGestureAnchor(5, 0);
+    mockModel.viewport = { top: 10, bottom: 20 };
+    expect(sel.getGestureAnchor()).toEqual({ row: 5, column: null });
+  });
+
+  it('prefers the viewport row closest to the row hint for non-unique keys', () => {
+    // Anchor was clicked at row 10 with key [10]. After a tick, row 10 no
+    // longer holds that key but rows 2 and 15 do (non-unique keys). Distance
+    // to the hint: row 2 → 8, row 15 → 5, so row 15 wins.
+    const sel = empty().withGestureAnchor(10, 0);
+    mockModel.valueForCell = (_col, row) => {
+      if (row === 2 || row === 15) return 10;
+      if (row === 10) return 999;
+      return row;
+    };
+    expect(sel.getGestureAnchor()).toEqual({ row: 15, column: null });
   });
 });
 

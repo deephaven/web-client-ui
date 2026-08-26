@@ -75,12 +75,25 @@ export interface KeyedGridModel {
 
   /**
    * Returns the current row index of the row whose key columns hold the given
-   * values, or `null` when the model can't resolve it (multi-column key,
-   * `seekRow` unavailable, or no matching row). Used to recover an accurate
-   * shift-click range when the anchor has ticked out of the viewport.
+   * values, or a `gone` / `unsupported` status if the model can't or won't
+   * resolve it. Used by `resolveKeyedSelection` to recover an accurate
+   * shift-click range when the anchor has ticked out of the viewport, and to
+   * detect when the anchor row has been removed from the table entirely.
    */
-  fetchRowForKey?: (values: readonly unknown[]) => Promise<number | null>;
+  fetchRowForKey?: (
+    values: readonly unknown[]
+  ) => Promise<FetchRowForKeyResult>;
 }
+
+/**
+ * `found` — the key resolves to `row` in the current view.
+ * `gone` — the model looked and can confirm the key is no longer in the table.
+ * `unsupported` — the model can't answer (multi-column key, missing `seekRow`).
+ */
+export type FetchRowForKeyResult =
+  | { status: 'found'; row: number }
+  | { status: 'gone' }
+  | { status: 'unsupported' };
 
 /**
  * Checks if the given model is a KeyedGridModel.

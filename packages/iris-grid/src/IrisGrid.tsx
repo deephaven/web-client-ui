@@ -157,7 +157,11 @@ import {
 import { DEFAULT_REGISTRY, IrisGridContext } from './IrisGridContextProvider';
 import IrisGridModel from './IrisGridModel';
 import { isKeyedGridModel } from './KeyedGridModel';
-import { KeyedSelection, type GetKeyedModel } from './KeyedSelection';
+import {
+  KeyedSelection,
+  type GetKeyedModel,
+  serializeKeyValues,
+} from './KeyedSelection';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import {
@@ -3729,23 +3733,28 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         startRow: number;
         endRow: number;
       };
+      // Endpoints known to no longer exist in the table so `resolve` won't
+      // leave phantom keys behind.
+      let excludedEndpoints: Set<string> | undefined;
       // Anchor drifted out of the viewport: seek its current row so the fetch
       // range matches the user's intent. Fall through to the row-hint range on
       // any failure (multi-column key, seekRow unavailable, key not found).
       if (pendingAnchorLookup != null && model.fetchRowForKey != null) {
-        const anchorRow = await model.fetchRowForKey(
-          pendingAnchorLookup.values
-        );
-        if (anchorRow != null) {
+        const result = await model.fetchRowForKey(pendingAnchorLookup.values);
+        if (result.status === 'found') {
           const { targetRow } = pendingAnchorLookup;
-          startRow = Math.min(anchorRow, targetRow);
-          endRow = Math.max(anchorRow, targetRow);
+          startRow = Math.min(result.row, targetRow);
+          endRow = Math.max(result.row, targetRow);
+        } else if (result.status === 'gone') {
+          excludedEndpoints = new Set([
+            serializeKeyValues(pendingAnchorLookup.values),
+          ]);
         }
       }
       const keyValues = await model.fetchKeyValuesForRowRange(startRow, endRow);
       // Bail if the user changed the selection while we were fetching.
       if (this.grid?.getSelection() !== pending) return;
-      const resolved = pending.resolve(keyValues);
+      const resolved = pending.resolve(keyValues, excludedEndpoints);
       this.grid.setSelection(resolved);
     } catch (e) {
       log.error('resolveKeyedSelection failed', e);
