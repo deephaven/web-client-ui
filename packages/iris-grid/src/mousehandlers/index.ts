@@ -5,6 +5,7 @@ export { default as IrisGridContextMenuHandler } from './IrisGridContextMenuHand
 export { default as IrisGridCopyCellMouseHandler } from './IrisGridCopyCellMouseHandler';
 export { default as IrisGridDataSelectMouseHandler } from './IrisGridDataSelectMouseHandler';
 export { default as IrisGridFilterMouseHandler } from './IrisGridFilterMouseHandler';
+export { default as IrisGridKeyedAnchorMouseHandler } from './IrisGridKeyedAnchorMouseHandler';
 export { default as IrisGridRowTreeMouseHandler } from './IrisGridRowTreeMouseHandler';
 export { default as IrisGridSortMouseHandler } from './IrisGridSortMouseHandler';
 export { default as PendingMouseHandler } from './PendingMouseHandler';
