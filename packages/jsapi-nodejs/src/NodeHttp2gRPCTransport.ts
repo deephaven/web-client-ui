@@ -5,6 +5,9 @@ import { assertNotNull } from '@deephaven/utils';
 
 const logger = Log.module('@deephaven/jsapi-nodejs.NodeHttp2gRPCTransport');
 
+/** Largest window `session.setLocalWindowSize` accepts. */
+const MAX_WINDOW_SIZE = 2 ** 31 - 1;
+
 type LogLevel = 'debug' | 'error';
 type GrpcTransport = DhcType.grpc.GrpcTransport;
 type GrpcTransportFactory = DhcType.grpc.GrpcTransportFactory;
@@ -61,7 +64,26 @@ function assertValidConfig({
 }: NodeHttp2TransportConfig): void {
   const initialWindowSize = sessionOptions?.settings?.initialWindowSize;
 
-  if (sessionLocalWindowSize == null || initialWindowSize == null) {
+  if (sessionLocalWindowSize == null) {
+    return;
+  }
+
+  // `setLocalWindowSize` rejects these, but not until the session connects,
+  // where the failure is only a log and the session runs at Node's default.
+  // `sessionOptions.settings` needs no equivalent check, since `http2.connect`
+  // validates it synchronously out of `create`.
+  if (
+    !Number.isInteger(sessionLocalWindowSize) ||
+    sessionLocalWindowSize < 0 ||
+    sessionLocalWindowSize > MAX_WINDOW_SIZE
+  ) {
+    throw new Error(
+      `sessionLocalWindowSize (${sessionLocalWindowSize}) must be an integer ` +
+        `between 0 and ${MAX_WINDOW_SIZE}.`
+    );
+  }
+
+  if (initialWindowSize == null) {
     return;
   }
 
@@ -191,7 +213,17 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
       });
 
       session.on('close', () => {
-        sessionMap.delete(origin);
+        // Delete by identity. A replacement session for this origin can already
+        // be mapped by the time this fires, and deleting by origin alone would
+        // untrack it, leaking it past `dispose` and duplicating it on `create`.
+        if (sessionMap.get(origin) === session) {
+          sessionMap.delete(origin);
+        }
+
+        if (sessionMap.size === 0) {
+          NodeHttp2gRPCTransport.sessionMaps.delete(sessionMap);
+        }
+
         NodeHttp2gRPCTransport.logSession(origin, 'close');
       });
 

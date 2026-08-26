@@ -232,6 +232,19 @@ describe('config validation', () => {
       })
     ).toThrow('is below sessionOptions.settings.initialWindowSize');
   });
+
+  it.each([2 ** 31, -1, 1.5])(
+    'should throw when sessionLocalWindowSize is %p',
+    windowSize => {
+      // Rejected up front rather than at connect, where the session would
+      // silently run at Node's default
+      expect(() =>
+        NodeHttp2gRPCTransport.createFactory({
+          sessionLocalWindowSize: windowSize,
+        })
+      ).toThrow('must be an integer between 0 and 2147483647');
+    }
+  );
 });
 
 describe('session sharing', () => {
@@ -349,6 +362,28 @@ describe('dispose', () => {
     expect(sessionA.closed).toBe(true);
     expect(sessionB.closed).toBe(true);
   });
+
+  it('should keep a replacement session tracked once the disposed one closes', async () => {
+    const origin = await startServer();
+    const factory = NodeHttp2gRPCTransport.createFactory();
+
+    const sessionA = getSession(factory.create(createTransportOptions(origin)));
+
+    // Clears the session map and starts closing A, which has not closed yet
+    NodeHttp2gRPCTransport.dispose();
+
+    const sessionB = getSession(factory.create(createTransportOptions(origin)));
+    expect(sessionB).not.toBe(sessionA);
+
+    await new Promise<void>(resolve => {
+      sessionA.once('close', () => resolve());
+    });
+
+    // A's close must not untrack B, or B leaks and every create duplicates it
+    expect(getSession(factory.create(createTransportOptions(origin)))).toBe(
+      sessionB
+    );
+  });
 });
 
 describe('requests', () => {
@@ -434,29 +469,6 @@ describe('session logging', () => {
 
       expect(levelByEvent('error')).toEqual('error');
       expect(infoByEvent('error')?.error).toBeDefined();
-    } finally {
-      unsubscribe();
-    }
-  });
-
-  it('should report a failed window change with its cause', async () => {
-    const origin = await startServer();
-    const { infoByEvent, unsubscribe } = trackSessionInfo();
-
-    try {
-      await createConnectedTransport(
-        // Above the protocol max, so `setLocalWindowSize` throws
-        NodeHttp2gRPCTransport.createFactory({
-          sessionLocalWindowSize: 2 ** 31,
-        }),
-        origin
-      );
-
-      const { error } = infoByEvent('error') ?? {};
-      expect(error?.message).toEqual('Failed to set session window size');
-      expect((error?.cause as NodeJS.ErrnoException | undefined)?.code).toEqual(
-        'ERR_OUT_OF_RANGE'
-      );
     } finally {
       unsubscribe();
     }

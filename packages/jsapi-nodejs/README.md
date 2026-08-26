@@ -110,10 +110,12 @@ Factories never share sessions, so each keeps its own.
 
 ### Logging
 
-`createFactory` throws on a `sessionLocalWindowSize` below
-`sessionOptions.settings.initialWindowSize` rather than silently limiting
-throughput. The check runs at factory creation, before any
-connection is attempted.
+`createFactory` validates `sessionLocalWindowSize` at factory creation, before
+any connection is attempted. It throws when the value is below
+`sessionOptions.settings.initialWindowSize`, and when it is not an integer in
+`0 … 2 ** 31 - 1` — the range `session.setLocalWindowSize()` accepts. Both would
+otherwise limit throughput silently, the second by leaving the session at Node's
+default window.
 
 Each session lifecycle event is logged through
 `NodeHttp2gRPCTransport.onLogMessage` as a lone `NodeHttp2SessionInfo` object,
