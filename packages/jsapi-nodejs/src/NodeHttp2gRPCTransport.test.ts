@@ -53,6 +53,19 @@ function createTransportOptions(
   };
 }
 
+const clientSessions = new Set<http2.ClientHttp2Session>();
+
+/** Create a transport, registering its session for cleanup. */
+function createTransport(
+  factory: DhcType.grpc.GrpcTransportFactory,
+  origin: string,
+  overrides: Partial<DhcType.grpc.GrpcTransportOptions> = {}
+): DhcType.grpc.GrpcTransport {
+  const transport = factory.create(createTransportOptions(origin, overrides));
+  clientSessions.add(getSession(transport));
+  return transport;
+}
+
 /** The session is private to the transport, but is what these tests assert on. */
 function getSession(
   transport: DhcType.grpc.GrpcTransport
@@ -92,7 +105,7 @@ async function createConnectedTransport(
   factory: DhcType.grpc.GrpcTransportFactory,
   origin: string
 ): Promise<DhcType.grpc.GrpcTransport> {
-  const transport = factory.create(createTransportOptions(origin));
+  const transport = createTransport(factory, origin);
   await waitForLocalSettings(getSession(transport));
   return transport;
 }
@@ -104,18 +117,16 @@ async function runRequest(
   onChunk: (chunk: Uint8Array) => void = jest.fn()
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const transport = factory.create(
-      createTransportOptions(origin, {
-        onChunk,
-        onEnd: (error?: Error | null) => {
-          if (error != null) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        },
-      })
-    );
+    const transport = createTransport(factory, origin, {
+      onChunk,
+      onEnd: (error?: Error | null) => {
+        if (error != null) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      },
+    });
 
     transport.start({});
     transport.finishSend();
@@ -124,6 +135,24 @@ async function runRequest(
 
 afterEach(async () => {
   NodeHttp2gRPCTransport.dispose();
+
+  // `dispose` only initiates each close. Without waiting, sessions finish
+  // closing during the next test and log into its handlers. `destroy` covers
+  // any session `dispose` did not reach, so cleanup cannot hang on a leak.
+  await Promise.all(
+    Array.from(clientSessions).map(session => {
+      if (session.destroyed) {
+        return Promise.resolve();
+      }
+
+      const closed = new Promise<void>(resolve => {
+        session.once('close', () => resolve());
+      });
+      session.destroy();
+      return closed;
+    })
+  );
+  clientSessions.clear();
 
   await Promise.all(
     servers.splice(0).map(
@@ -252,8 +281,8 @@ describe('session sharing', () => {
     const origin = await startServer();
     const factory = NodeHttp2gRPCTransport.createFactory();
 
-    const transportA = factory.create(createTransportOptions(origin));
-    const transportB = factory.create(createTransportOptions(origin));
+    const transportA = createTransport(factory, origin);
+    const transportB = createTransport(factory, origin);
 
     expect(getSession(transportB)).toBe(getSession(transportA));
   });
@@ -311,12 +340,8 @@ describe('deprecated `factory`', () => {
     const origin = await startServer();
 
     // Would regress to a session per access if the getter stopped memoizing
-    const transportA = NodeHttp2gRPCTransport.factory.create(
-      createTransportOptions(origin)
-    );
-    const transportB = NodeHttp2gRPCTransport.factory.create(
-      createTransportOptions(origin)
-    );
+    const transportA = createTransport(NodeHttp2gRPCTransport.factory, origin);
+    const transportB = createTransport(NodeHttp2gRPCTransport.factory, origin);
 
     expect(getSession(transportB)).toBe(getSession(transportA));
   });
@@ -367,12 +392,12 @@ describe('dispose', () => {
     const origin = await startServer();
     const factory = NodeHttp2gRPCTransport.createFactory();
 
-    const sessionA = getSession(factory.create(createTransportOptions(origin)));
+    const sessionA = getSession(createTransport(factory, origin));
 
     // Clears the session map and starts closing A, which has not closed yet
     NodeHttp2gRPCTransport.dispose();
 
-    const sessionB = getSession(factory.create(createTransportOptions(origin)));
+    const sessionB = getSession(createTransport(factory, origin));
     expect(sessionB).not.toBe(sessionA);
 
     await new Promise<void>(resolve => {
@@ -380,9 +405,7 @@ describe('dispose', () => {
     });
 
     // A's close must not untrack B, or B leaks and every create duplicates it
-    expect(getSession(factory.create(createTransportOptions(origin)))).toBe(
-      sessionB
-    );
+    expect(getSession(createTransport(factory, origin))).toBe(sessionB);
   });
 });
 
@@ -451,12 +474,12 @@ describe('session logging', () => {
   });
 
   it('should log a session error at error level', async () => {
+    // Nothing is listening here, so the session errors instead of connecting
+    const origin = 'http://127.0.0.1:1';
     const { infoByEvent, levelByEvent, unsubscribe } = trackSessionInfo();
 
     try {
-      // Nothing is listening, so the session errors instead of connecting
-      const factory = NodeHttp2gRPCTransport.createFactory();
-      factory.create(createTransportOptions('http://127.0.0.1:1'));
+      createTransport(NodeHttp2gRPCTransport.createFactory(), origin);
 
       await new Promise<void>(resolve => {
         const intervalId = setInterval(() => {
@@ -489,9 +512,12 @@ describe('session logging', () => {
       // Omitted at `connect`, where it would still report Node's default
       expect(infoByEvent('connect')).toBeDefined();
       expect(infoByEvent('connect')?.localInitialWindowSize).toBeUndefined();
-      expect(infoByEvent('localSettings')?.localInitialWindowSize).toEqual(
-        1024 * 1024
-      );
+
+      expect(infoByEvent('localSettings')).toEqual({
+        origin,
+        event: 'localSettings',
+        localInitialWindowSize: 1024 * 1024,
+      });
     } finally {
       unsubscribe();
     }
@@ -511,12 +537,12 @@ describe('session logging', () => {
         origin
       );
 
-      expect(infoByEvent('remoteSettings')?.remoteInitialWindowSize).toEqual(
-        3 * 1024 * 1024
-      );
-      expect(infoByEvent('remoteSettings')?.remoteMaxConcurrentStreams).toEqual(
-        77
-      );
+      expect(infoByEvent('remoteSettings')).toEqual({
+        origin,
+        event: 'remoteSettings',
+        remoteInitialWindowSize: 3 * 1024 * 1024,
+        remoteMaxConcurrentStreams: 77,
+      });
     } finally {
       unsubscribe();
     }
@@ -535,20 +561,13 @@ describe('session logging', () => {
       );
       const session = getSession(transport);
 
-      expect(infoByEvent('connect')?.origin).toEqual(origin);
-      expect(infoByEvent('connect')?.effectiveLocalWindowSize).toEqual(
-        2 * 1024 * 1024
-      );
-
-      // Omitted at `connect`, where Node would report an assumption of its own
-      // rather than anything the peer advertised
-      expect(
-        infoByEvent('connect')?.remoteMaxConcurrentStreams
-      ).toBeUndefined();
-      expect(infoByEvent('connect')?.remoteInitialWindowSize).toBeUndefined();
-
-      // Nothing is readable off a destroyed session, so `close` reports none of it
-      expect(infoByEvent('close')?.effectiveLocalWindowSize).toBeUndefined();
+      // The peer settings are omitted here, where Node would report an
+      // assumption of its own rather than anything the peer advertised
+      expect(infoByEvent('connect')).toEqual({
+        origin,
+        event: 'connect',
+        effectiveLocalWindowSize: 2 * 1024 * 1024,
+      });
 
       const closed = new Promise<void>(resolve => {
         session.once('close', () => resolve());
@@ -556,7 +575,8 @@ describe('session logging', () => {
       session.close();
       await closed;
 
-      expect(infoByEvent('close')).toBeDefined();
+      // Nothing is readable off a destroyed session, so `close` adds nothing
+      expect(infoByEvent('close')).toEqual({ origin, event: 'close' });
     } finally {
       unsubscribe();
     }
