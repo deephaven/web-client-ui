@@ -1,17 +1,22 @@
-import ShellQuote, { type ParseEntry, type ControlOperator } from 'shell-quote';
+import ShellQuote, {
+  type Comment,
+  type ControlOperator,
+  type GlobPattern,
+  type ParseEntry,
+} from 'shell-quote';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
 class ConsoleUtils {
-  static hasComment(arg: ParseEntry): arg is { comment: string } {
-    return (arg as { comment: string }).comment !== undefined;
+  static hasComment(arg: ParseEntry): arg is Comment {
+    return (arg as Comment).comment !== undefined;
   }
 
-  static hasPattern(arg: ParseEntry): arg is { op: 'glob'; pattern: string } {
-    return (arg as { pattern: string }).pattern !== undefined;
+  static hasPattern(arg: ParseEntry): arg is GlobPattern {
+    return (arg as GlobPattern).pattern !== undefined;
   }
 
-  static hasOp(arg: ParseEntry): arg is { op: ControlOperator } {
-    return (arg as { op: ControlOperator }).op !== undefined;
+  static hasOp(arg: ParseEntry): arg is ControlOperator {
+    return (arg as ControlOperator).op !== undefined;
   }
 
   /**
