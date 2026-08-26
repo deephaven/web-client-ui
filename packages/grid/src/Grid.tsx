@@ -470,6 +470,10 @@ class Grid extends PureComponent<GridProps, GridState> {
       new GridSelectionMouseHandler(900),
     ];
 
+    // Selections are immutable, so a single instance can back both selection
+    // and lastSelection until the first commit produces a fresh committed value.
+    const emptySelection = props.createEmptySelection(this.getModel);
+
     this.state = {
       // Top/left visible cell in the grid. Note that it's visible row/column index, not the model index (ie. if columns are re-ordered)
       top: 0,
@@ -514,8 +518,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Currently selected ranges and previously selected ranges
       // Store the previously selected ranges to determine if the new selection should
       // deselect again (if it's the same range)
-      selection: props.createEmptySelection(this.getModel),
-      lastSelection: props.createEmptySelection(this.getModel),
+      selection: emptySelection,
+      lastSelection: emptySelection,
       selectedRanges: [],
 
       // The mouse cursor style to use when hovering over the grid element
