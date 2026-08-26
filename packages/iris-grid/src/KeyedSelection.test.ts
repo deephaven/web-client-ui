@@ -275,6 +275,53 @@ describe('resolve', () => {
     expect(resolved.isRowSelected(2)).toBe(true);
     expect(resolved.isRowSelected(1)).toBe(false);
   });
+
+  it('merges endpointKeyData for keys missing from the fetched map', () => {
+    const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
+    const pending = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [],
+      false,
+      null,
+      new Map(),
+      null,
+      new GridRange(null, 0, null, 4),
+      null,
+      null,
+      null,
+      endpoints
+    );
+    // Simulate a fetch that missed both endpoints because of drift.
+    const resolved = pending.resolve(new Map([keyValuesOf(1), keyValuesOf(3)]));
+    expect(resolved.isRowSelected(0)).toBe(true);
+    expect(resolved.isRowSelected(1)).toBe(true);
+    expect(resolved.isRowSelected(3)).toBe(true);
+    expect(resolved.isRowSelected(4)).toBe(true);
+    expect(resolved.selectedKeys.size).toBe(4);
+  });
+
+  it('prefers fetched values over endpointKeyData when a key is in both', () => {
+    const endpoints = new Map<string, readonly unknown[]>([
+      [keyOf(0), ['stale']],
+    ]);
+    const pending = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [],
+      false,
+      null,
+      new Map(),
+      null,
+      new GridRange(null, 0, null, 0),
+      null,
+      null,
+      null,
+      endpoints
+    );
+    const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
+    expect(resolved.selectedKeyValues.get(keyOf(0))).toEqual(['fresh']);
+  });
 });
 
 // ─── getUniqueRowCount ────────────────────────────────────────────────────────
@@ -329,10 +376,30 @@ describe('getUniqueRowCount', () => {
   });
 });
 
-// ─── commitMouseGesture (multi-row → pending) ─────────────────────────────────
+// ─── commitMouseGesture (multi-row → pending or fast path) ────────────────────
 
 describe('commitMouseGesture', () => {
-  it('returns a pending selection when overlay spans more than one row', () => {
+  afterEach(() => {
+    mockModel.viewport = { top: 0, bottom: ROW_COUNT - 1 };
+  });
+
+  it('commits a multi-row overlay synchronously when fully in viewport', () => {
+    const withOverlay = new KeyedSelection(
+      getKeyedModel,
+      new Set(),
+      [new GridRange(null, 0, null, 5)],
+      false
+    );
+    const result = withOverlay.commitMouseGesture(empty(), false);
+    expect(result.pendingRows).toBeNull();
+    for (let r = 0; r <= 5; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    expect(result.selectedKeys.size).toBe(6);
+  });
+
+  it('returns a pending selection when overlay extends beyond viewport', () => {
+    mockModel.viewport = { top: 0, bottom: 2 };
     const withOverlay = new KeyedSelection(
       getKeyedModel,
       new Set(),

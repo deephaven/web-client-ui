@@ -1,5 +1,5 @@
 import { EMPTY_ARRAY, assertNotNaN, assertNotNull } from '@deephaven/utils';
-import GridRange from './GridRange';
+import GridRange, { type GridRangeIndex } from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type { GetModel, Selection } from './Selection';
@@ -12,7 +12,9 @@ export class RangedSelection implements Selection {
 
   constructor(
     readonly ranges: readonly GridRange[],
-    private readonly getModel: GetModel
+    private readonly getModel: GetModel,
+    private readonly gestureStartRow: GridRangeIndex = null,
+    private readonly gestureStartColumn: GridRangeIndex = null
   ) {}
 
   isEmpty(): boolean {
@@ -101,9 +103,37 @@ export class RangedSelection implements Selection {
     return new RangedSelection(ranges, this.getModel);
   }
 
-  // Alias: ranges are committed immediately for RangedSelection
+  // Preserves the gesture anchor so mid-drag range updates don't clobber the shift-click origin.
   withMouseGestureRanges(ranges: readonly GridRange[]): RangedSelection {
-    return this.withUpdatedRanges(ranges);
+    // Identity check keeps the same object for commitMouseGesture's no-op path.
+    // This allows Grid.commitSelection to recognize that no changes have occurred.
+    if (ranges === this.ranges) return this;
+    return new RangedSelection(
+      ranges,
+      this.getModel,
+      this.gestureStartRow,
+      this.gestureStartColumn
+    );
+  }
+
+  withGestureAnchor(
+    row: GridRangeIndex,
+    column: GridRangeIndex
+  ): RangedSelection {
+    if (row === this.gestureStartRow && column === this.gestureStartColumn) {
+      return this;
+    }
+    return new RangedSelection(this.ranges, this.getModel, row, column);
+  }
+
+  getGestureAnchor(): {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null {
+    if (this.gestureStartRow == null && this.gestureStartColumn == null) {
+      return null;
+    }
+    return { row: this.gestureStartRow, column: this.gestureStartColumn };
   }
 
   selectAll(): RangedSelection {
@@ -133,7 +163,12 @@ export class RangedSelection implements Selection {
         : GridRange.cellCount(selectedRanges) === 1) &&
       GridRange.rangeArraysEqual(selectedRanges, lastRanges)
     ) {
-      return new RangedSelection(EMPTY_ARRAY, this.getModel);
+      return new RangedSelection(
+        EMPTY_ARRAY,
+        this.getModel,
+        this.gestureStartRow,
+        this.gestureStartColumn
+      );
     }
 
     let newRanges = selectedRanges.slice();
@@ -154,7 +189,7 @@ export class RangedSelection implements Selection {
     const changed =
       newRanges.length !== selectedRanges.length ||
       newRanges.some((r, i) => !r.equals(selectedRanges[i]));
-    return this.withUpdatedRanges(changed ? newRanges : selectedRanges);
+    return this.withMouseGestureRanges(changed ? newRanges : selectedRanges);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -166,7 +201,9 @@ export class RangedSelection implements Selection {
     if (this.ranges.length > 0) {
       return new RangedSelection(
         this.ranges.slice(this.ranges.length - 1),
-        this.getModel
+        this.getModel,
+        this.gestureStartRow,
+        this.gestureStartColumn
       );
     }
     return this;
@@ -196,7 +233,12 @@ export class RangedSelection implements Selection {
       }
       rowCount -= lastRowSize;
     }
-    return new RangedSelection(ranges, this.getModel);
+    return new RangedSelection(
+      ranges,
+      this.getModel,
+      this.gestureStartRow,
+      this.gestureStartColumn
+    );
   }
 }
 

@@ -2,6 +2,7 @@ import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
   type BoundedAxisRange,
   GridRange,
+  type GridRangeIndex,
   type ModelIndex,
   type Selection,
   type VisibleIndex,
@@ -50,7 +51,18 @@ export class KeyedSelection implements Selection {
     // When non-null, limits snapshot results to this many rows via the viewport subscription.
     readonly maxRows: number | null = null,
     // When non-null, key values for this row range are being resolved asynchronously.
-    readonly pendingRows: GridRange | null = null
+    readonly pendingRows: GridRange | null = null,
+    // Serialized key of the shift-click / drag anchor; drift-immune across ticks.
+    private readonly anchorKey: string | null = null,
+    // Raw key-column values captured with the anchor at click time.
+    private readonly anchorValues: readonly unknown[] | null = null,
+    // Anchor row at click time; fallback for getGestureAnchor when anchorKey is out of viewport.
+    private readonly anchorRow: GridRangeIndex = null,
+    // Endpoint key data captured at click time; merged into resolve() so shift-click endpoints survive fetch-time drift.
+    readonly endpointKeyData: ReadonlyMap<
+      string,
+      readonly unknown[]
+    > = EMPTY_MAP
   ) {
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
@@ -141,8 +153,60 @@ export class KeyedSelection implements Selection {
       ranges,
       this.invertedSelection,
       null,
-      this.selectedKeyValues
+      this.selectedKeyValues,
+      this.maxRows,
+      null,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
     );
+  }
+
+  withGestureAnchor(
+    row: GridRangeIndex,
+    _column: GridRangeIndex
+  ): KeyedSelection {
+    // Keyed selections are full-row; ignore column.
+    let nextKey: string | null = null;
+    let nextValues: readonly unknown[] | null = null;
+    if (row != null) {
+      const { key, values } = this.getRowKeyData(row);
+      nextKey = key;
+      nextValues = values;
+    }
+    if (nextKey === this.anchorKey && row === this.anchorRow) return this;
+    return new KeyedSelection(
+      this.getModel,
+      this.selectedKeys,
+      this.overlayRanges,
+      this.invertedSelection,
+      this.lastSingleRow,
+      this.selectedKeyValues,
+      this.maxRows,
+      this.pendingRows,
+      nextKey,
+      nextValues,
+      row
+    );
+  }
+
+  getGestureAnchor(): {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null {
+    if (this.anchorKey == null && this.anchorRow == null) return null;
+    if (this.anchorKey != null) {
+      const model = this.getModel();
+      const viewTop = model.viewport?.top ?? 0;
+      const viewBottom = model.viewport?.bottom ?? 0;
+      for (let r = viewTop; r <= viewBottom; r += 1) {
+        if (this.getRowKeyData(r).key === this.anchorKey) {
+          return { row: r, column: null };
+        }
+      }
+    }
+    // Anchor key is not in the viewport; fall back to the click-time row hint.
+    return { row: this.anchorRow, column: null };
   }
 
   commitMouseGesture(
@@ -190,7 +254,12 @@ export class KeyedSelection implements Selection {
         EMPTY_ARRAY,
         this.invertedSelection,
         null,
-        nextKeyValues
+        nextKeyValues,
+        this.maxRows,
+        null,
+        this.anchorKey,
+        this.anchorValues,
+        this.anchorRow
       );
     }
 
@@ -198,6 +267,47 @@ export class KeyedSelection implements Selection {
     // Multi-row shift selections may span out-of-viewport rows where valueForCell
     // returns null. Defer those to async resolution in IrisGrid.
     if (rows.length > 1) {
+      const first = rows[0];
+      const last = rows[rows.length - 1];
+      const model = this.getModel();
+      const viewTop = model.viewport?.top ?? 0;
+      const viewBottom = model.viewport?.bottom ?? 0;
+
+      // Fast path: entire range is in the viewport, so we can enumerate keys
+      // synchronously and skip the async fetch race entirely.
+      if (first >= viewTop && last <= viewBottom) {
+        const nextKeyValues = new Map<string, readonly unknown[]>();
+        for (let r = first; r <= last; r += 1) {
+          const { key: k, values } = this.getRowKeyData(r);
+          nextKeyValues.set(k, values);
+        }
+        return new KeyedSelection(
+          this.getModel,
+          new Set(nextKeyValues.keys()),
+          EMPTY_ARRAY,
+          false,
+          null,
+          nextKeyValues,
+          this.maxRows,
+          null,
+          this.anchorKey,
+          this.anchorValues,
+          this.anchorRow
+        );
+      }
+
+      // Slow path: async resolve. Endpoints are needed even if the fetch is
+      // preempted by ticks: the anchor is drift-immune (cached at click time);
+      // the target is the just-clicked row (must be in the viewport) —
+      // identify it as the endpoint that isn't the anchor's current position.
+      const endpoints = new Map<string, readonly unknown[]>();
+      if (this.anchorKey != null && this.anchorValues != null) {
+        endpoints.set(this.anchorKey, this.anchorValues);
+      }
+      const anchorNow = this.getGestureAnchor()?.row;
+      const targetRow = anchorNow === last ? first : last;
+      const { key: tKey, values: tValues } = this.getRowKeyData(targetRow);
+      endpoints.set(tKey, tValues);
       return new KeyedSelection(
         this.getModel,
         new Set(),
@@ -206,7 +316,11 @@ export class KeyedSelection implements Selection {
         null,
         EMPTY_MAP,
         this.maxRows,
-        new GridRange(null, rows[0], null, rows[rows.length - 1])
+        new GridRange(null, first, null, last),
+        this.anchorKey,
+        this.anchorValues,
+        this.anchorRow,
+        endpoints
       );
     }
     const [row] = rows;
@@ -233,7 +347,12 @@ export class KeyedSelection implements Selection {
       EMPTY_ARRAY,
       false,
       singleRow,
-      nextKeyValues
+      nextKeyValues,
+      this.maxRows,
+      null,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
     );
   }
 
@@ -242,8 +361,21 @@ export class KeyedSelection implements Selection {
   }
 
   // Shift+click needs a clean slate so the range replaces rather than extends the old keys.
+  // Anchor is preserved so shift+click's extend reads it after the trim.
   trimmed(): KeyedSelection {
-    return new KeyedSelection(this.getModel, new Set());
+    return new KeyedSelection(
+      this.getModel,
+      new Set(),
+      EMPTY_ARRAY,
+      false,
+      null,
+      EMPTY_MAP,
+      null,
+      null,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
+    );
   }
 
   // Always returns non-inverted; switching to a new selection exits inverted mode.
@@ -296,19 +428,34 @@ export class KeyedSelection implements Selection {
       this.invertedSelection,
       this.lastSingleRow,
       this.selectedKeyValues,
-      maxRows
+      maxRows,
+      this.pendingRows,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
     );
   }
 
   /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
   resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
+    // Guarantee the click-time endpoints survive: fetches over a ticking table
+    // can miss the anchor / target rows if they scrolled between click and reply.
+    const merged = new Map(keyValues);
+    this.endpointKeyData.forEach((values, key) => {
+      if (!merged.has(key)) merged.set(key, values);
+    });
     return new KeyedSelection(
       this.getModel,
-      new Set(keyValues.keys()),
+      new Set(merged.keys()),
       EMPTY_ARRAY,
       false,
       null,
-      keyValues
+      merged,
+      null,
+      null,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
     );
   }
 
@@ -345,7 +492,12 @@ export class KeyedSelection implements Selection {
       EMPTY_ARRAY,
       this.invertedSelection,
       null,
-      nextKeyValues
+      nextKeyValues,
+      this.maxRows,
+      null,
+      this.anchorKey,
+      this.anchorValues,
+      this.anchorRow
     );
   }
 }

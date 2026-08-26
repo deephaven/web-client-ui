@@ -614,17 +614,17 @@ it('handles keyboard pageDown to move cursor and/or selection down', () => {
 
   // Try selecting a range with shift+pageDown
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(51);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(51);
   expect(component.state.selectionEndRow).toBe(98);
 
   // Try increasing the selection with another shift+pageDown.
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(51);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(51);
   expect(component.state.selectionEndRow).toBe(145);
 
   // Try changing the selected row with an arrow key.
   arrowUp(component);
-  expect(component.state.selectionStartRow).toBe(50);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(50);
   expect(component.state.selectionEndRow).toBe(50);
   expect(component.state.cursorRow).toBe(50);
 
@@ -633,7 +633,7 @@ it('handles keyboard pageDown to move cursor and/or selection down', () => {
   pageDown(component, { shiftKey: true });
   pageDown(component, { shiftKey: true });
   pageDown(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(50);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(50);
   expect(component.state.selectionEndRow).toBe(199);
 });
 
@@ -655,17 +655,17 @@ it('handles keyboard pageUp to move cursor and/or selection up', () => {
 
   // Try selecting a range with shift+pageUp
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(152);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(152);
   expect(component.state.selectionEndRow).toBe(105);
 
   // Try increasing the selection with another shift+pageUp.
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(152);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(152);
   expect(component.state.selectionEndRow).toBe(58);
 
   // Try changing the selected row with an arrow key.
   arrowDown(component);
-  expect(component.state.selectionStartRow).toBe(153);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(153);
   expect(component.state.selectionEndRow).toBe(153);
   expect(component.state.cursorRow).toBe(153);
 
@@ -674,7 +674,7 @@ it('handles keyboard pageUp to move cursor and/or selection up', () => {
   pageUp(component, { shiftKey: true });
   pageUp(component, { shiftKey: true });
   pageUp(component, { shiftKey: true });
-  expect(component.state.selectionStartRow).toBe(153);
+  expect(component.state.selection.getGestureAnchor()?.row).toBe(153);
   expect(component.state.selectionEndRow).toBe(0);
 });
 

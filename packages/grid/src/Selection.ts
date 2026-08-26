@@ -1,4 +1,5 @@
 import type GridRange from './GridRange';
+import type { GridRangeIndex } from './GridRange';
 import type GridModel from './GridModel';
 import type { VisibleIndex } from './GridMetrics';
 import type { BoundedAxisRange } from './GridAxisRange';
@@ -49,4 +50,19 @@ export interface Selection {
    * Returns a new Selection containing at most maxRows rows.
    */
   truncate: (maxRows: number) => Selection;
+  /**
+   * Returns a new Selection whose gesture anchor is set to the given cell.
+   * The anchor is the extend-from position for shift-click. Passing null for
+   * both row and column clears the anchor.
+   */
+  withGestureAnchor: (row: GridRangeIndex, column: GridRangeIndex) => Selection;
+  /**
+   * Returns the current row/column of the gesture anchor, or null if no
+   * anchor is set or the anchor is no longer resolvable (e.g. a keyed
+   * anchor whose row has scrolled out of the viewport).
+   */
+  getGestureAnchor: () => {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null;
 }

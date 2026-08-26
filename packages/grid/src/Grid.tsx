@@ -209,8 +209,6 @@ export type GridState = {
   // Cursor (highlighted cell) location and active selected range
   cursorRow: VisibleIndex | null;
   cursorColumn: VisibleIndex | null;
-  selectionStartRow: VisibleIndex | null;
-  selectionStartColumn: VisibleIndex | null;
   selectionEndRow: VisibleIndex | null;
   selectionEndColumn: VisibleIndex | null;
 
@@ -513,8 +511,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Cursor (highlighted cell) location and active selected range
       cursorRow: null,
       cursorColumn: null,
-      selectionStartRow: null,
-      selectionStartColumn: null,
       selectionEndRow: null,
       selectionEndColumn: null,
 
@@ -890,14 +886,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     this.setState(state => {
-      let {
-        cursorRow,
-        cursorColumn,
-        selectionStartColumn,
-        selectionStartRow,
-        selectionEndColumn,
-        selectionEndRow,
-      } = state;
+      let { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
+        state;
+      let anchorRow: GridRangeIndex = null;
+      let anchorColumn: GridRangeIndex = null;
       if (gridRanges.length > 0) {
         const range = GridRange.boundedRange(
           gridRanges[0],
@@ -907,18 +899,18 @@ class Grid extends PureComponent<GridProps, GridState> {
         if (!range.containsCell(cursorColumn, cursorRow)) {
           ({ row: cursorRow, column: cursorColumn } = range.startCell());
         }
-        selectionStartColumn = range.startColumn;
-        selectionStartRow = range.startRow;
+        anchorColumn = range.startColumn;
+        anchorRow = range.startRow;
         selectionEndColumn = range.endColumn;
         selectionEndRow = range.endRow;
       }
-      const selection = state.selection.withUpdatedRanges(gridRanges);
+      const selection = state.selection
+        .withUpdatedRanges(gridRanges)
+        .withGestureAnchor(anchorRow, anchorColumn);
       return {
         selection,
         selectedRanges: selectionToRanges(selection),
         lastSelection: state.selection,
-        selectionStartColumn,
-        selectionStartRow,
         selectionEndColumn,
         selectionEndRow,
         cursorColumn,
@@ -1154,14 +1146,13 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param row Row where the selection is beginning
    */
   beginSelection(column: GridRangeIndex, row: GridRangeIndex): void {
-    this.setState({
-      selectionStartColumn: column,
-      selectionStartRow: row,
+    this.setState(state => ({
+      selection: state.selection.withGestureAnchor(row, column),
       selectionEndColumn: column,
       selectionEndRow: row,
       cursorColumn: column,
       cursorRow: row,
-    });
+    }));
   }
 
   /**
@@ -1178,14 +1169,15 @@ class Grid extends PureComponent<GridProps, GridState> {
     maximizePreviousRange = false
   ): void {
     this.setState(state => {
-      const { selection, selectionStartRow, selectionStartColumn } = state;
+      const { selection } = state;
       const { theme } = this.props;
       const { autoSelectRow, autoSelectColumn } = theme;
       const selectedRanges = selection.toActiveRanges();
-      // When extendSelection is true but there are no active ranges, fall back to the
-      // cursor anchor (selectionStartRow/Column) so shift+click works after trimming.
-      const hasCursorAnchor =
-        selectionStartRow != null || selectionStartColumn != null;
+      // Fall back to the selection's gesture anchor so shift+click works after trimming.
+      const anchor = selection.getGestureAnchor();
+      const selectionStartRow = anchor?.row ?? null;
+      const selectionStartColumn = anchor?.column ?? null;
+      const hasCursorAnchor = anchor != null;
 
       if (extendSelection && (selectedRanges.length > 0 || hasCursorAnchor)) {
         const lastSelectedRange =
@@ -1453,14 +1445,12 @@ class Grid extends PureComponent<GridProps, GridState> {
       });
 
       if (!GridRange.containsCell(selectedRanges, column, row)) {
-        const newSel = selection.withUpdatedRanges([
-          GridRange.makeCell(column, row),
-        ]);
+        const newSel = selection
+          .withUpdatedRanges([GridRange.makeCell(column, row)])
+          .withGestureAnchor(row, column);
         this.setState({
           selection: newSel,
           selectedRanges: selectionToRanges(newSel),
-          selectionStartColumn: column,
-          selectionStartRow: row,
           selectionEndColumn: column,
           selectionEndRow: row,
         });
