@@ -14,7 +14,7 @@ A one line summary, regenerated on every render, so it only reads values the gri
 Grid with 100 rows and 3 columns. 2 rows selected.
 ```
 
-And a "Describe the grid contents" button. Pressing it renders a **snapshot**: a table of the visible cells and column headers. Reconciling an element per cell on every frame would be far too slow while scrolling, so the snapshot is generated only on request, and it is discarded as soon as the grid scrolls. The button is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
+And a toggle button that turns a **snapshot** on and off: a table of the visible cells and column headers. Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default. While it is on, it is regenerated on every render and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
 
 The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. Fallback content is never laid out, so native table semantics are the most reliable thing to hand a screen reader, and `<th scope="col">` associates each cell with its column for free. It is a `table` and not a `grid`, because `grid` promises cell-by-cell keyboard navigation that only the canvas implements. `aria-rowcount` and `aria-colcount` describe the whole grid, while the table only holds the viewport.
 
@@ -24,8 +24,13 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
 <canvas class="grid-canvas">
   <div data-grid-a11y-revision="1">
     <p>Grid with 100 rows and 3 columns.</p>
-    <button type="button" tabindex="-1" data-grid-a11y-describe>
-      Describe the grid contents
+    <button
+      type="button"
+      tabindex="-1"
+      aria-pressed="true"
+      data-grid-a11y-describe
+    >
+      Hide the grid contents
     </button>
     <div data-grid-a11y-snapshot>
       <p role="status">
@@ -67,9 +72,9 @@ The attribute names are exported as `GRID_A11Y_ATTRIBUTES` and typed as `GridA11
 
 | Attribute                 | On                | Description                                                              |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| `data-grid-a11y-revision` | fallback root     | Incremented each time a snapshot is generated                            |
-| `data-grid-a11y-describe` | button            | The button that generates a snapshot                                     |
-| `data-grid-a11y-snapshot` | snapshot root     | Present only while a snapshot is held                                    |
+| `data-grid-a11y-revision` | fallback root     | Incremented each time the grid redraws                                   |
+| `data-grid-a11y-describe` | button            | The button that toggles the snapshot on and off                          |
+| `data-grid-a11y-snapshot` | snapshot root     | Present only while the snapshot is on                                    |
 | `data-grid-column`        | headers and cells | Visible column index                                                     |
 | `data-grid-row`           | cells             | Visible row index                                                        |
 | `data-grid-header`        | headers           | Header text, for looking a column up by name                             |
@@ -94,7 +99,7 @@ const clientY = box.y + y + height / 2;
 
 ## Testing with Playwright
 
-[@deephaven/playwright-grid](https://www.npmjs.com/package/@deephaven/playwright-grid) wraps the snapshot in helpers for end-to-end tests, so tests can address cells by column name instead of by pixel offset. Each helper regenerates the snapshot before it reads, so it never sees a stale viewport:
+[@deephaven/playwright-grid](https://www.npmjs.com/package/@deephaven/playwright-grid) wraps the snapshot in helpers for end-to-end tests, so tests can address cells by column name instead of by pixel offset. Each helper turns the snapshot on before it reads, so it never sees a stale viewport:
 
 ```ts
 import { test } from '@playwright/test';

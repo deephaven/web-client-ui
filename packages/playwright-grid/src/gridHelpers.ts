@@ -73,13 +73,13 @@ function parseRect(value: string | null): GridA11yRect | null {
 }
 
 /**
- * Regenerate the grid's accessibility snapshot and wait for it to render.
- * The snapshot is a point in time view of the viewport rather than something
- * the grid maintains as it scrolls, so it is refreshed before every query.
+ * Turn the grid's accessibility snapshot on and wait for it to render.
+ * The snapshot is off by default, and once on the grid keeps it in sync with
+ * the viewport, so this only clicks when the snapshot is not already showing.
  * @param canvas Locator for the grid canvas
  * @returns Locator for the rendered snapshot
  */
-async function refreshSnapshot(canvas: Locator): Promise<Locator> {
+async function showSnapshot(canvas: Locator): Promise<Locator> {
   const fallback = canvas.locator(`[${ATTRIBUTES.revision}]`);
   if ((await fallback.count()) === 0) {
     throw new Error(
@@ -87,16 +87,14 @@ async function refreshSnapshot(canvas: Locator): Promise<Locator> {
     );
   }
 
-  // The button is canvas fallback content, so it is never painted and cannot be clicked
-  const observedRevision = Number(
-    await fallback.getAttribute(ATTRIBUTES.revision)
-  );
-  await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
-  await expect
-    .poll(async () => Number(await fallback.getAttribute(ATTRIBUTES.revision)))
-    .toBeGreaterThan(observedRevision);
+  const snapshot = canvas.locator(`[${ATTRIBUTES.snapshot}]`);
+  if ((await snapshot.count()) === 0) {
+    // The button is canvas fallback content, so it is never painted and cannot be clicked
+    await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
+    await expect.poll(async () => snapshot.count()).toBeGreaterThan(0);
+  }
 
-  return canvas.locator(`[${ATTRIBUTES.snapshot}]`);
+  return snapshot;
 }
 
 /**
@@ -156,7 +154,7 @@ async function queryCell(
   row: number
 ): Promise<GridQueryResult> {
   const canvas = await resolveGridCanvas(grid);
-  const snapshot = await refreshSnapshot(canvas);
+  const snapshot = await showSnapshot(canvas);
 
   const columnIndex = await resolveColumn(snapshot, column);
   if (columnIndex == null) {
@@ -188,7 +186,7 @@ async function queryColumnHeader(
   column: ColumnRef
 ): Promise<GridQueryResult> {
   const canvas = await resolveGridCanvas(grid);
-  const snapshot = await refreshSnapshot(canvas);
+  const snapshot = await showSnapshot(canvas);
 
   const columnIndex = await resolveColumn(snapshot, column);
   if (columnIndex == null) {
@@ -217,7 +215,7 @@ export async function waitForGrid(grid: Locator): Promise<void> {
   const canvas = await resolveGridCanvas(grid);
   await expect
     .poll(async () => {
-      const snapshot = await refreshSnapshot(canvas);
+      const snapshot = await showSnapshot(canvas);
       return snapshot.locator(`[${ATTRIBUTES.row}]`).count();
     })
     .toBeGreaterThan(0);
@@ -241,7 +239,7 @@ export async function getGridSummary(grid: Locator): Promise<string> {
  */
 export async function getColumnHeaderNames(grid: Locator): Promise<string[]> {
   const canvas = await resolveGridCanvas(grid);
-  const snapshot = await refreshSnapshot(canvas);
+  const snapshot = await showSnapshot(canvas);
   const headers = await snapshot
     .locator(`[${ATTRIBUTES.header}]`)
     .evaluateAll(
@@ -259,7 +257,7 @@ export async function getColumnHeaderNames(grid: Locator): Promise<string[]> {
  */
 export async function getVisibleRows(grid: Locator): Promise<number[]> {
   const canvas = await resolveGridCanvas(grid);
-  const snapshot = await refreshSnapshot(canvas);
+  const snapshot = await showSnapshot(canvas);
   const rows = await snapshot
     .locator(`tbody tr [${ATTRIBUTES.row}]:first-child`)
     .evaluateAll(

@@ -37,8 +37,9 @@ Columns and rows are addressed by _visible_ index, i.e. what is currently on
 screen. Anything outside of the viewport is not addressable, so scroll it into
 view first.
 
-Each helper regenerates the snapshot before it reads, so it never reports a
-viewport the grid has already scrolled away from.
+Each helper turns the grid's accessibility snapshot on before it reads. Once on,
+the grid keeps the snapshot in sync with the viewport, so a helper never reports
+a viewport the grid has already scrolled away from.
 
 ## API
 

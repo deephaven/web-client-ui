@@ -14,8 +14,8 @@ export type GridA11yFallbackProps = {
   /** The model being displayed */
   model: GridModel;
 
-  /** Get the metrics of the most recent render, or null if the grid has not drawn yet */
-  getMetrics: () => GridMetrics | null;
+  /** The metrics of the most recent render, or null if the grid has not drawn yet */
+  metrics: GridMetrics | null;
 
   /** The currently selected ranges */
   selectedRanges?: readonly GridRange[];
@@ -29,7 +29,7 @@ export type GridA11yFallbackProps = {
  *
  * The summary only reads values the grid already has on hand, so it is
  * regenerated on every render. The snapshot walks every visible cell, so it is
- * generated on request and discarded as soon as the grid scrolls away from it.
+ * toggled on and off by a button and only tracks the viewport while it is on.
  *
  * The snapshot is a plain table rather than divs with ARIA roles, as fallback
  * content is never laid out and native table semantics come with the column
@@ -39,7 +39,7 @@ export type GridA11yFallbackProps = {
  */
 export function GridA11yFallback({
   model,
-  getMetrics,
+  metrics,
   selectedRanges = EMPTY_ARRAY,
   revision,
 }: GridA11yFallbackProps): JSX.Element {
@@ -48,7 +48,6 @@ export function GridA11yFallback({
     if (!showSnapshot) {
       return;
     }
-    const metrics = getMetrics();
     if (metrics == null) {
       return;
     }
@@ -57,7 +56,7 @@ export function GridA11yFallback({
     // `revision` changes whenever the grid redraws, which is what makes the
     // metrics read above stale
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSnapshot, getMetrics, model, selectedRanges, revision]);
+  }, [showSnapshot, metrics, model, selectedRanges, revision]);
 
   return (
     <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>
