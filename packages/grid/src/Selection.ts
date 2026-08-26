@@ -10,65 +10,97 @@ export type GetModel = () => GridModel;
 /**
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
+ *
+ * Two write paths cover selection updates:
+ * - `withUpdatedRanges` writes into the **committed** selection state
+ *   (programmatic entry points like `Grid.setSelectedRanges`).
+ * - `withMouseGestureRanges` writes into the **transient overlay** state
+ *   used for mid-gesture rendering (drag / shift-click on every mouse move).
+ *
+ * For `RangedSelection` these look the same because there's no separate
+ * overlay concept. For `KeyedSelection` they're distinct: overlay ranges
+ * drive gesture preview only; committed key sets change on `commitMouseGesture`.
  */
 export interface Selection {
-  /** Returns true if no cells are selected. */
+  /** True when the selection contains no cells and no in-progress gesture. */
   isEmpty: () => boolean;
-  /** Returns true if the specified cell is part of the selection. */
+  /** True when `(row, column)` is part of the selection. */
   isCellSelected: (row: VisibleIndex, column: VisibleIndex) => boolean;
-  /** Returns true if the entire row is part of the selection. */
+  /** True when the entire row is part of the selection. */
   isRowSelected: (row: VisibleIndex) => boolean;
-  /** Returns false if any selected range exceeds the given column/row bounds. */
+  /** False if any selected range exceeds `columnCount` or `rowCount`. */
   isValid: (columnCount: number, rowCount: number) => boolean;
-  /** Returns the ranges Grid uses for cursor positioning, extend-selection, and keyboard navigation. */
+  /**
+   * Ranges Grid uses for cursor positioning, extend-selection, and keyboard
+   * navigation. For `RangedSelection` these are the committed ranges; for
+   * `KeyedSelection` these are the transient overlay ranges (empty after commit).
+   */
   toActiveRanges: () => readonly GridRange[];
-  /** Returns column [start, end] pairs for scrollbar tick rendering. */
+  /** Column `[start, end]` pairs for scrollbar tick rendering. */
   getColumnTickRanges: () => readonly BoundedAxisRange[];
-  /** Returns row [start, end] pairs for scrollbar tick rendering. */
+  /** Row `[start, end]` pairs for scrollbar tick rendering. */
   getRowTickRanges: () => readonly BoundedAxisRange[];
-  /** Returns a new Selection with selection cleared. */
+  /** A fresh empty selection with no committed state, overlay, or anchor. */
   clear: () => Selection;
-  /** Returns a new Selection keeping only the last range. */
+  /**
+   * A new selection keeping only the last committed range (for
+   * `RangedSelection`) or clearing committed keys (for `KeyedSelection`).
+   * Called by `Grid.trimSelectedRanges` immediately before shift-based
+   * extend so the anchor is preserved.
+   */
   trimmed: () => Selection;
-  /** Returns a new Selection generated from the supplied ranges */
+  /**
+   * Replaces the **committed** selection with the given ranges. Clears the
+   * gesture anchor and any transient overlay state. Programmatic entry point
+   * used by `Grid.setSelectedRanges`, `setFocusRow`, and
+   * `moveCursorInDirection`.
+   */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
   /**
-   * Applies mouse gesture ranges to this selection. When `isReplacing` is
-   * true the caller intends the overlay to replace the current selection
-   * (drag / shift+click); implementations that would otherwise carry
-   * previously-committed selection state (e.g. `KeyedSelection.selectedKeys`)
-   * should drop it. Ignored by `RangedSelection`.
+   * Replaces the **transient overlay** ranges (mid-gesture preview) with
+   * the given ranges. Called on every mouse-move during a drag / shift-click.
+   * Preserves the gesture anchor. `commitMouseGesture` later folds the
+   * overlay into the committed state.
+   *
+   * When `isReplacing` is true the caller intends the overlay to replace
+   * the current committed selection (drag / shift+click). Implementations
+   * that would otherwise carry previously-committed state (e.g.
+   * `KeyedSelection.selectedKeys`) drop it. Ignored by `RangedSelection`.
    */
   withMouseGestureRanges: (
     ranges: readonly GridRange[],
     isReplacing?: boolean
   ) => Selection;
   /**
-   * Commits the current mouse gesture and returns the settled selection.
-   * Returns this (identity) when there is nothing to commit.
+   * Commits the transient overlay into the committed selection and returns
+   * the settled selection. Handles consolidation, deselect-on-reclick, and
+   * subtract logic. Returns `this` (identity) when there is nothing to
+   * commit, which lets `Grid.commitSelection` short-circuit its setState.
    */
   commitMouseGesture: (
     lastCommitted: Selection,
     autoSelectRow: boolean
   ) => Selection;
-  /** Returns a new Selection representing the entire grid selected. */
+  /** A new selection covering the entire grid. */
   selectAll: () => Selection;
-  /** Returns the single selected visible row, or null if zero or multiple rows are selected. */
-  getLastSingleSelectedRow: () => VisibleIndex | null;
   /**
-   * Returns a new Selection containing at most maxRows rows.
+   * The single selected visible row, or `null` when zero or multiple rows
+   * are selected. Drives `gotoRow` sync.
    */
+  getLastSingleSelectedRow: () => VisibleIndex | null;
+  /** A new selection containing at most `maxRows` rows. */
   truncate: (maxRows: number) => Selection;
   /**
-   * Returns a new Selection whose gesture anchor is set to the given cell.
-   * The anchor is the extend-from position for shift-click. Passing null for
-   * both row and column clears the anchor.
+   * A new selection whose gesture anchor is set to the given cell. The
+   * anchor is the extend-from position for shift-click and keyboard extend.
+   * Called from `Grid.beginSelection` on a fresh mouse-down. Passing `null`
+   * for both `row` and `column` clears the anchor.
    */
   withGestureAnchor: (row: GridRangeIndex, column: GridRangeIndex) => Selection;
   /**
-   * Returns the current row/column of the gesture anchor, or null if no
-   * anchor is set or the anchor is no longer resolvable (e.g. a keyed
-   * anchor whose row has scrolled out of the viewport).
+   * The current `{row, column}` of the gesture anchor, or `null` if none is
+   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
+   * row has scrolled out of the viewport with no row hint fallback).
    */
   getGestureAnchor: () => {
     row: GridRangeIndex;

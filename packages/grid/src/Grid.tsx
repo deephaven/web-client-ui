@@ -298,7 +298,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       autoSelectColumn: false,
       autoSelectRow: false,
     } as Partial<GridThemeType>,
-    createEmptySelection: RangedSelection.empty,
+    createEmptySelection: RangedSelection.empty as (
+      getModel: GetModel
+    ) => Selection,
   };
 
   // use same constant as chrome source for windows
