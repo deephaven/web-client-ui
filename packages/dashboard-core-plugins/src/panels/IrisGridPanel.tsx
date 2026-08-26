@@ -65,6 +65,7 @@ import {
 import {
   assertNotNull,
   type CancelablePromise,
+  EMPTY_ARRAY,
   type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
@@ -488,7 +489,9 @@ export class IrisGridPanel extends PureComponent<
 
       const gridSel = this.irisGrid.current?.state.gridSelection;
       const selectedRanges =
-        gridSel != null && isRangedSelection(gridSel) ? gridSel.toRanges() : [];
+        gridSel != null && isRangedSelection(gridSel)
+          ? gridSel.toRanges()
+          : EMPTY_ARRAY;
 
       return (
         <div className="iris-grid-plugin">
