@@ -42,7 +42,7 @@ export interface NodeHttp2TransportConfig {
 
 /**
  * Session state logged via {@link NodeHttp2gRPCTransport.logMessage} on each
- * session lifecycle event, as the second argument to the log message.
+ * session lifecycle event, after a `Session <event>` label.
  *
  * Each event carries only what it updated, so a field is absent rather than
  * stale on events that say nothing about it.
@@ -148,6 +148,7 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
 
     NodeHttp2gRPCTransport.logMessage(
       event === 'error' ? 'error' : 'debug',
+      `Session ${event}`,
       info
     );
   }

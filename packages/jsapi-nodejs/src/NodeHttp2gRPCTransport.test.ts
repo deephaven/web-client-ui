@@ -1,13 +1,10 @@
 import http2 from 'node:http2';
 import type { AddressInfo } from 'node:net';
 import type { dh as DhcType } from '@deephaven/jsapi-types';
-import Log from '@deephaven/log';
 import {
   NodeHttp2gRPCTransport,
   type NodeHttp2SessionInfo,
 } from './NodeHttp2gRPCTransport';
-
-Log.setLogLevel(-1);
 
 const NODE_DEFAULT_WINDOW_SIZE = 65535;
 
@@ -427,21 +424,54 @@ describe('requests', () => {
 });
 
 describe('session logging', () => {
-  /** Session events are logged as a bare {@link NodeHttp2SessionInfo}. */
+  /**
+   * Session events are logged as a `Session <event>` label followed by a
+   * {@link NodeHttp2SessionInfo}.
+   */
   function trackSessionInfo(): {
     infoByEvent: (
       event: NodeHttp2SessionInfo['event']
     ) => NodeHttp2SessionInfo | undefined;
     levelByEvent: (event: NodeHttp2SessionInfo['event']) => string | undefined;
+    waitForEvent: (event: NodeHttp2SessionInfo['event']) => Promise<void>;
     unsubscribe: () => void;
   } {
     const logged: { level: string; info: NodeHttp2SessionInfo }[] = [];
+    const waits = new Map<
+      NodeHttp2SessionInfo['event'],
+      { promise: Promise<void>; resolve: () => void }
+    >();
+
+    /**
+     * One promise per event, created by whichever comes first — the wait or the
+     * log. A waiter that arrives after the event fired gets the settled promise
+     * back, so nothing has to re-check what was already logged.
+     */
+    function waitFor(event: NodeHttp2SessionInfo['event']): {
+      promise: Promise<void>;
+      resolve: () => void;
+    } {
+      let wait = waits.get(event);
+
+      if (wait == null) {
+        let resolve!: () => void;
+        const promise = new Promise<void>(res => {
+          resolve = res;
+        });
+
+        wait = { promise, resolve };
+        waits.set(event, wait);
+      }
+
+      return wait;
+    }
 
     const unsubscribe = NodeHttp2gRPCTransport.onLogMessage(
       (level, ...args) => {
-        const [info] = args as [NodeHttp2SessionInfo?];
+        const [, info] = args as [unknown, NodeHttp2SessionInfo?];
         if (info != null && typeof info === 'object' && 'event' in info) {
           logged.push({ level, info });
+          waitFor(info.event).resolve();
         }
       }
     );
@@ -452,6 +482,7 @@ describe('session logging', () => {
     return {
       infoByEvent: event => find(event)?.info,
       levelByEvent: event => find(event)?.level,
+      waitForEvent: event => waitFor(event).promise,
       unsubscribe,
     };
   }
@@ -476,19 +507,13 @@ describe('session logging', () => {
   it('should log a session error at error level', async () => {
     // Nothing is listening here, so the session errors instead of connecting
     const origin = 'http://127.0.0.1:1';
-    const { infoByEvent, levelByEvent, unsubscribe } = trackSessionInfo();
+    const { infoByEvent, levelByEvent, waitForEvent, unsubscribe } =
+      trackSessionInfo();
 
     try {
       createTransport(NodeHttp2gRPCTransport.createFactory(), origin);
 
-      await new Promise<void>(resolve => {
-        const intervalId = setInterval(() => {
-          if (infoByEvent('error') != null) {
-            clearInterval(intervalId);
-            resolve();
-          }
-        }, 10);
-      });
+      await waitForEvent('error');
 
       expect(levelByEvent('error')).toEqual('error');
       expect(infoByEvent('error')?.error).toBeDefined();
