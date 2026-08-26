@@ -4,16 +4,29 @@ import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type { GetModel, Selection } from './Selection';
 
-/** Immutable selection implementation based on grid ranges. */
+/**
+ * Immutable `Selection` for standard (row-indexed) grids. Each entry in
+ * `ranges` describes a rectangle of cells; consumers iterate/consolidate
+ * as needed.
+ */
 export class RangedSelection implements Selection {
   static empty(getModel: GetModel): RangedSelection {
     return new RangedSelection(EMPTY_ARRAY, getModel);
   }
 
   constructor(
+    /** Committed selection rectangles; may be empty for a cleared selection. */
     readonly ranges: readonly GridRange[],
+    /**
+     * Deferred lookup for the current `GridModel`. Passed as a closure
+     * (not a direct reference) so this Selection always reads the model
+     * currently on `Grid.props.model` — surviving prop swaps without
+     * holding a stale reference.
+     */
     private readonly getModel: GetModel,
+    /** Anchor row for shift-click / keyboard extend; null when no anchor is set. */
     private readonly gestureStartRow: GridRangeIndex = null,
+    /** Anchor column for shift-click / keyboard extend; null when no anchor is set. */
     private readonly gestureStartColumn: GridRangeIndex = null
   ) {}
 

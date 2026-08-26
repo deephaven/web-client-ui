@@ -28,42 +28,97 @@ export function serializeKeyValues(values: readonly unknown[]): string {
   });
 }
 
+/**
+ * Immutable `Selection` for keyed tables: identifies rows by their
+ * serialized key-column values rather than raw row indices, so the
+ * selection survives ticks that shuffle row positions.
+ *
+ * Rows sharing the same key highlight together (see `isRowSelected`).
+ * When `invertedSelection` is true, `selectedKeys` is treated as an
+ * exclusion set (all rows selected except those keys).
+ */
 export class KeyedSelection implements Selection {
   static empty(getModel: GetKeyedModel): KeyedSelection {
     return new KeyedSelection(getModel, new Set());
   }
 
+  /** Keys derived from the current overlay range's viewport-visible rows. */
   private readonly gestureKeys: ReadonlySet<string>;
 
   constructor(
+    /**
+     * Deferred lookup for the current `KeyedGridModel`. Passed as a closure
+     * (not a direct reference) so this Selection always reads the model
+     * currently on `Grid.props.model` — surviving prop swaps without holding
+     * a stale reference.
+     */
     private readonly getModel: GetKeyedModel,
+    /**
+     * Serialized keys that identify the committed selection. Interpreted
+     * as an inclusion set by default; as an exclusion set when
+     * `invertedSelection` is true.
+     */
     readonly selectedKeys: ReadonlySet<string>,
+    /**
+     * Ranges from the in-progress mouse gesture. Cleared on commit; used
+     * to render an overlay before the gesture settles.
+     */
     private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY,
-    // When true, selectedKeys is an exclusion set: all rows are selected EXCEPT those in the set.
+    /**
+     * When true, `selectedKeys` is an exclusion set: all rows are selected
+     * EXCEPT those in the set.
+     */
     readonly invertedSelection: boolean = false,
-    // Last committed single-row position; best-effort, may be stale after table ticks.
+    /**
+     * Last committed single-row position; best-effort, may be stale after
+     * table ticks. Consumed by `getLastSingleSelectedRow` (drives gotoRow).
+     */
     private readonly lastSingleRow: VisibleIndex | null = null,
-    // Raw key-column values for each committed key; used for server-side filter construction.
+    /**
+     * Raw key-column values for each committed key; used for server-side
+     * filter construction (e.g. `buildKeyFilter`).
+     */
     readonly selectedKeyValues: ReadonlyMap<
       string,
       readonly unknown[]
     > = EMPTY_MAP,
-    // When non-null, limits snapshot results to this many rows via the viewport subscription.
+    /**
+     * When non-null, limits snapshot results to this many rows via the
+     * viewport subscription.
+     */
     readonly maxRows: number | null = null,
-    // When non-null, key values for this row range are being resolved asynchronously.
+    /**
+     * When non-null, key values for this row range are being resolved
+     * asynchronously by `IrisGrid.resolveKeyedSelection`.
+     */
     readonly pendingRows: GridRange | null = null,
-    // Serialized key of the shift-click / drag anchor; drift-immune across ticks.
+    /**
+     * Serialized key of the shift-click / drag anchor. Drift-immune across
+     * ticks: `getGestureAnchor` scans the viewport for the row currently
+     * holding this key.
+     */
     private readonly anchorKey: string | null = null,
-    // Raw key-column values captured with the anchor at click time.
+    /** Raw key-column values captured with the anchor at click time. */
     private readonly anchorValues: readonly unknown[] | null = null,
-    // Anchor row at click time; fallback for getGestureAnchor when anchorKey is out of viewport.
+    /**
+     * Anchor row at click time. Fallback for `getGestureAnchor` when the
+     * anchor key has scrolled out of the viewport.
+     */
     private readonly anchorRow: GridRangeIndex = null,
-    // Endpoint key data captured at click time; merged into resolve() so shift-click endpoints survive fetch-time drift.
+    /**
+     * Endpoint key data captured at click time; merged into `resolve()` so
+     * shift-click endpoints survive fetch-time drift.
+     */
     readonly endpointKeyData: ReadonlyMap<
       string,
       readonly unknown[]
     > = EMPTY_MAP,
-    // Non-null when the anchor scrolled out of the viewport: resolveKeyedSelection uses this to seekRow before fetching.
+    /**
+     * Non-null when the anchor scrolled out of the viewport at commit time.
+     * `IrisGrid.resolveKeyedSelection` seeks the anchor's current row via
+     * `fetchRowForKey` before fetching so the range endpoints line up with
+     * the user's intent.
+     */
     readonly pendingAnchorLookup: {
       values: readonly unknown[];
       targetRow: VisibleIndex;
