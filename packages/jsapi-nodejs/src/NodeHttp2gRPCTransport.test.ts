@@ -168,52 +168,57 @@ describe('window sizes', () => {
   });
 
   it('should derive the session window from settings.initialWindowSize when unset', async () => {
+    const initialWindowSize = 1024 * 1024;
+
     const origin = await startServer();
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
+        sessionOptions: { settings: { initialWindowSize } },
       }),
       origin
     );
     const session = getSession(transport);
 
-    // A connection window left at 64KB would cap every stream, making the
-    // configured stream window unreachable.
-    expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
-    expect(session.state.effectiveLocalWindowSize).toEqual(1024 * 1024);
+    expect(session.localSettings.initialWindowSize).toEqual(initialWindowSize);
+    expect(session.state.effectiveLocalWindowSize).toEqual(initialWindowSize);
   });
 
   it('should not derive the stream window from sessionLocalWindowSize', async () => {
+    const sessionLocalWindowSize = 2 * 1024 * 1024;
     const origin = await startServer();
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        sessionLocalWindowSize: 2 * 1024 * 1024,
+        sessionLocalWindowSize,
       }),
       origin
     );
     const session = getSession(transport);
 
-    // A large connection window over a small stream window is a valid way to
-    // share a session between many streams, so it is left alone.
     expect(session.localSettings.initialWindowSize).toEqual(
       NODE_DEFAULT_WINDOW_SIZE
     );
-    expect(session.state.effectiveLocalWindowSize).toEqual(2 * 1024 * 1024);
+    expect(session.state.effectiveLocalWindowSize).toEqual(
+      sessionLocalWindowSize
+    );
   });
 
   it('should apply configured window sizes', async () => {
+    const initialWindowSize = 1024 * 1024;
+    const sessionLocalWindowSize = 2 * 1024 * 1024;
     const origin = await startServer();
     const transport = await createConnectedTransport(
       NodeHttp2gRPCTransport.createFactory({
-        sessionLocalWindowSize: 2 * 1024 * 1024,
-        sessionOptions: { settings: { initialWindowSize: 1024 * 1024 } },
+        sessionLocalWindowSize,
+        sessionOptions: { settings: { initialWindowSize } },
       }),
       origin
     );
     const session = getSession(transport);
 
-    expect(session.localSettings.initialWindowSize).toEqual(1024 * 1024);
-    expect(session.state.effectiveLocalWindowSize).toEqual(2 * 1024 * 1024);
+    expect(session.localSettings.initialWindowSize).toEqual(initialWindowSize);
+    expect(session.state.effectiveLocalWindowSize).toEqual(
+      sessionLocalWindowSize
+    );
   });
 });
 
