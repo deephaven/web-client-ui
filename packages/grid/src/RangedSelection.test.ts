@@ -244,6 +244,63 @@ describe('withMouseGestureRanges', () => {
     const viaUpdated = sel.withUpdatedRanges(newRanges);
     expect(viaGesture.toRanges()).toEqual(viaUpdated.toRanges());
   });
+
+  it('preserves the gesture anchor', () => {
+    const sel = single(0, 0).withGestureAnchor(3, 4);
+    const updated = sel.withMouseGestureRanges([GridRange.makeCell(2, 2)]);
+    expect(updated.getGestureAnchor()).toEqual({ row: 3, column: 4 });
+  });
+});
+
+// ─── withGestureAnchor / getGestureAnchor ────────────────────────────────────
+
+describe('getGestureAnchor', () => {
+  it('returns null when no anchor was set', () => {
+    expect(empty().getGestureAnchor()).toBeNull();
+  });
+
+  it('round-trips row and column through withGestureAnchor', () => {
+    const sel = empty().withGestureAnchor(7, 3);
+    expect(sel.getGestureAnchor()).toEqual({ row: 7, column: 3 });
+  });
+
+  it('returns identity when the anchor is unchanged', () => {
+    const sel = empty().withGestureAnchor(1, 2);
+    expect(sel.withGestureAnchor(1, 2)).toBe(sel);
+  });
+
+  it('clears the anchor when both row and column are null', () => {
+    const sel = empty().withGestureAnchor(1, 2).withGestureAnchor(null, null);
+    expect(sel.getGestureAnchor()).toBeNull();
+  });
+
+  it('returns the anchor when only row is set', () => {
+    expect(empty().withGestureAnchor(5, null).getGestureAnchor()).toEqual({
+      row: 5,
+      column: null,
+    });
+  });
+
+  it('is cleared by withUpdatedRanges (fresh replacement)', () => {
+    const sel = single(0, 0)
+      .withGestureAnchor(3, 4)
+      .withUpdatedRanges([GridRange.makeCell(1, 1)]);
+    expect(sel.getGestureAnchor()).toBeNull();
+  });
+
+  it('is preserved by commitMouseGesture', () => {
+    const sel = single(1, 1).withGestureAnchor(2, 3);
+    const committed = sel.commitMouseGesture(empty(), false);
+    expect(committed.getGestureAnchor()).toEqual({ row: 2, column: 3 });
+  });
+
+  it('is preserved by trimmed()', () => {
+    const sel = new RangedSelection(
+      [GridRange.makeCell(0, 0), GridRange.makeCell(1, 1)],
+      getModel
+    ).withGestureAnchor(5, 6);
+    expect(sel.trimmed().getGestureAnchor()).toEqual({ row: 5, column: 6 });
+  });
 });
 
 // ─── selectAll ───────────────────────────────────────────────────────────────

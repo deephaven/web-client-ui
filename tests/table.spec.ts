@@ -103,6 +103,37 @@ test('ctrl+clicking rows in a keyed table selects multiple key groups', async ({
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
+test('shift+clicking rows in a keyed table selects the range of keys', async ({
+  page,
+}) => {
+  await gotoPage(page, '');
+  await openTable(page, 'keyed_table');
+
+  const grid = page.locator('.iris-grid-panel .iris-grid');
+  const gridLocation = await grid.boundingBox();
+  expect(gridLocation).not.toBeNull();
+  if (gridLocation === null) return;
+
+  const rowHeight = 19;
+  const columnHeaderHeight = 30;
+
+  // Click row 0 (Key=0), then shift+click row 2 (Key=2).
+  // The shift-click extend picks up keys 0, 1, 2, so every row with those
+  // keys should be highlighted (rows 0,1,2,5,6,7,10,11,12,15,16,17).
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight + 0.5 * rowHeight
+  );
+  await page.keyboard.down('Shift');
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight + 2.5 * rowHeight
+  );
+  await page.keyboard.up('Shift');
+
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
 test('can open a table with column header groups', async ({ page }) => {
   await gotoPage(page, '');
   await openTable(page, 'simple_table_header_group');
