@@ -37,31 +37,29 @@ function empty() {
 /** A selection that contains exactly row 5. */
 function singleRow(row = 5) {
   const key = keyOf(row);
-  return new KeyedSelection(
-    getKeyedModel,
-    new Set([key]),
-    [],
-    false,
-    row,
-    new Map([[key, [row]]])
-  );
+  return new KeyedSelection({
+    getModel: getKeyedModel,
+    selectedKeys: new Set([key]),
+    lastSingleRow: row,
+    selectedKeyValues: new Map([[key, [row]]]),
+  });
 }
 
 /** A selection that contains rows 3 and 7. */
 function multiRow() {
-  return new KeyedSelection(
-    getKeyedModel,
-    new Set([keyOf(3), keyOf(7)]),
-    [],
-    false,
-    null,
-    new Map([keyValuesOf(3), keyValuesOf(7)])
-  );
+  return new KeyedSelection({
+    getModel: getKeyedModel,
+    selectedKeys: new Set([keyOf(3), keyOf(7)]),
+    selectedKeyValues: new Map([keyValuesOf(3), keyValuesOf(7)]),
+  });
 }
 
 /** An inverted (select-all) selection with no exclusions. */
 function allRows() {
-  return new KeyedSelection(getKeyedModel, new Set(), [], true);
+  return new KeyedSelection({
+    getModel: getKeyedModel,
+    invertedSelection: true,
+  });
 }
 
 // ─── isEmpty ─────────────────────────────────────────────────────────────────
@@ -80,16 +78,10 @@ describe('isEmpty', () => {
   });
 
   it('returns false when pendingRows is set', () => {
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 0, null, 10)
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 0, null, 10),
+    });
     expect(pending.isEmpty()).toBe(false);
   });
 });
@@ -112,23 +104,20 @@ describe('isRowSelected', () => {
   });
 
   it('returns false for a row that is excluded in an inverted selection', () => {
-    const excludeRow5 = new KeyedSelection(
-      getKeyedModel,
-      new Set([keyOf(5)]),
-      [],
-      true
-    );
+    const excludeRow5 = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set([keyOf(5)]),
+      invertedSelection: true,
+    });
     expect(excludeRow5.isRowSelected(5)).toBe(false);
     expect(excludeRow5.isRowSelected(6)).toBe(true);
   });
 
   it('returns true for a row in the gesture overlay', () => {
-    const withOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 3, null, 3)],
-      false
-    );
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 3, null, 3)],
+    });
     expect(withOverlay.isRowSelected(3)).toBe(true);
     expect(withOverlay.isRowSelected(4)).toBe(false);
   });
@@ -273,16 +262,10 @@ describe('truncate', () => {
 
 describe('resolve', () => {
   it('clears pendingRows and commits the provided key values', () => {
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 0, null, 4)
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 0, null, 4),
+    });
     const resolved = pending.resolve(new Map([keyValuesOf(0), keyValuesOf(2)]));
     expect(resolved.pendingRows).toBeNull();
     expect(resolved.isRowSelected(0)).toBe(true);
@@ -292,20 +275,11 @@ describe('resolve', () => {
 
   it('merges endpointKeyData for keys missing from the fetched map', () => {
     const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 0, null, 4),
-      null,
-      null,
-      null,
-      endpoints
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 0, null, 4),
+      endpointKeyData: endpoints,
+    });
     // Simulate a fetch that missed both endpoints because of drift.
     const resolved = pending.resolve(new Map([keyValuesOf(1), keyValuesOf(3)]));
     expect(resolved.isRowSelected(0)).toBe(true);
@@ -319,40 +293,22 @@ describe('resolve', () => {
     const endpoints = new Map<string, readonly unknown[]>([
       [keyOf(0), ['stale']],
     ]);
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 0, null, 0),
-      null,
-      null,
-      null,
-      endpoints
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 0, null, 0),
+      endpointKeyData: endpoints,
+    });
     const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
     expect(resolved.selectedKeyValues.get(keyOf(0))).toEqual(['fresh']);
   });
 
   it('skips endpoints listed in excludedEndpoints (removed rows)', () => {
     const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 1, null, 4),
-      null,
-      null,
-      null,
-      endpoints
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 1, null, 4),
+      endpointKeyData: endpoints,
+    });
     const resolved = pending.resolve(
       new Map([keyValuesOf(1), keyValuesOf(4)]),
       new Set([keyOf(0)])
@@ -377,40 +333,30 @@ describe('getUniqueRowCount', () => {
     expect(allRows().getUniqueRowCount()).toBe(ROW_COUNT);
 
     // exclude row 5 → rowCount - 1
-    const excludeOne = new KeyedSelection(
-      getKeyedModel,
-      new Set([keyOf(5)]),
-      [],
-      true
-    );
+    const excludeOne = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set([keyOf(5)]),
+      invertedSelection: true,
+    });
     expect(excludeOne.getUniqueRowCount()).toBe(ROW_COUNT - 1);
   });
 
   it('returns null when pendingRows is set', () => {
-    const pending = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [],
-      false,
-      null,
-      new Map(),
-      null,
-      new GridRange(null, 0, null, 9)
-    );
+    const pending = new KeyedSelection({
+      getModel: getKeyedModel,
+      pendingRows: new GridRange(null, 0, null, 9),
+    });
     expect(pending.getUniqueRowCount()).toBeNull();
   });
 
   it('returns null when hasUniqueSelectionKeys is false', () => {
     const nonUniqueModel = { ...mockModel, hasUniqueSelectionKeys: false };
     const getModel: GetKeyedModel = () => nonUniqueModel as never;
-    const sel = new KeyedSelection(
+    const sel = new KeyedSelection({
       getModel,
-      new Set([keyOf(0)]),
-      [],
-      false,
-      null,
-      new Map([keyValuesOf(0)])
-    );
+      selectedKeys: new Set([keyOf(0)]),
+      selectedKeyValues: new Map([keyValuesOf(0)]),
+    });
     expect(sel.getUniqueRowCount()).toBeNull();
   });
 });
@@ -470,12 +416,10 @@ describe('commitMouseGesture', () => {
   });
 
   it('commits a multi-row overlay synchronously when fully in viewport', () => {
-    const withOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 0, null, 5)],
-      false
-    );
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 0, null, 5)],
+    });
     const result = withOverlay.commitMouseGesture(empty(), false);
     expect(result.pendingRows).toBeNull();
     for (let r = 0; r <= 5; r += 1) {
@@ -486,12 +430,10 @@ describe('commitMouseGesture', () => {
 
   it('returns a pending selection when overlay extends beyond viewport', () => {
     mockModel.viewport = { top: 0, bottom: 2 };
-    const withOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 0, null, 5)],
-      false
-    );
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 0, null, 5)],
+    });
     const result = withOverlay.commitMouseGesture(empty(), false);
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingRows?.startRow).toBe(0);
@@ -499,12 +441,10 @@ describe('commitMouseGesture', () => {
   });
 
   it('commits a single-row overlay synchronously', () => {
-    const withOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 3, null, 3)],
-      false
-    );
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 3, null, 3)],
+    });
     const result = withOverlay.commitMouseGesture(empty(), false);
     expect(result.pendingRows).toBeNull();
     expect(result.isRowSelected(3)).toBe(true);
@@ -512,12 +452,10 @@ describe('commitMouseGesture', () => {
 
   it('deselects a single row when it was the entire previous selection', () => {
     const last = singleRow(3);
-    const withOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 3, null, 3)],
-      false
-    );
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 3, null, 3)],
+    });
     const result = withOverlay.commitMouseGesture(last, false);
     expect(result.isRowSelected(3)).toBe(false);
   });
@@ -543,19 +481,13 @@ describe('commitMouseGesture', () => {
     // Viewport 20..30. Anchor key was captured at row 5 (now out of viewport);
     // user shift-clicks row 25 (in viewport). Slow path fires with lookup.
     mockModel.viewport = { top: 20, bottom: 30 };
-    const anchoredOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 5, null, 25)],
-      false,
-      null,
-      new Map(),
-      null,
-      null,
-      keyOf(5),
-      [5],
-      5
-    );
+    const anchoredOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 5, null, 25)],
+      anchorKey: keyOf(5),
+      anchorValues: [5],
+      anchorRow: 5,
+    });
     const result = anchoredOverlay.commitMouseGesture(empty(), false);
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingAnchorLookup).not.toBeNull();
@@ -566,19 +498,13 @@ describe('commitMouseGesture', () => {
   it('leaves pendingAnchorLookup null when the anchor is in viewport', () => {
     // Viewport 0..10 contains the anchor row 5. Overlay extends to row 50 (OOV).
     mockModel.viewport = { top: 0, bottom: 10 };
-    const anchoredOverlay = new KeyedSelection(
-      getKeyedModel,
-      new Set(),
-      [new GridRange(null, 5, null, 50)],
-      false,
-      null,
-      new Map(),
-      null,
-      null,
-      keyOf(5),
-      [5],
-      5
-    );
+    const anchoredOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 5, null, 50)],
+      anchorKey: keyOf(5),
+      anchorValues: [5],
+      anchorRow: 5,
+    });
     const result = anchoredOverlay.commitMouseGesture(empty(), false);
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingAnchorLookup).toBeNull();

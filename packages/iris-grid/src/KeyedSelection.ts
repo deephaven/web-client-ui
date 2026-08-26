@@ -29,6 +29,85 @@ export function serializeKeyValues(values: readonly unknown[]): string {
 }
 
 /**
+ * Configuration for a `KeyedSelection`. `getModel` is required; every
+ * other field defaults to an "empty" value (`null`, an empty set/map, or
+ * `false` where appropriate).
+ */
+export type KeyedSelectionOptions = {
+  /**
+   * Deferred lookup for the current `KeyedGridModel`. Passed as a closure
+   * (not a direct reference) so this Selection always reads the model
+   * currently on `Grid.props.model` — surviving prop swaps without holding
+   * a stale reference.
+   */
+  getModel: GetKeyedModel;
+  /**
+   * Serialized keys that identify the committed selection. Interpreted as
+   * an inclusion set by default; as an exclusion set when
+   * `invertedSelection` is true.
+   */
+  selectedKeys?: ReadonlySet<string>;
+  /**
+   * Ranges from the in-progress mouse gesture. Cleared on commit; used to
+   * render an overlay before the gesture settles.
+   */
+  overlayRanges?: readonly GridRange[];
+  /**
+   * When true, `selectedKeys` is an exclusion set: all rows are selected
+   * EXCEPT those in the set.
+   */
+  invertedSelection?: boolean;
+  /**
+   * Last committed single-row position; best-effort, may be stale after
+   * table ticks. Consumed by `getLastSingleSelectedRow` (drives gotoRow).
+   */
+  lastSingleRow?: VisibleIndex | null;
+  /**
+   * Raw key-column values for each committed key; used for server-side
+   * filter construction (e.g. `buildKeyFilter`).
+   */
+  selectedKeyValues?: ReadonlyMap<string, readonly unknown[]>;
+  /**
+   * When non-null, limits snapshot results to this many rows via the
+   * viewport subscription.
+   */
+  maxRows?: number | null;
+  /**
+   * When non-null, key values for this row range are being resolved
+   * asynchronously by `IrisGrid.resolveKeyedSelection`.
+   */
+  pendingRows?: GridRange | null;
+  /**
+   * Serialized key of the shift-click / drag anchor. Drift-immune across
+   * ticks: `getGestureAnchor` scans the viewport for the row currently
+   * holding this key.
+   */
+  anchorKey?: string | null;
+  /** Raw key-column values captured with the anchor at click time. */
+  anchorValues?: readonly unknown[] | null;
+  /**
+   * Anchor row at click time. Fallback for `getGestureAnchor` when the
+   * anchor key has scrolled out of the viewport.
+   */
+  anchorRow?: GridRangeIndex;
+  /**
+   * Endpoint key data captured at click time; merged into `resolve()` so
+   * shift-click endpoints survive fetch-time drift.
+   */
+  endpointKeyData?: ReadonlyMap<string, readonly unknown[]>;
+  /**
+   * Non-null when the anchor scrolled out of the viewport at commit time.
+   * `IrisGrid.resolveKeyedSelection` seeks the anchor's current row via
+   * `fetchRowForKey` before fetching so the range endpoints line up with
+   * the user's intent.
+   */
+  pendingAnchorLookup?: {
+    values: readonly unknown[];
+    targetRow: VisibleIndex;
+  } | null;
+};
+
+/**
  * Immutable `Selection` for keyed tables: identifies rows by their
  * serialized key-column values rather than raw row indices, so the
  * selection survives ticks that shuffle row positions.
@@ -39,102 +118,67 @@ export function serializeKeyValues(values: readonly unknown[]): string {
  */
 export class KeyedSelection implements Selection {
   static empty(getModel: GetKeyedModel): KeyedSelection {
-    return new KeyedSelection(getModel, new Set());
+    return new KeyedSelection({ getModel });
   }
+
+  private readonly getModel: GetKeyedModel;
+
+  readonly selectedKeys: ReadonlySet<string>;
+
+  private readonly overlayRanges: readonly GridRange[];
+
+  readonly invertedSelection: boolean;
+
+  private readonly lastSingleRow: VisibleIndex | null;
+
+  readonly selectedKeyValues: ReadonlyMap<string, readonly unknown[]>;
+
+  readonly maxRows: number | null;
+
+  readonly pendingRows: GridRange | null;
+
+  private readonly anchorKey: string | null;
+
+  private readonly anchorValues: readonly unknown[] | null;
+
+  private readonly anchorRow: GridRangeIndex;
+
+  readonly endpointKeyData: ReadonlyMap<string, readonly unknown[]>;
+
+  readonly pendingAnchorLookup: {
+    values: readonly unknown[];
+    targetRow: VisibleIndex;
+  } | null;
 
   /** Keys derived from the current overlay range's viewport-visible rows. */
   private readonly gestureKeys: ReadonlySet<string>;
 
-  constructor(
-    /**
-     * Deferred lookup for the current `KeyedGridModel`. Passed as a closure
-     * (not a direct reference) so this Selection always reads the model
-     * currently on `Grid.props.model` — surviving prop swaps without holding
-     * a stale reference.
-     */
-    private readonly getModel: GetKeyedModel,
-    /**
-     * Serialized keys that identify the committed selection. Interpreted
-     * as an inclusion set by default; as an exclusion set when
-     * `invertedSelection` is true.
-     */
-    readonly selectedKeys: ReadonlySet<string>,
-    /**
-     * Ranges from the in-progress mouse gesture. Cleared on commit; used
-     * to render an overlay before the gesture settles.
-     */
-    private readonly overlayRanges: readonly GridRange[] = EMPTY_ARRAY,
-    /**
-     * When true, `selectedKeys` is an exclusion set: all rows are selected
-     * EXCEPT those in the set.
-     */
-    readonly invertedSelection: boolean = false,
-    /**
-     * Last committed single-row position; best-effort, may be stale after
-     * table ticks. Consumed by `getLastSingleSelectedRow` (drives gotoRow).
-     */
-    private readonly lastSingleRow: VisibleIndex | null = null,
-    /**
-     * Raw key-column values for each committed key; used for server-side
-     * filter construction (e.g. `buildKeyFilter`).
-     */
-    readonly selectedKeyValues: ReadonlyMap<
-      string,
-      readonly unknown[]
-    > = EMPTY_MAP,
-    /**
-     * When non-null, limits snapshot results to this many rows via the
-     * viewport subscription.
-     */
-    readonly maxRows: number | null = null,
-    /**
-     * When non-null, key values for this row range are being resolved
-     * asynchronously by `IrisGrid.resolveKeyedSelection`.
-     */
-    readonly pendingRows: GridRange | null = null,
-    /**
-     * Serialized key of the shift-click / drag anchor. Drift-immune across
-     * ticks: `getGestureAnchor` scans the viewport for the row currently
-     * holding this key.
-     */
-    private readonly anchorKey: string | null = null,
-    /** Raw key-column values captured with the anchor at click time. */
-    private readonly anchorValues: readonly unknown[] | null = null,
-    /**
-     * Anchor row at click time. Fallback for `getGestureAnchor` when the
-     * anchor key has scrolled out of the viewport.
-     */
-    private readonly anchorRow: GridRangeIndex = null,
-    /**
-     * Endpoint key data captured at click time; merged into `resolve()` so
-     * shift-click endpoints survive fetch-time drift.
-     */
-    readonly endpointKeyData: ReadonlyMap<
-      string,
-      readonly unknown[]
-    > = EMPTY_MAP,
-    /**
-     * Non-null when the anchor scrolled out of the viewport at commit time.
-     * `IrisGrid.resolveKeyedSelection` seeks the anchor's current row via
-     * `fetchRowForKey` before fetching so the range endpoints line up with
-     * the user's intent.
-     */
-    readonly pendingAnchorLookup: {
-      values: readonly unknown[];
-      targetRow: VisibleIndex;
-    } | null = null
-  ) {
+  constructor(options: KeyedSelectionOptions) {
+    this.getModel = options.getModel;
+    this.selectedKeys = options.selectedKeys ?? new Set();
+    this.overlayRanges = options.overlayRanges ?? EMPTY_ARRAY;
+    this.invertedSelection = options.invertedSelection ?? false;
+    this.lastSingleRow = options.lastSingleRow ?? null;
+    this.selectedKeyValues = options.selectedKeyValues ?? EMPTY_MAP;
+    this.maxRows = options.maxRows ?? null;
+    this.pendingRows = options.pendingRows ?? null;
+    this.anchorKey = options.anchorKey ?? null;
+    this.anchorValues = options.anchorValues ?? null;
+    this.anchorRow = options.anchorRow ?? null;
+    this.endpointKeyData = options.endpointKeyData ?? EMPTY_MAP;
+    this.pendingAnchorLookup = options.pendingAnchorLookup ?? null;
+
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
-    if (overlayRanges.length === 0) {
+    if (this.overlayRanges.length === 0) {
       this.gestureKeys = new Set();
     } else {
       const model = this.getModel();
       const viewTop = model.viewport?.top ?? 0;
       const viewBottom = model.viewport?.bottom ?? 0;
       const keys = new Set<string>();
-      for (let i = 0; i < overlayRanges.length; i += 1) {
-        const { startRow, endRow } = overlayRanges[i];
+      for (let i = 0; i < this.overlayRanges.length; i += 1) {
+        const { startRow, endRow } = this.overlayRanges[i];
         if (startRow == null) continue; // eslint-disable-line no-continue
         const last = endRow ?? startRow;
         const clampedStart = Math.max(startRow, viewTop);
@@ -145,6 +189,30 @@ export class KeyedSelection implements Selection {
       }
       this.gestureKeys = keys;
     }
+  }
+
+  /**
+   * Returns a copy of this selection with the given fields overridden.
+   * Unspecified fields carry through; pass `null` (or an empty
+   * set/map/false) to explicitly clear a field.
+   */
+  private copyWith(overrides: Partial<KeyedSelectionOptions>): KeyedSelection {
+    return new KeyedSelection({
+      getModel: this.getModel,
+      selectedKeys: this.selectedKeys,
+      overlayRanges: this.overlayRanges,
+      invertedSelection: this.invertedSelection,
+      lastSingleRow: this.lastSingleRow,
+      selectedKeyValues: this.selectedKeyValues,
+      maxRows: this.maxRows,
+      pendingRows: this.pendingRows,
+      anchorKey: this.anchorKey,
+      anchorValues: this.anchorValues,
+      anchorRow: this.anchorRow,
+      endpointKeyData: this.endpointKeyData,
+      pendingAnchorLookup: this.pendingAnchorLookup,
+      ...overrides,
+    });
   }
 
   /** Returns both the serialized key and the raw values for a visible row. */
@@ -207,38 +275,27 @@ export class KeyedSelection implements Selection {
 
   // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
   // so drag and shift-click commit with the overlay as a fresh selection.
+  // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
+  // so drag and shift-click commit with the overlay as a fresh selection.
   withMouseGestureRanges(
     ranges: readonly GridRange[],
     isReplacing = false
   ): KeyedSelection {
     if (isReplacing) {
-      return new KeyedSelection(
-        this.getModel,
-        new Set(),
-        ranges,
-        false,
-        null,
-        EMPTY_MAP,
-        this.maxRows,
-        null,
-        this.anchorKey,
-        this.anchorValues,
-        this.anchorRow
-      );
+      return this.copyWith({
+        selectedKeys: new Set(),
+        overlayRanges: ranges,
+        invertedSelection: false,
+        lastSingleRow: null,
+        selectedKeyValues: EMPTY_MAP,
+        pendingRows: null,
+      });
     }
-    return new KeyedSelection(
-      this.getModel,
-      this.selectedKeys,
-      ranges,
-      this.invertedSelection,
-      null,
-      this.selectedKeyValues,
-      this.maxRows,
-      null,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow
-    );
+    return this.copyWith({
+      overlayRanges: ranges,
+      lastSingleRow: null,
+      pendingRows: null,
+    });
   }
 
   withGestureAnchor(
@@ -254,21 +311,11 @@ export class KeyedSelection implements Selection {
       nextValues = values;
     }
     if (nextKey === this.anchorKey && row === this.anchorRow) return this;
-    return new KeyedSelection(
-      this.getModel,
-      this.selectedKeys,
-      this.overlayRanges,
-      this.invertedSelection,
-      this.lastSingleRow,
-      this.selectedKeyValues,
-      this.maxRows,
-      this.pendingRows,
-      nextKey,
-      nextValues,
-      row,
-      this.endpointKeyData,
-      this.pendingAnchorLookup
-    );
+    return this.copyWith({
+      anchorKey: nextKey,
+      anchorValues: nextValues,
+      anchorRow: row,
+    });
   }
 
   getGestureAnchor(): {
@@ -347,19 +394,13 @@ export class KeyedSelection implements Selection {
           nextKeyValues.set(k, values);
         }
       });
-      return new KeyedSelection(
-        this.getModel,
-        next,
-        EMPTY_ARRAY,
-        this.invertedSelection,
-        null,
-        nextKeyValues,
-        this.maxRows,
-        null,
-        this.anchorKey,
-        this.anchorValues,
-        this.anchorRow
-      );
+      return this.copyWith({
+        selectedKeys: next,
+        overlayRanges: EMPTY_ARRAY,
+        lastSingleRow: null,
+        selectedKeyValues: nextKeyValues,
+        pendingRows: null,
+      });
     }
 
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
@@ -380,19 +421,14 @@ export class KeyedSelection implements Selection {
           const { key: k, values } = this.getRowKeyData(r);
           nextKeyValues.set(k, values);
         }
-        return new KeyedSelection(
-          this.getModel,
-          new Set(nextKeyValues.keys()),
-          EMPTY_ARRAY,
-          false,
-          null,
-          nextKeyValues,
-          this.maxRows,
-          null,
-          this.anchorKey,
-          this.anchorValues,
-          this.anchorRow
-        );
+        return this.copyWith({
+          selectedKeys: new Set(nextKeyValues.keys()),
+          overlayRanges: EMPTY_ARRAY,
+          invertedSelection: false,
+          lastSingleRow: null,
+          selectedKeyValues: nextKeyValues,
+          pendingRows: null,
+        });
       }
 
       // Slow path: async resolve. Endpoints are needed even if the fetch is
@@ -419,21 +455,15 @@ export class KeyedSelection implements Selection {
           ? { values: this.anchorValues, targetRow }
           : null;
 
-      return new KeyedSelection(
-        this.getModel,
-        new Set(),
-        this.overlayRanges,
-        false,
-        null,
-        EMPTY_MAP,
-        this.maxRows,
-        new GridRange(null, first, null, last),
-        this.anchorKey,
-        this.anchorValues,
-        this.anchorRow,
-        endpoints,
-        pendingAnchorLookup
-      );
+      return this.copyWith({
+        selectedKeys: new Set(),
+        invertedSelection: false,
+        lastSingleRow: null,
+        selectedKeyValues: EMPTY_MAP,
+        pendingRows: new GridRange(null, first, null, last),
+        endpointKeyData: endpoints,
+        pendingAnchorLookup,
+      });
     }
     const [row] = rows;
     const { key: k, values } = this.getRowKeyData(row);
@@ -453,48 +483,41 @@ export class KeyedSelection implements Selection {
     }
     // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
     const singleRow = next.size === 1 && rows.length === 1 ? rows[0] : null;
-    return new KeyedSelection(
-      this.getModel,
-      next,
-      EMPTY_ARRAY,
-      false,
-      singleRow,
-      nextKeyValues,
-      this.maxRows,
-      null,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow
-    );
+    return this.copyWith({
+      selectedKeys: next,
+      overlayRanges: EMPTY_ARRAY,
+      invertedSelection: false,
+      lastSingleRow: singleRow,
+      selectedKeyValues: nextKeyValues,
+      pendingRows: null,
+    });
   }
 
   clear(): KeyedSelection {
-    return new KeyedSelection(this.getModel, new Set());
+    return new KeyedSelection({ getModel: this.getModel });
   }
 
   // Shift+click needs a clean slate so the range replaces rather than extends the old keys.
   // Anchor is preserved so shift+click's extend reads it after the trim.
   trimmed(): KeyedSelection {
-    return new KeyedSelection(
-      this.getModel,
-      new Set(),
-      EMPTY_ARRAY,
-      false,
-      null,
-      EMPTY_MAP,
-      null,
-      null,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow
-    );
+    return this.copyWith({
+      selectedKeys: new Set(),
+      overlayRanges: EMPTY_ARRAY,
+      invertedSelection: false,
+      lastSingleRow: null,
+      selectedKeyValues: EMPTY_MAP,
+      maxRows: null,
+      pendingRows: null,
+      endpointKeyData: EMPTY_MAP,
+      pendingAnchorLookup: null,
+    });
   }
 
   // Always returns non-inverted; switching to a new selection exits inverted mode.
   withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
     // Replacement semantics: discard previous selection and select exactly these rows.
     if (ranges.length === 0) {
-      return new KeyedSelection(this.getModel, new Set());
+      return new KeyedSelection({ getModel: this.getModel });
     }
     const rows: VisibleIndex[] = [];
     for (let i = 0; i < ranges.length; i += 1) {
@@ -506,7 +529,7 @@ export class KeyedSelection implements Selection {
       }
     }
     if (rows.length === 0) {
-      return new KeyedSelection(this.getModel, new Set());
+      return new KeyedSelection({ getModel: this.getModel });
     }
     const next = new Set<string>();
     const nextKeyValues = new Map<string, readonly unknown[]>();
@@ -515,39 +538,25 @@ export class KeyedSelection implements Selection {
       next.add(k);
       nextKeyValues.set(k, values);
     });
-    return new KeyedSelection(
-      this.getModel,
-      next,
-      EMPTY_ARRAY,
-      false,
-      null,
-      nextKeyValues
-    );
+    return new KeyedSelection({
+      getModel: this.getModel,
+      selectedKeys: next,
+      selectedKeyValues: nextKeyValues,
+    });
   }
 
   // Sets invertedSelection=true with an empty exclusion set (all rows selected).
   // eslint-disable-next-line class-methods-use-this
   selectAll(): KeyedSelection {
-    return new KeyedSelection(this.getModel, new Set(), EMPTY_ARRAY, true);
+    return new KeyedSelection({
+      getModel: this.getModel,
+      invertedSelection: true,
+    });
   }
 
   truncate(maxRows: number): KeyedSelection {
     if (maxRows === this.maxRows) return this;
-    return new KeyedSelection(
-      this.getModel,
-      this.selectedKeys,
-      this.overlayRanges,
-      this.invertedSelection,
-      this.lastSingleRow,
-      this.selectedKeyValues,
-      maxRows,
-      this.pendingRows,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow,
-      this.endpointKeyData,
-      this.pendingAnchorLookup
-    );
+    return this.copyWith({ maxRows });
   }
 
   /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
@@ -564,19 +573,17 @@ export class KeyedSelection implements Selection {
       if (excludedEndpoints?.has(key) === true) return;
       if (!merged.has(key)) merged.set(key, values);
     });
-    return new KeyedSelection(
-      this.getModel,
-      new Set(merged.keys()),
-      EMPTY_ARRAY,
-      false,
-      null,
-      merged,
-      null,
-      null,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow
-    );
+    return this.copyWith({
+      selectedKeys: new Set(merged.keys()),
+      overlayRanges: EMPTY_ARRAY,
+      invertedSelection: false,
+      lastSingleRow: null,
+      selectedKeyValues: merged,
+      maxRows: null,
+      pendingRows: null,
+      endpointKeyData: EMPTY_MAP,
+      pendingAnchorLookup: null,
+    });
   }
 
   /**
@@ -606,19 +613,15 @@ export class KeyedSelection implements Selection {
       next.add(key);
       nextKeyValues.set(key, values);
     }
-    return new KeyedSelection(
-      this.getModel,
-      next,
-      EMPTY_ARRAY,
-      this.invertedSelection,
-      null,
-      nextKeyValues,
-      this.maxRows,
-      null,
-      this.anchorKey,
-      this.anchorValues,
-      this.anchorRow
-    );
+    return this.copyWith({
+      selectedKeys: next,
+      overlayRanges: EMPTY_ARRAY,
+      lastSingleRow: null,
+      selectedKeyValues: nextKeyValues,
+      pendingRows: null,
+      endpointKeyData: EMPTY_MAP,
+      pendingAnchorLookup: null,
+    });
   }
 }
 

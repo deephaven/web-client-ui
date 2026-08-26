@@ -944,14 +944,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         const values = keyIndices.map(i => model.valueForCell(i, modelRow));
         const key = serializeKeyValues(values);
         const keyValues = new Map<string, readonly unknown[]>([[key, values]]);
-        effectiveSelection = new KeyedSelection(
-          getModel as GetKeyedModel,
-          new Set([key]),
-          [],
-          false,
-          rowIndex,
-          keyValues
-        );
+        effectiveSelection = new KeyedSelection({
+          getModel: getModel as GetKeyedModel,
+          selectedKeys: new Set([key]),
+          lastSingleRow: rowIndex,
+          selectedKeyValues: keyValues,
+        });
       } else if (isEditableGridModel(model) && model.isEditable) {
         // Input tables: single-cell selection (editable rows are cell-granular).
         effectiveSelection = new RangedSelection(

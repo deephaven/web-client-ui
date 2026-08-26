@@ -43,15 +43,13 @@ function keyedSel(
   maxRows: number | null = null
 ) {
   const getModel: GetKeyedModel = () => makeModel() as never;
-  return new KeyedSelection(
+  return new KeyedSelection({
     getModel,
-    new Set(keyValues.keys()),
-    [],
+    selectedKeys: new Set(keyValues.keys()),
     invertedSelection,
-    null,
-    keyValues,
-    maxRows
-  );
+    selectedKeyValues: keyValues,
+    maxRows,
+  });
 }
 
 // ─── snapshotFromSelection ────────────────────────────────────────────────────
