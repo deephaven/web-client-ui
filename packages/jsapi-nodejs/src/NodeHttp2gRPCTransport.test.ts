@@ -11,14 +11,15 @@ Log.setLogLevel(-1);
 
 const NODE_DEFAULT_WINDOW_SIZE = 65535;
 
-const RESPONSE_CHUNK = Buffer.alloc(1024, 1);
+const RESPONSE_WRITE_CHUNK = Buffer.alloc(1024, 1);
+const RESPONSE_END_CHUNK = Buffer.alloc(1024, 2);
 
 const servers: http2.Http2Server[] = [];
 
 function respondWithChunks(stream: http2.ServerHttp2Stream): void {
   stream.respond({ ':status': 200, 'content-type': 'application/grpc' });
-  stream.write(RESPONSE_CHUNK);
-  stream.end(RESPONSE_CHUNK);
+  stream.write(RESPONSE_WRITE_CHUNK);
+  stream.end(RESPONSE_END_CHUNK);
 }
 
 async function startServer(
@@ -361,7 +362,9 @@ describe('requests', () => {
       (total, [chunk]: [Uint8Array]) => total + chunk.length,
       0
     );
-    expect(byteCount).toEqual(RESPONSE_CHUNK.length * 2);
+    expect(byteCount).toEqual(
+      RESPONSE_WRITE_CHUNK.length + RESPONSE_END_CHUNK.length
+    );
   });
 });
 
