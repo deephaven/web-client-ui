@@ -333,6 +333,10 @@ export interface IrisGridProps {
   userRowHeights: ReadonlyMap<ModelIndex, number>;
   /** @deprecated Use onSelectionChange instead. */
   onSelectionChanged?: (gridRanges: readonly GridRange[]) => void;
+  /**
+   * Called when the selection changes.
+   * @param selection The new selection state as a `Selection` object.
+   */
   onSelectionChange?: (selection: Selection) => void;
   rollupConfig?: UIRollupConfig;
   aggregationSettings: AggregationSettings;
