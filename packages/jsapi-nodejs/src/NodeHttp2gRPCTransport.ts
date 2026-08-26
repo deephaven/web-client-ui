@@ -183,11 +183,13 @@ export class NodeHttp2gRPCTransport implements GrpcTransport {
             session.setLocalWindowSize(localWindowSize);
           }
         } catch (err) {
-          NodeHttp2gRPCTransport.logSession(origin, 'error', {
-            error: new Error('Failed to set session window size', {
-              cause: err,
-            }),
-          });
+          // Assigned instead of passed to the `Error` constructor, which only
+          // accepts `cause` as of Node 16.9 and would silently drop it on the
+          // Node 16 this package still supports.
+          const error = new Error('Failed to set session window size');
+          error.cause = err;
+
+          NodeHttp2gRPCTransport.logSession(origin, 'error', { error });
         }
 
         NodeHttp2gRPCTransport.logSession(origin, 'connect', {
