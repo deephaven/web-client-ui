@@ -122,7 +122,6 @@ import {
   IrisGridDataSelectMouseHandler,
   IrisGridPartitionedTableMouseHandler,
   IrisGridFilterMouseHandler,
-  IrisGridKeyedAnchorMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
   IrisGridTokenMouseHandler,
@@ -805,7 +804,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new ClearFilterKeyHandler(this),
     ];
     const mouseHandlers: MouseHandlersProp = [
-      new IrisGridKeyedAnchorMouseHandler(this),
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -3717,35 +3715,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onSelectionChange?.(selection);
     if (selection instanceof KeyedSelection && selection.pendingRows != null) {
       this.resolveKeyedSelection(selection);
-    }
-  }
-
-  /**
-   * After a tick, find where the single committed key currently sits and update
-   * the grid's selection anchor so shift-click extends from the right row.
-   */
-  refreshKeyedSelectionAnchor(): void {
-    const { model } = this.props;
-    const selection = this.grid?.getSelection();
-    if (
-      !(selection instanceof KeyedSelection) ||
-      selection.selectedKeys.size !== 1 ||
-      selection.pendingRows != null ||
-      selection.invertedSelection ||
-      !isKeyedGridModel(model)
-    ) {
-      return;
-    }
-    const { top, bottom } = model.viewport ?? {};
-    if (top == null || bottom == null) return;
-    const currentAnchor = this.grid?.state.selectionStartRow;
-    for (let r = top; r <= bottom; r += 1) {
-      if (selection.isRowSelected(r)) {
-        if (r !== currentAnchor) {
-          this.grid?.setSelectedRanges([new GridRange(null, r, null, r)]);
-        }
-        break;
-      }
     }
   }
 
