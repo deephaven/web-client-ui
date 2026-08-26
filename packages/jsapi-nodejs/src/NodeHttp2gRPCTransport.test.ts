@@ -497,6 +497,46 @@ describe('session logging', () => {
     }
   });
 
+  it('should report a failed window change with its cause', async () => {
+    const origin = await startServer();
+    const { infoByEvent, unsubscribe } = trackSessionInfo();
+
+    try {
+      const transport = createTransport(
+        NodeHttp2gRPCTransport.createFactory({
+          sessionLocalWindowSize: 2 * 1024 * 1024,
+        }),
+        origin
+      );
+      const session = getSession(transport);
+      const cause = new Error('setLocalWindowSize failed');
+
+      // Config out of Node's range is rejected up front, so the only way left
+      // in is a throw from the call itself. Installed synchronously, before
+      // `connect` can fire.
+      jest.spyOn(session, 'setLocalWindowSize').mockImplementation(() => {
+        throw cause;
+      });
+
+      await waitForLocalSettings(session);
+
+      expect(infoByEvent('error')?.error?.message).toEqual(
+        'Failed to set session window size'
+      );
+      expect(infoByEvent('error')?.error?.cause).toBe(cause);
+
+      // The session still connects, but silently at Node's default rather than
+      // the 2MB that was asked for — which is what the error log is there for
+      expect(infoByEvent('connect')).toEqual({
+        origin,
+        event: 'connect',
+        effectiveLocalWindowSize: NODE_DEFAULT_WINDOW_SIZE,
+      });
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it('should log the stream window only once it has been applied', async () => {
     const origin = await startServer();
     const { infoByEvent, unsubscribe } = trackSessionInfo();
