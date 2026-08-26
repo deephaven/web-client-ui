@@ -65,7 +65,6 @@ import {
 import {
   assertNotNull,
   type CancelablePromise,
-  EMPTY_ARRAY,
   type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
