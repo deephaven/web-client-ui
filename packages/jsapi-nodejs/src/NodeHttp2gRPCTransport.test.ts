@@ -497,7 +497,7 @@ describe('session logging', () => {
     }
   });
 
-  it('should log the peer settings the peer actually advertised', async () => {
+  it('should log the peer settings once the peer has advertised them', async () => {
     const origin = await startServer(respondWithChunks, {
       initialWindowSize: 3 * 1024 * 1024,
       maxConcurrentStreams: 77,
@@ -517,11 +517,6 @@ describe('session logging', () => {
       expect(infoByEvent('remoteSettings')?.remoteMaxConcurrentStreams).toEqual(
         77
       );
-
-      // Node reports an assumption of its own before the peer has spoken
-      expect(
-        infoByEvent('connect')?.remoteMaxConcurrentStreams
-      ).toBeUndefined();
     } finally {
       unsubscribe();
     }
@@ -544,6 +539,13 @@ describe('session logging', () => {
       expect(infoByEvent('connect')?.effectiveLocalWindowSize).toEqual(
         2 * 1024 * 1024
       );
+
+      // Omitted at `connect`, where Node would report an assumption of its own
+      // rather than anything the peer advertised
+      expect(
+        infoByEvent('connect')?.remoteMaxConcurrentStreams
+      ).toBeUndefined();
+      expect(infoByEvent('connect')?.remoteInitialWindowSize).toBeUndefined();
 
       // Nothing is readable off a destroyed session, so `close` reports none of it
       expect(infoByEvent('close')?.effectiveLocalWindowSize).toBeUndefined();
