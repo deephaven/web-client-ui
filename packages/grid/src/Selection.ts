@@ -32,8 +32,17 @@ export interface Selection {
   trimmed: () => Selection;
   /** Returns a new Selection generated from the supplied ranges */
   withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
-  /** Applies mouse gesture ranges to this selection. */
-  withMouseGestureRanges: (ranges: readonly GridRange[]) => Selection;
+  /**
+   * Applies mouse gesture ranges to this selection. When `isReplacing` is
+   * true the caller intends the overlay to replace the current selection
+   * (drag / shift+click); implementations that would otherwise carry
+   * previously-committed selection state (e.g. `KeyedSelection.selectedKeys`)
+   * should drop it. Ignored by `RangedSelection`.
+   */
+  withMouseGestureRanges: (
+    ranges: readonly GridRange[],
+    isReplacing?: boolean
+  ) => Selection;
   /**
    * Commits the current mouse gesture and returns the settled selection.
    * Returns this (identity) when there is nothing to commit.

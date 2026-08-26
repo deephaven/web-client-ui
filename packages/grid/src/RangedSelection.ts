@@ -104,7 +104,10 @@ export class RangedSelection implements Selection {
   }
 
   // Preserves the gesture anchor so mid-drag range updates don't clobber the shift-click origin.
-  withMouseGestureRanges(ranges: readonly GridRange[]): RangedSelection {
+  withMouseGestureRanges(
+    ranges: readonly GridRange[],
+    _isReplacing?: boolean
+  ): RangedSelection {
     // Identity check keeps the same object for commitMouseGesture's no-op path.
     // This allows Grid.commitSelection to recognize that no changes have occurred.
     if (ranges === this.ranges) return this;

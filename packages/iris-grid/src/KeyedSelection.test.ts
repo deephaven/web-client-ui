@@ -233,6 +233,20 @@ describe('withMouseGestureRanges', () => {
     // Row 5 in gestureKeys via overlay
     expect(sel.isRowSelected(5)).toBe(true);
   });
+
+  it('drops selectedKeys / invertedSelection when isReplacing is true', () => {
+    // Simulates a drag step from a committed single-key selection: the overlay
+    // should replace rather than merge with the prior committed keys.
+    const sel = singleRow(2).withMouseGestureRanges(
+      [new GridRange(null, 5, null, 5)],
+      true
+    );
+    expect(sel.selectedKeys.size).toBe(0);
+    expect(sel.selectedKeyValues.size).toBe(0);
+    expect(sel.invertedSelection).toBe(false);
+    // Overlay still previews via gestureKeys.
+    expect(sel.isRowSelected(5)).toBe(true);
+  });
 });
 
 // ─── truncate ────────────────────────────────────────────────────────────────
@@ -506,6 +520,23 @@ describe('commitMouseGesture', () => {
     );
     const result = withOverlay.commitMouseGesture(last, false);
     expect(result.isRowSelected(3)).toBe(false);
+  });
+
+  it('replaces prior committed keys on drag (isReplacing=true via withMouseGestureRanges)', () => {
+    // Reproduces the drag bug: prior commit selected key 2; drag extends to
+    // row 5. Without isReplacing the ctrl+click toggle path fires and
+    // fragments the selection. With isReplacing, the overlay replaces the
+    // prior committed keys wholesale.
+    const priorCommit = singleRow(2);
+    const dragOverlay = priorCommit.withMouseGestureRanges(
+      [new GridRange(null, 2, null, 5)],
+      true
+    );
+    const result = dragOverlay.commitMouseGesture(priorCommit, false);
+    for (let r = 2; r <= 5; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    expect(result.selectedKeys.size).toBe(4);
   });
 
   it('sets pendingAnchorLookup when the anchor is out of viewport', () => {

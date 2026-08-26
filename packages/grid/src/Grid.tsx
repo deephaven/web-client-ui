@@ -1243,7 +1243,12 @@ class Grid extends PureComponent<GridProps, GridState> {
         } else {
           newRanges.push(selectedRange);
         }
-        const newSelection = selection.withMouseGestureRanges(newRanges);
+        // drag / shift+click extend by replacing; ctrl+shift+click grows the previous range instead.
+        const isReplacing = !maximizePreviousRange;
+        const newSelection = selection.withMouseGestureRanges(
+          newRanges,
+          isReplacing
+        );
         return {
           selection: newSelection,
           selectedRanges: selectionToRanges(newSelection),

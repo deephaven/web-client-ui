@@ -150,8 +150,27 @@ export class KeyedSelection implements Selection {
     return EMPTY_ARRAY;
   }
 
-  // Preserve invertedSelection through gesture overlay changes
-  withMouseGestureRanges(ranges: readonly GridRange[]): KeyedSelection {
+  // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
+  // so drag and shift-click commit with the overlay as a fresh selection.
+  withMouseGestureRanges(
+    ranges: readonly GridRange[],
+    isReplacing = false
+  ): KeyedSelection {
+    if (isReplacing) {
+      return new KeyedSelection(
+        this.getModel,
+        new Set(),
+        ranges,
+        false,
+        null,
+        EMPTY_MAP,
+        this.maxRows,
+        null,
+        this.anchorKey,
+        this.anchorValues,
+        this.anchorRow
+      );
+    }
     return new KeyedSelection(
       this.getModel,
       this.selectedKeys,
