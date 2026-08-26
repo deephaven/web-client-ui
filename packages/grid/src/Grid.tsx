@@ -73,7 +73,7 @@ import {
 import { type EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
-import { type Selection } from './Selection';
+import { type GetModel, type Selection } from './Selection';
 import {
   RangedSelection,
   isRangedSelection,
@@ -123,7 +123,9 @@ export type GridProps = typeof Grid.defaultProps & {
   mouseHandlers?: readonly GridMouseHandler[];
 
   // Factory that creates an empty Selection; defaults to an empty RangedSelection.
-  createEmptySelection?: (getModel: () => GridModel) => Selection;
+  // Uses a `GetModel` closure (not a direct `model` reference) so Selections
+  // always read the current `props.model` even after prop updates.
+  createEmptySelection?: (getModel: GetModel) => Selection;
 
   // Initial state of moved columns or rows
   movedColumns?: readonly MoveOperation[];
@@ -300,7 +302,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       autoSelectColumn: false,
       autoSelectRow: false,
     } as Partial<GridThemeType>,
-    createEmptySelection: (getModel: () => GridModel): Selection =>
+    createEmptySelection: (getModel: GetModel): Selection =>
       RangedSelection.empty(getModel),
   };
 
