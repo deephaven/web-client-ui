@@ -54,12 +54,17 @@ function makeMetrics({
 }
 
 function renderFallback({
-  getMetrics = () => makeMetrics(),
+  metrics = makeMetrics(),
   revision = 0,
 }: {
-  getMetrics?: () => GridMetrics | null;
+  metrics?: GridMetrics | null;
   revision?: number;
 } = {}) {
+  // The grid reads its metrics from a mutable field, so the getter is stable
+  // while the metrics it returns change with each draw
+  let currentMetrics = metrics;
+  const getMetrics = () => currentMetrics;
+
   const { rerender, ...rest } = render(
     <GridA11yFallback
       model={MODEL}
@@ -70,15 +75,17 @@ function renderFallback({
 
   return {
     ...rest,
-    /** Rerender with the same metrics getter, as the grid does when it updates */
-    rerender: (nextRevision: number) =>
+    /** Redraw with new metrics, as the grid does when it updates */
+    rerender: (nextRevision: number, nextMetrics = currentMetrics) => {
+      currentMetrics = nextMetrics;
       rerender(
         <GridA11yFallback
           model={MODEL}
           getMetrics={getMetrics}
           revision={nextRevision}
         />
-      ),
+      );
+    },
   };
 }
 
@@ -165,14 +172,12 @@ it('exposes the revision of the most recent grid update', () => {
 });
 
 it('describes the new contents each time the grid updates', async () => {
-  let metrics = makeMetrics();
-  const { rerender } = renderFallback({ getMetrics: () => metrics });
+  const { rerender } = renderFallback();
 
   await describeContents();
   expect(screen.getByText('0,0')).toBeInTheDocument();
 
-  metrics = makeMetrics({ rows: [2, 3] });
-  rerender(1);
+  rerender(1, makeMetrics({ rows: [2, 3] }));
 
   expect(screen.queryByText('0,0')).toBeNull();
   expect(screen.getByText('0,2')).toBeInTheDocument();
@@ -195,7 +200,7 @@ it('stops describing the contents when toggled off', async () => {
 });
 
 it('describes nothing when the grid has not drawn yet', async () => {
-  renderFallback({ getMetrics: () => null });
+  renderFallback({ metrics: null });
 
   await describeContents();
 

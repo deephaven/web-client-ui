@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { EMPTY_ARRAY } from '@deephaven/utils';
 import type GridMetrics from './GridMetrics';
 import type GridModel from './GridModel';
@@ -8,14 +8,15 @@ import {
   formatGridA11yRect,
   getGridA11ySummary,
   GRID_A11Y_ATTRIBUTES,
+  type GridA11ySnapshot,
 } from './GridA11yUtils';
 
 export type GridA11yFallbackProps = {
   /** The model being displayed */
   model: GridModel;
 
-  /** The metrics of the most recent render, or null if the grid has not drawn yet */
-  metrics: GridMetrics | null;
+  /** Get the metrics of the most recent draw, or null if the grid has not drawn yet */
+  getMetrics: () => GridMetrics | null;
 
   /** The currently selected ranges */
   selectedRanges?: readonly GridRange[];
@@ -39,24 +40,39 @@ export type GridA11yFallbackProps = {
  */
 export function GridA11yFallback({
   model,
-  metrics,
+  getMetrics,
   selectedRanges = EMPTY_ARRAY,
   revision,
 }: GridA11yFallbackProps): JSX.Element {
   const [showSnapshot, setShowSnapshot] = useState(false);
-  const snapshot = useMemo(() => {
-    if (!showSnapshot) {
-      return;
-    }
-    if (metrics == null) {
+  const [snapshot, setSnapshot] = useState<GridA11ySnapshot | null>(null);
+  const snapshotInputs =
+    useRef<[GridMetrics | null, GridModel, readonly GridRange[]]>();
+
+  // The grid draws in its own `componentDidUpdate`, so a passive effect is the
+  // first point the metrics of the draw that just happened are available. It has
+  // to run after every render, as a draw changes the metrics without changing
+  // any prop, so it bails unless the inputs changed to avoid updating forever.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const metrics = showSnapshot ? getMetrics() : null;
+    const [prevMetrics, prevModel, prevSelectedRanges] =
+      snapshotInputs.current ?? [];
+    if (
+      metrics === prevMetrics &&
+      model === prevModel &&
+      selectedRanges === prevSelectedRanges
+    ) {
       return;
     }
 
-    return createGridA11ySnapshot(model, metrics, selectedRanges);
-    // `revision` changes whenever the grid redraws, which is what makes the
-    // metrics read above stale
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSnapshot, metrics, model, selectedRanges, revision]);
+    snapshotInputs.current = [metrics, model, selectedRanges];
+    setSnapshot(
+      metrics == null
+        ? null
+        : createGridA11ySnapshot(model, metrics, selectedRanges)
+    );
+  });
 
   return (
     <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>

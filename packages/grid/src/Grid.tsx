@@ -2477,7 +2477,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         >
           <GridA11yFallback
             model={model}
-            metrics={this.metrics}
+            getMetrics={this.getMetrics}
             selectedRanges={selectedRanges}
             revision={updateRevision}
           />

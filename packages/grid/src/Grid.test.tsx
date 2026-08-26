@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { fireEvent, render, within } from '@testing-library/react';
+import { act, fireEvent, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
@@ -1533,6 +1533,14 @@ describe('accessibility fallback content', () => {
     );
   }
 
+  function hideContents(component: Grid) {
+    fireEvent.click(
+      getFallback(component).getByRole('button', {
+        name: 'Hide the grid contents',
+      })
+    );
+  }
+
   it('summarizes the size of the grid', () => {
     const component = makeGridComponent(
       new MockGridModel({ rowCount: 100, columnCount: 3 })
@@ -1576,31 +1584,41 @@ describe('accessibility fallback content', () => {
     expect(within(table).getByText('0,0')).toHaveAttribute('data-grid-rect');
   });
 
-  it('increments the revision each time the contents are described', () => {
+  it('exposes the revision of the most recent grid update', () => {
     const component = makeGridComponent();
     const fallback = (component.canvas as unknown as HTMLElement)
       .firstElementChild;
 
     expect(fallback).toHaveAttribute('data-grid-a11y-revision', '0');
 
-    describeContents(component);
+    act(() => {
+      component.forceUpdate();
+    });
     expect(fallback).toHaveAttribute('data-grid-a11y-revision', '1');
-
-    describeContents(component);
-    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '2');
   });
 
-  it('discards the description once the grid scrolls away from it', () => {
+  it('keeps describing the contents as the grid scrolls', () => {
     const component = makeGridComponent();
 
     describeContents(component);
-    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+    expect(getFallback(component).getByText('0,0')).toBeInTheDocument();
 
     fireEvent.wheel(component.canvas as unknown as HTMLElement, {
       deltaY: 500,
     });
 
     expect(component.state.top).toBeGreaterThan(0);
+    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+    expect(getFallback(component).queryByText('0,0')).toBeNull();
+  });
+
+  it('stops describing the contents when toggled off', () => {
+    const component = makeGridComponent();
+
+    describeContents(component);
+    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+
+    hideContents(component);
     expect(getFallback(component).queryByRole('table')).toBeNull();
   });
 
