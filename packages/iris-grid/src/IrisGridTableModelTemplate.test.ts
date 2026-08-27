@@ -183,58 +183,6 @@ describe('fetchKeyValuesForRowRange', () => {
   });
 });
 
-// ─── fetchRowForKey ───────────────────────────────────────────────────────────
-
-describe('fetchRowForKey', () => {
-  let model: IrisGridTableModelTemplate;
-
-  beforeEach(() => {
-    const columns = irisGridTestUtils.makeColumns(3);
-    model = makeModel(columns);
-    (model.table as DhType.Table & { getAttribute: jest.Mock }).getAttribute =
-      jest.fn((attr: string) => (attr === 'keyColumns' ? '0' : null));
-  });
-
-  it('returns { status: "found", row } via seekRow for a single-column key', async () => {
-    const seekRow = jest.fn().mockResolvedValue(42);
-    (model.table as DhType.Table & { seekRow: jest.Mock }).seekRow = seekRow;
-    expect(await model.fetchRowForKey([7])).toEqual({
-      status: 'found',
-      row: 42,
-    });
-    expect(seekRow).toHaveBeenCalledWith(
-      0,
-      model.columns[0],
-      expect.any(String),
-      7
-    );
-  });
-
-  it('returns { status: "gone" } when seekRow returns -1', async () => {
-    (model.table as DhType.Table & { seekRow: jest.Mock }).seekRow = jest
-      .fn()
-      .mockResolvedValue(-1);
-    expect(await model.fetchRowForKey([9999])).toEqual({ status: 'gone' });
-  });
-
-  it('returns { status: "unsupported" } for multi-column keys', async () => {
-    (model.table as DhType.Table & { getAttribute: jest.Mock }).getAttribute =
-      jest.fn((attr: string) => (attr === 'keyColumns' ? '0, 1' : null));
-    const seekRow = jest.fn();
-    (model.table as DhType.Table & { seekRow: jest.Mock }).seekRow = seekRow;
-    expect(await model.fetchRowForKey([1, 2])).toEqual({
-      status: 'unsupported',
-    });
-    expect(seekRow).not.toHaveBeenCalled();
-  });
-
-  it('returns { status: "unsupported" } when the table does not support seekRow', async () => {
-    (model.table as DhType.Table & { seekRow: unknown }).seekRow =
-      undefined as never;
-    expect(await model.fetchRowForKey([7])).toEqual({ status: 'unsupported' });
-  });
-});
-
 // ─── snapshotByKeys ───────────────────────────────────────────────────────────
 
 describe('snapshotByKeys', () => {

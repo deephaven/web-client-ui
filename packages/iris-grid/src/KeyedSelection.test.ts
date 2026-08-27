@@ -330,22 +330,6 @@ describe('resolve', () => {
     const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
     expect(resolved.selectedKeyValues.get(keyOf(0))).toEqual(['fresh']);
   });
-
-  it('skips endpoints listed in excludedEndpoints (removed rows)', () => {
-    const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
-    const pending = new KeyedSelection({
-      getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 1, null, 4),
-      endpointKeyData: endpoints,
-    });
-    const resolved = pending.resolve(
-      new Map([keyValuesOf(1), keyValuesOf(4)]),
-      new Set([keyOf(0)])
-    );
-    expect(resolved.isRowSelected(0)).toBe(false);
-    expect(resolved.isRowSelected(1)).toBe(true);
-    expect(resolved.isRowSelected(4)).toBe(true);
-  });
 });
 
 // ─── getUniqueRowCount ────────────────────────────────────────────────────────
@@ -514,43 +498,6 @@ describe('commitMouseGesture', () => {
       expect(result.isRowSelected(r)).toBe(true);
     }
     expect(result.selectedKeys.size).toBe(4);
-  });
-
-  it('sets pendingAnchorLookup when the anchor is out of viewport', () => {
-    // Viewport 20..30. Anchor key was captured at row 5 (now out of viewport);
-    // user shift-clicks row 25 (in viewport). Slow path fires with lookup.
-    mockModel.viewport = { top: 20, bottom: 30 };
-    const anchoredOverlay = new KeyedSelection({
-      getModel: getKeyedModel,
-      overlayRanges: [new GridRange(null, 5, null, 25)],
-      anchorKey: keyOf(5),
-      anchorValues: [5],
-      anchorRow: 5,
-    });
-    const result = anchoredOverlay.commitMouseGesture(empty(), {
-      autoSelectRow: false,
-    });
-    expect(result.pendingRows).not.toBeNull();
-    expect(result.pendingAnchorLookup).not.toBeNull();
-    expect(result.pendingAnchorLookup?.values).toEqual([5]);
-    expect(result.pendingAnchorLookup?.targetRow).toBe(25);
-  });
-
-  it('leaves pendingAnchorLookup null when the anchor is in viewport', () => {
-    // Viewport 0..10 contains the anchor row 5. Overlay extends to row 50 (OOV).
-    mockModel.viewport = { top: 0, bottom: 10 };
-    const anchoredOverlay = new KeyedSelection({
-      getModel: getKeyedModel,
-      overlayRanges: [new GridRange(null, 5, null, 50)],
-      anchorKey: keyOf(5),
-      anchorValues: [5],
-      anchorRow: 5,
-    });
-    const result = anchoredOverlay.commitMouseGesture(empty(), {
-      autoSelectRow: false,
-    });
-    expect(result.pendingRows).not.toBeNull();
-    expect(result.pendingAnchorLookup).toBeNull();
   });
 });
 

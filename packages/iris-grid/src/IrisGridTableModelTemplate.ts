@@ -29,10 +29,7 @@ import {
   type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
-import {
-  type KeyedGridModel,
-  type FetchRowForKeyResult,
-} from './KeyedGridModel';
+import { type KeyedGridModel } from './KeyedGridModel';
 import { serializeKeyValues } from './KeyedSelection';
 
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -1663,26 +1660,6 @@ class IrisGridTableModelTemplate<
     } finally {
       sub.close();
     }
-  }
-
-  async fetchRowForKey(
-    values: readonly unknown[]
-  ): Promise<FetchRowForKeyResult> {
-    // seekRow only matches on one column, so multi-column keys are not supported.
-    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
-    if (keyColumns.length !== 1 || values.length !== 1) {
-      return { status: 'unsupported' };
-    }
-    const table = this.table as DhType.Table;
-    if (table.seekRow == null) return { status: 'unsupported' };
-    const col = keyColumns[0];
-    const valueType = this.tableUtils.getValueType(
-      col.type
-    ) as DhType.ValueTypeType;
-    const rowIndex = await table.seekRow(0, col, valueType, values[0]);
-    return rowIndex < 0
-      ? { status: 'gone' }
-      : { status: 'found', row: rowIndex };
   }
 
   /**

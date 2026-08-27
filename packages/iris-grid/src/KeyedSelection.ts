@@ -96,16 +96,6 @@ export type KeyedSelectionOptions = {
    * shift-click endpoints survive fetch-time drift.
    */
   endpointKeyData?: ReadonlyMap<string, readonly unknown[]>;
-  /**
-   * Non-null when the anchor scrolled out of the viewport at commit time.
-   * `IrisGrid.resolveKeyedSelection` seeks the anchor's current row via
-   * `fetchRowForKey` before fetching so the range endpoints line up with
-   * the user's intent.
-   */
-  pendingAnchorLookup?: {
-    values: readonly unknown[];
-    targetRow: VisibleIndex;
-  } | null;
 };
 
 /**
@@ -146,11 +136,6 @@ export class KeyedSelection implements Selection {
 
   readonly endpointKeyData: ReadonlyMap<string, readonly unknown[]>;
 
-  readonly pendingAnchorLookup: {
-    values: readonly unknown[];
-    targetRow: VisibleIndex;
-  } | null;
-
   /** Keys derived from the current overlay range's viewport-visible rows. */
   private readonly gestureKeys: ReadonlySet<string>;
 
@@ -167,7 +152,6 @@ export class KeyedSelection implements Selection {
     this.anchorValues = options.anchorValues ?? null;
     this.anchorRow = options.anchorRow ?? null;
     this.endpointKeyData = options.endpointKeyData ?? EMPTY_MAP;
-    this.pendingAnchorLookup = options.pendingAnchorLookup ?? null;
 
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
@@ -211,7 +195,6 @@ export class KeyedSelection implements Selection {
       anchorValues: this.anchorValues,
       anchorRow: this.anchorRow,
       endpointKeyData: this.endpointKeyData,
-      pendingAnchorLookup: this.pendingAnchorLookup,
       ...overrides,
     });
   }
@@ -440,21 +423,10 @@ export class KeyedSelection implements Selection {
       if (this.anchorKey != null && this.anchorValues != null) {
         endpoints.set(this.anchorKey, this.anchorValues);
       }
-      const anchorInViewport =
-        this.anchorKey != null &&
-        this.findKeyInViewport(this.anchorKey) != null;
       const anchorNow = this.getGestureAnchor()?.row;
       const targetRow = anchorNow === last ? first : last;
       const { key: tKey, values: tValues } = this.getRowKeyData(targetRow);
       endpoints.set(tKey, tValues);
-
-      // If the anchor scrolled out of the viewport the row-hint range is
-      // probably stale; ask the resolver to seek the anchor's current row
-      // before fetching so the range endpoints line up with the user's intent.
-      const pendingAnchorLookup =
-        !anchorInViewport && this.anchorKey != null && this.anchorValues != null
-          ? { values: this.anchorValues, targetRow }
-          : null;
 
       return this.copyWith({
         selectedKeys: new Set(),
@@ -463,7 +435,6 @@ export class KeyedSelection implements Selection {
         selectedKeyValues: EMPTY_MAP,
         pendingRows: new GridRange(null, first, null, last),
         endpointKeyData: endpoints,
-        pendingAnchorLookup,
       });
     }
     const [row] = rows;
@@ -510,7 +481,6 @@ export class KeyedSelection implements Selection {
       maxRows: null,
       pendingRows: null,
       endpointKeyData: EMPTY_MAP,
-      pendingAnchorLookup: null,
     });
   }
 
@@ -580,17 +550,11 @@ export class KeyedSelection implements Selection {
   }
 
   /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
-  resolve(
-    keyValues: ReadonlyMap<string, readonly unknown[]>,
-    excludedEndpoints?: ReadonlySet<string>
-  ): KeyedSelection {
+  resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
     // Guarantee the click-time endpoints survive: fetches over a ticking table
     // can miss the anchor / target rows if they scrolled between click and reply.
-    // Callers pass `excludedEndpoints` when an endpoint is known to no longer
-    // exist (e.g. anchor row deleted) so we don't leave phantom keys behind.
     const merged = new Map(keyValues);
     this.endpointKeyData.forEach((values, key) => {
-      if (excludedEndpoints?.has(key) === true) return;
       if (!merged.has(key)) merged.set(key, values);
     });
     return this.copyWith({
@@ -602,7 +566,6 @@ export class KeyedSelection implements Selection {
       maxRows: null,
       pendingRows: null,
       endpointKeyData: EMPTY_MAP,
-      pendingAnchorLookup: null,
     });
   }
 
@@ -640,7 +603,6 @@ export class KeyedSelection implements Selection {
       selectedKeyValues: nextKeyValues,
       pendingRows: null,
       endpointKeyData: EMPTY_MAP,
-      pendingAnchorLookup: null,
     });
   }
 }
