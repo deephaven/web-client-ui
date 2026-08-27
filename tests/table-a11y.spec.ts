@@ -23,13 +23,18 @@ function getCanvas(page: Page): Locator {
 
 /** The fallback content is never painted, so the button cannot be clicked for real */
 async function describeContents(canvas: Locator): Promise<Locator> {
-  const revision = await canvas.getAttribute(ATTRIBUTES.revision);
-  await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
-  await expect(canvas).toHaveAttribute(
-    ATTRIBUTES.revision,
-    String(Number(revision) + 1)
-  );
-  return canvas.locator(`[${ATTRIBUTES.snapshot}]`);
+  const fallback = canvas.locator(`[${ATTRIBUTES.revision}]`);
+  await expect(fallback).toHaveCount(1);
+
+  const button = fallback.locator(`button[${ATTRIBUTES.describe}]`);
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
+  await expect(button).toHaveText('Describe the grid contents');
+  await button.dispatchEvent('click');
+
+  const snapshot = fallback.locator(`[${ATTRIBUTES.snapshot}]`);
+  await expect(snapshot).toHaveCount(1);
+  await expect(button).toHaveText('Hide the grid contents');
+  return snapshot;
 }
 
 test.beforeEach(async ({ page }) => {
@@ -139,18 +144,24 @@ test('reports the position of a cell relative to the canvas', async ({
   expect(y + height).toBeLessThanOrEqual(box.height);
 });
 
-test('discards the description once the grid scrolls', async ({ page }) => {
+test('keeps the description in sync as the grid scrolls', async ({ page }) => {
   await openTable(page, 'simple_table');
   await waitForLoadingDone(page);
 
   const canvas = getCanvas(page);
   const snapshot = await describeContents(canvas);
-  await expect(snapshot).toHaveCount(1);
+  const status = snapshot.locator('p[role="status"]');
+  await expect(status).toHaveText(/Showing rows 1 to \d+/);
 
   await page.locator('.iris-grid .grid-wrapper').hover();
   await page.mouse.wheel(0, 500);
 
-  await expect(snapshot).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const text = (await status.textContent()) ?? '';
+      return Number(/Showing rows (\d+)/.exec(text)?.[1] ?? 0);
+    })
+    .toBeGreaterThan(1);
 });
 
 test('summarizes the current selection', async ({ page }) => {
