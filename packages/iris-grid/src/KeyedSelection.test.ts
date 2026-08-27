@@ -192,6 +192,10 @@ describe('trimmed', () => {
 // ─── withCommittedRanges ────────────────────────────────────────────────────────
 
 describe('withCommittedRanges', () => {
+  afterEach(() => {
+    mockModel.viewport = { top: 0, bottom: ROW_COUNT - 1 };
+  });
+
   it('selects a row that is not already selected', () => {
     const sel = empty().withCommittedRanges([new GridRange(null, 3, null, 3)]);
     expect(sel.isRowSelected(3)).toBe(true);
@@ -207,6 +211,31 @@ describe('withCommittedRanges', () => {
   it('returns an empty selection for empty ranges', () => {
     const sel = singleRow();
     expect(sel.withCommittedRanges([]).isEmpty()).toBe(true);
+  });
+
+  it('resolves synchronously when all rows are in the viewport', () => {
+    mockModel.viewport = { top: 0, bottom: 10 };
+    const sel = empty().withCommittedRanges([new GridRange(null, 2, null, 5)]);
+    expect(sel.pendingRows).toBeNull();
+    expect(sel.selectedKeys.size).toBe(4);
+    for (let r = 2; r <= 5; r += 1) {
+      expect(sel.isRowSelected(r)).toBe(true);
+    }
+  });
+
+  it('defers to async resolution when any row is out of viewport', () => {
+    // Programmatic entry (e.g. Grid.setFocusRow jumping to row 50) must not
+    // synchronously call valueForCell for rows outside the current viewport —
+    // it returns undefined and collapses every off-screen row to the same
+    // phantom [null,...] key.
+    mockModel.viewport = { top: 0, bottom: 10 };
+    const sel = empty().withCommittedRanges([
+      new GridRange(null, 50, null, 50),
+    ]);
+    expect(sel.pendingRows).not.toBeNull();
+    expect(sel.pendingRows?.startRow).toBe(50);
+    expect(sel.pendingRows?.endRow).toBe(50);
+    expect(sel.selectedKeys.size).toBe(0);
   });
 });
 

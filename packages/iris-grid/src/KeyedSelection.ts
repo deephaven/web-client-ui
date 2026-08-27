@@ -532,17 +532,36 @@ export class KeyedSelection implements Selection {
     if (rows.length === 0) {
       return new KeyedSelection({ getModel: this.getModel });
     }
-    const next = new Set<string>();
-    const nextKeyValues = new Map<string, readonly unknown[]>();
-    rows.forEach(r => {
-      const { key: k, values } = this.getRowKeyData(r);
-      next.add(k);
-      nextKeyValues.set(k, values);
-    });
+
+    const first = rows[0];
+    const last = rows[rows.length - 1];
+    const model = this.getModel();
+    const viewTop = model.viewport?.top ?? 0;
+    const viewBottom = model.viewport?.bottom ?? 0;
+
+    // Fast path: entire range fits in the viewport, so valueForCell answers
+    // synchronously with real values.
+    if (first >= viewTop && last <= viewBottom) {
+      const next = new Set<string>();
+      const nextKeyValues = new Map<string, readonly unknown[]>();
+      rows.forEach(r => {
+        const { key: k, values } = this.getRowKeyData(r);
+        next.add(k);
+        nextKeyValues.set(k, values);
+      });
+      return new KeyedSelection({
+        getModel: this.getModel,
+        selectedKeys: next,
+        selectedKeyValues: nextKeyValues,
+      });
+    }
+
+    // Slow path: any row outside the viewport would resolve to a phantom
+    // all-null key via undefined valueForCell reads. Defer to async key fetch;
+    // IrisGrid's onSelectionChange handler picks up pendingRows.
     return new KeyedSelection({
       getModel: this.getModel,
-      selectedKeys: next,
-      selectedKeyValues: nextKeyValues,
+      pendingRows: new GridRange(null, first, null, last),
     });
   }
 
