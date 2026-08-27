@@ -33,7 +33,10 @@ export type CommitMouseGestureOptions = {
  * overlay concept. For `KeyedSelection` they're distinct: overlay ranges
  * drive gesture preview only; committed key sets change on `commitMouseGesture`.
  */
-export interface Selection {
+export interface Selection extends SelectionQueries, SelectionTransforms {}
+
+/** Read-only inspection of a `Selection`. Every method is side-effect-free. */
+export interface SelectionQueries {
   /** True when the selection contains no cells and no in-progress gesture. */
   isEmpty: () => boolean;
   /** True when `(row, column)` is part of the selection. */
@@ -52,6 +55,27 @@ export interface Selection {
   getColumnTickRanges: () => readonly BoundedAxisRange[];
   /** Row `[start, end]` pairs for scrollbar tick rendering. */
   getRowTickRanges: () => readonly BoundedAxisRange[];
+  /**
+   * The single selected visible row, or `null` when zero or multiple rows
+   * are selected. Drives `gotoRow` sync.
+   */
+  getLastSingleSelectedRow: () => VisibleIndex | null;
+  /**
+   * The current `{row, column}` of the gesture anchor, or `null` if none is
+   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
+   * row has scrolled out of the viewport with no row hint fallback).
+   */
+  getGestureAnchor: () => {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null;
+}
+
+/**
+ * Immutable transformations of a `Selection`. Each method returns a new
+ * `Selection`; the receiver is never modified.
+ */
+export interface SelectionTransforms {
   /** A fresh empty selection with no committed state, overlay, or anchor. */
   clear: () => Selection;
   /**
@@ -95,11 +119,6 @@ export interface Selection {
   ) => Selection;
   /** A new selection covering the entire grid. */
   selectAll: () => Selection;
-  /**
-   * The single selected visible row, or `null` when zero or multiple rows
-   * are selected. Drives `gotoRow` sync.
-   */
-  getLastSingleSelectedRow: () => VisibleIndex | null;
   /** A new selection containing at most `maxRows` rows. */
   truncate: (maxRows: number) => Selection;
   /**
@@ -109,13 +128,4 @@ export interface Selection {
    * for both `row` and `column` clears the anchor.
    */
   withGestureAnchor: (row: GridRangeIndex, column: GridRangeIndex) => Selection;
-  /**
-   * The current `{row, column}` of the gesture anchor, or `null` if none is
-   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
-   * row has scrolled out of the viewport with no row hint fallback).
-   */
-  getGestureAnchor: () => {
-    row: GridRangeIndex;
-    column: GridRangeIndex;
-  } | null;
 }
