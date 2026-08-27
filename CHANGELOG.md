@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.5](https://github.com/deephaven/web-client-ui/compare/v1.27.4...v1.27.5) (2026-08-26)
+
+### Bug Fixes
+
+- DH-22976: control IrisGrid sorts and filters ([#2737](https://github.com/deephaven/web-client-ui/issues/2737)) ([7635d2a](https://github.com/deephaven/web-client-ui/commit/7635d2aa0f1b142a852994a326e02d222f522782)), closes [deephaven-plugins#1377](https://github.com/deephaven/deephaven-plugins/issues/1377)
+- DH-23381: Allow Legacy Plugin Menu with Zero Rows ([#2738](https://github.com/deephaven/web-client-ui/issues/2738)) ([9d61493](https://github.com/deephaven/web-client-ui/commit/9d61493e2c0bd50b082f76f87e8d9f2abc37bee0))
+
 ## [1.27.4](https://github.com/deephaven/web-client-ui/compare/v1.27.3...v1.27.4) (2026-08-13)
 
 ### Bug Fixes

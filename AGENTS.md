@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to agents when working with code in this repository.
 
 ## Repo shape
 
@@ -43,3 +43,10 @@ The web UI does not work standalone — it requires a `deephaven-core` server on
 - Lerna versioning is conventional-commits driven; release notes and CHANGELOGs are generated automatically.
 - ESLint extends Airbnb + React; Prettier and Stylelint are wired through `@deephaven/prettier-config` and `@deephaven/stylelint-config`. Run `npm run test:lint` rather than calling eslint/stylelint directly so caching works.
 - New packages: copy `embed-widget` for an app, `components` for a library, then add to root `tsconfig.json` references if it needs to participate in `npm run types`.
+
+### Code Commenting Rules
+
+- **No redundant comments:** Do not repeat the code syntax or describe what a line physically changes.
+- **Describe current functionality:** Do not describe previous bugs in production code.
+- **Comment the "why":** Explain the underlying business logic, non-obvious constraints, or the specific problem the code is solving if necessary.
+- **Keep it functional:** Assume the developer reading the code already understands the programming language and general architecture of the application. Only comment when necessary.

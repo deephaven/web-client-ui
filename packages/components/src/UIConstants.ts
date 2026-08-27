@@ -24,3 +24,19 @@ export const PICKER_ITEM_HEIGHTS = {
 
 export const PICKER_TOP_OFFSET = 4;
 export const TABLE_ROW_HEIGHT = 33;
+
+// Copied from https://github.com/adobe/react-spectrum/blob/main/packages/%40adobe/react-spectrum/src/table/TableViewBase.tsx
+export const TABLE_VIEW_ROW_HEIGHTS = {
+  compact: {
+    medium: 32,
+    large: 40,
+  },
+  regular: {
+    medium: 40,
+    large: 50,
+  },
+  spacious: {
+    medium: 48,
+    large: 60,
+  },
+} as const;

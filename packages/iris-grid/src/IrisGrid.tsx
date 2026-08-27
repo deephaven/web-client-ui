@@ -191,7 +191,6 @@ import type AggregationOperation from './sidebar/aggregations/AggregationOperati
 import { type UIRollupConfig } from './sidebar/RollupRows';
 import {
   type Action,
-  type AdvancedFilterMap,
   type AdvancedFilterOptions,
   type ColumnName,
   type InputFilter,
@@ -254,7 +253,7 @@ export interface IrisGridContextMenuData {
   column: DhType.Column;
   rowIndex: GridRangeIndex;
   columnIndex: GridRangeIndex;
-  modelRow: GridRangeIndex;
+  modelRow?: GridRangeIndex;
   modelColumn: GridRangeIndex;
   selection: Selection | null;
 }
@@ -312,11 +311,15 @@ export interface IrisGridProps {
   partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
   sorts: readonly SortDescriptor[];
+  isSortsControlled: boolean;
+  onSortsChange?: (sorts: readonly SortDescriptor[]) => void;
 
   /** @deprecated use `reverse` instead */
   reverseType?: ReverseType;
   reverse: boolean;
   quickFilters: ReadonlyQuickFilterMap | null;
+  isQuickFiltersControlled: boolean;
+  onQuickFiltersChange?: (quickFilters: ReadonlyQuickFilterMap) => void;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
   settings?: Settings;
@@ -550,8 +553,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     partitions: undefined,
     partitionConfig: undefined,
     quickFilters: EMPTY_MAP,
+    isQuickFiltersControlled: false,
+    onQuickFiltersChange: undefined,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
+    isSortsControlled: false,
+    onSortsChange: undefined,
     reverse: false,
     customColumns: EMPTY_ARRAY,
     aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
@@ -988,6 +995,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters,
       quickFilters,
       sorts,
+      isQuickFiltersControlled,
+      isSortsControlled,
       getMetricCalculator,
     } = this.props;
 
@@ -1041,10 +1050,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (customFilters !== prevProps.customFilters) {
       this.startLoading('Filtering...', { resetRanges: true });
     }
-    if (sorts !== prevProps.sorts) {
+    if (
+      sorts !== prevProps.sorts ||
+      (!prevProps.isSortsControlled && isSortsControlled)
+    ) {
       this.updateSorts(sorts);
     }
-    if (quickFilters !== prevProps.quickFilters) {
+    if (
+      quickFilters !== prevProps.quickFilters ||
+      (!prevProps.isQuickFiltersControlled && isQuickFiltersControlled)
+    ) {
       this.updateQuickFilters(quickFilters);
     }
     const { loadingScrimStartTime, loadingScrimFinishTime } = this;
@@ -1826,28 +1841,30 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       : new Map(advancedFilters);
     const newQuickFilters = replaceExisting ? new Map() : new Map(quickFilters);
 
-    let isChanged = replaceExisting && advancedFilters.size > 0;
+    let didAdvancedFiltersChange = replaceExisting && advancedFilters.size > 0;
+    let didQuickFiltersChange = replaceExisting && quickFilters.size > 0;
     inputFilters.forEach(({ name, type, value }) => {
       const modelIndex = model.columns.findIndex(
         ({ name: columnName, type: columnType }) =>
           columnName === name && columnType === type
       );
       if (modelIndex >= 0) {
-        isChanged = newAdvancedFilters.delete(modelIndex) || isChanged;
-        isChanged =
+        didAdvancedFiltersChange =
+          newAdvancedFilters.delete(modelIndex) || didAdvancedFiltersChange;
+        didQuickFiltersChange =
           this.applyQuickFilter(modelIndex, value, newQuickFilters) ||
-          isChanged;
+          didQuickFiltersChange;
       } else {
         log.error('Unable to find column for inputFilter', name, type, value);
       }
     });
-    if (isChanged) {
-      this.setState({
-        quickFilters: newQuickFilters,
-        advancedFilters: newAdvancedFilters,
-      });
+    if (didQuickFiltersChange) {
+      this.requestQuickFiltersChange(newQuickFilters);
     }
-    return isChanged;
+    if (didAdvancedFiltersChange) {
+      this.setState({ advancedFilters: newAdvancedFilters });
+    }
+    return didQuickFiltersChange || didAdvancedFiltersChange;
   }
 
   /**
@@ -1924,13 +1941,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     log.debug('Setting quick filter', modelIndex, filter, text);
 
-    this.startLoading('Filtering...', { resetRanges: true });
-
-    this.setState(({ quickFilters }) => {
-      const newQuickFilters = new Map(quickFilters);
-      newQuickFilters.set(modelIndex, { filter, text });
-      return { quickFilters: newQuickFilters };
-    });
+    const { quickFilters } = this.state;
+    const newQuickFilters = new Map(quickFilters);
+    newQuickFilters.set(modelIndex, { filter, text });
+    this.requestQuickFiltersChange(newQuickFilters);
   }
 
   /**
@@ -1950,6 +1964,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { model } = this.props;
+    const { quickFilters } = this.state;
+    const newQuickFilters: QuickFilterMap = clearFiltersOnLinkerFilterUpdate
+      ? new Map()
+      : new Map(quickFilters);
+    let didQuickFiltersChange = false;
     filterMap.forEach(({ columnType, filterList }, columnName) => {
       const column = model.columns.find(
         c => c.name === columnName && c.type === columnType
@@ -1964,67 +1983,71 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filterList
       );
       if (combinedText.length === 0) {
-        this.removeQuickFilter(columnIndex);
+        didQuickFiltersChange =
+          newQuickFilters.delete(columnIndex) || didQuickFiltersChange;
       } else {
         const { formatter } = model;
-        this.setQuickFilter(
-          columnIndex,
-          this.makeQuickFilter(column, combinedText, formatter.timeZone),
-          `${combinedText}`
-        );
+        newQuickFilters.set(columnIndex, {
+          filter: this.makeQuickFilter(
+            column,
+            combinedText,
+            formatter.timeZone
+          ),
+          text: `${combinedText}`,
+        });
+        didQuickFiltersChange = true;
       }
     });
+    if (didQuickFiltersChange) {
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
   }
 
   removeColumnFilter(modelRange: ModelIndex | BoundedAxisRange): void {
-    this.startLoading('Filtering...', { resetRanges: true });
-
     const clearRange: BoundedAxisRange = Array.isArray(modelRange)
       ? modelRange
       : [modelRange, modelRange];
-
-    this.setState(
-      ({ advancedFilters, quickFilters }: Partial<IrisGridState>) => {
-        const newAdvancedFilters: AdvancedFilterMap = advancedFilters
-          ? new Map(advancedFilters)
-          : new Map();
-        const newQuickFilters: QuickFilterMap = quickFilters
-          ? new Map(quickFilters)
-          : new Map();
-        newAdvancedFilters.forEach((_, column) => {
-          if (column >= clearRange[0] && column <= clearRange[1]) {
-            newAdvancedFilters.delete(column);
-          }
-        });
-        newQuickFilters.forEach((_, column) => {
-          if (column >= clearRange[0] && column <= clearRange[1]) {
-            newQuickFilters.delete(column);
-          }
-        });
-
-        return {
-          quickFilters: newQuickFilters,
-          advancedFilters: newAdvancedFilters,
-        };
+    const { advancedFilters, quickFilters } = this.state;
+    const { isQuickFiltersControlled } = this.props;
+    const newAdvancedFilters = new Map(advancedFilters);
+    const newQuickFilters = new Map(quickFilters);
+    newAdvancedFilters.forEach((_, column) => {
+      if (column >= clearRange[0] && column <= clearRange[1]) {
+        newAdvancedFilters.delete(column);
       }
-    );
+    });
+    newQuickFilters.forEach((_, column) => {
+      if (column >= clearRange[0] && column <= clearRange[1]) {
+        newQuickFilters.delete(column);
+      }
+    });
+
+    const didAdvancedFiltersChange =
+      newAdvancedFilters.size !== advancedFilters.size;
+    const didQuickFiltersChange = newQuickFilters.size !== quickFilters.size;
+    if (didQuickFiltersChange) {
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
+    if (didAdvancedFiltersChange) {
+      if (!didQuickFiltersChange || isQuickFiltersControlled) {
+        this.startLoading('Filtering...', { resetRanges: true });
+      }
+      this.setState({ advancedFilters: newAdvancedFilters });
+    }
   }
 
   removeQuickFilter(modelColumn: ModelIndex): void {
-    this.startLoading('Clearing Filter...', { resetRanges: true });
-
-    this.setState(({ quickFilters }) => {
-      const newQuickFilters = new Map(quickFilters);
-      newQuickFilters.delete(modelColumn);
-
-      return { quickFilters: newQuickFilters };
-    });
+    const { quickFilters } = this.state;
+    const newQuickFilters = new Map(quickFilters);
+    newQuickFilters.delete(modelColumn);
+    this.requestQuickFiltersChange(newQuickFilters);
   }
 
   clearAllFilters(): void {
     log.debug('Clearing all filters');
 
     const { advancedFilters, quickFilters, searchFilter } = this.state;
+    const { isQuickFiltersControlled } = this.props;
     if (
       quickFilters.size === 0 &&
       advancedFilters.size === 0 &&
@@ -2033,16 +2056,25 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
-    // if there is an active quick filter input field, reset it as well
-    this.clearGridInputField();
+    if (quickFilters.size > 0) {
+      this.requestQuickFiltersChange(EMPTY_MAP);
+    }
 
-    this.startLoading('Clearing Filters...', { resetRanges: true });
-    this.setState({
-      quickFilters: new Map(),
-      advancedFilters: new Map(),
-      searchValue: '',
-      searchFilter: undefined,
-    });
+    const hasOtherFilters = advancedFilters.size > 0 || searchFilter != null;
+    if (hasOtherFilters) {
+      if (quickFilters.size === 0 || isQuickFiltersControlled) {
+        this.startLoading('Clearing Filters...', { resetRanges: true });
+      }
+      this.setState({
+        advancedFilters: new Map(),
+        searchValue: '',
+        searchFilter: undefined,
+      });
+    }
+
+    if (!isQuickFiltersControlled) {
+      this.clearGridInputField();
+    }
   }
 
   clearAllAggregations(): void {
@@ -2108,21 +2140,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       });
     });
     this.startLoading('Rebuilding filters...', { resetRanges: true });
-
-    this.setState({
-      quickFilters: newQuickFilters,
-      advancedFilters: newAdvancedFilters,
-    });
+    if (quickFilters.size > 0) {
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
+    this.setState({ advancedFilters: newAdvancedFilters });
   }
 
   setFilters({
     quickFilters,
     advancedFilters,
   }: Pick<IrisGridState, 'quickFilters' | 'advancedFilters'>): void {
-    this.setState({
-      quickFilters,
-      advancedFilters,
-    });
+    this.requestQuickFiltersChange(quickFilters);
+    this.setState({ advancedFilters });
   }
 
   updateFormatterSettings(settings?: Settings, forceUpdate = true): void {
@@ -3046,7 +3075,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         addToExisting
       );
 
-      this.updateSorts(sorts);
+      this.requestSortsChange(sorts);
     } else {
       log.debug('Column type was not sortable', model.columns[columnIndex]);
     }
@@ -3056,6 +3085,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.startLoading('Sorting...');
     this.setState({ sorts });
     this.grid?.forceUpdate();
+  }
+
+  requestSortsChange(sorts: readonly SortDescriptor[]): void {
+    const { isSortsControlled, onSortsChange } = this.props;
+    onSortsChange?.(sorts);
+    if (!isSortsControlled) {
+      this.updateSorts(sorts);
+    }
   }
 
   updateQuickFilters(quickFilters: ReadonlyQuickFilterMap | null): void {
@@ -3071,6 +3108,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.startLoading('Filtering...', { resetRanges: true });
     this.setState({ quickFilters: quickFilters ?? EMPTY_MAP });
     this.grid?.forceUpdate();
+  }
+
+  requestQuickFiltersChange(quickFilters: ReadonlyQuickFilterMap): void {
+    const { isQuickFiltersControlled, onQuickFiltersChange } = this.props;
+    onQuickFiltersChange?.(quickFilters);
+    if (!isQuickFiltersControlled) {
+      this.updateQuickFilters(quickFilters);
+    }
   }
 
   sortColumn(
@@ -3089,9 +3134,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isAbs,
       addToExisting
     );
-    this.startLoading('Sorting...');
-    this.setState({ sorts });
-    this.grid?.forceUpdate();
+    this.requestSortsChange(sorts);
   }
 
   reverse(reverse: boolean): void {
@@ -3359,10 +3402,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
     log.info('Setting table sorts', sorts);
 
-    this.startLoading('Sorting...');
-    this.setState({ sorts });
-
-    this.grid?.forceUpdate();
+    this.requestSortsChange(sorts);
   }
 
   handleAdvancedFilterDone(): void {
@@ -3434,17 +3474,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleFilterBarChange(value: string): void {
-    this.startLoading('Filtering...', { resetRanges: true });
-
-    this.setState(({ focusedFilterBarColumn, quickFilters }) => {
-      const newQuickFilters = new Map(quickFilters);
-      if (focusedFilterBarColumn != null) {
-        const modelIndex = this.getModelColumn(focusedFilterBarColumn);
-        assertNotNull(modelIndex);
-        this.applyQuickFilter(modelIndex, value, newQuickFilters);
-      }
-      return { quickFilters: newQuickFilters };
-    });
+    const { focusedFilterBarColumn, quickFilters } = this.state;
+    const newQuickFilters = new Map(quickFilters);
+    if (focusedFilterBarColumn != null) {
+      const modelIndex = this.getModelColumn(focusedFilterBarColumn);
+      assertNotNull(modelIndex);
+      this.applyQuickFilter(modelIndex, value, newQuickFilters);
+    }
+    this.requestQuickFiltersChange(newQuickFilters);
   }
 
   handleFilterBarDone(setGridFocus = true, defocusInput = true): void {
@@ -3931,17 +3968,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
       if (newSorts.length !== sorts.length) {
         log.debug('removing sorts from removed custom columns...');
-        this.setState({ sorts: newSorts });
+        this.requestSortsChange(newSorts);
       }
       if (
         newQuickFilters.size !== quickFilters.size ||
         newAdvancedFilters.size !== advancedFilters.size
       ) {
         log.debug(`removing filters from removed custom columns...`);
-        this.setState({
-          quickFilters: newQuickFilters,
-          advancedFilters: newAdvancedFilters,
-        });
+        if (newQuickFilters.size !== quickFilters.size) {
+          this.requestQuickFiltersChange(newQuickFilters);
+        }
+        if (newAdvancedFilters.size !== advancedFilters.size) {
+          this.setState({ advancedFilters: newAdvancedFilters });
+        }
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
@@ -4203,6 +4242,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       `Grouping by columns ${rollupConfig?.columns?.join(', ') ?? ''}...`
     );
 
+    this.requestSortsChange(EMPTY_ARRAY);
+
     // Have to clear select distinct since rollup uses the original columns, not the current ones.
     // IrisGridProxyModel has a check to prevent model update
     // when selectDistinctModel is cleared and the rollupConfig is set on the model.
@@ -4210,7 +4251,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       rollupConfig,
       movedColumns: EMPTY_ARRAY,
       frozenColumns: EMPTY_ARRAY,
-      sorts: EMPTY_ARRAY,
       reverse: false,
       selectDistinctColumns: EMPTY_ARRAY,
     });
@@ -4231,10 +4271,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }...`
     );
 
+    this.requestSortsChange(EMPTY_ARRAY);
+
     this.setState({
       selectDistinctColumns: columnNames,
       movedColumns: [],
-      sorts: [],
       reverse: false,
     });
   }
