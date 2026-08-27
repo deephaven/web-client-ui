@@ -32,7 +32,7 @@ export interface KeyedGridModel {
   ) => Promise<unknown[][]>;
 
   /**
-   * Text version of snapshotByKeys: rows tab-separated, columns newline-separated.
+   * Text version of snapshotByKeys: columns tab-separated, rows newline-separated.
    * @param columns The columns to include in the snapshot.
    * @param keyValues A map of key column names to their corresponding values.
    * @param invertedSelection Whether to invert the selection.
