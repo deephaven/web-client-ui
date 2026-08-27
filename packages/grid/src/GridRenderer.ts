@@ -406,6 +406,7 @@ export class GridRenderer {
     if (floatingLeftColumnCount > 0) {
       this.drawSelectedRanges(context, state, {
         left: 0,
+        right: floatingLeftColumnCount - 1,
         maxX:
           getOrThrow(allColumnXs, floatingLeftColumnCount - 1) +
           getOrThrow(allColumnWidths, floatingLeftColumnCount - 1),
