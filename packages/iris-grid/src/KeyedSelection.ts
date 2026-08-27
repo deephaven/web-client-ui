@@ -344,40 +344,50 @@ export class KeyedSelection implements Selection {
     _options: CommitMouseGestureOptions
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
-    const rows: VisibleIndex[] = [];
+
+    // Scan ranges for endpoints and total row count
+    let first: VisibleIndex | null = null;
+    let lastRow: VisibleIndex = 0;
+    let rowCount = 0;
     for (let i = 0; i < this.overlayRanges.length; i += 1) {
       const { startRow, endRow } = this.overlayRanges[i];
       if (startRow == null) continue; // eslint-disable-line no-continue
-      const last = endRow ?? startRow;
-      for (let r = startRow; r <= last; r += 1) {
-        rows.push(r);
-      }
+      const rEnd = endRow ?? startRow;
+      if (first === null) first = startRow;
+      lastRow = rEnd;
+      rowCount += rEnd - startRow + 1;
     }
-    if (rows.length === 0) return this;
+    if (first === null || rowCount === 0) return this;
+
     const next = new Set(this.selectedKeys);
 
     if (this.selectedKeys.size > 0 || this.invertedSelection) {
       // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
       // holds the previous committed keys. Toggle each overlay row individually.
       const nextKeyValues = new Map(this.selectedKeyValues);
-      rows.forEach(r => {
-        const { key: k, values } = this.getRowKeyData(r);
-        if (lastCommitted.isRowSelected(r)) {
-          if (this.invertedSelection) {
-            next.add(k);
-            nextKeyValues.set(k, values);
-          } else {
+      for (let i = 0; i < this.overlayRanges.length; i += 1) {
+        const { startRow, endRow } = this.overlayRanges[i];
+        if (startRow == null) continue; // eslint-disable-line no-continue
+        const rEnd = endRow ?? startRow;
+        for (let r = startRow; r <= rEnd; r += 1) {
+          const { key: k, values } = this.getRowKeyData(r);
+          if (lastCommitted.isRowSelected(r)) {
+            if (this.invertedSelection) {
+              next.add(k);
+              nextKeyValues.set(k, values);
+            } else {
+              next.delete(k);
+              nextKeyValues.delete(k);
+            }
+          } else if (this.invertedSelection) {
             next.delete(k);
             nextKeyValues.delete(k);
+          } else {
+            next.add(k);
+            nextKeyValues.set(k, values);
           }
-        } else if (this.invertedSelection) {
-          next.delete(k);
-          nextKeyValues.delete(k);
-        } else {
-          next.add(k);
-          nextKeyValues.set(k, values);
         }
-      });
+      }
       return this.copyWith({
         selectedKeys: next,
         overlayRanges: EMPTY_ARRAY,
@@ -390,18 +400,16 @@ export class KeyedSelection implements Selection {
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
     // Multi-row shift selections may span out-of-viewport rows where valueForCell
     // returns null. Defer those to async resolution in IrisGrid.
-    if (rows.length > 1) {
-      const first = rows[0];
-      const last = rows[rows.length - 1];
+    if (rowCount > 1) {
       const model = this.getModel();
       const viewTop = model.viewport?.top ?? 0;
       const viewBottom = model.viewport?.bottom ?? 0;
 
       // Fast path: entire range is in the viewport, so we can enumerate keys
       // synchronously and skip the async fetch race entirely.
-      if (first >= viewTop && last <= viewBottom) {
+      if (first >= viewTop && lastRow <= viewBottom) {
         const nextKeyValues = new Map<string, readonly unknown[]>();
-        for (let r = first; r <= last; r += 1) {
+        for (let r = first; r <= lastRow; r += 1) {
           const { key: k, values } = this.getRowKeyData(r);
           nextKeyValues.set(k, values);
         }
@@ -424,7 +432,7 @@ export class KeyedSelection implements Selection {
         endpoints.set(this.anchorKey, this.anchorValues);
       }
       const anchorNow = this.getGestureAnchor()?.row;
-      const targetRow = anchorNow === last ? first : last;
+      const targetRow = anchorNow === lastRow ? first : lastRow;
       const { key: tKey, values: tValues } = this.getRowKeyData(targetRow);
       endpoints.set(tKey, tValues);
 
@@ -433,11 +441,13 @@ export class KeyedSelection implements Selection {
         invertedSelection: false,
         lastSingleRow: null,
         selectedKeyValues: EMPTY_MAP,
-        pendingRows: new GridRange(null, first, null, last),
+        pendingRows: new GridRange(null, first, null, lastRow),
         endpointKeyData: endpoints,
       });
     }
-    const [row] = rows;
+
+    // Single-row path (rowCount === 1): first === lastRow.
+    const row = first;
     const { key: k, values } = this.getRowKeyData(row);
     const nextKeyValues = new Map(this.selectedKeyValues);
     // Deselect only when the clicked row was the entire previous committed selection.
@@ -454,7 +464,7 @@ export class KeyedSelection implements Selection {
       nextKeyValues.set(k, values);
     }
     // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
-    const singleRow = next.size === 1 && rows.length === 1 ? rows[0] : null;
+    const singleRow = next.size === 1 ? row : null;
     return this.copyWith({
       selectedKeys: next,
       overlayRanges: EMPTY_ARRAY,
@@ -490,35 +500,40 @@ export class KeyedSelection implements Selection {
     if (ranges.length === 0) {
       return new KeyedSelection({ getModel: this.getModel });
     }
-    const rows: VisibleIndex[] = [];
+
+    // Scan for endpoints
+    let first: VisibleIndex | null = null;
+    let lastRow: VisibleIndex = 0;
     for (let i = 0; i < ranges.length; i += 1) {
       const { startRow, endRow } = ranges[i];
       if (startRow == null) continue; // eslint-disable-line no-continue
-      const last = endRow ?? startRow;
-      for (let r = startRow; r <= last; r += 1) {
-        rows.push(r);
-      }
+      const rEnd = endRow ?? startRow;
+      if (first === null) first = startRow;
+      lastRow = rEnd;
     }
-    if (rows.length === 0) {
+    if (first === null) {
       return new KeyedSelection({ getModel: this.getModel });
     }
 
-    const first = rows[0];
-    const last = rows[rows.length - 1];
     const model = this.getModel();
     const viewTop = model.viewport?.top ?? 0;
     const viewBottom = model.viewport?.bottom ?? 0;
 
     // Fast path: entire range fits in the viewport, so valueForCell answers
     // synchronously with real values.
-    if (first >= viewTop && last <= viewBottom) {
+    if (first >= viewTop && lastRow <= viewBottom) {
       const next = new Set<string>();
       const nextKeyValues = new Map<string, readonly unknown[]>();
-      rows.forEach(r => {
-        const { key: k, values } = this.getRowKeyData(r);
-        next.add(k);
-        nextKeyValues.set(k, values);
-      });
+      for (let i = 0; i < ranges.length; i += 1) {
+        const { startRow, endRow } = ranges[i];
+        if (startRow == null) continue; // eslint-disable-line no-continue
+        const rEnd = endRow ?? startRow;
+        for (let r = startRow; r <= rEnd; r += 1) {
+          const { key: k, values } = this.getRowKeyData(r);
+          next.add(k);
+          nextKeyValues.set(k, values);
+        }
+      }
       return new KeyedSelection({
         getModel: this.getModel,
         selectedKeys: next,
@@ -531,7 +546,7 @@ export class KeyedSelection implements Selection {
     // IrisGrid's onSelectionChange handler picks up pendingRows.
     return new KeyedSelection({
       getModel: this.getModel,
-      pendingRows: new GridRange(null, first, null, last),
+      pendingRows: new GridRange(null, first, null, lastRow),
     });
   }
 
