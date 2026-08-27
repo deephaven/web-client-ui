@@ -1112,8 +1112,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   /** Sets the selection directly, bypassing mouse/keyboard gesture state. */
   setSelection(selection: Selection): void {
+    // Sync lastSelection so the next gesture compares against the just-installed
+    // committed state; otherwise a pending → resolved swap would leave the next
+    // ctrl+click's toggle referencing the pending selection's empty keys.
     this.setState({
       selection,
+      lastSelection: selection,
       selectedRanges: selectionToRanges(selection),
     });
   }
