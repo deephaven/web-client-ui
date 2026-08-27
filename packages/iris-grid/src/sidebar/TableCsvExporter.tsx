@@ -294,23 +294,23 @@ class TableCsvExporter extends Component<
       isKeyedGridModel(model);
 
     onDownloadStart();
+    let filteredTable: DhType.Table | null = null;
+    let frozenTable: DhType.Table | null = null;
+    let handedOff = false;
     try {
-      let frozenTable: DhType.Table;
       if (isKeyedSelectedRows) {
-        const filteredTable = await model.createFilteredByKeysTable(
+        filteredTable = await model.createFilteredByKeysTable(
           selection.selectedKeyValues,
           selection.invertedSelection
         );
         // freeze to static snapshot; TableSaver closes frozenTable in finishDownload/cancelDownload
         frozenTable = await filteredTable.freeze();
-        filteredTable.close();
       } else {
         frozenTable = await model.export();
       }
       const snapshotRanges = this.getSnapshotRanges(frozenTable.size);
       if (snapshotRanges.length === 0) {
         // All selected rows were removed from the ticking table before export.
-        frozenTable.close();
         onCancel();
         return;
       }
@@ -326,6 +326,7 @@ class TableCsvExporter extends Component<
         includeColumnHeaders,
         useUnformattedValues
       );
+      handedOff = true;
     } catch (error) {
       log.error('CSV download failed', error);
       this.setState({
@@ -336,6 +337,14 @@ class TableCsvExporter extends Component<
         ),
       });
       onCancel();
+    } finally {
+      // filteredTable is only a staging table used to produce frozenTable; always close it.
+      filteredTable?.close();
+      // frozenTable is owned by TableSaver only after onDownload runs; close on early
+      // return or any throw before handoff.
+      if (!handedOff) {
+        frozenTable?.close();
+      }
     }
   }
 
