@@ -76,7 +76,6 @@ import ThemeContext from './ThemeContext';
 import { type GetModel, type Selection } from './Selection';
 import {
   RangedSelection,
-  isRangedSelection,
   assertIsRangedSelection,
   selectionToRanges,
 } from './RangedSelection';
@@ -1063,9 +1062,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { selection } = this.state;
     if (selection !== prevState.selection) {
       const { onSelectionChanged, onSelectionChange } = this.props;
-      if (isRangedSelection(selection)) {
-        onSelectionChanged(selection.toRanges());
-      }
+      onSelectionChanged(selectionToRanges(selection));
       onSelectionChange(selection);
     }
   }
