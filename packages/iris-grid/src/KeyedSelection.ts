@@ -515,7 +515,7 @@ export class KeyedSelection implements Selection {
   }
 
   // Always returns non-inverted; switching to a new selection exits inverted mode.
-  withUpdatedRanges(ranges: readonly GridRange[]): KeyedSelection {
+  withCommittedRanges(ranges: readonly GridRange[]): KeyedSelection {
     // Replacement semantics: discard previous selection and select exactly these rows.
     if (ranges.length === 0) {
       return new KeyedSelection({ getModel: this.getModel });

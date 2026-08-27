@@ -115,7 +115,7 @@ export class RangedSelection implements Selection {
     return result;
   }
 
-  withUpdatedRanges(ranges: readonly GridRange[]): RangedSelection {
+  withCommittedRanges(ranges: readonly GridRange[]): RangedSelection {
     if (ranges === this.ranges) return this;
     return new RangedSelection(ranges, this.getModel);
   }
@@ -158,7 +158,9 @@ export class RangedSelection implements Selection {
 
   selectAll(): RangedSelection {
     const { rowCount } = this.getModel();
-    return this.withUpdatedRanges([new GridRange(null, 0, null, rowCount - 1)]);
+    return this.withCommittedRanges([
+      new GridRange(null, 0, null, rowCount - 1),
+    ]);
   }
 
   getLastSingleSelectedRow(): VisibleIndex | null {

@@ -189,16 +189,16 @@ describe('trimmed', () => {
   });
 });
 
-// ─── withUpdatedRanges ────────────────────────────────────────────────────────
+// ─── withCommittedRanges ────────────────────────────────────────────────────────
 
-describe('withUpdatedRanges', () => {
+describe('withCommittedRanges', () => {
   it('selects a row that is not already selected', () => {
-    const sel = empty().withUpdatedRanges([new GridRange(null, 3, null, 3)]);
+    const sel = empty().withCommittedRanges([new GridRange(null, 3, null, 3)]);
     expect(sel.isRowSelected(3)).toBe(true);
   });
 
   it('replaces the selection — keeps a row already selected (no toggle)', () => {
-    const sel = singleRow(3).withUpdatedRanges([
+    const sel = singleRow(3).withCommittedRanges([
       new GridRange(null, 3, null, 3),
     ]);
     expect(sel.isRowSelected(3)).toBe(true);
@@ -206,7 +206,7 @@ describe('withUpdatedRanges', () => {
 
   it('returns an empty selection for empty ranges', () => {
     const sel = singleRow();
-    expect(sel.withUpdatedRanges([]).isEmpty()).toBe(true);
+    expect(sel.withCommittedRanges([]).isEmpty()).toBe(true);
   });
 });
 

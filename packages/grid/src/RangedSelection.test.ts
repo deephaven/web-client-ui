@@ -217,18 +217,18 @@ describe('getRowTickRanges', () => {
   });
 });
 
-// ─── withUpdatedRanges ───────────────────────────────────────────────────────
+// ─── withCommittedRanges ───────────────────────────────────────────────────────
 
-describe('withUpdatedRanges', () => {
+describe('withCommittedRanges', () => {
   it('returns the same instance when given the same ranges reference', () => {
     const sel = single(0, 0);
-    expect(sel.withUpdatedRanges(sel.toRanges())).toBe(sel);
+    expect(sel.withCommittedRanges(sel.toRanges())).toBe(sel);
   });
 
   it('returns a new instance with the new ranges', () => {
     const sel = single(0, 0);
     const newRanges = [GridRange.makeCell(1, 1)];
-    const updated = sel.withUpdatedRanges(newRanges);
+    const updated = sel.withCommittedRanges(newRanges);
     expect(updated).not.toBe(sel);
     expect(updated.toRanges()).toBe(newRanges);
   });
@@ -237,11 +237,11 @@ describe('withUpdatedRanges', () => {
 // ─── withMouseGestureRanges ──────────────────────────────────────────────────
 
 describe('withMouseGestureRanges', () => {
-  it('behaves identically to withUpdatedRanges', () => {
+  it('behaves identically to withCommittedRanges', () => {
     const sel = single(0, 0);
     const newRanges = [GridRange.makeCell(2, 2)];
     const viaGesture = sel.withMouseGestureRanges(newRanges);
-    const viaUpdated = sel.withUpdatedRanges(newRanges);
+    const viaUpdated = sel.withCommittedRanges(newRanges);
     expect(viaGesture.toRanges()).toEqual(viaUpdated.toRanges());
   });
 
@@ -281,10 +281,10 @@ describe('getGestureAnchor', () => {
     });
   });
 
-  it('is cleared by withUpdatedRanges (fresh replacement)', () => {
+  it('is cleared by withCommittedRanges (fresh replacement)', () => {
     const sel = single(0, 0)
       .withGestureAnchor(3, 4)
-      .withUpdatedRanges([GridRange.makeCell(1, 1)]);
+      .withCommittedRanges([GridRange.makeCell(1, 1)]);
     expect(sel.getGestureAnchor()).toBeNull();
   });
 

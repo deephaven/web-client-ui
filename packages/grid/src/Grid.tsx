@@ -908,7 +908,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectionEndRow = range.endRow;
       }
       const selection = state.selection
-        .withUpdatedRanges(gridRanges)
+        .withCommittedRanges(gridRanges)
         .withGestureAnchor(anchorRow, anchorColumn);
       return {
         selection,
@@ -1358,7 +1358,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     );
     const { cursorColumn } = this.state;
     this.setState(state => {
-      const newSel = state.selection.withUpdatedRanges([
+      const newSel = state.selection.withCommittedRanges([
         new GridRange(null, focusedRow, null, focusedRow),
       ]);
       return {
@@ -1453,7 +1453,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
       if (!GridRange.containsCell(selectedRanges, column, row)) {
         const newSel = selection
-          .withUpdatedRanges([GridRange.makeCell(column, row)])
+          .withCommittedRanges([GridRange.makeCell(column, row)])
           .withGestureAnchor(row, column);
         this.setState({
           selection: newSel,

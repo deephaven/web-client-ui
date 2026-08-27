@@ -24,7 +24,7 @@ export type CommitMouseGestureOptions = {
  * Mutations return new instances; Grid stores the result in React state.
  *
  * Two write paths cover selection updates:
- * - `withUpdatedRanges` writes into the **committed** selection state
+ * - `withCommittedRanges` writes into the **committed** selection state
  *   (programmatic entry points like `Grid.setSelectedRanges`).
  * - `withMouseGestureRanges` writes into the **transient overlay** state
  *   used for mid-gesture rendering (drag / shift-click on every mouse move).
@@ -67,7 +67,7 @@ export interface Selection {
    * used by `Grid.setSelectedRanges`, `setFocusRow`, and
    * `moveCursorInDirection`.
    */
-  withUpdatedRanges: (ranges: readonly GridRange[]) => Selection;
+  withCommittedRanges: (ranges: readonly GridRange[]) => Selection;
   /**
    * Replaces the **transient overlay** ranges (mid-gesture preview) with
    * the given ranges. Called on every mouse-move during a drag / shift-click.
