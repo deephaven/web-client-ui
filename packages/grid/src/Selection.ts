@@ -8,6 +8,18 @@ import type { BoundedAxisRange } from './GridAxisRange';
 export type GetModel = () => GridModel;
 
 /**
+ * Options for `Selection.commitMouseGesture`.
+ */
+export type CommitMouseGestureOptions = {
+  /**
+   * When true, a single-row commit that repeats the previous single-row
+   * selection is treated as a deselect (matches theme `autoSelectRow`
+   * behavior).
+   */
+  autoSelectRow: boolean;
+};
+
+/**
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
@@ -79,7 +91,7 @@ export interface Selection {
    */
   commitMouseGesture: (
     lastCommitted: Selection,
-    autoSelectRow: boolean
+    options: CommitMouseGestureOptions
   ) => Selection;
   /** A new selection covering the entire grid. */
   selectAll: () => Selection;

@@ -290,7 +290,7 @@ describe('getGestureAnchor', () => {
 
   it('is preserved by commitMouseGesture', () => {
     const sel = single(1, 1).withGestureAnchor(2, 3);
-    const committed = sel.commitMouseGesture(empty(), false);
+    const committed = sel.commitMouseGesture(empty(), { autoSelectRow: false });
     expect(committed.getGestureAnchor()).toEqual({ row: 2, column: 3 });
   });
 
@@ -358,27 +358,29 @@ describe('commitMouseGesture', () => {
   it('deselects when committing the same single cell over itself', () => {
     const last = single(3, 5);
     const current = single(3, 5);
-    const result = current.commitMouseGesture(last, false);
+    const result = current.commitMouseGesture(last, { autoSelectRow: false });
     expect(result.isEmpty()).toBe(true);
   });
 
   it('deselects when committing the same single row with autoSelectRow', () => {
     const last = fullRow(3);
     const current = fullRow(3);
-    const result = current.commitMouseGesture(last, true);
+    const result = current.commitMouseGesture(last, { autoSelectRow: true });
     expect(result.isEmpty()).toBe(true);
   });
 
   it('does NOT deselect a single row without autoSelectRow', () => {
     const last = fullRow(3);
     const current = fullRow(3);
-    const result = current.commitMouseGesture(last, false);
+    const result = current.commitMouseGesture(last, { autoSelectRow: false });
     expect(result.isEmpty()).toBe(false);
   });
 
   it('keeps a new single-cell selection when lastCommitted is empty', () => {
     const current = single(2, 4);
-    const result = current.commitMouseGesture(empty(), false);
+    const result = current.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.toRanges()).toEqual(current.toRanges());
   });
 
@@ -390,7 +392,7 @@ describe('commitMouseGesture', () => {
       [...outer.toRanges(), ...inner.toRanges()],
       getModel
     );
-    const result = combined.commitMouseGesture(outer, false);
+    const result = combined.commitMouseGesture(outer, { autoSelectRow: false });
     // inner area should be cut out; result should not include (2,2)
     expect(result.isCellSelected(2, 2)).toBe(false);
     // outer areas outside inner should remain
@@ -401,7 +403,7 @@ describe('commitMouseGesture', () => {
     const a = new GridRange(0, 0, 0, 5);
     const b = new GridRange(0, 6, 0, 10);
     const sel = new RangedSelection([a, b], getModel);
-    const result = sel.commitMouseGesture(empty(), false);
+    const result = sel.commitMouseGesture(empty(), { autoSelectRow: false });
     const ranges = result.toRanges();
     // Adjacent ranges [0,0-5] and [0,6-10] should consolidate to [0,0-10]
     expect(ranges).toHaveLength(1);

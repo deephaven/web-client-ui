@@ -2,7 +2,11 @@ import { EMPTY_ARRAY, assertNotNaN, assertNotNull } from '@deephaven/utils';
 import GridRange, { type GridRangeIndex } from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
-import type { GetModel, Selection } from './Selection';
+import type {
+  CommitMouseGestureOptions,
+  GetModel,
+  Selection,
+} from './Selection';
 
 /**
  * Immutable `Selection` for standard (row-indexed) grids. Each entry in
@@ -165,7 +169,7 @@ export class RangedSelection implements Selection {
 
   commitMouseGesture(
     lastCommitted: Selection,
-    autoSelectRow: boolean
+    { autoSelectRow }: CommitMouseGestureOptions
   ): RangedSelection {
     const selectedRanges = this.ranges;
     // lastCommitted is always a RangedSelection when this method is called

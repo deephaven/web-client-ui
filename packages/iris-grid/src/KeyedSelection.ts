@@ -1,6 +1,7 @@
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
   type BoundedAxisRange,
+  type CommitMouseGestureOptions,
   GridRange,
   type GridRangeIndex,
   type ModelIndex,
@@ -357,7 +358,7 @@ export class KeyedSelection implements Selection {
 
   commitMouseGesture(
     lastCommitted: Selection,
-    _autoSelectRow: boolean
+    _options: CommitMouseGestureOptions
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
     const rows: VisibleIndex[] = [];

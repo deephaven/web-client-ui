@@ -1293,10 +1293,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { autoSelectRow } = theme;
       const { selection, lastSelection, cursorRow, cursorColumn } = state;
 
-      const newSelection = selection.commitMouseGesture(
-        lastSelection,
-        autoSelectRow ?? false
-      );
+      const newSelection = selection.commitMouseGesture(lastSelection, {
+        autoSelectRow: autoSelectRow ?? false,
+      });
       if (newSelection === selection) return null;
 
       let newCursorRow = cursorRow;

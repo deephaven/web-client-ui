@@ -420,7 +420,9 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 0, null, 5)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), false);
+    const result = withOverlay.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.pendingRows).toBeNull();
     for (let r = 0; r <= 5; r += 1) {
       expect(result.isRowSelected(r)).toBe(true);
@@ -434,7 +436,9 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 0, null, 5)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), false);
+    const result = withOverlay.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingRows?.startRow).toBe(0);
     expect(result.pendingRows?.endRow).toBe(5);
@@ -445,7 +449,9 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 3, null, 3)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), false);
+    const result = withOverlay.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.pendingRows).toBeNull();
     expect(result.isRowSelected(3)).toBe(true);
   });
@@ -456,7 +462,9 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 3, null, 3)],
     });
-    const result = withOverlay.commitMouseGesture(last, false);
+    const result = withOverlay.commitMouseGesture(last, {
+      autoSelectRow: false,
+    });
     expect(result.isRowSelected(3)).toBe(false);
   });
 
@@ -470,7 +478,9 @@ describe('commitMouseGesture', () => {
       [new GridRange(null, 2, null, 5)],
       true
     );
-    const result = dragOverlay.commitMouseGesture(priorCommit, false);
+    const result = dragOverlay.commitMouseGesture(priorCommit, {
+      autoSelectRow: false,
+    });
     for (let r = 2; r <= 5; r += 1) {
       expect(result.isRowSelected(r)).toBe(true);
     }
@@ -488,7 +498,9 @@ describe('commitMouseGesture', () => {
       anchorValues: [5],
       anchorRow: 5,
     });
-    const result = anchoredOverlay.commitMouseGesture(empty(), false);
+    const result = anchoredOverlay.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingAnchorLookup).not.toBeNull();
     expect(result.pendingAnchorLookup?.values).toEqual([5]);
@@ -505,7 +517,9 @@ describe('commitMouseGesture', () => {
       anchorValues: [5],
       anchorRow: 5,
     });
-    const result = anchoredOverlay.commitMouseGesture(empty(), false);
+    const result = anchoredOverlay.commitMouseGesture(empty(), {
+      autoSelectRow: false,
+    });
     expect(result.pendingRows).not.toBeNull();
     expect(result.pendingAnchorLookup).toBeNull();
   });
