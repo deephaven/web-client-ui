@@ -9,7 +9,7 @@ import {
 import GridRenderer from './GridRenderer';
 import { type GridRenderState } from './GridRendererTypes';
 import { type GridColor } from './GridTheme';
-import memoizeClear from './memoizeClear';
+import fastMemoize from './fastMemoize';
 
 export type CellRenderType = 'text' | 'dataBar';
 
@@ -86,7 +86,7 @@ abstract class CellRenderer {
     context.fillText(markerText, textX, textY);
   }
 
-  getCachedTruncatedString = memoizeClear(
+  getCachedTruncatedString = fastMemoize(
     (
       context: CanvasRenderingContext2D,
       text: string,
@@ -103,7 +103,7 @@ abstract class CellRenderer {
         fontWidthUpper,
         truncationChar
       ),
-    { max: 10000 }
+    10000
   );
 }
 

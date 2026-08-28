@@ -1,3 +1,4 @@
+import { EMPTY_ARRAY } from '@deephaven/utils';
 import { EventTarget, type Event } from 'event-target-shim';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { type ModelIndex } from './GridMetrics';
@@ -6,7 +7,7 @@ import {
   type GridTheme,
   type NullableGridColor,
 } from './GridTheme';
-import memoizeClear from './memoizeClear';
+import fastMemoize from './fastMemoize';
 import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
@@ -206,10 +207,16 @@ abstract class GridModel<
     visibleLength: number = LINK_TRUNCATION_LENGTH
   ): Token[] {
     const text = this.textForCell(column, row);
+    // Only http(s) urls and emails are tokenized, so text without a colon or an
+    // at sign cannot contain one. This runs for every visible cell of every
+    // frame, so it is worth skipping the cache lookup entirely.
+    if (text == null || (!text.includes(':') && !text.includes('@'))) {
+      return EMPTY_ARRAY as unknown as Token[];
+    }
     return this.getCachedTokensInText(text, visibleLength);
   }
 
-  getCachedTokensInText = memoizeClear(
+  getCachedTokensInText = fastMemoize(
     (text: string, visibleLength: number): Token[] => {
       // If no text is truncated, then directly search in text
       if (visibleLength >= text.length) {
@@ -230,7 +237,7 @@ abstract class GridModel<
 
       return GridUtils.findTokensWithProtocolInText(contentToCheckForLinks);
     },
-    { max: 10000 }
+    10000
   );
 
   renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
