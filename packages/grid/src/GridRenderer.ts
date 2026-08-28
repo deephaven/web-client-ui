@@ -2112,11 +2112,46 @@ export class GridRenderer {
       rowRunStartY = null;
     };
 
+    // Coalesce vertically-adjacent partial rows with identical column runs into
+    // one rect per column run. Without this, a rectangular multi-row range
+    // (e.g. shift+click across rows and a subset of columns) would emit a
+    // separate rect per row and `stroke()` would draw horizontal borders
+    // through the selection.
+    let partialRunStartY: number | null = null;
+    let partialRunEndY = 0;
+    let partialRuns: { x: number; endX: number }[] = [];
+    const partialRunsEqual = (
+      a: { x: number; endX: number }[],
+      b: { x: number; endX: number }[]
+    ): boolean => {
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i += 1) {
+        if (a[i].x !== b[i].x || a[i].endX !== b[i].endX) return false;
+      }
+      return true;
+    };
+    const flushPartialRun = (): void => {
+      if (partialRunStartY != null) {
+        for (let i = 0; i < partialRuns.length; i += 1) {
+          const { x, endX } = partialRuns[i];
+          context.rect(
+            x,
+            partialRunStartY,
+            endX - x,
+            partialRunEndY - partialRunStartY
+          );
+        }
+      }
+      partialRunStartY = null;
+      partialRuns = [];
+    };
+
     for (let r = top; r <= bottom; r += 1) {
       const rowY = allRowYs.get(r);
       const rowH = allRowHeights.get(r);
       if (rowY == null || rowH == null) {
         flushRowRun();
+        flushPartialRun();
         // eslint-disable-next-line no-continue
         continue;
       }
@@ -2124,53 +2159,66 @@ export class GridRenderer {
       const endY = Math.round(rowY + rowH) - 0.5;
       if (endY < minY || y > maxY) {
         flushRowRun();
+        flushPartialRun();
         // eslint-disable-next-line no-continue
         continue;
       }
       if (selection.isRowSelected(r)) {
+        flushPartialRun();
         // Extend or start the full-row run.
         if (rowRunStartY == null) rowRunStartY = y;
         rowRunEndY = endY;
       } else {
         flushRowRun();
-        // Partial selection — check each cell and coalesce consecutive selected columns.
+        // Build this row's column runs so we can coalesce with the previous row.
+        const rowRuns: { x: number; endX: number }[] = [];
+        const pushRun = (
+          runStartCol: VisibleIndex,
+          runEndCol: VisibleIndex
+        ): void => {
+          const x = Math.max(
+            Math.round(getOrThrow(allColumnXs, runStartCol)) + 0.5,
+            minX
+          );
+          const endX = Math.min(
+            Math.round(
+              getOrThrow(allColumnXs, runEndCol) +
+                getOrThrow(allColumnWidths, runEndCol)
+            ) - 0.5,
+            maxX
+          );
+          if (endX > x) rowRuns.push({ x, endX });
+        };
         let runStart: VisibleIndex | null = null;
         for (let c = left; c <= right; c += 1) {
           if (selection.isCellSelected(r, c)) {
             if (runStart === null) runStart = c;
           } else if (runStart !== null) {
-            const x = Math.max(
-              Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
-              minX
-            );
-            const endX = Math.min(
-              Math.round(
-                getOrThrow(allColumnXs, c - 1) +
-                  getOrThrow(allColumnWidths, c - 1)
-              ) - 0.5,
-              maxX
-            );
-            if (endX > x) context.rect(x, y, endX - x, endY - y);
+            pushRun(runStart, c - 1);
             runStart = null;
           }
         }
         if (runStart !== null) {
-          const x = Math.max(
-            Math.round(getOrThrow(allColumnXs, runStart)) + 0.5,
-            minX
-          );
-          const endX = Math.min(
-            Math.round(
-              getOrThrow(allColumnXs, right) +
-                getOrThrow(allColumnWidths, right)
-            ) - 0.5,
-            maxX
-          );
-          if (endX > x) context.rect(x, y, endX - x, endY - y);
+          pushRun(runStart, right);
+        }
+
+        if (rowRuns.length === 0) {
+          flushPartialRun();
+        } else if (
+          partialRunStartY != null &&
+          partialRunsEqual(rowRuns, partialRuns)
+        ) {
+          partialRunEndY = endY;
+        } else {
+          flushPartialRun();
+          partialRuns = rowRuns;
+          partialRunStartY = y;
+          partialRunEndY = endY;
         }
       }
     }
     flushRowRun();
+    flushPartialRun();
 
     /**
      * Create the path, then draw it once. Fill and
