@@ -15,9 +15,10 @@ FROM mcr.microsoft.com/playwright:v1.56.1-noble AS playwright
 WORKDIR /work/
 
 # Update packages list and install some build tools
+# ffmpeg is used by scripts/e2e-record.mjs to trim recordings and export mp4
 RUN set -eux; \
     apt-get update; \
-    apt-get install build-essential --yes;
+    apt-get install build-essential ffmpeg --yes;
 
 # print installed fonts for debugging
 RUN fc-list : family;
