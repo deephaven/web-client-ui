@@ -40,6 +40,7 @@ function makeMetrics({
   return {
     visibleColumns: columns,
     visibleRows: rows,
+    floatingColumns: [],
     allColumnWidths,
     allColumnXs,
     allRowHeights,
