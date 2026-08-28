@@ -18,9 +18,10 @@ function makeModel(
 
 /** Build a minimal viewport-subscription mock for createViewportSubscription. */
 function makeSubscriptionMock(
-  rows: { get: (col: DhType.Column) => unknown }[]
+  rows: { get: (col: DhType.Column) => unknown }[],
+  offset = 0
 ) {
-  const getViewportData = jest.fn().mockResolvedValue({ rows });
+  const getViewportData = jest.fn().mockResolvedValue({ rows, offset });
   const close = jest.fn();
   return { getViewportData, close };
 }
@@ -150,7 +151,7 @@ describe('fetchKeyValuesForRowRange', () => {
       { get: (col: DhType.Column) => (col.index === 0 ? 5 : 'x') },
       { get: (col: DhType.Column) => (col.index === 0 ? 7 : 'x') },
     ];
-    subMock = makeSubscriptionMock(rows);
+    subMock = makeSubscriptionMock(rows, 5);
     (
       model.table as DhType.Table & {
         createViewportSubscription: jest.Mock;
@@ -169,11 +170,12 @@ describe('fetchKeyValuesForRowRange', () => {
     });
   });
 
-  it('returns a map keyed by JSON-serialized key values', async () => {
+  it('returns a map keyed by row index containing the JSON-serialized key and raw values', async () => {
     const result = await model.fetchKeyValuesForRowRange(5, 7);
-    expect(result.has(JSON.stringify([5]))).toBe(true);
-    expect(result.has(JSON.stringify([7]))).toBe(true);
+    // offset=5 so rows[0]/rows[1] map to indices 5 and 6.
     expect(result.size).toBe(2);
+    expect(result.get(5)).toEqual({ key: JSON.stringify([5]), values: [5] });
+    expect(result.get(6)).toEqual({ key: JSON.stringify([7]), values: [7] });
   });
 
   it('closes the subscription even if getViewportData throws', async () => {

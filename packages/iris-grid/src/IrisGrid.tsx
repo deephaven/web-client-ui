@@ -2524,7 +2524,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // Skip copy while keyed selection is still resolving — selectedKeyValues is empty.
       if (
         selection instanceof KeyedSelection &&
-        selection.pendingRows != null
+        selection.pendingRanges.length > 0
       ) {
         return;
       }
@@ -3750,7 +3750,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({ gotoRow: `${singleRow + 1}` });
     }
     onSelectionChange?.(selection);
-    if (selection instanceof KeyedSelection && selection.pendingRows != null) {
+    if (
+      selection instanceof KeyedSelection &&
+      selection.pendingRanges.length > 0
+    ) {
       this.resolveKeyedSelection(selection);
     }
   }
@@ -3759,17 +3762,51 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   async resolveKeyedSelection(pending: KeyedSelection): Promise<void> {
     const { model } = this.props;
     if (!isKeyedGridModel(model)) return;
-    const { pendingRows } = pending;
-    if (pendingRows?.startRow == null || pendingRows?.endRow == null) return;
+    const { pendingRanges } = pending;
+    if (pendingRanges.length === 0) return;
+
+    // Compute the envelope covering every pending range so the server round
+    // trip is one viewport subscription regardless of how many disjoint ranges
+    // were selected (e.g. plugin-driven programmatic selection).
+    let minStart: number | null = null;
+    let maxEnd: number | null = null;
+    for (let i = 0; i < pendingRanges.length; i += 1) {
+      const { startRow, endRow } = pendingRanges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const rEnd = endRow ?? startRow;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (minStart === null || low < minStart) minStart = low;
+      if (maxEnd === null || high > maxEnd) maxEnd = high;
+    }
+    if (minStart === null || maxEnd === null) return;
+
     try {
-      const { startRow, endRow } = pendingRows as {
-        startRow: number;
-        endRow: number;
-      };
-      const keyValues = await model.fetchKeyValuesForRowRange(startRow, endRow);
+      const rowsByIndex = await model.fetchKeyValuesForRowRange(
+        minStart,
+        maxEnd
+      );
       // Bail if the user changed the selection while we were fetching.
       if (this.grid?.getSelection() !== pending) return;
-      const resolved = pending.resolve(keyValues);
+
+      // Filter to only rows the caller actually requested — the envelope may
+      // include rows between disjoint ranges that must not be selected.
+      const filtered = new Map<string, readonly unknown[]>();
+      rowsByIndex.forEach(({ key, values }, rowIndex) => {
+        for (let i = 0; i < pendingRanges.length; i += 1) {
+          const { startRow, endRow } = pendingRanges[i];
+          if (startRow == null) continue; // eslint-disable-line no-continue
+          const rEnd = endRow ?? startRow;
+          const low = Math.min(startRow, rEnd);
+          const high = Math.max(startRow, rEnd);
+          if (rowIndex >= low && rowIndex <= high) {
+            filtered.set(key, values);
+            break;
+          }
+        }
+      });
+
+      const resolved = pending.resolve(filtered);
       this.grid.setSelection(resolved);
     } catch (e) {
       log.error('resolveKeyedSelection failed', e);

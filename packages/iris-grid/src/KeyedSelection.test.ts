@@ -73,14 +73,14 @@ describe('isEmpty', () => {
     expect(singleRow().isEmpty()).toBe(false);
   });
 
-  it('returns false for inverted selection (pendingRows path)', () => {
+  it('returns false for inverted selection (pendingRanges path)', () => {
     expect(allRows().isEmpty()).toBe(false);
   });
 
-  it('returns false when pendingRows is set', () => {
+  it('returns false when pendingRanges is non-empty', () => {
     const pending = new KeyedSelection({
       getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 0, null, 10),
+      pendingRanges: [new GridRange(null, 0, null, 10)],
     });
     expect(pending.isEmpty()).toBe(false);
   });
@@ -216,7 +216,7 @@ describe('withCommittedRanges', () => {
   it('resolves synchronously when all rows are in the viewport', () => {
     mockModel.viewport = { top: 0, bottom: 10 };
     const sel = empty().withCommittedRanges([new GridRange(null, 2, null, 5)]);
-    expect(sel.pendingRows).toBeNull();
+    expect(sel.pendingRanges).toHaveLength(0);
     expect(sel.selectedKeys.size).toBe(4);
     for (let r = 2; r <= 5; r += 1) {
       expect(sel.isRowSelected(r)).toBe(true);
@@ -232,10 +232,38 @@ describe('withCommittedRanges', () => {
     const sel = empty().withCommittedRanges([
       new GridRange(null, 50, null, 50),
     ]);
-    expect(sel.pendingRows).not.toBeNull();
-    expect(sel.pendingRows?.startRow).toBe(50);
-    expect(sel.pendingRows?.endRow).toBe(50);
+    expect(sel.pendingRanges).toHaveLength(1);
+    expect(sel.pendingRanges[0].startRow).toBe(50);
+    expect(sel.pendingRanges[0].endRow).toBe(50);
     expect(sel.selectedKeys.size).toBe(0);
+  });
+
+  it('preserves multiple non-contiguous ranges in pendingRanges', () => {
+    // Programmatic selection of rows 1 and 100 must NOT collapse into a
+    // 1..100 envelope — otherwise resolveKeyedSelection would fetch and
+    // select every intermediate row.
+    mockModel.viewport = { top: 0, bottom: 10 };
+    const sel = empty().withCommittedRanges([
+      new GridRange(null, 1, null, 1),
+      new GridRange(null, 100, null, 100),
+    ]);
+    expect(sel.pendingRanges).toHaveLength(2);
+    expect(sel.pendingRanges[0].startRow).toBe(1);
+    expect(sel.pendingRanges[1].startRow).toBe(100);
+  });
+
+  it('preserves reverse-ordered ranges without inverting endpoints', () => {
+    // A reverse-order input must not create a malformed
+    // GridRange(startRow=100, endRow=1) envelope; each input range is kept
+    // as-is and resolveKeyedSelection handles ordering.
+    mockModel.viewport = { top: 0, bottom: 10 };
+    const sel = empty().withCommittedRanges([
+      new GridRange(null, 100, null, 100),
+      new GridRange(null, 1, null, 1),
+    ]);
+    expect(sel.pendingRanges).toHaveLength(2);
+    expect(sel.pendingRanges[0].startRow).toBe(100);
+    expect(sel.pendingRanges[1].startRow).toBe(1);
   });
 });
 
@@ -290,13 +318,13 @@ describe('truncate', () => {
 // ─── resolve ─────────────────────────────────────────────────────────────────
 
 describe('resolve', () => {
-  it('clears pendingRows and commits the provided key values', () => {
+  it('clears pendingRanges and commits the provided key values', () => {
     const pending = new KeyedSelection({
       getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 0, null, 4),
+      pendingRanges: [new GridRange(null, 0, null, 4)],
     });
     const resolved = pending.resolve(new Map([keyValuesOf(0), keyValuesOf(2)]));
-    expect(resolved.pendingRows).toBeNull();
+    expect(resolved.pendingRanges).toHaveLength(0);
     expect(resolved.isRowSelected(0)).toBe(true);
     expect(resolved.isRowSelected(2)).toBe(true);
     expect(resolved.isRowSelected(1)).toBe(false);
@@ -306,7 +334,7 @@ describe('resolve', () => {
     const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
     const pending = new KeyedSelection({
       getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 0, null, 4),
+      pendingRanges: [new GridRange(null, 0, null, 4)],
       endpointKeyData: endpoints,
     });
     // Simulate a fetch that missed both endpoints because of drift.
@@ -324,7 +352,7 @@ describe('resolve', () => {
     ]);
     const pending = new KeyedSelection({
       getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 0, null, 0),
+      pendingRanges: [new GridRange(null, 0, null, 0)],
       endpointKeyData: endpoints,
     });
     const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
@@ -354,10 +382,10 @@ describe('getUniqueRowCount', () => {
     expect(excludeOne.getUniqueRowCount()).toBe(ROW_COUNT - 1);
   });
 
-  it('returns null when pendingRows is set', () => {
+  it('returns null when pendingRanges is non-empty', () => {
     const pending = new KeyedSelection({
       getModel: getKeyedModel,
-      pendingRows: new GridRange(null, 0, null, 9),
+      pendingRanges: [new GridRange(null, 0, null, 9)],
     });
     expect(pending.getUniqueRowCount()).toBeNull();
   });
@@ -436,7 +464,7 @@ describe('commitMouseGesture', () => {
     const result = withOverlay.commitMouseGesture(empty(), {
       autoSelectRow: false,
     });
-    expect(result.pendingRows).toBeNull();
+    expect(result.pendingRanges).toHaveLength(0);
     for (let r = 0; r <= 5; r += 1) {
       expect(result.isRowSelected(r)).toBe(true);
     }
@@ -452,9 +480,9 @@ describe('commitMouseGesture', () => {
     const result = withOverlay.commitMouseGesture(empty(), {
       autoSelectRow: false,
     });
-    expect(result.pendingRows).not.toBeNull();
-    expect(result.pendingRows?.startRow).toBe(0);
-    expect(result.pendingRows?.endRow).toBe(5);
+    expect(result.pendingRanges).toHaveLength(1);
+    expect(result.pendingRanges[0].startRow).toBe(0);
+    expect(result.pendingRanges[0].endRow).toBe(5);
   });
 
   it('commits a single-row overlay synchronously', () => {
@@ -465,7 +493,7 @@ describe('commitMouseGesture', () => {
     const result = withOverlay.commitMouseGesture(empty(), {
       autoSelectRow: false,
     });
-    expect(result.pendingRows).toBeNull();
+    expect(result.pendingRanges).toHaveLength(0);
     expect(result.isRowSelected(3)).toBe(true);
   });
 

@@ -1642,7 +1642,9 @@ class IrisGridTableModelTemplate<
   async fetchKeyValuesForRowRange(
     startRow: number,
     endRow: number
-  ): Promise<ReadonlyMap<string, readonly unknown[]>> {
+  ): Promise<
+    ReadonlyMap<VisibleIndex, { key: string; values: readonly unknown[] }>
+  > {
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     // Use a secondary viewport subscription on the live table to avoid a copy/filter round-trip.
     const sub = (this.table as DhType.Table).createViewportSubscription({
@@ -1651,10 +1653,18 @@ class IrisGridTableModelTemplate<
     });
     try {
       const data = await sub.getViewportData();
-      const result = new Map<string, readonly unknown[]>();
-      data.rows.forEach((row: DhType.Row) => {
+      const result = new Map<
+        VisibleIndex,
+        { key: string; values: readonly unknown[] }
+      >();
+      // data.offset is the absolute row of data.rows[0]; callers need the row
+      // index to filter results back to the exact requested ranges.
+      data.rows.forEach((row: DhType.Row, i: number) => {
         const values = keyColumns.map(col => row.get(col));
-        result.set(serializeKeyValues(values), values);
+        result.set(data.offset + i, {
+          key: serializeKeyValues(values),
+          values,
+        });
       });
       return result;
     } finally {

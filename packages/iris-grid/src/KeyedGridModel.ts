@@ -1,5 +1,5 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import type { ModelIndex } from '@deephaven/grid';
+import type { ModelIndex, VisibleIndex } from '@deephaven/grid';
 
 /** Model that exposes key-column metadata for selection purposes. */
 export interface KeyedGridModel {
@@ -66,12 +66,16 @@ export interface KeyedGridModel {
   /**
    * Fetches the key-column values for every row in [startRow, endRow] from the
    * live table. Used to resolve pending shift-click selections that span
-   * out-of-viewport rows.
+   * out-of-viewport rows. The returned map is keyed by row index so callers can
+   * filter results back to the exact ranges that were requested (an envelope
+   * fetch may include rows outside the caller's target ranges).
    */
   fetchKeyValuesForRowRange: (
     startRow: number,
     endRow: number
-  ) => Promise<ReadonlyMap<string, readonly unknown[]>>;
+  ) => Promise<
+    ReadonlyMap<VisibleIndex, { key: string; values: readonly unknown[] }>
+  >;
 }
 
 /**

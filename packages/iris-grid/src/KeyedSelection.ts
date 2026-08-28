@@ -74,10 +74,10 @@ export type KeyedSelectionOptions = {
    */
   maxRows?: number | null;
   /**
-   * When non-null, key values for this row range are being resolved
-   * asynchronously by `IrisGrid.resolveKeyedSelection`.
+   * Ranges whose key values are being resolved asynchronously by
+   * `IrisGrid.resolveKeyedSelection`. Empty array means no resolution is in progress.
    */
-  pendingRows?: GridRange | null;
+  pendingRanges?: readonly GridRange[];
   /**
    * Serialized key of the shift-click / drag anchor. Drift-immune across
    * ticks: `getGestureAnchor` scans the viewport for the row currently
@@ -126,7 +126,7 @@ export class KeyedSelection implements Selection {
 
   readonly maxRows: number | null;
 
-  readonly pendingRows: GridRange | null;
+  readonly pendingRanges: readonly GridRange[];
 
   private readonly anchorKey: string | null;
 
@@ -147,7 +147,7 @@ export class KeyedSelection implements Selection {
     this.lastSingleRow = options.lastSingleRow ?? null;
     this.selectedKeyValues = options.selectedKeyValues ?? EMPTY_MAP;
     this.maxRows = options.maxRows ?? null;
-    this.pendingRows = options.pendingRows ?? null;
+    this.pendingRanges = options.pendingRanges ?? EMPTY_ARRAY;
     this.anchorKey = options.anchorKey ?? null;
     this.anchorValues = options.anchorValues ?? null;
     this.anchorRow = options.anchorRow ?? null;
@@ -190,7 +190,7 @@ export class KeyedSelection implements Selection {
       lastSingleRow: this.lastSingleRow,
       selectedKeyValues: this.selectedKeyValues,
       maxRows: this.maxRows,
-      pendingRows: this.pendingRows,
+      pendingRanges: this.pendingRanges,
       anchorKey: this.anchorKey,
       anchorValues: this.anchorValues,
       anchorRow: this.anchorRow,
@@ -215,7 +215,7 @@ export class KeyedSelection implements Selection {
     // Inverted selection means all rows are selected — never empty.
     if (this.invertedSelection) return false;
     // Pending resolution means a selection is in progress — not empty.
-    if (this.pendingRows != null) return false;
+    if (this.pendingRanges.length > 0) return false;
     return this.selectedKeys.size === 0 && this.gestureKeys.size === 0;
   }
 
@@ -272,13 +272,13 @@ export class KeyedSelection implements Selection {
         invertedSelection: false,
         lastSingleRow: null,
         selectedKeyValues: EMPTY_MAP,
-        pendingRows: null,
+        pendingRanges: EMPTY_ARRAY,
       });
     }
     return this.copyWith({
       overlayRanges: ranges,
       lastSingleRow: null,
-      pendingRows: null,
+      pendingRanges: EMPTY_ARRAY,
     });
   }
 
@@ -393,13 +393,15 @@ export class KeyedSelection implements Selection {
         overlayRanges: EMPTY_ARRAY,
         lastSingleRow: null,
         selectedKeyValues: nextKeyValues,
-        pendingRows: null,
+        pendingRanges: EMPTY_ARRAY,
       });
     }
 
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
     // Multi-row shift selections may span out-of-viewport rows where valueForCell
     // returns null. Defer those to async resolution in IrisGrid.
+    // Assumes shift+click/drag emits one contiguous overlay range; `first`/`lastRow`
+    // are that range's endpoints and drive the anchor/target endpoint capture below.
     if (rowCount > 1) {
       const model = this.getModel();
       const viewTop = model.viewport?.top ?? 0;
@@ -419,7 +421,7 @@ export class KeyedSelection implements Selection {
           invertedSelection: false,
           lastSingleRow: null,
           selectedKeyValues: nextKeyValues,
-          pendingRows: null,
+          pendingRanges: EMPTY_ARRAY,
         });
       }
 
@@ -441,7 +443,7 @@ export class KeyedSelection implements Selection {
         invertedSelection: false,
         lastSingleRow: null,
         selectedKeyValues: EMPTY_MAP,
-        pendingRows: new GridRange(null, first, null, lastRow),
+        pendingRanges: this.overlayRanges,
         endpointKeyData: endpoints,
       });
     }
@@ -471,7 +473,7 @@ export class KeyedSelection implements Selection {
       invertedSelection: false,
       lastSingleRow: singleRow,
       selectedKeyValues: nextKeyValues,
-      pendingRows: null,
+      pendingRanges: EMPTY_ARRAY,
     });
   }
 
@@ -489,7 +491,7 @@ export class KeyedSelection implements Selection {
       lastSingleRow: null,
       selectedKeyValues: EMPTY_MAP,
       maxRows: null,
-      pendingRows: null,
+      pendingRanges: EMPTY_ARRAY,
       endpointKeyData: EMPTY_MAP,
     });
   }
@@ -501,17 +503,21 @@ export class KeyedSelection implements Selection {
       return new KeyedSelection({ getModel: this.getModel });
     }
 
-    // Scan for endpoints
-    let first: VisibleIndex | null = null;
-    let lastRow: VisibleIndex = 0;
+    // Compute the true min/max across every range so the viewport check is
+    // correct even when input ranges arrive out of order or non-contiguous
+    // (e.g. plugin-driven programmatic selection).
+    let minRow: VisibleIndex | null = null;
+    let maxRow: VisibleIndex | null = null;
     for (let i = 0; i < ranges.length; i += 1) {
       const { startRow, endRow } = ranges[i];
       if (startRow == null) continue; // eslint-disable-line no-continue
       const rEnd = endRow ?? startRow;
-      if (first === null) first = startRow;
-      lastRow = rEnd;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (minRow === null || low < minRow) minRow = low;
+      if (maxRow === null || high > maxRow) maxRow = high;
     }
-    if (first === null) {
+    if (minRow === null || maxRow === null) {
       return new KeyedSelection({ getModel: this.getModel });
     }
 
@@ -519,16 +525,18 @@ export class KeyedSelection implements Selection {
     const viewTop = model.viewport?.top ?? 0;
     const viewBottom = model.viewport?.bottom ?? 0;
 
-    // Fast path: entire range fits in the viewport, so valueForCell answers
+    // Fast path: every range fits in the viewport, so valueForCell answers
     // synchronously with real values.
-    if (first >= viewTop && lastRow <= viewBottom) {
+    if (minRow >= viewTop && maxRow <= viewBottom) {
       const next = new Set<string>();
       const nextKeyValues = new Map<string, readonly unknown[]>();
       for (let i = 0; i < ranges.length; i += 1) {
         const { startRow, endRow } = ranges[i];
         if (startRow == null) continue; // eslint-disable-line no-continue
         const rEnd = endRow ?? startRow;
-        for (let r = startRow; r <= rEnd; r += 1) {
+        const low = Math.min(startRow, rEnd);
+        const high = Math.max(startRow, rEnd);
+        for (let r = low; r <= high; r += 1) {
           const { key: k, values } = this.getRowKeyData(r);
           next.add(k);
           nextKeyValues.set(k, values);
@@ -543,10 +551,10 @@ export class KeyedSelection implements Selection {
 
     // Slow path: any row outside the viewport would resolve to a phantom
     // all-null key via undefined valueForCell reads. Defer to async key fetch;
-    // IrisGrid's onSelectionChange handler picks up pendingRows.
+    // IrisGrid's onSelectionChange handler picks up pendingRanges.
     return new KeyedSelection({
       getModel: this.getModel,
-      pendingRows: new GridRange(null, first, null, lastRow),
+      pendingRanges: ranges,
     });
   }
 
@@ -564,7 +572,7 @@ export class KeyedSelection implements Selection {
     return this.copyWith({ maxRows });
   }
 
-  /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRows. */
+  /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRanges. */
   resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
     // Guarantee the click-time endpoints survive: fetches over a ticking table
     // can miss the anchor / target rows if they scrolled between click and reply.
@@ -579,7 +587,7 @@ export class KeyedSelection implements Selection {
       lastSingleRow: null,
       selectedKeyValues: merged,
       maxRows: null,
-      pendingRows: null,
+      pendingRanges: EMPTY_ARRAY,
       endpointKeyData: EMPTY_MAP,
     });
   }
@@ -590,7 +598,10 @@ export class KeyedSelection implements Selection {
    * For inverted selections the count is approximate on ticking tables.
    */
   getUniqueRowCount(): number | null {
-    if (this.pendingRows != null || !this.getModel().hasUniqueSelectionKeys) {
+    if (
+      this.pendingRanges.length > 0 ||
+      !this.getModel().hasUniqueSelectionKeys
+    ) {
       return null;
     }
     if (this.invertedSelection) {
@@ -616,7 +627,7 @@ export class KeyedSelection implements Selection {
       overlayRanges: EMPTY_ARRAY,
       lastSingleRow: null,
       selectedKeyValues: nextKeyValues,
-      pendingRows: null,
+      pendingRanges: EMPTY_ARRAY,
       endpointKeyData: EMPTY_MAP,
     });
   }
