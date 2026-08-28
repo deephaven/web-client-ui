@@ -1,36 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { EMPTY_ARRAY } from '@deephaven/utils';
-import type GridMetrics from './GridMetrics';
-import type GridModel from './GridModel';
-import type GridRange from './GridRange';
+import React, { useEffect, useMemo, useState } from 'react';
+import { type GridRenderState } from './GridRendererTypes';
 import {
   createGridA11ySnapshot,
   formatGridA11yRect,
   getGridA11ySummary,
   GRID_A11Y_ATTRIBUTES,
-  type GridA11ySnapshot,
 } from './GridA11yUtils';
 
+/** Called with the state the grid just drew */
+export type GridDrawListener = (renderState: GridRenderState) => void;
+
 export type GridA11yFallbackProps = {
-  /** The model being displayed */
-  model: GridModel;
-
-  /** Get the metrics of the most recent draw, or null if the grid has not drawn yet */
-  getMetrics: () => GridMetrics | null;
-
-  /** The currently selected ranges */
-  selectedRanges?: readonly GridRange[];
-
-  revision: number;
+  /** Listen for the grid drawing its canvas. Returns a function to stop listening */
+  registerDrawListener: (listener: GridDrawListener) => () => void;
 };
 
 /**
  * The fallback content of the grid canvas. Never painted, but assistive
  * technology and browser automation read it in place of the pixels.
  *
- * The summary only reads values the grid already has on hand, so it is
- * regenerated on every render. The snapshot walks every visible cell, so it is
- * toggled on and off by a button and only tracks the viewport while it is on.
+ * Everything here describes the most recent draw, so it only updates when the
+ * grid draws. The summary reads values the grid already has on hand, while the
+ * snapshot walks every visible cell, so the snapshot is toggled on and off by a
+ * button and only tracks the viewport while it is on.
  *
  * The snapshot is a plain table rather than divs with ARIA roles, as fallback
  * content is never laid out and native table semantics come with the column
@@ -39,44 +31,28 @@ export type GridA11yFallbackProps = {
  * implements.
  */
 export function GridA11yFallback({
-  model,
-  getMetrics,
-  selectedRanges = EMPTY_ARRAY,
-  revision,
+  registerDrawListener,
 }: GridA11yFallbackProps): JSX.Element {
   const [showSnapshot, setShowSnapshot] = useState(false);
-  const [snapshot, setSnapshot] = useState<GridA11ySnapshot | null>(null);
-  const snapshotInputs =
-    useRef<[GridMetrics | null, GridModel, readonly GridRange[]]>();
+  const [renderState, setRenderState] = useState<GridRenderState | null>(null);
 
-  // The grid draws in its own `componentDidUpdate`, so a passive effect is the
-  // first point the metrics of the draw that just happened are available. It has
-  // to run after every render, as a draw changes the metrics without changing
-  // any prop, so it bails unless the inputs changed to avoid updating forever.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const metrics = showSnapshot ? getMetrics() : null;
-    const [prevMetrics, prevModel, prevSelectedRanges] =
-      snapshotInputs.current ?? [];
-    if (
-      metrics === prevMetrics &&
-      model === prevModel &&
-      selectedRanges === prevSelectedRanges
-    ) {
-      return;
+  useEffect(() => registerDrawListener(setRenderState), [registerDrawListener]);
+
+  const snapshot = useMemo(() => {
+    if (!showSnapshot || renderState == null) {
+      return null;
     }
-
-    snapshotInputs.current = [metrics, model, selectedRanges];
-    setSnapshot(
-      metrics == null
-        ? null
-        : createGridA11ySnapshot(model, metrics, selectedRanges)
-    );
-  });
+    const { model, metrics, selectedRanges } = renderState;
+    return createGridA11ySnapshot(model, metrics, selectedRanges);
+  }, [renderState, showSnapshot]);
 
   return (
-    <div {...{ [GRID_A11Y_ATTRIBUTES.revision]: revision }}>
-      <p>{getGridA11ySummary(model, selectedRanges)}</p>
+    <div>
+      {renderState != null && (
+        <p>
+          {getGridA11ySummary(renderState.model, renderState.selectedRanges)}
+        </p>
+      )}
       {/* Kept out of the tab order so sighted keyboard users are not sent to an element they cannot see */}
       <button
         type="button"

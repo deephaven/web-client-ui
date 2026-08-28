@@ -1541,6 +1541,13 @@ describe('accessibility fallback content', () => {
     );
   }
 
+  /** Draw the frame the grid requested, as the browser does before it paints */
+  function drawFrame(component: Grid) {
+    act(() => {
+      component.updateCanvas();
+    });
+  }
+
   it('summarizes the size of the grid', () => {
     const component = makeGridComponent(
       new MockGridModel({ rowCount: 100, columnCount: 3 })
@@ -1558,6 +1565,7 @@ describe('accessibility fallback content', () => {
 
     mouseClick(0, 0, component);
     mouseClick(1, 1, component, { ctrlKey: true });
+    drawFrame(component);
 
     expect(
       getFallback(component).getByText(
@@ -1584,19 +1592,6 @@ describe('accessibility fallback content', () => {
     expect(within(table).getByText('0,0')).toHaveAttribute('data-grid-rect');
   });
 
-  it('exposes the revision of the most recent grid update', () => {
-    const component = makeGridComponent();
-    const fallback = (component.canvas as unknown as HTMLElement)
-      .firstElementChild;
-
-    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '0');
-
-    act(() => {
-      component.forceUpdate();
-    });
-    expect(fallback).toHaveAttribute('data-grid-a11y-revision', '1');
-  });
-
   it('keeps describing the contents as the grid scrolls', () => {
     const component = makeGridComponent();
 
@@ -1606,6 +1601,7 @@ describe('accessibility fallback content', () => {
     fireEvent.wheel(component.canvas as unknown as HTMLElement, {
       deltaY: 500,
     });
+    drawFrame(component);
 
     expect(component.state.top).toBeGreaterThan(0);
     expect(getFallback(component).getByRole('table')).toBeInTheDocument();
@@ -1628,6 +1624,7 @@ describe('accessibility fallback content', () => {
     fireEvent.wheel(component.canvas as unknown as HTMLElement, {
       deltaY: 500,
     });
+    drawFrame(component);
     describeContents(component);
 
     const table = getFallback(component).getByRole('table');

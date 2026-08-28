@@ -2,19 +2,19 @@
 
 Grid draws its contents to an [HTML canvas](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas) rather than to DOM elements. This is what allows it to display quadrillions of rows at 60fps, but it also means there are no per-cell elements for screen readers, browser automation, or other external tooling to inspect.
 
-To bridge that gap, Grid describes its contents in its canvas fallback content. The description is read from the model and the metrics of the most recent render, so it always reflects what is actually on screen.
+To bridge that gap, Grid describes its contents in its canvas fallback content. The description is generated from the model and the metrics of the most recent canvas draw, so it always reflects what is actually on screen.
 
 ## Canvas fallback content
 
 The children of a `<canvas>` element are its fallback content: they are never painted, but assistive technology reads them in place of the pixels. Grid renders two things there.
 
-A one line summary, regenerated on every render, so it only reads values the grid already has on hand:
+A one line summary, regenerated on every draw, so it only reads values the grid already has on hand:
 
 ```text
 Grid with 100 rows and 3 columns. 2 rows selected.
 ```
 
-And a toggle button that turns a **snapshot** on and off: a table of the visible cells and column headers. Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default. While it is on, it is regenerated on every render and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
+And a toggle button that turns a **snapshot** on and off: a table of the visible cells and column headers. Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default. While it is on, it is regenerated on every draw and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
 
 The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. Fallback content is never laid out, so native table semantics are the most reliable thing to hand a screen reader, and `<th scope="col">` associates each cell with its column for free. It is a `table` and not a `grid`, because `grid` promises cell-by-cell keyboard navigation that only the canvas implements. `aria-rowcount` and `aria-colcount` describe the whole grid, while the table only holds the viewport.
 
@@ -22,7 +22,7 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
 
 ```html
 <canvas class="grid-canvas">
-  <div data-grid-a11y-revision="1">
+  <div>
     <p>Grid with 100 rows and 3 columns.</p>
     <button
       type="button"
@@ -72,7 +72,6 @@ The attribute names are exported as `GRID_A11Y_ATTRIBUTES` and typed as `GridA11
 
 | Attribute                 | On                | Description                                                              |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| `data-grid-a11y-revision` | fallback root     | Incremented each time the grid redraws                                   |
 | `data-grid-a11y-describe` | button            | The button that toggles the snapshot on and off                          |
 | `data-grid-a11y-snapshot` | snapshot root     | Present only while the snapshot is on                                    |
 | `data-grid-column`        | headers and cells | Visible column index                                                     |
@@ -83,6 +82,8 @@ The attribute names are exported as `GRID_A11Y_ATTRIBUTES` and typed as `GridA11
 Rows and columns that are collapsed to nothing on screen are left out, and the column header rect covers the bottom level of the header, which is the row that handles sorting. For a grid with column groups, higher level headers are not in the snapshot.
 
 ## Locating a cell on screen
+
+The snapshot elements are never laid out, so they have no geometry of their own. Giving each cell a real box would mean styling and laying out an element per cell on every frame, which is exactly the cost the canvas exists to avoid, so each element carries the bounds the grid already computed as a `data-grid-rect` attribute instead.
 
 `data-grid-rect` is relative to the top left of the canvas. Add the canvas position to convert to page coordinates, for example to dispatch a click at the centre of a cell:
 

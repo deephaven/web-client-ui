@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import GridA11yFallback from './GridA11yFallback';
+import GridA11yFallback, { type GridDrawListener } from './GridA11yFallback';
 import type GridMetrics from './GridMetrics';
+import { type GridRenderState } from './GridRendererTypes';
 import MockGridModel from './MockGridModel';
 
 const COLUMN_WIDTH = 100;
@@ -55,36 +56,38 @@ function makeMetrics({
 
 function renderFallback({
   metrics = makeMetrics(),
-  revision = 0,
 }: {
   metrics?: GridMetrics | null;
-  revision?: number;
 } = {}) {
-  // The grid reads its metrics from a mutable field, so the getter is stable
-  // while the metrics it returns change with each draw
+  // The grid replays its most recent draw to each new listener, then notifies
+  // them again on every draw after that
   let currentMetrics = metrics;
-  const getMetrics = () => currentMetrics;
-
-  const { rerender, ...rest } = render(
-    <GridA11yFallback
-      model={MODEL}
-      getMetrics={getMetrics}
-      revision={revision}
-    />
-  );
+  const listeners = new Set<GridDrawListener>();
+  const notifyListeners = () => {
+    if (currentMetrics == null) {
+      return;
+    }
+    const renderState = {
+      model: MODEL,
+      metrics: currentMetrics,
+      selectedRanges: [],
+    } as unknown as GridRenderState;
+    listeners.forEach(listener => listener(renderState));
+  };
+  const registerDrawListener = (listener: GridDrawListener) => {
+    listeners.add(listener);
+    notifyListeners();
+    return () => {
+      listeners.delete(listener);
+    };
+  };
 
   return {
-    ...rest,
-    /** Redraw with new metrics, as the grid does when it updates */
-    rerender: (nextRevision: number, nextMetrics = currentMetrics) => {
+    ...render(<GridA11yFallback registerDrawListener={registerDrawListener} />),
+    /** Draw the canvas again, as the grid does when it updates */
+    draw: (nextMetrics = currentMetrics) => {
       currentMetrics = nextMetrics;
-      rerender(
-        <GridA11yFallback
-          model={MODEL}
-          getMetrics={getMetrics}
-          revision={nextRevision}
-        />
-      );
+      act(notifyListeners);
     },
   };
 }
@@ -161,23 +164,13 @@ it('announces the description of the viewport', async () => {
   );
 });
 
-it('exposes the revision of the most recent grid update', () => {
-  const { container, rerender } = renderFallback();
-  const fallback = container.firstElementChild;
-
-  expect(fallback).toHaveAttribute('data-grid-a11y-revision', '0');
-
-  rerender(1);
-  expect(fallback).toHaveAttribute('data-grid-a11y-revision', '1');
-});
-
-it('describes the new contents each time the grid updates', async () => {
-  const { rerender } = renderFallback();
+it('describes the new contents each time the grid draws', async () => {
+  const { draw } = renderFallback();
 
   await describeContents();
   expect(screen.getByText('0,0')).toBeInTheDocument();
 
-  rerender(1, makeMetrics({ rows: [2, 3] }));
+  draw(makeMetrics({ rows: [2, 3] }));
 
   expect(screen.queryByText('0,0')).toBeNull();
   expect(screen.getByText('0,2')).toBeInTheDocument();

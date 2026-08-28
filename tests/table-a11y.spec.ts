@@ -8,7 +8,6 @@ import { gotoPage, openTable, waitForLoadingDone } from './utils';
  */
 
 const ATTRIBUTES = {
-  revision: 'data-grid-a11y-revision',
   describe: 'data-grid-a11y-describe',
   snapshot: 'data-grid-a11y-snapshot',
   column: 'data-grid-column',
@@ -23,15 +22,12 @@ function getCanvas(page: Page): Locator {
 
 /** The fallback content is never painted, so the button cannot be clicked for real */
 async function describeContents(canvas: Locator): Promise<Locator> {
-  const fallback = canvas.locator(`[${ATTRIBUTES.revision}]`);
-  await expect(fallback).toHaveCount(1);
-
-  const button = fallback.locator(`button[${ATTRIBUTES.describe}]`);
+  const button = canvas.locator(`button[${ATTRIBUTES.describe}]`);
   await expect(button).toHaveAttribute('aria-pressed', 'false');
   await expect(button).toHaveText('Describe the grid contents');
   await button.dispatchEvent('click');
 
-  const snapshot = fallback.locator(`[${ATTRIBUTES.snapshot}]`);
+  const snapshot = canvas.locator(`[${ATTRIBUTES.snapshot}]`);
   await expect(snapshot).toHaveCount(1);
   await expect(button).toHaveText('Hide the grid contents');
   return snapshot;

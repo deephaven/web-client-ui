@@ -81,7 +81,7 @@ import {
   type CellInputRendererRegistry,
   type CellInputProps,
 } from './GridRendererTypes';
-import GridA11yFallback from './GridA11yFallback';
+import GridA11yFallback, { type GridDrawListener } from './GridA11yFallback';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -358,6 +358,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   renderState: GridRenderState;
 
+  // The state of the most recent draw, or null if the grid has not drawn yet
+  private lastDrawnRenderState: GridRenderState | null;
+
+  // Listeners for when the grid draws its canvas.
+  private drawListeners: Set<GridDrawListener>;
+
   // Track the cursor that is currently added to the document
   // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
   // Note: on document, not body so that cursor styling can be combined with
@@ -395,7 +401,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
-    this.getMetrics = this.getMetrics.bind(this);
+    this.registerDrawListener = this.registerDrawListener.bind(this);
     this.getSelectedRanges = this.getSelectedRanges.bind(this);
 
     const {
@@ -420,6 +426,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.metrics = null;
 
     this.renderState = {} as GridRenderState;
+
+    this.lastDrawnRenderState = null;
+    this.drawListeners = new Set();
 
     // Track the cursor that is currently added to the document
     // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
@@ -1075,9 +1084,22 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  /** Gets the metrics of the most recent render, or null if the grid has not drawn yet */
-  private getMetrics(): GridMetrics | null {
-    return this.metrics;
+  /**
+   * Listen for the grid finishing a draw of its canvas. Called immediately with
+   * the most recent draw if the grid has already drawn.
+   * @param listener Called with the state that was drawn
+   * @returns A function to stop listening
+   */
+  private registerDrawListener(listener: GridDrawListener): () => void {
+    this.drawListeners.add(listener);
+
+    if (this.lastDrawnRenderState != null) {
+      listener(this.lastDrawnRenderState);
+    }
+
+    return () => {
+      this.drawListeners.delete(listener);
+    };
   }
 
   /** Gets the selected ranges */
@@ -1786,6 +1808,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     renderer.drawCanvas(renderState);
 
     context.restore();
+
+    this.lastDrawnRenderState = renderState;
+    this.drawListeners.forEach(listener => {
+      listener(renderState);
+    });
   }
 
   /**
@@ -2455,8 +2482,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   render(): ReactNode {
-    const { children, model } = this.props;
-    const { cursor, selectedRanges, updateRevision } = this.state;
+    const { children } = this.props;
+    const { cursor } = this.state;
 
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>
@@ -2475,12 +2502,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           onMouseLeave={this.handleMouseLeave}
           tabIndex={0}
         >
-          <GridA11yFallback
-            model={model}
-            getMetrics={this.getMetrics}
-            selectedRanges={selectedRanges}
-            revision={updateRevision}
-          />
+          <GridA11yFallback registerDrawListener={this.registerDrawListener} />
         </canvas>
         {this.renderInputField()}
         {children}

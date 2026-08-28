@@ -9,9 +9,6 @@ import GridRange from './GridRange';
  * treat them as a public contract.
  */
 export const GRID_A11Y_ATTRIBUTES = {
-  /** On the root of the fallback content. Incremented on each grid update */
-  revision: 'data-grid-a11y-revision',
-
   /** On the button that generates a snapshot */
   describe: 'data-grid-a11y-describe',
 

@@ -8,7 +8,6 @@ import type { GridA11yAttributes, GridA11yRect } from '@deephaven/grid';
  * grid ever renames one.
  */
 const ATTRIBUTES = {
-  revision: 'data-grid-a11y-revision',
   describe: 'data-grid-a11y-describe',
   snapshot: 'data-grid-a11y-snapshot',
   column: 'data-grid-column',
@@ -80,8 +79,8 @@ function parseRect(value: string | null): GridA11yRect | null {
  * @returns Locator for the rendered snapshot
  */
 async function showSnapshot(canvas: Locator): Promise<Locator> {
-  const fallback = canvas.locator(`[${ATTRIBUTES.revision}]`);
-  if ((await fallback.count()) === 0) {
+  const describeButton = canvas.locator(`[${ATTRIBUTES.describe}]`);
+  if ((await describeButton.count()) === 0) {
     throw new Error(
       'No Deephaven grid found. Ensure the locator resolves to a grid canvas.'
     );
@@ -90,7 +89,7 @@ async function showSnapshot(canvas: Locator): Promise<Locator> {
   const snapshot = canvas.locator(`[${ATTRIBUTES.snapshot}]`);
   if ((await snapshot.count()) === 0) {
     // The button is canvas fallback content, so it is never painted and cannot be clicked
-    await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
+    await describeButton.dispatchEvent('click');
     await expect.poll(async () => snapshot.count()).toBeGreaterThan(0);
   }
 
