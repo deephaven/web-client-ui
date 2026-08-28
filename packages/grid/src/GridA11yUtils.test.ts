@@ -7,26 +7,48 @@ const COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 20;
 const HEADER_HEIGHT = 30;
 const ROW_HEADER_WIDTH = 30;
+const MAX_X = 400;
 
 /**
  * Make metrics for a viewport of the given size, laid out left to right and
  * top to bottom. Any column in `hiddenColumns` is collapsed to zero width.
+ * Floating columns are pinned to the edges of the grid, so their coordinates
+ * take priority over any scrollable coordinates for the same column.
  */
 function makeMetrics({
   columns = [0, 1, 2],
   rows = [0, 1],
   hiddenColumns = [] as number[],
+  floatingLeftColumns = [] as number[],
+  floatingRightColumns = [] as number[],
 } = {}): GridMetrics {
   const allColumnWidths = new Map<number, number>();
   const allColumnXs = new Map<number, number>();
   const modelColumns = new Map<number, number>();
+  const widthOf = (column: number): number =>
+    hiddenColumns.includes(column) ? 0 : COLUMN_WIDTH;
+  const setColumn = (column: number, columnX: number): void => {
+    allColumnWidths.set(column, widthOf(column));
+    allColumnXs.set(column, columnX);
+    modelColumns.set(column, column);
+  };
+
   let x = 0;
   columns.forEach(column => {
-    const width = hiddenColumns.includes(column) ? 0 : COLUMN_WIDTH;
-    allColumnWidths.set(column, width);
-    allColumnXs.set(column, x);
-    modelColumns.set(column, column);
-    x += width;
+    setColumn(column, x);
+    x += widthOf(column);
+  });
+
+  x = 0;
+  floatingLeftColumns.forEach(column => {
+    setColumn(column, x);
+    x += widthOf(column);
+  });
+
+  x = MAX_X;
+  [...floatingRightColumns].reverse().forEach(column => {
+    x -= widthOf(column);
+    setColumn(column, x);
   });
 
   const allRowHeights = new Map<number, number>();
@@ -41,6 +63,7 @@ function makeMetrics({
   return {
     visibleColumns: columns,
     visibleRows: rows,
+    floatingColumns: [...floatingLeftColumns, ...floatingRightColumns],
     allColumnWidths,
     allColumnXs,
     allRowHeights,
@@ -154,6 +177,111 @@ describe('createGridA11ySnapshot', () => {
     expect(snapshot.description).toBe(
       'Grid with 100 rows and 3 columns. Showing rows 1 to 2, columns 0, 1, 2.'
     );
+  });
+
+  it('includes floating columns in left to right order', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+      floatingRightColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [3, 4, 5],
+        floatingLeftColumns: [0],
+        floatingRightColumns: [9],
+      })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([
+      0, 3, 4, 5, 9,
+    ]);
+    expect(snapshot.rows[0].cells.map(({ text }) => text)).toEqual([
+      '0,0',
+      '3,0',
+      '4,0',
+      '5,0',
+      '9,0',
+    ]);
+    expect(snapshot.description).toBe(
+      'Grid with 100 rows and 10 columns. Showing rows 1 to 2, columns 0, 3, 4, 5, 9.'
+    );
+  });
+
+  it('positions floating columns where they are pinned', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+      floatingRightColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [3, 4, 5],
+        floatingLeftColumns: [0],
+        floatingRightColumns: [9],
+      })
+    );
+
+    expect(snapshot.columns[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: 0,
+      width: COLUMN_WIDTH,
+      height: HEADER_HEIGHT,
+    });
+    expect(snapshot.rows[1].cells[4].rect).toEqual({
+      x: ROW_HEADER_WIDTH + MAX_X - COLUMN_WIDTH,
+      y: HEADER_HEIGHT + ROW_HEIGHT,
+      width: COLUMN_WIDTH,
+      height: ROW_HEIGHT,
+    });
+  });
+
+  it('describes a floating column once when it is also scrolled into view', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columns: [0, 1, 2], floatingLeftColumns: [0] })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([0, 1, 2]);
+    expect(snapshot.rows[0].cells.map(({ text }) => text)).toEqual([
+      '0,0',
+      '1,0',
+      '2,0',
+    ]);
+  });
+
+  it('leaves out floating columns that are collapsed to nothing on screen', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+      floatingRightColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [3, 4, 5],
+        floatingLeftColumns: [0],
+        floatingRightColumns: [9],
+        hiddenColumns: [0, 4],
+      })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([3, 5, 9]);
+    expect(snapshot.rows[0].cells.map(({ text }) => text)).toEqual([
+      '3,0',
+      '5,0',
+      '9,0',
+    ]);
   });
 
   it('includes the selection in the description', () => {

@@ -207,11 +207,23 @@ export function createGridA11ySnapshot(
   const columns: GridA11yColumnSnapshot[] = [];
   const rows: GridA11yRowSnapshot[] = [];
 
+  const isHiddenColumn = (column: VisibleIndex): boolean =>
+    (metrics.allColumnWidths.get(column) ?? 0) <= 0;
+  const isHiddenRow = (row: VisibleIndex): boolean =>
+    (metrics.allRowHeights.get(row) ?? 0) <= 0;
+
   // Hidden columns and rows are collapsed to nothing on screen, so leave them
   // out rather than describing something the user cannot see
-  const snapshotColumns = metrics.visibleColumns.filter(
-    column => (metrics.allColumnWidths.get(column) ?? 0) > 0
-  );
+  // Floating columns are pinned to the edges of the grid and can also appear in
+  // visibleColumns, so dedupe them and describe everything in left to right order
+  const snapshotColumns = [
+    ...new Set([...metrics.floatingColumns, ...metrics.visibleColumns]),
+  ]
+    .filter(column => !isHiddenColumn(column))
+    .sort(
+      (a, b) =>
+        (metrics.allColumnXs.get(a) ?? 0) - (metrics.allColumnXs.get(b) ?? 0)
+    );
 
   snapshotColumns.forEach(column => {
     const modelColumn = metrics.modelColumns.get(column);
@@ -227,7 +239,7 @@ export function createGridA11ySnapshot(
   });
 
   metrics.visibleRows.forEach(row => {
-    if ((metrics.allRowHeights.get(row) ?? 0) <= 0) {
+    if (isHiddenRow(row)) {
       return;
     }
     const modelRow = metrics.modelRows.get(row);
