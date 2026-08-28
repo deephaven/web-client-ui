@@ -81,9 +81,9 @@ describe('calculateTextWidth', () => {
     );
 
     const charWidths = allCharWidths.get(font);
-    expect(charWidths.get('a')).toEqual(10);
+    expect(charWidths.get('ab')).toEqual(30);
+    expect(charWidths.get('bc')).toEqual(50);
     expect(charWidths.get('b')).toEqual(20);
-    expect(charWidths.get('c')).toEqual(30);
     expect(textWidth).toEqual(60);
   });
 
@@ -114,7 +114,7 @@ describe('calculateTextWidth', () => {
     expect(secondRun).toEqual(100);
   });
 
-  it('should terminate early if max width is exceeded', () => {
+  it('should clamp the result to max width', () => {
     const input = 'abcde';
     const mockContext = {
       measureText: jest.fn().mockImplementation(char => ({
@@ -130,6 +130,26 @@ describe('calculateTextWidth', () => {
     );
 
     expect(textWidth).toEqual(50);
+  });
+
+  it('should stop measuring text too long to cache once max width is exceeded', () => {
+    const input = 'ab'.repeat(GridMetricCalculator.MAX_CACHED_TEXT_LENGTH);
+    const mockContext = {
+      measureText: jest.fn().mockImplementation(chars => ({
+        width: chars.length * 10,
+      })),
+    };
+
+    const textWidth = gridMetricCalculator.calculateTextWidth(
+      mockContext,
+      font,
+      input,
+      50
+    );
+
+    expect(textWidth).toEqual(50);
+    // Only the first few characters should have been measured, not the whole string
+    expect(mockContext.measureText.mock.calls.length).toBeLessThan(10);
   });
 
   // This test checks that the calculation logic is equivalent to the native canvas one.

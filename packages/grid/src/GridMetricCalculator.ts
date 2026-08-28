@@ -119,6 +119,12 @@ export class GridMetricCalculator {
   /** The size of the caches this calculator stores */
   static CACHE_SIZE = 10000;
 
+  /**
+   * Text longer than this is measured without being cached. It is unlikely to
+   * repeat, and measuring it stops early once `maxWidth` is exceeded anyway.
+   */
+  static MAX_CACHED_TEXT_LENGTH = 128;
+
   /** The maximum column width as a percentage of the full grid */
   static MAX_COLUMN_WIDTH = 0.8;
 
@@ -155,6 +161,9 @@ export class GridMetricCalculator {
   /** Cache of fonts to width of all chars */
   protected allCharWidths: Map<string, Map<string, number>>;
 
+  /** Cache of fonts to the measured width of whole strings */
+  protected allTextWidths: Map<string, Map<string, number>>;
+
   /** Map from visible index to model index for rows (e.g. reversing movedRows operations) */
   protected modelRows: VisibleToModelMap;
 
@@ -177,6 +186,7 @@ export class GridMetricCalculator {
     fontWidthsLower = new Map(),
     fontWidthsUpper = new Map(),
     allCharWidths = new Map(),
+    allTextWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
     movedRows = [] as readonly MoveOperation[],
@@ -189,6 +199,7 @@ export class GridMetricCalculator {
     this.calculatedRowHeights = calculatedRowHeights;
     this.calculatedColumnWidths = calculatedColumnWidths;
     this.allCharWidths = allCharWidths;
+    this.allTextWidths = allTextWidths;
     this.fontWidthsLower = fontWidthsLower;
     this.contentColumnWidths = contentColumnWidths;
     this.contentRowHeights = contentRowHeights;
@@ -1894,48 +1905,93 @@ export class GridMetricCalculator {
     maxWidth?: number
   ): number {
     if (text.length === 0) return 0;
-    context.font = font;
 
-    if (!this.allCharWidths.has(font)) {
-      this.allCharWidths.set(font, new Map());
+    if (text.length > GridMetricCalculator.MAX_CACHED_TEXT_LENGTH) {
+      return this.measureTextWidth(context, font, text, maxWidth);
     }
-    const charWidths = getOrThrow(this.allCharWidths, font);
+
+    let textWidths = this.allTextWidths.get(font);
+    if (textWidths === undefined) {
+      textWidths = new Map();
+      this.allTextWidths.set(font, textWidths);
+    }
+
+    let width = textWidths.get(text);
+    if (width === undefined) {
+      width = this.measureTextWidth(context, font, text);
+      textWidths.set(text, width);
+      trimMap(textWidths);
+    }
+
+    return maxWidth !== undefined && width > maxWidth ? maxWidth : width;
+  }
+
+  /**
+   * Measure the width of a string, summing the widths of each pair of adjacent characters so that
+   * font kerning is taken into account. Character and pair widths are cached per font.
+   * @param context The canvas rendering context
+   * @param font The font to measure with
+   * @param text The text to measure, must not be empty
+   * @param maxWidth The width to stop measuring at, if any
+   */
+  protected measureTextWidth(
+    context: CanvasRenderingContext2D,
+    font: string,
+    text: string,
+    maxWidth?: number
+  ): number {
+    let charWidths = this.allCharWidths.get(font);
+    if (charWidths === undefined) {
+      charWidths = new Map();
+      this.allCharWidths.set(font, charWidths);
+    }
+
+    const { length } = text;
+    if (length === 1) {
+      return this.getCharWidth(context, font, charWidths, text);
+    }
 
     let result = 0;
-    for (let i = 0; i < text.length; i += 1) {
-      const char = text[i];
+    let char = text[0];
+    for (let i = 0; i < length - 1; i += 1) {
       const nextChar = text[i + 1];
-
-      if (!charWidths.has(char)) {
-        charWidths.set(char, context.measureText(char).width);
+      result += this.getCharWidth(context, font, charWidths, char + nextChar);
+      if (i > 0) {
+        // Need to remove the current character that was already counted in the previous pair
+        result -= this.getCharWidth(context, font, charWidths, char);
       }
 
-      if (nextChar !== undefined) {
-        if (!charWidths.has(nextChar)) {
-          charWidths.set(nextChar, context.measureText(nextChar).width);
-        }
-
-        const pair = char + nextChar;
-        if (!charWidths.has(pair)) {
-          charWidths.set(pair, context.measureText(pair).width);
-        }
-
-        result += getOrThrow(charWidths, pair);
-        if (i > 0) {
-          // Need to remove the current character that was already counted in the previous pair
-          result -= getOrThrow(charWidths, char);
-        }
-
-        if (maxWidth !== undefined && result > maxWidth) {
-          return maxWidth;
-        }
-      } else if (result === 0) {
-        // On last char and no pair found before that => Only one char in string
-        result = getOrThrow(charWidths, char);
+      if (maxWidth !== undefined && result > maxWidth) {
+        return maxWidth;
       }
+
+      char = nextChar;
     }
 
     return result;
+  }
+
+  /**
+   * Get the cached width of a single character or a pair of characters, measuring it if needed.
+   * @param context The canvas rendering context
+   * @param font The font to measure with
+   * @param charWidths The character width cache for `font`
+   * @param chars The character or character pair to get the width of
+   */
+  protected getCharWidth(
+    context: CanvasRenderingContext2D,
+    font: string,
+    charWidths: Map<string, number>,
+    chars: string
+  ): number {
+    let width = charWidths.get(chars);
+    if (width === undefined) {
+      // Only set the font when something actually needs to be measured, assigning it re-parses the font string
+      context.font = font;
+      width = context.measureText(chars).width;
+      charWidths.set(chars, width);
+    }
+    return width;
   }
 
   /**
