@@ -1,18 +1,31 @@
 /**
  * A minimal memoizer for the hot per cell render paths.
  *
- * `memoizeClear` is built on memoizee, whose argument dispatch and LRU
- * bookkeeping cost far more than the work it caches once a function is called
- * for every visible cell of every frame. This keeps the same "clear the whole
- * cache when it fills" behaviour with a plain string keyed Map.
+ * `memoizeClear` wraps memoizee, which routes every call through a
+ * configurable argument resolver, a nested lookup structure and an LRU queue
+ * that has to be reordered on each hit. That is a reasonable trade for
+ * occasional calls, but a function invoked once per visible cell of every
+ * frame pays it tens of thousands of times a second: profiling a grid scroll
+ * found more time spent inside memoizee than in the truncation and
+ * tokenization it was caching.
+ *
+ * This flattens the arguments into one string key and does a single `Map`
+ * lookup. There is no eviction queue to maintain because the entire cache is
+ * dropped once it fills, which is the behaviour `memoizeClear` already settled
+ * on to avoid LRU thrashing.
+ *
+ * The returned function does not forward `this`, so the memoized function must
+ * not depend on it.
  */
 
 const objectKeys = new WeakMap<object, string>();
 let nextObjectKey = 0;
 
 /**
- * Objects are keyed by identity, primitives by type and value so that values
- * such as the number 1 and the string '1' cannot collide.
+ * Builds the key fragment for a single argument. Primitives are tagged with
+ * their type so that values such as the number 1 and the string '1' cannot
+ * collide, and objects get a lazily assigned id so they are keyed by identity
+ * instead of being serialized.
  */
 function argKey(arg: unknown): string {
   const type = typeof arg;
@@ -29,8 +42,9 @@ function argKey(arg: unknown): string {
 }
 
 /**
- * @param fn The function to memoize
- * @param max Number of entries to hold before clearing the cache
+ * @param fn The function to memoize. Must not depend on `this`
+ * @param max Number of entries to hold before clearing the whole cache
+ * @returns The memoized function
  */
 export function fastMemoize<A extends unknown[], R>(
   fn: (...args: A) => R,
@@ -44,6 +58,7 @@ export function fastMemoize<A extends unknown[], R>(
       key += `\u0000${argKey(args[i])}`;
     }
 
+    // Only fall back to `has` when the value is undefined, so a hit costs one lookup
     const cached = cache.get(key);
     if (cached !== undefined || cache.has(key)) {
       return cached as R;
