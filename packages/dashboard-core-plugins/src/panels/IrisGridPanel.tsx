@@ -76,6 +76,7 @@ import {
   type ModelIndex,
   type ModelSizeMap,
   type MoveOperation,
+  type Selection,
 } from '@deephaven/grid';
 import type {
   TablePluginComponent,
@@ -245,6 +246,9 @@ interface IrisGridPanelState {
   frozenColumns?: readonly ColumnName[];
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
 
+  // Current grid selection for memoization in getPluginContent
+  gridSelection: Selection | null;
+
   // eslint-disable-next-line react/no-unused-state
   panelState?: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
@@ -295,6 +299,7 @@ export class IrisGridPanel extends PureComponent<
     this.handleDataSelected = this.handleDataSelected.bind(this);
     this.handleError = this.handleError.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
+    this.handleGridSelectionChange = this.handleGridSelectionChange.bind(this);
     this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -364,6 +369,7 @@ export class IrisGridPanel extends PureComponent<
       isStuckToRight: false,
       conditionalFormats: [],
       selectDistinctColumns: [],
+      gridSelection: null,
     };
   }
 
@@ -470,7 +476,8 @@ export class IrisGridPanel extends PureComponent<
     (
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
-      pluginState: unknown
+      pluginState: unknown,
+      gridSel: Selection | null
     ) => {
       if (
         !model ||
@@ -486,7 +493,6 @@ export class IrisGridPanel extends PureComponent<
         panel: this,
       };
 
-      const gridSel = this.irisGrid.current?.state.gridSelection;
       const selectedRanges = selectionToRanges(gridSel);
 
       return (
@@ -706,6 +712,10 @@ export class IrisGridPanel extends PureComponent<
     const { glEventHub, onStateChange } = this.props;
     glEventHub.emit(IrisGridEvent.STATE_CHANGED, this);
     onStateChange?.(irisGridState, gridState);
+  }
+
+  handleGridSelectionChange(selection: Selection): void {
+    this.setState({ gridSelection: selection });
   }
 
   handlePluginStateChange(pluginState: unknown): void {
@@ -1252,8 +1262,10 @@ export class IrisGridPanel extends PureComponent<
       error != null ? `Unable to open table. ${error}` : undefined;
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
+    const { gridSelection } = this.state;
     const childrenContent =
-      children ?? this.getPluginContent(Plugin, model, pluginState);
+      children ??
+      this.getPluginContent(Plugin, model, pluginState, gridSelection);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
     const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
@@ -1333,6 +1345,7 @@ export class IrisGridPanel extends PureComponent<
             onDataSelected={this.handleDataSelected}
             onError={this.handleError}
             onStateChange={this.handleGridStateChange}
+            onSelectionChange={this.handleGridSelectionChange}
             onContextMenu={this.handleContextMenu}
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
             customFilters={pluginFilters}
