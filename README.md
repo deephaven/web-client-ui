@@ -179,45 +179,7 @@ See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/aut
 - `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
 - `npm run e2e:performance`: Runs grid performance benchmark tests against the main app (requires a Deephaven server). Skipped by default in CI due to resource constraints.
 
-### Grid Performance Testing
-
-For performance-sensitive changes to the Grid component, there are two ways to benchmark:
-
-**1. Main App Tests** (`grid-performance.spec.ts`)
-
-Tests scroll performance with real table data from a Deephaven server:
-
-```bash
-npm run e2e:performance
-```
-
-**2. Standalone Perf App** (`grid-perf-app.spec.ts`)
-
-A lightweight test app in `tests/grid-perf-app/` that uses mock data. This is useful for:
-
-- Testing without a Deephaven server
-- Benchmarking row and column counts the test data does not reach
-- Iterating on Grid changes quickly
-
-To use the perf app:
-
-```bash
-# Install dependencies (one time)
-cd tests/grid-perf-app && npm install
-
-# Start the app
-npm run dev
-
-# In another terminal (from the repo root), run the perf app tests
-npm run e2e:grid-performance
-```
-
-The perf app supports query params to configure the grid:
-
-- `rows`: Number of rows (default: 1000000)
-- `cols`: Number of columns (default: 100)
-
-Example: `http://localhost:4020/?rows=100000&cols=50`
+For benchmarking performance-sensitive Grid changes, see [Grid Performance Testing](./tests/grid-perf-app/README.md).
 
 ### Docker
 
