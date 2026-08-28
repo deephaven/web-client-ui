@@ -358,9 +358,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   renderState: GridRenderState;
 
-  // The state of the most recent draw, or null if the grid has not drawn yet
-  private lastDrawnRenderState: GridRenderState | null;
-
   // Listeners for when the grid draws its canvas.
   private drawListeners: Set<GridDrawListener>;
 
@@ -427,7 +424,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.renderState = {} as GridRenderState;
 
-    this.lastDrawnRenderState = null;
     this.drawListeners = new Set();
 
     // Track the cursor that is currently added to the document
@@ -1093,9 +1089,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   private registerDrawListener(listener: GridDrawListener): () => void {
     this.drawListeners.add(listener);
 
-    if (this.lastDrawnRenderState != null) {
-      listener(this.lastDrawnRenderState);
-    }
+    listener(this.renderState);
 
     return () => {
       this.drawListeners.delete(listener);
@@ -1809,7 +1803,6 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     context.restore();
 
-    this.lastDrawnRenderState = renderState;
     this.drawListeners.forEach(listener => {
       listener(renderState);
     });
