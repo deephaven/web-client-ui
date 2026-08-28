@@ -1475,21 +1475,25 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param extendSelection Whether to extend the current selection (eg. holding Shift)
    * @param keepCursorInView Whether to move the viewport so that the cursor is in view
    * @param maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
+   * @param commit Whether to commit the selection after moving. Drag paths pass `false` to keep the movement a transient overlay — committing per-move would trigger a resolve/fetch on every mousemove for keyed selections.
    */
   moveCursorToPosition(
     column: GridRangeIndex,
     row: GridRangeIndex,
     extendSelection = false,
     keepCursorInView = true,
-    maximizePreviousRange = false
+    maximizePreviousRange = false,
+    commit = true
   ): void {
     if (!extendSelection) {
       this.beginSelection(column, row);
     }
 
     this.moveSelection(column, row, extendSelection, maximizePreviousRange);
-    // Commit after every keyboard move so KeyedSelection resolves keys immediately.
-    this.commitSelection();
+    if (commit) {
+      // Commit after every keyboard move so KeyedSelection resolves keys immediately.
+      this.commitSelection();
+    }
 
     if (keepCursorInView) {
       this.moveViewToCell(column, row);

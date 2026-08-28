@@ -198,7 +198,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
           column = rightVisible + 1;
         }
       }
-      grid.moveCursorToPosition(column, row, true, true);
+      // Transient overlay during drag — onUp performs the settled commit.
+      grid.moveCursorToPosition(column, row, true, true, false, false);
     }
     return true;
   }
@@ -273,10 +274,14 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const maxX = deltaX > 0 && column != null ? column : columnCount - 1;
     const minY = deltaY < 0 && row != null ? row : 0;
     const maxY = deltaY > 0 && row != null ? row : rowCount - 1;
+    // Transient overlay during auto-scroll drag — onUp performs the settled commit.
     grid.moveCursorToPosition(
       Math.min(Math.max(minX, selectionEndColumn + deltaX), maxX),
       Math.min(Math.max(minY, selectionEndRow + deltaY), maxY),
-      true
+      true,
+      true,
+      false,
+      false
     );
     this.lastTriggerTime = Date.now();
   }
