@@ -2,7 +2,7 @@ import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
   type BoundedAxisRange,
   type CommitMouseGestureOptions,
-  GridRange,
+  type GridRange,
   type GridRangeIndex,
   type ModelIndex,
   type Selection,
