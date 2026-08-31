@@ -21,6 +21,7 @@ interface FPSResult {
   maxFrameTime: number;
   frameCount: number;
   droppedFrames: number;
+  stalledFrames: number;
 }
 
 /**
@@ -53,8 +54,9 @@ async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
     return (window as any).__frameTimings as number[];
   });
 
-  // Filter out outliers (frames > 500ms are likely idle periods)
-  const validTimings = timings.filter(t => t < 500 && t > 0);
+  // Only drop non-positive/invalid timings; retain long frames (stalls) so
+  // that severe regressions are not hidden from the reported metrics.
+  const validTimings = timings.filter(t => t > 0);
 
   if (validTimings.length === 0) {
     return {
@@ -64,6 +66,7 @@ async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
       maxFrameTime: 0,
       frameCount: 0,
       droppedFrames: 0,
+      stalledFrames: 0,
     };
   }
 
@@ -74,6 +77,8 @@ async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
   const maxFrameTime = Math.max(...validTimings);
   // Frames taking > 33ms (less than 30fps) are considered "dropped"
   const droppedFrames = validTimings.filter(t => t > 33).length;
+  // Frames taking >= 500ms are likely severe stalls, reported separately
+  const stalledFrames = validTimings.filter(t => t >= 500).length;
 
   return {
     fps,
@@ -82,6 +87,7 @@ async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
     maxFrameTime,
     frameCount: validTimings.length,
     droppedFrames,
+    stalledFrames,
   };
 }
 
@@ -128,6 +134,12 @@ function logResults(
   console.log(
     `  Dropped frames (>33ms): ${result.droppedFrames} (${(
       (result.droppedFrames / result.frameCount) *
+      100
+    ).toFixed(1)}%)`
+  );
+  console.log(
+    `  Stalled frames (>=500ms): ${result.stalledFrames} (${(
+      (result.stalledFrames / result.frameCount) *
       100
     ).toFixed(1)}%)`
   );

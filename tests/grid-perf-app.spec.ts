@@ -52,7 +52,7 @@ async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
     return (window as any).__frameTimings as number[];
   });
 
-  const validTimings = timings.filter(t => t < 500 && t > 0);
+  const validTimings = timings.filter(t => t > 0);
 
   if (validTimings.length === 0) {
     return {
