@@ -13,6 +13,7 @@ export default defineConfig({
     port: 4020,
   },
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       // Resolve local packages to their source for development
       '@deephaven/grid': path.resolve(packagesDir, 'grid/src'),
