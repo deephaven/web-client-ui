@@ -72,6 +72,23 @@ export class RangedSelection implements Selection {
     return false;
   }
 
+  isColumnSelected(column: VisibleIndex): boolean {
+    const { rowCount } = this.getModel();
+    for (let i = 0; i < this.ranges.length; i += 1) {
+      const range = this.ranges[i];
+      const columnInRange =
+        range.startColumn === null ||
+        (range.startColumn <= column && column <= (range.endColumn ?? 0));
+      const allRowsSelected =
+        range.startRow === null ||
+        (range.startRow === 0 && (range.endRow ?? -1) === rowCount - 1);
+      if (columnInRange && allRowsSelected) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   isValid(columnCount: number, rowCount: number): boolean {
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];

@@ -132,6 +132,27 @@ describe('isCellSelected', () => {
   });
 });
 
+describe('isColumnSelected', () => {
+  it('returns true only for an inverted-empty (select-all) selection', () => {
+    expect(allRows().isColumnSelected(0)).toBe(true);
+    expect(allRows().isColumnSelected(COLUMN_COUNT - 1)).toBe(true);
+  });
+
+  it('returns false for a non-inverted selection even with keys', () => {
+    expect(singleRow(5).isColumnSelected(0)).toBe(false);
+    expect(empty().isColumnSelected(0)).toBe(false);
+  });
+
+  it('returns false for an inverted selection with exclusions', () => {
+    const excludeOne = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set([keyOf(5)]),
+      invertedSelection: true,
+    });
+    expect(excludeOne.isColumnSelected(0)).toBe(false);
+  });
+});
+
 // ─── getLastSingleSelectedRow ─────────────────────────────────────────────────
 
 describe('getLastSingleSelectedRow', () => {

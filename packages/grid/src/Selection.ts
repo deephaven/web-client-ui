@@ -43,6 +43,8 @@ export interface SelectionQueries {
   isCellSelected: (column: VisibleIndex, row: VisibleIndex) => boolean;
   /** True when the entire row is part of the selection. */
   isRowSelected: (row: VisibleIndex) => boolean;
+  /** True when the entire column is part of the selection. */
+  isColumnSelected: (column: VisibleIndex) => boolean;
   /** False if any selected range exceeds `columnCount` or `rowCount`. */
   isValid: (columnCount: number, rowCount: number) => boolean;
   /**

@@ -231,6 +231,11 @@ export class KeyedSelection implements Selection {
     return this.selectedKeys.has(key) || this.gestureKeys.has(key);
   }
 
+  // Only fully selected when the inversion covers every row (i.e. select-all).
+  isColumnSelected(_column: VisibleIndex): boolean {
+    return this.invertedSelection && this.selectedKeys.size === 0;
+  }
+
   // eslint-disable-next-line class-methods-use-this
   isValid(_columnCount: number, _rowCount: number): boolean {
     return true;

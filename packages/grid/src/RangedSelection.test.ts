@@ -36,6 +36,10 @@ function fullRow(row: number) {
   return new RangedSelection([new GridRange(null, row, null, row)], getModel);
 }
 
+function fullColumn(col: number) {
+  return new RangedSelection([new GridRange(col, null, col, null)], getModel);
+}
+
 // ─── isEmpty ─────────────────────────────────────────────────────────────────
 
 describe('isEmpty', () => {
@@ -128,6 +132,29 @@ describe('isRowSelected', () => {
   it('returns false when column bounds do not cover the full row', () => {
     const sel = range(0, 5, COLUMN_COUNT - 2, 5);
     expect(sel.isRowSelected(5)).toBe(false);
+  });
+});
+
+// ─── isColumnSelected ────────────────────────────────────────────────────────
+
+describe('isColumnSelected', () => {
+  it('returns false for empty selection', () => {
+    expect(empty().isColumnSelected(0)).toBe(false);
+  });
+
+  it('returns true when null row bounds span the column', () => {
+    expect(fullColumn(3).isColumnSelected(3)).toBe(true);
+    expect(fullColumn(3).isColumnSelected(4)).toBe(false);
+  });
+
+  it('returns true when explicit row bounds cover [0, rowCount-1]', () => {
+    const sel = range(5, 0, 5, ROW_COUNT - 1);
+    expect(sel.isColumnSelected(5)).toBe(true);
+  });
+
+  it('returns false when row bounds do not cover the full column', () => {
+    const sel = range(5, 0, 5, ROW_COUNT - 2);
+    expect(sel.isColumnSelected(5)).toBe(false);
   });
 });
 
