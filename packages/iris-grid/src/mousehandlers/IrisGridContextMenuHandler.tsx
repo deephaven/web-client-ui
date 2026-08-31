@@ -562,7 +562,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       const isCellInOriginalRange =
         rowIndex != null &&
         columnIndex != null &&
-        (gridSelection?.isCellSelected(rowIndex, columnIndex) ?? false);
+        (gridSelection?.isCellSelected(columnIndex, rowIndex) ?? false);
 
       const canPasteInCell = model.isEditableRange(
         GridRange.makeCell(columnIndex, rowIndex)
@@ -664,7 +664,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     let effectiveSelection: Selection;
     if (gridSelection == null || gridSelection.isEmpty()) {
       effectiveSelection = makeSingleCellSelection();
-    } else if (gridSelection.isCellSelected(rowIndex, columnIndex)) {
+    } else if (gridSelection.isCellSelected(columnIndex, rowIndex)) {
       effectiveSelection = gridSelection.truncate(MAX_MULTISELECT_ROWS);
     } else {
       effectiveSelection = makeSingleCellSelection();
@@ -932,7 +932,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const clickedInSelection =
       rowIndex != null &&
       columnIndex != null &&
-      (gridSelection?.isCellSelected(rowIndex, columnIndex) ?? false);
+      (gridSelection?.isCellSelected(columnIndex, rowIndex) ?? false);
     let effectiveSelection: Selection | null;
     if (clickedInSelection) {
       effectiveSelection = gridSelection;

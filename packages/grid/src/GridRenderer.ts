@@ -2172,7 +2172,7 @@ export class GridRenderer {
         };
         let runStart: VisibleIndex | null = null;
         for (let c = left; c <= right; c += 1) {
-          if (selection.isCellSelected(r, c)) {
+          if (selection.isCellSelected(c, r)) {
             if (runStart === null) runStart = c;
           } else if (runStart !== null) {
             pushRun(runStart, c - 1);

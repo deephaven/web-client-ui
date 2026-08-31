@@ -39,8 +39,8 @@ export interface Selection extends SelectionQueries, SelectionTransforms {}
 export interface SelectionQueries {
   /** True when the selection contains no cells and no in-progress gesture. */
   isEmpty: () => boolean;
-  /** True when `(row, column)` is part of the selection. */
-  isCellSelected: (row: VisibleIndex, column: VisibleIndex) => boolean;
+  /** True when `(column, row)` is part of the selection. */
+  isCellSelected: (column: VisibleIndex, row: VisibleIndex) => boolean;
   /** True when the entire row is part of the selection. */
   isRowSelected: (row: VisibleIndex) => boolean;
   /** False if any selected range exceeds `columnCount` or `rowCount`. */

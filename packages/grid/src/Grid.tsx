@@ -1307,7 +1307,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         newCursorColumn = null;
       } else if (
         cursorRow == null ||
-        !newSelection.isCellSelected(cursorRow, cursorColumn ?? 0)
+        !newSelection.isCellSelected(cursorColumn ?? 0, cursorRow)
       ) {
         const { model } = this.props;
         const { columnCount, rowCount } = model;
@@ -1771,7 +1771,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    */
   isSelected(row: VisibleIndex, column: VisibleIndex): boolean {
     const { selection } = this.state;
-    return selection.isCellSelected(row, column);
+    return selection.isCellSelected(column, row);
   }
 
   addDocumentCursor(cursor: string | null = null): void {

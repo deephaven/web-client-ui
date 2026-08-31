@@ -64,19 +64,19 @@ describe('isCellSelected', () => {
   });
 
   it('returns true for an exactly matching single-cell range', () => {
-    expect(single(3, 5).isCellSelected(5, 3)).toBe(true);
+    expect(single(3, 5).isCellSelected(3, 5)).toBe(true);
   });
 
   it('returns false for a cell outside the single-cell range', () => {
-    expect(single(3, 5).isCellSelected(6, 3)).toBe(false);
-    expect(single(3, 5).isCellSelected(5, 4)).toBe(false);
+    expect(single(3, 5).isCellSelected(3, 6)).toBe(false);
+    expect(single(3, 5).isCellSelected(4, 5)).toBe(false);
   });
 
   it('handles null column bounds (full-row range)', () => {
     const sel = fullRow(3);
-    expect(sel.isCellSelected(3, 0)).toBe(true);
-    expect(sel.isCellSelected(3, COLUMN_COUNT - 1)).toBe(true);
-    expect(sel.isCellSelected(4, 0)).toBe(false);
+    expect(sel.isCellSelected(0, 3)).toBe(true);
+    expect(sel.isCellSelected(COLUMN_COUNT - 1, 3)).toBe(true);
+    expect(sel.isCellSelected(0, 4)).toBe(false);
   });
 
   it('handles null row bounds (full-column range)', () => {
@@ -84,17 +84,17 @@ describe('isCellSelected', () => {
       [new GridRange(2, null, 2, null)],
       getModel
     );
-    expect(sel.isCellSelected(0, 2)).toBe(true);
-    expect(sel.isCellSelected(ROW_COUNT - 1, 2)).toBe(true);
-    expect(sel.isCellSelected(0, 3)).toBe(false);
+    expect(sel.isCellSelected(2, 0)).toBe(true);
+    expect(sel.isCellSelected(2, ROW_COUNT - 1)).toBe(true);
+    expect(sel.isCellSelected(3, 0)).toBe(false);
   });
 
   it('matches cells within a multi-cell range', () => {
     const sel = range(1, 2, 3, 4);
     expect(sel.isCellSelected(2, 2)).toBe(true);
-    expect(sel.isCellSelected(4, 3)).toBe(true);
+    expect(sel.isCellSelected(3, 4)).toBe(true);
     expect(sel.isCellSelected(1, 1)).toBe(false);
-    expect(sel.isCellSelected(1, 4)).toBe(false);
+    expect(sel.isCellSelected(4, 1)).toBe(false);
   });
 
   it('returns true if any range in a multi-range selection matches', () => {

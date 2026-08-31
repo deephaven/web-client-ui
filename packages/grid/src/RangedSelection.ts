@@ -38,7 +38,7 @@ export class RangedSelection implements Selection {
     return this.ranges.length === 0;
   }
 
-  isCellSelected(row: VisibleIndex, column: VisibleIndex): boolean {
+  isCellSelected(column: VisibleIndex, row: VisibleIndex): boolean {
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];
       const rowSelected =

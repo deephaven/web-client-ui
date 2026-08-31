@@ -220,7 +220,7 @@ export class KeyedSelection implements Selection {
   }
 
   // Keyed selection is always full-row; column is irrelevant
-  isCellSelected(row: VisibleIndex, _column: VisibleIndex): boolean {
+  isCellSelected(_column: VisibleIndex, row: VisibleIndex): boolean {
     return this.isRowSelected(row);
   }
 

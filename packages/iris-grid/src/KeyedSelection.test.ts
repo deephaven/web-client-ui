@@ -126,9 +126,9 @@ describe('isRowSelected', () => {
 describe('isCellSelected', () => {
   it('delegates to isRowSelected (column is irrelevant)', () => {
     const sel = singleRow(7);
-    expect(sel.isCellSelected(7, 0)).toBe(true);
-    expect(sel.isCellSelected(7, COLUMN_COUNT - 1)).toBe(true);
-    expect(sel.isCellSelected(8, 0)).toBe(false);
+    expect(sel.isCellSelected(0, 7)).toBe(true);
+    expect(sel.isCellSelected(COLUMN_COUNT - 1, 7)).toBe(true);
+    expect(sel.isCellSelected(0, 8)).toBe(false);
   });
 });
 
