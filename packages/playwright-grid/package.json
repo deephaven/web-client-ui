@@ -22,10 +22,10 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "peerDependencies": {
+    "@deephaven/grid": "file:../grid",
     "@playwright/test": ">=1.40.0"
   },
   "devDependencies": {
-    "@deephaven/grid": "file:../grid",
     "@playwright/test": "1.56.1"
   },
   "files": [
