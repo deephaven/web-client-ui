@@ -1,6 +1,7 @@
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { GridRange } from '@deephaven/grid';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
@@ -134,54 +135,123 @@ describe('createFilteredByKeysTable', () => {
   });
 });
 
-// ─── fetchKeyValuesForRowRange ────────────────────────────────────────────────
+// ─── fetchKeyValuesForRowRanges ───────────────────────────────────────────────
 
-describe('fetchKeyValuesForRowRange', () => {
+describe('fetchKeyValuesForRowRanges', () => {
   let model: IrisGridTableModelTemplate;
-  let subMock: ReturnType<typeof makeSubscriptionMock>;
 
   beforeEach(() => {
     const columns = irisGridTestUtils.makeColumns(3);
     model = makeModel(columns);
     (model.table as DhType.Table & { getAttribute: jest.Mock }).getAttribute =
       jest.fn((attr: string) => (attr === 'keyColumns' ? '0' : null));
-
-    // rows that return their row index as the key column value
-    const rows = [
-      { get: (col: DhType.Column) => (col.index === 0 ? 5 : 'x') },
-      { get: (col: DhType.Column) => (col.index === 0 ? 7 : 'x') },
-    ];
-    subMock = makeSubscriptionMock(rows, 5);
-    (
-      model.table as DhType.Table & {
-        createViewportSubscription: jest.Mock;
-      }
-    ).createViewportSubscription = jest.fn(() => subMock);
   });
 
-  it('calls createViewportSubscription with key columns and the row range', async () => {
-    await model.fetchKeyValuesForRowRange(5, 7);
+  /** Installs a viewport subscription that returns one row per index in [first, last]. */
+  function installEnvelopeSubscription(
+    first: number,
+    last: number
+  ): ReturnType<typeof makeSubscriptionMock> {
+    const rows: { get: (col: DhType.Column) => unknown }[] = [];
+    for (let r = first; r <= last; r += 1) {
+      const rowIndex = r;
+      rows.push({
+        get: (col: DhType.Column) => (col.index === 0 ? rowIndex : 'x'),
+      });
+    }
+    const sub = makeSubscriptionMock(rows, first);
+    (
+      model.table as DhType.Table & { createViewportSubscription: jest.Mock }
+    ).createViewportSubscription = jest.fn(() => sub);
+    return sub;
+  }
+
+  it('subscribes to the envelope of the requested ranges', async () => {
+    installEnvelopeSubscription(1, 100);
+    await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, 1, null, 1),
+      new GridRange(null, 100, null, 100),
+    ]);
     const tableWithSub = model.table as DhType.Table & {
       createViewportSubscription: jest.Mock;
     };
     expect(tableWithSub.createViewportSubscription).toHaveBeenCalledWith({
-      rows: { first: 5, last: 7 },
+      rows: { first: 1, last: 100 },
       columns: [model.columns[0]],
     });
   });
 
-  it('returns a map keyed by row index containing the JSON-serialized key and raw values', async () => {
-    const result = await model.fetchKeyValuesForRowRange(5, 7);
-    // offset=5 so rows[0]/rows[1] map to indices 5 and 6.
+  it('single contiguous range returns every row in the range', async () => {
+    installEnvelopeSubscription(5, 7);
+    const result = await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, 5, null, 7),
+    ]);
+    expect(result.size).toBe(3);
+    expect(result.get(JSON.stringify([5]))).toEqual([5]);
+    expect(result.get(JSON.stringify([6]))).toEqual([6]);
+    expect(result.get(JSON.stringify([7]))).toEqual([7]);
+  });
+
+  it('filters envelope rows that fall between disjoint ranges', async () => {
+    // Envelope 1..100 covers all intermediate rows; only rows 1 and 100 should
+    // survive the range-membership filter.
+    installEnvelopeSubscription(1, 100);
+    const result = await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, 1, null, 1),
+      new GridRange(null, 100, null, 100),
+    ]);
     expect(result.size).toBe(2);
-    expect(result.get(5)).toEqual({ key: JSON.stringify([5]), values: [5] });
-    expect(result.get(6)).toEqual({ key: JSON.stringify([7]), values: [7] });
+    expect(result.has(JSON.stringify([1]))).toBe(true);
+    expect(result.has(JSON.stringify([100]))).toBe(true);
+  });
+
+  it('normalizes reverse-ordered ranges when computing the envelope', async () => {
+    installEnvelopeSubscription(1, 100);
+    await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, 100, null, 100),
+      new GridRange(null, 1, null, 1),
+    ]);
+    const tableWithSub = model.table as DhType.Table & {
+      createViewportSubscription: jest.Mock;
+    };
+    expect(tableWithSub.createViewportSubscription).toHaveBeenCalledWith({
+      rows: { first: 1, last: 100 },
+      columns: [model.columns[0]],
+    });
+  });
+
+  it('normalizes a range whose startRow > endRow', async () => {
+    installEnvelopeSubscription(3, 5);
+    const result = await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, 5, null, 3),
+    ]);
+    // Rows 3, 4, 5 should all pass range-membership (low=3, high=5).
+    expect(result.size).toBe(3);
+  });
+
+  it('returns an empty map when ranges is empty', async () => {
+    const sub = installEnvelopeSubscription(0, 0);
+    const result = await model.fetchKeyValuesForRowRanges([]);
+    expect(result.size).toBe(0);
+    expect(sub.getViewportData).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty map when every range has a null startRow', async () => {
+    const sub = installEnvelopeSubscription(0, 0);
+    const result = await model.fetchKeyValuesForRowRanges([
+      new GridRange(null, null, null, null),
+    ]);
+    expect(result.size).toBe(0);
+    expect(sub.getViewportData).not.toHaveBeenCalled();
   });
 
   it('closes the subscription even if getViewportData throws', async () => {
-    subMock.getViewportData.mockRejectedValueOnce(new Error('network error'));
-    await expect(model.fetchKeyValuesForRowRange(0, 1)).rejects.toThrow();
-    expect(subMock.close).toHaveBeenCalled();
+    const sub = installEnvelopeSubscription(0, 1);
+    sub.getViewportData.mockRejectedValueOnce(new Error('network error'));
+    await expect(
+      model.fetchKeyValuesForRowRanges([new GridRange(null, 0, null, 1)])
+    ).rejects.toThrow();
+    expect(sub.close).toHaveBeenCalled();
   });
 });
 

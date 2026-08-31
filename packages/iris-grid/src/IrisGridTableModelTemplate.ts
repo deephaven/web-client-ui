@@ -1639,37 +1639,61 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  async fetchKeyValuesForRowRange(
-    startRow: number,
-    endRow: number
-  ): Promise<
-    ReadonlyMap<VisibleIndex, { key: string; values: readonly unknown[] }>
-  > {
+  async fetchKeyValuesForRowRanges(
+    ranges: readonly GridRange[]
+  ): Promise<ReadonlyMap<string, readonly unknown[]>> {
+    // Compute the bounding envelope covering every range so the server round
+    // trip is one viewport subscription regardless of how many disjoint ranges
+    // were selected. Handles reverse-ordered and out-of-order input.
+    let minStart: number | null = null;
+    let maxEnd: number | null = null;
+    for (let i = 0; i < ranges.length; i += 1) {
+      const { startRow, endRow } = ranges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const rEnd = endRow ?? startRow;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (minStart === null || low < minStart) minStart = low;
+      if (maxEnd === null || high > maxEnd) maxEnd = high;
+    }
+    if (minStart === null || maxEnd === null) return new Map();
+
     const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
     // Use a secondary viewport subscription on the live table to avoid a copy/filter round-trip.
     const sub = (this.table as DhType.Table).createViewportSubscription({
-      rows: { first: startRow, last: endRow },
+      rows: { first: minStart, last: maxEnd },
       columns: keyColumns,
     });
     try {
       const data = await sub.getViewportData();
-      const result = new Map<
-        VisibleIndex,
-        { key: string; values: readonly unknown[] }
-      >();
-      // data.offset is the absolute row of data.rows[0]; callers need the row
-      // index to filter results back to the exact requested ranges.
+      const result = new Map<string, readonly unknown[]>();
+      // Filter to only rows the caller actually requested — the envelope may
+      // include rows between disjoint ranges that must not be selected.
       data.rows.forEach((row: DhType.Row, i: number) => {
+        const rowIndex = data.offset + i;
+        if (!IrisGridTableModelTemplate.rowInAnyRange(rowIndex, ranges)) return;
         const values = keyColumns.map(col => row.get(col));
-        result.set(data.offset + i, {
-          key: serializeKeyValues(values),
-          values,
-        });
+        result.set(serializeKeyValues(values), values);
       });
       return result;
     } finally {
       sub.close();
     }
+  }
+
+  private static rowInAnyRange(
+    rowIndex: number,
+    ranges: readonly GridRange[]
+  ): boolean {
+    for (let i = 0; i < ranges.length; i += 1) {
+      const { startRow, endRow } = ranges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const rEnd = endRow ?? startRow;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (rowIndex >= low && rowIndex <= high) return true;
+    }
+    return false;
   }
 
   /**

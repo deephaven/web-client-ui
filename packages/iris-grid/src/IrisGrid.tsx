@@ -3765,49 +3765,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { pendingRanges } = pending;
     if (pendingRanges.length === 0) return;
 
-    // Compute the envelope covering every pending range so the server round
-    // trip is one viewport subscription regardless of how many disjoint ranges
-    // were selected (e.g. plugin-driven programmatic selection).
-    let minStart: number | null = null;
-    let maxEnd: number | null = null;
-    for (let i = 0; i < pendingRanges.length; i += 1) {
-      const { startRow, endRow } = pendingRanges[i];
-      if (startRow == null) continue; // eslint-disable-line no-continue
-      const rEnd = endRow ?? startRow;
-      const low = Math.min(startRow, rEnd);
-      const high = Math.max(startRow, rEnd);
-      if (minStart === null || low < minStart) minStart = low;
-      if (maxEnd === null || high > maxEnd) maxEnd = high;
-    }
-    if (minStart === null || maxEnd === null) return;
-
     try {
-      const rowsByIndex = await model.fetchKeyValuesForRowRange(
-        minStart,
-        maxEnd
-      );
+      const keyValues = await model.fetchKeyValuesForRowRanges(pendingRanges);
       // Bail if the user changed the selection while we were fetching.
       if (this.grid?.getSelection() !== pending) return;
-
-      // Filter to only rows the caller actually requested — the envelope may
-      // include rows between disjoint ranges that must not be selected.
-      const filtered = new Map<string, readonly unknown[]>();
-      rowsByIndex.forEach(({ key, values }, rowIndex) => {
-        for (let i = 0; i < pendingRanges.length; i += 1) {
-          const { startRow, endRow } = pendingRanges[i];
-          if (startRow == null) continue; // eslint-disable-line no-continue
-          const rEnd = endRow ?? startRow;
-          const low = Math.min(startRow, rEnd);
-          const high = Math.max(startRow, rEnd);
-          if (rowIndex >= low && rowIndex <= high) {
-            filtered.set(key, values);
-            break;
-          }
-        }
-      });
-
-      const resolved = pending.resolve(filtered);
-      this.grid.setSelection(resolved);
+      this.grid.setSelection(pending.resolve(keyValues));
     } catch (e) {
       log.error('resolveKeyedSelection failed', e);
       // Prevent the unusable pending selection from remaining installed indefinitely.
