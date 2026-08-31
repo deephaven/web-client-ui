@@ -2097,81 +2097,62 @@ export class GridRenderer {
         : minX;
 
     context.beginPath();
-    let rowRunStartY: number | null = null;
-    let rowRunEndY = 0;
-    // Flushes the current consecutive-selected-row run as a single rect.
-    const flushRowRun = (): void => {
-      if (rowRunStartY != null && rowSelectionEndX > rowSelectionX) {
-        context.rect(
-          rowSelectionX,
-          rowRunStartY,
-          rowSelectionEndX - rowSelectionX,
-          rowRunEndY - rowRunStartY
-        );
-      }
-      rowRunStartY = null;
-    };
+    // A full-row run is a special case of a partial run whose column list is a
+    // single full-width entry, so both cases share one coalescer below. Reused
+    // by reference so the equality check short-circuits for consecutive full rows.
+    const FULL_ROW_COLS: readonly { x: number; endX: number }[] =
+      rowSelectionEndX > rowSelectionX
+        ? [{ x: rowSelectionX, endX: rowSelectionEndX }]
+        : [];
 
-    // Coalesce vertically-adjacent partial rows with identical column runs into
-    // one rect per column run. Without this, a rectangular multi-row range
-    // (e.g. shift+click across rows and a subset of columns) would emit a
-    // separate rect per row and `stroke()` would draw horizontal borders
-    // through the selection.
-    let partialRunStartY: number | null = null;
-    let partialRunEndY = 0;
-    let partialRuns: { x: number; endX: number }[] = [];
-    const partialRunsEqual = (
-      a: { x: number; endX: number }[],
-      b: { x: number; endX: number }[]
+    // Coalesce vertically-adjacent rows sharing an identical column signature
+    // into one rect per column run rather than rendering strokes between each row.
+    let runStartY: number | null = null;
+    let runEndY = 0;
+    let runCols: readonly { x: number; endX: number }[] = [];
+    const colsEqual = (
+      a: readonly { x: number; endX: number }[],
+      b: readonly { x: number; endX: number }[]
     ): boolean => {
+      if (a === b) return true;
       if (a.length !== b.length) return false;
       for (let i = 0; i < a.length; i += 1) {
         if (a[i].x !== b[i].x || a[i].endX !== b[i].endX) return false;
       }
       return true;
     };
-    const flushPartialRun = (): void => {
-      if (partialRunStartY != null) {
-        for (let i = 0; i < partialRuns.length; i += 1) {
-          const { x, endX } = partialRuns[i];
-          context.rect(
-            x,
-            partialRunStartY,
-            endX - x,
-            partialRunEndY - partialRunStartY
-          );
+    const flushRun = (): void => {
+      if (runStartY != null) {
+        for (let i = 0; i < runCols.length; i += 1) {
+          const { x, endX } = runCols[i];
+          context.rect(x, runStartY, endX - x, runEndY - runStartY);
         }
       }
-      partialRunStartY = null;
-      partialRuns = [];
+      runStartY = null;
+      runCols = [];
     };
 
     for (let r = top; r <= bottom; r += 1) {
       const rowY = allRowYs.get(r);
       const rowH = allRowHeights.get(r);
       if (rowY == null || rowH == null) {
-        flushRowRun();
-        flushPartialRun();
+        flushRun();
         // eslint-disable-next-line no-continue
         continue;
       }
       const y = Math.max(Math.round(rowY) + 0.5, 0.5);
       const endY = Math.round(rowY + rowH) - 0.5;
       if (endY < minY || y > maxY) {
-        flushRowRun();
-        flushPartialRun();
+        flushRun();
         // eslint-disable-next-line no-continue
         continue;
       }
+
+      let rowCols: readonly { x: number; endX: number }[];
       if (selection.isRowSelected(r)) {
-        flushPartialRun();
-        // Extend or start the full-row run.
-        if (rowRunStartY == null) rowRunStartY = y;
-        rowRunEndY = endY;
+        rowCols = FULL_ROW_COLS;
       } else {
-        flushRowRun();
-        // Build this row's column runs so we can coalesce with the previous row.
-        const rowRuns: { x: number; endX: number }[] = [];
+        const built: { x: number; endX: number }[] = [];
         const pushRun = (
           runStartCol: VisibleIndex,
           runEndCol: VisibleIndex
@@ -2187,7 +2168,7 @@ export class GridRenderer {
             ) - 0.5,
             maxX
           );
-          if (endX > x) rowRuns.push({ x, endX });
+          if (endX > x) built.push({ x, endX });
         };
         let runStart: VisibleIndex | null = null;
         for (let c = left; c <= right; c += 1) {
@@ -2201,24 +2182,21 @@ export class GridRenderer {
         if (runStart !== null) {
           pushRun(runStart, right);
         }
+        rowCols = built;
+      }
 
-        if (rowRuns.length === 0) {
-          flushPartialRun();
-        } else if (
-          partialRunStartY != null &&
-          partialRunsEqual(rowRuns, partialRuns)
-        ) {
-          partialRunEndY = endY;
-        } else {
-          flushPartialRun();
-          partialRuns = rowRuns;
-          partialRunStartY = y;
-          partialRunEndY = endY;
-        }
+      if (rowCols.length === 0) {
+        flushRun();
+      } else if (runStartY != null && colsEqual(rowCols, runCols)) {
+        runEndY = endY;
+      } else {
+        flushRun();
+        runCols = rowCols;
+        runStartY = y;
+        runEndY = endY;
       }
     }
-    flushRowRun();
-    flushPartialRun();
+    flushRun();
 
     /**
      * Create the path, then draw it once. Fill and
