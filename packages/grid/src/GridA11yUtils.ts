@@ -111,7 +111,27 @@ function getCellRect(
   if (x == null || y == null || width == null || height == null) {
     return null;
   }
-  return { x: metrics.gridX + x, y: metrics.gridY + y, width, height };
+
+  // Cells at the start of the viewport may be scrolled such that their
+  // coordinates begin before the grid content area (e.g. `-leftOffset` or
+  // `-topOffset`), which would place their bounds behind the row/column
+  // headers. Clip the rect to the grid content area so that the reported
+  // bounds (and their centre) always land within the interactable grid.
+  const clippedX = Math.max(x, 0);
+  const clippedY = Math.max(y, 0);
+  const clippedWidth = width - (clippedX - x);
+  const clippedHeight = height - (clippedY - y);
+  if (clippedWidth <= 0 || clippedHeight <= 0) {
+    // Cell is entirely obscured by the headers
+    return null;
+  }
+
+  return {
+    x: metrics.gridX + clippedX,
+    y: metrics.gridY + clippedY,
+    width: clippedWidth,
+    height: clippedHeight,
+  };
 }
 
 /**
