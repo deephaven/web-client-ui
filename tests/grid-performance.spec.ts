@@ -7,7 +7,8 @@ import { gotoPage, openTable, waitForLoadingDone } from './utils';
  *
  * These tests use existing tables from the test environment:
  * - simple_table: Small table (100 rows, 2 columns)
- * - all_types: Table with many column types
+ * - all_types: Table with many column types (20 rows)
+ * - all_types_big: Same columns as all_types with 1,000,000 rows
  *
  * For benchmarks that need Grid props toggled or row and column counts the
  * test data does not reach, see grid-perf-app.spec.ts which uses a standalone
@@ -187,14 +188,15 @@ test.describe('grid scroll performance benchmarks', () => {
     });
   });
 
-  test.describe('all_types table performance', () => {
+  test.describe('all_types_big table performance', () => {
     test.beforeEach(async ({ page }) => {
-      // all_types is a table with many different column types
-      await openTable(page, 'all_types');
+      // all_types_big has many different column types and 1,000,000 rows so
+      // scrolling actually exercises snapshot fetching and rendering
+      await openTable(page, 'all_types_big');
       await waitForLoadingDone(page);
     });
 
-    test('scroll performance - all_types', async ({ page }) => {
+    test('scroll performance - all_types_big', async ({ page }) => {
       await startFPSMeasurement(page);
 
       // Scroll down significantly and back
@@ -204,7 +206,7 @@ test.describe('grid scroll performance benchmarks', () => {
       await scrollGrid(page, -4000);
 
       const result = await stopFPSMeasurement(page);
-      logResults('All Types Table Scroll', result, { minFps: 30 });
+      logResults('All Types Big Table Scroll', result, { minFps: 30 });
     });
 
     test('rapid scroll performance', async ({ page }) => {
@@ -262,7 +264,7 @@ test.describe('grid performance stress tests', () => {
   });
 
   test('horizontal and vertical scroll combined', async ({ page }) => {
-    await openTable(page, 'all_types');
+    await openTable(page, 'all_types_big');
     await waitForLoadingDone(page);
 
     const grid = page.locator('.iris-grid-panel .iris-grid').last();
