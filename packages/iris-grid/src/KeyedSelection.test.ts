@@ -350,35 +350,6 @@ describe('resolve', () => {
     expect(resolved.isRowSelected(2)).toBe(true);
     expect(resolved.isRowSelected(1)).toBe(false);
   });
-
-  it('merges endpointKeyData for keys missing from the fetched map', () => {
-    const endpoints = new Map([keyValuesOf(0), keyValuesOf(4)]);
-    const pending = new KeyedSelection({
-      getModel: getKeyedModel,
-      pendingRanges: [new GridRange(null, 0, null, 4)],
-      endpointKeyData: endpoints,
-    });
-    // Simulate a fetch that missed both endpoints because of drift.
-    const resolved = pending.resolve(new Map([keyValuesOf(1), keyValuesOf(3)]));
-    expect(resolved.isRowSelected(0)).toBe(true);
-    expect(resolved.isRowSelected(1)).toBe(true);
-    expect(resolved.isRowSelected(3)).toBe(true);
-    expect(resolved.isRowSelected(4)).toBe(true);
-    expect(resolved.selectedKeys.size).toBe(4);
-  });
-
-  it('prefers fetched values over endpointKeyData when a key is in both', () => {
-    const endpoints = new Map<string, readonly unknown[]>([
-      [keyOf(0), ['stale']],
-    ]);
-    const pending = new KeyedSelection({
-      getModel: getKeyedModel,
-      pendingRanges: [new GridRange(null, 0, null, 0)],
-      endpointKeyData: endpoints,
-    });
-    const resolved = pending.resolve(new Map([[keyOf(0), ['fresh']]]));
-    expect(resolved.selectedKeyValues.get(keyOf(0))).toEqual(['fresh']);
-  });
 });
 
 // ─── getUniqueRowCount ────────────────────────────────────────────────────────
@@ -435,6 +406,16 @@ describe('getGestureAnchor', () => {
 
   it('returns null when no anchor was set', () => {
     expect(empty().getGestureAnchor()).toBeNull();
+  });
+
+  it('returns the anchor row set by withGestureAnchor', () => {
+    const sel = empty().withGestureAnchor(5, 0);
+    expect(sel.getGestureAnchor()).toEqual({ row: 5, column: null });
+  });
+
+  it('clears the anchor when withGestureAnchor is called with null', () => {
+    const sel = empty().withGestureAnchor(5, 0).withGestureAnchor(null, null);
+    expect(sel.getGestureAnchor()).toBeNull();
   });
 
   it('returns the current viewport row of the anchor key after ticks', () => {

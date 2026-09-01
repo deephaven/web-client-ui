@@ -3758,7 +3758,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  /** Resolves a pending shift-click KeyedSelection by fetching key values from the server. */
+  /**
+   * Resolves a KeyedSelection with ranges outside the current viewport by
+   * fetching the missing key values from the server. Triggered by
+   * `Grid.setSelectedRanges` (plugin-driven programmatic selection) and by
+   * shift+click/drag that spans a scrolled-away region.
+   */
   async resolveKeyedSelection(pending: KeyedSelection): Promise<void> {
     const { model } = this.props;
     if (!isKeyedGridModel(model)) return;

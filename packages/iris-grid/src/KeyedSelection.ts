@@ -81,23 +81,13 @@ export type KeyedSelectionOptions = {
    */
   pendingRanges?: readonly GridRange[];
   /**
-   * Serialized key of the shift-click / drag anchor. Drift-immune across
-   * ticks: `getGestureAnchor` scans the viewport for the row currently
-   * holding this key.
+   * Serialized key of the shift-click / drag anchor. Lets `getGestureAnchor`
+   * find where the anchor row moved to after a tick, so shift-click extends
+   * from the row the user actually clicked, not from a stale row index.
    */
   anchorKey?: string | null;
-  /** Raw key-column values captured with the anchor at click time. */
-  anchorValues?: readonly unknown[] | null;
-  /**
-   * Anchor row at click time. Fallback for `getGestureAnchor` when the
-   * anchor key has scrolled out of the viewport.
-   */
+  /** Anchor row at click time. Fallback when the anchor key is out of viewport. */
   anchorRow?: GridRangeIndex;
-  /**
-   * Endpoint key data captured at click time; merged into `resolve()` so
-   * shift-click endpoints survive fetch-time drift.
-   */
-  endpointKeyData?: ReadonlyMap<string, readonly unknown[]>;
 };
 
 /**
@@ -132,11 +122,7 @@ export class KeyedSelection implements Selection {
 
   private readonly anchorKey: string | null;
 
-  private readonly anchorValues: readonly unknown[] | null;
-
   private readonly anchorRow: GridRangeIndex;
-
-  readonly endpointKeyData: ReadonlyMap<string, readonly unknown[]>;
 
   /** Keys derived from the current overlay range's viewport-visible rows. */
   private readonly gestureKeys: ReadonlySet<string>;
@@ -151,9 +137,7 @@ export class KeyedSelection implements Selection {
     this.maxRows = options.maxRows ?? null;
     this.pendingRanges = options.pendingRanges ?? EMPTY_ARRAY;
     this.anchorKey = options.anchorKey ?? null;
-    this.anchorValues = options.anchorValues ?? null;
     this.anchorRow = options.anchorRow ?? null;
-    this.endpointKeyData = options.endpointKeyData ?? EMPTY_MAP;
 
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
@@ -194,9 +178,7 @@ export class KeyedSelection implements Selection {
       maxRows: this.maxRows,
       pendingRanges: this.pendingRanges,
       anchorKey: this.anchorKey,
-      anchorValues: this.anchorValues,
       anchorRow: this.anchorRow,
-      endpointKeyData: this.endpointKeyData,
       ...overrides,
     });
   }
@@ -277,19 +259,9 @@ export class KeyedSelection implements Selection {
     _column: GridRangeIndex
   ): KeyedSelection {
     // Keyed selections are full-row; ignore column.
-    let nextKey: string | null = null;
-    let nextValues: readonly unknown[] | null = null;
-    if (row != null) {
-      const { key, values } = this.getRowKeyData(row);
-      nextKey = key;
-      nextValues = values;
-    }
+    const nextKey = row != null ? this.getRowKeyData(row).key : null;
     if (nextKey === this.anchorKey && row === this.anchorRow) return this;
-    return this.copyWith({
-      anchorKey: nextKey,
-      anchorValues: nextValues,
-      anchorRow: row,
-    });
+    return this.copyWith({ anchorKey: nextKey, anchorRow: row });
   }
 
   getGestureAnchor(): {
@@ -443,26 +415,15 @@ export class KeyedSelection implements Selection {
         });
       }
 
-      // Slow path: async resolve. Endpoints are needed even if the fetch is
-      // preempted by ticks: the anchor is drift-immune (cached at click time);
-      // the target is the just-clicked row (must be in the viewport) —
-      // identify it as the endpoint that isn't the anchor's current position.
-      const endpoints = new Map<string, readonly unknown[]>();
-      if (this.anchorKey != null && this.anchorValues != null) {
-        endpoints.set(this.anchorKey, this.anchorValues);
-      }
-      const anchorNow = this.getGestureAnchor()?.row;
-      const targetRow = anchorNow === lastRow ? first : lastRow;
-      const { key: tKey, values: tValues } = this.getRowKeyData(targetRow);
-      endpoints.set(tKey, tValues);
-
+      // Slow path: same async-fetch mechanism as `withCommittedRanges`.
+      // `IrisGrid.resolveKeyedSelection` fetches keys for the overlay ranges;
+      // rows that scroll away during the fetch are dropped from the result.
       return this.copyWith({
         selectedKeys: new Set(),
         invertedSelection: false,
         lastSingleRow: null,
         selectedKeyValues: EMPTY_MAP,
         pendingRanges: this.overlayRanges,
-        endpointKeyData: endpoints,
       });
     }
 
@@ -510,7 +471,6 @@ export class KeyedSelection implements Selection {
       selectedKeyValues: EMPTY_MAP,
       maxRows: null,
       pendingRanges: EMPTY_ARRAY,
-      endpointKeyData: EMPTY_MAP,
     });
   }
 
@@ -592,21 +552,14 @@ export class KeyedSelection implements Selection {
 
   /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRanges. */
   resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
-    // Guarantee the click-time endpoints survive: fetches over a ticking table
-    // can miss the anchor / target rows if they scrolled between click and reply.
-    const merged = new Map(keyValues);
-    this.endpointKeyData.forEach((values, key) => {
-      if (!merged.has(key)) merged.set(key, values);
-    });
     return this.copyWith({
-      selectedKeys: new Set(merged.keys()),
+      selectedKeys: new Set(keyValues.keys()),
       overlayRanges: EMPTY_ARRAY,
       invertedSelection: false,
       lastSingleRow: null,
-      selectedKeyValues: merged,
+      selectedKeyValues: keyValues,
       maxRows: null,
       pendingRanges: EMPTY_ARRAY,
-      endpointKeyData: EMPTY_MAP,
     });
   }
 
@@ -646,7 +599,6 @@ export class KeyedSelection implements Selection {
       lastSingleRow: null,
       selectedKeyValues: nextKeyValues,
       pendingRanges: EMPTY_ARRAY,
-      endpointKeyData: EMPTY_MAP,
     });
   }
 }
