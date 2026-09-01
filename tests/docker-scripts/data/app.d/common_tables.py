@@ -36,7 +36,7 @@ all_types_cols = [
     "Short=(short)(i%19==0 ? null : (int)(scale*(i*2-1)))",
     "BigDec=(i%21==0 ? null : new java.math.BigDecimal(scale*(i*2-1)))",
     "BigInt=(i%22==0 ? null : new java.math.BigInteger(Integer.toString((int)(scale*(i*2-1)))))",
-    "Byte=(Byte)(i%19==0 ? null : new Byte( Integer.toString((int)(i))))",
+    "Byte=(Byte)(i%19==0 ? null : new Byte( Integer.toString((int)(i % 128))))",
 ]
 
 all_types = empty_table(size).update_view(all_types_cols)
