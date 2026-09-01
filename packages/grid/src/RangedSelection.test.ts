@@ -162,27 +162,23 @@ describe('isColumnSelected', () => {
 
 describe('isValid', () => {
   it('returns true for empty selection', () => {
-    expect(empty().isValid(COLUMN_COUNT, ROW_COUNT)).toBe(true);
+    expect(empty().isValid()).toBe(true);
   });
 
   it('returns true when all ranges are within bounds', () => {
-    expect(range(0, 0, 5, 10).isValid(COLUMN_COUNT, ROW_COUNT)).toBe(true);
+    expect(range(0, 0, 5, 10).isValid()).toBe(true);
   });
 
   it('returns false when a range exceeds columnCount', () => {
-    expect(range(0, 0, COLUMN_COUNT, 0).isValid(COLUMN_COUNT, ROW_COUNT)).toBe(
-      false
-    );
+    expect(range(0, 0, COLUMN_COUNT, 0).isValid()).toBe(false);
   });
 
   it('returns false when a range exceeds rowCount', () => {
-    expect(range(0, 0, 0, ROW_COUNT).isValid(COLUMN_COUNT, ROW_COUNT)).toBe(
-      false
-    );
+    expect(range(0, 0, 0, ROW_COUNT).isValid()).toBe(false);
   });
 
   it('returns true for null bounds (unbounded ranges are always valid)', () => {
-    expect(fullRow(5).isValid(COLUMN_COUNT, ROW_COUNT)).toBe(true);
+    expect(fullRow(5).isValid()).toBe(true);
   });
 });
 

@@ -1072,11 +1072,10 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @returns True if the selection is valid, false if the selection was invalid and has been reset
    */
   validateSelection(): boolean {
-    const { model, createEmptySelection } = this.props;
-    const { columnCount, rowCount } = model;
+    const { createEmptySelection } = this.props;
     const { selection } = this.state;
 
-    if (!selection.isValid(columnCount, rowCount)) {
+    if (!selection.isValid()) {
       // Just clear the selection rather than trying to trim it.
       const empty = createEmptySelection(this.getModel);
       this.setState({

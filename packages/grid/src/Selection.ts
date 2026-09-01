@@ -45,8 +45,8 @@ export interface SelectionQueries {
   isRowSelected: (row: VisibleIndex) => boolean;
   /** True when the entire column is part of the selection. */
   isColumnSelected: (column: VisibleIndex) => boolean;
-  /** False if any selected range exceeds `columnCount` or `rowCount`. */
-  isValid: (columnCount: number, rowCount: number) => boolean;
+  /** False if any selected range exceeds the model's current column or row count. */
+  isValid: () => boolean;
   /**
    * Ranges Grid uses for cursor positioning, extend-selection, and keyboard
    * navigation. For `RangedSelection` these are the committed ranges; for

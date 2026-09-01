@@ -89,7 +89,8 @@ export class RangedSelection implements Selection {
     return false;
   }
 
-  isValid(columnCount: number, rowCount: number): boolean {
+  isValid(): boolean {
+    const { columnCount, rowCount } = this.getModel();
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];
       if (

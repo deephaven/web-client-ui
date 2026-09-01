@@ -237,7 +237,7 @@ export class KeyedSelection implements Selection {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  isValid(_columnCount: number, _rowCount: number): boolean {
+  isValid(): boolean {
     return true;
   }
 
