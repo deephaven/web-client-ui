@@ -1,6 +1,5 @@
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
-  type BoundedAxisRange,
   type CommitMouseGestureOptions,
   type GridRange,
   type GridRangeIndex,
@@ -243,18 +242,6 @@ export class KeyedSelection implements Selection {
 
   toActiveRanges(): readonly GridRange[] {
     return this.overlayRanges;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  getColumnTickRanges(): readonly BoundedAxisRange[] {
-    // Keyed selection does not support column-specific tick ranges.
-    return EMPTY_ARRAY;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  getRowTickRanges(): readonly BoundedAxisRange[] {
-    // Keyed selection does not support row-specific tick ranges.
-    return EMPTY_ARRAY;
   }
 
   // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`

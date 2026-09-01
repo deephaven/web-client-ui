@@ -18,6 +18,7 @@ import { type CellRenderType } from './CellRenderer';
 import type CellRenderer from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
+import { isTickRangeSelection } from './Selection';
 
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
@@ -2673,11 +2674,13 @@ export class GridRenderer {
         const { cursorColumn } = state;
         const { lastLeft, columnCount } = metrics;
 
-        const mergedRanges = GridUtils.mergeSortedRanges(
-          [...state.selection.getColumnTickRanges()].sort(
-            GridUtils.compareRanges
-          )
-        );
+        const mergedRanges = isTickRangeSelection(state.selection)
+          ? GridUtils.mergeSortedRanges(
+              [...state.selection.getColumnTickRanges()].sort(
+                GridUtils.compareRanges
+              )
+            )
+          : [];
 
         const getTickX = (index: number): number => {
           if (index <= lastLeft) {
@@ -2788,9 +2791,13 @@ export class GridRenderer {
 
         context.fillStyle = scrollBarSelectionTickColor;
 
-        const mergedRanges = GridUtils.mergeSortedRanges(
-          [...state.selection.getRowTickRanges()].sort(GridUtils.compareRanges)
-        );
+        const mergedRanges = isTickRangeSelection(state.selection)
+          ? GridUtils.mergeSortedRanges(
+              [...state.selection.getRowTickRanges()].sort(
+                GridUtils.compareRanges
+              )
+            )
+          : [];
 
         for (let i = 0; i < mergedRanges.length; i += 1) {
           const range = mergedRanges[i];

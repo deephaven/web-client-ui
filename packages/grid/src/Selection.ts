@@ -51,10 +51,6 @@ export interface SelectionQueries {
    * `KeyedSelection` these are the transient overlay ranges (empty after commit).
    */
   toActiveRanges: () => readonly GridRange[];
-  /** Column `[start, end]` pairs for scrollbar tick rendering. */
-  getColumnTickRanges: () => readonly BoundedAxisRange[];
-  /** Row `[start, end]` pairs for scrollbar tick rendering. */
-  getRowTickRanges: () => readonly BoundedAxisRange[];
   /**
    * The single selected visible row, or `null` when zero or multiple rows
    * are selected. Drives `gotoRow` sync.
@@ -69,6 +65,28 @@ export interface SelectionQueries {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null;
+}
+
+/**
+ * Optional capability implemented by selections that can project onto
+ * scrollbar tick marks.
+ */
+export interface TickRangeSelection {
+  /** Column `[start, end]` pairs for scrollbar tick rendering. */
+  getColumnTickRanges: () => readonly BoundedAxisRange[];
+  /** Row `[start, end]` pairs for scrollbar tick rendering. */
+  getRowTickRanges: () => readonly BoundedAxisRange[];
+}
+
+export function isTickRangeSelection(
+  selection: Selection
+): selection is Selection & TickRangeSelection {
+  return (
+    typeof (selection as Partial<TickRangeSelection>).getColumnTickRanges ===
+      'function' &&
+    typeof (selection as Partial<TickRangeSelection>).getRowTickRanges ===
+      'function'
+  );
 }
 
 /**

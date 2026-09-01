@@ -6,6 +6,7 @@ import type {
   CommitMouseGestureOptions,
   GetModel,
   Selection,
+  TickRangeSelection,
 } from './Selection';
 
 /**
@@ -13,7 +14,7 @@ import type {
  * `ranges` describes a rectangle of cells; consumers iterate/consolidate
  * as needed.
  */
-export class RangedSelection implements Selection {
+export class RangedSelection implements Selection, TickRangeSelection {
   static empty(getModel: GetModel): RangedSelection {
     return new RangedSelection(EMPTY_ARRAY, getModel);
   }
