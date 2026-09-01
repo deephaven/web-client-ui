@@ -1,5 +1,8 @@
 import { EMPTY_ARRAY, assertNotNaN, assertNotNull } from '@deephaven/utils';
-import GridRange, { type GridRangeIndex } from './GridRange';
+import GridRange, {
+  type GridRangeIndex,
+  type SELECTION_DIRECTION,
+} from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type {
@@ -10,7 +13,11 @@ import type {
   Selection,
   TickRangeSelection,
 } from './Selection';
-import { computeGestureExtend } from './GridSelectionUtils';
+import {
+  computeGestureExtend,
+  cursorLandingCellForRanges,
+  nextCursorInRanges,
+} from './GridSelectionUtils';
 
 /**
  * Immutable `Selection` for standard (row-indexed) grids. Each entry in
@@ -193,6 +200,25 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const consolidated = GridRange.consolidate(this.ranges);
     if (GridRange.rowCount(consolidated) !== 1) return null;
     return consolidated[0]?.startRow ?? null;
+  }
+
+  getNextCursorInDirection(
+    current: { row: GridRangeIndex; column: GridRangeIndex },
+    direction: SELECTION_DIRECTION
+  ): { row: GridRangeIndex; column: GridRangeIndex } | null {
+    const { columnCount, rowCount } = this.getModel();
+    return nextCursorInRanges(this.ranges, current, direction, {
+      columnCount,
+      rowCount,
+    });
+  }
+
+  getCursorLandingCell(): {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null {
+    const { columnCount, rowCount } = this.getModel();
+    return cursorLandingCellForRanges(this.ranges, { columnCount, rowCount });
   }
 
   withGestureExtend(

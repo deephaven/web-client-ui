@@ -599,6 +599,68 @@ describe('commitGesture', () => {
   });
 });
 
+// ─── KeyboardSelection ───────────────────────────────────────────────────────
+
+describe('getCursorLandingCell', () => {
+  it('returns null when the selection is empty', () => {
+    expect(empty().getCursorLandingCell()).toBeNull();
+  });
+
+  it('returns the first cell of a single-cell selection', () => {
+    expect(single(3, 4).getCursorLandingCell()).toEqual({ column: 3, row: 4 });
+  });
+
+  it('returns the top-left cell of a multi-cell range', () => {
+    expect(range(2, 5, 7, 9).getCursorLandingCell()).toEqual({
+      column: 2,
+      row: 5,
+    });
+  });
+
+  it('bounds unbounded ranges (full row) to the model column count', () => {
+    expect(fullRow(3).getCursorLandingCell()).toEqual({ column: 0, row: 3 });
+  });
+});
+
+describe('getNextCursorInDirection', () => {
+  const { DOWN, RIGHT, UP } = GridRange.SELECTION_DIRECTION;
+
+  it('walks the whole grid when the selection is empty', () => {
+    expect(
+      empty().getNextCursorInDirection({ column: 0, row: 0 }, RIGHT)
+    ).toEqual({ column: 1, row: 0 });
+  });
+
+  it('walks the whole grid when only a single cell is selected', () => {
+    expect(
+      single(2, 3).getNextCursorInDirection({ column: 2, row: 3 }, DOWN)
+    ).toEqual({ column: 2, row: 4 });
+  });
+
+  it('wraps at the grid edge when a single cell is at the bottom-right', () => {
+    expect(
+      single(COLUMN_COUNT - 1, ROW_COUNT - 1).getNextCursorInDirection(
+        { column: COLUMN_COUNT - 1, row: ROW_COUNT - 1 },
+        RIGHT
+      )
+    ).toEqual({ column: 0, row: 0 });
+  });
+
+  it('cycles through cells within a multi-cell range', () => {
+    // range covers (2..4, 5..7); moving right from (2,5) advances to (3,5)
+    expect(
+      range(2, 5, 4, 7).getNextCursorInDirection({ column: 2, row: 5 }, RIGHT)
+    ).toEqual({ column: 3, row: 5 });
+  });
+
+  it('wraps within a multi-cell range', () => {
+    // moving UP from (2,5) inside range (2..4, 5..7) wraps to (4, 7)
+    expect(
+      range(2, 5, 4, 7).getNextCursorInDirection({ column: 2, row: 5 }, UP)
+    ).toEqual({ column: 4, row: 7 });
+  });
+});
+
 // ─── clear ───────────────────────────────────────────────────────────────────
 
 describe('clear', () => {

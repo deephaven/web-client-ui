@@ -630,6 +630,46 @@ describe('commitGesture', () => {
   });
 });
 
+// ─── KeyboardSelection ───────────────────────────────────────────────────────
+
+describe('getCursorLandingCell', () => {
+  it('returns null when there is no overlay (committed selection)', () => {
+    // Landing is only consulted mid-gesture on the pre-commit selection.
+    expect(singleRow(5).getCursorLandingCell()).toBeNull();
+  });
+
+  it('returns the top-left of the overlay for a mid-gesture selection', () => {
+    const gesture = empty().withMouseGestureRanges(
+      [new GridRange(null, 4, null, 6)],
+      true
+    );
+    expect(gesture.getCursorLandingCell()).toEqual({ column: 0, row: 4 });
+  });
+});
+
+describe('getNextCursorInDirection', () => {
+  const { RIGHT } = GridRange.SELECTION_DIRECTION;
+
+  it('walks the whole grid when there is no overlay', () => {
+    expect(
+      singleRow(5).getNextCursorInDirection({ column: 0, row: 0 }, RIGHT)
+    ).toEqual({ column: 1, row: 0 });
+  });
+
+  it('cycles within a mid-gesture range', () => {
+    const gesture = empty().withMouseGestureRanges(
+      [new GridRange(null, 4, null, 6)],
+      true
+    );
+    expect(
+      gesture.getNextCursorInDirection(
+        { column: 0, row: 4 },
+        GridRange.SELECTION_DIRECTION.DOWN
+      )
+    ).toEqual({ column: 0, row: 5 });
+  });
+});
+
 // ─── withToggledRow ───────────────────────────────────────────────────────────
 
 describe('withToggledRow', () => {

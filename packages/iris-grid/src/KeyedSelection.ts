@@ -6,9 +6,12 @@ import {
   type GridRange,
   type GridRangeIndex,
   type ModelIndex,
+  type SELECTION_DIRECTION,
   type Selection,
   type VisibleIndex,
   computeGestureExtend,
+  cursorLandingCellForRanges,
+  nextCursorInRanges,
 } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
@@ -223,6 +226,28 @@ export class KeyedSelection implements Selection {
   getLastSingleSelectedRow(): VisibleIndex | null {
     if (this.invertedSelection || this.selectedKeys.size !== 1) return null;
     return this.lastSingleRow;
+  }
+
+  getNextCursorInDirection(
+    current: { row: GridRangeIndex; column: GridRangeIndex },
+    direction: SELECTION_DIRECTION
+  ): { row: GridRangeIndex; column: GridRangeIndex } | null {
+    const { columnCount, rowCount } = this.getModel();
+    return nextCursorInRanges(this.overlayRanges, current, direction, {
+      columnCount,
+      rowCount,
+    });
+  }
+
+  getCursorLandingCell(): {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null {
+    const { columnCount, rowCount } = this.getModel();
+    return cursorLandingCellForRanges(this.overlayRanges, {
+      columnCount,
+      rowCount,
+    });
   }
 
   toActiveRanges(): readonly GridRange[] {

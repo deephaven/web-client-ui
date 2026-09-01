@@ -1,5 +1,5 @@
 import type GridRange from './GridRange';
-import type { GridRangeIndex } from './GridRange';
+import type { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
 import type GridModel from './GridModel';
 import type { VisibleIndex } from './GridMetrics';
 import type { BoundedAxisRange } from './GridAxisRange';
@@ -24,13 +24,15 @@ export type CommitMouseGestureOptions = {
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
- * Composed from five sub-interfaces:
+ * Composed from six sub-interfaces:
  * - `SelectionQueries` — read-only inspection.
  * - `SelectionTransforms` — immutable transforms with no external dependencies.
  * - `ProgrammaticSelection` — programmatic write path (`Grid.setSelectedRanges`).
  * - `MouseSelection` — mouse-driven gestures (click, shift-click, drag).
- * - `SelectionDeprecated` — gesture-plumbing being replaced by upcoming
- *   `KeyboardSelection` interface and internal implementation. See
+ * - `KeyboardSelection` — keyboard-driven queries (Tab/Enter advance, cursor
+ *   landing after commit).
+ * - `SelectionDeprecated` — gesture-plumbing being replaced by the above
+ *   interfaces and internal implementation. See
  *   `plans/selection-interface-refactor.md`.
  */
 export interface Selection
@@ -38,6 +40,7 @@ export interface Selection
     SelectionTransforms,
     ProgrammaticSelection,
     MouseSelection,
+    KeyboardSelection,
     SelectionDeprecated {}
 
 /** Read-only inspection of a `Selection`. Every method is side-effect-free. */
@@ -183,6 +186,35 @@ export interface MouseSelection {
     lastCommitted: Selection,
     opts: CommitGestureOptions
   ) => Selection;
+}
+
+/**
+ * Keyboard-driven selection queries. Grid's key handlers use these to advance
+ * the cursor within the current selection (Tab/Enter) and to place the cursor
+ * after a commit or programmatic install.
+ */
+export interface KeyboardSelection {
+  /**
+   * Returns the next cursor cell in `direction` starting from `current`.
+   * When the selection is empty or has exactly one cell, walks the whole
+   * grid (wrapping at edges) so a lone Tab still moves the cursor.
+   * Otherwise cycles through the currently selected ranges.
+   */
+  getNextCursorInDirection: (
+    current: { row: GridRangeIndex; column: GridRangeIndex },
+    direction: SELECTION_DIRECTION
+  ) => { row: GridRangeIndex; column: GridRangeIndex } | null;
+
+  /**
+   * Returns the cell the cursor should land on after this selection is
+   * committed or programmatically installed. Grid calls this on the
+   * pre-commit selection so `KeyedSelection`'s overlay is still available.
+   * Returns `null` when the selection has no cells.
+   */
+  getCursorLandingCell: () => {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null;
 }
 
 /**

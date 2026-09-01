@@ -1345,6 +1345,81 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
+   * Extend + commit a gesture at `cursor` and return the resulting partial
+   * state. Shared by mouse click-and-release and keyboard commits.
+   *
+   * @param state Pre-gesture state; `state.selection` is the selection to
+   * fold against. Cursor landing reads its extended (pre-commit) form so
+   * `KeyedSelection`'s overlay is still available.
+   * @param cursor Gesture target cell.
+   * @param mode Modifier-derived gesture mode.
+   * @param opts.moveCursor Snap the cursor to `cursor` (default true).
+   * Pass false for keyboard extend / maximize / add so the cursor stays put.
+   */
+  private applyGestureAt(
+    state: Pick<GridState, 'selection' | 'cursorRow' | 'cursorColumn'>,
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    mode: GestureMode,
+    opts: { moveCursor?: boolean } = {}
+  ): Pick<
+    GridState,
+    | 'selection'
+    | 'lastSelection'
+    | 'selectedRanges'
+    | 'cursorRow'
+    | 'cursorColumn'
+    | 'selectionEndColumn'
+    | 'selectionEndRow'
+  > {
+    const { theme } = this.props;
+    const { moveCursor = true } = opts;
+    const lastSelection = state.selection;
+    const extendOpts: GestureExtendOptions = {
+      mode,
+      autoSelectRow: theme.autoSelectRow ?? false,
+      autoSelectColumn: theme.autoSelectColumn ?? false,
+    };
+    const extended = state.selection.withGestureExtend(cursor, extendOpts);
+    const settled = extended.commitGesture(lastSelection, {
+      autoSelectRow: extendOpts.autoSelectRow,
+    });
+
+    let cursorRow: GridRangeIndex = moveCursor ? cursor.row : state.cursorRow;
+    let cursorColumn: GridRangeIndex = moveCursor
+      ? cursor.column
+      : state.cursorColumn;
+    if (settled.isEmpty()) {
+      cursorRow = null;
+      cursorColumn = null;
+    } else if (
+      cursorRow == null ||
+      cursorColumn == null ||
+      !settled.isCellSelected(cursorColumn, cursorRow)
+    ) {
+      // Cursor is outside the settled selection (e.g. ctrl-click hole-punch).
+      // Read landing from the pre-commit selection so KeyedSelection's overlay
+      // is still available.
+      const landing = extended.getCursorLandingCell();
+      if (landing != null) {
+        ({ column: cursorColumn, row: cursorRow } = landing);
+      } else {
+        cursorRow = null;
+        cursorColumn = null;
+      }
+    }
+
+    return {
+      selection: settled,
+      lastSelection,
+      selectedRanges: selectionToRanges(settled),
+      cursorRow,
+      cursorColumn,
+      selectionEndColumn: cursor.column,
+      selectionEndRow: cursor.row,
+    };
+  }
+
+  /**
    * Start a mouse-driven selection gesture at `cursor` with the given
    * modifier-derived `mode`. Extends the selection per `mode` semantics
    * and commits immediately so a click without drag settles the state.
@@ -1353,59 +1428,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode
   ): void {
-    const { model, theme } = this.props;
-    const { columnCount, rowCount } = model;
-    this.setState(state => {
-      // Snapshot pre-gesture selection so onUp's commit uses a stable
-      // deselect-on-reclick basis across the whole gesture.
-      const lastSelection = state.selection;
-      const opts: GestureExtendOptions = {
-        mode,
-        autoSelectRow: theme.autoSelectRow ?? false,
-        autoSelectColumn: theme.autoSelectColumn ?? false,
-      };
-      const extended = state.selection.withGestureExtend(cursor, opts);
-      const settled = extended.commitGesture(lastSelection, {
-        autoSelectRow: opts.autoSelectRow,
-      });
-
-      let cursorRow: GridRangeIndex = cursor.row;
-      let cursorColumn: GridRangeIndex = cursor.column;
-      if (settled.isEmpty()) {
-        cursorRow = null;
-        cursorColumn = null;
-      } else if (
-        cursor.row == null ||
-        cursor.column == null ||
-        !settled.isCellSelected(cursor.column, cursor.row)
-      ) {
-        // Cursor is outside the settled selection (e.g. ctrl-click hole-punch).
-        // Land on the first cell of the pre-commit ranges.
-        const nextCursor = GridRange.nextCell(
-          GridRange.boundedRanges(
-            extended.toActiveRanges(),
-            columnCount,
-            rowCount
-          )
-        );
-        if (nextCursor != null) {
-          ({ column: cursorColumn, row: cursorRow } = nextCursor);
-        } else {
-          cursorRow = null;
-          cursorColumn = null;
-        }
-      }
-
-      return {
-        selection: settled,
-        lastSelection,
-        selectedRanges: selectionToRanges(settled),
-        cursorRow,
-        cursorColumn,
-        selectionEndColumn: cursor.column,
-        selectionEndRow: cursor.row,
-      };
-    });
+    this.setState(state => this.applyGestureAt(state, cursor, mode));
   }
 
   /**
@@ -1436,8 +1459,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   /** Settle the current mouse selection gesture. Called on mouse-up. */
   handleMouseSelectEnd(): void {
-    const { model, theme } = this.props;
-    const { columnCount, rowCount } = model;
+    const { theme } = this.props;
     this.setState(state => {
       const { selection, lastSelection, cursorRow, cursorColumn } = state;
       const settled = selection.commitGesture(lastSelection, {
@@ -1455,17 +1477,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         !settled.isCellSelected(cursorColumn ?? 0, cursorRow)
       ) {
         // Cursor landing reads pre-commit ranges because KeyedSelection's
-        // overlay is cleared by commit. Uses the deprecated `toActiveRanges`
-        // for now; step 3 introduces `getCursorLandingCell`.
-        const nextCursor = GridRange.nextCell(
-          GridRange.boundedRanges(
-            selection.toActiveRanges(),
-            columnCount,
-            rowCount
-          )
-        );
-        if (nextCursor != null) {
-          ({ column: newCursorColumn, row: newCursorRow } = nextCursor);
+        // overlay is cleared by commit.
+        const landing = selection.getCursorLandingCell();
+        if (landing != null) {
+          ({ column: newCursorColumn, row: newCursorRow } = landing);
         } else {
           newCursorColumn = null;
           newCursorRow = null;
@@ -1480,6 +1495,109 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectedRanges: selectionToRanges(settled),
       };
     });
+  }
+
+  /**
+   * Apply a keyboard-driven selection gesture at `cursor` with `mode`, then
+   * optionally scroll the viewport to bring the cursor into view. Shared
+   * entry point for arrow keys, Home/End, and page-key movements.
+   *
+   * Only `replace` moves the cursor to `cursor`; extend/maximize/add
+   * preserve the existing cursor and update `selectionEnd` only. This
+   * matches long-standing Shift+Arrow semantics where the cursor stays put
+   * as the selection grows.
+   */
+  handleKeySelectAt(
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    mode: GestureMode,
+    opts: { keepCursorInView?: boolean } = {}
+  ): void {
+    const { keepCursorInView = true } = opts;
+    const moveCursor = mode === 'replace';
+    this.setState(state =>
+      this.applyGestureAt(state, cursor, mode, { moveCursor })
+    );
+    if (keepCursorInView && cursor.column != null && cursor.row != null) {
+      this.moveViewToCell(cursor.column, cursor.row);
+    }
+  }
+
+  /**
+   * Advance the cursor in `direction` through the current selection. Used
+   * by Tab/Enter — cycles within the selected ranges when there are
+   * multiple, wraps at grid edges when there is only a single cell.
+   * When the resulting cursor falls outside the current selection (e.g.
+   * from an initial empty state), installs a fresh single-cell selection.
+   */
+  handleKeyAdvanceCursor(direction: SELECTION_DIRECTION): void {
+    const { cursorColumn, cursorRow, selection } = this.state;
+    const next = selection.getNextCursorInDirection(
+      { column: cursorColumn, row: cursorRow },
+      direction
+    );
+    if (next == null) return;
+
+    const { column, row } = next;
+    if (column == null || row == null) return;
+    if (selection.isCellSelected(column, row)) {
+      this.setState({ cursorColumn: column, cursorRow: row });
+    } else {
+      this.setState(state =>
+        this.applyGestureAt(state, { column, row }, 'replace')
+      );
+    }
+
+    this.moveViewToCell(column, row);
+  }
+
+  /**
+   * Page-up gesture. Reads viewport metrics to compute the target cell,
+   * applies the gesture without auto-scrolling, then pins the viewport top
+   * so the cursor lands where it was on screen before.
+   */
+  handleKeyPageUp(mode: GestureMode): void {
+    const { cursorColumn, selectionEndRow } = this.state;
+    if (selectionEndRow == null) return;
+    const row = selectionEndRow;
+
+    const metricState = this.getMetricState();
+    const { bottomVisible, topVisible, hasHorizontalBar } =
+      this.metricCalculator.getMetrics(metricState);
+
+    let target = row - (bottomVisible - topVisible);
+    target -= hasHorizontalBar ? 0 : 1;
+    target = Math.max(target, 0);
+    const viewportPosition = Math.max(target - (row - topVisible), 0);
+
+    this.handleKeySelectAt({ column: cursorColumn, row: target }, mode, {
+      keepCursorInView: false,
+    });
+    this.setViewState({ top: viewportPosition });
+  }
+
+  /**
+   * Page-down gesture. Symmetric with `handleKeyPageUp` but clamps against
+   * the last row and last viewport top.
+   */
+  handleKeyPageDown(mode: GestureMode): void {
+    const { cursorColumn, selectionEndRow } = this.state;
+    if (selectionEndRow == null) return;
+    const row = selectionEndRow;
+
+    const metricState = this.getMetricState();
+    const { bottomVisible, topVisible, hasHorizontalBar, rowCount, lastTop } =
+      this.metricCalculator.getMetrics(metricState);
+    const lastRowIndex = rowCount - 1;
+
+    let target = bottomVisible - topVisible + row;
+    target += hasHorizontalBar ? 0 : 1;
+    target = Math.min(target, lastRowIndex);
+    const viewportPosition = Math.min(lastTop, target - (row - topVisible));
+
+    this.handleKeySelectAt({ column: cursorColumn, row: target }, mode, {
+      keepCursorInView: false,
+    });
+    this.setViewState({ top: viewportPosition });
   }
 
   setFocusRow(focusedRow: number): void {

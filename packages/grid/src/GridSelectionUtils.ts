@@ -1,4 +1,7 @@
-import GridRange, { type GridRangeIndex } from './GridRange';
+import GridRange, {
+  type GridRangeIndex,
+  type SELECTION_DIRECTION,
+} from './GridRange';
 import type { GestureExtendOptions, GestureMode } from './Selection';
 
 /**
@@ -173,4 +176,56 @@ export function computeGestureExtend(
     trimBefore,
     resetAnchor: false,
   };
+}
+
+/**
+ * Returns the next cursor cell in `direction` walking through `ranges`.
+ * Falls back to walking the full grid when the ranges are empty or contain
+ * exactly one cell — matches Tab/Enter behavior for single-cell selections.
+ * Shared by `RangedSelection` and `KeyedSelection` implementations of
+ * `getNextCursorInDirection`.
+ */
+export function nextCursorInRanges(
+  ranges: readonly GridRange[],
+  current: { row: GridRangeIndex; column: GridRangeIndex },
+  direction: SELECTION_DIRECTION,
+  bounds: { columnCount: number; rowCount: number }
+): { row: GridRangeIndex; column: GridRangeIndex } | null {
+  const activeRanges =
+    ranges.length > 0
+      ? ranges
+      : [GridRange.makeCell(current.column, current.row)];
+  if (activeRanges.length === 1 && GridRange.cellCount(activeRanges) === 1) {
+    const gridRange = new GridRange(
+      0,
+      0,
+      bounds.columnCount - 1,
+      bounds.rowCount - 1
+    );
+    return (
+      gridRange.nextCell(current.column, current.row, direction) ??
+      gridRange.startCell(direction)
+    );
+  }
+  return GridRange.nextCell(
+    GridRange.boundedRanges(activeRanges, bounds.columnCount, bounds.rowCount),
+    current.column,
+    current.row,
+    direction
+  );
+}
+
+/**
+ * Returns the first cell of `ranges` bounded to `[columnCount, rowCount]`.
+ * Shared by `RangedSelection` and `KeyedSelection` implementations of
+ * `getCursorLandingCell`.
+ */
+export function cursorLandingCellForRanges(
+  ranges: readonly GridRange[],
+  bounds: { columnCount: number; rowCount: number }
+): { row: GridRangeIndex; column: GridRangeIndex } | null {
+  if (ranges.length === 0) return null;
+  return GridRange.nextCell(
+    GridRange.boundedRanges(ranges, bounds.columnCount, bounds.rowCount)
+  );
 }
