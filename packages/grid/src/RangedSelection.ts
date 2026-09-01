@@ -10,7 +10,7 @@ import type {
   Selection,
   TickRangeSelection,
 } from './Selection';
-import { computeGestureExtend } from './SelectionUtils';
+import { computeGestureExtend } from './GridSelectionUtils';
 
 /**
  * Immutable `Selection` for standard (row-indexed) grids. Each entry in

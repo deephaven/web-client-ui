@@ -1,5 +1,24 @@
 import GridRange, { type GridRangeIndex } from './GridRange';
-import type { GestureExtendOptions } from './Selection';
+import type { GestureExtendOptions, GestureMode } from './Selection';
+
+/**
+ * Maps modifier-key state on a mouse event to the appropriate `GestureMode`.
+ * The four modifier combinations partition the gesture space:
+ * - shift + ctrl/meta → `maximize`
+ * - shift alone       → `extend`
+ * - ctrl/meta alone   → `add`
+ * - no modifiers      → `replace`
+ */
+export function gestureModeFromModifiers(modifiers: {
+  isShiftKey: boolean;
+  isModifierKey: boolean;
+}): GestureMode {
+  const { isShiftKey, isModifierKey } = modifiers;
+  if (isShiftKey && isModifierKey) return 'maximize';
+  if (isShiftKey) return 'extend';
+  if (isModifierKey) return 'add';
+  return 'replace';
+}
 
 /**
  * Shape describing how a mouse gesture should mutate the selection's ranges.

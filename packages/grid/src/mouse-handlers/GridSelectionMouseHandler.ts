@@ -2,6 +2,7 @@ import { type EventHandlerResult } from '../EventHandlerResult';
 import type Grid from '../Grid';
 import GridMouseHandler, { type GridMouseEvent } from '../GridMouseHandler';
 import GridUtils, { type GridPoint } from '../GridUtils';
+import { gestureModeFromModifiers } from '../GridSelectionUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
 
@@ -47,20 +48,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       (row !== null || !autoSelectRow)
     ) {
       grid.focus();
-      // Modifier keys pick the gesture mode:
-      //   shift+ctrl → maximize (grow last range without replacing)
-      //   shift → extend (from anchor to cursor, trimming to the last range)
-      //   ctrl → add (append single cell without replacing)
-      //   plain → replace (clear + install single cell)
-      // eslint-disable-next-line no-nested-ternary
-      const mode =
-        isShiftKey && isModifierKey
-          ? 'maximize'
-          : isShiftKey
-          ? 'extend'
-          : isModifierKey
-          ? 'add'
-          : 'replace';
+      const mode = gestureModeFromModifiers({ isShiftKey, isModifierKey });
       grid.handleMouseSelectStart({ row, column }, mode);
     }
 
