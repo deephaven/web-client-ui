@@ -236,11 +236,6 @@ export class KeyedSelection implements Selection {
     return this.invertedSelection && this.selectedKeys.size === 0;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  isValid(): boolean {
-    return true;
-  }
-
   getLastSingleSelectedRow(): VisibleIndex | null {
     if (this.invertedSelection || this.selectedKeys.size !== 1) return null;
     return this.lastSingleRow;

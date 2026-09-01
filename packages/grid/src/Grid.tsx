@@ -77,6 +77,7 @@ import { type GetModel, type Selection } from './Selection';
 import {
   RangedSelection,
   assertIsRangedSelection,
+  isRangedSelection,
   selectionToRanges,
 } from './RangedSelection';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
@@ -1075,7 +1076,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { createEmptySelection } = this.props;
     const { selection } = this.state;
 
-    if (!selection.isValid()) {
+    // Validate that a RangedSelection is within the bounds of the grid model
+    if (isRangedSelection(selection) && !selection.isInBounds()) {
       // Just clear the selection rather than trying to trim it.
       const empty = createEmptySelection(this.getModel);
       this.setState({

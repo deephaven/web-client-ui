@@ -89,7 +89,11 @@ export class RangedSelection implements Selection {
     return false;
   }
 
-  isValid(): boolean {
+  /**
+   * Checks if all ranges are within the bounds of the grid model.
+   * @returns True if all ranges are within bounds, false otherwise.
+   */
+  isInBounds(): boolean {
     const { columnCount, rowCount } = this.getModel();
     for (let i = 0; i < this.ranges.length; i += 1) {
       const range = this.ranges[i];

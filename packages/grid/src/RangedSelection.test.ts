@@ -158,27 +158,27 @@ describe('isColumnSelected', () => {
   });
 });
 
-// ─── isValid ─────────────────────────────────────────────────────────────────
+// ─── isInBounds ─────────────────────────────────────────────────────────────
 
-describe('isValid', () => {
+describe('isInBounds', () => {
   it('returns true for empty selection', () => {
-    expect(empty().isValid()).toBe(true);
+    expect(empty().isInBounds()).toBe(true);
   });
 
   it('returns true when all ranges are within bounds', () => {
-    expect(range(0, 0, 5, 10).isValid()).toBe(true);
+    expect(range(0, 0, 5, 10).isInBounds()).toBe(true);
   });
 
   it('returns false when a range exceeds columnCount', () => {
-    expect(range(0, 0, COLUMN_COUNT, 0).isValid()).toBe(false);
+    expect(range(0, 0, COLUMN_COUNT, 0).isInBounds()).toBe(false);
   });
 
   it('returns false when a range exceeds rowCount', () => {
-    expect(range(0, 0, 0, ROW_COUNT).isValid()).toBe(false);
+    expect(range(0, 0, 0, ROW_COUNT).isInBounds()).toBe(false);
   });
 
   it('returns true for null bounds (unbounded ranges are always valid)', () => {
-    expect(fullRow(5).isValid()).toBe(true);
+    expect(fullRow(5).isInBounds()).toBe(true);
   });
 });
 
