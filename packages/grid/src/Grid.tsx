@@ -1554,35 +1554,12 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
-   * Page-up gesture. Reads viewport metrics to compute the target cell,
-   * applies the gesture without auto-scrolling, then pins the viewport top
-   * so the cursor lands where it was on screen before.
+   * Page-move gesture. `direction` is +1 (page-down) or -1 (page-up). Reads
+   * viewport metrics to compute the target cell, applies the gesture without
+   * auto-scrolling, then pins the viewport top so the cursor lands where it
+   * was on screen before.
    */
-  handleKeyPageUp(mode: GestureMode): void {
-    const { cursorColumn, selectionEndRow } = this.state;
-    if (selectionEndRow == null) return;
-    const row = selectionEndRow;
-
-    const metricState = this.getMetricState();
-    const { bottomVisible, topVisible, hasHorizontalBar } =
-      this.metricCalculator.getMetrics(metricState);
-
-    let target = row - (bottomVisible - topVisible);
-    target -= hasHorizontalBar ? 0 : 1;
-    target = Math.max(target, 0);
-    const viewportPosition = Math.max(target - (row - topVisible), 0);
-
-    this.handleKeySelectAt({ column: cursorColumn, row: target }, mode, {
-      keepCursorInView: false,
-    });
-    this.setViewState({ top: viewportPosition });
-  }
-
-  /**
-   * Page-down gesture. Symmetric with `handleKeyPageUp` but clamps against
-   * the last row and last viewport top.
-   */
-  handleKeyPageDown(mode: GestureMode): void {
+  private handleKeyPage(mode: GestureMode, direction: 1 | -1): void {
     const { cursorColumn, selectionEndRow } = this.state;
     if (selectionEndRow == null) return;
     const row = selectionEndRow;
@@ -1590,17 +1567,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     const metricState = this.getMetricState();
     const { bottomVisible, topVisible, hasHorizontalBar, rowCount, lastTop } =
       this.metricCalculator.getMetrics(metricState);
-    const lastRowIndex = rowCount - 1;
+    const pageSize = bottomVisible - topVisible + (hasHorizontalBar ? 0 : 1);
 
-    let target = bottomVisible - topVisible + row;
-    target += hasHorizontalBar ? 0 : 1;
-    target = Math.min(target, lastRowIndex);
-    const viewportPosition = Math.min(lastTop, target - (row - topVisible));
+    const target = clamp(row + direction * pageSize, 0, rowCount - 1);
+    const viewportPosition = clamp(target - (row - topVisible), 0, lastTop);
 
     this.handleKeySelectAt({ column: cursorColumn, row: target }, mode, {
       keepCursorInView: false,
     });
     this.setViewState({ top: viewportPosition });
+  }
+
+  handleKeyPageUp(mode: GestureMode): void {
+    this.handleKeyPage(mode, -1);
+  }
+
+  handleKeyPageDown(mode: GestureMode): void {
+    this.handleKeyPage(mode, 1);
   }
 
   setFocusRow(focusedRow: number): void {
