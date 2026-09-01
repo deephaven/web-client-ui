@@ -38,13 +38,6 @@ class GridSelectionMouseHandler extends GridMouseHandler {
 
     const isModifierKey = GridUtils.isModifierKeyDown(event);
     const isShiftKey = event.shiftKey;
-    if (!isModifierKey) {
-      if (isShiftKey) {
-        grid.trimSelectedRanges();
-      } else {
-        grid.clearSelectedRanges();
-      }
-    }
 
     const theme = grid.getTheme();
     const { autoSelectRow, autoSelectColumn } = theme;
@@ -54,13 +47,21 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       (row !== null || !autoSelectRow)
     ) {
       grid.focus();
-      grid.moveCursorToPosition(
-        column,
-        row,
-        isShiftKey,
-        false,
+      // Modifier keys pick the gesture mode:
+      //   shift+ctrl → maximize (grow last range without replacing)
+      //   shift → extend (from anchor to cursor, trimming to the last range)
+      //   ctrl → add (append single cell without replacing)
+      //   plain → replace (clear + install single cell)
+      // eslint-disable-next-line no-nested-ternary
+      const mode =
         isShiftKey && isModifierKey
-      );
+          ? 'maximize'
+          : isShiftKey
+          ? 'extend'
+          : isModifierKey
+          ? 'add'
+          : 'replace';
+      grid.handleMouseSelectStart({ row, column }, mode);
     }
 
     this.startPoint = gridPoint;
@@ -199,7 +200,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
         }
       }
       // Transient overlay during drag — onUp performs the settled commit.
-      grid.moveCursorToPosition(column, row, true, true, false, false);
+      grid.handleMouseSelectDrag({ row, column });
     }
     return true;
   }
@@ -208,7 +209,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     if (this.startPoint !== undefined) {
       this.startPoint = undefined;
       this.stopTimer();
-      grid.commitSelection();
+      grid.handleMouseSelectEnd();
     }
 
     return false;
@@ -225,9 +226,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       return false;
     }
 
-    grid.clearSelectedRanges();
-    grid.moveCursorToPosition(column, row);
-    grid.commitSelection();
+    // Double-click behaves as a plain click at the target: replace selection.
+    grid.handleMouseSelectStart({ row, column }, 'replace');
 
     return true;
   }
@@ -247,8 +247,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     if (!isInRange && row != null && column != null) {
       this.startPoint = undefined;
       this.stopTimer();
-      grid.clearSelectedRanges();
-      grid.moveCursorToPosition(column, row);
+      grid.handleMouseSelectStart({ row, column }, 'replace');
     }
 
     return false;
@@ -275,14 +274,10 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const minY = deltaY < 0 && row != null ? row : 0;
     const maxY = deltaY > 0 && row != null ? row : rowCount - 1;
     // Transient overlay during auto-scroll drag — onUp performs the settled commit.
-    grid.moveCursorToPosition(
-      Math.min(Math.max(minX, selectionEndColumn + deltaX), maxX),
-      Math.min(Math.max(minY, selectionEndRow + deltaY), maxY),
-      true,
-      true,
-      false,
-      false
-    );
+    grid.handleMouseSelectDrag({
+      column: Math.min(Math.max(minX, selectionEndColumn + deltaX), maxX),
+      row: Math.min(Math.max(minY, selectionEndRow + deltaY), maxY),
+    });
     this.lastTriggerTime = Date.now();
   }
 

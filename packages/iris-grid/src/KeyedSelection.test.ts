@@ -550,6 +550,82 @@ describe('commitMouseGesture', () => {
   });
 });
 
+// ─── withGestureExtend (MouseSelection) ──────────────────────────────────────
+
+describe('withGestureExtend', () => {
+  const defaultOpts = { autoSelectRow: true, autoSelectColumn: false };
+
+  it('installs a full-row overlay for replace mode', () => {
+    const sel = singleRow(3).withGestureExtend(
+      { row: 7, column: 0 },
+      { mode: 'replace', ...defaultOpts }
+    );
+    // Replace clears committed keys; overlay is the single-row range.
+    expect(sel.overlayRanges).toHaveLength(1);
+    expect(sel.overlayRanges[0]).toEqual(new GridRange(null, 7, null, 7));
+    expect(sel.selectedKeys.size).toBe(0);
+  });
+
+  it('resets anchor to cursor on replace mode', () => {
+    const sel = empty().withGestureExtend(
+      { row: 7, column: 0 },
+      { mode: 'replace', ...defaultOpts }
+    );
+    expect(sel.getGestureAnchor()).toEqual({ row: 7, column: null });
+  });
+
+  it('appends to the overlay for add mode without dropping committed keys', () => {
+    const sel = singleRow(3).withGestureExtend(
+      { row: 7, column: 0 },
+      { mode: 'add', ...defaultOpts }
+    );
+    expect(sel.selectedKeys.size).toBe(1);
+    expect(sel.overlayRanges).toHaveLength(1);
+  });
+
+  it('extends the overlay from anchor to cursor for extend mode', () => {
+    const sel = empty()
+      .withGestureAnchor(3, null)
+      .withGestureExtend(
+        { row: 7, column: 0 },
+        { mode: 'extend', ...defaultOpts }
+      );
+    expect(sel.overlayRanges).toHaveLength(1);
+    expect(sel.overlayRanges[0]).toEqual(new GridRange(null, 3, null, 7));
+  });
+
+  it('preserves the anchor for extend mode', () => {
+    const sel = empty()
+      .withGestureAnchor(3, null)
+      .withGestureExtend(
+        { row: 7, column: 0 },
+        { mode: 'extend', ...defaultOpts }
+      );
+    expect(sel.getGestureAnchor()).toEqual({ row: 3, column: null });
+  });
+});
+
+// ─── commitGesture (MouseSelection) ──────────────────────────────────────────
+
+describe('commitGesture', () => {
+  it('commits an overlay into selectedKeys', () => {
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 3, null, 3)],
+    });
+    const result = withOverlay.commitGesture(empty(), {
+      autoSelectRow: false,
+    });
+    expect(result.isRowSelected(3)).toBe(true);
+    expect(result.overlayRanges).toHaveLength(0);
+  });
+
+  it('is identity when there is no overlay to commit', () => {
+    const sel = singleRow(5);
+    expect(sel.commitGesture(sel, { autoSelectRow: false })).toBe(sel);
+  });
+});
+
 // ─── withToggledRow ───────────────────────────────────────────────────────────
 
 describe('withToggledRow', () => {

@@ -1,11 +1,14 @@
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
+  type CommitGestureOptions,
   type CommitMouseGestureOptions,
+  type GestureExtendOptions,
   type GridRange,
   type GridRangeIndex,
   type ModelIndex,
   type Selection,
   type VisibleIndex,
+  computeGestureExtend,
 } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
@@ -324,6 +327,34 @@ export class KeyedSelection implements Selection {
       }
     }
     return best;
+  }
+
+  withGestureExtend(
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    opts: GestureExtendOptions
+  ): KeyedSelection {
+    const { newRanges, isReplacing, trimBefore, resetAnchor } =
+      computeGestureExtend(
+        this.overlayRanges,
+        this.getGestureAnchor(),
+        cursor,
+        opts
+      );
+    const base = trimBefore ? this.trimmed() : this;
+    let result = base.withMouseGestureRanges(newRanges, isReplacing);
+    if (resetAnchor) {
+      result = result.withGestureAnchor(cursor.row, cursor.column);
+    }
+    return result;
+  }
+
+  commitGesture(
+    lastCommitted: Selection,
+    opts: CommitGestureOptions
+  ): KeyedSelection {
+    // The new commitGesture defers to the existing implementation. Once the
+    // deprecated interface is removed, the guts move here directly.
+    return this.commitMouseGesture(lastCommitted, opts);
   }
 
   commitMouseGesture(

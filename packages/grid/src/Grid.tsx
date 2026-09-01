@@ -73,7 +73,12 @@ import {
 import { type EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
-import { type GetModel, type Selection } from './Selection';
+import {
+  type GestureExtendOptions,
+  type GestureMode,
+  type GetModel,
+  type Selection,
+} from './Selection';
 import {
   RangedSelection,
   assertIsRangedSelection,
@@ -1335,6 +1340,144 @@ class Grid extends PureComponent<GridProps, GridState> {
         selection: newSelection,
         lastSelection: newSelection,
         selectedRanges: selectionToRanges(newSelection),
+      };
+    });
+  }
+
+  /**
+   * Start a mouse-driven selection gesture at `cursor` with the given
+   * modifier-derived `mode`. Extends the selection per `mode` semantics
+   * and commits immediately so a click without drag settles the state.
+   */
+  handleMouseSelectStart(
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    mode: GestureMode
+  ): void {
+    const { model, theme } = this.props;
+    const { columnCount, rowCount } = model;
+    this.setState(state => {
+      // Snapshot pre-gesture selection so onUp's commit uses a stable
+      // deselect-on-reclick basis across the whole gesture.
+      const lastSelection = state.selection;
+      const opts: GestureExtendOptions = {
+        mode,
+        autoSelectRow: theme.autoSelectRow ?? false,
+        autoSelectColumn: theme.autoSelectColumn ?? false,
+      };
+      const extended = state.selection.withGestureExtend(cursor, opts);
+      const settled = extended.commitGesture(lastSelection, {
+        autoSelectRow: opts.autoSelectRow,
+      });
+
+      let cursorRow: GridRangeIndex = cursor.row;
+      let cursorColumn: GridRangeIndex = cursor.column;
+      if (settled.isEmpty()) {
+        cursorRow = null;
+        cursorColumn = null;
+      } else if (
+        cursor.row == null ||
+        cursor.column == null ||
+        !settled.isCellSelected(cursor.column, cursor.row)
+      ) {
+        // Cursor is outside the settled selection (e.g. ctrl-click hole-punch).
+        // Land on the first cell of the pre-commit ranges.
+        const nextCursor = GridRange.nextCell(
+          GridRange.boundedRanges(
+            extended.toActiveRanges(),
+            columnCount,
+            rowCount
+          )
+        );
+        if (nextCursor != null) {
+          ({ column: cursorColumn, row: cursorRow } = nextCursor);
+        } else {
+          cursorRow = null;
+          cursorColumn = null;
+        }
+      }
+
+      return {
+        selection: settled,
+        lastSelection,
+        selectedRanges: selectionToRanges(settled),
+        cursorRow,
+        cursorColumn,
+        selectionEndColumn: cursor.column,
+        selectionEndRow: cursor.row,
+      };
+    });
+  }
+
+  /**
+   * Extend the current mouse selection gesture to `cursor`. Transient
+   * overlay only; the settled commit runs on `handleMouseSelectEnd`.
+   */
+  handleMouseSelectDrag(cursor: {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  }): void {
+    const { theme } = this.props;
+    this.setState(state => {
+      const opts: GestureExtendOptions = {
+        mode: 'extend',
+        autoSelectRow: theme.autoSelectRow ?? false,
+        autoSelectColumn: theme.autoSelectColumn ?? false,
+      };
+      const extended = state.selection.withGestureExtend(cursor, opts);
+      return {
+        selection: extended,
+        selectedRanges: selectionToRanges(extended),
+        selectionEndColumn: cursor.column,
+        selectionEndRow: cursor.row,
+      };
+    });
+    this.moveViewToCell(cursor.column, cursor.row);
+  }
+
+  /** Settle the current mouse selection gesture. Called on mouse-up. */
+  handleMouseSelectEnd(): void {
+    const { model, theme } = this.props;
+    const { columnCount, rowCount } = model;
+    this.setState(state => {
+      const { selection, lastSelection, cursorRow, cursorColumn } = state;
+      const settled = selection.commitGesture(lastSelection, {
+        autoSelectRow: theme.autoSelectRow ?? false,
+      });
+      if (settled === selection) return null;
+
+      let newCursorRow = cursorRow;
+      let newCursorColumn = cursorColumn;
+      if (settled.isEmpty()) {
+        newCursorRow = null;
+        newCursorColumn = null;
+      } else if (
+        cursorRow == null ||
+        !settled.isCellSelected(cursorColumn ?? 0, cursorRow)
+      ) {
+        // Cursor landing reads pre-commit ranges because KeyedSelection's
+        // overlay is cleared by commit. Uses the deprecated `toActiveRanges`
+        // for now; step 3 introduces `getCursorLandingCell`.
+        const nextCursor = GridRange.nextCell(
+          GridRange.boundedRanges(
+            selection.toActiveRanges(),
+            columnCount,
+            rowCount
+          )
+        );
+        if (nextCursor != null) {
+          ({ column: newCursorColumn, row: newCursorRow } = nextCursor);
+        } else {
+          newCursorColumn = null;
+          newCursorRow = null;
+        }
+      }
+
+      return {
+        cursorRow: newCursorRow,
+        cursorColumn: newCursorColumn,
+        selection: settled,
+        lastSelection: settled,
+        selectedRanges: selectionToRanges(settled),
       };
     });
   }

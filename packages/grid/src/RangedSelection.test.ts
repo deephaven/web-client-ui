@@ -434,6 +434,171 @@ describe('commitMouseGesture', () => {
   });
 });
 
+// ─── withGestureExtend (MouseSelection) ──────────────────────────────────────
+
+describe('withGestureExtend', () => {
+  const defaultOpts = { autoSelectRow: false, autoSelectColumn: false };
+
+  describe('replace mode', () => {
+    it('replaces the selection with a single cell at the cursor', () => {
+      const sel = range(0, 0, 5, 5).withGestureExtend(
+        { row: 10, column: 10 },
+        { mode: 'replace', ...defaultOpts }
+      );
+      expect(sel.toRanges()).toHaveLength(1);
+      expect(sel.toRanges()[0]).toEqual(GridRange.makeCell(10, 10));
+    });
+
+    it('resets the anchor to the cursor', () => {
+      const sel = empty().withGestureExtend(
+        { row: 10, column: 5 },
+        { mode: 'replace', ...defaultOpts }
+      );
+      expect(sel.getGestureAnchor()).toEqual({ row: 10, column: 5 });
+    });
+
+    it('installs a full-row range when autoSelectRow is true', () => {
+      const sel = empty().withGestureExtend(
+        { row: 10, column: 5 },
+        { mode: 'replace', autoSelectRow: true, autoSelectColumn: false }
+      );
+      expect(sel.toRanges()[0]).toEqual(new GridRange(null, 10, null, 10));
+    });
+
+    it('installs a full-column range when autoSelectColumn is true', () => {
+      const sel = empty().withGestureExtend(
+        { row: 10, column: 5 },
+        { mode: 'replace', autoSelectRow: false, autoSelectColumn: true }
+      );
+      expect(sel.toRanges()[0]).toEqual(new GridRange(5, null, 5, null));
+    });
+  });
+
+  describe('add mode', () => {
+    it('appends a single cell to the existing ranges', () => {
+      const sel = range(0, 0, 5, 5).withGestureExtend(
+        { row: 10, column: 10 },
+        { mode: 'add', ...defaultOpts }
+      );
+      expect(sel.toRanges()).toHaveLength(2);
+      expect(sel.toRanges()[1]).toEqual(GridRange.makeCell(10, 10));
+    });
+
+    it('resets the anchor to the cursor', () => {
+      const sel = single(3, 3)
+        .withGestureAnchor(3, 3)
+        .withGestureExtend(
+          { row: 10, column: 10 },
+          { mode: 'add', ...defaultOpts }
+        );
+      expect(sel.getGestureAnchor()).toEqual({ row: 10, column: 10 });
+    });
+  });
+
+  describe('extend mode', () => {
+    it('extends from the anchor to the cursor as a single range', () => {
+      const sel = single(3, 3)
+        .withGestureAnchor(3, 3)
+        .withGestureExtend(
+          { row: 7, column: 5 },
+          { mode: 'extend', ...defaultOpts }
+        );
+      expect(sel.toRanges()).toHaveLength(1);
+      expect(sel.toRanges()[0]).toEqual(new GridRange(3, 3, 5, 7));
+    });
+
+    it('preserves the anchor', () => {
+      const sel = single(3, 3)
+        .withGestureAnchor(3, 3)
+        .withGestureExtend(
+          { row: 7, column: 5 },
+          { mode: 'extend', ...defaultOpts }
+        );
+      expect(sel.getGestureAnchor()).toEqual({ row: 3, column: 3 });
+    });
+
+    it('trims to the last range before extending', () => {
+      const multi = new RangedSelection(
+        [new GridRange(0, 0, 1, 1), new GridRange(5, 5, 6, 6)],
+        getModel,
+        6,
+        6
+      );
+      const sel = multi.withGestureExtend(
+        { row: 8, column: 8 },
+        { mode: 'extend', ...defaultOpts }
+      );
+      expect(sel.toRanges()).toHaveLength(1);
+      // Anchor is (6,6), cursor is (8,8), so extended range is (6,6,8,8).
+      expect(sel.toRanges()[0]).toEqual(new GridRange(6, 6, 8, 8));
+    });
+  });
+
+  describe('maximize mode', () => {
+    it('grows the last range to include the cursor', () => {
+      const sel = range(2, 2, 4, 4).withGestureExtend(
+        { row: 6, column: 6 },
+        { mode: 'maximize', ...defaultOpts }
+      );
+      expect(sel.toRanges()[0]).toEqual(new GridRange(2, 2, 6, 6));
+    });
+
+    it('preserves earlier ranges', () => {
+      const multi = new RangedSelection(
+        [new GridRange(0, 0, 1, 1), new GridRange(5, 5, 6, 6)],
+        getModel
+      );
+      const sel = multi.withGestureExtend(
+        { row: 8, column: 8 },
+        { mode: 'maximize', ...defaultOpts }
+      );
+      expect(sel.toRanges()).toHaveLength(2);
+      expect(sel.toRanges()[0]).toEqual(new GridRange(0, 0, 1, 1));
+      expect(sel.toRanges()[1]).toEqual(new GridRange(5, 5, 8, 8));
+    });
+
+    it('preserves the anchor', () => {
+      const sel = single(3, 3)
+        .withGestureAnchor(3, 3)
+        .withGestureExtend(
+          { row: 7, column: 5 },
+          { mode: 'maximize', ...defaultOpts }
+        );
+      expect(sel.getGestureAnchor()).toEqual({ row: 3, column: 3 });
+    });
+  });
+});
+
+// ─── commitGesture (MouseSelection) ──────────────────────────────────────────
+
+describe('commitGesture', () => {
+  const defaultOpts = { autoSelectRow: false };
+
+  it('deselects on single-cell reclick', () => {
+    const lastCommitted = single(3, 3);
+    const current = single(3, 3);
+    const settled = current.commitGesture(lastCommitted, defaultOpts);
+    expect(settled.isEmpty()).toBe(true);
+  });
+
+  it('does not deselect when the cell differs from the last committed', () => {
+    const lastCommitted = single(3, 3);
+    const current = single(4, 4);
+    const settled = current.commitGesture(lastCommitted, defaultOpts);
+    expect(settled.isEmpty()).toBe(false);
+    expect(settled.toRanges()[0]).toEqual(GridRange.makeCell(4, 4));
+  });
+
+  it('subtracts a contained range on ctrl-click (hole-punch)', () => {
+    const sel = new RangedSelection(
+      [new GridRange(5, 5, 9, 9), GridRange.makeCell(7, 7)],
+      getModel
+    );
+    const settled = sel.commitGesture(empty(), defaultOpts);
+    expect(settled.toRanges()).toHaveLength(4);
+  });
+});
+
 // ─── clear ───────────────────────────────────────────────────────────────────
 
 describe('clear', () => {

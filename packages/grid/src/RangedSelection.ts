@@ -3,11 +3,14 @@ import GridRange, { type GridRangeIndex } from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type {
+  CommitGestureOptions,
   CommitMouseGestureOptions,
+  GestureExtendOptions,
   GetModel,
   Selection,
   TickRangeSelection,
 } from './Selection';
+import { computeGestureExtend } from './SelectionUtils';
 
 /**
  * Immutable `Selection` for standard (row-indexed) grids. Each entry in
@@ -190,6 +193,37 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const consolidated = GridRange.consolidate(this.ranges);
     if (GridRange.rowCount(consolidated) !== 1) return null;
     return consolidated[0]?.startRow ?? null;
+  }
+
+  withGestureExtend(
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    opts: GestureExtendOptions
+  ): RangedSelection {
+    const { newRanges, trimBefore, resetAnchor } = computeGestureExtend(
+      this.ranges,
+      this.getGestureAnchor(),
+      cursor,
+      opts
+    );
+    // Trim is a no-op wrapper for RangedSelection when `newRanges` already
+    // reflects the single-remaining-range shape returned by computeGestureExtend,
+    // but call it explicitly so anchor / other state stays consistent with the
+    // existing shift-click path.
+    const base = trimBefore ? this.trimmed() : this;
+    let result = base.withMouseGestureRanges(newRanges);
+    if (resetAnchor) {
+      result = result.withGestureAnchor(cursor.row, cursor.column);
+    }
+    return result;
+  }
+
+  commitGesture(
+    lastCommitted: Selection,
+    opts: CommitGestureOptions
+  ): RangedSelection {
+    // The new commitGesture defers to the existing implementation. Once the
+    // deprecated interface is removed, the guts move here directly.
+    return this.commitMouseGesture(lastCommitted, opts);
   }
 
   commitMouseGesture(

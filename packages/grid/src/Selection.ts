@@ -24,18 +24,20 @@ export type CommitMouseGestureOptions = {
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
- * Composed from four sub-interfaces:
+ * Composed from five sub-interfaces:
  * - `SelectionQueries` — read-only inspection.
  * - `SelectionTransforms` — immutable transforms with no external dependencies.
  * - `ProgrammaticSelection` — programmatic write path (`Grid.setSelectedRanges`).
+ * - `MouseSelection` — mouse-driven gestures (click, shift-click, drag).
  * - `SelectionDeprecated` — gesture-plumbing being replaced by upcoming
- *   `MouseSelection` / `KeyboardSelection` interfaces. See
+ *   `KeyboardSelection` interface and internal implementation. See
  *   `plans/selection-interface-refactor.md`.
  */
 export interface Selection
   extends SelectionQueries,
     SelectionTransforms,
     ProgrammaticSelection,
+    MouseSelection,
     SelectionDeprecated {}
 
 /** Read-only inspection of a `Selection`. Every method is side-effect-free. */
@@ -109,6 +111,78 @@ export interface ProgrammaticSelection {
    * gesture anchor and transient overlay state.
    */
   withCommittedRanges: (ranges: readonly GridRange[]) => Selection;
+}
+
+/**
+ * Modifier-key-derived mode for a mouse gesture:
+ * - `replace` — plain click: clear the current selection and install a
+ *   single cell at the cursor.
+ * - `add` — ctrl/meta click: keep the current selection and add a single
+ *   cell at the cursor.
+ * - `extend` — shift click / drag: trim to the last range and extend it
+ *   from the gesture anchor to the cursor.
+ * - `maximize` — ctrl+shift click: keep all ranges, grow the last range
+ *   to include the cursor.
+ */
+export type GestureMode = 'replace' | 'add' | 'extend' | 'maximize';
+
+/** Options for `MouseSelection.withGestureExtend`. */
+export type GestureExtendOptions = {
+  /** How the current selection should be combined with the incoming cursor. */
+  mode: GestureMode;
+  /** Full-row selection mode (theme `autoSelectRow`). */
+  autoSelectRow: boolean;
+  /** Full-column selection mode (theme `autoSelectColumn`). */
+  autoSelectColumn: boolean;
+};
+
+/** Options for `MouseSelection.commitGesture`. */
+export type CommitGestureOptions = {
+  /**
+   * When true, a single-row commit that repeats the previous single-row
+   * selection is treated as a deselect. Matches the `autoSelectRow` theme
+   * flag semantic.
+   */
+  autoSelectRow: boolean;
+};
+
+/**
+ * Mouse-driven selection updates. Both `withGestureExtend` and
+ * `commitGesture` are called by `Grid`'s mouse handlers.
+ *
+ * A gesture starts on mouse-down, may extend across drag frames, and settles
+ * on mouse-up. Each drag frame calls `withGestureExtend` to update the
+ * transient overlay; `commitGesture` folds the overlay into the committed
+ * selection.
+ */
+export interface MouseSelection {
+  /**
+   * Applies a mouse gesture that moves the selection to `cursor` per `opts`.
+   * `mode` chooses replace / add / extend / maximize semantics based on the
+   * modifier keys the caller observed.
+   *
+   * Returns a transient overlay-updated selection. Caller controls when to
+   * `commitGesture` — mouse handlers commit on mouse-up only; a plain click
+   * commits immediately.
+   */
+  withGestureExtend: (
+    cursor: { row: GridRangeIndex; column: GridRangeIndex },
+    opts: GestureExtendOptions
+  ) => Selection;
+
+  /**
+   * Settles the current transient overlay into the committed selection.
+   * Handles consolidation, deselect-on-reclick, and subtract logic. Returns
+   * identity (`this`) when there is nothing to commit.
+   *
+   * `lastCommitted` is the selection state as it was BEFORE the current
+   * gesture began. Grid pins this in state at gesture-start so the
+   * deselect-on-reclick comparison stays stable across drag frames.
+   */
+  commitGesture: (
+    lastCommitted: Selection,
+    opts: CommitGestureOptions
+  ) => Selection;
 }
 
 /**

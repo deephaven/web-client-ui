@@ -31,6 +31,7 @@ export { default as MockDataBarGridModel } from './MockDataBarGridModel';
 export * from './key-handlers';
 export * from './mouse-handlers';
 export * from './Selection';
+export * from './SelectionUtils';
 export {
   RangedSelection,
   isRangedSelection,
