@@ -8,7 +8,8 @@ import type { BoundedAxisRange } from './GridAxisRange';
 export type GetModel = () => GridModel;
 
 /**
- * Options for `Selection.commitMouseGesture`.
+ * Options for the deprecated `commitMouseGesture`. Will be revisited when the
+ * new `MouseSelection` / `KeyboardSelection` interfaces are introduced.
  */
 export type CommitMouseGestureOptions = {
   /**
@@ -23,17 +24,19 @@ export type CommitMouseGestureOptions = {
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
- * Two write paths cover selection updates:
- * - `withCommittedRanges` writes into the **committed** selection state
- *   (programmatic entry points like `Grid.setSelectedRanges`).
- * - `withMouseGestureRanges` writes into the **transient overlay** state
- *   used for mid-gesture rendering (drag / shift-click on every mouse move).
- *
- * For `RangedSelection` these look the same because there's no separate
- * overlay concept. For `KeyedSelection` they're distinct: overlay ranges
- * drive gesture preview only; committed key sets change on `commitMouseGesture`.
+ * Composed from four sub-interfaces:
+ * - `SelectionQueries` — read-only inspection.
+ * - `SelectionTransforms` — immutable transforms with no external dependencies.
+ * - `ProgrammaticSelection` — programmatic write path (`Grid.setSelectedRanges`).
+ * - `SelectionDeprecated` — gesture-plumbing being replaced by upcoming
+ *   `MouseSelection` / `KeyboardSelection` interfaces. See
+ *   `plans/selection-interface-refactor.md`.
  */
-export interface Selection extends SelectionQueries, SelectionTransforms {}
+export interface Selection
+  extends SelectionQueries,
+    SelectionTransforms,
+    ProgrammaticSelection,
+    SelectionDeprecated {}
 
 /** Read-only inspection of a `Selection`. Every method is side-effect-free. */
 export interface SelectionQueries {
@@ -46,25 +49,10 @@ export interface SelectionQueries {
   /** True when the entire column is part of the selection. */
   isColumnSelected: (column: VisibleIndex) => boolean;
   /**
-   * Ranges Grid uses for cursor positioning, extend-selection, and keyboard
-   * navigation. For `RangedSelection` these are the committed ranges; for
-   * `KeyedSelection` these are the transient overlay ranges (empty after commit).
-   */
-  toActiveRanges: () => readonly GridRange[];
-  /**
    * The single selected visible row, or `null` when zero or multiple rows
    * are selected. Drives `gotoRow` sync.
    */
   getLastSingleSelectedRow: () => VisibleIndex | null;
-  /**
-   * The current `{row, column}` of the gesture anchor, or `null` if none is
-   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
-   * row has scrolled out of the viewport with no row hint fallback).
-   */
-  getGestureAnchor: () => {
-    row: GridRangeIndex;
-    column: GridRangeIndex;
-  } | null;
 }
 
 /**
@@ -90,8 +78,8 @@ export function isTickRangeSelection(
 }
 
 /**
- * Immutable transformations of a `Selection`. Each method returns a new
- * `Selection`; the receiver is never modified.
+ * Immutable transformations of a `Selection` that need no external context.
+ * Each method returns a new `Selection`; the receiver is never modified.
  */
 export interface SelectionTransforms {
   /** A fresh empty selection with no committed state, overlay, or anchor. */
@@ -103,16 +91,56 @@ export interface SelectionTransforms {
    * extend so the anchor is preserved.
    */
   trimmed: () => Selection;
+  /** A new selection covering the entire grid. */
+  selectAll: () => Selection;
+  /** A new selection containing at most `maxRows` rows. */
+  truncate: (maxRows: number) => Selection;
+}
+
+/**
+ * Programmatic write path: install a caller-supplied set of ranges as the
+ * committed selection. Used by `Grid.setSelectedRanges`, `setFocusRow`, and
+ * `moveCursorInDirection`. Distinct from gesture-driven writes, which are
+ * being reworked in the `MouseSelection` / `KeyboardSelection` interfaces.
+ */
+export interface ProgrammaticSelection {
   /**
-   * Replaces the **committed** selection with the given ranges. Clears the
-   * gesture anchor and any transient overlay state. Programmatic entry point
-   * used by `Grid.setSelectedRanges`, `setFocusRow`, and
-   * `moveCursorInDirection`.
+   * Replaces the committed selection with the given ranges. Clears any
+   * gesture anchor and transient overlay state.
    */
   withCommittedRanges: (ranges: readonly GridRange[]) => Selection;
+}
+
+/**
+ * Members up for re-examination as part of the Selection interface refactor.
+ * Consumers should treat these as unstable — they may move to
+ * `MouseSelection` / `KeyboardSelection`, come back to `Selection` under
+ * different names, or disappear entirely. See
+ * `plans/selection-interface-refactor.md`.
+ */
+export interface SelectionDeprecated {
   /**
-   * Replaces the **transient overlay** ranges (mid-gesture preview) with
-   * the given ranges. Called on every mouse-move during a drag / shift-click.
+   * Ranges Grid uses for cursor positioning, extend-selection, and keyboard
+   * navigation. For `RangedSelection` these are the committed ranges; for
+   * `KeyedSelection` these are the transient overlay ranges (empty after commit).
+   * @deprecated Use the new `MouseSelection` / `KeyboardSelection` primitives
+   * once available.
+   */
+  toActiveRanges: () => readonly GridRange[];
+  /**
+   * The current `{row, column}` of the gesture anchor, or `null` if none is
+   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
+   * row has scrolled out of the viewport with no row hint fallback).
+   * @deprecated Anchor state will become internal once gesture geometry
+   * moves into Selection.
+   */
+  getGestureAnchor: () => {
+    row: GridRangeIndex;
+    column: GridRangeIndex;
+  } | null;
+  /**
+   * Replaces the transient overlay ranges (mid-gesture preview) with the
+   * given ranges. Called on every mouse-move during a drag / shift-click.
    * Preserves the gesture anchor. `commitMouseGesture` later folds the
    * overlay into the committed state.
    *
@@ -120,6 +148,7 @@ export interface SelectionTransforms {
    * the current committed selection (drag / shift+click). Implementations
    * that would otherwise carry previously-committed state (e.g.
    * `KeyedSelection.selectedKeys`) drop it. Ignored by `RangedSelection`.
+   * @deprecated Will be replaced by higher-level `MouseSelection` primitives.
    */
   withMouseGestureRanges: (
     ranges: readonly GridRange[],
@@ -130,20 +159,18 @@ export interface SelectionTransforms {
    * the settled selection. Handles consolidation, deselect-on-reclick, and
    * subtract logic. Returns `this` (identity) when there is nothing to
    * commit, which lets `Grid.commitSelection` short-circuit its setState.
+   * @deprecated Will be replaced by `MouseSelection.commitGesture` (name TBD).
    */
   commitMouseGesture: (
     lastCommitted: Selection,
     options: CommitMouseGestureOptions
   ) => Selection;
-  /** A new selection covering the entire grid. */
-  selectAll: () => Selection;
-  /** A new selection containing at most `maxRows` rows. */
-  truncate: (maxRows: number) => Selection;
   /**
    * A new selection whose gesture anchor is set to the given cell. The
    * anchor is the extend-from position for shift-click and keyboard extend.
    * Called from `Grid.beginSelection` on a fresh mouse-down. Passing `null`
    * for both `row` and `column` clears the anchor.
+   * @deprecated Anchor writes will become internal to gesture primitives.
    */
   withGestureAnchor: (row: GridRangeIndex, column: GridRangeIndex) => Selection;
 }
