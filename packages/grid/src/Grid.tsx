@@ -253,6 +253,18 @@ export type GridState = {
   updateRevision: number;
 };
 
+/** Selection-related slice of `GridState`. Returned by gesture entry points. */
+export type GridSelectionState = Pick<
+  GridState,
+  | 'selection'
+  | 'lastSelection'
+  | 'selectedRanges'
+  | 'cursorRow'
+  | 'cursorColumn'
+  | 'selectionEndColumn'
+  | 'selectionEndRow'
+>;
+
 /**
  * High performance, extendible, themeable grid component.
  * Architectured to be fast and handle billions of rows/columns by default.
@@ -1361,16 +1373,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode,
     opts: { moveCursor?: boolean } = {}
-  ): Pick<
-    GridState,
-    | 'selection'
-    | 'lastSelection'
-    | 'selectedRanges'
-    | 'cursorRow'
-    | 'cursorColumn'
-    | 'selectionEndColumn'
-    | 'selectionEndRow'
-  > {
+  ): GridSelectionState {
     const { theme } = this.props;
     const { moveCursor = true } = opts;
     const lastSelection = state.selection;
