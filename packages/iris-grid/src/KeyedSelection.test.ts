@@ -529,6 +529,29 @@ describe('commitMouseGesture', () => {
     }
     expect(result.selectedKeys.size).toBe(4);
   });
+
+  it('adds ctrl+shift+click grown range without toggling off overlapping rows', () => {
+    // Prior commit selected rows 5-9. User ctrl+shift+clicks row 12 which
+    // grows the last range from 5 (anchor) to 12. Overlay = (null, 5, null, 12).
+    // Expected: rows 5-12 all selected (union). Row 5 must NOT be toggled off
+    // just because it was in both the prior selection and the grown range.
+    const priorCommit = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set([5, 6, 7, 8, 9].map(keyOf)),
+      selectedKeyValues: new Map([5, 6, 7, 8, 9].map(keyValuesOf)),
+    });
+    const grownOverlay = priorCommit.withMouseGestureRanges(
+      [new GridRange(null, 5, null, 12)],
+      false
+    );
+    const result = grownOverlay.commitMouseGesture(priorCommit, {
+      autoSelectRow: false,
+    });
+    for (let r = 5; r <= 12; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    expect(result.selectedKeys.size).toBe(8);
+  });
 });
 
 // ─── withGestureExtend (MouseSelection) ──────────────────────────────────────

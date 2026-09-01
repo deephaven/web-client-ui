@@ -353,7 +353,10 @@ export class KeyedSelection implements Selection {
 
     if (this.selectedKeys.size > 0 || this.invertedSelection) {
       // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
-      // holds the previous committed keys. Toggle each overlay row individually.
+      // holds the previous committed keys. A single-row overlay is a ctrl+click
+      // on a cell — toggle its selection. A multi-row overlay is a ctrl+shift+click
+      // grown range — add all rows without toggling off overlapping ones.
+      const shouldToggle = rowCount === 1;
       const nextKeyValues = new Map(this.selectedKeyValues);
       for (let i = 0; i < this.overlayRanges.length; i += 1) {
         const { startRow, endRow } = this.overlayRanges[i];
@@ -361,7 +364,8 @@ export class KeyedSelection implements Selection {
         const rEnd = endRow ?? startRow;
         for (let r = startRow; r <= rEnd; r += 1) {
           const { key: k, values } = this.getRowKeyData(r);
-          if (lastCommitted.isRowSelected(r)) {
+          if (shouldToggle && lastCommitted.isRowSelected(r)) {
+            // Toggle off: ctrl+click on an already-selected row deselects it.
             if (this.invertedSelection) {
               next.add(k);
               nextKeyValues.set(k, values);
