@@ -3,7 +3,6 @@ import { type GridRenderState } from './GridRendererTypes';
 import {
   createGridA11ySnapshot,
   formatGridA11yRect,
-  getGridA11ySummary,
   GRID_A11Y_ATTRIBUTES,
 } from './GridA11yUtils';
 
@@ -47,12 +46,7 @@ export function GridA11yFallback({
   }, [renderState, showSnapshot]);
 
   return (
-    <div>
-      {renderState != null && (
-        <p>
-          {getGridA11ySummary(renderState.model, renderState.selectedRanges)}
-        </p>
-      )}
+    <>
       {/* Kept out of the tab order so sighted keyboard users are not sent to an element they cannot see */}
       <button
         type="button"
@@ -110,7 +104,7 @@ export function GridA11yFallback({
           </table>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
