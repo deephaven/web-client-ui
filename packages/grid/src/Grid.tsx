@@ -852,12 +852,26 @@ class Grid extends PureComponent<GridProps, GridState> {
         expandDescendants
       );
     }
-    this.clearSelectedRanges();
-    this.commitSelection(); // Need to commit before moving in case we're selecting same row again
-    this.moveCursorToPosition(0, row);
-    this.commitSelection();
-
-    this.setState({ isStuckToBottom: false });
+    // Programmatic install so we bypass gesture-driven deselect-on-reclick
+    // when the caller re-toggles the currently-selected row.
+    const { theme } = this.props;
+    const range =
+      theme.autoSelectRow === true
+        ? new GridRange(null, row, null, row)
+        : GridRange.makeCell(0, row);
+    this.setState(state => {
+      const newSel = state.selection.clear().withCommittedRanges([range]);
+      return {
+        selection: newSel,
+        lastSelection: newSel,
+        selectedRanges: selectionToRanges(newSel),
+        cursorRow: row,
+        cursorColumn: 0,
+        selectionEndRow: row,
+        selectionEndColumn: 0,
+        isStuckToBottom: false,
+      };
+    });
   }
 
   getStickyScrollPosition(
@@ -1615,11 +1629,13 @@ class Grid extends PureComponent<GridProps, GridState> {
         selection: newSel,
         lastSelection: newSel,
         selectedRanges: selectionToRanges(newSel),
+        cursorColumn,
+        cursorRow: focusedRow,
+        selectionEndColumn: cursorColumn,
+        selectionEndRow: focusedRow,
         isStuckToBottom: false,
       };
     });
-    // Update cursor coordinates only — no gesture/commit cycle so deselect-on-reclick cannot fire.
-    this.beginSelection(cursorColumn, focusedRow);
   }
 
   /**
@@ -2554,7 +2570,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (direction !== null) {
-      this.moveCursorInDirection(direction);
+      this.handleKeyAdvanceCursor(direction);
     }
 
     this.setState({ editingCell: null });

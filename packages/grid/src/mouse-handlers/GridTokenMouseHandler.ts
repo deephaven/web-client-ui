@@ -130,7 +130,7 @@ class GridTokenMouseHandler extends GridMouseHandler {
       // After 1 second, select the row and if it is an input table, start editing
       grid.clearSelectedRanges();
       grid.focus();
-      grid.moveCursorToPosition(column, row);
+      grid.handleKeySelectAt({ column, row }, 'replace');
       if (
         isEditableGridModel(model) &&
         column != null &&
