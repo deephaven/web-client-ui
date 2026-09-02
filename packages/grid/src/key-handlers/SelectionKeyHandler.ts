@@ -158,10 +158,19 @@ class SelectionKeyHandler extends KeyHandler {
         moveToRow = rowCount - 1;
       }
       if (moveToColumn != null && moveToRow != null) {
-        grid.handleKeySelectAt(
-          { column: moveToColumn, row: moveToRow },
-          isShiftKey ? 'maximize' : 'replace'
-        );
+        // If the target cell is already part of the current selection,
+        // skip the gesture and just move the cursor to that cell to avoid deselecting.
+        if (
+          !isShiftKey &&
+          grid.state.selection.isCellSelected(moveToColumn, moveToRow)
+        ) {
+          grid.handleKeyMoveCursor(moveToColumn, moveToRow);
+        } else {
+          grid.handleKeySelectAt(
+            { column: moveToColumn, row: moveToRow },
+            isShiftKey ? 'maximize' : 'replace'
+          );
+        }
       }
       return true;
     }

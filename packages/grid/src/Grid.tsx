@@ -1407,6 +1407,19 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleKeyPage(mode, 1);
   }
 
+  /**
+   * Move the cursor to a cell without touching the selection.
+   */
+  handleKeyMoveCursor(column: VisibleIndex, row: VisibleIndex): void {
+    this.setState({
+      cursorColumn: column,
+      cursorRow: row,
+      selectionEndColumn: column,
+      selectionEndRow: row,
+    });
+    this.moveViewToCell(column, row);
+  }
+
   setFocusRow(focusedRow: number): void {
     if (!this.metrics || !this.prevMetrics) {
       return;
