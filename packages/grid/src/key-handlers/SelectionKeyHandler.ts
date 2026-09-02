@@ -185,9 +185,9 @@ class SelectionKeyHandler extends KeyHandler {
     if (autoSelectRow && deltaColumn !== 0) {
       const { lastLeft } = grid.metrics;
       const left = clamp(grid.state.left + deltaColumn, 0, lastLeft);
-      grid.handleKeySelectAt({ column: left, row: cursorRow }, mode, {
-        keepCursorInView: false,
-      });
+      if (cursorRow != null) {
+        grid.handleKeyMoveCursor(left, cursorRow);
+      }
       grid.setViewState({ left });
       return true;
     }
