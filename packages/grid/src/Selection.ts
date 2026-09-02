@@ -213,22 +213,6 @@ export interface KeyboardSelection {
  */
 export interface SelectionDeprecated {
   /**
-   * Replaces the transient overlay ranges (mid-gesture preview) with the
-   * given ranges. Called on every mouse-move during a drag / shift-click.
-   * Preserves the gesture anchor. `commitGesture` later folds the
-   * overlay into the committed state.
-   *
-   * When `isReplacing` is true the caller intends the overlay to replace
-   * the current committed selection (drag / shift+click). Implementations
-   * that would otherwise carry previously-committed state (e.g.
-   * `KeyedSelection.selectedKeys`) drop it. Ignored by `RangedSelection`.
-   * @deprecated Will be replaced by higher-level `MouseSelection` primitives.
-   */
-  withMouseGestureRanges: (
-    ranges: readonly GridRange[],
-    isReplacing?: boolean
-  ) => Selection;
-  /**
    * A new selection whose gesture anchor is set to the given cell. The
    * anchor is the extend-from position for shift-click and keyboard extend.
    * Called from `Grid.beginSelection` on a fresh mouse-down. Passing `null`

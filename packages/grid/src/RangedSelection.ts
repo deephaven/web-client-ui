@@ -148,22 +148,6 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return new RangedSelection(ranges, this.getModel);
   }
 
-  // Preserves the gesture anchor so mid-drag range updates don't clobber the shift-click origin.
-  withMouseGestureRanges(
-    ranges: readonly GridRange[],
-    _isReplacing?: boolean
-  ): RangedSelection {
-    // Identity check keeps the same object for commitGesture's no-op path,
-    // which lets Grid's setState short-circuit when nothing actually changed.
-    if (ranges === this.ranges) return this;
-    return new RangedSelection(
-      ranges,
-      this.getModel,
-      this.gestureStartRow,
-      this.gestureStartColumn
-    );
-  }
-
   withGestureAnchor(
     row: GridRangeIndex,
     column: GridRangeIndex
@@ -234,7 +218,15 @@ export class RangedSelection implements Selection, TickRangeSelection {
     // but call it explicitly so anchor / other state stays consistent with the
     // existing shift-click path.
     const base = trimBefore ? this.trimmed() : this;
-    let result = base.withMouseGestureRanges(newRanges);
+    let result: RangedSelection =
+      newRanges === base.ranges
+        ? base
+        : new RangedSelection(
+            newRanges,
+            base.getModel,
+            base.gestureStartRow,
+            base.gestureStartColumn
+          );
     if (resetAnchor) {
       result = result.withGestureAnchor(cursor.row, cursor.column);
     }
@@ -283,7 +275,13 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const changed =
       newRanges.length !== selectedRanges.length ||
       newRanges.some((r, i) => !r.equals(selectedRanges[i]));
-    return this.withMouseGestureRanges(changed ? newRanges : selectedRanges);
+    if (!changed) return this;
+    return new RangedSelection(
+      newRanges,
+      this.getModel,
+      this.gestureStartRow,
+      this.gestureStartColumn
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this

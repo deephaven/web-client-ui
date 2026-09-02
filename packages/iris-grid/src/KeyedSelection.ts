@@ -249,9 +249,18 @@ export class KeyedSelection implements Selection {
     });
   }
 
-  // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
-  // so drag and shift-click commit with the overlay as a fresh selection.
-  withMouseGestureRanges(
+  /**
+   * Replaces the transient overlay ranges (mid-gesture preview) with the
+   * given ranges. Preserves the gesture anchor so mid-drag range updates
+   * don't clobber the shift-click origin.
+   *
+   * When `isReplacing` is true the caller intends the overlay to replace
+   * the current committed selection (drag / shift+click); previously
+   * committed keys are dropped so the commit uses the overlay as a fresh
+   * selection. Otherwise the committed keys are kept, letting a subsequent
+   * `commitGesture` fold the overlay into the existing set.
+   */
+  private withMouseGestureRanges(
     ranges: readonly GridRange[],
     isReplacing = false
   ): KeyedSelection {

@@ -255,24 +255,6 @@ describe('withCommittedRanges', () => {
   });
 });
 
-// ─── withMouseGestureRanges ──────────────────────────────────────────────────
-
-describe('withMouseGestureRanges', () => {
-  it('behaves identically to withCommittedRanges', () => {
-    const sel = single(0, 0);
-    const newRanges = [GridRange.makeCell(2, 2)];
-    const viaGesture = sel.withMouseGestureRanges(newRanges);
-    const viaUpdated = sel.withCommittedRanges(newRanges);
-    expect(viaGesture.toRanges()).toEqual(viaUpdated.toRanges());
-  });
-
-  it('preserves the gesture anchor', () => {
-    const sel = single(0, 0).withGestureAnchor(3, 4);
-    const updated = sel.withMouseGestureRanges([GridRange.makeCell(2, 2)]);
-    expect(updated.getGestureAnchor()).toEqual({ row: 3, column: 4 });
-  });
-});
-
 // ─── withGestureAnchor / getGestureAnchor ────────────────────────────────────
 
 describe('getGestureAnchor', () => {
