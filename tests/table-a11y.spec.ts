@@ -83,6 +83,25 @@ test('describes the visible contents as an accessible table', async ({
   );
 });
 
+test('describes a grid with no rows', async ({ page }) => {
+  await openTable(page, 'simple_table_empty');
+  await waitForLoadingDone(page);
+
+  const snapshot = await describeContents(getCanvas(page));
+
+  const table = snapshot.locator('table');
+  await expect(table).toHaveAttribute('aria-rowcount', '1');
+  await expect(table).toHaveAttribute('aria-colcount', '3');
+
+  // The columns still exist and are still on screen, there is just nothing in them
+  await expect(table.locator('th')).toHaveText(['x', 'y', 'z']);
+  await expect(table.locator('tbody tr')).toHaveCount(0);
+
+  await expect(snapshot.locator('p[role="status"]')).toHaveText(
+    'Grid with 0 rows and 3 columns. Showing no rows, columns x, y, z.'
+  );
+});
+
 test('locates each cell by its column, row, and position on screen', async ({
   page,
 }) => {

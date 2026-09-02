@@ -20,6 +20,7 @@ type TableNames =
   | 'all_types'
   | 'simple_plot'
   | 'simple_table'
+  | 'simple_table_empty'
   | 'simple_table_header_group'
   | 'simple_table_header_group_hide'
   | 'double_and_string'

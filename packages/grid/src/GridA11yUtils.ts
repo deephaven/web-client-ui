@@ -284,7 +284,10 @@ export function createGridA11ySnapshot(
 
   const { topVisible, bottomVisible } = metrics;
   const headers = columns.map(({ text }) => text).filter(text => text !== '');
-  const visibleRows = `Showing rows ${topVisible + 1} to ${bottomVisible + 1}`;
+  const visibleRows =
+    rows.length > 0
+      ? `Showing rows ${topVisible + 1} to ${bottomVisible + 1}`
+      : 'Showing no rows';
   const viewport =
     headers.length > 0
       ? `${visibleRows}, columns ${headers.join(', ')}.`

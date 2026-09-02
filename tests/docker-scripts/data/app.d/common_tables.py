@@ -15,6 +15,8 @@ simple_table_header_group_hide = simple_table.layout_hints(
     column_groups=column_groups, hide=["y", "z"]
 )
 
+simple_table_empty = empty_table(0).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])
+
 double_and_string = new_table(
     [
         double_col("Doubles", [3.1, 5.45, -1.0, 1.0, 3.0, 4.20]),
