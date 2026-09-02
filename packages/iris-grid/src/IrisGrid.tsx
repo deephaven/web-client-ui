@@ -1219,9 +1219,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     { max: 100 }
   );
 
+  /**
+   * For keyed models, return a function that creates an empty keyed selection.
+   * For non-keyed models, return `undefined` to use the Grid default.
+   */
   getCachedCreateEmptySelection = memoize(
-    (model: IrisGridModel) =>
-      isKeyedGridModel(model)
+    (isKeyed: boolean) =>
+      isKeyed
         ? (getModel: () => GridModel): Selection =>
             KeyedSelection.empty(getModel as GetKeyedModel)
         : undefined,
@@ -3696,6 +3700,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleSchemaChanged(): void {
     const { model } = this.props;
     this.setState({ movedColumns: model.initialMovedColumns });
+
+    // Clear the selection if the model type changed (keyed vs non-keyed)
+    const currentSelection = this.grid?.state.selection;
+    if (currentSelection == null) return;
+    const modelIsKeyed = isKeyedGridModel(model);
+    const selectionIsKeyed = currentSelection instanceof KeyedSelection;
+    if (modelIsKeyed !== selectionIsKeyed) {
+      this.grid?.clearSelectedRanges();
+    }
   }
 
   handleViewChanged(metrics?: GridMetrics): void {
@@ -5644,7 +5657,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.grid = grid;
             }}
             isStickyBottom={!isEditableGridModel(model) || !model.isEditable}
-            createEmptySelection={this.getCachedCreateEmptySelection(model)}
+            createEmptySelection={this.getCachedCreateEmptySelection(
+              isKeyedGridModel(model)
+            )}
             isStuckToBottom={isStuckToBottom}
             isStuckToRight={isStuckToRight}
             metricCalculator={metricCalculator}
