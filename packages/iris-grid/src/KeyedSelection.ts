@@ -282,7 +282,15 @@ export class KeyedSelection implements Selection {
     return this.copyWith({ anchorKey: nextKey, anchorRow: row });
   }
 
-  getGestureAnchor(): {
+  /**
+   * The current `{row, column}` of the gesture anchor, or `null` if none is
+   * set. Because `KeyedSelection` tracks the anchor by serialized key, the
+   * anchor's visible row may drift as the viewport scrolls. Resolves the
+   * key against the current viewport when possible; falls back to the
+   * click-time row hint (`anchorRow`) when the key has scrolled out. Returns
+   * `null` only when neither is set.
+   */
+  private getGestureAnchor(): {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null {

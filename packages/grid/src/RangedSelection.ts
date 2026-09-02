@@ -174,7 +174,10 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return new RangedSelection(this.ranges, this.getModel, row, column);
   }
 
-  getGestureAnchor(): {
+  /**
+   * The current `{row, column}` of the gesture anchor, or `null` if none is set.
+   */
+  private getGestureAnchor(): {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null {

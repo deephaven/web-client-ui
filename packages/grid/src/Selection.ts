@@ -213,17 +213,6 @@ export interface KeyboardSelection {
  */
 export interface SelectionDeprecated {
   /**
-   * The current `{row, column}` of the gesture anchor, or `null` if none is
-   * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
-   * row has scrolled out of the viewport with no row hint fallback).
-   * @deprecated Anchor state will become internal once gesture geometry
-   * moves into Selection.
-   */
-  getGestureAnchor: () => {
-    row: GridRangeIndex;
-    column: GridRangeIndex;
-  } | null;
-  /**
    * Replaces the transient overlay ranges (mid-gesture preview) with the
    * given ranges. Called on every mouse-move during a drag / shift-click.
    * Preserves the gesture anchor. `commitGesture` later folds the
