@@ -250,12 +250,6 @@ export class KeyedSelection implements Selection {
     });
   }
 
-  toActiveRanges(): readonly GridRange[] {
-    return this.overlayRanges;
-  }
-
-  // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
-  // so drag and shift-click commit with the overlay as a fresh selection.
   // Drops selectedKeys / selectedKeyValues / invertedSelection on `isReplacing`
   // so drag and shift-click commit with the overlay as a fresh selection.
   withMouseGestureRanges(

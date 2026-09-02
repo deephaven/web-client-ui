@@ -182,19 +182,17 @@ describe('isInBounds', () => {
   });
 });
 
-// ─── toRanges / toActiveRanges ───────────────────────────────────────────────
+// ─── toRanges ────────────────────────────────────────────────────────────────
 
-describe('toRanges and toActiveRanges', () => {
-  it('return the same array reference as the internal ranges', () => {
+describe('toRanges', () => {
+  it('returns the same array reference as the internal ranges', () => {
     const ranges = [GridRange.makeCell(0, 0)];
     const sel = new RangedSelection(ranges, getModel);
     expect(sel.toRanges()).toBe(ranges);
-    expect(sel.toActiveRanges()).toBe(ranges);
   });
 
-  it('return empty array for empty selection', () => {
+  it('returns empty array for empty selection', () => {
     expect(empty().toRanges()).toHaveLength(0);
-    expect(empty().toActiveRanges()).toHaveLength(0);
   });
 });
 

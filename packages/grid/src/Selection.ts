@@ -226,14 +226,6 @@ export interface KeyboardSelection {
  */
 export interface SelectionDeprecated {
   /**
-   * Ranges Grid uses for cursor positioning, extend-selection, and keyboard
-   * navigation. For `RangedSelection` these are the committed ranges; for
-   * `KeyedSelection` these are the transient overlay ranges (empty after commit).
-   * @deprecated Use the new `MouseSelection` / `KeyboardSelection` primitives
-   * once available.
-   */
-  toActiveRanges: () => readonly GridRange[];
-  /**
    * The current `{row, column}` of the gesture anchor, or `null` if none is
    * set or the anchor is no longer resolvable (e.g. a keyed anchor whose
    * row has scrolled out of the viewport with no row hint fallback).
