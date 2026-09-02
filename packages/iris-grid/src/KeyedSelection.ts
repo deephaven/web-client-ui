@@ -281,11 +281,11 @@ export class KeyedSelection implements Selection {
     });
   }
 
-  withGestureAnchor(
-    row: GridRangeIndex,
-    _column: GridRangeIndex
-  ): KeyedSelection {
-    // Keyed selections are full-row; ignore column.
+  /**
+   * Sets the gesture anchor (extend-from position for shift-click and
+   * keyboard extend) to the row's key. Passing `null` clears the anchor.
+   */
+  private withGestureAnchor(row: GridRangeIndex): KeyedSelection {
     const nextKey = row != null ? this.getRowKeyData(row).key : null;
     if (nextKey === this.anchorKey && row === this.anchorRow) return this;
     return this.copyWith({ anchorKey: nextKey, anchorRow: row });
@@ -350,7 +350,8 @@ export class KeyedSelection implements Selection {
     const base = trimBefore ? this.trimmed() : this;
     let result = base.withMouseGestureRanges(newRanges, isReplacing);
     if (resetAnchor) {
-      result = result.withGestureAnchor(cursor.row, cursor.column);
+      // Keyed selection is row based, so column is not used in the anchor.
+      result = result.withGestureAnchor(cursor.row);
     }
     return result;
   }
@@ -505,7 +506,17 @@ export class KeyedSelection implements Selection {
   }
 
   // Always returns non-inverted; switching to a new selection exits inverted mode.
-  withCommittedRanges(ranges: readonly GridRange[]): KeyedSelection {
+  withCommittedRanges(
+    ranges: readonly GridRange[],
+    anchor?: { row: GridRangeIndex; column: GridRangeIndex }
+  ): KeyedSelection {
+    const result = this.installCommittedRanges(ranges);
+    if (anchor === undefined) return result;
+    // Keyed selection is row based, so column is not used in the anchor.
+    return result.withGestureAnchor(anchor.row);
+  }
+
+  private installCommittedRanges(ranges: readonly GridRange[]): KeyedSelection {
     // Replacement semantics: discard previous selection and select exactly these rows.
     if (ranges.length === 0) {
       return new KeyedSelection({ getModel: this.getModel });

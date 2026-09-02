@@ -143,12 +143,23 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return result;
   }
 
-  withCommittedRanges(ranges: readonly GridRange[]): RangedSelection {
-    if (ranges === this.ranges) return this;
-    return new RangedSelection(ranges, this.getModel);
+  withCommittedRanges(
+    ranges: readonly GridRange[],
+    anchor?: { row: GridRangeIndex; column: GridRangeIndex }
+  ): RangedSelection {
+    const result =
+      ranges === this.ranges
+        ? this
+        : new RangedSelection(ranges, this.getModel);
+    if (anchor === undefined) return result;
+    return result.withGestureAnchor(anchor.row, anchor.column);
   }
 
-  withGestureAnchor(
+  /**
+   * Sets the gesture anchor (extend-from position for shift-click and
+   * keyboard extend) to the given cell. Passing `null` for both clears it.
+   */
+  private withGestureAnchor(
     row: GridRangeIndex,
     column: GridRangeIndex
   ): RangedSelection {

@@ -938,9 +938,10 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectionEndColumn = range.endColumn;
         selectionEndRow = range.endRow;
       }
-      const selection = state.selection
-        .withCommittedRanges(gridRanges)
-        .withGestureAnchor(anchorRow, anchorColumn);
+      const selection = state.selection.withCommittedRanges(gridRanges, {
+        row: anchorRow,
+        column: anchorColumn,
+      });
       return {
         selection,
         selectedRanges: selectionToRanges(selection),

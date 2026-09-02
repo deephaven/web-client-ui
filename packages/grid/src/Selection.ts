@@ -11,24 +11,20 @@ export type GetModel = () => GridModel;
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
- * Composed from six sub-interfaces:
+ * Composed from five sub-interfaces:
  * - `SelectionQueries` — read-only inspection.
  * - `SelectionTransforms` — immutable transforms with no external dependencies.
  * - `ProgrammaticSelection` — programmatic write path (`Grid.setSelectedRanges`).
  * - `MouseSelection` — mouse-driven gestures (click, shift-click, drag).
  * - `KeyboardSelection` — keyboard-driven queries (Tab/Enter advance, cursor
  *   landing after commit).
- * - `SelectionDeprecated` — gesture-plumbing being replaced by the above
- *   interfaces and internal implementation. See
- *   `plans/selection-interface-refactor.md`.
  */
 export interface Selection
   extends SelectionQueries,
     SelectionTransforms,
     ProgrammaticSelection,
     MouseSelection,
-    KeyboardSelection,
-    SelectionDeprecated {}
+    KeyboardSelection {}
 
 /** Read-only inspection of a `Selection`. Every method is side-effect-free. */
 export interface SelectionQueries {
@@ -97,10 +93,15 @@ export interface SelectionTransforms {
  */
 export interface ProgrammaticSelection {
   /**
-   * Replaces the committed selection with the given ranges. Clears any
-   * gesture anchor and transient overlay state.
+   * Replaces the committed selection with the given ranges and clears any
+   * transient overlay state. When `anchor` is provided, sets the gesture
+   * anchor (extend-from position for shift-click and keyboard extend) to
+   * the given cell; otherwise clears it.
    */
-  withCommittedRanges: (ranges: readonly GridRange[]) => Selection;
+  withCommittedRanges: (
+    ranges: readonly GridRange[],
+    anchor?: { row: GridRangeIndex; column: GridRangeIndex }
+  ) => Selection;
 }
 
 /**
@@ -202,22 +203,4 @@ export interface KeyboardSelection {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null;
-}
-
-/**
- * Members up for re-examination as part of the Selection interface refactor.
- * Consumers should treat these as unstable — they may move to
- * `MouseSelection` / `KeyboardSelection`, come back to `Selection` under
- * different names, or disappear entirely. See
- * `plans/selection-interface-refactor.md`.
- */
-export interface SelectionDeprecated {
-  /**
-   * A new selection whose gesture anchor is set to the given cell. The
-   * anchor is the extend-from position for shift-click and keyboard extend.
-   * Called from `Grid.beginSelection` on a fresh mouse-down. Passing `null`
-   * for both `row` and `column` clears the anchor.
-   * @deprecated Anchor writes will become internal to gesture primitives.
-   */
-  withGestureAnchor: (row: GridRangeIndex, column: GridRangeIndex) => Selection;
 }
