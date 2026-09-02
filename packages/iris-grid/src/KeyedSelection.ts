@@ -227,6 +227,10 @@ export class KeyedSelection implements Selection {
     return this.lastSingleRow;
   }
 
+  isSingleRowSelection(): boolean {
+    return !this.invertedSelection && this.selectedKeys.size === 1;
+  }
+
   getNextCursorInDirection(
     current: { row: GridRangeIndex; column: GridRangeIndex },
     direction: SELECTION_DIRECTION

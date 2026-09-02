@@ -37,6 +37,10 @@ export interface SelectionQueries {
   /** True when the entire column is part of the selection. */
   isColumnSelected: (column: VisibleIndex) => boolean;
   /**
+   * True when the selection covers exactly one row.
+   */
+  isSingleRowSelection: () => boolean;
+  /**
    * The single selected visible row, or `null` when zero or multiple rows
    * are selected. Drives `gotoRow` sync.
    */

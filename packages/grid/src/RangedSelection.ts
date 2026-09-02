@@ -195,6 +195,10 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return consolidated[0]?.startRow ?? null;
   }
 
+  isSingleRowSelection(): boolean {
+    return GridRange.rowCount(this.ranges) === 1;
+  }
+
   getNextCursorInDirection(
     current: { row: GridRangeIndex; column: GridRangeIndex },
     direction: SELECTION_DIRECTION

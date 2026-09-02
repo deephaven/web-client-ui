@@ -158,10 +158,10 @@ class SelectionKeyHandler extends KeyHandler {
         moveToRow = rowCount - 1;
       }
       if (moveToColumn != null && moveToRow != null) {
-        // If the target cell is already part of the current selection,
-        // skip the gesture and just move the cursor to that cell to avoid deselecting.
+        // Avoid deselection when the target cell is already selected in a single-row selection.
         if (
           !isShiftKey &&
+          grid.state.selection.isSingleRowSelection() &&
           grid.state.selection.isCellSelected(moveToColumn, moveToRow)
         ) {
           grid.handleKeyMoveCursor(moveToColumn, moveToRow);
@@ -217,11 +217,10 @@ class SelectionKeyHandler extends KeyHandler {
       : grid.state.selection.resolveCursorRow(row);
     const targetColumn = clamp(column + deltaColumn, 0, columnCount - 1);
     const targetRow = clamp((resolvedRow ?? row) + deltaRow, 0, rowCount - 1);
-    // Same-key rows in a keyed selection all resolve to the current
-    // selectedKeys; committing another one would trip commitGesture's
-    // deselect-on-repeat check. Skip the gesture and just move the cursor.
+    // Avoid deselection when the target cell is already selected in a single-row selection.
     if (
       !isShiftKey &&
+      grid.state.selection.isSingleRowSelection() &&
       grid.state.selection.isCellSelected(targetColumn, targetRow)
     ) {
       grid.handleKeyMoveCursor(targetColumn, targetRow);
