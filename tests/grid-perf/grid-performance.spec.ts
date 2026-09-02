@@ -1,5 +1,5 @@
 import { test, type Page } from '@playwright/test';
-import { gotoPage, openTable, waitForLoadingDone } from './utils';
+import { gotoPage, openTable, waitForLoadingDone } from '../utils';
 
 /**
  * Performance benchmark tests for the Grid component using the main app.
@@ -151,7 +151,7 @@ function logResults(
  * Performance tests are skipped by default as they can be flaky in CI due to
  * resource constraints. To run these tests explicitly:
  *
- *   RUN_PERF_TESTS=1 npx playwright test grid-performance.spec.ts
+ *   npm run e2e:performance
  */
 test.describe('grid scroll performance benchmarks', () => {
   // Skip by default - these tests are flaky in CI due to resource constraints
