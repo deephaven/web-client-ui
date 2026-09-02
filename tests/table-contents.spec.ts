@@ -6,7 +6,7 @@ import {
   expectColumnHeaderNames,
   getCellText,
   getColumnHeaderNames,
-  getGridSummary,
+  getGridDescription,
   getVisibleRows,
   waitForGrid,
 } from '@deephaven/playwright-grid';
@@ -45,7 +45,9 @@ test('can open a simple table', async ({ page }) => {
   expect(await getCellText(grid, 'y', 1)).toMatch(DOUBLE_PATTERN);
   expect(await getCellText(grid, 'z', 1)).toMatch(DOUBLE_PATTERN);
 
-  expect(await getGridSummary(grid)).toBe('Grid with 100 rows and 3 columns.');
+  expect(await getGridDescription(grid)).toMatch(
+    /^Grid with 100 rows and 3 columns\. Showing rows /
+  );
 });
 
 test('can make a non-contiguous table row selection', async ({ page }) => {
@@ -62,8 +64,8 @@ test('can make a non-contiguous table row selection', async ({ page }) => {
   }
   /* eslint-enable no-await-in-loop */
 
-  expect(await getGridSummary(grid)).toBe(
-    'Grid with 100 rows and 3 columns. 5 rows selected.'
+  expect(await getGridDescription(grid)).toMatch(
+    /^Grid with 100 rows and 3 columns\. 5 rows selected\. /
   );
 });
 
@@ -124,12 +126,16 @@ test.describe('scrolling', () => {
     const before = await getVisibleRows(grid);
     expect(before[0]).toBe(0);
 
-    await page.locator('.iris-grid .grid-wrapper').hover();
-    await page.mouse.wheel(0, 500);
-    await waitForLoadingDone(page);
+    // The first wheel event can land before the grid is ready to handle it
+    await expect(async () => {
+      await page.locator('.iris-grid .grid-wrapper').hover();
+      await page.mouse.wheel(0, 500);
+      await waitForLoadingDone(page);
+
+      expect((await getVisibleRows(grid))[0]).toBeGreaterThan(0);
+    }).toPass();
 
     const after = await getVisibleRows(grid);
-    expect(after[0]).toBeGreaterThan(0);
 
     // x=i, so each visible row must still show its own index
     const rows = after.slice(0, 5);

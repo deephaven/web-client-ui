@@ -221,14 +221,19 @@ export async function waitForGrid(grid: Locator): Promise<void> {
 }
 
 /**
- * Get the grid's one line summary, e.g. for asserting the size or the selection.
+ * Get the grid's description of its size, selection, and viewport, e.g. for
+ * asserting the selection.
  * @param grid Locator for the grid canvas or an element containing it
- * @returns The summary, e.g. `Grid with 100 rows and 3 columns. 2 cells selected.`
+ * @returns The description, e.g. `Grid with 100 rows and 3 columns. 2 cells selected. Showing rows 1 to 20, columns x, y, z.`
  */
-export async function getGridSummary(grid: Locator): Promise<string> {
+export async function getGridDescription(grid: Locator): Promise<string> {
   const canvas = await resolveGridCanvas(grid);
-  const summary = await canvas.locator('p').first().textContent();
-  return summary ?? '';
+  const snapshot = await showSnapshot(canvas);
+  const description = await snapshot
+    .locator('[role="status"]')
+    .first()
+    .textContent();
+  return description ?? '';
 }
 
 /**

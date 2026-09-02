@@ -107,10 +107,10 @@ async function hideContents() {
   );
 }
 
-it('renders the summary without describing the contents', () => {
+it('describes nothing until the contents are requested', () => {
   renderFallback();
 
-  expect(screen.getByText(SUMMARY)).toBeInTheDocument();
+  expect(screen.queryByRole('status')).toBeNull();
   expect(screen.queryByRole('table')).toBeNull();
 });
 

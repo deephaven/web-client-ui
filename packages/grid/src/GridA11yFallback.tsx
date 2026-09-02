@@ -19,9 +19,10 @@ export type GridA11yFallbackProps = {
  * technology and browser automation read it in place of the pixels.
  *
  * Everything here describes the most recent draw, so it only updates when the
- * grid draws. The summary reads values the grid already has on hand, while the
- * snapshot walks every visible cell, so the snapshot is toggled on and off by a
- * button and only tracks the viewport while it is on.
+ * grid draws. Describing the contents walks every visible cell, which is far
+ * too expensive to do on every frame for a grid nobody is inspecting, so the
+ * snapshot is toggled on and off by a button and only tracks the viewport while
+ * it is on.
  *
  * The snapshot is a plain table rather than divs with ARIA roles, as fallback
  * content is never laid out and native table semantics come with the column

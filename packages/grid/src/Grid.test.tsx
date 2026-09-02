@@ -1553,9 +1553,11 @@ describe('accessibility fallback content', () => {
       new MockGridModel({ rowCount: 100, columnCount: 3 })
     );
 
-    expect(
-      getFallback(component).getByText('Grid with 100 rows and 3 columns.')
-    ).toBeInTheDocument();
+    describeContents(component);
+
+    expect(getFallback(component).getByRole('status')).toHaveTextContent(
+      'Grid with 100 rows and 3 columns.'
+    );
   });
 
   it('summarizes the current selection', () => {
@@ -1563,15 +1565,14 @@ describe('accessibility fallback content', () => {
       new MockGridModel({ rowCount: 100, columnCount: 3 })
     );
 
+    describeContents(component);
     mouseClick(0, 0, component);
     mouseClick(1, 1, component, { ctrlKey: true });
     drawFrame(component);
 
-    expect(
-      getFallback(component).getByText(
-        'Grid with 100 rows and 3 columns. 2 cells selected.'
-      )
-    ).toBeInTheDocument();
+    expect(getFallback(component).getByRole('status')).toHaveTextContent(
+      'Grid with 100 rows and 3 columns. 2 cells selected.'
+    );
   });
 
   it('describes the visible contents on request', () => {

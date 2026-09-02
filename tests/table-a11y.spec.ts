@@ -37,16 +37,13 @@ test.beforeEach(async ({ page }) => {
   await gotoPage(page, '');
 });
 
-test('summarizes the grid size in the canvas fallback content', async ({
-  page,
-}) => {
+test('describes nothing until the contents are requested', async ({ page }) => {
   await openTable(page, 'simple_table');
   await waitForLoadingDone(page);
 
   const canvas = getCanvas(page);
-  await expect(canvas.locator('p').first()).toHaveText(
-    'Grid with 100 rows and 3 columns.'
-  );
+  await expect(canvas.locator(`[${ATTRIBUTES.snapshot}]`)).toHaveCount(0);
+  await expect(canvas.locator('p')).toHaveCount(0);
 });
 
 test('offers a button to describe the grid contents, out of the tab order', async ({
@@ -165,9 +162,9 @@ test('summarizes the current selection', async ({ page }) => {
   await waitForLoadingDone(page);
 
   const canvas = getCanvas(page);
-  const summary = canvas.locator('p').first();
 
   const snapshot = await describeContents(canvas);
+  const status = snapshot.locator('p[role="status"]');
   const firstCell = snapshot.locator(
     `[${ATTRIBUTES.row}="0"][${ATTRIBUTES.column}="0"]`
   );
@@ -186,16 +183,16 @@ test('summarizes the current selection', async ({ page }) => {
 
   // Clicking a cell in a table selects the whole row
   await canvas.click({ position: toPosition(first) });
-  await expect(summary).toHaveText(
-    'Grid with 100 rows and 3 columns. 1 row selected.'
+  await expect(status).toHaveText(
+    /^Grid with 100 rows and 3 columns\. 1 row selected\. /
   );
 
   await canvas.click({
     position: toPosition(second),
     modifiers: ['ControlOrMeta'],
   });
-  await expect(summary).toHaveText(
-    'Grid with 100 rows and 3 columns. 2 rows selected.'
+  await expect(status).toHaveText(
+    /^Grid with 100 rows and 3 columns\. 2 rows selected\. /
   );
 });
 

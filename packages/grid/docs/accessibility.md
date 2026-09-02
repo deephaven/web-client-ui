@@ -6,15 +6,13 @@ To bridge that gap, Grid describes its contents in its canvas fallback content. 
 
 ## Canvas fallback content
 
-The children of a `<canvas>` element are its fallback content: they are never painted, but assistive technology reads them in place of the pixels. Grid renders two things there.
-
-A one line summary, regenerated on every draw, so it only reads values the grid already has on hand:
+The children of a `<canvas>` element are its fallback content: they are never painted, but assistive technology reads them in place of the pixels. Grid renders a toggle button there, which turns a **snapshot** on and off: a description of the grid size, selection, and viewport, plus a table of the visible cells and column headers.
 
 ```text
-Grid with 100 rows and 3 columns. 2 rows selected.
+Grid with 100 rows and 3 columns. 2 rows selected. Showing rows 1 to 20, columns x, y, z.
 ```
 
-And a toggle button that turns a **snapshot** on and off: a table of the visible cells and column headers. Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default. While it is on, it is regenerated on every draw and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
+Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default and nothing is described until it is turned on. While it is on, it is regenerated on every draw and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
 
 The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. Fallback content is never laid out, so native table semantics are the most reliable thing to hand a screen reader, and `<th scope="col">` associates each cell with its column for free. It is a `table` and not a `grid`, because `grid` promises cell-by-cell keyboard navigation that only the canvas implements. `aria-rowcount` and `aria-colcount` describe the whole grid, while the table only holds the viewport.
 
@@ -23,7 +21,6 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
 ```html
 <canvas class="grid-canvas">
   <div>
-    <p>Grid with 100 rows and 3 columns.</p>
     <button
       type="button"
       tabindex="-1"
