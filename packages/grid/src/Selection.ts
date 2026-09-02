@@ -203,4 +203,18 @@ export interface KeyboardSelection {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null;
+
+  /**
+   * Tries to find the cursor row for a selection that may have moved due to ticking.
+   *
+   * @param fallback returned if the current cursor row cannot be determined.
+   */
+  resolveCursorRow: (fallback: GridRangeIndex) => GridRangeIndex;
+
+  /**
+   * Tries to find the shift endpoint row for a selection that may have moved due to ticking.
+   *
+   * @param fallback returned if the current shift endpoint row cannot be determined.
+   */
+  resolveShiftEndpointRow: (fallback: GridRangeIndex) => GridRangeIndex;
 }

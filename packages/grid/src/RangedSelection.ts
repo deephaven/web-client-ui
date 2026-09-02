@@ -214,6 +214,18 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return cursorLandingCellForRanges(this.ranges, { columnCount, rowCount });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  resolveCursorRow(fallback: GridRangeIndex): GridRangeIndex {
+    // Ranged selections do not drift with ticking, so the cursor row is always valid. Return the fallback.
+    return fallback;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  resolveShiftEndpointRow(fallback: GridRangeIndex): GridRangeIndex {
+    // Ranged selections do not drift with ticking, so the cursor row is always valid. Return the fallback.
+    return fallback;
+  }
+
   withGestureExtend(
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     opts: GestureExtendOptions

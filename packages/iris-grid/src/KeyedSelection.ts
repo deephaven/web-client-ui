@@ -249,6 +249,55 @@ export class KeyedSelection implements Selection {
     });
   }
 
+  resolveCursorRow(fallback: GridRangeIndex): GridRangeIndex {
+    // Fallback is still live if its key is currently selected — the cursor
+    // sits on a row we recognize, no need to reach for the anchor.
+    if (
+      fallback != null &&
+      this.selectedKeys.has(this.getRowKeyData(fallback).key)
+    ) {
+      return fallback;
+    }
+    // Otherwise the cursor is stale (row drifted out from under it).
+    // Use the anchor key's current viewport row when we can find it.
+    const anchorViewportRow =
+      this.anchorKey != null ? this.findKeyInViewport(this.anchorKey) : null;
+    return anchorViewportRow ?? fallback;
+  }
+
+  resolveShiftEndpointRow(fallback: GridRangeIndex): GridRangeIndex {
+    if (
+      fallback != null &&
+      this.selectedKeys.has(this.getRowKeyData(fallback).key)
+    ) {
+      return fallback;
+    }
+    // Shift-extend never moves the anchor, so a contiguous keyed selection
+    // is anchor ± N rows. Walk outward from the anchor's live row to find
+    // the far endpoint on whichever side the selection actually extended.
+    const anchorViewportRow =
+      this.anchorKey != null ? this.findKeyInViewport(this.anchorKey) : null;
+    if (anchorViewportRow == null) return fallback;
+    const model = this.getModel();
+    const viewTop = model.viewport?.top ?? 0;
+    const viewBottom = model.viewport?.bottom ?? 0;
+    let downSteps = 0;
+    for (let r = anchorViewportRow + 1; r <= viewBottom; r += 1) {
+      if (!this.selectedKeys.has(this.getRowKeyData(r).key)) break;
+      downSteps += 1;
+    }
+    let upSteps = 0;
+    for (let r = anchorViewportRow - 1; r >= viewTop; r -= 1) {
+      if (!this.selectedKeys.has(this.getRowKeyData(r).key)) break;
+      upSteps += 1;
+    }
+    if (downSteps === 0 && upSteps === 0) return anchorViewportRow;
+    // Prefer the side the selection actually extended toward.
+    return downSteps >= upSteps
+      ? anchorViewportRow + downSteps
+      : anchorViewportRow - upSteps;
+  }
+
   /**
    * Replaces the transient overlay ranges (mid-gesture preview) with the
    * given ranges. Preserves the gesture anchor so mid-drag range updates

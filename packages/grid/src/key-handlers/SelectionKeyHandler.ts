@@ -210,8 +210,23 @@ class SelectionKeyHandler extends KeyHandler {
     }
     const { model } = grid.props;
     const { columnCount, rowCount } = model;
+    // Resolve `row` through the selection so `KeyedSelection` can compensate
+    // for ticks that shuffle row indices under the stored cursor / endpoint.
+    const resolvedRow = isShiftKey
+      ? grid.state.selection.resolveShiftEndpointRow(row)
+      : grid.state.selection.resolveCursorRow(row);
     const targetColumn = clamp(column + deltaColumn, 0, columnCount - 1);
-    const targetRow = clamp(row + deltaRow, 0, rowCount - 1);
+    const targetRow = clamp((resolvedRow ?? row) + deltaRow, 0, rowCount - 1);
+    // Same-key rows in a keyed selection all resolve to the current
+    // selectedKeys; committing another one would trip commitGesture's
+    // deselect-on-repeat check. Skip the gesture and just move the cursor.
+    if (
+      !isShiftKey &&
+      grid.state.selection.isCellSelected(targetColumn, targetRow)
+    ) {
+      grid.handleKeyMoveCursor(targetColumn, targetRow);
+      return true;
+    }
     grid.handleKeySelectAt({ column: targetColumn, row: targetRow }, mode);
     return true;
   }
