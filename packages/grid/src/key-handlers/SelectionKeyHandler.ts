@@ -131,13 +131,14 @@ class SelectionKeyHandler extends KeyHandler {
   ): boolean {
     const isShiftKey = event.shiftKey;
     const isModifierKey = GridUtils.isModifierKeyDown(event);
-    const mode = gestureModeFromModifiers({ isShiftKey, isModifierKey });
 
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
       grid.state;
     const column = isShiftKey ? selectionEndColumn : cursorColumn;
     const row = isShiftKey ? selectionEndRow : cursorRow;
 
+    // Ctrl+Arrow is an exception to the mode returned by gestureModeFromModifiers
+    // It jumps to the edge of the grid in the arrow direction, and replaces the selection.
     if (isModifierKey) {
       const { model } = grid.props;
       const { columnCount, rowCount } = model;
@@ -157,12 +158,18 @@ class SelectionKeyHandler extends KeyHandler {
         moveToRow = rowCount - 1;
       }
       if (moveToColumn != null && moveToRow != null) {
-        grid.handleKeySelectAt({ column: moveToColumn, row: moveToRow }, mode);
+        grid.handleKeySelectAt(
+          { column: moveToColumn, row: moveToRow },
+          isShiftKey ? 'maximize' : 'replace'
+        );
       }
       return true;
     }
 
     if (!grid.metrics) throw new Error('grid.metrics are not set');
+
+    // Plain / Shift arrows: mode is derived from Shift alone here since `isModifierKey` was short-circuited above.
+    const mode = gestureModeFromModifiers({ isShiftKey, isModifierKey: false });
 
     const { theme } = grid.props;
     const { autoSelectRow = false, autoSelectColumn = false } = theme;
