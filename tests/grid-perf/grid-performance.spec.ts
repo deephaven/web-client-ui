@@ -99,6 +99,7 @@ async function openLongStringTable(
   await page.keyboard.press('Enter');
 
   await page.getByRole('button', { name: tableName, exact: true }).click();
+  await expect(page.locator('.iris-grid .grid-wrapper')).toBeVisible();
   await waitForLoadingDone(page);
 }
 
@@ -165,6 +166,9 @@ test.describe('grid scroll performance benchmarks', () => {
     });
 
     test('rapid scroll performance', async ({ page }) => {
+      // Ensure the pointer is over the grid so wheel events target it
+      await getGrid(page).hover();
+
       await startFPSMeasurement(page);
 
       // Rapid small scrolls (simulates fast mouse wheel)
@@ -312,6 +316,9 @@ test.describe('grid performance stress tests', () => {
   test('sustained scrolling performance', async ({ page }) => {
     await openTable(page, 'simple_table');
     await waitForLoadingDone(page);
+
+    // Ensure the pointer is over the grid so wheel events target it
+    await getGrid(page).hover();
 
     await startFPSMeasurement(page);
 
