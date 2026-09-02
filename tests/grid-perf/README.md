@@ -4,7 +4,7 @@ For performance-sensitive changes to the Grid component, there are two ways to b
 
 ## Main app tests
 
-[`tests/grid-perf/grid-performance.spec.ts`](./grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests).
+[`tests/grid-perf/grid-performance.spec.ts`](./grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests). It covers the application mode tables plus console generated tables of ~500 and ~25,000 character string cells, which exercise text measurement and truncation.
 
 ```bash
 npm run e2e:performance
