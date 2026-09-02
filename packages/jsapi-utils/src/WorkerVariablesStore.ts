@@ -10,6 +10,16 @@ const log = Log.module('@deephaven/jsapi-utils.WorkerVariablesStore');
  */
 export type WorkerVariables = readonly dh.ide.VariableDefinition[];
 
+/**
+ * Stable empty snapshot for workers with no push-observable variables — e.g.
+ * legacy Enterprise connections that predate Core's field-updates API. Sharing
+ * one frozen instance keeps `useSyncExternalStore` snapshot identity stable so
+ * consumers don't re-render on repeated reads, and lets them distinguish
+ * "resolved but has no field-updates feed" (`[]`) from "still resolving"
+ * (`null`).
+ */
+const EMPTY_WORKER_VARIABLES: WorkerVariables = Object.freeze([]);
+
 /** Default key used when a host exposes a single connection (e.g. DHC). */
 export const DEFAULT_WORKER_KEY = 'default';
 
@@ -181,6 +191,21 @@ export function createWorkerVariablesStore(
       }
       if (connection == null) {
         log.debug('No connection available for worker', key);
+        return;
+      }
+      // Legacy Enterprise connections predate Core's field-updates API, so they
+      // have no `subscribeToFieldUpdates`. Treat such a worker as resolved with
+      // no variables (empty, not `null`) rather than throwing on the missing
+      // method, and install a no-op teardown so we don't re-resolve on every
+      // new listener.
+      if (typeof connection.subscribeToFieldUpdates !== 'function') {
+        log.debug(
+          'Connection has no field-updates support; worker is empty',
+          key
+        );
+        entry.list = EMPTY_WORKER_VARIABLES;
+        entry.unsubscribeFieldUpdates = () => undefined;
+        notify(entry);
         return;
       }
       // entry.list is replaced with a fresh array each delta so snapshot

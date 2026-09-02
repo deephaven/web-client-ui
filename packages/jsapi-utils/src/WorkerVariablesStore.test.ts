@@ -1,5 +1,6 @@
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
+import Log from '@deephaven/log';
 import {
   DEFAULT_WORKER_KEY,
   createWorkerVariablesStore,
@@ -239,6 +240,83 @@ describe('createWorkerVariablesStore', () => {
     await flushPromises();
     expect(listener).not.toHaveBeenCalled();
     expect(store.snapshot('w1')).toBeNull();
+  });
+
+  it('treats a connection lacking subscribeToFieldUpdates as an empty worker', async () => {
+    // Legacy Enterprise connections predate Core's field-updates API, so they
+    // expose no `subscribeToFieldUpdates`. The store must treat such a worker
+    // as resolved-but-empty (snapshot `[]`, distinct from loading's `null`),
+    // without throwing or logging the "Failed to resolve worker connection"
+    // error the missing method would otherwise trigger.
+    const errorSpy = jest
+      .spyOn(Log.module('@deephaven/jsapi-utils.WorkerVariablesStore'), 'error')
+      .mockImplementation(() => undefined);
+    const connection = { close: jest.fn() } as unknown as dh.IdeConnection;
+    const store = createWorkerVariablesStore(async () => connection);
+    const listener = jest.fn();
+    store.subscribe('s:legacy', listener);
+    await flushPromises();
+    expect(errorSpy).not.toHaveBeenCalled();
+    // Notified once so consumers re-render from `null` to the empty snapshot.
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(store.snapshot('s:legacy')).toEqual([]);
+    // Empty snapshot identity is stable across reads (no re-render churn).
+    expect(store.snapshot('s:legacy')).toBe(store.snapshot('s:legacy'));
+    errorSpy.mockRestore();
+  });
+
+  describe('legacy worker without subscribeToFieldUpdates', () => {
+    // Legacy Enterprise connections predate Core's field-updates API. These
+    // document that the store treats them as resolved-but-empty rather than
+    // erroring, and that the empty state participates in the normal
+    // resolve/invalidate/teardown lifecycle.
+    const makeLegacyConnection = (): dh.IdeConnection =>
+      ({ close: jest.fn() }) as unknown as dh.IdeConnection;
+
+    it('resolves the connection only once as more listeners subscribe', async () => {
+      const resolveConnection = jest.fn(async () => makeLegacyConnection());
+      const store = createWorkerVariablesStore(resolveConnection);
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      // The no-op teardown installed for a legacy worker short-circuits
+      // `start`, so extra listeners don't trigger a fresh resolve.
+      store.subscribe('s:legacy', jest.fn());
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(resolveConnection).toHaveBeenCalledTimes(1);
+    });
+
+    it('clears to null then re-resolves back to empty on invalidate', async () => {
+      const store = createWorkerVariablesStore(async () =>
+        makeLegacyConnection()
+      );
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(store.snapshot('s:legacy')).toEqual([]);
+
+      store.invalidate('s:legacy');
+      // Snapshot drops to null synchronously while the re-resolve is in flight.
+      expect(store.snapshot('s:legacy')).toBeNull();
+      await flushPromises();
+      expect(store.snapshot('s:legacy')).toEqual([]);
+    });
+
+    it('tears down on last unsubscribe and re-resolves to empty on the next subscribe', async () => {
+      const resolveConnection = jest.fn(async () => makeLegacyConnection());
+      const store = createWorkerVariablesStore(resolveConnection);
+      const off = store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(store.snapshot('s:legacy')).toEqual([]);
+
+      off();
+      // Last listener gone: the entry is dropped and snapshot returns to null.
+      expect(store.snapshot('s:legacy')).toBeNull();
+
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(resolveConnection).toHaveBeenCalledTimes(2);
+      expect(store.snapshot('s:legacy')).toEqual([]);
+    });
   });
 
   it('isolates a throwing listener so other listeners still run', async () => {
