@@ -179,7 +179,7 @@ See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/aut
 - `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
 - `npm run e2e:performance`: Runs grid performance benchmark tests against the main app (requires a Deephaven server). Skipped by default in CI due to resource constraints.
 
-For benchmarking performance-sensitive Grid changes, see [Grid Performance Testing](./tests/grid-perf-app/README.md).
+For benchmarking performance-sensitive Grid changes, see [Grid Performance Testing](./tests/grid-perf/README.md).
 
 ### Docker
 

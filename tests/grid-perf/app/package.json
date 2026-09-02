@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@deephaven/grid": "file:../../packages/grid",
-    "@deephaven/log": "file:../../packages/log",
+    "@deephaven/grid": "file:../../../packages/grid",
+    "@deephaven/log": "file:../../../packages/log",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

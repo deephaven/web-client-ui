@@ -4,7 +4,7 @@ For performance-sensitive changes to the Grid component, there are two ways to b
 
 ## Main app tests
 
-[`tests/grid-performance.spec.ts`](../grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests).
+[`tests/grid-perf/grid-performance.spec.ts`](./grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests).
 
 ```bash
 npm run e2e:performance
@@ -12,7 +12,7 @@ npm run e2e:performance
 
 ## Standalone perf app
 
-[`tests/grid-perf-app.spec.ts`](../grid-perf-app.spec.ts) drives this app, a lightweight Vite app that renders a `Grid` backed by `MockGridModel`. It is useful for:
+[`tests/grid-perf/grid-perf-app.spec.ts`](./grid-perf-app.spec.ts) drives [`app`](./app), a lightweight Vite app that renders a `Grid` backed by `MockGridModel`. It is useful for:
 
 - Testing without a Deephaven server
 - Benchmarking row and column counts the test data does not reach
@@ -20,7 +20,7 @@ npm run e2e:performance
 
 ```bash
 # Install dependencies (one time)
-cd tests/grid-perf-app && npm install
+cd tests/grid-perf/app && npm install
 
 # Start the app
 npm run dev

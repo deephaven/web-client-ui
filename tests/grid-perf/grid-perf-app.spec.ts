@@ -3,14 +3,14 @@ import { test, type Page } from '@playwright/test';
 /**
  * Grid Performance Tests using the standalone perf app.
  *
- * These tests use the grid-perf-app which provides a standalone Grid component
- * with MockGridModel data, allowing proper testing of Grid props without needing
- * a Deephaven server.
+ * These tests use the perf app in `tests/grid-perf/app`, which provides a
+ * standalone Grid component with MockGridModel data, allowing proper testing of
+ * Grid props without needing a Deephaven server.
  *
  * Prerequisites:
- *   1. Install the perf app: cd tests/grid-perf-app && npm install
- *   2. Start the perf app: cd tests/grid-perf-app && npm run dev
- *   3. Run tests: RUN_PERF_TESTS=1 npx playwright test grid-perf-app.spec.ts
+ *   1. Install the perf app: cd tests/grid-perf/app && npm install
+ *   2. Start the perf app: cd tests/grid-perf/app && npm run dev
+ *   3. Run tests (from the repo root): npm run e2e:grid-performance
  *
  * The perf app supports query params:
  *   - rows: Number of rows (default: 1000000)
