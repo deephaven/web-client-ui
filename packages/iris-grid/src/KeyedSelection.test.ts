@@ -451,11 +451,16 @@ describe('getGestureAnchor', () => {
   });
 });
 
-// ─── commitMouseGesture (multi-row → pending or fast path) ────────────────────
+// ─── commitGesture (multi-row → pending or fast path) ────────────────────
 
-describe('commitMouseGesture', () => {
+describe('commitGesture', () => {
   afterEach(() => {
     mockModel.viewport = { top: 0, bottom: ROW_COUNT - 1 };
+  });
+
+  it('is identity when there is no overlay to commit', () => {
+    const sel = singleRow(5);
+    expect(sel.commitGesture(sel, { autoSelectRow: false })).toBe(sel);
   });
 
   it('commits a multi-row overlay synchronously when fully in viewport', () => {
@@ -463,7 +468,7 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 0, null, 5)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), {
+    const result = withOverlay.commitGesture(empty(), {
       autoSelectRow: false,
     });
     expect(result.pendingRanges).toHaveLength(0);
@@ -479,7 +484,7 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 0, null, 5)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), {
+    const result = withOverlay.commitGesture(empty(), {
       autoSelectRow: false,
     });
     expect(result.pendingRanges).toHaveLength(1);
@@ -492,7 +497,7 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 3, null, 3)],
     });
-    const result = withOverlay.commitMouseGesture(empty(), {
+    const result = withOverlay.commitGesture(empty(), {
       autoSelectRow: false,
     });
     expect(result.pendingRanges).toHaveLength(0);
@@ -505,7 +510,7 @@ describe('commitMouseGesture', () => {
       getModel: getKeyedModel,
       overlayRanges: [new GridRange(null, 3, null, 3)],
     });
-    const result = withOverlay.commitMouseGesture(last, {
+    const result = withOverlay.commitGesture(last, {
       autoSelectRow: false,
     });
     expect(result.isRowSelected(3)).toBe(false);
@@ -521,7 +526,7 @@ describe('commitMouseGesture', () => {
       [new GridRange(null, 2, null, 5)],
       true
     );
-    const result = dragOverlay.commitMouseGesture(priorCommit, {
+    const result = dragOverlay.commitGesture(priorCommit, {
       autoSelectRow: false,
     });
     for (let r = 2; r <= 5; r += 1) {
@@ -544,7 +549,7 @@ describe('commitMouseGesture', () => {
       [new GridRange(null, 5, null, 12)],
       false
     );
-    const result = grownOverlay.commitMouseGesture(priorCommit, {
+    const result = grownOverlay.commitGesture(priorCommit, {
       autoSelectRow: false,
     });
     for (let r = 5; r <= 12; r += 1) {
@@ -606,27 +611,6 @@ describe('withGestureExtend', () => {
         { mode: 'extend', ...defaultOpts }
       );
     expect(sel.getGestureAnchor()).toEqual({ row: 3, column: null });
-  });
-});
-
-// ─── commitGesture (MouseSelection) ──────────────────────────────────────────
-
-describe('commitGesture', () => {
-  it('commits an overlay into selectedKeys', () => {
-    const withOverlay = new KeyedSelection({
-      getModel: getKeyedModel,
-      overlayRanges: [new GridRange(null, 3, null, 3)],
-    });
-    const result = withOverlay.commitGesture(empty(), {
-      autoSelectRow: false,
-    });
-    expect(result.isRowSelected(3)).toBe(true);
-    expect(result.overlayRanges).toHaveLength(0);
-  });
-
-  it('is identity when there is no overlay to commit', () => {
-    const sel = singleRow(5);
-    expect(sel.commitGesture(sel, { autoSelectRow: false })).toBe(sel);
   });
 });
 

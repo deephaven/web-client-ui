@@ -8,19 +8,6 @@ import type { BoundedAxisRange } from './GridAxisRange';
 export type GetModel = () => GridModel;
 
 /**
- * Options for the deprecated `commitMouseGesture`. Will be revisited when the
- * new `MouseSelection` / `KeyboardSelection` interfaces are introduced.
- */
-export type CommitMouseGestureOptions = {
-  /**
-   * When true, a single-row commit that repeats the previous single-row
-   * selection is treated as a deselect (matches theme `autoSelectRow`
-   * behavior).
-   */
-  autoSelectRow: boolean;
-};
-
-/**
  * Immutable value object representing the current selection state of the grid.
  * Mutations return new instances; Grid stores the result in React state.
  *
@@ -239,7 +226,7 @@ export interface SelectionDeprecated {
   /**
    * Replaces the transient overlay ranges (mid-gesture preview) with the
    * given ranges. Called on every mouse-move during a drag / shift-click.
-   * Preserves the gesture anchor. `commitMouseGesture` later folds the
+   * Preserves the gesture anchor. `commitGesture` later folds the
    * overlay into the committed state.
    *
    * When `isReplacing` is true the caller intends the overlay to replace
@@ -251,17 +238,6 @@ export interface SelectionDeprecated {
   withMouseGestureRanges: (
     ranges: readonly GridRange[],
     isReplacing?: boolean
-  ) => Selection;
-  /**
-   * Commits the transient overlay into the committed selection and returns
-   * the settled selection. Handles consolidation, deselect-on-reclick, and
-   * subtract logic. Returns `this` (identity) when there is nothing to
-   * commit, which lets `Grid.commitSelection` short-circuit its setState.
-   * @deprecated Will be replaced by `MouseSelection.commitGesture` (name TBD).
-   */
-  commitMouseGesture: (
-    lastCommitted: Selection,
-    options: CommitMouseGestureOptions
   ) => Selection;
   /**
    * A new selection whose gesture anchor is set to the given cell. The

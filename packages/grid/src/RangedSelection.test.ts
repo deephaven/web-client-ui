@@ -309,9 +309,9 @@ describe('getGestureAnchor', () => {
     expect(sel.getGestureAnchor()).toBeNull();
   });
 
-  it('is preserved by commitMouseGesture', () => {
+  it('is preserved by commitGesture', () => {
     const sel = single(1, 1).withGestureAnchor(2, 3);
-    const committed = sel.commitMouseGesture(empty(), { autoSelectRow: false });
+    const committed = sel.commitGesture(empty(), { autoSelectRow: false });
     expect(committed.getGestureAnchor()).toEqual({ row: 2, column: 3 });
   });
 
@@ -373,33 +373,33 @@ describe('getLastSingleSelectedRow', () => {
   });
 });
 
-// ─── commitMouseGesture ──────────────────────────────────────────────────────
+// ─── commitGesture ───────────────────────────────────────────────────
 
-describe('commitMouseGesture', () => {
+describe('commitGesture', () => {
   it('deselects when committing the same single cell over itself', () => {
     const last = single(3, 5);
     const current = single(3, 5);
-    const result = current.commitMouseGesture(last, { autoSelectRow: false });
+    const result = current.commitGesture(last, { autoSelectRow: false });
     expect(result.isEmpty()).toBe(true);
   });
 
   it('deselects when committing the same single row with autoSelectRow', () => {
     const last = fullRow(3);
     const current = fullRow(3);
-    const result = current.commitMouseGesture(last, { autoSelectRow: true });
+    const result = current.commitGesture(last, { autoSelectRow: true });
     expect(result.isEmpty()).toBe(true);
   });
 
   it('does NOT deselect a single row without autoSelectRow', () => {
     const last = fullRow(3);
     const current = fullRow(3);
-    const result = current.commitMouseGesture(last, { autoSelectRow: false });
+    const result = current.commitGesture(last, { autoSelectRow: false });
     expect(result.isEmpty()).toBe(false);
   });
 
   it('keeps a new single-cell selection when lastCommitted is empty', () => {
     const current = single(2, 4);
-    const result = current.commitMouseGesture(empty(), {
+    const result = current.commitGesture(empty(), {
       autoSelectRow: false,
     });
     expect(result.toRanges()).toEqual(current.toRanges());
@@ -413,7 +413,7 @@ describe('commitMouseGesture', () => {
       [...outer.toRanges(), ...inner.toRanges()],
       getModel
     );
-    const result = combined.commitMouseGesture(outer, { autoSelectRow: false });
+    const result = combined.commitGesture(outer, { autoSelectRow: false });
     // inner area should be cut out; result should not include (2,2)
     expect(result.isCellSelected(2, 2)).toBe(false);
     // outer areas outside inner should remain
@@ -424,7 +424,7 @@ describe('commitMouseGesture', () => {
     const a = new GridRange(0, 0, 0, 5);
     const b = new GridRange(0, 6, 0, 10);
     const sel = new RangedSelection([a, b], getModel);
-    const result = sel.commitMouseGesture(empty(), { autoSelectRow: false });
+    const result = sel.commitGesture(empty(), { autoSelectRow: false });
     const ranges = result.toRanges();
     // Adjacent ranges [0,0-5] and [0,6-10] should consolidate to [0,0-10]
     expect(ranges).toHaveLength(1);
@@ -564,36 +564,6 @@ describe('withGestureExtend', () => {
         );
       expect(sel.getGestureAnchor()).toEqual({ row: 3, column: 3 });
     });
-  });
-});
-
-// ─── commitGesture (MouseSelection) ──────────────────────────────────────────
-
-describe('commitGesture', () => {
-  const defaultOpts = { autoSelectRow: false };
-
-  it('deselects on single-cell reclick', () => {
-    const lastCommitted = single(3, 3);
-    const current = single(3, 3);
-    const settled = current.commitGesture(lastCommitted, defaultOpts);
-    expect(settled.isEmpty()).toBe(true);
-  });
-
-  it('does not deselect when the cell differs from the last committed', () => {
-    const lastCommitted = single(3, 3);
-    const current = single(4, 4);
-    const settled = current.commitGesture(lastCommitted, defaultOpts);
-    expect(settled.isEmpty()).toBe(false);
-    expect(settled.toRanges()[0]).toEqual(GridRange.makeCell(4, 4));
-  });
-
-  it('subtracts a contained range on ctrl-click (hole-punch)', () => {
-    const sel = new RangedSelection(
-      [new GridRange(5, 5, 9, 9), GridRange.makeCell(7, 7)],
-      getModel
-    );
-    const settled = sel.commitGesture(empty(), defaultOpts);
-    expect(settled.toRanges()).toHaveLength(4);
   });
 });
 

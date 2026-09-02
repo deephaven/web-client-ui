@@ -1,7 +1,6 @@
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import {
   type CommitGestureOptions,
-  type CommitMouseGestureOptions,
   type GestureExtendOptions,
   type GridRange,
   type GridRangeIndex,
@@ -341,16 +340,7 @@ export class KeyedSelection implements Selection {
 
   commitGesture(
     lastCommitted: Selection,
-    opts: CommitGestureOptions
-  ): KeyedSelection {
-    // The new commitGesture defers to the existing implementation. Once the
-    // deprecated interface is removed, the guts move here directly.
-    return this.commitMouseGesture(lastCommitted, opts);
-  }
-
-  commitMouseGesture(
-    lastCommitted: Selection,
-    _options: CommitMouseGestureOptions
+    _opts: CommitGestureOptions
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
 

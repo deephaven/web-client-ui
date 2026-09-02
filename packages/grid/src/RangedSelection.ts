@@ -7,7 +7,6 @@ import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
 import type {
   CommitGestureOptions,
-  CommitMouseGestureOptions,
   GestureExtendOptions,
   GetModel,
   Selection,
@@ -154,8 +153,8 @@ export class RangedSelection implements Selection, TickRangeSelection {
     ranges: readonly GridRange[],
     _isReplacing?: boolean
   ): RangedSelection {
-    // Identity check keeps the same object for commitMouseGesture's no-op path.
-    // This allows Grid.commitSelection to recognize that no changes have occurred.
+    // Identity check keeps the same object for commitGesture's no-op path,
+    // which lets Grid's setState short-circuit when nothing actually changed.
     if (ranges === this.ranges) return this;
     return new RangedSelection(
       ranges,
@@ -241,16 +240,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
 
   commitGesture(
     lastCommitted: Selection,
-    opts: CommitGestureOptions
-  ): RangedSelection {
-    // The new commitGesture defers to the existing implementation. Once the
-    // deprecated interface is removed, the guts move here directly.
-    return this.commitMouseGesture(lastCommitted, opts);
-  }
-
-  commitMouseGesture(
-    lastCommitted: Selection,
-    { autoSelectRow }: CommitMouseGestureOptions
+    { autoSelectRow }: CommitGestureOptions
   ): RangedSelection {
     const selectedRanges = this.ranges;
     // lastCommitted is always a RangedSelection when this method is called
