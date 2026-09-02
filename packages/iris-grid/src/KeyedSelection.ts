@@ -384,6 +384,22 @@ export class KeyedSelection implements Selection {
       // on a cell — toggle its selection. A multi-row overlay is a ctrl+shift+click
       // grown range — add all rows without toggling off overlapping ones.
       const shouldToggle = rowCount === 1;
+
+      // Multi-row ctrl+shift add that spans out-of-viewport should  defer
+      // to async resolution while preserving the already-committed keys.
+      if (!shouldToggle && !this.invertedSelection) {
+        const model = this.getModel();
+        const viewTop = model.viewport?.top ?? 0;
+        const viewBottom = model.viewport?.bottom ?? 0;
+        if (first < viewTop || lastRow > viewBottom) {
+          return this.copyWith({
+            overlayRanges: EMPTY_ARRAY,
+            lastSingleRow: null,
+            pendingRanges: this.overlayRanges,
+          });
+        }
+      }
+
       const nextKeyValues = new Map(this.selectedKeyValues);
       for (let i = 0; i < this.overlayRanges.length; i += 1) {
         const { startRow, endRow } = this.overlayRanges[i];
@@ -591,14 +607,22 @@ export class KeyedSelection implements Selection {
     return this.copyWith({ maxRows });
   }
 
-  /** Builds a fully-resolved selection from async-fetched key values, clearing pendingRanges. */
+  /**
+   * Builds a fully-resolved selection from async-fetched key values merged with the current selection, clearing pendingRanges.
+   */
   resolve(keyValues: ReadonlyMap<string, readonly unknown[]>): KeyedSelection {
+    const mergedKeys = new Set(this.selectedKeys);
+    const mergedKeyValues = new Map(this.selectedKeyValues);
+    keyValues.forEach((values, key) => {
+      mergedKeys.add(key);
+      mergedKeyValues.set(key, values);
+    });
     return this.copyWith({
-      selectedKeys: new Set(keyValues.keys()),
+      selectedKeys: mergedKeys,
       overlayRanges: EMPTY_ARRAY,
       invertedSelection: false,
       lastSingleRow: null,
-      selectedKeyValues: keyValues,
+      selectedKeyValues: mergedKeyValues,
       maxRows: null,
       pendingRanges: EMPTY_ARRAY,
     });
