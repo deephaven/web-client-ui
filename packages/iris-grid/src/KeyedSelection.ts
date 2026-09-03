@@ -302,6 +302,32 @@ export class KeyedSelection implements Selection {
       : anchorViewportRow - upSteps;
   }
 
+  // Cursor / endpoint stubs; real key-tracking implementation lands in step 2
+  // of plans/cursor-into-selection.md. Grid still owns cursor state today.
+  readonly cursorRow: VisibleIndex | null = null;
+
+  readonly cursorColumn: VisibleIndex | null = null;
+
+  readonly selectionEndRow: VisibleIndex | null = null;
+
+  readonly selectionEndColumn: VisibleIndex | null = null;
+
+  // eslint-disable-next-line class-methods-use-this
+  withCursor(
+    _row: VisibleIndex | null,
+    _column: VisibleIndex | null
+  ): KeyedSelection {
+    return this;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  withSelectionEnd(
+    _row: VisibleIndex | null,
+    _column: VisibleIndex | null
+  ): KeyedSelection {
+    return this;
+  }
+
   /**
    * Replaces the transient overlay ranges (mid-gesture preview) with the
    * given ranges. Preserves the gesture anchor so mid-drag range updates

@@ -45,6 +45,14 @@ export interface SelectionQueries {
    * are selected. Drives `gotoRow` sync.
    */
   getLastSingleSelectedRow: () => VisibleIndex | null;
+  /** The focus cell's row, or `null` when there is no cursor set. */
+  readonly cursorRow: VisibleIndex | null;
+  /** The focus cell's column, or `null` when there is no cursor set. */
+  readonly cursorColumn: VisibleIndex | null;
+  /** Row of the last shift/drag endpoint, or `null` when unset. */
+  readonly selectionEndRow: VisibleIndex | null;
+  /** Column of the last shift/drag endpoint, or `null` when unset. */
+  readonly selectionEndColumn: VisibleIndex | null;
 }
 
 /**
@@ -228,4 +236,24 @@ export interface KeyboardSelection {
    * @param fallback returned if the current shift endpoint row cannot be determined.
    */
   resolveShiftEndpointRow: (fallback: GridRangeIndex) => GridRangeIndex;
+
+  /**
+   * A new selection with the cursor set to `(column, row)`. Passing `null`
+   * for both clears the cursor. Non-cursor state (ranges, keys, anchor,
+   * selection endpoint) is preserved.
+   */
+  withCursor: (
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
+  ) => Selection;
+
+  /**
+   * A new selection with the shift/drag endpoint set to `(column, row)`.
+   * Passing `null` for both clears the endpoint. Non-endpoint state
+   * (ranges, keys, anchor, cursor) is preserved.
+   */
+  withSelectionEnd: (
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
+  ) => Selection;
 }

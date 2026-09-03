@@ -694,6 +694,116 @@ describe('truncate', () => {
   });
 });
 
+// ─── cursor tracking ─────────────────────────────────────────────────────────
+
+describe('cursor', () => {
+  it('defaults to null on an empty selection', () => {
+    expect(empty().cursorRow).toBeNull();
+    expect(empty().cursorColumn).toBeNull();
+  });
+
+  it('stores the cursor position set via withCursor', () => {
+    const sel = empty().withCursor(3, 5);
+    expect(sel.cursorRow).toBe(3);
+    expect(sel.cursorColumn).toBe(5);
+  });
+
+  it('returns identity when withCursor is a no-op', () => {
+    const sel = empty().withCursor(3, 5);
+    expect(sel.withCursor(3, 5)).toBe(sel);
+  });
+
+  it('clears when withCursor is called with null', () => {
+    const sel = empty().withCursor(3, 5).withCursor(null, null);
+    expect(sel.cursorRow).toBeNull();
+    expect(sel.cursorColumn).toBeNull();
+  });
+
+  it('is preserved through withCommittedRanges', () => {
+    const sel = empty()
+      .withCursor(2, 4)
+      .withCommittedRanges([GridRange.makeCell(0, 0)]);
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(4);
+  });
+
+  it('is preserved through commitGesture', () => {
+    const sel = single(1, 1).withCursor(1, 1);
+    const committed = sel.commitGesture(empty(), { autoSelectRow: false });
+    expect(committed.cursorRow).toBe(1);
+    expect(committed.cursorColumn).toBe(1);
+  });
+
+  it('is preserved through trimmed', () => {
+    const sel = new RangedSelection(
+      [GridRange.makeCell(0, 0), GridRange.makeCell(1, 1)],
+      getModel
+    ).withCursor(5, 6);
+    expect(sel.trimmed().cursorRow).toBe(5);
+    expect(sel.trimmed().cursorColumn).toBe(6);
+  });
+
+  it('is preserved through truncate', () => {
+    const sel = range(0, 0, 0, 10).withCursor(0, 3);
+    expect(sel.truncate(3).cursorRow).toBe(0);
+    expect(sel.truncate(3).cursorColumn).toBe(3);
+  });
+
+  it('is preserved through clear', () => {
+    const sel = single(0, 0).withCursor(2, 2).clear();
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(2);
+    expect(sel.isEmpty()).toBe(true);
+  });
+});
+
+// ─── selectionEnd tracking ───────────────────────────────────────────────────
+
+describe('selectionEnd', () => {
+  it('defaults to null on an empty selection', () => {
+    expect(empty().selectionEndRow).toBeNull();
+    expect(empty().selectionEndColumn).toBeNull();
+  });
+
+  it('stores the endpoint set via withSelectionEnd', () => {
+    const sel = empty().withSelectionEnd(7, 3);
+    expect(sel.selectionEndRow).toBe(7);
+    expect(sel.selectionEndColumn).toBe(3);
+  });
+
+  it('returns identity when withSelectionEnd is a no-op', () => {
+    const sel = empty().withSelectionEnd(7, 3);
+    expect(sel.withSelectionEnd(7, 3)).toBe(sel);
+  });
+
+  it('clears when withSelectionEnd is called with null', () => {
+    const sel = empty().withSelectionEnd(7, 3).withSelectionEnd(null, null);
+    expect(sel.selectionEndRow).toBeNull();
+    expect(sel.selectionEndColumn).toBeNull();
+  });
+
+  it('is preserved through withCommittedRanges', () => {
+    const sel = empty()
+      .withSelectionEnd(4, 2)
+      .withCommittedRanges([GridRange.makeCell(0, 0)]);
+    expect(sel.selectionEndRow).toBe(4);
+    expect(sel.selectionEndColumn).toBe(2);
+  });
+
+  it('is preserved through commitGesture', () => {
+    const sel = single(1, 1).withSelectionEnd(1, 1);
+    const committed = sel.commitGesture(empty(), { autoSelectRow: false });
+    expect(committed.selectionEndRow).toBe(1);
+    expect(committed.selectionEndColumn).toBe(1);
+  });
+
+  it('is cleared by clear() (transient state)', () => {
+    const sel = single(0, 0).withSelectionEnd(3, 3).clear();
+    expect(sel.selectionEndRow).toBeNull();
+    expect(sel.selectionEndColumn).toBeNull();
+  });
+});
+
 // ─── isRangedSelection ───────────────────────────────────────────────────────
 
 describe('isRangedSelection', () => {

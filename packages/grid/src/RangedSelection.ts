@@ -42,8 +42,52 @@ export class RangedSelection implements Selection, TickRangeSelection {
     /** Anchor row for shift-click / keyboard extend; null when no anchor is set. */
     private readonly gestureStartRow: GridRangeIndex = null,
     /** Anchor column for shift-click / keyboard extend; null when no anchor is set. */
-    private readonly gestureStartColumn: GridRangeIndex = null
+    private readonly gestureStartColumn: GridRangeIndex = null,
+    /** Focus row; null when no cursor is set. */
+    readonly cursorRow: VisibleIndex | null = null,
+    /** Focus column; null when no cursor is set. */
+    readonly cursorColumn: VisibleIndex | null = null,
+    /** Last shift/drag endpoint row; null when unset. */
+    readonly selectionEndRow: VisibleIndex | null = null,
+    /** Last shift/drag endpoint column; null when unset. */
+    readonly selectionEndColumn: VisibleIndex | null = null
   ) {}
+
+  /**
+   * Returns a copy with the given fields overridden. Unspecified fields
+   * carry through from `this`, so mutations that only touch ranges /
+   * anchor keep cursor + endpoint intact without extra bookkeeping at
+   * every call site.
+   */
+  private copyWith(overrides: {
+    ranges?: readonly GridRange[];
+    gestureStart?: { row: GridRangeIndex; column: GridRangeIndex };
+    cursor?: { row: VisibleIndex | null; column: VisibleIndex | null };
+    selectionEnd?: { row: VisibleIndex | null; column: VisibleIndex | null };
+  }): RangedSelection {
+    const gestureStart = overrides.gestureStart ?? {
+      row: this.gestureStartRow,
+      column: this.gestureStartColumn,
+    };
+    const cursor = overrides.cursor ?? {
+      row: this.cursorRow,
+      column: this.cursorColumn,
+    };
+    const selectionEnd = overrides.selectionEnd ?? {
+      row: this.selectionEndRow,
+      column: this.selectionEndColumn,
+    };
+    return new RangedSelection(
+      overrides.ranges ?? this.ranges,
+      this.getModel,
+      gestureStart.row,
+      gestureStart.column,
+      cursor.row,
+      cursor.column,
+      selectionEnd.row,
+      selectionEnd.column
+    );
+  }
 
   isEmpty(): boolean {
     return this.ranges.length === 0;
@@ -165,7 +209,10 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const result =
       ranges === this.ranges
         ? this
-        : new RangedSelection(ranges, this.getModel);
+        : this.copyWith({
+            ranges,
+            gestureStart: { row: null, column: null },
+          });
     if (anchor === undefined) return result;
     return result.withGestureAnchor(anchor.row, anchor.column);
   }
@@ -181,7 +228,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
     if (row === this.gestureStartRow && column === this.gestureStartColumn) {
       return this;
     }
-    return new RangedSelection(this.ranges, this.getModel, row, column);
+    return this.copyWith({ gestureStart: { row, column } });
   }
 
   /**
@@ -245,6 +292,24 @@ export class RangedSelection implements Selection, TickRangeSelection {
     return fallback;
   }
 
+  withCursor(
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
+  ): RangedSelection {
+    if (row === this.cursorRow && column === this.cursorColumn) return this;
+    return this.copyWith({ cursor: { row, column } });
+  }
+
+  withSelectionEnd(
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
+  ): RangedSelection {
+    if (row === this.selectionEndRow && column === this.selectionEndColumn) {
+      return this;
+    }
+    return this.copyWith({ selectionEnd: { row, column } });
+  }
+
   withGestureExtend(
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     opts: GestureExtendOptions
@@ -261,14 +326,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
     // existing shift-click path.
     const base = trimBefore ? this.trimmed() : this;
     let result: RangedSelection =
-      newRanges === base.ranges
-        ? base
-        : new RangedSelection(
-            newRanges,
-            base.getModel,
-            base.gestureStartRow,
-            base.gestureStartColumn
-          );
+      newRanges === base.ranges ? base : base.copyWith({ ranges: newRanges });
     if (resetAnchor) {
       result = result.withGestureAnchor(cursor.row, cursor.column);
     }
@@ -291,12 +349,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
         : GridRange.cellCount(selectedRanges) === 1) &&
       GridRange.rangeArraysEqual(selectedRanges, lastRanges)
     ) {
-      return new RangedSelection(
-        EMPTY_ARRAY,
-        this.getModel,
-        this.gestureStartRow,
-        this.gestureStartColumn
-      );
+      return this.copyWith({ ranges: EMPTY_ARRAY });
     }
 
     let newRanges = selectedRanges.slice();
@@ -318,27 +371,22 @@ export class RangedSelection implements Selection, TickRangeSelection {
       newRanges.length !== selectedRanges.length ||
       newRanges.some((r, i) => !r.equals(selectedRanges[i]));
     if (!changed) return this;
-    return new RangedSelection(
-      newRanges,
-      this.getModel,
-      this.gestureStartRow,
-      this.gestureStartColumn
-    );
+    return this.copyWith({ ranges: newRanges });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   clear(): RangedSelection {
-    return new RangedSelection(EMPTY_ARRAY, this.getModel);
+    return this.copyWith({
+      ranges: EMPTY_ARRAY,
+      gestureStart: { row: null, column: null },
+      selectionEnd: { row: null, column: null },
+    });
   }
 
   trimmed(): RangedSelection {
     if (this.ranges.length > 0) {
-      return new RangedSelection(
-        this.ranges.slice(this.ranges.length - 1),
-        this.getModel,
-        this.gestureStartRow,
-        this.gestureStartColumn
-      );
+      return this.copyWith({
+        ranges: this.ranges.slice(this.ranges.length - 1),
+      });
     }
     return this;
   }
@@ -367,12 +415,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
       }
       rowCount -= lastRowSize;
     }
-    return new RangedSelection(
-      ranges,
-      this.getModel,
-      this.gestureStartRow,
-      this.gestureStartColumn
-    );
+    return this.copyWith({ ranges });
   }
 }
 
