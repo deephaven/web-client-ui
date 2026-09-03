@@ -54,6 +54,10 @@
           { "label": "Canvas options", "path": "customize/canvas-options.md" },
           { "label": "Sticky behavior", "path": "customize/sticky-behavior.md" }
         ]
+      },
+      {
+        "label": "Accessibility",
+        "path": "accessibility.md"
       }
     ]
   }

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
@@ -1517,5 +1517,118 @@ describe('cellInputRendererRegistry', () => {
     mouseDoubleClick(3, 5, component);
 
     expect(customRenderer).not.toHaveBeenCalled();
+  });
+});
+
+describe('accessibility fallback content', () => {
+  function getFallback(component: Grid) {
+    return within(component.canvas as unknown as HTMLElement);
+  }
+
+  function describeContents(component: Grid) {
+    fireEvent.click(
+      getFallback(component).getByRole('button', {
+        name: 'Describe the grid contents',
+      })
+    );
+  }
+
+  function hideContents(component: Grid) {
+    fireEvent.click(
+      getFallback(component).getByRole('button', {
+        name: 'Hide the grid contents',
+      })
+    );
+  }
+
+  /** Draw the frame the grid requested, as the browser does before it paints */
+  function drawFrame(component: Grid) {
+    act(() => {
+      component.updateCanvas();
+    });
+  }
+
+  it('summarizes the size of the grid', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    describeContents(component);
+
+    expect(getFallback(component).getByRole('status')).toHaveTextContent(
+      'Grid with 100 rows and 3 columns.'
+    );
+  });
+
+  it('summarizes the current selection', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    describeContents(component);
+    mouseClick(0, 0, component);
+    mouseClick(1, 1, component, { ctrlKey: true });
+    drawFrame(component);
+
+    expect(getFallback(component).getByRole('status')).toHaveTextContent(
+      'Grid with 100 rows and 3 columns. 2 cells selected.'
+    );
+  });
+
+  it('describes the visible contents on request', () => {
+    const component = makeGridComponent(
+      new MockGridModel({ rowCount: 100, columnCount: 3 })
+    );
+
+    expect(getFallback(component).queryByRole('table')).toBeNull();
+
+    describeContents(component);
+
+    const table = getFallback(component).getByRole('table');
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map(header => header.textContent)
+    ).toEqual(['0', '1', '2']);
+    expect(within(table).getByText('0,0')).toHaveAttribute('data-grid-rect');
+  });
+
+  it('keeps describing the contents as the grid scrolls', () => {
+    const component = makeGridComponent();
+
+    describeContents(component);
+    expect(getFallback(component).getByText('0,0')).toBeInTheDocument();
+
+    fireEvent.wheel(component.canvas as unknown as HTMLElement, {
+      deltaY: 500,
+    });
+    drawFrame(component);
+
+    expect(component.state.top).toBeGreaterThan(0);
+    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+    expect(getFallback(component).queryByText('0,0')).toBeNull();
+  });
+
+  it('stops describing the contents when toggled off', () => {
+    const component = makeGridComponent();
+
+    describeContents(component);
+    expect(getFallback(component).getByRole('table')).toBeInTheDocument();
+
+    hideContents(component);
+    expect(getFallback(component).queryByRole('table')).toBeNull();
+  });
+
+  it('describes the new viewport after the grid scrolls', () => {
+    const component = makeGridComponent();
+
+    fireEvent.wheel(component.canvas as unknown as HTMLElement, {
+      deltaY: 500,
+    });
+    drawFrame(component);
+    describeContents(component);
+
+    const table = getFallback(component).getByRole('table');
+    expect(within(table).queryByText('0,0')).toBeNull();
   });
 });

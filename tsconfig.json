@@ -24,6 +24,7 @@
     // reference their dependencies.
     { "path": "./packages/code-studio" },
     { "path": "./packages/embed-widget" },
-    { "path": "./packages/jsapi-nodejs" }
+    { "path": "./packages/jsapi-nodejs" },
+    { "path": "./packages/playwright-grid" }
   ]
 }
