@@ -10,8 +10,10 @@ import {
 import {
   logResults,
   scrollGrid,
+  scrollGridHorizontal,
   startFPSMeasurement,
   stopFPSMeasurement,
+  verifyHorizontalScrollRange,
 } from './utils';
 
 /**
@@ -44,6 +46,16 @@ const HUGE_TEXT_REPEAT = 200;
 const MIN_VARIABLE_TEXT_LENGTH = 24;
 
 /**
+ * Filler columns exist only to make the table wider than the viewport. Every
+ * cell is longer than the max column width, so each one is auto sized to 600px
+ * and the table ends up ~18,000px wide.
+ */
+const FILLER_COLUMN_COUNT = 30;
+
+/** Horizontal distance the horizontal scroll benchmarks travel each way */
+const HORIZONTAL_SCROLL_DISTANCE = 6000;
+
+/**
  * Locates the most recently opened grid if multiple exist
  */
 function getGrid(page: Page): Locator {
@@ -65,17 +77,25 @@ function makeLongStringTableCommand(
   textRepeat: number
 ): string {
   const textName = `${tableName}_text`;
+  const fillerName = `${tableName}_filler`;
+
+  const fillerColumns = Array.from(
+    { length: FILLER_COLUMN_COUNT },
+    (_, i) => `    "Filler${i} = ${fillerName} + i",`
+  ).join('\n');
 
   // `Repeated` hits the text width cache on every row, `Unique` and `Variable`
   // miss it, and `Variable` also varies the truncation point row to row
   return `from deephaven import empty_table
 ${textName} = "${LOREM}" * ${textRepeat}
+${fillerName} = "${LOREM}"
 ${tableName} = empty_table(${rowCount}).update_view([
     "Index = i",
     "Short = \`Row \` + i",
     "Repeated = ${textName}",
     "Unique = ${textName} + i",
     "Variable = ${textName}.substring(0, ${MIN_VARIABLE_TEXT_LENGTH} + (i % (${textName}.length() - ${MIN_VARIABLE_TEXT_LENGTH})))",
+${fillerColumns}
 ])`;
 }
 
@@ -201,23 +221,15 @@ test.describe('grid scroll performance benchmarks', () => {
     });
 
     test('horizontal scroll performance - long strings', async ({ page }) => {
-      const box = await getGrid(page).boundingBox();
-      if (!box) throw new Error('Grid not found');
-
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      const grid = getGrid(page);
+      await verifyHorizontalScrollRange(page, grid, HORIZONTAL_SCROLL_DISTANCE);
 
       await startFPSMeasurement(page);
 
-      // Long string columns are wide, so horizontal scrolling changes which
-      // part of each cell is truncated on every frame
-      for (let i = 0; i < 20; i += 1) {
-        await page.mouse.wheel(600, 0);
-        await page.waitForTimeout(16);
-      }
-      for (let i = 0; i < 20; i += 1) {
-        await page.mouse.wheel(-600, 0);
-        await page.waitForTimeout(16);
-      }
+      // Columns are wider than the viewport, so horizontal scrolling changes
+      // which part of each cell is truncated on every frame
+      await scrollGridHorizontal(page, grid, HORIZONTAL_SCROLL_DISTANCE);
+      await scrollGridHorizontal(page, grid, -HORIZONTAL_SCROLL_DISTANCE);
 
       const result = await stopFPSMeasurement(page);
       logResults('Long Strings Horizontal Scroll', result, { minFps: 24 });
@@ -260,21 +272,13 @@ test.describe('grid scroll performance benchmarks', () => {
     });
 
     test('horizontal scroll performance - huge strings', async ({ page }) => {
-      const box = await getGrid(page).boundingBox();
-      if (!box) throw new Error('Grid not found');
-
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      const grid = getGrid(page);
+      await verifyHorizontalScrollRange(page, grid, HORIZONTAL_SCROLL_DISTANCE);
 
       await startFPSMeasurement(page);
 
-      for (let i = 0; i < 20; i += 1) {
-        await page.mouse.wheel(600, 0);
-        await page.waitForTimeout(16);
-      }
-      for (let i = 0; i < 20; i += 1) {
-        await page.mouse.wheel(-600, 0);
-        await page.waitForTimeout(16);
-      }
+      await scrollGridHorizontal(page, grid, HORIZONTAL_SCROLL_DISTANCE);
+      await scrollGridHorizontal(page, grid, -HORIZONTAL_SCROLL_DISTANCE);
 
       const result = await stopFPSMeasurement(page);
       logResults('Huge Strings Horizontal Scroll', result, { minFps: 20 });
