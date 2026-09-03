@@ -113,4 +113,40 @@ describe('TableView', () => {
 
     expect(onViewportChange).toHaveBeenLastCalledWith(9, 9);
   });
+
+  // Regression: when the row height Spectrum actually lays out differs from
+  // the density/scale constant TableView uses for its viewport math, the
+  // reported range at max scroll collapsed to a single row, causing consumers
+  // to load only the last item and render blank placeholders above it.
+  it('reports a full viewport range at max scroll when the rendered row height differs from the constant', () => {
+    const onViewportChange = jest.fn();
+    const itemCount = 100;
+    renderTable({ itemCount, offset: 0, onViewportChange });
+    onViewportChange.mockClear();
+
+    const scrollElement = screen.getByRole('grid').lastElementChild;
+    expect(scrollElement).toBeInstanceOf(HTMLElement);
+
+    const actualRowHeight = 41;
+    const visibleRows = 10;
+    const clientHeight = actualRowHeight * visibleRows;
+    const scrollHeight = actualRowHeight * itemCount;
+    const scrollTop = scrollHeight - clientHeight;
+
+    Object.defineProperties(scrollElement, {
+      clientHeight: { configurable: true, value: clientHeight },
+      scrollHeight: { configurable: true, value: scrollHeight },
+      scrollTop: { configurable: true, value: scrollTop },
+    });
+
+    fireEvent.scroll(scrollElement as Element);
+
+    const lastCall = onViewportChange.mock.lastCall as
+      | [number, number]
+      | undefined;
+    expect(lastCall).toBeDefined();
+    const [top, bottom] = lastCall as [number, number];
+    expect(bottom).toBe(itemCount - 1);
+    expect(top).toBeLessThanOrEqual(itemCount - visibleRows);
+  });
 });
