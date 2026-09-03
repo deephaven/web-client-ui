@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop -- benchmark input must be sequential */
 import { test } from '@playwright/test';
 import {
   logResults,

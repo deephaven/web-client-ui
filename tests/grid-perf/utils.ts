@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop -- benchmark input must be sequential */
 import { type Locator, type Page } from '@playwright/test';
 
 export interface FPSResult {
