@@ -2675,11 +2675,7 @@ export class GridRenderer {
         const { lastLeft, columnCount } = metrics;
 
         const mergedRanges = isTickRangeSelection(state.selection)
-          ? GridUtils.mergeSortedRanges(
-              [...state.selection.getColumnTickRanges()].sort(
-                GridUtils.compareRanges
-              )
-            )
+          ? state.selection.getColumnTickRanges()
           : [];
 
         const getTickX = (index: number): number => {
@@ -2792,11 +2788,7 @@ export class GridRenderer {
         context.fillStyle = scrollBarSelectionTickColor;
 
         const mergedRanges = isTickRangeSelection(state.selection)
-          ? GridUtils.mergeSortedRanges(
-              [...state.selection.getRowTickRanges()].sort(
-                GridUtils.compareRanges
-              )
-            )
+          ? state.selection.getRowTickRanges()
           : [];
 
         for (let i = 0; i < mergedRanges.length; i += 1) {

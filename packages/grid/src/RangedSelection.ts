@@ -5,6 +5,7 @@ import GridRange, {
 } from './GridRange';
 import type { VisibleIndex } from './GridMetrics';
 import { type BoundedAxisRange } from './GridAxisRange';
+import GridUtils from './GridUtils';
 import type {
   CommitGestureOptions,
   GestureExtendOptions,
@@ -122,26 +123,40 @@ export class RangedSelection implements Selection, TickRangeSelection {
   }
 
   getColumnTickRanges(): readonly BoundedAxisRange[] {
-    const result: BoundedAxisRange[] = [];
+    if (this.cachedColumnTickRanges !== undefined) {
+      return this.cachedColumnTickRanges;
+    }
+    const raw: BoundedAxisRange[] = [];
     for (let i = 0; i < this.ranges.length; i += 1) {
       const { startColumn, endColumn } = this.ranges[i];
       if (startColumn != null && endColumn != null) {
-        result.push([startColumn, endColumn]);
+        raw.push([startColumn, endColumn]);
       }
     }
-    return result;
+    raw.sort(GridUtils.compareRanges);
+    this.cachedColumnTickRanges = GridUtils.mergeSortedRanges(raw);
+    return this.cachedColumnTickRanges;
   }
 
   getRowTickRanges(): readonly BoundedAxisRange[] {
-    const result: BoundedAxisRange[] = [];
+    if (this.cachedRowTickRanges !== undefined) {
+      return this.cachedRowTickRanges;
+    }
+    const raw: BoundedAxisRange[] = [];
     for (let i = 0; i < this.ranges.length; i += 1) {
       const { startRow, endRow } = this.ranges[i];
       if (startRow != null && endRow != null) {
-        result.push([startRow, endRow]);
+        raw.push([startRow, endRow]);
       }
     }
-    return result;
+    raw.sort(GridUtils.compareRanges);
+    this.cachedRowTickRanges = GridUtils.mergeSortedRanges(raw);
+    return this.cachedRowTickRanges;
   }
+
+  private cachedColumnTickRanges: readonly BoundedAxisRange[] | undefined;
+
+  private cachedRowTickRanges: readonly BoundedAxisRange[] | undefined;
 
   withCommittedRanges(
     ranges: readonly GridRange[],

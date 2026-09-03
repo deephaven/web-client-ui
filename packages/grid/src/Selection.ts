@@ -49,12 +49,19 @@ export interface SelectionQueries {
 
 /**
  * Optional capability implemented by selections that can project onto
- * scrollbar tick marks.
+ * scrollbar tick marks. Ranges are returned sorted by start and merged so
+ * consumers can iterate directly without re-normalizing per frame.
  */
 export interface TickRangeSelection {
-  /** Column `[start, end]` pairs for scrollbar tick rendering. */
+  /**
+   * Sorted, non-overlapping column `[start, end]` pairs for scrollbar tick
+   * rendering.
+   */
   getColumnTickRanges: () => readonly BoundedAxisRange[];
-  /** Row `[start, end]` pairs for scrollbar tick rendering. */
+  /**
+   * Sorted, non-overlapping row `[start, end]` pairs for scrollbar tick
+   * rendering.
+   */
   getRowTickRanges: () => readonly BoundedAxisRange[];
 }
 
