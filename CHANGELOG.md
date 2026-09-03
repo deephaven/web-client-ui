@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.1](https://github.com/deephaven/web-client-ui/compare/v1.28.0...v1.28.1) (2026-09-03)
+
+### Bug Fixes
+
+- DH-23551: Fix TableView blank rows for windowed data ([#2750](https://github.com/deephaven/web-client-ui/issues/2750)) ([a8a4ae9](https://github.com/deephaven/web-client-ui/commit/a8a4ae96b02b7bf5298436d34dac6c421bb03706))
+
 ## [1.28.0](https://github.com/deephaven/web-client-ui/compare/v1.27.5...v1.28.0) (2026-08-27)
 
 ### Features
