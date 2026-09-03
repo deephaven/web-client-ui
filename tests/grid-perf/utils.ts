@@ -1,5 +1,8 @@
 /* eslint-disable no-await-in-loop -- benchmark input must be sequential */
-import { type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
+
+/** Wheel delta applied per horizontal scroll step */
+export const HORIZONTAL_SCROLL_STEP = 400;
 
 export interface FPSResult {
   fps: number;
@@ -104,6 +107,90 @@ export async function scrollGrid(
     // Small delay to allow rendering
     await page.waitForTimeout(16);
   }
+}
+
+/**
+ * Scrolls the given element horizontally using mouse wheel events
+ */
+export async function scrollGridHorizontal(
+  page: Page,
+  grid: Locator,
+  totalDelta: number
+): Promise<void> {
+  const box = await grid.boundingBox();
+  if (!box) throw new Error('Grid not found');
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+
+  const direction = Math.sign(totalDelta);
+  let remaining = Math.abs(totalDelta);
+
+  while (remaining > 0) {
+    const step = Math.min(HORIZONTAL_SCROLL_STEP, remaining);
+    await page.mouse.wheel(step * direction, 0);
+    remaining -= step;
+    // Small delay to allow rendering
+    await page.waitForTimeout(16);
+  }
+}
+
+/**
+ * Hashes a strip of the grid canvas covering the column headers and first rows.
+ * The grid draws to a single canvas, so this is the only way to observe that
+ * what is rendered actually changed.
+ */
+export async function getGridSignature(grid: Locator): Promise<string> {
+  return grid
+    .locator('canvas')
+    .first()
+    .evaluate((canvas: HTMLCanvasElement) => {
+      const context = canvas.getContext('2d');
+      if (context == null) throw new Error('Grid canvas has no 2d context');
+
+      const { data } = context.getImageData(
+        0,
+        0,
+        canvas.width,
+        Math.min(canvas.height, 200)
+      );
+
+      let hash = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        hash = (Math.imul(hash, 31) + data[i]) | 0;
+      }
+      return String(hash);
+    });
+}
+
+/**
+ * Asserts the grid can scroll horizontally by `distance` without running out of
+ * range, then returns it to the left edge. A benchmark that scrolls past the
+ * right edge measures an idle grid instead of rendering work.
+ */
+export async function verifyHorizontalScrollRange(
+  page: Page,
+  grid: Locator,
+  distance: number
+): Promise<void> {
+  const start = await getGridSignature(grid);
+
+  await scrollGridHorizontal(page, grid, distance - HORIZONTAL_SCROLL_STEP);
+  await expect
+    .poll(() => getGridSignature(grid), {
+      message: 'Grid did not scroll horizontally',
+    })
+    .not.toBe(start);
+
+  const nearEnd = await getGridSignature(grid);
+  await scrollGridHorizontal(page, grid, HORIZONTAL_SCROLL_STEP);
+  await expect
+    .poll(() => getGridSignature(grid), {
+      message: `Grid has less than ${distance}px of horizontal scroll range`,
+    })
+    .not.toBe(nearEnd);
+
+  // Overscroll so the grid clamps back to the left edge
+  await scrollGridHorizontal(page, grid, -distance * 2);
 }
 
 export function logResults(
