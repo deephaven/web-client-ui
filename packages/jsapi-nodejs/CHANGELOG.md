@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.0](https://github.com/deephaven/web-client-ui/compare/v1.27.5...v1.28.0) (2026-08-27)
+
+### Features
+
+- DH-23468: Expose http2 config from factory ([2446346](https://github.com/deephaven/web-client-ui/commit/2446346354ef584c1e6df83311da3fe61ce3372b))
+
 ## [1.15.0](https://github.com/deephaven/web-client-ui/compare/v1.14.0...v1.15.0) (2026-02-25)
 
 ### Features

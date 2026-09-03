@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.0](https://github.com/deephaven/web-client-ui/compare/v1.27.5...v1.28.0) (2026-08-27)
+
+**Note:** Version bump only for package @deephaven/console
+
 ## [1.27.3](https://github.com/deephaven/web-client-ui/compare/v1.27.2...v1.27.3) (2026-08-12)
 
 ### Bug Fixes

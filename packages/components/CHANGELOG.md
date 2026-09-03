@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.0](https://github.com/deephaven/web-client-ui/compare/v1.27.5...v1.28.0) (2026-08-27)
+
+### Features
+
+- DH-23429: Create Deephaven TableView wrapper ([#2735](https://github.com/deephaven/web-client-ui/issues/2735)) ([871f548](https://github.com/deephaven/web-client-ui/commit/871f5488feda9569cf7d56e45b915dfdf0e0d827))
+
+### Bug Fixes
+
+- DH-23083: Use fg color for ErrorView text color for better contrast ([#2745](https://github.com/deephaven/web-client-ui/issues/2745)) ([2d487d1](https://github.com/deephaven/web-client-ui/commit/2d487d1b57d6c303926531c8e94c5771213a0a11))
+
 ## [1.27.2](https://github.com/deephaven/web-client-ui/compare/v1.27.1...v1.27.2) (2026-08-12)
 
 ### Bug Fixes

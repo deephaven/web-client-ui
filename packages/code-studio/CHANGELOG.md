@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.0](https://github.com/deephaven/web-client-ui/compare/v1.27.5...v1.28.0) (2026-08-27)
+
+### Features
+
+- DH-23429: Create Deephaven TableView wrapper ([#2735](https://github.com/deephaven/web-client-ui/issues/2735)) ([871f548](https://github.com/deephaven/web-client-ui/commit/871f5488feda9569cf7d56e45b915dfdf0e0d827))
+
 ## [1.27.5](https://github.com/deephaven/web-client-ui/compare/v1.27.4...v1.27.5) (2026-08-26)
 
 **Note:** Version bump only for package @deephaven/code-studio
