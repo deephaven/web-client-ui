@@ -1,5 +1,6 @@
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
+import Log from '@deephaven/log';
 import {
   DEFAULT_WORKER_KEY,
   createWorkerVariablesStore,
@@ -239,6 +240,75 @@ describe('createWorkerVariablesStore', () => {
     await flushPromises();
     expect(listener).not.toHaveBeenCalled();
     expect(store.snapshot('w1')).toBeNull();
+  });
+
+  it('treats a connection lacking subscribeToFieldUpdates as an unresolved (null) worker', async () => {
+    // Legacy Enterprise connections predate Core's field-updates API, so they
+    // expose no `subscribeToFieldUpdates`. The store must leave the snapshot
+    // null without throwing or logging the "Failed to resolve worker
+    // connection" error the missing method would otherwise trigger.
+    const errorSpy = jest
+      .spyOn(Log.module('@deephaven/jsapi-utils.WorkerVariablesStore'), 'error')
+      .mockImplementation(() => undefined);
+    const connection = { close: jest.fn() } as unknown as dh.IdeConnection;
+    const store = createWorkerVariablesStore(async () => connection);
+    const listener = jest.fn();
+    store.subscribe('s:legacy', listener);
+    await flushPromises();
+    expect(errorSpy).not.toHaveBeenCalled();
+    // No delta is ever produced, so listeners are not notified.
+    expect(listener).not.toHaveBeenCalled();
+    expect(store.snapshot('s:legacy')).toBeNull();
+    errorSpy.mockRestore();
+  });
+
+  describe('legacy worker without subscribeToFieldUpdates', () => {
+    // Legacy Enterprise connections predate Core's field-updates API. These
+    // document that the store leaves them unresolved (snapshot null) rather
+    // than erroring, while still participating in the normal
+    // resolve/invalidate/teardown lifecycle.
+    const makeLegacyConnection = (): dh.IdeConnection =>
+      ({ close: jest.fn() }) as unknown as dh.IdeConnection;
+
+    it('resolves the connection only once as more listeners subscribe', async () => {
+      const resolveConnection = jest.fn(async () => makeLegacyConnection());
+      const store = createWorkerVariablesStore(resolveConnection);
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      // The no-op teardown installed for a legacy worker short-circuits
+      // `start`, so extra listeners don't trigger a fresh resolve.
+      store.subscribe('s:legacy', jest.fn());
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(resolveConnection).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-resolves on invalidate and stays null', async () => {
+      const resolveConnection = jest.fn(async () => makeLegacyConnection());
+      const store = createWorkerVariablesStore(resolveConnection);
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(store.snapshot('s:legacy')).toBeNull();
+
+      store.invalidate('s:legacy');
+      await flushPromises();
+      expect(resolveConnection).toHaveBeenCalledTimes(2);
+      expect(store.snapshot('s:legacy')).toBeNull();
+    });
+
+    it('tears down on last unsubscribe and re-resolves on the next subscribe', async () => {
+      const resolveConnection = jest.fn(async () => makeLegacyConnection());
+      const store = createWorkerVariablesStore(resolveConnection);
+      const off = store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(store.snapshot('s:legacy')).toBeNull();
+
+      off();
+      store.subscribe('s:legacy', jest.fn());
+      await flushPromises();
+      expect(resolveConnection).toHaveBeenCalledTimes(2);
+      expect(store.snapshot('s:legacy')).toBeNull();
+    });
   });
 
   it('isolates a throwing listener so other listeners still run', async () => {

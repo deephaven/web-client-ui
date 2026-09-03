@@ -183,6 +183,14 @@ export function createWorkerVariablesStore(
         log.debug('No connection available for worker', key);
         return;
       }
+      // Legacy Enterprise connections predate Core's field-updates API. Leave
+      // the snapshot null and install a no-op teardown so we neither throw on
+      // the missing method nor re-resolve on every new listener.
+      if (typeof connection.subscribeToFieldUpdates !== 'function') {
+        log.debug('Connection has no field-updates support', key);
+        entry.unsubscribeFieldUpdates = () => undefined;
+        return;
+      }
       // entry.list is replaced with a fresh array each delta so snapshot
       // identity is stable for `useSyncExternalStore` consumers.
       const unsubscribe = connection.subscribeToFieldUpdates(changes => {
