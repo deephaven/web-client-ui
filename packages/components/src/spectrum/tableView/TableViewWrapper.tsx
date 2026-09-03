@@ -58,13 +58,18 @@ export function TableViewWrapper<T>(
       ) {
         return;
       }
+      // Prefer the row height Spectrum actually laid out over the density/scale
+      // constant: at max scroll the constant under-estimates the true row
+      // height and collapses the reported range to the final row.
+      const effectiveRowHeight =
+        element.scrollHeight > 0 ? element.scrollHeight / itemCount : rowHeight;
       const top = Math.min(
         itemCount - 1,
-        Math.max(0, Math.floor(element.scrollTop / rowHeight))
+        Math.max(0, Math.floor(element.scrollTop / effectiveRowHeight))
       );
       const visibleRowCount = Math.max(
         1,
-        Math.ceil(element.clientHeight / rowHeight)
+        Math.ceil(element.clientHeight / effectiveRowHeight)
       );
       const bottom = Math.max(
         top,
