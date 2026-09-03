@@ -58,6 +58,19 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.DEEPHAVENINTERNAL_PUBLIC_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/deephaven/deephaven-core/actions/workflows/update-web.yml/dispatches --data '{"ref": "main"}'
+      - name: Parse related issues
+        # Shared by the enterprise dispatch and the Jira ticket steps below
+        id: related-issues
+        if: ${{ github.event_name == 'release' }}
+        env:
+          RELEASE_NOTES: ${{ github.event.release.body }}
+        run: |
+          set -euo pipefail
+          ISSUES=$( { printf '%s' "$RELEASE_NOTES" | grep -oE 'DH-[0-9]+' || true; } | sort -u)
+          {
+            echo "json=$(printf '%s' "$ISSUES" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
+            echo "list=$(printf '%s' "$ISSUES" | paste -sd ',' - | sed 's/,/, /g')"
+          } >> "$GITHUB_OUTPUT"
       - name: Create Jira release ticket
         # Posts to a Jira Automation "Incoming webhook" rule that creates the
         # "Update web version on G+" task and links the DH- issues in the notes
@@ -67,6 +80,7 @@ jobs:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
           RELEASE_URL: ${{ github.event.release.html_url }}
           RELEASE_NOTES: ${{ github.event.release.body }}
+          RELATED_ISSUES: ${{ steps.related-issues.outputs.json }}
           # Names the thing being updated in the ticket summary
           JIRA_COMPONENT: 'web'
           # Bump when the target enterprise release changes
@@ -77,8 +91,6 @@ jobs:
           set -euo pipefail
           NOTES_WIKI=$(printf '%s' "$RELEASE_NOTES" \
             | sed -E 's/^#### /h4. /; s/^### /h3. /; s/^## /h2. /; s/^- /* /; s/\[([^]]*)\]\(([^)]*)\)/[\1|\2]/g; s/\*\*([^*]+)\*\*/*\1*/g')
-          RELATED_ISSUES=$( { printf '%s' "$RELEASE_NOTES" | grep -oE 'DH-[0-9]+' || true; } \
-            | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
           jq -n \
             --arg component "$JIRA_COMPONENT" \
             --arg version "$RELEASE_VERSION" \
@@ -91,3 +103,25 @@ jobs:
               -H 'Content-Type: application/json' \
               -H "X-Automation-Webhook-Token: $JIRA_WEBHOOK_SECRET" \
               --data @- "$JIRA_WEBHOOK_URL"
+      - name: Update enterprise
+        if: ${{ github.event_name == 'release' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+          RELATED_ISSUES: ${{ steps.related-issues.outputs.list }}
+          # Branch the enterprise PR is branched off of and targets
+          ENTERPRISE_REF: 'rc/gplus'
+          # Placeholder for the "Update web version on G+" ticket, filled in manually on the PR
+          ENTERPRISE_TICKET: 'DH-XXXXX'
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg ref "$ENTERPRISE_REF" \
+            --arg ticket "${ENTERPRISE_TICKET}${RELATED_ISSUES:+, $RELATED_ISSUES}" \
+            --arg version "${RELEASE_VERSION#v}" \
+            '{ref: $ref, inputs: {ticket: $ticket, version: $version}}' \
+          | curl -fsS -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.DEEPHAVENINTERNAL_PUBLIC_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            --data @- \
+            https://api.github.com/repos/deephaven-ent/iris/actions/workflows/update-web-packages.yml/dispatches
