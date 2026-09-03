@@ -36,15 +36,23 @@ export function GridA11yFallback({
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [renderState, setRenderState] = useState<GridRenderState | null>(null);
 
-  useEffect(() => registerDrawListener(setRenderState), [registerDrawListener]);
+  // Only follow the grid while the snapshot is shown, so a grid nobody is
+  // inspecting does no extra work per draw
+  useEffect(() => {
+    if (!showSnapshot) {
+      setRenderState(null);
+      return undefined;
+    }
+    return registerDrawListener(setRenderState);
+  }, [registerDrawListener, showSnapshot]);
 
   const snapshot = useMemo(() => {
-    if (!showSnapshot || renderState == null) {
+    if (renderState == null) {
       return null;
     }
     const { model, metrics, selectedRanges } = renderState;
     return createGridA11ySnapshot(model, metrics, selectedRanges);
-  }, [renderState, showSnapshot]);
+  }, [renderState]);
 
   return (
     <>

@@ -7,20 +7,32 @@ const COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 20;
 const HEADER_HEIGHT = 30;
 const ROW_HEADER_WIDTH = 30;
-const MAX_X = 400;
+const MAX_X = 600;
+const MAX_Y = 200;
 
 /**
  * Make metrics for a viewport of the given size, laid out left to right and
- * top to bottom. Any column in `hiddenColumns` is collapsed to zero width.
- * Floating columns are pinned to the edges of the grid, so their coordinates
- * take priority over any scrollable coordinates for the same column.
+ * top to bottom. Any column in `hiddenColumns` is collapsed to zero width, and
+ * any row in `hiddenRows` to zero height.
+ * Floating columns and rows are pinned to the edges of the grid, so their
+ * coordinates take priority over any scrollable coordinates for the same
+ * column or row. Scrollable items start after the frozen panes, as if the grid
+ * were scrolled so nothing is hidden underneath them, until `leftOffset` or
+ * `topOffset` scrolls them back under.
  */
 function makeMetrics({
   columns = [0, 1, 2],
   rows = [0, 1],
   hiddenColumns = [] as number[],
+  hiddenRows = [] as number[],
   floatingLeftColumns = [] as number[],
   floatingRightColumns = [] as number[],
+  floatingTopRows = [] as number[],
+  floatingBottomRows = [] as number[],
+  leftOffset = 0,
+  topOffset = 0,
+  verticalBarWidth = 0,
+  horizontalBarHeight = 0,
 } = {}): GridMetrics {
   const allColumnWidths = new Map<number, number>();
   const allColumnXs = new Map<number, number>();
@@ -32,8 +44,12 @@ function makeMetrics({
     allColumnXs.set(column, columnX);
     modelColumns.set(column, column);
   };
+  const sumWidths = (items: number[]): number =>
+    items.reduce((total, column) => total + widthOf(column), 0);
+  const floatingLeftWidth = sumWidths(floatingLeftColumns);
+  const floatingRightWidth = sumWidths(floatingRightColumns);
 
-  let x = 0;
+  let x = floatingLeftWidth - leftOffset;
   columns.forEach(column => {
     setColumn(column, x);
     x += widthOf(column);
@@ -54,16 +70,41 @@ function makeMetrics({
   const allRowHeights = new Map<number, number>();
   const allRowYs = new Map<number, number>();
   const modelRows = new Map<number, number>();
-  rows.forEach((row, index) => {
-    allRowHeights.set(row, ROW_HEIGHT);
-    allRowYs.set(row, index * ROW_HEIGHT);
+  const heightOf = (row: number): number =>
+    hiddenRows.includes(row) ? 0 : ROW_HEIGHT;
+  const setRow = (row: number, rowY: number): void => {
+    allRowHeights.set(row, heightOf(row));
+    allRowYs.set(row, rowY);
     modelRows.set(row, row);
+  };
+  const sumHeights = (items: number[]): number =>
+    items.reduce((total, row) => total + heightOf(row), 0);
+  const floatingTopHeight = sumHeights(floatingTopRows);
+  const floatingBottomHeight = sumHeights(floatingBottomRows);
+
+  let y = floatingTopHeight - topOffset;
+  rows.forEach(row => {
+    setRow(row, y);
+    y += heightOf(row);
+  });
+
+  y = 0;
+  floatingTopRows.forEach(row => {
+    setRow(row, y);
+    y += heightOf(row);
+  });
+
+  y = MAX_Y;
+  [...floatingBottomRows].reverse().forEach(row => {
+    y -= heightOf(row);
+    setRow(row, y);
   });
 
   return {
     visibleColumns: columns,
     visibleRows: rows,
     floatingColumns: [...floatingLeftColumns, ...floatingRightColumns],
+    floatingRows: [...floatingTopRows, ...floatingBottomRows],
     allColumnWidths,
     allColumnXs,
     allRowHeights,
@@ -73,6 +114,14 @@ function makeMetrics({
     gridX: ROW_HEADER_WIDTH,
     gridY: HEADER_HEIGHT,
     columnHeaderHeight: HEADER_HEIGHT,
+    width: ROW_HEADER_WIDTH + MAX_X,
+    height: HEADER_HEIGHT + MAX_Y,
+    verticalBarWidth,
+    horizontalBarHeight,
+    floatingLeftWidth,
+    floatingRightWidth,
+    floatingTopHeight,
+    floatingBottomHeight,
     topVisible: rows[0],
     bottomVisible: rows[rows.length - 1],
   } as unknown as GridMetrics;
@@ -281,6 +330,197 @@ describe('createGridA11ySnapshot', () => {
       '3,0',
       '5,0',
       '9,0',
+    ]);
+  });
+
+  it('includes floating rows in top to bottom order', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingTopRowCount: 1,
+      floatingBottomRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        rows: [3, 4],
+        floatingTopRows: [0],
+        floatingBottomRows: [99],
+      })
+    );
+
+    expect(snapshot.rows.map(({ row }) => row)).toEqual([0, 3, 4, 99]);
+    expect(snapshot.rows[3].cells.map(({ text }) => text)).toEqual([
+      '0,99',
+      '1,99',
+      '2,99',
+    ]);
+  });
+
+  it('positions floating rows where they are pinned', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingTopRowCount: 1,
+      floatingBottomRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        rows: [3, 4],
+        floatingTopRows: [0],
+        floatingBottomRows: [99],
+      })
+    );
+
+    expect(snapshot.rows[0].cells[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: HEADER_HEIGHT,
+      width: COLUMN_WIDTH,
+      height: ROW_HEIGHT,
+    });
+    expect(snapshot.rows[3].cells[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: HEADER_HEIGHT + MAX_Y - ROW_HEIGHT,
+      width: COLUMN_WIDTH,
+      height: ROW_HEIGHT,
+    });
+  });
+
+  it('describes a floating row once when it is also scrolled into view', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingTopRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ rows: [0, 1], floatingTopRows: [0] })
+    );
+
+    expect(snapshot.rows.map(({ row }) => row)).toEqual([0, 1]);
+  });
+
+  it('leaves out rows that are collapsed to nothing on screen', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingTopRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        rows: [3, 4, 5],
+        floatingTopRows: [0],
+        hiddenRows: [0, 4],
+      })
+    );
+
+    expect(snapshot.rows.map(({ row }) => row)).toEqual([3, 5]);
+  });
+
+  it('clips cells and headers that run past the edges of the canvas', () => {
+    const model = new MockGridModel({ rowCount: 100, columnCount: 10 });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columns: [0, 1, 2, 3, 4, 5, 6], leftOffset: 50 })
+    );
+
+    expect(snapshot.columns[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: 0,
+      width: COLUMN_WIDTH / 2,
+      height: HEADER_HEIGHT,
+    });
+    expect(snapshot.columns[6].rect).toEqual({
+      x: ROW_HEADER_WIDTH + MAX_X - COLUMN_WIDTH / 2,
+      y: 0,
+      width: COLUMN_WIDTH / 2,
+      height: HEADER_HEIGHT,
+    });
+  });
+
+  it('clips cells that run under the scroll bars', () => {
+    const model = new MockGridModel({ rowCount: 100, columnCount: 10 });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [0, 1, 2, 3, 4, 5],
+        verticalBarWidth: COLUMN_WIDTH / 2,
+        horizontalBarHeight: ROW_HEIGHT,
+      })
+    );
+
+    const [lastCell] = snapshot.rows[0].cells.slice(-1);
+    expect(lastCell.column).toBe(5);
+    expect(lastCell.rect.width).toBe(COLUMN_WIDTH / 2);
+    // The scroll bars only cover the grid content, not the headers
+    expect(snapshot.columns[5].rect.width).toBe(COLUMN_WIDTH);
+  });
+
+  it('omits cells scrolled underneath the floating columns', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [3, 4, 5],
+        floatingLeftColumns: [0],
+        leftOffset: COLUMN_WIDTH,
+      })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([0, 4, 5]);
+    expect(snapshot.rows[0].cells.map(({ text }) => text)).toEqual([
+      '0,0',
+      '4,0',
+      '5,0',
+    ]);
+  });
+
+  it('clips cells partly scrolled underneath the floating columns', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 10,
+      floatingLeftColumnCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [3, 4, 5],
+        floatingLeftColumns: [0],
+        leftOffset: COLUMN_WIDTH / 2,
+      })
+    );
+
+    expect(snapshot.rows[0].cells[1]).toMatchObject({
+      text: '3,0',
+      rect: {
+        x: ROW_HEADER_WIDTH + COLUMN_WIDTH,
+        width: COLUMN_WIDTH / 2,
+      },
+    });
+  });
+
+  it('omits rows scrolled underneath the floating rows', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingBottomRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        rows: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        floatingBottomRows: [99],
+      })
+    );
+
+    expect(snapshot.rows.map(({ row }) => row)).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 99,
     ]);
   });
 

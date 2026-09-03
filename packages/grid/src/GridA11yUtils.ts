@@ -93,36 +93,34 @@ export function formatGridA11yRect({
 }
 
 /**
- * Get the bounds of a cell, relative to the top left of the canvas.
- * @param metrics Metrics of the last render
- * @param column Visible column index of the cell
- * @param row Visible row index of the cell
- * @returns The bounds of the cell, or null if it is not in the viewport
+ * The area an item may be painted in, relative to the top left of the grid
+ * content area.
  */
-function getCellRect(
-  metrics: GridMetrics,
-  column: VisibleIndex,
-  row: VisibleIndex
-): GridA11yRect | null {
-  const x = metrics.allColumnXs.get(column);
-  const y = metrics.allRowYs.get(row);
-  const width = metrics.allColumnWidths.get(column);
-  const height = metrics.allRowHeights.get(row);
-  if (x == null || y == null || width == null || height == null) {
-    return null;
-  }
+type GridA11yBounds = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
 
-  // Cells at the start of the viewport may be scrolled such that their
-  // coordinates begin before the grid content area (e.g. `-leftOffset` or
-  // `-topOffset`), which would place their bounds behind the row/column
-  // headers. Clip the rect to the grid content area so that the reported
-  // bounds (and their centre) always land within the interactable grid.
-  const clippedX = Math.max(x, 0);
-  const clippedY = Math.max(y, 0);
-  const clippedWidth = width - (clippedX - x);
-  const clippedHeight = height - (clippedY - y);
+/**
+ * Clip a rect to the bounds it is painted in and move it onto the canvas.
+ * @param rect The rect, relative to the top left of the grid content area
+ * @param bounds The bounds the rect is painted in
+ * @param metrics Metrics of the last render
+ * @returns The visible part of the rect relative to the top left of the
+ * canvas, or null if none of it can be interacted with
+ */
+function clipGridA11yRect(
+  { x, y, width, height }: GridA11yRect,
+  { left, top, right, bottom }: GridA11yBounds,
+  metrics: GridMetrics
+): GridA11yRect | null {
+  const clippedX = Math.max(x, left);
+  const clippedY = Math.max(y, top);
+  const clippedWidth = Math.min(x + width, right) - clippedX;
+  const clippedHeight = Math.min(y + height, bottom) - clippedY;
   if (clippedWidth <= 0 || clippedHeight <= 0) {
-    // Cell is entirely obscured by the headers
     return null;
   }
 
@@ -135,28 +133,90 @@ function getCellRect(
 }
 
 /**
+ * Get the bounds of a cell, relative to the top left of the canvas.
+ * @param metrics Metrics of the last render
+ * @param column Visible column index of the cell
+ * @param row Visible row index of the cell
+ * @param isFloatingColumn Whether the column is frozen to the left or right
+ * @param isFloatingRow Whether the row is frozen to the top or bottom
+ * @returns The bounds of the cell, or null if none of it is interactable
+ */
+function getCellRect(
+  metrics: GridMetrics,
+  column: VisibleIndex,
+  row: VisibleIndex,
+  isFloatingColumn: boolean,
+  isFloatingRow: boolean
+): GridA11yRect | null {
+  const x = metrics.allColumnXs.get(column);
+  const y = metrics.allRowYs.get(row);
+  const width = metrics.allColumnWidths.get(column);
+  const height = metrics.allRowHeights.get(row);
+  if (x == null || y == null || width == null || height == null) {
+    return null;
+  }
+
+  const {
+    gridX,
+    gridY,
+    verticalBarWidth,
+    horizontalBarHeight,
+    floatingLeftWidth,
+    floatingRightWidth,
+    floatingTopHeight,
+    floatingBottomHeight,
+  } = metrics;
+
+  // Scrollable cells run under the headers, the frozen panes, and the scroll
+  // bars, all of which are painted over them and take the click instead
+  const right = metrics.width - gridX - verticalBarWidth;
+  const bottom = metrics.height - gridY - horizontalBarHeight;
+  return clipGridA11yRect(
+    { x, y, width, height },
+    {
+      left: isFloatingColumn ? 0 : floatingLeftWidth,
+      top: isFloatingRow ? 0 : floatingTopHeight,
+      right: isFloatingColumn ? right : right - floatingRightWidth,
+      bottom: isFloatingRow ? bottom : bottom - floatingBottomHeight,
+    },
+    metrics
+  );
+}
+
+/**
  * Get the bounds of a bottom level column header, relative to the top left of the canvas.
  * @param metrics Metrics of the last render
  * @param column Visible column index of the header
- * @returns The bounds of the header, or null if it is not in the viewport
+ * @param isFloatingColumn Whether the column is frozen to the left or right
+ * @returns The bounds of the header, or null if none of it is interactable
  */
 function getColumnHeaderRect(
   metrics: GridMetrics,
-  column: VisibleIndex
+  column: VisibleIndex,
+  isFloatingColumn: boolean
 ): GridA11yRect | null {
   const x = metrics.allColumnXs.get(column);
   const width = metrics.allColumnWidths.get(column);
   if (x == null || width == null) {
     return null;
   }
-  const { columnHeaderHeight } = metrics;
-  return {
-    x: metrics.gridX + x,
+
+  const { gridX, columnHeaderHeight, floatingLeftWidth, floatingRightWidth } =
+    metrics;
+
+  // Headers sit above the grid content, so the scroll bars never cover them
+  const right = metrics.width - gridX;
+  return clipGridA11yRect(
     // The bottom level header sits directly above the grid content
-    y: metrics.gridY - columnHeaderHeight,
-    width,
-    height: columnHeaderHeight,
-  };
+    { x, y: -columnHeaderHeight, width, height: columnHeaderHeight },
+    {
+      left: isFloatingColumn ? 0 : floatingLeftWidth,
+      top: -columnHeaderHeight,
+      right: isFloatingColumn ? right : right - floatingRightWidth,
+      bottom: 0,
+    },
+    metrics
+  );
 }
 
 /**
@@ -232,10 +292,14 @@ export function createGridA11ySnapshot(
   const isHiddenRow = (row: VisibleIndex): boolean =>
     (metrics.allRowHeights.get(row) ?? 0) <= 0;
 
+  const floatingColumns = new Set(metrics.floatingColumns);
+  const floatingRows = new Set(metrics.floatingRows);
+
   // Hidden columns and rows are collapsed to nothing on screen, so leave them
   // out rather than describing something the user cannot see
-  // Floating columns are pinned to the edges of the grid and can also appear in
-  // visibleColumns, so dedupe them and describe everything in left to right order
+  // Floating columns/rows are pinned to the edges of the grid and can also
+  // appear in the visible ranges, so dedupe them and describe everything in
+  // the order it appears on screen
   const snapshotColumns = [
     ...new Set([...metrics.floatingColumns, ...metrics.visibleColumns]),
   ]
@@ -245,9 +309,21 @@ export function createGridA11ySnapshot(
         (metrics.allColumnXs.get(a) ?? 0) - (metrics.allColumnXs.get(b) ?? 0)
     );
 
+  const snapshotRows = [
+    ...new Set([...metrics.floatingRows, ...metrics.visibleRows]),
+  ]
+    .filter(row => !isHiddenRow(row))
+    .sort(
+      (a, b) => (metrics.allRowYs.get(a) ?? 0) - (metrics.allRowYs.get(b) ?? 0)
+    );
+
   snapshotColumns.forEach(column => {
     const modelColumn = metrics.modelColumns.get(column);
-    const rect = getColumnHeaderRect(metrics, column);
+    const rect = getColumnHeaderRect(
+      metrics,
+      column,
+      floatingColumns.has(column)
+    );
     if (modelColumn == null || rect == null) {
       return;
     }
@@ -258,18 +334,22 @@ export function createGridA11ySnapshot(
     });
   });
 
-  metrics.visibleRows.forEach(row => {
-    if (isHiddenRow(row)) {
-      return;
-    }
+  snapshotRows.forEach(row => {
     const modelRow = metrics.modelRows.get(row);
     if (modelRow == null) {
       return;
     }
+    const isFloatingRow = floatingRows.has(row);
     const cells: GridA11yCellSnapshot[] = [];
     snapshotColumns.forEach(column => {
       const modelColumn = metrics.modelColumns.get(column);
-      const rect = getCellRect(metrics, column, row);
+      const rect = getCellRect(
+        metrics,
+        column,
+        row,
+        floatingColumns.has(column),
+        isFloatingRow
+      );
       if (modelColumn == null || rect == null) {
         return;
       }
@@ -279,7 +359,11 @@ export function createGridA11ySnapshot(
         rect,
       });
     });
-    rows.push({ row, cells });
+    // A row with nothing left after clipping is entirely covered by the frozen
+    // panes or the scroll bars
+    if (cells.length > 0) {
+      rows.push({ row, cells });
+    }
   });
 
   const { topVisible, bottomVisible } = metrics;
