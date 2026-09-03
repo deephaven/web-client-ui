@@ -228,6 +228,73 @@ describe('createGridA11ySnapshot', () => {
     );
   });
 
+  it('describes a single visible row', () => {
+    const model = new MockGridModel({ rowCount: 100, columnCount: 3 });
+    const snapshot = createGridA11ySnapshot(model, makeMetrics({ rows: [4] }));
+
+    expect(snapshot.description).toBe(
+      'Grid with 100 rows and 3 columns. Showing row 5, columns 0, 1, 2.'
+    );
+  });
+
+  it('describes an empty viewport', () => {
+    const model = new MockGridModel({ rowCount: 0, columnCount: 3 });
+    const snapshot = createGridA11ySnapshot(model, makeMetrics({ rows: [] }));
+
+    expect(snapshot.description).toBe(
+      'Grid with 0 rows and 3 columns. Showing no rows, columns 0, 1, 2.'
+    );
+  });
+
+  it('describes rows that are not contiguous as separate ranges', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingTopRowCount: 1,
+      floatingBottomRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        rows: [3, 4],
+        floatingTopRows: [0],
+        floatingBottomRows: [99],
+      })
+    );
+
+    expect(snapshot.description).toBe(
+      'Grid with 100 rows and 3 columns. Showing rows 1, 4 to 5, and 100, columns 0, 1, 2.'
+    );
+  });
+
+  it('joins two ranges of rows without a comma', () => {
+    const model = new MockGridModel({
+      rowCount: 100,
+      columnCount: 3,
+      floatingBottomRowCount: 1,
+    });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ rows: [3, 4], floatingBottomRows: [99] })
+    );
+
+    expect(snapshot.description).toBe(
+      'Grid with 100 rows and 3 columns. Showing rows 4 to 5 and 100, columns 0, 1, 2.'
+    );
+  });
+
+  it('leaves rows collapsed to nothing out of the description', () => {
+    const model = new MockGridModel({ rowCount: 100, columnCount: 3 });
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ rows: [0, 1, 2, 3], hiddenRows: [2] })
+    );
+
+    expect(snapshot.description).toBe(
+      'Grid with 100 rows and 3 columns. Showing rows 1 to 2 and 4, columns 0, 1, 2.'
+    );
+  });
+
   it('includes floating columns in left to right order', () => {
     const model = new MockGridModel({
       rowCount: 100,

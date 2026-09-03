@@ -12,6 +12,8 @@ The children of a `<canvas>` element are its fallback content: they are never pa
 Grid with 100 rows and 3 columns. 2 rows selected. Showing rows 1 to 20, columns x, y, z.
 ```
 
+Only rows that are actually painted are described. Rows collapsed to zero height or scrolled underneath a floating row are left out, and the remaining rows are grouped into consecutive ranges, so a grid with a pinned totals row reads `Showing rows 1 to 20 and 100`.
+
 Reconciling an element per cell on every frame would be far too slow for a grid nobody is inspecting, so the snapshot is off by default and nothing is described until it is turned on. While it is on, it is regenerated on every draw and tracks the viewport as the grid scrolls. The button reads "Describe the grid contents" when off and "Hide the grid contents" when on, carries `aria-pressed`, and is kept out of the tab order so sighted keyboard users are not sent to an element they cannot see.
 
 The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. Fallback content is never laid out, so native table semantics are the most reliable thing to hand a screen reader, and `<th scope="col">` associates each cell with its column for free. It is a `table` and not a `grid`, because `grid` promises cell-by-cell keyboard navigation that only the canvas implements. `aria-rowcount` and `aria-colcount` describe the whole grid, while the table only holds the viewport.

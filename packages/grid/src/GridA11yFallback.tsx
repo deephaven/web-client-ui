@@ -92,6 +92,7 @@ export function GridA11yFallback({
               </tr>
             </thead>
             <tbody>
+              {/* ARIA indexes are one based and count the header row */}
               {snapshot.rows.map(({ row, cells }) => (
                 <tr key={row} aria-rowindex={row + 2}>
                   {cells.map(({ column, text, rect }) => (

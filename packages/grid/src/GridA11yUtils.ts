@@ -271,6 +271,46 @@ export function getGridA11ySummary(
 }
 
 /**
+ * Describe which rows are on screen. Consecutive rows are collapsed into a
+ * range, so floating rows read as separate groups instead of being lumped in
+ * with the scrolled rows between them.
+ * @param rows The visible rows, in any order
+ * @returns A sentence fragment such as `Showing rows 1 to 20 and 100`
+ */
+function getVisibleRowsDescription(rows: readonly VisibleIndex[]): string {
+  const ranges: Array<[number, number]> = [];
+  [...rows]
+    .sort((a, b) => a - b)
+    .forEach(row => {
+      const lastRange = ranges.at(-1);
+      if (lastRange != null && row === lastRange[1] + 1) {
+        lastRange[1] = row;
+      } else {
+        ranges.push([row, row]);
+      }
+    });
+
+  if (ranges.length === 0) {
+    return 'Showing no rows';
+  }
+
+  // Row indexes are zero based, but the row numbers the user sees are not
+  const descriptions = ranges.map(([start, end]) =>
+    start === end ? `${start + 1}` : `${start + 1} to ${end + 1}`
+  );
+  const label = rows.length === 1 ? 'row' : 'rows';
+  if (descriptions.length === 1) {
+    return `Showing ${label} ${descriptions[0]}`;
+  }
+  if (descriptions.length === 2) {
+    return `Showing ${label} ${descriptions[0]} and ${descriptions[1]}`;
+  }
+  return `Showing ${label} ${descriptions
+    .slice(0, -1)
+    .join(', ')}, and ${descriptions.at(-1)}`;
+}
+
+/**
  * Get the text and bounds of everything currently in the viewport.
  * Iterates every visible cell, so only generate it on demand.
  * @param model The model being displayed
@@ -366,12 +406,8 @@ export function createGridA11ySnapshot(
     }
   });
 
-  const { topVisible, bottomVisible } = metrics;
   const headers = columns.map(({ text }) => text).filter(text => text !== '');
-  const visibleRows =
-    rows.length > 0
-      ? `Showing rows ${topVisible + 1} to ${bottomVisible + 1}`
-      : 'Showing no rows';
+  const visibleRows = getVisibleRowsDescription(rows.map(({ row }) => row));
   const viewport =
     headers.length > 0
       ? `${visibleRows}, columns ${headers.join(', ')}.`
