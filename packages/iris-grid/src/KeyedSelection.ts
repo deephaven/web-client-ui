@@ -90,6 +90,18 @@ export type KeyedSelectionOptions = {
   anchorKey?: string | null;
   /** Anchor row at click time. Fallback when the anchor key is out of viewport. */
   anchorRow?: GridRangeIndex;
+  /** Serialized key of the row the cursor was set on; null when the cursor is unset. */
+  cursorKey?: string | null;
+  /** Row hint for the cursor; used when `cursorKey` is not in the current viewport. */
+  cursorRowHint?: VisibleIndex | null;
+  /** Cursor column; not key-tracked because columns do not drift with row ticks. */
+  cursorColumn?: VisibleIndex | null;
+  /** Serialized key of the row the shift/drag endpoint was set on; null when unset. */
+  selectionEndKey?: string | null;
+  /** Row hint for the endpoint; used when `selectionEndKey` is not in the current viewport. */
+  selectionEndRowHint?: VisibleIndex | null;
+  /** Endpoint column; not key-tracked because columns do not drift with row ticks. */
+  selectionEndColumn?: VisibleIndex | null;
 };
 
 /**
@@ -126,6 +138,18 @@ export class KeyedSelection implements Selection {
 
   private readonly anchorRow: GridRangeIndex;
 
+  private readonly cursorKey: string | null;
+
+  private readonly cursorRowHint: VisibleIndex | null;
+
+  readonly cursorColumn: VisibleIndex | null;
+
+  private readonly selectionEndKey: string | null;
+
+  private readonly selectionEndRowHint: VisibleIndex | null;
+
+  readonly selectionEndColumn: VisibleIndex | null;
+
   /** Keys derived from the current overlay range's viewport-visible rows. */
   private readonly gestureKeys: ReadonlySet<string>;
 
@@ -140,6 +164,12 @@ export class KeyedSelection implements Selection {
     this.pendingRanges = options.pendingRanges ?? EMPTY_ARRAY;
     this.anchorKey = options.anchorKey ?? null;
     this.anchorRow = options.anchorRow ?? null;
+    this.cursorKey = options.cursorKey ?? null;
+    this.cursorRowHint = options.cursorRowHint ?? null;
+    this.cursorColumn = options.cursorColumn ?? null;
+    this.selectionEndKey = options.selectionEndKey ?? null;
+    this.selectionEndRowHint = options.selectionEndRowHint ?? null;
+    this.selectionEndColumn = options.selectionEndColumn ?? null;
 
     // Enumerate only viewport-visible rows so gesture key lookup stays O(1)
     // and construction is O(viewport) regardless of total table size.
@@ -181,6 +211,12 @@ export class KeyedSelection implements Selection {
       pendingRanges: this.pendingRanges,
       anchorKey: this.anchorKey,
       anchorRow: this.anchorRow,
+      cursorKey: this.cursorKey,
+      cursorRowHint: this.cursorRowHint,
+      cursorColumn: this.cursorColumn,
+      selectionEndKey: this.selectionEndKey,
+      selectionEndRowHint: this.selectionEndRowHint,
+      selectionEndColumn: this.selectionEndColumn,
       ...overrides,
     });
   }
@@ -265,7 +301,9 @@ export class KeyedSelection implements Selection {
     // Otherwise the cursor is stale (row drifted out from under it).
     // Use the anchor key's current viewport row when we can find it.
     const anchorViewportRow =
-      this.anchorKey != null ? this.findKeyInViewport(this.anchorKey) : null;
+      this.anchorKey != null
+        ? this.findKeyInViewport(this.anchorKey, this.anchorRow)
+        : null;
     return anchorViewportRow ?? fallback;
   }
 
@@ -280,7 +318,9 @@ export class KeyedSelection implements Selection {
     // is anchor ± N rows. Walk outward from the anchor's live row to find
     // the far endpoint on whichever side the selection actually extended.
     const anchorViewportRow =
-      this.anchorKey != null ? this.findKeyInViewport(this.anchorKey) : null;
+      this.anchorKey != null
+        ? this.findKeyInViewport(this.anchorKey, this.anchorRow)
+        : null;
     if (anchorViewportRow == null) return fallback;
     const model = this.getModel();
     const viewTop = model.viewport?.top ?? 0;
@@ -302,30 +342,35 @@ export class KeyedSelection implements Selection {
       : anchorViewportRow - upSteps;
   }
 
-  // Cursor / endpoint stubs; real key-tracking implementation lands in step 2
-  // of plans/cursor-into-selection.md. Grid still owns cursor state today.
-  readonly cursorRow: VisibleIndex | null = null;
-
-  readonly cursorColumn: VisibleIndex | null = null;
-
-  readonly selectionEndRow: VisibleIndex | null = null;
-
-  readonly selectionEndColumn: VisibleIndex | null = null;
-
-  // eslint-disable-next-line class-methods-use-this
+  // Cursor / endpoint tracking. Rows are stored as `(key, rowHint)` pairs so
+  // ticks that shuffle row indices resolve to the live row via
+  // `findKeyInViewport`; columns don't drift and are kept as raw indices.
   withCursor(
-    _row: VisibleIndex | null,
-    _column: VisibleIndex | null
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
   ): KeyedSelection {
-    return this;
+    if (row === this.cursorRow && column === this.cursorColumn) return this;
+    const nextKey = row != null ? this.getRowKeyData(row).key : null;
+    return this.copyWith({
+      cursorKey: nextKey,
+      cursorRowHint: row,
+      cursorColumn: column,
+    });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   withSelectionEnd(
-    _row: VisibleIndex | null,
-    _column: VisibleIndex | null
+    row: VisibleIndex | null,
+    column: VisibleIndex | null
   ): KeyedSelection {
-    return this;
+    if (row === this.selectionEndRow && column === this.selectionEndColumn) {
+      return this;
+    }
+    const nextKey = row != null ? this.getRowKeyData(row).key : null;
+    return this.copyWith({
+      selectionEndKey: nextKey,
+      selectionEndRowHint: row,
+      selectionEndColumn: column,
+    });
   }
 
   /**
@@ -384,7 +429,10 @@ export class KeyedSelection implements Selection {
   } | null {
     if (this.anchorKey == null && this.anchorRow == null) return null;
     if (this.anchorKey != null) {
-      const viewportRow = this.findKeyInViewport(this.anchorKey);
+      const viewportRow = this.findKeyInViewport(
+        this.anchorKey,
+        this.anchorRow
+      );
       if (viewportRow != null) return { row: viewportRow, column: null };
     }
     // Anchor key is not in the viewport; fall back to the click-time row hint.
@@ -394,13 +442,15 @@ export class KeyedSelection implements Selection {
   /**
    * Returns the visible row of `key`, or `null` if it's not in the viewport.
    * When multiple rows share the key (non-unique key columns), prefers the one
-   * closest to `anchorRow` so we track the row the user actually clicked.
+   * closest to `hint` so we track the row the caller last saw the key at.
    */
-  private findKeyInViewport(key: string): VisibleIndex | null {
+  private findKeyInViewport(
+    key: string,
+    hint: VisibleIndex | null
+  ): VisibleIndex | null {
     const model = this.getModel();
     const viewTop = model.viewport?.top ?? 0;
     const viewBottom = model.viewport?.bottom ?? 0;
-    const hint = this.anchorRow;
     let best: VisibleIndex | null = null;
     let bestDist = Infinity;
     for (let r = viewTop; r <= viewBottom; r += 1) {
@@ -413,6 +463,22 @@ export class KeyedSelection implements Selection {
       }
     }
     return best;
+  }
+
+  get cursorRow(): VisibleIndex | null {
+    if (this.cursorKey == null) return this.cursorRowHint;
+    return (
+      this.findKeyInViewport(this.cursorKey, this.cursorRowHint) ??
+      this.cursorRowHint
+    );
+  }
+
+  get selectionEndRow(): VisibleIndex | null {
+    if (this.selectionEndKey == null) return this.selectionEndRowHint;
+    return (
+      this.findKeyInViewport(this.selectionEndKey, this.selectionEndRowHint) ??
+      this.selectionEndRowHint
+    );
   }
 
   withGestureExtend(
@@ -583,7 +649,13 @@ export class KeyedSelection implements Selection {
   }
 
   clear(): KeyedSelection {
-    return new KeyedSelection({ getModel: this.getModel });
+    // Fresh empty carrying cursor forward (Escape semantics). Endpoint is
+    // transient gesture state and drops as part of the reset.
+    return KeyedSelection.empty(this.getModel).copyWith({
+      cursorKey: this.cursorKey,
+      cursorRowHint: this.cursorRowHint,
+      cursorColumn: this.cursorColumn,
+    });
   }
 
   // Shift+click needs a clean slate so the range replaces rather than extends the old keys.
@@ -612,9 +684,19 @@ export class KeyedSelection implements Selection {
   }
 
   private installCommittedRanges(ranges: readonly GridRange[]): KeyedSelection {
+    // Fields threaded through every fresh install so cursor / endpoint state
+    // survive programmatic range replacement (matches Escape semantics).
+    const carry = {
+      cursorKey: this.cursorKey,
+      cursorRowHint: this.cursorRowHint,
+      cursorColumn: this.cursorColumn,
+      selectionEndKey: this.selectionEndKey,
+      selectionEndRowHint: this.selectionEndRowHint,
+      selectionEndColumn: this.selectionEndColumn,
+    };
     // Replacement semantics: discard previous selection and select exactly these rows.
     if (ranges.length === 0) {
-      return new KeyedSelection({ getModel: this.getModel });
+      return new KeyedSelection({ getModel: this.getModel, ...carry });
     }
 
     // Compute the true min/max across every range so the viewport check is
@@ -632,7 +714,7 @@ export class KeyedSelection implements Selection {
       if (maxRow === null || high > maxRow) maxRow = high;
     }
     if (minRow === null || maxRow === null) {
-      return new KeyedSelection({ getModel: this.getModel });
+      return new KeyedSelection({ getModel: this.getModel, ...carry });
     }
 
     const model = this.getModel();
@@ -660,6 +742,7 @@ export class KeyedSelection implements Selection {
         getModel: this.getModel,
         selectedKeys: next,
         selectedKeyValues: nextKeyValues,
+        ...carry,
       });
     }
 
@@ -669,15 +752,18 @@ export class KeyedSelection implements Selection {
     return new KeyedSelection({
       getModel: this.getModel,
       pendingRanges: ranges,
+      ...carry,
     });
   }
 
   // Sets invertedSelection=true with an empty exclusion set (all rows selected).
-  // eslint-disable-next-line class-methods-use-this
   selectAll(): KeyedSelection {
-    return new KeyedSelection({
-      getModel: this.getModel,
+    // Fresh inverted-all carrying cursor forward.
+    return KeyedSelection.empty(this.getModel).copyWith({
       invertedSelection: true,
+      cursorKey: this.cursorKey,
+      cursorRowHint: this.cursorRowHint,
+      cursorColumn: this.cursorColumn,
     });
   }
 

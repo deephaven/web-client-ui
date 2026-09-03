@@ -336,6 +336,120 @@ describe('truncate', () => {
   });
 });
 
+// ─── cursor tracking ─────────────────────────────────────────────────────────
+
+describe('cursor', () => {
+  it('defaults to null on an empty selection', () => {
+    expect(empty().cursorRow).toBeNull();
+    expect(empty().cursorColumn).toBeNull();
+  });
+
+  it('stores cursor via withCursor', () => {
+    const sel = empty().withCursor(2, 3);
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(3);
+  });
+
+  it('returns identity when withCursor is a no-op', () => {
+    const sel = empty().withCursor(2, 3);
+    expect(sel.withCursor(2, 3)).toBe(sel);
+  });
+
+  it('clears when withCursor is called with null', () => {
+    const sel = empty().withCursor(2, 3).withCursor(null, null);
+    expect(sel.cursorRow).toBeNull();
+    expect(sel.cursorColumn).toBeNull();
+  });
+
+  it('resolves cursorKey against the current viewport (drift compensation)', () => {
+    // Mock model: row N has key value N. cursorKey='[2]' lives at row 2
+    // regardless of the stored row hint.
+    const sel = new KeyedSelection({
+      getModel: getKeyedModel,
+      cursorKey: keyOf(2),
+      cursorRowHint: 42,
+      cursorColumn: 0,
+    });
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(0);
+  });
+
+  it('falls back to cursorRowHint when the key is out of viewport', () => {
+    // Row 999 is outside the mock's [0..99] viewport.
+    const sel = new KeyedSelection({
+      getModel: getKeyedModel,
+      cursorKey: keyOf(999),
+      cursorRowHint: 42,
+      cursorColumn: 3,
+    });
+    expect(sel.cursorRow).toBe(42);
+    expect(sel.cursorColumn).toBe(3);
+  });
+
+  it('is preserved through clear', () => {
+    const sel = singleRow(2).withCursor(2, 3).clear();
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(3);
+    expect(sel.isEmpty()).toBe(true);
+  });
+
+  it('is preserved through trimmed', () => {
+    const sel = singleRow(2).withCursor(2, 3).trimmed();
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(3);
+  });
+
+  it('is preserved through withCommittedRanges', () => {
+    const sel = empty()
+      .withCursor(2, 3)
+      .withCommittedRanges([new GridRange(null, 5, null, 5)]);
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(3);
+  });
+
+  it('is preserved through selectAll', () => {
+    const sel = empty().withCursor(2, 3).selectAll();
+    expect(sel.cursorRow).toBe(2);
+    expect(sel.cursorColumn).toBe(3);
+  });
+});
+
+// ─── selectionEnd tracking ───────────────────────────────────────────────────
+
+describe('selectionEnd', () => {
+  it('defaults to null on an empty selection', () => {
+    expect(empty().selectionEndRow).toBeNull();
+    expect(empty().selectionEndColumn).toBeNull();
+  });
+
+  it('stores endpoint via withSelectionEnd', () => {
+    const sel = empty().withSelectionEnd(7, 2);
+    expect(sel.selectionEndRow).toBe(7);
+    expect(sel.selectionEndColumn).toBe(2);
+  });
+
+  it('returns identity when withSelectionEnd is a no-op', () => {
+    const sel = empty().withSelectionEnd(7, 2);
+    expect(sel.withSelectionEnd(7, 2)).toBe(sel);
+  });
+
+  it('resolves selectionEndKey against the current viewport', () => {
+    const sel = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectionEndKey: keyOf(4),
+      selectionEndRowHint: 42,
+      selectionEndColumn: 0,
+    });
+    expect(sel.selectionEndRow).toBe(4);
+  });
+
+  it('is cleared by clear() (transient state)', () => {
+    const sel = empty().withSelectionEnd(3, 3).clear();
+    expect(sel.selectionEndRow).toBeNull();
+    expect(sel.selectionEndColumn).toBeNull();
+  });
+});
+
 // ─── resolve ─────────────────────────────────────────────────────────────────
 
 describe('resolve', () => {
