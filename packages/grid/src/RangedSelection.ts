@@ -252,12 +252,6 @@ export class RangedSelection implements Selection, TickRangeSelection {
     ]);
   }
 
-  getLastSingleSelectedRow(): VisibleIndex | null {
-    const consolidated = GridRange.consolidate(this.ranges);
-    if (GridRange.rowCount(consolidated) !== 1) return null;
-    return consolidated[0]?.startRow ?? null;
-  }
-
   isSingleRowSelection(): boolean {
     return GridRange.rowCount(this.ranges) === 1;
   }
@@ -273,24 +267,12 @@ export class RangedSelection implements Selection, TickRangeSelection {
     });
   }
 
-  getCursorLandingCell(): {
+  private getCursorLandingCell(): {
     row: GridRangeIndex;
     column: GridRangeIndex;
   } | null {
     const { columnCount, rowCount } = this.getModel();
     return cursorLandingCellForRanges(this.ranges, { columnCount, rowCount });
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  resolveCursorRow(fallback: GridRangeIndex): GridRangeIndex {
-    // Ranged selections do not drift with ticking, so the cursor row is always valid. Return the fallback.
-    return fallback;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  resolveShiftEndpointRow(fallback: GridRangeIndex): GridRangeIndex {
-    // Ranged selections do not drift with ticking, so the cursor row is always valid. Return the fallback.
-    return fallback;
   }
 
   withCursor(

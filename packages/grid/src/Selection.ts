@@ -40,11 +40,6 @@ export interface SelectionQueries {
    * True when the selection covers exactly one row.
    */
   isSingleRowSelection: () => boolean;
-  /**
-   * The single selected visible row, or `null` when zero or multiple rows
-   * are selected. Drives `gotoRow` sync.
-   */
-  getLastSingleSelectedRow: () => VisibleIndex | null;
   /** The focus cell's row, or `null` when there is no cursor set. */
   readonly cursorRow: VisibleIndex | null;
   /** The focus cell's column, or `null` when there is no cursor set. */
@@ -219,31 +214,6 @@ export interface KeyboardSelection {
     current: { row: GridRangeIndex; column: GridRangeIndex },
     direction: SELECTION_DIRECTION
   ) => { row: GridRangeIndex; column: GridRangeIndex } | null;
-
-  /**
-   * Returns the cell the cursor should land on after this selection is
-   * committed or programmatically installed. Grid calls this on the
-   * pre-commit selection so `KeyedSelection`'s overlay is still available.
-   * Returns `null` when the selection has no cells.
-   */
-  getCursorLandingCell: () => {
-    row: GridRangeIndex;
-    column: GridRangeIndex;
-  } | null;
-
-  /**
-   * Tries to find the cursor row for a selection that may have moved due to ticking.
-   *
-   * @param fallback returned if the current cursor row cannot be determined.
-   */
-  resolveCursorRow: (fallback: GridRangeIndex) => GridRangeIndex;
-
-  /**
-   * Tries to find the shift endpoint row for a selection that may have moved due to ticking.
-   *
-   * @param fallback returned if the current shift endpoint row cannot be determined.
-   */
-  resolveShiftEndpointRow: (fallback: GridRangeIndex) => GridRangeIndex;
 
   /**
    * A new selection with the cursor set to `(column, row)`. Passing `null`

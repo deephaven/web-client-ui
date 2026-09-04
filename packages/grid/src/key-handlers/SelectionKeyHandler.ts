@@ -210,13 +210,8 @@ class SelectionKeyHandler extends KeyHandler {
     }
     const { model } = grid.props;
     const { columnCount, rowCount } = model;
-    // Resolve `row` through the selection so `KeyedSelection` can compensate
-    // for ticks that shuffle row indices under the stored cursor / endpoint.
-    const resolvedRow = isShiftKey
-      ? grid.state.selection.resolveShiftEndpointRow(row)
-      : grid.state.selection.resolveCursorRow(row);
     const targetColumn = clamp(column + deltaColumn, 0, columnCount - 1);
-    const targetRow = clamp((resolvedRow ?? row) + deltaRow, 0, rowCount - 1);
+    const targetRow = clamp(row + deltaRow, 0, rowCount - 1);
     // Avoid deselection when the target cell is already selected in a single-row selection.
     if (
       !isShiftKey &&

@@ -327,12 +327,14 @@ export class KeyedSelection implements Selection {
         selectedKeys: new Set(),
         overlayRanges: ranges,
         invertedSelection: false,
+        lastSingleRow: null,
         selectedKeyValues: EMPTY_MAP,
         pendingRanges: EMPTY_ARRAY,
       });
     }
     return this.copyWith({
       overlayRanges: ranges,
+      lastSingleRow: null,
       pendingRanges: EMPTY_ARRAY,
     });
   }
@@ -472,6 +474,7 @@ export class KeyedSelection implements Selection {
           return withCommittedCursor(
             this.copyWith({
               overlayRanges: EMPTY_ARRAY,
+              lastSingleRow: null,
               pendingRanges: this.overlayRanges,
             }),
             this.getCursorLandingCell(),
@@ -509,6 +512,7 @@ export class KeyedSelection implements Selection {
         this.copyWith({
           selectedKeys: next,
           overlayRanges: EMPTY_ARRAY,
+          lastSingleRow: null,
           selectedKeyValues: nextKeyValues,
           pendingRanges: EMPTY_ARRAY,
         }),
@@ -540,6 +544,7 @@ export class KeyedSelection implements Selection {
             selectedKeys: new Set(nextKeyValues.keys()),
             overlayRanges: EMPTY_ARRAY,
             invertedSelection: false,
+            lastSingleRow: null,
             selectedKeyValues: nextKeyValues,
             pendingRanges: EMPTY_ARRAY,
           }),
@@ -555,6 +560,7 @@ export class KeyedSelection implements Selection {
         this.copyWith({
           selectedKeys: new Set(),
           invertedSelection: false,
+          lastSingleRow: null,
           selectedKeyValues: EMPTY_MAP,
           pendingRanges: this.overlayRanges,
         }),
@@ -580,11 +586,14 @@ export class KeyedSelection implements Selection {
       next.add(k);
       nextKeyValues.set(k, values);
     }
+    // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
+    const singleRow = next.size === 1 ? row : null;
     return withCommittedCursor(
       this.copyWith({
         selectedKeys: next,
         overlayRanges: EMPTY_ARRAY,
         invertedSelection: false,
+        lastSingleRow: singleRow,
         selectedKeyValues: nextKeyValues,
         pendingRanges: EMPTY_ARRAY,
       }),
@@ -610,6 +619,7 @@ export class KeyedSelection implements Selection {
       selectedKeys: new Set(),
       overlayRanges: EMPTY_ARRAY,
       invertedSelection: false,
+      lastSingleRow: null,
       selectedKeyValues: EMPTY_MAP,
       maxRows: null,
       pendingRanges: EMPTY_ARRAY,
@@ -730,6 +740,7 @@ export class KeyedSelection implements Selection {
       selectedKeys: mergedKeys,
       overlayRanges: EMPTY_ARRAY,
       invertedSelection: false,
+      lastSingleRow: null,
       selectedKeyValues: mergedKeyValues,
       maxRows: null,
       pendingRanges: EMPTY_ARRAY,
@@ -769,6 +780,7 @@ export class KeyedSelection implements Selection {
     return this.copyWith({
       selectedKeys: next,
       overlayRanges: EMPTY_ARRAY,
+      lastSingleRow: null,
       selectedKeyValues: nextKeyValues,
       pendingRanges: EMPTY_ARRAY,
     });

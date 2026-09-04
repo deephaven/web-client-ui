@@ -327,34 +327,6 @@ describe('selectAll', () => {
   });
 });
 
-// ─── getLastSingleSelectedRow ────────────────────────────────────────────────
-
-describe('getLastSingleSelectedRow', () => {
-  it('returns null for empty selection', () => {
-    expect(empty().getLastSingleSelectedRow()).toBeNull();
-  });
-
-  it('returns the row for a single-cell selection', () => {
-    expect(single(3, 7).getLastSingleSelectedRow()).toBe(7);
-  });
-
-  it('returns the row for a full-row single-row selection', () => {
-    expect(fullRow(4).getLastSingleSelectedRow()).toBe(4);
-  });
-
-  it('returns null when multiple rows are selected', () => {
-    expect(range(0, 0, 0, 5).getLastSingleSelectedRow()).toBeNull();
-  });
-
-  it('returns null for multiple ranges', () => {
-    const sel = new RangedSelection(
-      [GridRange.makeCell(0, 0), GridRange.makeCell(1, 1)],
-      getModel
-    );
-    expect(sel.getLastSingleSelectedRow()).toBeNull();
-  });
-});
-
 // ─── commitGesture ───────────────────────────────────────────────────
 
 describe('commitGesture', () => {

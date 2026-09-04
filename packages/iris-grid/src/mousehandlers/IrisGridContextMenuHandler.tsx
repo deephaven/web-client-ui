@@ -947,7 +947,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         effectiveSelection = new KeyedSelection({
           getModel: getModel as GetKeyedModel,
           selectedKeys: new Set([key]),
-          lastSingleRow: rowIndex,
           selectedKeyValues: keyValues,
         });
       } else if (isEditableGridModel(model) && model.isEditable) {

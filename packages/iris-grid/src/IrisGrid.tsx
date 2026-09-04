@@ -3758,9 +3758,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
-    const singleRow = selection.getLastSingleSelectedRow();
-    if (singleRow != null) {
-      this.setState({ gotoRow: `${singleRow + 1}` });
+    const { cursorRow } = selection;
+    if (cursorRow != null) {
+      this.setState({ gotoRow: `${cursorRow + 1}` });
     }
     onSelectionChange?.(selection);
     if (

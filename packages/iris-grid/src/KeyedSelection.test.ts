@@ -40,7 +40,6 @@ function singleRow(row = 5) {
   return new KeyedSelection({
     getModel: getKeyedModel,
     selectedKeys: new Set([key]),
-    lastSingleRow: row,
     selectedKeyValues: new Map([[key, [row]]]),
   });
 }
@@ -150,26 +149,6 @@ describe('isColumnSelected', () => {
       invertedSelection: true,
     });
     expect(excludeOne.isColumnSelected(0)).toBe(false);
-  });
-});
-
-// ─── getLastSingleSelectedRow ─────────────────────────────────────────────────
-
-describe('getLastSingleSelectedRow', () => {
-  it('returns the row for a single-key selection with a lastSingleRow', () => {
-    expect(singleRow(5).getLastSingleSelectedRow()).toBe(5);
-  });
-
-  it('returns null for a multi-key selection', () => {
-    expect(multiRow().getLastSingleSelectedRow()).toBeNull();
-  });
-
-  it('returns null for an inverted selection', () => {
-    expect(allRows().getLastSingleSelectedRow()).toBeNull();
-  });
-
-  it('returns null when selectedKeys.size !== 1', () => {
-    expect(empty().getLastSingleSelectedRow()).toBeNull();
   });
 });
 
