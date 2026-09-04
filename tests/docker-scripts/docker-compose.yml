@@ -26,6 +26,20 @@ services:
       dhc-server:
         condition: service_healthy
 
+  e2e-performance:
+    # requires the image built by CI to be provided
+    image: e2e-ci:test
+    ipc: host
+    environment:
+      - VITE_PROXY_URL=http://dhc-server:10000
+    volumes:
+      - ../../tests:/work/tests
+      - ../../test-results:/work/test-results
+    entrypoint: "npm run e2e:performance -- --config=playwright-ci.config.ts --project=chromium --reporter=list"
+    depends_on:
+      dhc-server:
+        condition: service_healthy
+
   e2e-record:
     # requires the image built by CI to be provided
     image: e2e-ci:test

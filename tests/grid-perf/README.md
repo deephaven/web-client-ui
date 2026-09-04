@@ -10,6 +10,10 @@ For performance-sensitive changes to the Grid component, there are two ways to b
 npm run e2e:performance
 ```
 
+Each benchmark appends its metrics to `test-results/grid-perf-results.jsonl`. Run [`scripts/grid-perf-report.mjs`](../../scripts/grid-perf-report.mjs) afterwards to turn them into a markdown table.
+
+The `Build and End-to-end Tests` workflow runs this suite in chromium after the e2e matrix and publishes the report to the job summary, an artifact, and a PR comment. Runner timings are noisy, so the job never fails the build.
+
 ## Standalone perf app
 
 [`tests/grid-perf/grid-perf-app.spec.ts`](./grid-perf-app.spec.ts) drives [`app`](./app), a lightweight Vite app that renders a `Grid` backed by `MockGridModel`. It is useful for:

@@ -1,8 +1,14 @@
 /* eslint-disable no-await-in-loop -- benchmark input must be sequential */
+import fs from 'node:fs';
+import path from 'node:path';
 import { expect, type Locator, type Page } from '@playwright/test';
 
 /** Wheel delta applied per horizontal scroll step */
 export const HORIZONTAL_SCROLL_STEP = 400;
+
+/** Line delimited results consumed by `scripts/grid-perf-report.mjs` */
+const RESULTS_FILE =
+  process.env.PERF_RESULTS_FILE ?? 'test-results/grid-perf-results.jsonl';
 
 export interface FPSResult {
   fps: number;
@@ -193,11 +199,33 @@ export async function verifyHorizontalScrollRange(
   await scrollGridHorizontal(page, grid, -distance * 2);
 }
 
+/**
+ * Appends a benchmark result so it can be aggregated into a report after the
+ * run. Benchmarks run serially, so appends never interleave.
+ */
+function recordResult(
+  testName: string,
+  result: FPSResult,
+  expected: { minFps: number }
+): void {
+  fs.mkdirSync(path.dirname(RESULTS_FILE), { recursive: true });
+  fs.appendFileSync(
+    RESULTS_FILE,
+    `${JSON.stringify({
+      name: testName,
+      minFps: expected.minFps,
+      ...result,
+    })}\n`
+  );
+}
+
 export function logResults(
   testName: string,
   result: FPSResult,
   expected: { minFps: number }
 ): void {
+  recordResult(testName, result, expected);
+
   console.log(`\n${testName}:`);
   console.log(`  Average FPS: ${result.fps.toFixed(1)}`);
   console.log(`  Avg frame time: ${result.avgFrameTime.toFixed(2)}ms`);
