@@ -1206,38 +1206,19 @@ class Grid extends PureComponent<GridProps, GridState> {
     const extended = state.selection.withGestureExtend(cursor, extendOpts);
     const settled = extended.commitGesture(lastSelection, {
       autoSelectRow: extendOpts.autoSelectRow,
+      // When moveCursor is false (extend / maximize / add), preserve the
+      // pre-gesture cursor. When true (replace), move to the gesture cursor.
+      cursor: moveCursor
+        ? cursor
+        : { row: state.cursorRow, column: state.cursorColumn },
     });
-
-    let cursorRow: GridRangeIndex = moveCursor ? cursor.row : state.cursorRow;
-    let cursorColumn: GridRangeIndex = moveCursor
-      ? cursor.column
-      : state.cursorColumn;
-    if (settled.isEmpty()) {
-      cursorRow = null;
-      cursorColumn = null;
-    } else if (
-      cursorRow == null ||
-      cursorColumn == null ||
-      !settled.isCellSelected(cursorColumn, cursorRow)
-    ) {
-      // Cursor is outside the settled selection (e.g. ctrl-click hole-punch).
-      // Read landing from the pre-commit selection so KeyedSelection's overlay
-      // is still available.
-      const landing = extended.getCursorLandingCell();
-      if (landing != null) {
-        ({ column: cursorColumn, row: cursorRow } = landing);
-      } else {
-        cursorRow = null;
-        cursorColumn = null;
-      }
-    }
 
     return {
       selection: settled,
       lastSelection,
       selectedRanges: selectionToRanges(settled),
-      cursorRow,
-      cursorColumn,
+      cursorRow: settled.cursorRow,
+      cursorColumn: settled.cursorColumn,
       selectionEndColumn: cursor.column,
       selectionEndRow: cursor.row,
     };
@@ -1288,32 +1269,14 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { selection, lastSelection, cursorRow, cursorColumn } = state;
       const settled = selection.commitGesture(lastSelection, {
         autoSelectRow: theme.autoSelectRow ?? false,
+        // Mouse-up commit preserves the current cursor position.
+        cursor: { row: cursorRow, column: cursorColumn },
       });
       if (settled === selection) return null;
 
-      let newCursorRow = cursorRow;
-      let newCursorColumn = cursorColumn;
-      if (settled.isEmpty()) {
-        newCursorRow = null;
-        newCursorColumn = null;
-      } else if (
-        cursorRow == null ||
-        !settled.isCellSelected(cursorColumn ?? 0, cursorRow)
-      ) {
-        // Cursor landing reads pre-commit ranges because KeyedSelection's
-        // overlay is cleared by commit.
-        const landing = selection.getCursorLandingCell();
-        if (landing != null) {
-          ({ column: newCursorColumn, row: newCursorRow } = landing);
-        } else {
-          newCursorColumn = null;
-          newCursorRow = null;
-        }
-      }
-
       return {
-        cursorRow: newCursorRow,
-        cursorColumn: newCursorColumn,
+        cursorRow: settled.cursorRow,
+        cursorColumn: settled.cursorColumn,
         selection: settled,
         lastSelection: settled,
         selectedRanges: selectionToRanges(settled),

@@ -11,6 +11,7 @@ import {
   computeGestureExtend,
   cursorLandingCellForRanges,
   nextCursorInRanges,
+  withCommittedCursor,
 } from '@deephaven/grid';
 import type IrisGridModel from './IrisGridModel';
 import type { KeyedGridModel } from './KeyedGridModel';
@@ -503,7 +504,7 @@ export class KeyedSelection implements Selection {
 
   commitGesture(
     lastCommitted: Selection,
-    _opts: CommitGestureOptions
+    opts: CommitGestureOptions
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
 
@@ -537,11 +538,15 @@ export class KeyedSelection implements Selection {
         const viewTop = model.viewport?.top ?? 0;
         const viewBottom = model.viewport?.bottom ?? 0;
         if (first < viewTop || lastRow > viewBottom) {
-          return this.copyWith({
-            overlayRanges: EMPTY_ARRAY,
-            lastSingleRow: null,
-            pendingRanges: this.overlayRanges,
-          });
+          return withCommittedCursor(
+            this.copyWith({
+              overlayRanges: EMPTY_ARRAY,
+              lastSingleRow: null,
+              pendingRanges: this.overlayRanges,
+            }),
+            this.getCursorLandingCell(),
+            opts
+          );
         }
       }
 
@@ -570,13 +575,17 @@ export class KeyedSelection implements Selection {
           }
         }
       }
-      return this.copyWith({
-        selectedKeys: next,
-        overlayRanges: EMPTY_ARRAY,
-        lastSingleRow: null,
-        selectedKeyValues: nextKeyValues,
-        pendingRanges: EMPTY_ARRAY,
-      });
+      return withCommittedCursor(
+        this.copyWith({
+          selectedKeys: next,
+          overlayRanges: EMPTY_ARRAY,
+          lastSingleRow: null,
+          selectedKeyValues: nextKeyValues,
+          pendingRanges: EMPTY_ARRAY,
+        }),
+        this.getCursorLandingCell(),
+        opts
+      );
     }
 
     // Regular click path: clearSelectedRanges emptied selectedKeys first.
@@ -597,26 +606,34 @@ export class KeyedSelection implements Selection {
           const { key: k, values } = this.getRowKeyData(r);
           nextKeyValues.set(k, values);
         }
-        return this.copyWith({
-          selectedKeys: new Set(nextKeyValues.keys()),
-          overlayRanges: EMPTY_ARRAY,
-          invertedSelection: false,
-          lastSingleRow: null,
-          selectedKeyValues: nextKeyValues,
-          pendingRanges: EMPTY_ARRAY,
-        });
+        return withCommittedCursor(
+          this.copyWith({
+            selectedKeys: new Set(nextKeyValues.keys()),
+            overlayRanges: EMPTY_ARRAY,
+            invertedSelection: false,
+            lastSingleRow: null,
+            selectedKeyValues: nextKeyValues,
+            pendingRanges: EMPTY_ARRAY,
+          }),
+          this.getCursorLandingCell(),
+          opts
+        );
       }
 
       // Slow path: same async-fetch mechanism as `withCommittedRanges`.
       // `IrisGrid.resolveKeyedSelection` fetches keys for the overlay ranges;
       // rows that scroll away during the fetch are dropped from the result.
-      return this.copyWith({
-        selectedKeys: new Set(),
-        invertedSelection: false,
-        lastSingleRow: null,
-        selectedKeyValues: EMPTY_MAP,
-        pendingRanges: this.overlayRanges,
-      });
+      return withCommittedCursor(
+        this.copyWith({
+          selectedKeys: new Set(),
+          invertedSelection: false,
+          lastSingleRow: null,
+          selectedKeyValues: EMPTY_MAP,
+          pendingRanges: this.overlayRanges,
+        }),
+        this.getCursorLandingCell(),
+        opts
+      );
     }
 
     // Single-row path (rowCount === 1): first === lastRow.
@@ -638,14 +655,18 @@ export class KeyedSelection implements Selection {
     }
     // Store the single committed row so getLastSingleSelectedRow() works for gotoRow sync.
     const singleRow = next.size === 1 ? row : null;
-    return this.copyWith({
-      selectedKeys: next,
-      overlayRanges: EMPTY_ARRAY,
-      invertedSelection: false,
-      lastSingleRow: singleRow,
-      selectedKeyValues: nextKeyValues,
-      pendingRanges: EMPTY_ARRAY,
-    });
+    return withCommittedCursor(
+      this.copyWith({
+        selectedKeys: next,
+        overlayRanges: EMPTY_ARRAY,
+        invertedSelection: false,
+        lastSingleRow: singleRow,
+        selectedKeyValues: nextKeyValues,
+        pendingRanges: EMPTY_ARRAY,
+      }),
+      this.getCursorLandingCell(),
+      opts
+    );
   }
 
   clear(): KeyedSelection {

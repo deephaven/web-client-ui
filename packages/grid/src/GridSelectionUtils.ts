@@ -2,7 +2,12 @@ import GridRange, {
   type GridRangeIndex,
   type SELECTION_DIRECTION,
 } from './GridRange';
-import type { GestureExtendOptions, GestureMode } from './Selection';
+import type {
+  CommitGestureOptions,
+  GestureExtendOptions,
+  GestureMode,
+  Selection,
+} from './Selection';
 
 /**
  * Maps modifier-key state on a mouse event to the appropriate `GestureMode`.
@@ -228,4 +233,49 @@ export function cursorLandingCellForRanges(
   return GridRange.nextCell(
     GridRange.boundedRanges(ranges, bounds.columnCount, bounds.rowCount)
   );
+}
+
+/**
+ * Returns `settled` with the post-commit cursor placed. Uses `opts.cursor`
+ * as the target; substitutes `landing` when the target falls outside a
+ * non-empty settled selection; preserves the target when settled is empty
+ * (matches Escape's "cursor survives clear" semantics).
+ *
+ * Callers pass `landing` precomputed from the pre-commit selection so this
+ * helper doesn't need to reach back into the caller's overlay state.
+ * Returns `settled` unchanged when the cursor is already correct so
+ * mouseUp no-ops preserve reference equality.
+ */
+export function withCommittedCursor<S extends Selection>(
+  settled: S,
+  landing: { row: GridRangeIndex; column: GridRangeIndex } | null,
+  opts: CommitGestureOptions
+): S {
+  const target = opts.cursor;
+  if (target === undefined) return settled;
+
+  let desiredRow: GridRangeIndex;
+  let desiredColumn: GridRangeIndex;
+  if (settled.isEmpty()) {
+    desiredRow = target.row;
+    desiredColumn = target.column;
+  } else if (
+    target.row != null &&
+    target.column != null &&
+    settled.isCellSelected(target.column, target.row)
+  ) {
+    desiredRow = target.row;
+    desiredColumn = target.column;
+  } else {
+    desiredRow = landing?.row ?? null;
+    desiredColumn = landing?.column ?? null;
+  }
+
+  if (
+    settled.cursorRow === desiredRow &&
+    settled.cursorColumn === desiredColumn
+  ) {
+    return settled;
+  }
+  return settled.withCursor(desiredRow, desiredColumn) as S;
 }

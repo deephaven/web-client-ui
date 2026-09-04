@@ -17,6 +17,7 @@ import {
   computeGestureExtend,
   cursorLandingCellForRanges,
   nextCursorInRanges,
+  withCommittedCursor,
 } from './GridSelectionUtils';
 
 /**
@@ -335,8 +336,9 @@ export class RangedSelection implements Selection, TickRangeSelection {
 
   commitGesture(
     lastCommitted: Selection,
-    { autoSelectRow }: CommitGestureOptions
+    opts: CommitGestureOptions
   ): RangedSelection {
+    const { autoSelectRow } = opts;
     const selectedRanges = this.ranges;
     // lastCommitted is always a RangedSelection when this method is called
     assertIsRangedSelection(lastCommitted);
@@ -349,7 +351,11 @@ export class RangedSelection implements Selection, TickRangeSelection {
         : GridRange.cellCount(selectedRanges) === 1) &&
       GridRange.rangeArraysEqual(selectedRanges, lastRanges)
     ) {
-      return this.copyWith({ ranges: EMPTY_ARRAY });
+      return withCommittedCursor(
+        this.copyWith({ ranges: EMPTY_ARRAY }),
+        this.getCursorLandingCell(),
+        opts
+      );
     }
 
     let newRanges = selectedRanges.slice();
@@ -370,8 +376,11 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const changed =
       newRanges.length !== selectedRanges.length ||
       newRanges.some((r, i) => !r.equals(selectedRanges[i]));
-    if (!changed) return this;
-    return this.copyWith({ ranges: newRanges });
+    return withCommittedCursor(
+      changed ? this.copyWith({ ranges: newRanges }) : this,
+      this.getCursorLandingCell(),
+      opts
+    );
   }
 
   clear(): RangedSelection {

@@ -154,6 +154,14 @@ export type CommitGestureOptions = {
    * flag semantic.
    */
   autoSelectRow: boolean;
+  /**
+   * Post-commit cursor position. When `settled` is non-empty and this
+   * cursor falls outside it, `commitGesture` substitutes a landing cell
+   * from the pre-commit selection. When `settled` is empty, this cursor
+   * is preserved on the returned selection (matches Escape semantics).
+   * Omit for no-op commits that shouldn't touch cursor.
+   */
+  cursor?: { row: GridRangeIndex; column: GridRangeIndex };
 };
 
 /**

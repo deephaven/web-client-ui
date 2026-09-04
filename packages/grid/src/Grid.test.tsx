@@ -259,8 +259,9 @@ it('clicking a selected cell should deselect it', () => {
 
   mouseClick(3, 5, component);
 
-  expect(component.state.cursorRow).toBe(null);
-  expect(component.state.cursorColumn).toBe(null);
+  // Deselect-by-click preserves the cursor
+  expect(component.state.cursorRow).toBe(5);
+  expect(component.state.cursorColumn).toBe(3);
   expect(component.state.selection.ranges.length).toBe(0);
 });
 
@@ -272,8 +273,9 @@ it('ctrl clicking a selected cell should deselect it', () => {
 
   mouseClick(3, 5, component, { ctrlKey: true });
 
-  expect(component.state.cursorRow).toBe(null);
-  expect(component.state.cursorColumn).toBe(null);
+  // Deselect-by-click preserves the cursor
+  expect(component.state.cursorRow).toBe(5);
+  expect(component.state.cursorColumn).toBe(3);
   expect(component.state.selection.ranges.length).toBe(0);
 });
 
