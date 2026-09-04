@@ -2,9 +2,11 @@
 
 For performance-sensitive changes to the Grid component, there are two ways to benchmark. Both suites are skipped unless `RUN_PERF_TESTS` is set, since frame timings are too resource sensitive for CI.
 
+Both run through [`playwright-perf.config.ts`](../../playwright-perf.config.ts), which disables video and trace capture and runs chromium only with a single worker, so recording overhead and parallelism don't skew the frame times.
+
 ## Main app tests
 
-[`tests/grid-perf/grid-performance.spec.ts`](./grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests). It covers the application mode tables plus console generated tables of ~500 and ~25,000 character string cells, which exercise text measurement and truncation.
+[`tests/grid-perf/grid-performance.spec.ts`](./grid-performance.spec.ts) measures scroll FPS in the main app with real table data, so it requires a Deephaven server and the usual [E2E setup](../../README.md#e2e-tests). It covers the application mode tables plus the `perf_` tables defined in [`performance_tables.py`](../docker-scripts/data/app.d/performance_tables.py), which include ~500 and ~25,000 character string cells to exercise text measurement and truncation.
 
 ```bash
 npm run e2e:performance
