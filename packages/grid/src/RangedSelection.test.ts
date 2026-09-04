@@ -351,6 +351,27 @@ describe('commitGesture', () => {
     expect(result.isEmpty()).toBe(false);
   });
 
+  it('does NOT deselect when allowDeselect is false (keyboard callers)', () => {
+    const last = single(3, 5);
+    const current = single(3, 5);
+    const result = current.commitGesture(last, {
+      autoSelectRow: false,
+      allowDeselect: false,
+    });
+    expect(result.isEmpty()).toBe(false);
+    expect(result.toRanges()).toEqual(current.toRanges());
+  });
+
+  it('does NOT deselect a repeat single-row commit when allowDeselect is false', () => {
+    const last = fullRow(3);
+    const current = fullRow(3);
+    const result = current.commitGesture(last, {
+      autoSelectRow: true,
+      allowDeselect: false,
+    });
+    expect(result.isEmpty()).toBe(false);
+  });
+
   it('keeps a new single-cell selection when lastCommitted is empty', () => {
     const current = single(2, 4);
     const result = current.commitGesture(empty(), {

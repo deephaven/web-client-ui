@@ -572,6 +572,22 @@ it('handles keyboard arrow to move selection down/right', () => {
   );
 });
 
+it('arrow-key clamped at an edge preserves the selection', () => {
+  // Keyboard callers pass allowDeselect: false so re-committing the same
+  // single-cell selection (edge-clamped arrow) must NOT deselect it.
+  const component = makeGridComponent();
+  mouseClick(0, 5, component);
+  expect(component.state.selection.ranges.length).toBe(1);
+
+  arrowLeft(component);
+  expect(component.state.selection.cursorColumn).toBe(0);
+  expect(component.state.selection.cursorRow).toBe(5);
+  expect(component.state.selection.ranges.length).toBe(1);
+  expect(component.state.selection.ranges[0]).toEqual(
+    new GridRange(0, 5, 0, 5)
+  );
+});
+
 it('handles keyboard arrow to extend selection down/up', () => {
   const component = makeGridComponent();
 

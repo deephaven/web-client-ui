@@ -252,10 +252,6 @@ export class RangedSelection implements Selection, TickRangeSelection {
     ]);
   }
 
-  isSingleRowSelection(): boolean {
-    return GridRange.rowCount(this.ranges) === 1;
-  }
-
   getNextCursorInDirection(
     current: { row: GridRangeIndex; column: GridRangeIndex },
     direction: SELECTION_DIRECTION
@@ -327,6 +323,7 @@ export class RangedSelection implements Selection, TickRangeSelection {
     const lastRanges = lastCommitted.toRanges();
 
     if (
+      opts.allowDeselect !== false &&
       selectedRanges.length === 1 &&
       (autoSelectRow
         ? GridRange.rowCount(selectedRanges) === 1

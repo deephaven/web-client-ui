@@ -158,19 +158,10 @@ class SelectionKeyHandler extends KeyHandler {
         moveToRow = rowCount - 1;
       }
       if (moveToColumn != null && moveToRow != null) {
-        // Avoid deselection when the target cell is already selected in a single-row selection.
-        if (
-          !isShiftKey &&
-          grid.state.selection.isSingleRowSelection() &&
-          grid.state.selection.isCellSelected(moveToColumn, moveToRow)
-        ) {
-          grid.handleKeyMoveCursor(moveToColumn, moveToRow);
-        } else {
-          grid.handleKeySelectAt(
-            { column: moveToColumn, row: moveToRow },
-            isShiftKey ? 'maximize' : 'replace'
-          );
-        }
+        grid.handleKeySelectAt(
+          { column: moveToColumn, row: moveToRow },
+          isShiftKey ? 'maximize' : 'replace'
+        );
       }
       return true;
     }
@@ -212,15 +203,6 @@ class SelectionKeyHandler extends KeyHandler {
     const { columnCount, rowCount } = model;
     const targetColumn = clamp(column + deltaColumn, 0, columnCount - 1);
     const targetRow = clamp(row + deltaRow, 0, rowCount - 1);
-    // Avoid deselection when the target cell is already selected in a single-row selection.
-    if (
-      !isShiftKey &&
-      grid.state.selection.isSingleRowSelection() &&
-      grid.state.selection.isCellSelected(targetColumn, targetRow)
-    ) {
-      grid.handleKeyMoveCursor(targetColumn, targetRow);
-      return true;
-    }
     grid.handleKeySelectAt({ column: targetColumn, row: targetRow }, mode);
     return true;
   }

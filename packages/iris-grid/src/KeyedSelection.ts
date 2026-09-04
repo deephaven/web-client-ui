@@ -250,10 +250,6 @@ export class KeyedSelection implements Selection {
     return this.invertedSelection && this.selectedKeys.size === 0;
   }
 
-  isSingleRowSelection(): boolean {
-    return !this.invertedSelection && this.selectedKeys.size === 1;
-  }
-
   getNextCursorInDirection(
     current: { row: GridRangeIndex; column: GridRangeIndex },
     direction: SELECTION_DIRECTION
@@ -569,6 +565,7 @@ export class KeyedSelection implements Selection {
     const nextKeyValues = new Map(this.selectedKeyValues);
     // Deselect only when the clicked row was the entire previous committed selection.
     const wasEntireSelection =
+      opts.allowDeselect !== false &&
       lastCommitted instanceof KeyedSelection &&
       !lastCommitted.invertedSelection &&
       lastCommitted.selectedKeys.size === 1 &&

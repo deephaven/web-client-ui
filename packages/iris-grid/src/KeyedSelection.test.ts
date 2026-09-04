@@ -609,6 +609,19 @@ describe('commitGesture', () => {
     expect(result.isRowSelected(3)).toBe(false);
   });
 
+  it('does NOT deselect a single row when allowDeselect is false (keyboard callers)', () => {
+    const last = singleRow(3);
+    const withOverlay = new KeyedSelection({
+      getModel: getKeyedModel,
+      overlayRanges: [new GridRange(null, 3, null, 3)],
+    });
+    const result = withOverlay.commitGesture(last, {
+      autoSelectRow: false,
+      allowDeselect: false,
+    });
+    expect(result.isRowSelected(3)).toBe(true);
+  });
+
   it('replaces prior committed keys on drag (isReplacing=true via withMouseGestureRanges)', () => {
     // Reproduces the drag bug: prior commit selected key 2; drag extends to
     // row 5. Without isReplacing the ctrl+click toggle path fires and

@@ -36,10 +36,6 @@ export interface SelectionQueries {
   isRowSelected: (row: VisibleIndex) => boolean;
   /** True when the entire column is part of the selection. */
   isColumnSelected: (column: VisibleIndex) => boolean;
-  /**
-   * True when the selection covers exactly one row.
-   */
-  isSingleRowSelection: () => boolean;
   /** The focus cell's row, or `null` when there is no cursor set. */
   readonly cursorRow: VisibleIndex | null;
   /** The focus cell's column, or `null` when there is no cursor set. */
@@ -157,6 +153,14 @@ export type CommitGestureOptions = {
    * Omit for no-op commits that shouldn't touch cursor.
    */
   cursor?: { row: GridRangeIndex; column: GridRangeIndex };
+  /**
+   * When true (default), a commit whose settled ranges match the previous
+   * single-row / single-cell committed selection is treated as a deselect.
+   * This is the mouse click-to-deselect affordance. Keyboard callers pass
+   * `false` so arrowing onto an already-selected cell just moves the cursor
+   * instead of clearing the selection.
+   */
+  allowDeselect?: boolean;
 };
 
 /**

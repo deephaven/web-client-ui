@@ -1170,15 +1170,19 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param mode Modifier-derived gesture mode.
    * @param opts.moveCursor Snap the cursor to `cursor` (default true).
    * Pass false for keyboard extend / maximize / add so the cursor stays put.
+   * @param opts.allowDeselect Whether committing on top of the same
+   * single-row / single-cell selection should deselect (mouse affordance,
+   * default true). Keyboard callers pass false so arrowing onto an
+   * already-selected cell just moves the cursor.
    */
   private applyGestureAt(
     selection: Selection,
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode,
-    opts: { moveCursor?: boolean } = {}
+    opts: { moveCursor?: boolean; allowDeselect?: boolean } = {}
   ): GridSelectionState {
     const { theme } = this.props;
-    const { moveCursor = true } = opts;
+    const { moveCursor = true, allowDeselect = true } = opts;
     const lastSelection = selection;
     const extendOpts: GestureExtendOptions = {
       mode,
@@ -1194,6 +1198,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       .commitGesture(lastSelection, {
         autoSelectRow: extendOpts.autoSelectRow,
         cursor: cursorTarget,
+        allowDeselect,
       })
       .withSelectionEnd(cursor.row, cursor.column);
 
@@ -1283,7 +1288,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { keepCursorInView = true } = opts;
     const moveCursor = mode === 'replace';
     this.setState(state =>
-      this.applyGestureAt(state.selection, cursor, mode, { moveCursor })
+      this.applyGestureAt(state.selection, cursor, mode, {
+        moveCursor,
+        allowDeselect: false,
+      })
     );
     if (keepCursorInView && cursor.column != null && cursor.row != null) {
       this.moveViewToCell(cursor.column, cursor.row);
@@ -1313,7 +1321,9 @@ class Grid extends PureComponent<GridProps, GridState> {
       }));
     } else {
       this.setState(state =>
-        this.applyGestureAt(state.selection, { column, row }, 'replace')
+        this.applyGestureAt(state.selection, { column, row }, 'replace', {
+          allowDeselect: false,
+        })
       );
     }
 
