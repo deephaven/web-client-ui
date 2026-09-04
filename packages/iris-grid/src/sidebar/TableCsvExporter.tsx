@@ -15,8 +15,10 @@ import {
 import {
   GridRange,
   GridUtils,
+  isRangedSelection,
   type ModelSizeMap,
   type MoveOperation,
+  type Selection,
 } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -26,6 +28,8 @@ import './TableCsvExporter.scss';
 import Log from '@deephaven/log';
 import type IrisGridModel from '../IrisGridModel';
 import IrisGridUtils from '../IrisGridUtils';
+import { KeyedSelection } from '../KeyedSelection';
+import { isKeyedGridModel } from '../KeyedGridModel';
 
 const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
@@ -48,7 +52,7 @@ interface TableCsvExporterProps {
     useUnformattedValues: boolean
   ) => void;
   onCancel: () => void;
-  selectedRanges: readonly GridRange[];
+  selection: Selection | null;
 }
 
 interface TableCsvExporterState {
@@ -97,8 +101,12 @@ class TableCsvExporter extends Component<
     tableDownloadStatus: '',
     tableDownloadProgress: 0,
     tableDownloadEstimatedTime: null,
-    selectedRanges: [],
+    selection: null,
   };
+
+  static formatRowCount(count: number): string {
+    return count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+  }
 
   static getDateString(dh: typeof DhType): string {
     return dh.i18n.DateTimeFormat.format(
@@ -142,32 +150,67 @@ class TableCsvExporter extends Component<
     };
   }
 
-  getSnapshotRanges(): GridRange[] {
-    const { model, selectedRanges } = this.props;
+  /** Returns the exact selected row count when known, or null for unknown-size keyed selections. */
+  get selectedRowCount(): number | null {
+    const { selection } = this.props;
+    if (
+      selection != null &&
+      isRangedSelection(selection) &&
+      !selection.isEmpty()
+    ) {
+      return GridRange.rowCount(selection.toRanges());
+    }
+    if (selection instanceof KeyedSelection) {
+      return selection.getUniqueRowCount();
+    }
+    return null;
+  }
+
+  getSnapshotRanges(keyedTableSize: number): GridRange[] {
+    const { model, selection } = this.props;
     const {
       downloadRowOption,
       customizedDownloadRowOption,
       customizedDownloadRows,
     } = this.state;
     const { rowCount, columnCount } = model;
-    let snapshotRanges = [] as GridRange[];
+    const snapshotRanges: GridRange[] = [];
     switch (downloadRowOption) {
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS:
         snapshotRanges.push(new GridRange(0, 0, columnCount - 1, rowCount - 1));
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS:
-        snapshotRanges = selectedRanges
-          .map(range => ({
-            ...range,
-            startColumn: 0,
-            endColumn: columnCount - 1,
-          }))
-          .sort((rangeA, rangeB) => {
-            if (rangeA.startRow != null && rangeB.startRow != null) {
-              return rangeA.startRow - rangeB.startRow;
-            }
-            return 0;
-          }) as GridRange[];
+        if (selection != null && isRangedSelection(selection)) {
+          snapshotRanges.push(
+            ...selection
+              .toRanges()
+              .map(
+                range =>
+                  new GridRange(
+                    0,
+                    range.startRow,
+                    columnCount - 1,
+                    range.endRow
+                  )
+              )
+              .sort((a, b) => {
+                if (a.startRow != null && b.startRow != null) {
+                  return a.startRow - b.startRow;
+                }
+                return 0;
+              })
+          );
+        } else if (selection instanceof KeyedSelection) {
+          // keyed: the frozenTable is already filtered; snapshot all its rows.
+          // Guard against zero — a ticking table can remove all selected rows before export.
+          if (keyedTableSize > 0) {
+            snapshotRanges.push(
+              new GridRange(0, 0, columnCount - 1, keyedTableSize - 1)
+            );
+          }
+        } else {
+          throw new Error('Unsupported selection type for snapshot ranges.');
+        }
         break;
       case TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS:
         switch (customizedDownloadRowOption) {
@@ -221,9 +264,20 @@ class TableCsvExporter extends Component<
   }
 
   async handleDownloadClick(): Promise<void> {
-    const { model, isDownloading, onDownloadStart, onDownload, onCancel } =
-      this.props;
-    const { fileName, includeColumnHeaders, useUnformattedValues } = this.state;
+    const {
+      model,
+      selection,
+      isDownloading,
+      onDownloadStart,
+      onDownload,
+      onCancel,
+    } = this.props;
+    const {
+      fileName,
+      includeColumnHeaders,
+      useUnformattedValues,
+      downloadRowOption,
+    } = this.state;
 
     if (isDownloading) {
       onCancel();
@@ -231,35 +285,65 @@ class TableCsvExporter extends Component<
     }
 
     this.resetDownloadState();
+    if (!this.validateOptionInput()) return;
 
-    const snapshotRanges = this.getSnapshotRanges();
-    const modelRanges = this.getModelRanges(snapshotRanges);
-    if (this.validateOptionInput()) {
-      onDownloadStart();
-      try {
-        const frozenTable = await model.export();
-        const tableSubscription = frozenTable.setViewport(0, 0);
-        await tableSubscription.getViewportData();
-        onDownload(
-          fileName,
-          frozenTable,
-          tableSubscription,
-          snapshotRanges,
-          modelRanges,
-          includeColumnHeaders,
-          useUnformattedValues
+    const isKeyedSelectedRows =
+      downloadRowOption ===
+        TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
+      selection instanceof KeyedSelection &&
+      isKeyedGridModel(model);
+
+    onDownloadStart();
+    let filteredTable: DhType.Table | null = null;
+    let frozenTable: DhType.Table | null = null;
+    let handedOff = false;
+    try {
+      if (isKeyedSelectedRows) {
+        filteredTable = await model.createFilteredByKeysTable(
+          selection.selectedKeyValues,
+          selection.invertedSelection
         );
-      } catch (error) {
-        log.error('CSV download failed', error);
-
-        this.setState({
-          errorMessage: (
-            <p>
-              <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
-            </p>
-          ),
-        });
+        // freeze to static snapshot; TableSaver closes frozenTable in finishDownload/cancelDownload
+        frozenTable = await filteredTable.freeze();
+      } else {
+        frozenTable = await model.export();
+      }
+      const snapshotRanges = this.getSnapshotRanges(frozenTable.size);
+      if (snapshotRanges.length === 0) {
+        // All selected rows were removed from the ticking table before export.
         onCancel();
+        return;
+      }
+      const modelRanges = this.getModelRanges(snapshotRanges);
+      const tableSubscription = frozenTable.setViewport(0, 0);
+      await tableSubscription.getViewportData();
+      onDownload(
+        fileName,
+        frozenTable,
+        tableSubscription,
+        snapshotRanges,
+        modelRanges,
+        includeColumnHeaders,
+        useUnformattedValues
+      );
+      handedOff = true;
+    } catch (error) {
+      log.error('CSV download failed', error);
+      this.setState({
+        errorMessage: (
+          <p>
+            <FontAwesomeIcon icon={vsWarning} /> {`${error}`}
+          </p>
+        ),
+      });
+      onCancel();
+    } finally {
+      // filteredTable is only a staging table used to produce frozenTable; always close it.
+      filteredTable?.close();
+      // frozenTable is owned by TableSaver only after onDownload runs; close on early
+      // return or any throw before handoff.
+      if (!handedOff) {
+        frozenTable?.close();
       }
     }
   }
@@ -297,13 +381,13 @@ class TableCsvExporter extends Component<
   }
 
   validateOptionInput(): boolean {
-    const { selectedRanges } = this.props;
+    const { selection } = this.props;
     const { downloadRowOption, customizedDownloadRows } = this.state;
 
     if (
       downloadRowOption ===
         TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS &&
-      selectedRanges.length === 0
+      (selection == null || selection.isEmpty())
     ) {
       this.setState({
         errorMessage: (
@@ -340,7 +424,6 @@ class TableCsvExporter extends Component<
       isDownloading,
       tableDownloadProgress,
       tableDownloadEstimatedTime,
-      selectedRanges,
       tableDownloadStatus,
     } = this.props;
     const {
@@ -373,9 +456,7 @@ class TableCsvExporter extends Component<
             >
               All Rows
               <span className="text-muted ml-2">
-                {`(${rowCount
-                  .toString()
-                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`}
+                {`(${TableCsvExporter.formatRowCount(rowCount)} rows)`}
               </span>
             </Radio>
             <Radio
@@ -384,10 +465,10 @@ class TableCsvExporter extends Component<
             >
               Only Selected Rows
               <span className="text-muted ml-2">
-                {selectedRanges.length > 0
-                  ? `(${GridRange.rowCount(selectedRanges)
-                      .toString()
-                      .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`
+                {this.selectedRowCount != null
+                  ? `(${TableCsvExporter.formatRowCount(
+                      this.selectedRowCount
+                    )} rows)`
                   : null}
               </span>
             </Radio>

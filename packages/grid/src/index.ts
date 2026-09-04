@@ -30,6 +30,14 @@ export { default as ViewportDataGridModel } from './ViewportDataGridModel';
 export { default as MockDataBarGridModel } from './MockDataBarGridModel';
 export * from './key-handlers';
 export * from './mouse-handlers';
+export * from './Selection';
+export * from './GridSelectionUtils';
+export {
+  RangedSelection,
+  isRangedSelection,
+  assertIsRangedSelection,
+  selectionToRanges,
+} from './RangedSelection';
 export * from './errors';
 export * from './EventHandlerResult';
 export * from './ThemeContext';

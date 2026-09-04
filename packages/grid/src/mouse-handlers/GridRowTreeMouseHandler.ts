@@ -66,6 +66,13 @@ class GridRowTreeMouseHandler extends GridMouseHandler {
     }
     return false;
   }
+
+  // Consume double-clicks in the tree box so `GridSelectionMouseHandler`
+  // doesn't fire a same-row `handleMouseSelectStart('replace')`, which would
+  // trigger deselect-on-reclick and wipe the row we just toggled.
+  onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
+    return GridRowTreeMouseHandler.isInTreeBox(gridPoint, grid);
+  }
 }
 
 export default GridRowTreeMouseHandler;

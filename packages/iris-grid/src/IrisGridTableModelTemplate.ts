@@ -29,6 +29,8 @@ import {
   type SortDescriptor,
 } from '@deephaven/jsapi-utils';
 import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
+import { type KeyedGridModel } from './KeyedGridModel';
+import { serializeKeyValues } from './KeyedSelection';
 
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -67,7 +69,7 @@ class IrisGridTableModelTemplate<
     R extends UIRow = UIRow,
   >
   extends IrisGridModel
-  implements DeletableGridModel, EditableGridModel
+  implements DeletableGridModel, EditableGridModel, KeyedGridModel
 {
   static ROW_BUFFER_PAGES = 1;
 
@@ -240,6 +242,30 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
+  }
+
+  getMemoizedSelectionKeyColumnIndices = memoize(
+    (columns: DhType.Column[], raw: unknown): readonly ModelIndex[] => {
+      if (raw == null || typeof raw !== 'string' || raw.trim() === '') {
+        return [];
+      }
+      return raw.split(',').map(name => {
+        const idx = columns.findIndex(c => c.name === name.trim());
+        if (idx < 0) throw new Error(`Selection key column not found: ${name}`);
+        return idx;
+      });
+    }
+  );
+
+  get selectionKeyColumnIndices(): readonly ModelIndex[] {
+    return this.getMemoizedSelectionKeyColumnIndices(
+      this.columns,
+      (this.table as DhType.Table).getAttribute?.('keyColumns')
+    );
+  }
+
+  get hasUniqueSelectionKeys(): boolean {
+    return (this.table as DhType.Table).getAttribute?.('uniqueKeys') === 'true';
   }
 
   close(): void {
@@ -480,7 +506,7 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    return this.keyColumnSet.size > 0;
+    return this.inputKeyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -582,7 +608,7 @@ class IrisGridTableModelTemplate<
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
     const text = this.textValueForCell(x, y);
-    if (text == null && this.isKeyColumn(x)) {
+    if (text == null && this.isInputKeyColumn(x)) {
       const pendingRow = this.pendingRow(y);
       if (pendingRow != null && this.pendingDataMap.has(pendingRow)) {
         // Asterisk to show a value is required for a key column on a row that has some data entered
@@ -644,7 +670,7 @@ class IrisGridTableModelTemplate<
           value
         );
       }
-    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
+    } else if (this.isPendingRow(y) && this.isInputKeyColumn(x)) {
       assertNotNull(theme.errorTextColor);
       return theme.errorTextColor;
     }
@@ -1542,6 +1568,218 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
+  /**
+   * Builds a filter condition matching any row whose key columns equal one of the provided key value sets.
+   *
+   * @param keyValues A map of key column names to their corresponding values
+   * @param keyColumns The key columns to filter by
+   * @returns A filter condition matching the provided key values, or null if no filter is needed
+   */
+  private buildKeyFilter(
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    keyColumns: readonly DhType.Column[]
+  ): DhType.FilterCondition | null {
+    // Return null if there are no key values to filter by
+    if (keyValues.size === 0) return null;
+
+    // Create an AND filter for each set of key values
+    const keyFilters: DhType.FilterCondition[] = [];
+    keyValues.forEach(values => {
+      const colFilters = values.map((val, i) => {
+        const col = keyColumns[i];
+        return this.tableUtils.makeNullableEqFilter(col, val);
+      });
+      keyFilters.push(
+        colFilters.length === 1
+          ? colFilters[0]
+          : colFilters[0].and(...colFilters.slice(1))
+      );
+    });
+
+    // Combine the key filters with OR logic
+    return keyFilters.length === 1
+      ? keyFilters[0]
+      : keyFilters[0].or(...keyFilters.slice(1));
+  }
+
+  async createFilteredByKeysTable(
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean
+  ): Promise<DhType.Table> {
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error(
+        'createFilteredByKeysTable is not supported on tree tables'
+      );
+    }
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
+    const copy = await (this.table as DhType.Table).copy();
+    try {
+      if (keyFilter == null && !invertedSelection) {
+        // Empty non-inverted selection means zero rows match; filter to nothing so
+        // callers (e.g. CSV exporter) see size=0 rather than the full unfiltered table.
+        const neverMatch = keyColumns[0]
+          .filter()
+          .isNull()
+          .and(keyColumns[0].filter().isNull().not());
+        await this.tableUtils.applyFilter(copy, [neverMatch]);
+      } else if (keyFilter != null) {
+        const filter = invertedSelection ? [keyFilter.not()] : [keyFilter];
+        await this.tableUtils.applyFilter(copy, filter);
+      }
+      // Fall-through when keyFilter == null && invertedSelection: all rows selected.
+      // Skip applyFilter — an empty filter array on a fresh copy produces no
+      // filterchanged event, causing applyFilter to time out.
+      return copy;
+    } catch (err) {
+      // applyFilter can reject or time out; the copy hasn't been returned to any
+      // caller yet, so close it here to avoid leaking a JS API table.
+      copy.close();
+      throw err;
+    }
+  }
+
+  async fetchKeyValuesForRowRanges(
+    ranges: readonly GridRange[]
+  ): Promise<ReadonlyMap<string, readonly unknown[]>> {
+    // Compute the bounding envelope covering every range so the server round
+    // trip is one viewport subscription regardless of how many disjoint ranges
+    // were selected. Handles reverse-ordered and out-of-order input.
+    let minStart: number | null = null;
+    let maxEnd: number | null = null;
+    for (let i = 0; i < ranges.length; i += 1) {
+      const { startRow, endRow } = ranges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const rEnd = endRow ?? startRow;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (minStart === null || low < minStart) minStart = low;
+      if (maxEnd === null || high > maxEnd) maxEnd = high;
+    }
+    if (minStart === null || maxEnd === null) return new Map();
+
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    // Use a secondary viewport subscription on the live table to avoid a copy/filter round-trip.
+    const sub = (this.table as DhType.Table).createViewportSubscription({
+      rows: { first: minStart, last: maxEnd },
+      columns: keyColumns,
+    });
+    try {
+      const data = await sub.getViewportData();
+      const result = new Map<string, readonly unknown[]>();
+      // Filter to only rows the caller actually requested — the envelope may
+      // include rows between disjoint ranges that must not be selected.
+      data.rows.forEach((row: DhType.Row, i: number) => {
+        const rowIndex = data.offset + i;
+        if (!IrisGridTableModelTemplate.rowInAnyRange(rowIndex, ranges)) return;
+        const values = keyColumns.map(col => row.get(col));
+        result.set(serializeKeyValues(values), values);
+      });
+      return result;
+    } finally {
+      sub.close();
+    }
+  }
+
+  private static rowInAnyRange(
+    rowIndex: number,
+    ranges: readonly GridRange[]
+  ): boolean {
+    for (let i = 0; i < ranges.length; i += 1) {
+      const { startRow, endRow } = ranges[i];
+      if (startRow == null) continue; // eslint-disable-line no-continue
+      const rEnd = endRow ?? startRow;
+      const low = Math.min(startRow, rEnd);
+      const high = Math.max(startRow, rEnd);
+      if (rowIndex >= low && rowIndex <= high) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Implementation of snapshotByKeys.
+   * This works by filtering the table based on the key values and then taking a snapshot of the entire filtered table.
+   */
+  async snapshotByKeys(
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders = false,
+    formatValue: (value: unknown, column: DhType.Column) => unknown = v => v,
+    maxRows: number | null = null
+  ): Promise<unknown[][]> {
+    if (maxRows != null && maxRows < 1) {
+      throw new Error(`maxRows must be at least 1, got ${maxRows}`);
+    }
+    if (TableUtils.isTreeTable(this.table)) {
+      throw new Error('snapshotByKeys is not supported on tree tables');
+    }
+
+    const keyColumns = this.selectionKeyColumnIndices.map(i => this.columns[i]);
+    const keyFilter = this.buildKeyFilter(keyValues, keyColumns);
+    if (keyFilter == null && !invertedSelection) {
+      // Empty normal selection — nothing to copy
+      return includeHeaders ? [columns.map(c => c.name)] : [];
+    }
+
+    const filteredTable = await this.createFilteredByKeysTable(
+      keyValues,
+      invertedSelection
+    );
+    try {
+      const result: unknown[][] = [];
+      if (includeHeaders) {
+        result.push(columns.map(c => c.name));
+      }
+      if (filteredTable.size > 0) {
+        const lastRow =
+          maxRows != null
+            ? Math.min(filteredTable.size - 1, maxRows - 1)
+            : filteredTable.size - 1;
+        const sub = filteredTable.createViewportSubscription({
+          rows: { first: 0, last: lastRow },
+          columns: [...columns],
+        });
+        try {
+          const data = await sub.getViewportData();
+          result.push(
+            ...data.rows.map((rowData: DhType.Row) =>
+              columns.map(col => formatValue(rowData.get(col), col))
+            )
+          );
+        } finally {
+          sub.close();
+        }
+      }
+      return result;
+    } finally {
+      filteredTable.close();
+    }
+  }
+
+  async textSnapshotByKeys(
+    columns: readonly DhType.Column[],
+    keyValues: ReadonlyMap<string, readonly unknown[]>,
+    invertedSelection: boolean,
+    includeHeaders = false,
+    formatValue: (
+      value: unknown,
+      column: DhType.Column,
+      row?: DhType.Row
+    ) => string = v => `${v}`,
+    maxRows: number | null = null
+  ): Promise<string> {
+    const data = await this.snapshotByKeys(
+      columns,
+      keyValues,
+      invertedSelection,
+      includeHeaders,
+      formatValue,
+      maxRows
+    );
+    return data.map(row => row.join('\t')).join('\n');
+  }
+
   async valuesTable(
     columns: DhType.Column | readonly DhType.Column[]
   ): Promise<DhType.Table> {
@@ -1638,19 +1876,19 @@ class IrisGridTableModelTemplate<
     ) {
       return false;
     }
-    return !this.isKeyColumn(modelIndex);
+    return !this.isInputKeyColumn(modelIndex);
   }
 
   isColumnSortable(modelIndex: ModelIndex): boolean {
     return this.columns[modelIndex].isSortable ?? true;
   }
 
-  isKeyColumn(x: ModelIndex): boolean {
-    return this.keyColumnSet.has(this.columns[x].name);
+  isInputKeyColumn(x: ModelIndex): boolean {
+    return this.inputKeyColumnSet.has(this.columns[x].name);
   }
 
-  isValueColumn(x: ModelIndex): boolean {
-    return this.valueColumnSet.has(this.columns[x].name);
+  isInputValueColumn(x: ModelIndex): boolean {
+    return this.inputValueColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1674,26 +1912,29 @@ class IrisGridTableModelTemplate<
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
 
-    let isKeyColumnInRange = false;
+    let isInputKeyColumnInRange = false;
     assertNotNull(range.startColumn);
     // Check if any of the columns in grid range are key columns
     const bound = range.endColumn ?? this.table.size;
     for (let column = range.startColumn; column <= bound; column += 1) {
-      const isKey = this.isKeyColumn(column);
-      const isValue = this.isValueColumn(column);
+      const isKey = this.isInputKeyColumn(column);
+      const isValue = this.isInputValueColumn(column);
 
       if (!isKey && !isValue) {
         // If any column is not a key or value column, range is not editable
         return false;
       }
       if (isKey) {
-        isKeyColumnInRange = true;
+        isInputKeyColumnInRange = true;
         break;
       }
     }
 
     if (
-      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
+      !(
+        isPendingRange ||
+        (this.inputKeyColumnSet.size !== 0 && !isInputKeyColumnInRange)
+      )
     ) {
       return false;
     }

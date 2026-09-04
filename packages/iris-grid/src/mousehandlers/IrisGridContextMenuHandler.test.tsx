@@ -5,7 +5,6 @@ import {
   type Grid,
   type GridMetrics,
   type GridPoint,
-  GridSelectionMouseHandler,
   type ModelIndex,
 } from '@deephaven/grid';
 import { type dh } from '@deephaven/jsapi-types';
@@ -82,9 +81,6 @@ describe('onContextMenu modelRow prop', () => {
   const mockDh = createMockProxy<typeof dh>();
 
   beforeEach(() => {
-    jest
-      .spyOn(GridSelectionMouseHandler, 'getLatestSelection')
-      .mockReturnValue([]);
     jest.spyOn(ContextActions, 'triggerMenu').mockImplementation(() => null);
   });
 

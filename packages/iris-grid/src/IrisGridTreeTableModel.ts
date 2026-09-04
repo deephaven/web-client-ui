@@ -118,6 +118,17 @@ class IrisGridTreeTableModel
         : [];
   }
 
+  // Tree tables currently do not support keyed selection
+  // This insures that a rollup on a keyed table will not get a keyed selection
+  get selectionKeyColumnIndices(): readonly ModelIndex[] {
+    return EMPTY_ARRAY;
+  }
+
+  // Tree tables currently do not support keyed selection
+  get hasUniqueSelectionKeys(): boolean {
+    return false;
+  }
+
   get showExtraGroupColumn(): boolean {
     return this.showExtraGroupCol;
   }

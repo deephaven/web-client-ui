@@ -13,7 +13,7 @@ class EditKeyHandler extends KeyHandler {
     }
 
     const { model } = grid.props;
-    const { cursorColumn, cursorRow } = grid.state;
+    const { cursorColumn, cursorRow } = grid.state.selection;
     if (
       cursorColumn == null ||
       cursorRow == null ||

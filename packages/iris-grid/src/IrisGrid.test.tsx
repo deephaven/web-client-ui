@@ -6,7 +6,9 @@ import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
 import {
   type ExpandableColumnGridModel,
+  GridRange,
   isExpandableColumnGridModel,
+  RangedSelection,
 } from '@deephaven/grid';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -251,15 +253,29 @@ it('handles reverse key shortcut', () => {
 it('handles copy key handler', () => {
   const component = makeComponent();
 
-  component.copyRanges = jest.fn();
+  component.copySelection = jest.fn();
 
   keyDown('c', component);
 
-  expect(component.copyRanges).not.toHaveBeenCalled();
+  expect(component.copySelection).not.toHaveBeenCalled();
 
   keyDown('c', component, { ctrlKey: true });
 
-  expect(component.copyRanges).toHaveBeenCalled();
+  // No selection yet — handler should guard and not copy
+  expect(component.copySelection).not.toHaveBeenCalled();
+
+  act(() => {
+    component.setState({
+      gridSelection: new RangedSelection(
+        [new GridRange(0, 0, 0, 0)],
+        () => component.props.model
+      ),
+    });
+  });
+
+  keyDown('c', component, { ctrlKey: true });
+
+  expect(component.copySelection).toHaveBeenCalled();
 });
 
 it('handles value: undefined in setFilterMap, clears column filter', () => {

@@ -87,22 +87,22 @@ class IrisGridTableModel
     return this.table.applyCustomColumns != null;
   }
 
-  getMemoizedKeyColumnSet = memoize(
+  getMemoizedInputKeyColumnSet = memoize(
     (inputTableKeys?: readonly ColumnName[]) =>
       new Set(inputTableKeys ?? EMPTY_ARRAY)
   );
 
-  get keyColumnSet(): Set<ColumnName> {
-    return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
+  get inputKeyColumnSet(): Set<ColumnName> {
+    return this.getMemoizedInputKeyColumnSet(this.inputTable?.keys);
   }
 
-  getMemoizedValueColumnSet = memoize(
+  getMemoizedInputValueColumnSet = memoize(
     (inputTableValues?: readonly ColumnName[]) =>
       new Set(inputTableValues ?? EMPTY_ARRAY)
   );
 
-  get valueColumnSet(): Set<ColumnName> {
-    return this.getMemoizedValueColumnSet(this.inputTable?.values);
+  get inputValueColumnSet(): Set<ColumnName> {
+    return this.getMemoizedInputValueColumnSet(this.inputTable?.values);
   }
 
   getMemoizedFrontColumns = memoize(
@@ -351,7 +351,7 @@ class IrisGridTableModel
     ) {
       return false;
     }
-    return !this.isKeyColumn(modelIndex);
+    return !this.isInputKeyColumn(modelIndex);
   }
 
   isColumnFrozen(modelIndex: ModelIndex): boolean {
@@ -365,7 +365,7 @@ class IrisGridTableModel
 
     assertNotNull(this.inputTable);
     const { keyColumns } = this.inputTable;
-    if (this.keyColumnSet.size === 0) {
+    if (this.inputKeyColumnSet.size === 0) {
       throw new Error('No key columns to allow deletion');
     }
 

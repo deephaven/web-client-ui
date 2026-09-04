@@ -2,12 +2,12 @@ import type React from 'react';
 import { type VisibleIndex, type Coordinate } from './GridMetrics';
 import type GridMetrics from './GridMetrics';
 import type GridModel from './GridModel';
-import type GridRange from './GridRange';
 import { type GridTheme } from './GridTheme';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import type { CellInputFieldProps } from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
+import type { GestureMode, Selection } from './Selection';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;
@@ -86,12 +86,8 @@ export type GridRenderState = {
   mouseX: Coordinate | null;
   mouseY: Coordinate | null;
 
-  // Where the keyboard cursor is located
-  cursorColumn: VisibleIndex | null;
-  cursorRow: VisibleIndex | null;
-
-  // Currently selected ranges
-  selectedRanges: readonly GridRange[];
+  // Current selection. Owns the cursor and shift/drag endpoint.
+  selection: Selection;
 
   // Currently dragged column/row information
   draggingColumn: DraggingColumn | null;
@@ -105,4 +101,8 @@ export type GridRenderState = {
   isDraggingHorizontalScrollBar: boolean;
   isDraggingVerticalScrollBar: boolean;
   isDragging: boolean;
+
+  // Modifier-derived mode of the in-flight mouse gesture; `null` when no
+  // gesture is active. Drives the drag-overlay stroke on additive gestures.
+  gestureMode: GestureMode | null;
 };

@@ -1,37 +1,12 @@
 import { type EventHandlerResult } from '../EventHandlerResult';
 import type Grid from '../Grid';
 import GridMouseHandler, { type GridMouseEvent } from '../GridMouseHandler';
-import GridRange, { type GridRangeIndex } from '../GridRange';
 import GridUtils, { type GridPoint } from '../GridUtils';
+import { gestureModeFromModifiers } from '../GridSelectionUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
 
 class GridSelectionMouseHandler extends GridMouseHandler {
-  /**
-   * Returns the latest grid selection based on the current grid selection and where the user clicked
-   * This code is dependent on the behavior of onContextMenu
-   * @param originalSelection The selection from the current grid state which may be stale
-   * @param columnIndex The column index where the user clicked
-   * @param rowIndex The row index where the user clicked
-   */
-  static getLatestSelection(
-    originalSelection: readonly GridRange[],
-    columnIndex: GridRangeIndex,
-    rowIndex: GridRangeIndex
-  ): readonly GridRange[] {
-    const clickedInOriginalSelection = GridRange.containsCell(
-      originalSelection,
-      columnIndex,
-      rowIndex
-    );
-
-    // If the user clicked in a valid cell outside of the original selection,
-    // the selection will be changed to just that cell.
-    return clickedInOriginalSelection || columnIndex == null || rowIndex == null
-      ? originalSelection
-      : [GridRange.makeCell(columnIndex, rowIndex)];
-  }
-
   private startPoint?: GridPoint;
 
   private hasExtendedFloating = false;
@@ -64,13 +39,6 @@ class GridSelectionMouseHandler extends GridMouseHandler {
 
     const isModifierKey = GridUtils.isModifierKeyDown(event);
     const isShiftKey = event.shiftKey;
-    if (!isModifierKey) {
-      if (isShiftKey) {
-        grid.trimSelectedRanges();
-      } else {
-        grid.clearSelectedRanges();
-      }
-    }
 
     const theme = grid.getTheme();
     const { autoSelectRow, autoSelectColumn } = theme;
@@ -80,13 +48,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       (row !== null || !autoSelectRow)
     ) {
       grid.focus();
-      grid.moveCursorToPosition(
-        column,
-        row,
-        isShiftKey,
-        false,
-        isShiftKey && isModifierKey
-      );
+      const mode = gestureModeFromModifiers({ isShiftKey, isModifierKey });
+      grid.handleMouseSelectStart({ row, column }, mode);
     }
 
     this.startPoint = gridPoint;
@@ -224,7 +187,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
           column = rightVisible + 1;
         }
       }
-      grid.moveCursorToPosition(column, row, true, true);
+      // Transient overlay during drag — onUp performs the settled commit.
+      grid.handleMouseSelectDrag({ row, column });
     }
     return true;
   }
@@ -233,7 +197,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     if (this.startPoint !== undefined) {
       this.startPoint = undefined;
       this.stopTimer();
-      grid.commitSelection();
+      grid.handleMouseSelectEnd();
     }
 
     return false;
@@ -250,9 +214,8 @@ class GridSelectionMouseHandler extends GridMouseHandler {
       return false;
     }
 
-    grid.clearSelectedRanges();
-    grid.moveCursorToPosition(column, row);
-    grid.commitSelection();
+    // Double-click behaves as a plain click at the target: replace selection.
+    grid.handleMouseSelectStart({ row, column }, 'replace');
 
     return true;
   }
@@ -262,20 +225,17 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     grid: Grid,
     event: GridMouseEvent
   ): EventHandlerResult {
-    // check if the selected is already in the selected range
-    const selectedRanges = grid.getSelectedRanges();
-    const isInRange = GridRange.containsCell(
-      selectedRanges,
-      gridPoint.column,
-      gridPoint.row
-    );
+    const { row, column } = gridPoint;
+    const isInRange =
+      row != null &&
+      column != null &&
+      grid.getSelection().isCellSelected(column, row);
 
-    // only change the selected range if the selected cell is not in the selected range
-    if (!isInRange && gridPoint.row !== null && gridPoint.column !== null) {
+    // only change the selected range if the clicked cell is not already selected
+    if (!isInRange && row != null && column != null) {
       this.startPoint = undefined;
       this.stopTimer();
-      grid.clearSelectedRanges();
-      grid.moveCursorToPosition(gridPoint.column, gridPoint.row);
+      grid.handleMouseSelectStart({ row, column }, 'replace');
     }
 
     return false;
@@ -291,7 +251,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
-    const { selectionEndRow, selectionEndColumn } = grid.state;
+    const { selectionEndRow, selectionEndColumn } = grid.state.selection;
     if (selectionEndRow == null || selectionEndColumn == null) {
       throw new Error('selection not set');
     }
@@ -301,11 +261,11 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const maxX = deltaX > 0 && column != null ? column : columnCount - 1;
     const minY = deltaY < 0 && row != null ? row : 0;
     const maxY = deltaY > 0 && row != null ? row : rowCount - 1;
-    grid.moveCursorToPosition(
-      Math.min(Math.max(minX, selectionEndColumn + deltaX), maxX),
-      Math.min(Math.max(minY, selectionEndRow + deltaY), maxY),
-      true
-    );
+    // Transient overlay during auto-scroll drag — onUp performs the settled commit.
+    grid.handleMouseSelectDrag({
+      column: Math.min(Math.max(minX, selectionEndColumn + deltaX), maxX),
+      row: Math.min(Math.max(minY, selectionEndRow + deltaY), maxY),
+    });
     this.lastTriggerTime = Date.now();
   }
 

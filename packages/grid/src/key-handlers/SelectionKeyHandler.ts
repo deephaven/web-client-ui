@@ -3,14 +3,18 @@ import clamp from 'lodash.clamp';
 import { type EventHandlerResult } from '../EventHandlerResult';
 import type Grid from '../Grid';
 import GridRange from '../GridRange';
+import type { GridRangeIndex } from '../GridRange';
 import GridUtils from '../GridUtils';
+import { gestureModeFromModifiers } from '../GridSelectionUtils';
 import KeyHandler, { type GridKeyboardEvent } from '../KeyHandler';
 
 class SelectionKeyHandler extends KeyHandler {
   onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
+    const isShiftKey = event.shiftKey;
+    const isModifierKey = GridUtils.isModifierKeyDown(event);
     switch (event.key) {
       case 'a':
-        if (GridUtils.isModifierKeyDown(event)) {
+        if (isModifierKey) {
           grid.selectAll();
           return true;
         }
@@ -31,79 +35,72 @@ class SelectionKeyHandler extends KeyHandler {
        */
       case 'k':
       case 'K':
-        if (GridUtils.isModifierKeyDown(event)) return false;
+        if (isModifierKey) return false;
         return this.handlePageUp(event, grid);
       case 'j':
       case 'J':
-        if (GridUtils.isModifierKeyDown(event)) return false;
+        if (isModifierKey) return false;
         return this.handlePageDown(event, grid);
       case 'h':
       case 'H':
-        if (GridUtils.isModifierKeyDown(event)) return false;
-        if (!event.shiftKey) {
-          grid.clearSelectedRanges();
-        }
-        grid.moveCursorToPosition(0, grid.state.cursorRow, event.shiftKey);
-        return true;
+        if (isModifierKey) return false;
+        // In row-selection mode, column-edge movement is meaningless.
+        if (grid.props.theme.autoSelectRow === true) return true;
+        return this.handleRowEdge(0, event, grid);
       case 'l':
-      case 'L': {
-        if (GridUtils.isModifierKeyDown(event)) return false;
-        const { model } = grid.props;
-        const { columnCount } = model;
-        if (!event.shiftKey) {
-          grid.clearSelectedRanges();
-        }
-        grid.moveCursorToPosition(
-          columnCount - 1,
-          grid.state.cursorRow,
-          event.shiftKey
+      case 'L':
+        if (isModifierKey) return false;
+        if (grid.props.theme.autoSelectRow === true) return true;
+        return this.handleRowEdge(
+          grid.props.model.columnCount - 1,
+          event,
+          grid
         );
-        return true;
-      }
       case 'PageDown':
         return this.handlePageDown(event, grid);
       case 'PageUp':
         return this.handlePageUp(event, grid);
       case 'Home':
-        if (!event.shiftKey) {
-          grid.clearSelectedRanges();
-        }
-        grid.moveCursorToPosition(
-          GridUtils.isModifierKeyDown(event) ? grid.state.cursorColumn : 0,
-          GridUtils.isModifierKeyDown(event) ? 0 : grid.state.cursorRow,
-          event.shiftKey,
-          true,
-          true
-        );
-        return true;
       case 'End': {
         const { model } = grid.props;
         const { columnCount, rowCount } = model;
-        if (!event.shiftKey) {
-          grid.clearSelectedRanges();
+        const { cursorColumn, cursorRow } = grid.state.selection;
+        const toEnd = event.key === 'End';
+        // In row-selection mode, plain / Shift Home/End would only move the
+        // cursor between columns and (via commit) toggle the row selection.
+        // Ctrl+Home/End still jumps to top/bottom row, which is meaningful.
+        if (grid.props.theme.autoSelectRow === true && !isModifierKey) {
+          return true;
         }
-        grid.moveCursorToPosition(
-          GridUtils.isModifierKeyDown(event)
-            ? grid.state.cursorColumn
-            : columnCount - 1,
-          GridUtils.isModifierKeyDown(event)
-            ? rowCount - 1
-            : grid.state.cursorRow,
-          event.shiftKey,
-          true,
-          true
+        // Ctrl/Meta pins the column and jumps to the row edge; without it
+        // Home/End jumps to the column edge on the current row.
+        let targetColumn: GridRangeIndex;
+        let targetRow: GridRangeIndex;
+        if (isModifierKey) {
+          targetColumn = cursorColumn;
+          targetRow = toEnd ? rowCount - 1 : 0;
+        } else {
+          targetColumn = toEnd ? columnCount - 1 : 0;
+          targetRow = cursorRow;
+        }
+        if (targetColumn == null || targetRow == null) return false;
+        // Shift extends via maximize (grow the last range's furthest edge)
+        // to preserve pre-refactor Shift+Home followed by Shift+End behavior.
+        grid.handleKeySelectAt(
+          { column: targetColumn, row: targetRow },
+          isShiftKey ? 'maximize' : 'replace'
         );
         return true;
       }
       case 'Escape':
-        if (grid.state.selectedRanges.length === 0) return false;
+        if (grid.state.selection.isEmpty()) return false;
         grid.clearSelectedRanges();
         // consume the event, and stop propagation only if there were selected ranges to clear
         return { preventDefault: false, stopPropagation: true };
       case 'Enter':
-        if (grid.state.selectedRanges.length > 0) {
-          grid.moveCursorInDirection(
-            event.shiftKey
+        if (!grid.state.selection.isEmpty()) {
+          grid.handleKeyAdvanceCursor(
+            isShiftKey
               ? GridRange.SELECTION_DIRECTION.UP
               : GridRange.SELECTION_DIRECTION.DOWN
           );
@@ -111,9 +108,9 @@ class SelectionKeyHandler extends KeyHandler {
         }
         break;
       case 'Tab':
-        if (grid.state.selectedRanges.length > 0) {
-          grid.moveCursorInDirection(
-            event.shiftKey
+        if (!grid.state.selection.isEmpty()) {
+          grid.handleKeyAdvanceCursor(
+            isShiftKey
               ? GridRange.SELECTION_DIRECTION.LEFT
               : GridRange.SELECTION_DIRECTION.RIGHT
           );
@@ -134,22 +131,19 @@ class SelectionKeyHandler extends KeyHandler {
   ): boolean {
     const isShiftKey = event.shiftKey;
     const isModifierKey = GridUtils.isModifierKeyDown(event);
-    if (isShiftKey) {
-      grid.trimSelectedRanges();
-    } else {
-      grid.clearSelectedRanges();
-    }
 
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
-      grid.state;
+      grid.state.selection;
     const column = isShiftKey ? selectionEndColumn : cursorColumn;
     const row = isShiftKey ? selectionEndRow : cursorRow;
+
+    // Ctrl+Arrow is an exception to the mode returned by gestureModeFromModifiers
+    // It jumps to the edge of the grid in the arrow direction, and replaces the selection.
     if (isModifierKey) {
       const { model } = grid.props;
       const { columnCount, rowCount } = model;
-      const maximizePreviousRange = isModifierKey && isShiftKey;
-      let moveToColumn = null;
-      let moveToRow = null;
+      let moveToColumn: number | null = null;
+      let moveToRow: number | null = null;
       if (deltaColumn < 0) {
         moveToColumn = 0;
         moveToRow = row;
@@ -164,123 +158,85 @@ class SelectionKeyHandler extends KeyHandler {
         moveToRow = rowCount - 1;
       }
       if (moveToColumn != null && moveToRow != null) {
-        grid.moveCursorToPosition(
-          moveToColumn,
-          moveToRow,
-          isShiftKey,
-          true,
-          maximizePreviousRange
+        grid.handleKeySelectAt(
+          { column: moveToColumn, row: moveToRow },
+          isShiftKey ? 'maximize' : 'replace'
         );
       }
-    } else {
-      if (!grid.metrics) throw new Error('grid.metrics are not set');
-
-      const { theme } = grid.props;
-      const { autoSelectRow = false, autoSelectColumn = false } = theme;
-      if (autoSelectRow && deltaColumn !== 0) {
-        const { lastLeft } = grid.metrics;
-        let { left } = grid.state;
-
-        left = clamp(left + deltaColumn, 0, lastLeft);
-
-        grid.moveCursorToPosition(left, cursorRow, isShiftKey, false);
-
-        grid.setViewState({ left });
-      } else if (autoSelectColumn && deltaRow !== 0) {
-        const { lastTop } = grid.metrics;
-        let { top } = grid.state;
-
-        top = clamp(top + deltaRow, 0, lastTop);
-
-        grid.moveCursorToPosition(top, cursorColumn, isShiftKey, false);
-
-        grid.setViewState({ top });
-      } else {
-        grid.moveCursor(deltaColumn, deltaRow, isShiftKey);
-      }
+      return true;
     }
+
+    if (!grid.metrics) throw new Error('grid.metrics are not set');
+
+    // Plain / Shift arrows: mode is derived from Shift alone here since `isModifierKey` was short-circuited above.
+    const mode = gestureModeFromModifiers({ isShiftKey, isModifierKey: false });
+
+    const { theme } = grid.props;
+    const { autoSelectRow = false, autoSelectColumn = false } = theme;
+    if (autoSelectRow && deltaColumn !== 0) {
+      const { lastLeft } = grid.metrics;
+      const left = clamp(grid.state.left + deltaColumn, 0, lastLeft);
+      if (cursorRow != null) {
+        grid.handleKeyMoveCursor(left, cursorRow);
+      }
+      grid.setViewState({ left });
+      return true;
+    }
+    if (autoSelectColumn && deltaRow !== 0) {
+      const { lastTop } = grid.metrics;
+      const top = clamp(grid.state.top + deltaRow, 0, lastTop);
+      // Preserves the (arguably surprising) original behavior of using `top`
+      // as the column argument; kept identical to pre-refactor code paths.
+      grid.handleKeySelectAt({ column: top, row: cursorColumn }, mode, {
+        keepCursorInView: false,
+      });
+      grid.setViewState({ top });
+      return true;
+    }
+
+    if (row === null || column === null) {
+      const { left, top } = grid.state;
+      grid.handleKeySelectAt({ column: left, row: top }, mode);
+      return true;
+    }
+    const { model } = grid.props;
+    const { columnCount, rowCount } = model;
+    const targetColumn = clamp(column + deltaColumn, 0, columnCount - 1);
+    const targetRow = clamp(row + deltaRow, 0, rowCount - 1);
+    grid.handleKeySelectAt({ column: targetColumn, row: targetRow }, mode);
+    return true;
+  }
+
+  handleRowEdge(
+    targetColumn: number,
+    event: GridKeyboardEvent,
+    grid: Grid
+  ): boolean {
+    const isShiftKey = event.shiftKey;
+    const { cursorRow } = grid.state.selection;
+    if (cursorRow == null) return false;
+    grid.handleKeySelectAt(
+      { column: targetColumn, row: cursorRow },
+      gestureModeFromModifiers({ isShiftKey, isModifierKey: false })
+    );
     return true;
   }
 
   handlePageUp(e: GridKeyboardEvent, grid: Grid): boolean {
-    const isShiftKey = e.shiftKey;
-
-    if (isShiftKey) {
-      grid.trimSelectedRanges();
-    } else {
-      grid.clearSelectedRanges();
-    }
-
-    const { cursorColumn, selectionEndRow } = grid.state;
-    const row: number | null = selectionEndRow;
-    const column: number | null = cursorColumn;
-    if (row == null) {
-      return false;
-    }
-    const metricState = grid.getMetricState();
-    const { metricCalculator } = grid;
-    const { bottomVisible, topVisible, hasHorizontalBar } =
-      metricCalculator.getMetrics(metricState);
-
-    let selectRangeEndPosition = row - (bottomVisible - topVisible);
-    selectRangeEndPosition -= hasHorizontalBar ? 0 : 1;
-
-    // Don't move beyond the top table row.
-    selectRangeEndPosition = Math.max(selectRangeEndPosition, 0);
-    const viewportPosition = Math.max(
-      selectRangeEndPosition - (row - topVisible),
-      0
-    );
-
-    grid.moveCursorToPosition(
-      column,
-      selectRangeEndPosition,
-      isShiftKey,
-      false
-    );
-    grid.setViewState({ top: viewportPosition });
+    const mode = gestureModeFromModifiers({
+      isShiftKey: e.shiftKey,
+      isModifierKey: false,
+    });
+    grid.handleKeyPageUp(mode);
     return true;
   }
 
   handlePageDown(e: GridKeyboardEvent, grid: Grid): boolean {
-    const isShiftKey = e.shiftKey;
-
-    if (isShiftKey) {
-      grid.trimSelectedRanges();
-    } else {
-      grid.clearSelectedRanges();
-    }
-
-    const { selectionEndRow, cursorColumn } = grid.state;
-    const row: number | null = selectionEndRow;
-    const column: number | null = cursorColumn;
-    if (row === null) {
-      return false;
-    }
-    const metricState = grid.getMetricState();
-    const { metricCalculator } = grid;
-    const { bottomVisible, topVisible, hasHorizontalBar, rowCount, lastTop } =
-      metricCalculator.getMetrics(metricState);
-    const lastRowIndex = rowCount - 1;
-
-    let selectRangeEndPosition = bottomVisible - topVisible + row;
-    selectRangeEndPosition += hasHorizontalBar ? 0 : 1;
-
-    // Don't move beyond the bottom table row.
-    selectRangeEndPosition = Math.min(selectRangeEndPosition, lastRowIndex);
-
-    const viewportPosition = Math.min(
-      lastTop,
-      selectRangeEndPosition - (row - topVisible)
-    );
-    grid.moveCursorToPosition(
-      column,
-      selectRangeEndPosition,
-      isShiftKey,
-      false
-    );
-    grid.setViewState({ top: viewportPosition });
-
+    const mode = gestureModeFromModifiers({
+      isShiftKey: e.shiftKey,
+      isModifierKey: false,
+    });
+    grid.handleKeyPageDown(mode);
     return true;
   }
 }

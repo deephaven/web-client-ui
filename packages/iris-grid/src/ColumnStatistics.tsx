@@ -223,8 +223,8 @@ class ColumnStatistics extends Component<
         {columnIndex != null &&
           isEditableGridModel(model) &&
           model.isEditable &&
-          !model.keyColumnSet.has(column.name) &&
-          !model.valueColumnSet.has(column.name) && (
+          !model.inputKeyColumnSet.has(column.name) &&
+          !model.inputValueColumnSet.has(column.name) && (
             <div className="column-statistics-status">
               <FontAwesomeIcon icon={vsLock} className="mr-1" />
               Not editable
