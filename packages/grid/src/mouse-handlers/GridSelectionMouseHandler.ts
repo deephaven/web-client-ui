@@ -251,7 +251,7 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     const { metrics } = grid;
     if (!metrics) throw new Error('metrics not set');
 
-    const { selectionEndRow, selectionEndColumn } = grid.state;
+    const { selectionEndRow, selectionEndColumn } = grid.state.selection;
     if (selectionEndRow == null || selectionEndColumn == null) {
       throw new Error('selection not set');
     }

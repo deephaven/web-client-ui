@@ -3230,8 +3230,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
-    const cursorRow = this.grid?.state.cursorRow;
-    const cursorColumn = this.grid?.state.cursorColumn;
+    const cursorRow = this.grid?.state.selection.cursorRow;
+    const cursorColumn = this.grid?.state.selection.cursorColumn;
 
     if (cursorRow == null || cursorColumn == null) {
       // if a cell is not selected / grid is not rendered
@@ -3713,7 +3713,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleViewChanged(metrics?: GridMetrics): void {
     const { model } = this.props;
-    const { selectionEndRow = 0 } = this.grid?.state ?? {};
+    const selectionEndRow = this.grid?.state.selection.selectionEndRow ?? 0;
     let pendingRowCount = 0;
     if (isEditableGridModel(model) && model.isEditable) {
       assertNotNull(metrics);
@@ -4382,7 +4382,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return;
     }
 
-    let searchFromRow = this.grid?.state.cursorRow;
+    let searchFromRow = this.grid?.state.selection.cursorRow;
 
     if (searchFromRow == null) {
       searchFromRow = 0;
@@ -4894,7 +4894,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
     const { model } = this.props;
-    const cursorRow = this.grid?.state.cursorRow;
+    const cursorRow = this.grid?.state.selection.cursorRow;
     const {
       gotoValueSelectedColumnName: prevColumnName,
       gotoValueManuallyChanged,

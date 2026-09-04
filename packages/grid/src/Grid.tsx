@@ -214,13 +214,7 @@ export type GridState = {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
 
-  // Cursor (highlighted cell) location and active selected range
-  cursorRow: VisibleIndex | null;
-  cursorColumn: VisibleIndex | null;
-  selectionEndRow: VisibleIndex | null;
-  selectionEndColumn: VisibleIndex | null;
-
-  // The current selection
+  // The current selection. Owns the cursor the shift/drag endpoint
   selection: Selection;
   // Previous selection; used for deselect-on-reclick detection in `applyGestureAt`.
   lastSelection: Selection;
@@ -256,13 +250,7 @@ export type GridState = {
 /** Selection-related slice of `GridState`. Returned by gesture entry points. */
 export type GridSelectionState = Pick<
   GridState,
-  | 'selection'
-  | 'lastSelection'
-  | 'selectedRanges'
-  | 'cursorRow'
-  | 'cursorColumn'
-  | 'selectionEndColumn'
-  | 'selectionEndRow'
+  'selection' | 'lastSelection' | 'selectedRanges'
 >;
 
 /**
@@ -527,12 +515,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       // Move operations the user has performed on this grids columns/rows
       movedColumns,
       movedRows,
-
-      // Cursor (highlighted cell) location and active selected range
-      cursorRow: null,
-      cursorColumn: null,
-      selectionEndRow: null,
-      selectionEndColumn: null,
 
       // Currently selected ranges and previously selected ranges
       // Store the previously selected ranges to determine if the new selection should
@@ -860,15 +842,15 @@ class Grid extends PureComponent<GridProps, GridState> {
         ? new GridRange(null, row, null, row)
         : GridRange.makeCell(0, row);
     this.setState(state => {
-      const newSel = state.selection.clear().withCommittedRanges([range]);
+      const newSel = state.selection
+        .clear()
+        .withCommittedRanges([range])
+        .withCursor(row, 0)
+        .withSelectionEnd(row, 0);
       return {
         selection: newSel,
         lastSelection: newSel,
         selectedRanges: selectionToRanges(newSel),
-        cursorRow: row,
-        cursorColumn: 0,
-        selectionEndRow: row,
-        selectionEndColumn: 0,
         isStuckToBottom: false,
       };
     });
@@ -920,8 +902,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { model } = this.props;
     const { columnCount, rowCount } = model;
     this.setState(state => {
-      let { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
-        state;
+      let { cursorRow, cursorColumn } = state.selection;
+      let selectionEndRow: GridRangeIndex = null;
+      let selectionEndColumn: GridRangeIndex = null;
       let anchorRow: GridRangeIndex = null;
       let anchorColumn: GridRangeIndex = null;
       if (gridRanges.length > 0) {
@@ -938,18 +921,17 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectionEndColumn = range.endColumn;
         selectionEndRow = range.endRow;
       }
-      const selection = state.selection.withCommittedRanges(gridRanges, {
-        row: anchorRow,
-        column: anchorColumn,
-      });
+      const selection = state.selection
+        .withCommittedRanges(gridRanges, {
+          row: anchorRow,
+          column: anchorColumn,
+        })
+        .withCursor(cursorRow, cursorColumn)
+        .withSelectionEnd(selectionEndRow, selectionEndColumn);
       return {
         selection,
         selectedRanges: selectionToRanges(selection),
         lastSelection: state.selection,
-        selectionEndColumn,
-        selectionEndRow,
-        cursorColumn,
-        cursorRow,
       };
     });
   }
@@ -1181,46 +1163,44 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Extend + commit a gesture at `cursor` and return the resulting partial
    * state. Shared by mouse click-and-release and keyboard commits.
    *
-   * @param state Pre-gesture state; `state.selection` is the selection to
-   * fold against. Cursor landing reads its extended (pre-commit) form so
-   * `KeyedSelection`'s overlay is still available.
+   * @param selection Pre-gesture selection to fold against. Cursor landing
+   * reads its extended (pre-commit) form so `KeyedSelection`'s overlay is
+   * still available.
    * @param cursor Gesture target cell.
    * @param mode Modifier-derived gesture mode.
    * @param opts.moveCursor Snap the cursor to `cursor` (default true).
    * Pass false for keyboard extend / maximize / add so the cursor stays put.
    */
   private applyGestureAt(
-    state: Pick<GridState, 'selection' | 'cursorRow' | 'cursorColumn'>,
+    selection: Selection,
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode,
     opts: { moveCursor?: boolean } = {}
   ): GridSelectionState {
     const { theme } = this.props;
     const { moveCursor = true } = opts;
-    const lastSelection = state.selection;
+    const lastSelection = selection;
     const extendOpts: GestureExtendOptions = {
       mode,
       autoSelectRow: theme.autoSelectRow ?? false,
       autoSelectColumn: theme.autoSelectColumn ?? false,
     };
-    const extended = state.selection.withGestureExtend(cursor, extendOpts);
-    const settled = extended.commitGesture(lastSelection, {
-      autoSelectRow: extendOpts.autoSelectRow,
-      // When moveCursor is false (extend / maximize / add), preserve the
-      // pre-gesture cursor. When true (replace), move to the gesture cursor.
-      cursor: moveCursor
-        ? cursor
-        : { row: state.cursorRow, column: state.cursorColumn },
-    });
+    const extended = selection.withGestureExtend(cursor, extendOpts);
+    // `replace` snaps the cursor to the gesture; extend/maximize/add keep it put.
+    const cursorTarget = moveCursor
+      ? cursor
+      : { row: selection.cursorRow, column: selection.cursorColumn };
+    const settled = extended
+      .commitGesture(lastSelection, {
+        autoSelectRow: extendOpts.autoSelectRow,
+        cursor: cursorTarget,
+      })
+      .withSelectionEnd(cursor.row, cursor.column);
 
     return {
       selection: settled,
       lastSelection,
       selectedRanges: selectionToRanges(settled),
-      cursorRow: settled.cursorRow,
-      cursorColumn: settled.cursorColumn,
-      selectionEndColumn: cursor.column,
-      selectionEndRow: cursor.row,
     };
   }
 
@@ -1233,7 +1213,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode
   ): void {
-    this.setState(state => this.applyGestureAt(state, cursor, mode));
+    this.setState(state => this.applyGestureAt(state.selection, cursor, mode));
   }
 
   /**
@@ -1251,12 +1231,12 @@ class Grid extends PureComponent<GridProps, GridState> {
         autoSelectRow: theme.autoSelectRow ?? false,
         autoSelectColumn: theme.autoSelectColumn ?? false,
       };
-      const extended = state.selection.withGestureExtend(cursor, opts);
+      const extended = state.selection
+        .withGestureExtend(cursor, opts)
+        .withSelectionEnd(cursor.row, cursor.column);
       return {
         selection: extended,
         selectedRanges: selectionToRanges(extended),
-        selectionEndColumn: cursor.column,
-        selectionEndRow: cursor.row,
       };
     });
     this.moveViewToCell(cursor.column, cursor.row);
@@ -1266,17 +1246,18 @@ class Grid extends PureComponent<GridProps, GridState> {
   handleMouseSelectEnd(): void {
     const { theme } = this.props;
     this.setState(state => {
-      const { selection, lastSelection, cursorRow, cursorColumn } = state;
+      const { selection, lastSelection } = state;
       const settled = selection.commitGesture(lastSelection, {
         autoSelectRow: theme.autoSelectRow ?? false,
         // Mouse-up commit preserves the current cursor position.
-        cursor: { row: cursorRow, column: cursorColumn },
+        cursor: {
+          row: selection.cursorRow,
+          column: selection.cursorColumn,
+        },
       });
       if (settled === selection) return null;
 
       return {
-        cursorRow: settled.cursorRow,
-        cursorColumn: settled.cursorColumn,
         selection: settled,
         lastSelection: settled,
         selectedRanges: selectionToRanges(settled),
@@ -1302,7 +1283,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { keepCursorInView = true } = opts;
     const moveCursor = mode === 'replace';
     this.setState(state =>
-      this.applyGestureAt(state, cursor, mode, { moveCursor })
+      this.applyGestureAt(state.selection, cursor, mode, { moveCursor })
     );
     if (keepCursorInView && cursor.column != null && cursor.row != null) {
       this.moveViewToCell(cursor.column, cursor.row);
@@ -1317,9 +1298,9 @@ class Grid extends PureComponent<GridProps, GridState> {
    * from an initial empty state), installs a fresh single-cell selection.
    */
   handleKeyAdvanceCursor(direction: SELECTION_DIRECTION): void {
-    const { cursorColumn, cursorRow, selection } = this.state;
+    const { selection } = this.state;
     const next = selection.getNextCursorInDirection(
-      { column: cursorColumn, row: cursorRow },
+      { column: selection.cursorColumn, row: selection.cursorRow },
       direction
     );
     if (next == null) return;
@@ -1327,10 +1308,12 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { column, row } = next;
     if (column == null || row == null) return;
     if (selection.isCellSelected(column, row)) {
-      this.setState({ cursorColumn: column, cursorRow: row });
+      this.setState(state => ({
+        selection: state.selection.withCursor(row, column),
+      }));
     } else {
       this.setState(state =>
-        this.applyGestureAt(state, { column, row }, 'replace')
+        this.applyGestureAt(state.selection, { column, row }, 'replace')
       );
     }
 
@@ -1344,7 +1327,8 @@ class Grid extends PureComponent<GridProps, GridState> {
    * was on screen before.
    */
   private handleKeyPage(mode: GestureMode, direction: 1 | -1): void {
-    const { cursorColumn, selectionEndRow } = this.state;
+    const { selection } = this.state;
+    const { cursorColumn, selectionEndRow } = selection;
     if (selectionEndRow == null) return;
     const row = selectionEndRow;
 
@@ -1374,12 +1358,11 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Move the cursor to a cell without touching the selection.
    */
   handleKeyMoveCursor(column: VisibleIndex, row: VisibleIndex): void {
-    this.setState({
-      cursorColumn: column,
-      cursorRow: row,
-      selectionEndColumn: column,
-      selectionEndRow: row,
-    });
+    this.setState(state => ({
+      selection: state.selection
+        .withCursor(row, column)
+        .withSelectionEnd(row, column),
+    }));
     this.moveViewToCell(column, row);
   }
 
@@ -1402,20 +1385,19 @@ class Grid extends PureComponent<GridProps, GridState> {
       focusedRow + 1,
       halfViewportHeight
     );
-    const { cursorColumn } = this.state;
     this.setState(state => {
-      const newSel = state.selection.withCommittedRanges([
-        new GridRange(null, focusedRow, null, focusedRow),
-      ]);
+      const { cursorColumn } = state.selection;
+      const newSel = state.selection
+        .withCommittedRanges([
+          new GridRange(null, focusedRow, null, focusedRow),
+        ])
+        .withCursor(focusedRow, cursorColumn)
+        .withSelectionEnd(focusedRow, cursorColumn);
       return {
         top: Math.min(lastTop, newTop),
         selection: newSel,
         lastSelection: newSel,
         selectedRanges: selectionToRanges(newSel),
-        cursorColumn,
-        cursorRow: focusedRow,
-        selectionEndColumn: cursorColumn,
-        selectionEndRow: focusedRow,
         isStuckToBottom: false,
       };
     });
@@ -1531,7 +1513,10 @@ class Grid extends PureComponent<GridProps, GridState> {
       isQuickEdit,
     };
 
-    this.setState({ editingCell: cell, cursorColumn: column, cursorRow: row });
+    this.setState(state => ({
+      editingCell: cell,
+      selection: state.selection.withCursor(row, column),
+    }));
     this.moveViewToCell(column, row);
   }
 
@@ -2387,8 +2372,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const {
-      cursorColumn,
-      cursorRow,
       draggingColumn,
       draggingColumnSeparator,
       draggingRow,
@@ -2402,6 +2385,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseY,
       selection,
     } = this.state;
+    const { cursorRow, cursorColumn } = selection;
     const { model, stateOverride } = this.props;
     const { metrics } = this;
     const context = this.canvasContext;

@@ -64,7 +64,7 @@ class SelectionKeyHandler extends KeyHandler {
       case 'End': {
         const { model } = grid.props;
         const { columnCount, rowCount } = model;
-        const { cursorColumn, cursorRow } = grid.state;
+        const { cursorColumn, cursorRow } = grid.state.selection;
         const toEnd = event.key === 'End';
         // In row-selection mode, plain / Shift Home/End would only move the
         // cursor between columns and (via commit) toggle the row selection.
@@ -133,7 +133,7 @@ class SelectionKeyHandler extends KeyHandler {
     const isModifierKey = GridUtils.isModifierKeyDown(event);
 
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
-      grid.state;
+      grid.state.selection;
     const column = isShiftKey ? selectionEndColumn : cursorColumn;
     const row = isShiftKey ? selectionEndRow : cursorRow;
 
@@ -236,7 +236,7 @@ class SelectionKeyHandler extends KeyHandler {
     grid: Grid
   ): boolean {
     const isShiftKey = event.shiftKey;
-    const { cursorRow } = grid.state;
+    const { cursorRow } = grid.state.selection;
     if (cursorRow == null) return false;
     grid.handleKeySelectAt(
       { column: targetColumn, row: cursorRow },

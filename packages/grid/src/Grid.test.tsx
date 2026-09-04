@@ -201,16 +201,16 @@ it('handles mouse down in top left to update selection', () => {
 
   mouseClick(0, 0, component);
 
-  expect(component.state.cursorRow).toBe(0);
-  expect(component.state.cursorColumn).toBe(0);
+  expect(component.state.selection.cursorRow).toBe(0);
+  expect(component.state.selection.cursorColumn).toBe(0);
 });
 
 it('handles mouse down in middle of grid to update selection', () => {
   const component = makeGridComponent();
   mouseClick(3, 5, component);
 
-  expect(component.state.cursorRow).toBe(5);
-  expect(component.state.cursorColumn).toBe(3);
+  expect(component.state.selection.cursorRow).toBe(5);
+  expect(component.state.selection.cursorColumn).toBe(3);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, 5, 3, 5)
   );
@@ -244,8 +244,8 @@ it('handles mouse down in the very bottom right of last cell to update selection
     getClientY(row) + rowHeight - 1
   );
 
-  expect(component.state.cursorColumn).toBe(column);
-  expect(component.state.cursorRow).toBe(row);
+  expect(component.state.selection.cursorColumn).toBe(column);
+  expect(component.state.selection.cursorRow).toBe(row);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(column, row, column, row)
   );
@@ -260,8 +260,8 @@ it('clicking a selected cell should deselect it', () => {
   mouseClick(3, 5, component);
 
   // Deselect-by-click preserves the cursor
-  expect(component.state.cursorRow).toBe(5);
-  expect(component.state.cursorColumn).toBe(3);
+  expect(component.state.selection.cursorRow).toBe(5);
+  expect(component.state.selection.cursorColumn).toBe(3);
   expect(component.state.selection.ranges.length).toBe(0);
 });
 
@@ -274,8 +274,8 @@ it('ctrl clicking a selected cell should deselect it', () => {
   mouseClick(3, 5, component, { ctrlKey: true });
 
   // Deselect-by-click preserves the cursor
-  expect(component.state.cursorRow).toBe(5);
-  expect(component.state.cursorColumn).toBe(3);
+  expect(component.state.selection.cursorRow).toBe(5);
+  expect(component.state.selection.cursorColumn).toBe(3);
   expect(component.state.selection.ranges.length).toBe(0);
 });
 
@@ -284,15 +284,15 @@ it('right click outside the range changes the selected ranges', () => {
 
   mouseClick(3, 5, component);
   mouseClick(3, 6, component, { ctrlKey: true });
-  expect(component.state.cursorColumn).toBe(3);
-  expect(component.state.cursorRow).toBe(6);
+  expect(component.state.selection.cursorColumn).toBe(3);
+  expect(component.state.selection.cursorRow).toBe(6);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, 5, 3, 6)
   );
 
   mouseRightClick(5, 7, component);
-  expect(component.state.cursorColumn).toBe(5);
-  expect(component.state.cursorRow).toBe(7);
+  expect(component.state.selection.cursorColumn).toBe(5);
+  expect(component.state.selection.cursorRow).toBe(7);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 7, 5, 7)
   );
@@ -321,8 +321,8 @@ it('handles mouse drag down to update selection', () => {
 
   mouseMove(8, 7, component);
 
-  expect(component.state.selectionEndRow).toBe(7);
-  expect(component.state.selectionEndColumn).toBe(8);
+  expect(component.state.selection.selectionEndRow).toBe(7);
+  expect(component.state.selection.selectionEndColumn).toBe(8);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, 5, 8, 7)
@@ -330,8 +330,8 @@ it('handles mouse drag down to update selection', () => {
 
   mouseMove(5, 6, component);
 
-  expect(component.state.selectionEndRow).toBe(6);
-  expect(component.state.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(6);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, 5, 5, 6)
@@ -357,8 +357,8 @@ it('handles mouse drag from floating section to non-floating section to scroll a
     VIEW_SIZE - columnHeaderHeight - 1
   );
   mouseMove(8, 3, component);
-  expect(component.state.selectionEndRow).toBe(midDragRow);
-  expect(component.state.selectionEndColumn).toBe(8);
+  expect(component.state.selection.selectionEndRow).toBe(midDragRow);
+  expect(component.state.selection.selectionEndColumn).toBe(8);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, midDragRow, 8, lastRow)
@@ -378,8 +378,8 @@ it('handles mouse drag from floating section to non-floating section to scroll a
       1
   );
 
-  expect(component.state.selectionEndRow).toBe(endRow);
-  expect(component.state.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(endRow);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, endRow, 5, lastRow)
@@ -393,8 +393,8 @@ it('handles mouse drag up to update selection', () => {
 
   mouseMove(1, 2, component);
 
-  expect(component.state.selectionEndRow).toBe(2);
-  expect(component.state.selectionEndColumn).toBe(1);
+  expect(component.state.selection.selectionEndRow).toBe(2);
+  expect(component.state.selection.selectionEndColumn).toBe(1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(1, 2, 3, 5)
@@ -402,8 +402,8 @@ it('handles mouse drag up to update selection', () => {
 
   mouseMove(2, 3, component);
 
-  expect(component.state.selectionEndRow).toBe(3);
-  expect(component.state.selectionEndColumn).toBe(2);
+  expect(component.state.selection.selectionEndRow).toBe(3);
+  expect(component.state.selection.selectionEndColumn).toBe(2);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(2, 3, 3, 5)
@@ -417,8 +417,8 @@ it('handles mouse shift click to extend selection', () => {
 
   mouseClick(8, 7, component, { shiftKey: true });
 
-  expect(component.state.selectionEndRow).toBe(7);
-  expect(component.state.selectionEndColumn).toBe(8);
+  expect(component.state.selection.selectionEndRow).toBe(7);
+  expect(component.state.selection.selectionEndColumn).toBe(8);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 5, 8, 7)
@@ -426,8 +426,8 @@ it('handles mouse shift click to extend selection', () => {
 
   mouseClick(3, 2, component, { shiftKey: true });
 
-  expect(component.state.selectionEndRow).toBe(2);
-  expect(component.state.selectionEndColumn).toBe(3);
+  expect(component.state.selection.selectionEndRow).toBe(2);
+  expect(component.state.selection.selectionEndColumn).toBe(3);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(3, 2, 5, 5)
@@ -435,8 +435,8 @@ it('handles mouse shift click to extend selection', () => {
 
   mouseClick(9, 9, component, { shiftKey: true });
 
-  expect(component.state.selectionEndRow).toBe(9);
-  expect(component.state.selectionEndColumn).toBe(9);
+  expect(component.state.selection.selectionEndRow).toBe(9);
+  expect(component.state.selection.selectionEndColumn).toBe(9);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 5, 9, 9)
@@ -450,8 +450,8 @@ it('handles mouse ctrl click to add to selection', () => {
 
   mouseClick(8, 7, component, { ctrlKey: true });
 
-  expect(component.state.cursorColumn).toBe(8);
-  expect(component.state.cursorRow).toBe(7);
+  expect(component.state.selection.cursorColumn).toBe(8);
+  expect(component.state.selection.cursorRow).toBe(7);
   expect(component.state.selection.ranges.length).toBe(2);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 5, 5, 5)
@@ -470,8 +470,8 @@ it('deselects when ctrl clicking within a selected range', () => {
   mouseClick(7, 7, component, { ctrlKey: true });
 
   // Cursor should reset to the start range
-  expect(component.state.cursorColumn).toBe(5);
-  expect(component.state.cursorRow).toBe(5);
+  expect(component.state.selection.cursorColumn).toBe(5);
+  expect(component.state.selection.cursorRow).toBe(5);
   expect(component.state.selection.ranges.length).toBe(4);
   expect(component.state.selection.ranges).toEqual([
     new GridRange(5, 5, 9, 6),
@@ -488,8 +488,8 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
 
   mouseClick(8, 7, component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(8);
-  expect(component.state.selectionEndRow).toBe(7);
+  expect(component.state.selection.selectionEndColumn).toBe(8);
+  expect(component.state.selection.selectionEndRow).toBe(7);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 5, 8, 7)
@@ -497,8 +497,8 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
 
   mouseClick(2, 3, component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(2);
-  expect(component.state.selectionEndRow).toBe(3);
+  expect(component.state.selection.selectionEndColumn).toBe(2);
+  expect(component.state.selection.selectionEndRow).toBe(3);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(2, 3, 8, 7)
@@ -506,8 +506,8 @@ it('handles ctrl+shift click to extend range in both direcitons', () => {
 
   mouseClick(9, 9, component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(9);
-  expect(component.state.selectionEndRow).toBe(9);
+  expect(component.state.selection.selectionEndColumn).toBe(9);
+  expect(component.state.selection.selectionEndRow).toBe(9);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(2, 3, 9, 9)
@@ -526,8 +526,8 @@ it('handles double clicking a cell to edit', async () => {
 
   mouseDoubleClick(column, row, component);
 
-  expect(component.state.cursorColumn).toBe(column);
-  expect(component.state.cursorRow).toBe(row);
+  expect(component.state.selection.cursorColumn).toBe(column);
+  expect(component.state.selection.cursorRow).toBe(row);
   expect(component.state.editingCell).not.toBeNull();
   expect(component.state.editingCell?.column).toBe(column);
   expect(component.state.editingCell?.row).toBe(row);
@@ -539,8 +539,8 @@ it('handles double clicking a cell to edit', async () => {
   expect(model.textForCell(column, row)).toBe(value);
 
   // Cursor should have moved down by one after committing the value
-  expect(component.state.cursorColumn).toBe(column);
-  expect(component.state.cursorRow).toBe(row + 1);
+  expect(component.state.selection.cursorColumn).toBe(column);
+  expect(component.state.selection.cursorRow).toBe(row + 1);
 });
 
 it('handles keyboard arrow to update selection with no previous selection', () => {
@@ -548,8 +548,8 @@ it('handles keyboard arrow to update selection with no previous selection', () =
 
   arrowDown(component);
 
-  expect(component.state.cursorRow).toBe(0);
-  expect(component.state.cursorColumn).toBe(0);
+  expect(component.state.selection.cursorRow).toBe(0);
+  expect(component.state.selection.cursorColumn).toBe(0);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(0, 0, 0, 0)
@@ -564,8 +564,8 @@ it('handles keyboard arrow to move selection down/right', () => {
   arrowDown(component);
   arrowRight(component);
 
-  expect(component.state.cursorColumn).toBe(1);
-  expect(component.state.cursorRow).toBe(2);
+  expect(component.state.selection.cursorColumn).toBe(1);
+  expect(component.state.selection.cursorRow).toBe(2);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(1, 2, 1, 2)
@@ -581,8 +581,8 @@ it('handles keyboard arrow to extend selection down/up', () => {
   arrowDown(component, { shiftKey: true });
   arrowRight(component, { shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(6);
-  expect(component.state.selectionEndRow).toBe(7);
+  expect(component.state.selection.selectionEndColumn).toBe(6);
+  expect(component.state.selection.selectionEndRow).toBe(7);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 5, 6, 7)
@@ -595,8 +595,8 @@ it('handles keyboard arrow to extend selection down/up', () => {
   arrowLeft(component, { shiftKey: true });
   arrowLeft(component, { shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(4);
-  expect(component.state.selectionEndRow).toBe(3);
+  expect(component.state.selection.selectionEndColumn).toBe(4);
+  expect(component.state.selection.selectionEndRow).toBe(3);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(4, 3, 5, 5)
@@ -611,24 +611,24 @@ it('handles keyboard pageDown to move cursor and/or selection down', () => {
   // Click on row 4, hit the pageDown key.
   mouseClick(1, 4, component);
   pageDown(component);
-  expect(component.state.selectionEndRow).toBe(51);
-  expect(component.state.cursorRow).toBe(51);
+  expect(component.state.selection.selectionEndRow).toBe(51);
+  expect(component.state.selection.cursorRow).toBe(51);
 
   // Try selecting a range with shift+pageDown
   pageDown(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(51);
-  expect(component.state.selectionEndRow).toBe(98);
+  expect(component.state.selection.selectionEndRow).toBe(98);
 
   // Try increasing the selection with another shift+pageDown.
   pageDown(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(51);
-  expect(component.state.selectionEndRow).toBe(145);
+  expect(component.state.selection.selectionEndRow).toBe(145);
 
   // Try changing the selected row with an arrow key.
   arrowUp(component);
   expect(component.state.selection.getGestureAnchor()?.row).toBe(50);
-  expect(component.state.selectionEndRow).toBe(50);
-  expect(component.state.cursorRow).toBe(50);
+  expect(component.state.selection.selectionEndRow).toBe(50);
+  expect(component.state.selection.cursorRow).toBe(50);
 
   // Move another 4 pages down. Try selecting beyond the table row limit.
   pageDown(component, { shiftKey: true });
@@ -636,7 +636,7 @@ it('handles keyboard pageDown to move cursor and/or selection down', () => {
   pageDown(component, { shiftKey: true });
   pageDown(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(50);
-  expect(component.state.selectionEndRow).toBe(199);
+  expect(component.state.selection.selectionEndRow).toBe(199);
 });
 
 it('handles keyboard pageUp to move cursor and/or selection up', () => {
@@ -652,24 +652,24 @@ it('handles keyboard pageUp to move cursor and/or selection up', () => {
 
   // Try moving the selected row one page up.
   pageUp(component);
-  expect(component.state.selectionEndRow).toBe(152);
-  expect(component.state.cursorRow).toBe(152);
+  expect(component.state.selection.selectionEndRow).toBe(152);
+  expect(component.state.selection.cursorRow).toBe(152);
 
   // Try selecting a range with shift+pageUp
   pageUp(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(152);
-  expect(component.state.selectionEndRow).toBe(105);
+  expect(component.state.selection.selectionEndRow).toBe(105);
 
   // Try increasing the selection with another shift+pageUp.
   pageUp(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(152);
-  expect(component.state.selectionEndRow).toBe(58);
+  expect(component.state.selection.selectionEndRow).toBe(58);
 
   // Try changing the selected row with an arrow key.
   arrowDown(component);
   expect(component.state.selection.getGestureAnchor()?.row).toBe(153);
-  expect(component.state.selectionEndRow).toBe(153);
-  expect(component.state.cursorRow).toBe(153);
+  expect(component.state.selection.selectionEndRow).toBe(153);
+  expect(component.state.selection.cursorRow).toBe(153);
 
   // Move another page up. Try selecting beyond the first table row.
   pageUp(component, { shiftKey: true });
@@ -677,7 +677,7 @@ it('handles keyboard pageUp to move cursor and/or selection up', () => {
   pageUp(component, { shiftKey: true });
   pageUp(component, { shiftKey: true });
   expect(component.state.selection.getGestureAnchor()?.row).toBe(153);
-  expect(component.state.selectionEndRow).toBe(0);
+  expect(component.state.selection.selectionEndRow).toBe(0);
 });
 
 it('handles ctrl+shift keyboard arrows to extend selection to beginning/end', () => {
@@ -689,8 +689,8 @@ it('handles ctrl+shift keyboard arrows to extend selection to beginning/end', ()
 
   arrowUp(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(0);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(0);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, 5, 5)
@@ -698,8 +698,8 @@ it('handles ctrl+shift keyboard arrows to extend selection to beginning/end', ()
 
   arrowDown(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(rowCount - 1);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, 5, rowCount - 1)
@@ -707,8 +707,8 @@ it('handles ctrl+shift keyboard arrows to extend selection to beginning/end', ()
 
   arrowRight(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
-  expect(component.state.selectionEndRow).toBe(rowCount - 1);
+  expect(component.state.selection.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, columnCount - 1, rowCount - 1)
@@ -724,8 +724,8 @@ it('handles Home/End to go to beginning/end column', () => {
 
   home(component);
 
-  expect(component.state.selectionEndColumn).toBe(0);
-  expect(component.state.selectionEndRow).toBe(5);
+  expect(component.state.selection.selectionEndColumn).toBe(0);
+  expect(component.state.selection.selectionEndRow).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(0, 5, 0, 5)
@@ -733,8 +733,8 @@ it('handles Home/End to go to beginning/end column', () => {
 
   end(component);
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
-  expect(component.state.selectionEndRow).toBe(5);
+  expect(component.state.selection.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selection.selectionEndRow).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(columnCount - 1, 5, columnCount - 1, 5)
@@ -750,8 +750,8 @@ it('handles Shift+Home/End to extend selection to beginning/end column', () => {
 
   home(component, { shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(0);
-  expect(component.state.selectionEndRow).toBe(5);
+  expect(component.state.selection.selectionEndColumn).toBe(0);
+  expect(component.state.selection.selectionEndRow).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(0, 5, 5, 5)
@@ -759,8 +759,8 @@ it('handles Shift+Home/End to extend selection to beginning/end column', () => {
 
   end(component, { shiftKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(columnCount - 1);
-  expect(component.state.selectionEndRow).toBe(5);
+  expect(component.state.selection.selectionEndColumn).toBe(columnCount - 1);
+  expect(component.state.selection.selectionEndRow).toBe(5);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(0, 5, columnCount - 1, 5)
@@ -768,8 +768,8 @@ it('handles Shift+Home/End to extend selection to beginning/end column', () => {
 
   end(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(rowCount - 1);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(0, 5, columnCount - 1, rowCount - 1)
@@ -785,8 +785,8 @@ it('handles Ctrl+Home/End to go to beginning/end row', () => {
 
   home(component, { ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(0);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(0);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, 5, 0)
@@ -794,8 +794,8 @@ it('handles Ctrl+Home/End to go to beginning/end row', () => {
 
   end(component, { ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(rowCount - 1);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, rowCount - 1, 5, rowCount - 1)
@@ -811,8 +811,8 @@ it('handles Ctrl+Shift+Home/End to go to beginning/end row and extend selection'
 
   home(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(0);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(0);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, 5, 5)
@@ -820,8 +820,8 @@ it('handles Ctrl+Shift+Home/End to go to beginning/end row and extend selection'
 
   end(component, { shiftKey: true, ctrlKey: true });
 
-  expect(component.state.selectionEndColumn).toBe(5);
-  expect(component.state.selectionEndRow).toBe(rowCount - 1);
+  expect(component.state.selection.selectionEndColumn).toBe(5);
+  expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(5, 0, 5, rowCount - 1)
@@ -860,8 +860,8 @@ it('auto selects the row with the autoselect row option set', () => {
 
   arrowDown(component);
 
-  expect(component.state.cursorColumn).toBe(0);
-  expect(component.state.cursorRow).toBe(0);
+  expect(component.state.selection.cursorColumn).toBe(0);
+  expect(component.state.selection.cursorRow).toBe(0);
   expect(component.state.selection.ranges.length).toBe(1);
   expect(component.state.selection.ranges[0]).toEqual(
     new GridRange(null, 0, null, 0)
@@ -886,8 +886,8 @@ describe('mac specific shortcut tests', () => {
 
     mouseClick(8, 7, component, { metaKey: true });
 
-    expect(component.state.cursorColumn).toBe(8);
-    expect(component.state.cursorRow).toBe(7);
+    expect(component.state.selection.cursorColumn).toBe(8);
+    expect(component.state.selection.cursorRow).toBe(7);
     expect(component.state.selection.ranges.length).toBe(2);
     expect(component.state.selection.ranges[0]).toEqual(
       new GridRange(5, 5, 5, 5)
@@ -1027,7 +1027,7 @@ describe('paste tests', () => {
       end(component, { ctrlKey: true });
 
       // Check that we're at the last row
-      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+      expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
 
       // Check that isStuckToBottom is now true
       expect(component.state.isStuckToBottom).toBe(true);
@@ -1045,7 +1045,7 @@ describe('paste tests', () => {
       arrowDown(component, { ctrlKey: true });
 
       // Check that we're at the last row
-      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+      expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
 
       // Check that isStuckToBottom is now true
       expect(component.state.isStuckToBottom).toBe(true);
@@ -1063,7 +1063,7 @@ describe('paste tests', () => {
       end(component, { ctrlKey: true });
 
       // Check that we're at the last row
-      expect(component.state.selectionEndRow).toBe(rowCount - 1);
+      expect(component.state.selection.selectionEndRow).toBe(rowCount - 1);
 
       // Check that isStuckToBottom is still false
       expect(component.state.isStuckToBottom).toBe(false);
