@@ -663,6 +663,58 @@ describe('commitGesture', () => {
     }
     expect(result.selectedKeys.size).toBe(8);
   });
+
+  it('ctrl+drag over unselected rows adds them to the prior selection', () => {
+    // Prior commit selected row 1. User ctrl+click+drags 5..10 with additive
+    // semantics: overlay = {*, 5..10}, prior = {1}. Expected: {1, 5..10}.
+    const priorCommit = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set([1].map(keyOf)),
+      selectedKeyValues: new Map([1].map(keyValuesOf)),
+    });
+    const dragOverlay = priorCommit.withMouseGestureRanges(
+      [new GridRange(null, 5, null, 10)],
+      false
+    );
+    const result = dragOverlay.commitGesture(priorCommit, {
+      autoSelectRow: false,
+    });
+    expect(result.isRowSelected(1)).toBe(true);
+    for (let r = 5; r <= 10; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    expect(result.selectedKeys.size).toBe(7);
+  });
+
+  it('ctrl+drag over an all-selected range toggles those rows off', () => {
+    // Prior commit selected rows 1..20. User ctrl+click+drags 5..10; every
+    // overlay row is already in `lastCommitted`, so the range flips off.
+    // Expected: {1..4, 11..20}.
+    const priorKeys = [];
+    for (let r = 1; r <= 20; r += 1) priorKeys.push(r);
+    const priorCommit = new KeyedSelection({
+      getModel: getKeyedModel,
+      selectedKeys: new Set(priorKeys.map(keyOf)),
+      selectedKeyValues: new Map(priorKeys.map(keyValuesOf)),
+    });
+    const dragOverlay = priorCommit.withMouseGestureRanges(
+      [new GridRange(null, 5, null, 10)],
+      false
+    );
+    const result = dragOverlay.commitGesture(priorCommit, {
+      autoSelectRow: false,
+    });
+    for (let r = 5; r <= 10; r += 1) {
+      expect(result.isRowSelected(r)).toBe(false);
+    }
+    for (let r = 1; r <= 4; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    for (let r = 11; r <= 20; r += 1) {
+      expect(result.isRowSelected(r)).toBe(true);
+    }
+    expect(result.selectedKeys.size).toBe(14);
+  });
 });
 
 // ─── withGestureExtend (MouseSelection) ──────────────────────────────────────

@@ -452,11 +452,23 @@ export class KeyedSelection implements Selection {
     const next = new Set(this.selectedKeys);
 
     if (this.selectedKeys.size > 0 || this.invertedSelection) {
-      // Ctrl+click path: clearSelectedRanges was not called, so selectedKeys still
-      // holds the previous committed keys. A single-row overlay is a ctrl+click
-      // on a cell — toggle its selection. A multi-row overlay is a ctrl+shift+click
-      // grown range — add all rows without toggling off overlapping ones.
-      const shouldToggle = rowCount === 1;
+      // Ctrl+click / ctrl+drag path: clearSelectedRanges was not called, so
+      // selectedKeys still holds the previous committed keys. Toggle off when
+      // every row in the overlay was already committed (single-row ctrl+click
+      // on a selected row, or ctrl+drag over an all-selected range); otherwise
+      // add all rows to the selection without unioning them off.
+      let shouldToggle = true;
+      for (let i = 0; i < this.overlayRanges.length && shouldToggle; i += 1) {
+        const { startRow, endRow } = this.overlayRanges[i];
+        if (startRow == null) continue; // eslint-disable-line no-continue
+        const rEnd = endRow ?? startRow;
+        for (let r = startRow; r <= rEnd; r += 1) {
+          if (!lastCommitted.isRowSelected(r)) {
+            shouldToggle = false;
+            break;
+          }
+        }
+      }
 
       // Multi-row ctrl+shift add that spans out-of-viewport should  defer
       // to async resolution while preserving the already-committed keys.
@@ -483,8 +495,9 @@ export class KeyedSelection implements Selection {
         const rEnd = endRow ?? startRow;
         for (let r = startRow; r <= rEnd; r += 1) {
           const { key: k, values } = this.getRowKeyData(r);
-          if (shouldToggle && lastCommitted.isRowSelected(r)) {
-            // Toggle off: ctrl+click on an already-selected row deselects it.
+          if (shouldToggle) {
+            // Toggle off: every overlay row was already in lastCommitted, so
+            // ctrl+click / ctrl+drag flips them off.
             if (this.invertedSelection) {
               next.add(k);
               nextKeyValues.set(k, values);

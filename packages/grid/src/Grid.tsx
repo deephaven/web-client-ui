@@ -219,6 +219,13 @@ export type GridState = {
   // Previous selection; used for deselect-on-reclick detection in `applyGestureAt`.
   lastSelection: Selection;
 
+  // Modifier-derived mode of the in-flight mouse gesture (set on mouse-down,
+  // read on drag frames, cleared on mouse-up). `null` when no gesture is
+  // active. Lets drag frames distinguish additive gestures (`add`, `maximize`)
+  // from replacing ones (`replace`, `extend`) so ctrl+click+drag preserves the
+  // prior selection.
+  gestureMode: GestureMode | null;
+
   /**
    * @deprecated Use `selection` instead. Kept for backward compat with consumers
    * that read `grid.state.selectedRanges` directly.
@@ -522,6 +529,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       selection: emptySelection,
       lastSelection: emptySelection,
       selectedRanges: [],
+      gestureMode: null,
 
       // The mouse cursor style to use when hovering over the grid element
       cursor: null,
@@ -1218,7 +1226,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode
   ): void {
-    this.setState(state => this.applyGestureAt(state.selection, cursor, mode));
+    this.setState(state => ({
+      ...this.applyGestureAt(state.selection, cursor, mode),
+      gestureMode: mode,
+    }));
   }
 
   /**
@@ -1231,8 +1242,14 @@ class Grid extends PureComponent<GridProps, GridState> {
   }): void {
     const { theme } = this.props;
     this.setState(state => {
+      // Additive gestures (ctrl+click, ctrl+shift+click) grow the last range
+      // via `maximize` so the prior committed selection survives the drag.
+      // Replace and shift-extend continue as `extend`, trimming to the last
+      // range.
+      const isAdditive =
+        state.gestureMode === 'add' || state.gestureMode === 'maximize';
       const opts: GestureExtendOptions = {
-        mode: 'extend',
+        mode: isAdditive ? 'maximize' : 'extend',
         autoSelectRow: theme.autoSelectRow ?? false,
         autoSelectColumn: theme.autoSelectColumn ?? false,
       };
@@ -1261,13 +1278,18 @@ class Grid extends PureComponent<GridProps, GridState> {
         },
       });
       if (settled === selection) return null;
-
       return {
         selection: settled,
         lastSelection: settled,
         selectedRanges: selectionToRanges(settled),
       };
     });
+    // Always clear the in-flight gesture mode on mouse-up. Kept as a
+    // separate setState so the settled-update above stays in a single Pick
+    // shape that React's typing narrows cleanly.
+    this.setState(({ gestureMode }) =>
+      gestureMode == null ? null : { gestureMode: null }
+    );
   }
 
   /**
