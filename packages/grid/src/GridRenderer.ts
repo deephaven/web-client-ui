@@ -598,6 +598,7 @@ export class GridRenderer {
             0.5
           : height + 10,
     });
+    this.drawGestureDragOutline(context, state);
   }
 
   drawRowStripes(
@@ -2278,6 +2279,91 @@ export class GridRenderer {
     this.drawRoundedRect(context, x, y, w, h);
     context.stroke();
     context.lineWidth = lineWidth;
+  }
+
+  /**
+   * Draws an outline around the in-flight ctrl+click / ctrl+shift+click drag
+   * rectangle. Uses `selection.cursor` (mouse-down anchor) and
+   * `selection.selectionEnd` (current drag position) for the bounds. For row
+   * selection themes only the top and bottom horizontal strokes are drawn
+   * (row-boundary preview); for column selection only left/right; for cell
+   * selection all four sides.
+   */
+  drawGestureDragOutline(
+    context: CanvasRenderingContext2D,
+    state: GridRenderState
+  ): void {
+    const { gestureMode, selection, metrics, theme } = state;
+    if (gestureMode !== 'add' && gestureMode !== 'maximize') return;
+    const { cursorRow, cursorColumn, selectionEndRow, selectionEndColumn } =
+      selection;
+    if (
+      cursorRow == null ||
+      cursorColumn == null ||
+      selectionEndRow == null ||
+      selectionEndColumn == null
+    ) {
+      return;
+    }
+    const {
+      allColumnXs,
+      allColumnWidths,
+      allRowYs,
+      allRowHeights,
+      maxX,
+      maxY,
+    } = metrics;
+    const { autoSelectRow = false, autoSelectColumn = false } = theme;
+
+    const topRow = Math.min(cursorRow, selectionEndRow);
+    const bottomRow = Math.max(cursorRow, selectionEndRow);
+    const leftCol = Math.min(cursorColumn, selectionEndColumn);
+    const rightCol = Math.max(cursorColumn, selectionEndColumn);
+
+    const topY = allRowYs.get(topRow);
+    const bottomRowY = allRowYs.get(bottomRow);
+    const bottomRowH = allRowHeights.get(bottomRow);
+    const leftX = allColumnXs.get(leftCol);
+    const rightColX = allColumnXs.get(rightCol);
+    const rightColW = allColumnWidths.get(rightCol);
+    if (
+      topY == null ||
+      bottomRowY == null ||
+      bottomRowH == null ||
+      leftX == null ||
+      rightColX == null ||
+      rightColW == null
+    ) {
+      return;
+    }
+
+    const y0 = Math.round(topY) + 0.5;
+    const y1 = Math.round(bottomRowY + bottomRowH) - 0.5;
+    const x0 = autoSelectRow ? 0 : Math.round(leftX) + 0.5;
+    const x1 = autoSelectRow ? maxX : Math.round(rightColX + rightColW) - 0.5;
+
+    context.save();
+    context.beginPath();
+    context.strokeStyle = theme.selectionOutlineColor;
+    context.lineWidth = 1;
+    // Top / bottom horizontal strokes — always drawn (row + cell modes).
+    if (!autoSelectColumn) {
+      context.moveTo(x0, y0);
+      context.lineTo(x1, y0);
+      context.moveTo(x0, y1);
+      context.lineTo(x1, y1);
+    }
+    // Left / right vertical strokes — cell and column modes only.
+    if (!autoSelectRow) {
+      const yTop = autoSelectColumn ? 0 : y0;
+      const yBottom = autoSelectColumn ? maxY : y1;
+      context.moveTo(x0, yTop);
+      context.lineTo(x0, yBottom);
+      context.moveTo(x1, yTop);
+      context.lineTo(x1, yBottom);
+    }
+    context.stroke();
+    context.restore();
   }
 
   /**

@@ -2420,6 +2420,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       draggingRowOffset,
       draggingRowSeparator,
       editingCell,
+      gestureMode,
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
       isDragging,
@@ -2455,6 +2456,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
       isDragging,
+      gestureMode,
       ...stateOverride,
     };
 

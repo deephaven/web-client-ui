@@ -7,7 +7,7 @@ import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler
 import { type GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import type { CellInputFieldProps } from './CellInputField';
 import type { ColumnRestriction } from './GridModel';
-import type { Selection } from './Selection';
+import type { GestureMode, Selection } from './Selection';
 
 // Default font width in pixels if it cannot be retrieved from the context
 export const DEFAULT_FONT_WIDTH = 10;
@@ -101,4 +101,8 @@ export type GridRenderState = {
   isDraggingHorizontalScrollBar: boolean;
   isDraggingVerticalScrollBar: boolean;
   isDragging: boolean;
+
+  // Modifier-derived mode of the in-flight mouse gesture; `null` when no
+  // gesture is active. Drives the drag-overlay stroke on additive gestures.
+  gestureMode: GestureMode | null;
 };
