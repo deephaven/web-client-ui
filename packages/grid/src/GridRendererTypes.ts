@@ -86,11 +86,7 @@ export type GridRenderState = {
   mouseX: Coordinate | null;
   mouseY: Coordinate | null;
 
-  // Where the keyboard cursor is located
-  cursorColumn: VisibleIndex | null;
-  cursorRow: VisibleIndex | null;
-
-  // Current selection
+  // Current selection. Owns the cursor and shift/drag endpoint.
   selection: Selection;
 
   // Currently dragged column/row information

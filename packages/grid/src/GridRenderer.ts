@@ -2021,8 +2021,6 @@ export class GridRenderer {
     } = {}
   ): void {
     const {
-      cursorColumn: column,
-      cursorRow: row,
       draggingRow,
       draggingColumn,
       editingCell,
@@ -2031,6 +2029,7 @@ export class GridRenderer {
       selection,
       theme,
     } = state;
+    const { cursorColumn: column, cursorRow: row } = selection;
     const {
       allColumnWidths,
       allColumnXs,
@@ -2671,7 +2670,7 @@ export class GridRenderer {
       ) {
         context.fillStyle = scrollBarSelectionTickColor;
         // Scrollbar Selection Tick
-        const { cursorColumn } = state;
+        const { cursorColumn } = state.selection;
         const { lastLeft, columnCount } = metrics;
 
         const mergedRanges = isTickRangeSelection(state.selection)
@@ -2771,7 +2770,7 @@ export class GridRenderer {
         scrollBarActiveSelectionTickColor != null
       ) {
         // Scrollbar Selection Tick
-        const { cursorRow } = state;
+        const { cursorRow } = state.selection;
         const { lastTop, rowCount } = metrics;
 
         const getTickY = (index: number): number => {

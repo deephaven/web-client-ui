@@ -2385,7 +2385,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       mouseY,
       selection,
     } = this.state;
-    const { cursorRow, cursorColumn } = selection;
     const { model, stateOverride } = this.props;
     const { metrics } = this;
     const context = this.canvasContext;
@@ -2414,8 +2413,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       isDraggingHorizontalScrollBar,
       isDraggingVerticalScrollBar,
       isDragging,
-      cursorColumn,
-      cursorRow,
       ...stateOverride,
     };
 
