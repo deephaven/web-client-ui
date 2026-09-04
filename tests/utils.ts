@@ -18,7 +18,9 @@ export enum TableTypes {
 
 type TableNames =
   | 'all_types'
-  | 'all_types_big'
+  | 'perf_all_types_big'
+  | 'perf_long_strings'
+  | 'perf_huge_strings'
   | 'simple_plot'
   | 'simple_table'
   | 'simple_table_header_group'
