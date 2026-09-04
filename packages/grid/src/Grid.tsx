@@ -1182,15 +1182,22 @@ class Grid extends PureComponent<GridProps, GridState> {
    * single-row / single-cell selection should deselect (mouse affordance,
    * default true). Keyboard callers pass false so arrowing onto an
    * already-selected cell just moves the cursor.
+   * @param opts.settle Whether the commit should finalize (deselect check,
+   * hole-punch, consolidation). Mouse-down passes false so a drag can grow
+   * the last range before mouse-up finalizes.
    */
   private applyGestureAt(
     selection: Selection,
     cursor: { row: GridRangeIndex; column: GridRangeIndex },
     mode: GestureMode,
-    opts: { moveCursor?: boolean; allowDeselect?: boolean } = {}
+    opts: {
+      moveCursor?: boolean;
+      allowDeselect?: boolean;
+      settle?: boolean;
+    } = {}
   ): GridSelectionState {
     const { theme } = this.props;
-    const { moveCursor = true, allowDeselect = true } = opts;
+    const { moveCursor = true, allowDeselect = true, settle = true } = opts;
     const lastSelection = selection;
     const extendOpts: GestureExtendOptions = {
       mode,
@@ -1207,6 +1214,7 @@ class Grid extends PureComponent<GridProps, GridState> {
         autoSelectRow: extendOpts.autoSelectRow,
         cursor: cursorTarget,
         allowDeselect,
+        settle,
       })
       .withSelectionEnd(cursor.row, cursor.column);
 
@@ -1227,7 +1235,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     mode: GestureMode
   ): void {
     this.setState(state => ({
-      ...this.applyGestureAt(state.selection, cursor, mode),
+      // Defer settle to mouse-up so a drag can grow the last range before
+      // deselect / hole-punch / consolidation runs.
+      ...this.applyGestureAt(state.selection, cursor, mode, { settle: false }),
       gestureMode: mode,
     }));
   }

@@ -395,6 +395,45 @@ describe('commitGesture', () => {
     expect(result.isCellSelected(0, 0)).toBe(true);
   });
 
+  it('ctrl+drag toggles off a rectangle fully inside the prior selection', () => {
+    // Prior commit selected the full A1:F10 rectangle. Ctrl+drag inside it
+    // grows the last range from A5 (anchor) to F5. On mouse-up, the last
+    // range is subtracted from the containing prior range.
+    const outer = range(0, 0, 5, 9);
+    const dragRect = range(0, 4, 5, 4);
+    const combined = new RangedSelection(
+      [...outer.toRanges(), ...dragRect.toRanges()],
+      getModel
+    );
+    const result = combined.commitGesture(outer, { autoSelectRow: false });
+    // Rows 4 columns 0-5 should be deselected.
+    for (let c = 0; c <= 5; c += 1) {
+      expect(result.isCellSelected(c, 4)).toBe(false);
+    }
+    // Rows outside the drag rectangle should remain selected.
+    expect(result.isCellSelected(0, 0)).toBe(true);
+    expect(result.isCellSelected(5, 9)).toBe(true);
+  });
+
+  it('settle=false skips deselect check and hole-punch (mouse-down defer)', () => {
+    // On mouse-down we don't finalize: pass `settle: false` so a subsequent
+    // drag can grow the last range before mouse-up commits.
+    const outer = range(0, 0, 5, 5);
+    const inner = range(1, 1, 3, 3);
+    const combined = new RangedSelection(
+      [...outer.toRanges(), ...inner.toRanges()],
+      getModel
+    );
+    const result = combined.commitGesture(outer, {
+      autoSelectRow: false,
+      settle: false,
+    });
+    // Ranges kept as-is; the deferred subtract only runs on the mouse-up
+    // commit (settle defaults to true).
+    expect(result.toRanges()).toHaveLength(2);
+    expect(result.isCellSelected(2, 2)).toBe(true);
+  });
+
   it('consolidates adjacent ranges', () => {
     const a = new GridRange(0, 0, 0, 5);
     const b = new GridRange(0, 6, 0, 10);

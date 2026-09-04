@@ -161,6 +161,14 @@ export type CommitGestureOptions = {
    * instead of clearing the selection.
    */
   allowDeselect?: boolean;
+  /**
+   * When true (default), the commit finalizes the gesture: deselect check,
+   * hole-punch on overlap, and range consolidation all run. Pass `false`
+   * from mouse-down so those steps defer to mouse-up; between them the
+   * drag can grow the last range without eagerly fragmenting the prior
+   * selection.
+   */
+  settle?: boolean;
 };
 
 /**

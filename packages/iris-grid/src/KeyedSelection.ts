@@ -435,6 +435,13 @@ export class KeyedSelection implements Selection {
   ): KeyedSelection {
     if (this.overlayRanges.length === 0) return this;
 
+    if (opts.settle === false) {
+      // Mouse-down: keep overlayRanges pending. The overlay-to-committed
+      // merge (add / toggle-off / consolidation) runs on mouse-up so a drag
+      // can grow the overlay without prematurely folding it into selectedKeys.
+      return withCommittedCursor(this, this.getCursorLandingCell(), opts);
+    }
+
     // Scan ranges for endpoints and total row count
     let first: VisibleIndex | null = null;
     let lastRow: VisibleIndex = 0;

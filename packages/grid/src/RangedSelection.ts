@@ -316,11 +316,17 @@ export class RangedSelection implements Selection, TickRangeSelection {
     lastCommitted: Selection,
     opts: CommitGestureOptions
   ): RangedSelection {
-    const { autoSelectRow } = opts;
+    const { autoSelectRow, settle = true } = opts;
     const selectedRanges = this.ranges;
     // lastCommitted is always a RangedSelection when this method is called
     assertIsRangedSelection(lastCommitted);
     const lastRanges = lastCommitted.toRanges();
+
+    if (!settle) {
+      // Mouse-down: leave ranges as-is so the drag can grow the last range.
+      // Deselect / hole-punch / consolidation run on mouse-up.
+      return withCommittedCursor(this, this.getCursorLandingCell(), opts);
+    }
 
     if (
       opts.allowDeselect !== false &&
