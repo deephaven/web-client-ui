@@ -35,7 +35,7 @@ services:
     volumes:
       - ../../tests:/work/tests
       - ../../test-results:/work/test-results
-    entrypoint: "npm run e2e:performance -- --config=playwright-ci.config.ts --project=chromium --reporter=list"
+    entrypoint: "npm run e2e:performance"
     depends_on:
       dhc-server:
         condition: service_healthy
