@@ -65,10 +65,14 @@ class TimeUtils {
       .formatToParts(date)
       .find(part => part.type === 'timeZoneName')?.value;
 
-    if (offset == null || offset === 'GMT') {
+    if (
+      offset == null ||
+      offset === 'GMT' ||
+      /^GMT[+-]0(?::00)?$/.test(offset)
+    ) {
       return 'UTC±0';
     }
-    return offset.replace('GMT', 'UTC').replace(/[+-]0/, '±0');
+    return offset.replace('GMT', 'UTC');
   }
 
   /**
