@@ -1,6 +1,44 @@
 type TimeInSeconds = number;
 export type TimeString = `${string}:${string}:${string}`;
 
+const TIME_ZONE_DEFINITIONS = [
+  { name: 'Tokyo', value: 'Asia/Tokyo', noDst: true },
+  { name: 'Seoul', value: 'Asia/Seoul', noDst: true },
+  { name: 'Hong Kong', value: 'Asia/Hong_Kong', noDst: true },
+  { name: 'Singapore', value: 'Asia/Singapore', noDst: true },
+  { name: 'Kolkata', value: 'Asia/Kolkata', noDst: true },
+  { name: 'Berlin', value: 'Europe/Berlin', noDst: false },
+  { name: 'UTC', value: 'UTC', noDst: true },
+  { name: 'London', value: 'Europe/London', noDst: false },
+  { name: 'Sao Paulo', value: 'America/Sao_Paulo', noDst: false },
+  { name: 'Newfoundland', value: 'America/St_Johns', noDst: false },
+  { name: 'Halifax', value: 'America/Halifax', noDst: false },
+  { name: 'New York', value: 'America/New_York', noDst: false },
+  { name: 'Chicago', value: 'America/Chicago', noDst: false },
+  { name: 'Denver', value: 'America/Denver', noDst: false },
+  { name: 'Los Angeles', value: 'America/Los_Angeles', noDst: false },
+  { name: 'Anchorage', value: 'America/Anchorage', noDst: false },
+  { name: 'Honolulu', value: 'Pacific/Honolulu', noDst: true },
+  { name: 'Zurich', value: 'Europe/Zurich', noDst: false },
+  { name: 'Amsterdam', value: 'Europe/Amsterdam', noDst: false },
+  { name: 'Taipei', value: 'Asia/Taipei', noDst: true },
+  { name: 'Sydney', value: 'Australia/Sydney', noDst: false },
+] as const;
+
+function getTimeZoneOffset(timeZone: string, date = new Date()): string {
+  const offset = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    timeZoneName: 'shortOffset',
+  })
+    .formatToParts(date)
+    .find(part => part.type === 'timeZoneName')?.value;
+
+  if (offset == null || offset === 'GMT') {
+    return 'UTC±0';
+  }
+  return offset.replace('GMT', 'UTC').replace(/[+-]0/, '±0');
+}
+
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
@@ -16,29 +54,12 @@ class TimeUtils {
 
   static MILLIS_PER_HOUR = 60 * TimeUtils.MILLIS_PER_MIN;
 
-  static TIME_ZONES = Object.freeze([
-    { label: 'Tokyo UTC+9 No DST', value: 'Asia/Tokyo' },
-    { label: 'Seoul UTC+9 No DST', value: 'Asia/Seoul' },
-    { label: 'Hong Kong UTC+8 No DST', value: 'Asia/Hong_Kong' },
-    { label: 'Singapore UTC+8 No DST', value: 'Asia/Singapore' },
-    { label: 'Kolkata UTC+5:30 No DST', value: 'Asia/Kolkata' },
-    { label: 'Berlin UTC+1', value: 'Europe/Berlin' },
-    { label: 'UTC UTC±0 No DST', value: 'UTC' },
-    { label: 'London UTC±0', value: 'Europe/London' },
-    { label: 'Sao Paulo UTC-2', value: 'America/Sao_Paulo' },
-    { label: 'Newfoundland  UTC-3:30', value: 'America/St_Johns' },
-    { label: 'Halifax UTC-4', value: 'America/Halifax' },
-    { label: 'New York UTC−5', value: 'America/New_York' },
-    { label: 'Chicago UTC-6', value: 'America/Chicago' },
-    { label: 'Denver UTC-7', value: 'America/Denver' },
-    { label: 'Los Angeles UTC-8', value: 'America/Los_Angeles' },
-    { label: 'Anchorage UTC-9', value: 'America/Anchorage' },
-    { label: 'Honolulu UTC-10 No DST', value: 'Pacific/Honolulu' },
-    { label: 'Zurich UTC+1', value: 'Europe/Zurich' },
-    { label: 'Amsterdam UTC+1', value: 'Europe/Amsterdam' },
-    { label: 'Taipei UTC+8 No DST', value: 'Asia/Taipei' },
-    { label: 'Sydney UTC+10', value: 'Australia/Sydney' },
-  ]);
+  static TIME_ZONES = Object.freeze(
+    TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
+      label: `${name} ${getTimeZoneOffset(value)}${noDst ? ' No DST' : ''}`,
+      value,
+    }))
+  );
 
   /**
    * Pretty prints a time in seconds as a format like "1h 3m 23s", "32s"
