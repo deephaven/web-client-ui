@@ -356,7 +356,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   metrics: GridMetrics | null;
 
-  renderState: GridRenderState;
+  private renderState: GridRenderState | null;
 
   // Listeners for when the grid draws its canvas.
   private drawListeners: Set<GridDrawListener>;
@@ -422,7 +422,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.prevMetrics = null;
     this.metrics = null;
 
-    this.renderState = {} as GridRenderState;
+    this.renderState = null;
 
     this.drawListeners = new Set();
 
@@ -1089,7 +1089,9 @@ class Grid extends PureComponent<GridProps, GridState> {
   private registerDrawListener(listener: GridDrawListener): () => void {
     this.drawListeners.add(listener);
 
-    listener(this.renderState);
+    if (this.renderState !== null) {
+      listener(this.renderState);
+    }
 
     return () => {
       this.drawListeners.delete(listener);
