@@ -9,6 +9,140 @@ const {
   MILLIS_PER_HOUR,
 } = TimeUtils;
 
+// Northern hemisphere winter, standard time in US/Europe
+const WINTER_DATE = new Date('2024-01-15T12:00:00Z');
+
+// Northern hemisphere summer, daylight savings time in US/Europe
+const SUMMER_DATE = new Date('2024-07-15T12:00:00Z');
+
+describe('getTimeZoneOffset tests', () => {
+  it('returns UTC±0 for zones with no offset', () => {
+    expect(TimeUtils.getTimeZoneOffset('UTC', WINTER_DATE)).toBe('UTC±0');
+    expect(TimeUtils.getTimeZoneOffset('Europe/London', WINTER_DATE)).toBe(
+      'UTC±0'
+    );
+  });
+
+  it('returns whole hour offsets', () => {
+    expect(TimeUtils.getTimeZoneOffset('Asia/Tokyo', WINTER_DATE)).toBe(
+      'UTC+9'
+    );
+    expect(TimeUtils.getTimeZoneOffset('America/New_York', WINTER_DATE)).toBe(
+      'UTC-5'
+    );
+  });
+
+  it('returns part-hour offsets', () => {
+    expect(TimeUtils.getTimeZoneOffset('Asia/Kolkata', WINTER_DATE)).toBe(
+      'UTC+5:30'
+    );
+    expect(TimeUtils.getTimeZoneOffset('America/St_Johns', WINTER_DATE)).toBe(
+      'UTC-3:30'
+    );
+  });
+
+  it('keeps the same offset year round for zones without DST', () => {
+    [
+      'UTC',
+      'Asia/Tokyo',
+      'Asia/Kolkata',
+      'Pacific/Honolulu',
+      'America/Sao_Paulo',
+    ].forEach(timeZone => {
+      expect(TimeUtils.getTimeZoneOffset(timeZone, SUMMER_DATE)).toBe(
+        TimeUtils.getTimeZoneOffset(timeZone, WINTER_DATE)
+      );
+    });
+  });
+
+  it('changes the offset for zones observing DST', () => {
+    [
+      'America/New_York',
+      'Europe/London',
+      'Europe/Berlin',
+      'America/St_Johns',
+      'Australia/Sydney',
+    ].forEach(timeZone => {
+      expect(TimeUtils.getTimeZoneOffset(timeZone, SUMMER_DATE)).not.toBe(
+        TimeUtils.getTimeZoneOffset(timeZone, WINTER_DATE)
+      );
+    });
+  });
+
+  it('defaults to the current date', () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(SUMMER_DATE);
+      expect(TimeUtils.getTimeZoneOffset('America/New_York')).toBe('UTC-4');
+
+      jest.setSystemTime(WINTER_DATE);
+      expect(TimeUtils.getTimeZoneOffset('America/New_York')).toBe('UTC-5');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('TIME_ZONES tests', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  function getTimeZone(value: string): { label: string; value: string } {
+    const timeZone = TimeUtils.TIME_ZONES.find(tz => tz.value === value);
+    if (timeZone == null) {
+      throw new Error(`No time zone found for ${value}`);
+    }
+    return timeZone;
+  }
+
+  it('returns a frozen list of unique time zones', () => {
+    const { TIME_ZONES } = TimeUtils;
+    expect(Object.isFrozen(TIME_ZONES)).toBe(true);
+    expect(TIME_ZONES.length).toBeGreaterThan(0);
+    expect(new Set(TIME_ZONES.map(({ value }) => value)).size).toBe(
+      TIME_ZONES.length
+    );
+  });
+
+  it('labels each time zone with its name and current offset', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(WINTER_DATE);
+
+    TimeUtils.TIME_ZONES.forEach(({ label, value }) => {
+      expect(label).toContain(TimeUtils.getTimeZoneOffset(value, WINTER_DATE));
+    });
+
+    expect(getTimeZone('America/New_York').label).toBe('New York UTC-5');
+    expect(getTimeZone('Asia/Kolkata').label).toBe('Kolkata UTC+5:30 No DST');
+    expect(getTimeZone('UTC').label).toBe('UTC UTC±0 No DST');
+  });
+
+  it('marks zones that do not observe DST', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(WINTER_DATE);
+
+    expect(getTimeZone('Asia/Tokyo').label).toContain('No DST');
+    expect(getTimeZone('Pacific/Honolulu').label).toContain('No DST');
+    expect(getTimeZone('America/New_York').label).not.toContain('No DST');
+    expect(getTimeZone('Europe/London').label).not.toContain('No DST');
+  });
+
+  it('updates labels across a DST transition', () => {
+    jest.useFakeTimers();
+
+    jest.setSystemTime(WINTER_DATE);
+    expect(getTimeZone('America/New_York').label).toBe('New York UTC-5');
+    expect(getTimeZone('Europe/London').label).toBe('London UTC±0');
+    expect(getTimeZone('Asia/Tokyo').label).toBe('Tokyo UTC+9 No DST');
+
+    jest.setSystemTime(SUMMER_DATE);
+    expect(getTimeZone('America/New_York').label).toBe('New York UTC-4');
+    expect(getTimeZone('Europe/London').label).toBe('London UTC+1');
+    expect(getTimeZone('Asia/Tokyo').label).toBe('Tokyo UTC+9 No DST');
+  });
+});
+
 describe('formatElapsedTime parsing tests', () => {
   function testFormatElapsedTime(time: number, expectedResult: string) {
     const result = TimeUtils.formatElapsedTime(time);

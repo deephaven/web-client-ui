@@ -10,7 +10,7 @@ const TIME_ZONE_DEFINITIONS = [
   { name: 'Berlin', value: 'Europe/Berlin', noDst: false },
   { name: 'UTC', value: 'UTC', noDst: true },
   { name: 'London', value: 'Europe/London', noDst: false },
-  { name: 'Sao Paulo', value: 'America/Sao_Paulo', noDst: false },
+  { name: 'Sao Paulo', value: 'America/Sao_Paulo', noDst: true },
   { name: 'Newfoundland', value: 'America/St_Johns', noDst: false },
   { name: 'Halifax', value: 'America/Halifax', noDst: false },
   { name: 'New York', value: 'America/New_York', noDst: false },
@@ -24,20 +24,6 @@ const TIME_ZONE_DEFINITIONS = [
   { name: 'Taipei', value: 'Asia/Taipei', noDst: true },
   { name: 'Sydney', value: 'Australia/Sydney', noDst: false },
 ] as const;
-
-function getTimeZoneOffset(timeZone: string, date = new Date()): string {
-  const offset = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    timeZoneName: 'shortOffset',
-  })
-    .formatToParts(date)
-    .find(part => part.type === 'timeZoneName')?.value;
-
-  if (offset == null || offset === 'GMT') {
-    return 'UTC±0';
-  }
-  return offset.replace('GMT', 'UTC').replace(/[+-]0/, '±0');
-}
 
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
@@ -54,12 +40,36 @@ class TimeUtils {
 
   static MILLIS_PER_HOUR = 60 * TimeUtils.MILLIS_PER_MIN;
 
-  static TIME_ZONES = Object.freeze(
-    TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
-      label: `${name} ${getTimeZoneOffset(value)}${noDst ? ' No DST' : ''}`,
-      value,
-    }))
-  );
+  static get TIME_ZONES(): readonly { label: string; value: string }[] {
+    return Object.freeze(
+      TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
+        label: `${name} ${TimeUtils.getTimeZoneOffset(value)}${
+          noDst ? ' No DST' : ''
+        }`,
+        value,
+      }))
+    );
+  }
+
+  /**
+   * Returns the time zone offset as a string in the format "UTC±X"
+   * Part-hour offsets are supported as "UTC±X:YY"
+   * @param timeZone the IANA time zone identifier string (e.g. 'America/New_York')
+   * @param date the Date object for which to get the time zone offset, default now
+   */
+  static getTimeZoneOffset(timeZone: string, date = new Date()): string {
+    const offset = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      timeZoneName: 'shortOffset',
+    })
+      .formatToParts(date)
+      .find(part => part.type === 'timeZoneName')?.value;
+
+    if (offset == null || offset === 'GMT') {
+      return 'UTC±0';
+    }
+    return offset.replace('GMT', 'UTC').replace(/[+-]0/, '±0');
+  }
 
   /**
    * Pretty prints a time in seconds as a format like "1h 3m 23s", "32s"
