@@ -1798,6 +1798,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const { renderer, canvasContext: context, renderState } = this;
+    assertNotNull(renderState);
 
     context.save();
 
