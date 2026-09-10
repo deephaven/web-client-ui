@@ -25,6 +25,9 @@ const TIME_ZONE_DEFINITIONS = [
   { name: 'Sydney', value: 'Australia/Sydney', noDst: false },
 ] as const;
 
+let cachedTimeZones: readonly { label: string; value: string }[] = [];
+let cachedTimeZonesDate = '';
+
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
@@ -41,14 +44,22 @@ class TimeUtils {
   static MILLIS_PER_HOUR = 60 * TimeUtils.MILLIS_PER_MIN;
 
   static get TIME_ZONES(): readonly { label: string; value: string }[] {
-    return Object.freeze(
-      TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
-        label: `${name} ${TimeUtils.getTimeZoneOffset(value)}${
-          noDst ? ' No DST' : ''
-        }`,
-        value,
-      }))
-    );
+    const date = new Date();
+    const dateKey = date.toDateString();
+
+    if (cachedTimeZonesDate !== dateKey) {
+      cachedTimeZonesDate = dateKey;
+      cachedTimeZones = Object.freeze(
+        TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
+          label: `${name} ${TimeUtils.getTimeZoneOffset(value, date)}${
+            noDst ? ' No DST' : ''
+          }`,
+          value,
+        }))
+      );
+    }
+
+    return cachedTimeZones;
   }
 
   /**
