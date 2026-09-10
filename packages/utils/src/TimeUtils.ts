@@ -26,7 +26,7 @@ const TIME_ZONE_DEFINITIONS = [
 ] as const;
 
 let cachedTimeZones: readonly { label: string; value: string }[] = [];
-let cachedTimeZonesDate = '';
+let cachedTimeZonesMinute = '';
 
 class TimeUtils {
   static TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
@@ -45,10 +45,10 @@ class TimeUtils {
 
   static get TIME_ZONES(): readonly { label: string; value: string }[] {
     const date = new Date();
-    const dateKey = date.toDateString();
+    const minuteKey = date.toISOString().slice(0, 16);
 
-    if (cachedTimeZonesDate !== dateKey) {
-      cachedTimeZonesDate = dateKey;
+    if (cachedTimeZonesMinute !== minuteKey) {
+      cachedTimeZonesMinute = minuteKey;
       cachedTimeZones = Object.freeze(
         TIME_ZONE_DEFINITIONS.map(({ name, value, noDst }) => ({
           label: `${name} ${TimeUtils.getTimeZoneOffset(value, date)}${

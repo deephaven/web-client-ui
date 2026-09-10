@@ -141,6 +141,37 @@ describe('TIME_ZONES tests', () => {
     expect(getTimeZone('Europe/London').label).toBe('London UTC+1');
     expect(getTimeZone('Asia/Tokyo').label).toBe('Tokyo UTC+9 No DST');
   });
+
+  it('updates labels on the minute a DST transition takes effect', () => {
+    jest.useFakeTimers();
+
+    // US Eastern moves to DST at 2024-03-10 02:00 local, i.e. 07:00 UTC
+    jest.setSystemTime(new Date('2024-03-10T06:59:00Z'));
+    expect(getTimeZone('America/New_York').label).toBe('New York UTC-5');
+
+    jest.setSystemTime(new Date('2024-03-10T07:00:00Z'));
+    expect(getTimeZone('America/New_York').label).toBe('New York UTC-4');
+
+    // London moves to BST at 2024-03-31 01:00 UTC
+    jest.setSystemTime(new Date('2024-03-31T00:59:00Z'));
+    expect(getTimeZone('Europe/London').label).toBe('London UTC±0');
+
+    jest.setSystemTime(new Date('2024-03-31T01:00:00Z'));
+    expect(getTimeZone('Europe/London').label).toBe('London UTC+1');
+  });
+
+  it('reuses the cached list until the minute changes', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(WINTER_DATE);
+
+    const timeZones = TimeUtils.TIME_ZONES;
+
+    jest.setSystemTime(new Date(WINTER_DATE.getTime() + MILLIS_PER_MIN - 1));
+    expect(TimeUtils.TIME_ZONES).toBe(timeZones);
+
+    jest.setSystemTime(new Date(WINTER_DATE.getTime() + MILLIS_PER_MIN));
+    expect(TimeUtils.TIME_ZONES).not.toBe(timeZones);
+  });
 });
 
 describe('formatElapsedTime parsing tests', () => {
