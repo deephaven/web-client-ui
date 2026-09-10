@@ -218,7 +218,10 @@ jobs:
         run: docker load -i e2e-ci.tar.gz
 
       - name: Run performance tests
-        run: './tests/docker-scripts/run.sh e2e-performance'
+        # Create test-results first, otherwise the bind mount creates it as root and the report step can't write into it
+        run: |
+          mkdir -p test-results
+          ./tests/docker-scripts/run.sh e2e-performance
 
       - name: Build report
         if: ${{ !cancelled() }}
