@@ -12,8 +12,6 @@ import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import type * as monaco from 'monaco-editor';
-// @ts-ignore
-import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 import Log from '@deephaven/log';
 import MonacoThemeRaw from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -41,13 +39,21 @@ class MonacoUtils {
 
   private static loadCallbacks: (() => void)[] = [];
 
+  private static keyCodeUtils?: { fromString: (key: string) => number };
+
   /**
    * Loads Monaco. Subsequent calls return the same promise.
    */
   static load(): Promise<typeof monaco> {
     if (MonacoUtils.loadPromise == null) {
-      MonacoUtils.loadPromise = import('monaco-editor').then(loaded => {
+      MonacoUtils.loadPromise = Promise.all([
+        import('monaco-editor'),
+        // KeyCodeUtils is not part of Monaco's public API
+        // @ts-ignore
+        import('monaco-editor/esm/vs/base/common/keyCodes.js'),
+      ]).then(([loaded, { KeyCodeUtils }]) => {
         MonacoUtils.monaco = loaded;
+        MonacoUtils.keyCodeUtils = KeyCodeUtils;
         const callbacks = MonacoUtils.loadCallbacks;
         MonacoUtils.loadCallbacks = [];
         callbacks.forEach(callback => callback());
@@ -582,6 +588,8 @@ class MonacoUtils {
 
     const isMac = MonacoUtils.isMacPlatform();
     const monaco = MonacoUtils.getMonaco();
+    const { keyCodeUtils } = MonacoUtils;
+    assertNotNull(keyCodeUtils, 'Monaco has not loaded');
 
     if (isMac) {
       return (
@@ -590,7 +598,7 @@ class MonacoUtils {
         (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
         (keyState.altKey ? monaco.KeyMod.Alt : 0) |
         (keyState.ctrlKey ? monaco.KeyMod.WinCtrl : 0) |
-        KeyCodeUtils.fromString(keyValue)
+        keyCodeUtils.fromString(keyValue)
       );
     }
 
@@ -600,7 +608,7 @@ class MonacoUtils {
       (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
       (keyState.altKey ? monaco.KeyMod.Alt : 0) |
       (keyState.metaKey ? monaco.KeyMod.WinCtrl : 0) |
-      KeyCodeUtils.fromString(keyValue)
+      keyCodeUtils.fromString(keyValue)
     );
   }
 

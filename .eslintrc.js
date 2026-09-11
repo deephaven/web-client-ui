@@ -57,9 +57,9 @@ module.exports = {
         '@typescript-eslint/no-restricted-imports': [
           'error',
           {
-            paths: [
+            patterns: [
               {
-                name: 'monaco-editor',
+                group: ['monaco-editor', 'monaco-editor/*'],
                 allowTypeImports: true,
                 message:
                   'Monaco loads on demand. Use `import type`, render <Editor>, or use MonacoUtils.load() / MonacoUtils.getMonaco().',
