@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
+
+**Note:** Version bump only for package @deephaven/react-hooks
+
 ## [1.21.1](https://github.com/deephaven/web-client-ui/compare/v1.21.0...v1.21.1) (2026-06-04)
 
 ### Bug Fixes

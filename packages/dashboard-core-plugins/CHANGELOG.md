@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
+
+### Features
+
+- DH-9378: Web Keyed Selection ([#2736](https://github.com/deephaven/web-client-ui/issues/2736)) ([7d9454e](https://github.com/deephaven/web-client-ui/commit/7d9454e7257d916cd550681641a90e3656dff529))
+
 ## [1.28.1](https://github.com/deephaven/web-client-ui/compare/v1.28.0...v1.28.1) (2026-09-03)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

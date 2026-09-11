@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
+
+### Bug Fixes
+
+- DH-22388: Fix web settings daylight savings not reflected in timezone labels ([#2751](https://github.com/deephaven/web-client-ui/issues/2751)) ([f1f0f12](https://github.com/deephaven/web-client-ui/commit/f1f0f12f0ceecbecaa70a328a59d316b45a5f819))
+
 ## [1.10.0](https://github.com/deephaven/web-client-ui/compare/v1.9.0...v1.10.0) (2025-11-20)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/playwright-grid",
-  "version": "1.25.0",
+  "version": "1.29.0",
   "description": "Playwright helpers for testing the Deephaven grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
