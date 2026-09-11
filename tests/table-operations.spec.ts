@@ -451,6 +451,7 @@ test('custom column', async ({ page, browserName }) => {
       '.input-editor-wrapper .editor-container'
     );
     await expect(columnFormula).toHaveCount(1);
+    await expect(columnFormula.locator('.monaco-editor')).toBeVisible();
     await columnFormula.click();
     await page.keyboard.type('Double * 2');
   });
@@ -470,6 +471,7 @@ test('custom column', async ({ page, browserName }) => {
     const newColumnFormula = page
       .locator('.input-editor-wrapper .editor-container')
       .nth(1);
+    await expect(newColumnFormula.locator('.monaco-editor')).toBeVisible();
     await newColumnFormula.click();
     await page.keyboard.type('Test * 2');
 
@@ -502,6 +504,7 @@ test('custom column', async ({ page, browserName }) => {
     const dragColumnFormula = page
       .locator('.input-editor-wrapper .editor-container')
       .nth(1);
+    await expect(dragColumnFormula.locator('.monaco-editor')).toBeVisible();
     await dragColumnFormula.click();
     await page.keyboard.type('String');
 
