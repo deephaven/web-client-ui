@@ -19,6 +19,7 @@ import {
   usePromiseFactory,
 } from '@deephaven/react-hooks';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
+import Log from '@deephaven/log';
 import Editor from '../notebook/Editor';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
 import './RuffSettingsModal.scss';
@@ -33,6 +34,8 @@ interface RuffSettingsModalProps {
   readOnly?: boolean;
   defaultSettings?: Record<string, unknown>;
 }
+
+const log = Log.module('RuffSettingsModal');
 
 const RUFF_SETTINGS_URI = 'inmemory://dh-config/ruff-settings.json';
 
@@ -141,7 +144,7 @@ export default function RuffSettingsModal({
         debouncedValidate(model.getValue());
       });
 
-      registerRuffSchema();
+      registerRuffSchema().catch(log.error);
       debouncedValidate(model.getValue());
     },
     [debouncedValidate, text]
