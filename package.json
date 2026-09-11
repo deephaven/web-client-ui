@@ -12,7 +12,8 @@
   "overrides": {
     "nx": {
       "@parcel/watcher": "2.4.1"
-    }
+    },
+    "conventional-changelog-conventionalcommits": "10.3.0"
   },
   "scripts": {
     "clean:build": "rimraf packages/*/dist packages/*/build",
@@ -107,7 +108,7 @@
     "@vscode/codicons": "0.0.36",
     "browserslist-to-esbuild": "^2.1.1",
     "chokidar-cli": "^2.1.0",
-    "conventional-changelog-conventionalcommits": "^10.4.0",
+    "conventional-changelog-conventionalcommits": "10.3.0",
     "cross-env": "^7.0.2",
     "eslint": "^8.29.0",
     "identity-obj-proxy": "^3.0.0",
