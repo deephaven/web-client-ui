@@ -7,7 +7,8 @@ import { openPlot } from './utils';
  */
 const LIBRARY_MARKERS = {
   plotly: 'plotly_afterplot',
-  mathjax: 'MathJax',
+  // Plotly bundles its own MathJax integration, so match a MathJax internal
+  mathjax: 'outputJax',
   monaco: 'editorWorkerService',
 } as const;
 
