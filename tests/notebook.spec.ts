@@ -17,12 +17,15 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   await page.locator('[aria-label="New notebook"]').click();
 
   // Click editor container
-  await page.locator('.editor-container').click();
+  await page.locator('.script-editor .editor-container').click();
 
   const message = `Hello notebook ${browserName} ${generateId()}!`;
   const command = `print("${message}")`;
 
-  await pasteInMonaco(page.locator('.editor-container'), command);
+  await pasteInMonaco(
+    page.locator('.script-editor .editor-container'),
+    command
+  );
 
   // Click the Save button
   await page.locator('[aria-label="Save"]').click();
@@ -46,7 +49,7 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   await page.reload();
 
   await expect(
-    page.locator('.editor-container').locator('textarea')
+    page.locator('.script-editor .editor-container').locator('textarea')
   ).not.toBeEmpty();
 
   // Click close on the notebook file .lm_close_tab

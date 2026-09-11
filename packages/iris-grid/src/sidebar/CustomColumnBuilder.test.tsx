@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EventShimCustomEvent } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
@@ -188,14 +188,14 @@ test('Displays request failure message', async () => {
 
 test('Handles focus changes via keyboard', async () => {
   const user = userEvent.setup();
-  const { container } = render(
-    <Builder customColumns={['abc=bar', 'foo=bar']} />
-  );
+  render(<Builder customColumns={['abc=bar', 'foo=bar']} />);
 
   const nameInputs = screen.getAllByPlaceholderText('Column Name');
-  const formulaInputs = container.querySelectorAll(
-    '.input-editor-wrapper textarea'
-  );
+  const formulaInputs = await waitFor(() => {
+    const editors = screen.getAllByRole('textbox', { name: /^Column Formula/ });
+    expect(editors).toHaveLength(2);
+    return editors;
+  });
   const deleteButtons = screen.getAllByLabelText(/Delete/);
   const dragHandles = screen.getAllByLabelText(/Drag/);
   await user.click(nameInputs[0]);

@@ -48,6 +48,10 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
+beforeAll(async () => {
+  await MonacoUtils.load();
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
   expect.hasAssertions();

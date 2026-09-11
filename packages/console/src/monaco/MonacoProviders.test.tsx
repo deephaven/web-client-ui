@@ -4,6 +4,11 @@ import * as monaco from 'monaco-editor';
 import dh from '@deephaven/jsapi-shim';
 import type { DocumentRange, Position } from '@deephaven/jsapi-types';
 import MonacoProviders from './MonacoProviders';
+import MonacoUtils from './MonacoUtils';
+
+beforeAll(async () => {
+  await MonacoUtils.load();
+});
 
 const DEFAULT_LANGUAGE = 'test';
 
