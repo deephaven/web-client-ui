@@ -8,6 +8,11 @@ import CustomColumnInput, {
   type CustomColumnInputProps,
 } from './CustomColumnInput';
 
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
+
 const TEST_ID = 'TEST_ID';
 
 function Input({

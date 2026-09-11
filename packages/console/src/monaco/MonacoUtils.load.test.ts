@@ -3,6 +3,7 @@ import initRuff, { Workspace } from '@astral-sh/ruff-wasm-web';
 import MonacoUtils from './MonacoUtils';
 import MonacoProviders from './MonacoProviders';
 
+// The timeout covers loading Monaco on demand, which a test's default does not
 it('runs setup and Ruff once Monaco loads, without loading it', async () => {
   (Workspace as unknown as { version: () => string }).version = () => 'test';
   const registerLanguage = jest.spyOn(monaco.languages, 'register');
@@ -53,4 +54,4 @@ it('runs setup and Ruff once Monaco loads, without loading it', async () => {
   const laterCallback = jest.fn();
   MonacoUtils.whenLoaded(laterCallback);
   expect(laterCallback).toHaveBeenCalledTimes(1);
-});
+}, 30000);

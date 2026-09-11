@@ -3,11 +3,17 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EventShimCustomEvent } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
+import { MonacoUtils } from '@deephaven/console';
 import CustomColumnBuilder, {
   type CustomColumnBuilderProps,
 } from './CustomColumnBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 import IrisGridModel from '../IrisGridModel';
+
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 

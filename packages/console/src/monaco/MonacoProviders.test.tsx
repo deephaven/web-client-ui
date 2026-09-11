@@ -6,9 +6,10 @@ import type { DocumentRange, Position } from '@deephaven/jsapi-types';
 import MonacoProviders from './MonacoProviders';
 import MonacoUtils from './MonacoUtils';
 
+// Monaco loads on demand, which takes longer than a test's default timeout
 beforeAll(async () => {
   await MonacoUtils.load();
-});
+}, 30000);
 
 const DEFAULT_LANGUAGE = 'test';
 

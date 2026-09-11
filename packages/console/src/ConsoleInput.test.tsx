@@ -2,6 +2,7 @@ import React from 'react';
 import dh from '@deephaven/jsapi-shim';
 import { act, render, waitFor } from '@testing-library/react';
 import { ConsoleInput } from './ConsoleInput';
+import MonacoUtils from './monaco/MonacoUtils';
 import { type CommandHistoryStorage } from './command-history';
 
 /**
@@ -15,6 +16,11 @@ jest.mock('./monaco', () => ({
     'line-height': '19px',
   },
 }));
+
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
 
 function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   return {
