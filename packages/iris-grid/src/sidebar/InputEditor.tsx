@@ -9,6 +9,7 @@ interface InputEditorProps {
   placeholder?: string;
   value: string;
   onContentChanged: (value?: string) => void;
+  onEditorInitialized?: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   editorSettings: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
   editorIndex: number;
   onTab: (editorIndex: number, shiftKey: boolean) => void;
@@ -87,6 +88,7 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
   }
 
   handleEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor): void {
+    const { onEditorInitialized } = this.props;
     this.editor = editor;
 
     // disable tab to spaces in this editor to improve tab navigation
@@ -98,6 +100,8 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
     editor.onDidChangeModelContent(this.handleContentChanged);
     editor.onDidFocusEditorText(this.handleEditorFocus);
     editor.onDidBlurEditorText(this.handleEditorBlur);
+
+    onEditorInitialized?.(editor);
   }
 
   handleEditorWillDestroy(): void {
