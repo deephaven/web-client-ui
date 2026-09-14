@@ -1,6 +1,6 @@
 import React, { PureComponent, type ReactElement, type RefObject } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import {
   assertNotNull,
@@ -15,6 +15,7 @@ import {
   type CommandHistoryTable,
 } from './command-history';
 import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
+import Editor from './notebook/Editor';
 import './ConsoleInput.scss';
 
 const log = Log.module('ConsoleInput');
@@ -59,6 +60,8 @@ export class ConsoleInput extends PureComponent<
   constructor(props: ConsoleInputProps) {
     super(props);
 
+    this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
+    this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleResize = this.handleResize.bind(this);
 
     this.commandContainer = React.createRef();
@@ -78,8 +81,6 @@ export class ConsoleInput extends PureComponent<
   }
 
   componentDidMount(): void {
-    this.initCommandEditor();
-
     this.loadMoreHistory();
   }
 
@@ -88,8 +89,8 @@ export class ConsoleInput extends PureComponent<
     this.layoutEditor();
     // If the session has changed, we need to destroy the old command editor and create a new one for the new session
     if (prevProps.session !== session) {
-      this.destroyCommandEditor(prevProps.session);
-      this.initCommandEditor();
+      this.closeDocument(prevProps.session);
+      this.openDocument(session);
     }
   }
 
@@ -99,9 +100,6 @@ export class ConsoleInput extends PureComponent<
     if (this.loadingPromise != null) {
       this.loadingPromise.cancel();
     }
-
-    const { session } = this.props;
-    this.destroyCommandEditor(session);
   }
 
   cancelListener?: () => void;
@@ -165,14 +163,9 @@ export class ConsoleInput extends PureComponent<
     }
   }
 
-  initCommandEditor(): void {
-    const { language, session } = this.props;
-    const model = monaco.editor.createModel(
-      '',
-      language,
-      MonacoUtils.generateConsoleUri()
-    );
-    const commandSettings = {
+  getEditorSettings(): monaco.editor.IStandaloneEditorConstructionOptions {
+    const { language } = this.props;
+    return {
       copyWithSyntaxHighlighting: false,
       cursorStyle: 'block',
       fixedOverflowWidgets: true,
@@ -195,22 +188,31 @@ export class ConsoleInput extends PureComponent<
         top: TOP_PADDING,
         bottom: BOTTOM_PADDING,
       },
-      value: '',
       wordWrap: 'on',
       autoClosingBrackets: 'beforeWhitespace',
-      model,
-    } as const;
+      // The model is created with a console URI in handleEditorInitialized
+      model: null,
+    };
+  }
 
+  handleEditorInitialized(
+    commandEditor: monaco.editor.IStandaloneCodeEditor
+  ): void {
+    const { language, session } = this.props;
+    const monaco = MonacoUtils.getMonaco();
     const element = this.commandContainer.current;
     assertNotNull(element);
 
-    this.commandEditor = monaco.editor.create(element, commandSettings);
-
-    MonacoUtils.setEOL(this.commandEditor);
-    this.openDocumentCleanup = MonacoUtils.openDocument(
-      this.commandEditor,
-      session
+    this.commandEditor = commandEditor;
+    const model = monaco.editor.createModel(
+      '',
+      language,
+      MonacoUtils.generateConsoleUri()
     );
+    commandEditor.setModel(model);
+
+    MonacoUtils.setEOL(commandEditor);
+    this.openDocument(session);
 
     this.commandEditor.onDidChangeModelContent(() => {
       const value = this.commandEditor?.getValue();
@@ -232,8 +234,8 @@ export class ConsoleInput extends PureComponent<
      * Can't do it in `onDidChangeModelContent` either, since we want to stop the Enter action from modifying the command.
      */
     this.commandEditor.onKeyDown(keyEvent => {
-      const { commandEditor, commandHistoryIndex } = this;
-      const position = commandEditor?.getPosition();
+      const { commandHistoryIndex } = this;
+      const position = commandEditor.getPosition();
       assertNotNull(position);
       const { lineNumber } = position;
 
@@ -306,18 +308,31 @@ export class ConsoleInput extends PureComponent<
     this.setState({ model: this.commandEditor.getModel() });
   }
 
+  handleEditorWillDestroy(): void {
+    const { session } = this.props;
+    this.closeDocument(session);
+    this.commandEditor?.getModel()?.dispose();
+    this.commandEditor = undefined;
+  }
+
+  openDocument(session: dh.IdeSession): void {
+    if (this.commandEditor) {
+      this.openDocumentCleanup = MonacoUtils.openDocument(
+        this.commandEditor,
+        session
+      );
+    }
+  }
+
   /**
-   * Closes the monaco document, disposes the Monaco editor, and clears all associated cleanup state.
-   *
-   * @param session The session that originally received `openDocument` for this editor
+   * Closes the monaco document for the session that received `openDocument`
+   * @param session The session the document was opened with
    */
-  destroyCommandEditor(session: dh.IdeSession): void {
+  closeDocument(session: dh.IdeSession): void {
     if (this.commandEditor) {
       this.openDocumentCleanup?.dispose();
       this.openDocumentCleanup = undefined;
       MonacoUtils.closeDocument(this.commandEditor, session);
-      this.commandEditor.dispose();
-      this.commandEditor = undefined;
     }
   }
 
@@ -523,7 +538,14 @@ export class ConsoleInput extends PureComponent<
             className={ConsoleInput.INPUT_CLASS_NAME}
             ref={this.commandContainer}
             style={{ height: commandEditorHeight }}
-          />
+          >
+            <Editor
+              className="h-100 w-100"
+              settings={this.getEditorSettings()}
+              onEditorInitialized={this.handleEditorInitialized}
+              onEditorWillDestroy={this.handleEditorWillDestroy}
+            />
+          </div>
           {model && (
             <MonacoProviders
               model={model}

@@ -11,10 +11,7 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
-import * as monaco from 'monaco-editor';
-import type { Environment } from 'monaco-editor';
-// @ts-ignore
-import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
+import type * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import MonacoThemeRaw from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
@@ -31,25 +28,81 @@ const CONSOLE_URI_PREFIX = 'inmemory://dh-console/';
 
 declare global {
   interface Window {
-    MonacoEnvironment?: Environment;
+    MonacoEnvironment?: monaco.Environment;
   }
 }
 
 class MonacoUtils {
+  private static loadPromise?: Promise<typeof monaco>;
+
+  private static monaco?: typeof monaco;
+
+  private static loadCallbacks: (() => void)[] = [];
+
+  private static keyCodeUtils?: { fromString: (key: string) => number };
+
   /**
-   * Initializes Monaco for the environment
+   * Loads Monaco. Subsequent calls return the same promise.
+   */
+  static load(): Promise<typeof monaco> {
+    if (MonacoUtils.loadPromise == null) {
+      MonacoUtils.loadPromise = Promise.all([
+        import('monaco-editor'),
+        // KeyCodeUtils is not part of Monaco's public API
+        // @ts-ignore
+        import('monaco-editor/esm/vs/base/common/keyCodes.js'),
+      ]).then(([loaded, { KeyCodeUtils }]) => {
+        MonacoUtils.monaco = loaded;
+        MonacoUtils.keyCodeUtils = KeyCodeUtils;
+        const callbacks = MonacoUtils.loadCallbacks;
+        MonacoUtils.loadCallbacks = [];
+        callbacks.forEach(callback => callback());
+        return loaded;
+      });
+    }
+    return MonacoUtils.loadPromise;
+  }
+
+  /**
+   * @returns Monaco, once it has loaded. Safe wherever an editor already exists.
+   */
+  static getMonaco(): typeof monaco {
+    assertNotNull(MonacoUtils.monaco, 'Monaco has not loaded');
+    return MonacoUtils.monaco;
+  }
+
+  /**
+   * Runs the callback now if Monaco has loaded, or once it has
+   * @param callback The callback to run
+   */
+  static whenLoaded(callback: () => void): void {
+    if (MonacoUtils.monaco != null) {
+      callback();
+    } else {
+      MonacoUtils.loadCallbacks.push(callback);
+    }
+  }
+
+  /**
+   * Initializes Monaco for the environment, once it has loaded
    * @param getWorker The getWorker function Monaco should use
    *                  The workers should be provided by the caller and bundled by their build system (e.g. Vite, Webpack)
    */
   static init({
     getWorker,
-  }: { getWorker?: Environment['getWorker'] } = {}): void {
-    log.debug('Initializing Monaco...');
-
+  }: { getWorker?: monaco.Environment['getWorker'] } = {}): void {
     if (getWorker !== undefined) {
       MonacoUtils.registerGetWorker(getWorker);
     }
 
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.init());
+      return;
+    }
+
+    log.debug('Initializing Monaco...');
+
+    const monaco = MonacoUtils.getMonaco();
     const { initTheme, registerLanguages } = MonacoUtils;
 
     initTheme();
@@ -86,6 +139,9 @@ class MonacoUtils {
         model.onDidChangeContent(() => {
           throttledLint(model);
         });
+        model.onWillDispose(() => {
+          throttledLint.cancel();
+        });
       }
     });
 
@@ -98,6 +154,12 @@ class MonacoUtils {
    * Initialize current Monaco theme based on the current DH theme.
    */
   static initTheme(): void {
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.initTheme());
+      return;
+    }
+
+    const monaco = MonacoUtils.getMonaco();
     const { removeHashtag } = MonacoUtils;
 
     const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
@@ -271,7 +333,7 @@ class MonacoUtils {
    * Register the getWorker function for Monaco
    * @param getWorker The getWorker function for Monaco
    */
-  static registerGetWorker(getWorker: Environment['getWorker']): void {
+  static registerGetWorker(getWorker: monaco.Environment['getWorker']): void {
     window.MonacoEnvironment = {
       ...window.MonacoEnvironment,
       getWorker,
@@ -288,6 +350,12 @@ class MonacoUtils {
   }
 
   static registerLanguages(languages: Language[]): void {
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.registerLanguages(languages));
+      return;
+    }
+
+    const monaco = MonacoUtils.getMonaco();
     // First override the default loader for any language we have a custom definition for
     // https://github.com/Microsoft/monaco-editor/issues/252#issuecomment-482786867
     const languageIds = languages.map(({ id }) => id);
@@ -306,6 +374,12 @@ class MonacoUtils {
   }
 
   static registerLanguage(language: Language): void {
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.registerLanguage(language));
+      return;
+    }
+
+    const monaco = MonacoUtils.getMonaco();
     log.debug2('Registering language: ', language.id);
     monaco.languages.register(language);
 
@@ -322,7 +396,7 @@ class MonacoUtils {
    */
   static setEOL(
     editor: monaco.editor.IStandaloneCodeEditor,
-    eolSequence = monaco.editor.EndOfLineSequence.LF
+    eolSequence = MonacoUtils.getMonaco().editor.EndOfLineSequence.LF
   ): void {
     editor.getModel()?.setEOL(eolSequence);
   }
@@ -452,6 +526,12 @@ class MonacoUtils {
    * be impacted.
    */
   static removeConflictingKeybindings(): void {
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.removeConflictingKeybindings());
+      return;
+    }
+
+    const monaco = MonacoUtils.getMonaco();
     // All editor instances share a global keybinding registry which is where
     // default keybindings are set. There doesn't appear to be a way to remove
     // default bindings, but we can add new ones that will override the existing
@@ -507,6 +587,9 @@ class MonacoUtils {
     }
 
     const isMac = MonacoUtils.isMacPlatform();
+    const monaco = MonacoUtils.getMonaco();
+    const { keyCodeUtils } = MonacoUtils;
+    assertNotNull(keyCodeUtils, 'Monaco has not loaded');
 
     if (isMac) {
       return (
@@ -515,7 +598,7 @@ class MonacoUtils {
         (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
         (keyState.altKey ? monaco.KeyMod.Alt : 0) |
         (keyState.ctrlKey ? monaco.KeyMod.WinCtrl : 0) |
-        KeyCodeUtils.fromString(keyValue)
+        keyCodeUtils.fromString(keyValue)
       );
     }
 
@@ -525,13 +608,14 @@ class MonacoUtils {
       (keyState.shiftKey ? monaco.KeyMod.Shift : 0) |
       (keyState.altKey ? monaco.KeyMod.Alt : 0) |
       (keyState.metaKey ? monaco.KeyMod.WinCtrl : 0) |
-      KeyCodeUtils.fromString(keyValue)
+      keyCodeUtils.fromString(keyValue)
     );
   }
 
   static provideLinks(model: monaco.editor.ITextModel): {
     links: monaco.languages.ILink[];
   } {
+    const monaco = MonacoUtils.getMonaco();
     const newTokens: monaco.languages.ILink[] = [];
 
     for (let i = 1; i <= model.getLineCount(); i += 1) {
@@ -563,7 +647,9 @@ class MonacoUtils {
    * @returns A new console URI
    */
   static generateConsoleUri(): monaco.Uri {
-    return monaco.Uri.parse(`${CONSOLE_URI_PREFIX}${nanoid()}`);
+    return MonacoUtils.getMonaco().Uri.parse(
+      `${CONSOLE_URI_PREFIX}${nanoid()}`
+    );
   }
 
   /**

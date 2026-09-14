@@ -1,7 +1,8 @@
 import React from 'react';
 import dh from '@deephaven/jsapi-shim';
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { ConsoleInput } from './ConsoleInput';
+import MonacoUtils from './monaco/MonacoUtils';
 import { type CommandHistoryStorage } from './command-history';
 
 /**
@@ -15,6 +16,11 @@ jest.mock('./monaco', () => ({
     'line-height': '19px',
   },
 }));
+
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
 
 function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   return {
@@ -34,11 +40,11 @@ function makeSession(): dh.IdeSession {
   return session;
 }
 
-function renderConsoleInput(
+async function renderConsoleInput(
   session: dh.IdeSession,
   ref: React.RefObject<ConsoleInput>
 ) {
-  return render(
+  const result = render(
     <ConsoleInput
       ref={ref}
       session={session}
@@ -47,23 +53,26 @@ function renderConsoleInput(
       onSubmit={jest.fn()}
     />
   );
+  // The editor, and its document, open once Monaco has loaded
+  await waitFor(() => expect(session.openDocument).toHaveBeenCalled());
+  return result;
 }
 
 describe('ConsoleInput session transition', () => {
-  it('notifies the initial session when the document is opened', () => {
+  it('notifies the initial session when the document is opened', async () => {
     const session = makeSession();
     const ref = React.createRef<ConsoleInput>();
-    renderConsoleInput(session, ref);
+    await renderConsoleInput(session, ref);
 
     expect(session.openDocument).toHaveBeenCalledTimes(1);
   });
 
-  it('calls closeDocument on the old session and openDocument on the new session on session prop change', () => {
+  it('calls closeDocument on the old session and openDocument on the new session on session prop change', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { rerender } = renderConsoleInput(session1, ref);
+    const { rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput
@@ -79,12 +88,12 @@ describe('ConsoleInput session transition', () => {
     expect(session2.openDocument).toHaveBeenCalledTimes(1);
   });
 
-  it('routes model edits only to the current session after a session replacement', () => {
+  it('routes model edits only to the current session after a session replacement', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { rerender } = renderConsoleInput(session1, ref);
+    const { rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput
@@ -104,12 +113,12 @@ describe('ConsoleInput session transition', () => {
     expect(session1.changeDocument).not.toHaveBeenCalled();
   });
 
-  it('calls closeDocument on the last active session when the component unmounts', () => {
+  it('calls closeDocument on the last active session when the component unmounts', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { unmount, rerender } = renderConsoleInput(session1, ref);
+    const { unmount, rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput

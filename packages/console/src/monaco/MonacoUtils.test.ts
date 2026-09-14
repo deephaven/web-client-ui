@@ -48,6 +48,11 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
+
 beforeEach(() => {
   jest.clearAllMocks();
   expect.hasAssertions();
