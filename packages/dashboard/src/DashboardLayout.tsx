@@ -351,6 +351,10 @@ export function DashboardLayout({
           lastConfigRef.current
         );
 
+        // A pending save describes the layout being replaced and must not
+        // land after this config and put the old layout back
+        throttledProcessDehydratedLayoutConfig.cancel();
+
         log.debug('Setting new layout content...');
         const content = LayoutUtils.hydrateLayoutConfig(
           layoutConfig,
@@ -369,7 +373,14 @@ export function DashboardLayout({
         setIsDashboardEmpty(layout.root.contentItems.length === 0);
       }
     },
-    [hydrateComponent, layout, layoutConfig, panelManager, previousLayoutConfig]
+    [
+      hydrateComponent,
+      layout,
+      layoutConfig,
+      panelManager,
+      previousLayoutConfig,
+      throttledProcessDehydratedLayoutConfig,
+    ]
   );
 
   // This should be the last hook called in this component
