@@ -246,3 +246,107 @@ it('hydrates panels from a new external layoutConfig prop', async () => {
 
   expect(mountCounts.get('a')).toBe(1);
 });
+
+describe('replacing a layout with a pending save', () => {
+  const makeLayoutConfig = (name: string): DashboardLayoutConfig => [
+    {
+      type: 'stack',
+      content: [
+        {
+          id: `panel-${name}`,
+          type: 'react-component',
+          component: TestPanel.displayName,
+          props: { metadata: { type: 'test', name } },
+          title: name,
+        },
+      ],
+    },
+  ];
+
+  beforeEach(() => {
+    jest.useFakeTimers({ now: 0 });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  /**
+   * Renders layout `a`, queues a throttled save describing it, then replaces
+   * it with layout `b` while that save is still pending.
+   *
+   * @returns The titles saved after the replacement, and an unmount handle
+   */
+  function renderAndReplaceLayout() {
+    let gl: LayoutManager | undefined;
+    // Must keep a stable identity across renders; a new function each render
+    // rebuilds the layout and no panels ever mount
+    const onGoldenLayoutChange = (layout: LayoutManager) => {
+      gl = layout;
+    };
+    const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
+    const dashboard = (layoutConfig: DashboardLayoutConfig) => (
+      <ApiContext.Provider value={dh}>
+        <Dashboard
+          layoutConfig={layoutConfig}
+          onGoldenLayoutChange={onGoldenLayoutChange}
+          onLayoutConfigChange={onLayoutConfigChange}
+        >
+          <TestPlugin />
+        </Dashboard>
+      </ApiContext.Provider>
+    );
+    const { rerender, unmount } = render(dashboard(makeLayoutConfig('a')));
+
+    act(() => {
+      jest.advanceTimersByTime(16);
+    });
+    expect(onLayoutConfigChange).toHaveBeenCalledTimes(1);
+
+    // Retitling inside the throttle window queues a save for the trailing edge
+    act(() => {
+      gl!.root.getItemsById('panel-a')[0].setTitle('queued');
+      jest.advanceTimersByTime(16);
+    });
+    expect(onLayoutConfigChange).toHaveBeenCalledTimes(1);
+    onLayoutConfigChange.mockClear();
+
+    // Replace the layout with the queued save still pending, just shy of due
+    act(() => {
+      jest.advanceTimersByTime(980);
+    });
+    rerender(dashboard(makeLayoutConfig('b')));
+    expect(screen.getByTestId('test-panel-b')).toBeInTheDocument();
+    expect(screen.queryByTestId('test-panel-a')).not.toBeInTheDocument();
+
+    const savedTitles = () =>
+      onLayoutConfigChange.mock.calls.map(
+        ([config]) => config[0].content?.[0].title
+      );
+
+    return { savedTitles, unmount };
+  }
+
+  it('saves the replacing layout rather than the replaced one', () => {
+    const { savedTitles } = renderAndReplaceLayout();
+
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(savedTitles()).not.toContain('queued');
+    expect(savedTitles()).toContain('b');
+    expect(screen.getByTestId('test-panel-b')).toBeInTheDocument();
+  });
+
+  it('does not save the replaced layout when unmounting flushes the save', () => {
+    const { savedTitles, unmount } = renderAndReplaceLayout();
+
+    unmount();
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(savedTitles()).not.toContain('queued');
+  });
+});

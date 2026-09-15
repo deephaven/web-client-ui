@@ -7,6 +7,12 @@ import testLayout from './deephaven-app-layout.test.json';
 const WORKSPACE_STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
 /**
+ * Shared baseline for the test layout. Named rather than auto-generated so
+ * more than one test can assert against the same image.
+ */
+const TEST_LAYOUT_SNAPSHOT = 'tests-golden-layout-test-layout.png';
+
+/**
  * Build a persisted workspace that holds the test layout in place of the
  * default one, so a fresh page boots straight into it without going through
  * the import UI. Mirrors the shape `LocalWorkspaceStorage` writes.
@@ -132,7 +138,9 @@ test.describe('tests golden-layout operations', () => {
 
   test('golden-layout renders the test layout', async ({ page }) => {
     // general overall visual check of layout
-    await expect(page.locator('.lm_root')).toHaveScreenshot();
+    await expect(page.locator('.lm_root')).toHaveScreenshot(
+      TEST_LAYOUT_SNAPSHOT
+    );
   });
 
   test('golden-layout can maximize the first stack', async ({ page }) => {
@@ -355,6 +363,29 @@ test.describe('default layout', () => {
     await expect(
       page.locator('.lm_tab').filter({ has: page.getByText('test-a') })
     ).toHaveCount(1);
+
+    await expect(page.locator('.lm_root')).toHaveScreenshot(
+      TEST_LAYOUT_SNAPSHOT
+    );
+
+    // The layout save is throttled, so the import can still be in flight here.
+    // Reloading before it lands restores the pre-import layout, which looks
+    // identical to the regression this reload is meant to catch.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          key => localStorage.getItem(key)?.includes('test-a') ?? false,
+          WORKSPACE_STORAGE_KEY
+        )
+      )
+      .toBe(true);
+
+    // the imported layout must survive a reload, not be overwritten by a
+    // pending save describing the layout it replaced
+    await gotoPage(page, '');
+    await expect(page.locator('.lm_root')).toHaveScreenshot(
+      TEST_LAYOUT_SNAPSHOT
+    );
   });
 
   test('reopen last closed panel', async ({ page }) => {
