@@ -263,17 +263,54 @@ describe('replacing a layout with a pending save', () => {
     },
   ];
 
+  // Golden-layout emits `stateChanged` on the next animation frame. Frames
+  // are queued and run on request so the tests control whether the throttle
+  // deadline or the replacement's `stateChanged` lands first.
+  let frames = new Map<number, FrameRequestCallback>();
+  let nextFrameId = 1;
+  let requestFrameSpy: jest.SpyInstance;
+  let cancelFrameSpy: jest.SpyInstance;
+
+  function runFrame() {
+    const due = [...frames.values()];
+    frames.clear();
+    act(() => {
+      due.forEach(callback => callback(performance.now()));
+    });
+  }
+
   beforeEach(() => {
-    jest.useFakeTimers({ now: 0 });
+    jest.useFakeTimers({
+      now: 0,
+      doNotFake: ['requestAnimationFrame', 'cancelAnimationFrame'],
+    });
+    frames = new Map();
+    nextFrameId = 1;
+    requestFrameSpy = jest
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(callback => {
+        const id = nextFrameId;
+        nextFrameId += 1;
+        frames.set(id, callback);
+        return id;
+      });
+    cancelFrameSpy = jest
+      .spyOn(window, 'cancelAnimationFrame')
+      .mockImplementation(id => {
+        frames.delete(id);
+      });
   });
 
   afterEach(() => {
+    requestFrameSpy.mockRestore();
+    cancelFrameSpy.mockRestore();
     jest.useRealTimers();
   });
 
   /**
    * Renders layout `a`, queues a throttled save describing it, then replaces
-   * it with layout `b` while that save is still pending.
+   * it with layout `b` while that save is still pending. The `stateChanged`
+   * for `b` is left in the frame queue.
    *
    * @returns The titles saved after the replacement, and an unmount handle
    */
@@ -298,23 +335,18 @@ describe('replacing a layout with a pending save', () => {
     );
     const { rerender, unmount } = render(dashboard(makeLayoutConfig('a')));
 
-    act(() => {
-      jest.advanceTimersByTime(16);
-    });
+    // Initial stateChanged saves on the throttle's leading edge
+    runFrame();
     expect(onLayoutConfigChange).toHaveBeenCalledTimes(1);
 
     // Retitling inside the throttle window queues a save for the trailing edge
     act(() => {
       gl!.root.getItemsById('panel-a')[0].setTitle('queued');
-      jest.advanceTimersByTime(16);
     });
+    runFrame();
     expect(onLayoutConfigChange).toHaveBeenCalledTimes(1);
     onLayoutConfigChange.mockClear();
 
-    // Replace the layout with the queued save still pending, just shy of due
-    act(() => {
-      jest.advanceTimersByTime(980);
-    });
     rerender(dashboard(makeLayoutConfig('b')));
     expect(screen.getByTestId('test-panel-b')).toBeInTheDocument();
     expect(screen.queryByTestId('test-panel-a')).not.toBeInTheDocument();
@@ -327,26 +359,24 @@ describe('replacing a layout with a pending save', () => {
     return { savedTitles, unmount };
   }
 
-  it('saves the replacing layout rather than the replaced one', () => {
+  it('saves the replacing layout, not the replaced one, when the deadline passes before the next frame', () => {
     const { savedTitles } = renderAndReplaceLayout();
 
+    // Deadline fires before any frame delivers the replacement's stateChanged
     act(() => {
-      jest.advanceTimersByTime(5000);
+      jest.runAllTimers();
     });
+    expect(savedTitles()).toEqual([]);
 
-    expect(savedTitles()).not.toContain('queued');
-    expect(savedTitles()).toContain('b');
-    expect(screen.getByTestId('test-panel-b')).toBeInTheDocument();
+    runFrame();
+    expect(savedTitles()).toEqual(['b']);
   });
 
   it('does not save the replaced layout when unmounting flushes the save', () => {
     const { savedTitles, unmount } = renderAndReplaceLayout();
 
     unmount();
-    act(() => {
-      jest.advanceTimersByTime(5000);
-    });
 
-    expect(savedTitles()).not.toContain('queued');
+    expect(savedTitles()).toEqual([]);
   });
 });
