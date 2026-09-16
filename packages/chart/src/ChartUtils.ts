@@ -9,18 +9,18 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import { set } from 'lodash';
 import type {
   Layout,
-  PlotData,
   PlotType,
-  Axis as PlotlyAxis,
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
   MarkerSymbol,
+  PolarLayout,
+  Scene,
   Template,
-  Delta,
 } from 'plotly.js';
 import { assertNotNull, bindAllMethods, type Range } from '@deephaven/utils';
 import { type ChartTheme } from './ChartTheme';
+import { type PlotData } from './plotly/plotlyTypes';
 
 export type FilterColumnMap = Map<
   string,
@@ -94,7 +94,7 @@ interface Rangebreaks {
   pattern?: 'day of week' | 'hour' | '';
   values?: string[];
 }
-interface RangebreakAxisFormat extends PlotlyAxis {
+interface RangebreakAxisFormat extends Omit<LayoutAxis, 'rangebreaks'> {
   rangebreaks: Rangebreaks[];
 }
 
@@ -133,9 +133,9 @@ function isDateTimeColumnFormatter(
 function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   return (
     value != null &&
-    (value as PlotlyAxis).range != null &&
-    ((value as PlotlyAxis).autorange === false ||
-      (value as PlotlyAxis).autorange === undefined)
+    (value as LayoutAxis).range != null &&
+    ((value as LayoutAxis).autorange === false ||
+      (value as LayoutAxis).autorange === undefined)
   );
 }
 
@@ -290,10 +290,10 @@ class ChartUtils {
     axisFormat: Partial<LayoutAxis> | null,
     axis: DhType.plot.Axis,
     isDateType: boolean
-  ): Partial<PlotlyAxis> | null {
+  ): Partial<LayoutAxis> | null {
     const { gapBetweenMajorTicks } = axis;
     if (gapBetweenMajorTicks != null && gapBetweenMajorTicks > 0) {
-      const updatedFormat: Partial<PlotlyAxis> = axisFormat || {};
+      const updatedFormat: Partial<LayoutAxis> = axisFormat || {};
       let tickSpacing = gapBetweenMajorTicks;
       if (isDateType) {
         // Need to convert from nanoseconds to milliseconds
@@ -480,7 +480,7 @@ class ChartUtils {
       const value = layout[key];
       if (isRangedPlotlyAxis(value)) {
         // Only want to add the range if it's not autoranged
-        ranges[key] = [...(value as PlotlyAxis).range];
+        ranges[key] = [...value.range];
       }
     }
 
@@ -649,7 +649,7 @@ class ChartUtils {
   getAxisFormats(
     figure: DhType.plot.Figure,
     formatter: Formatter
-  ): Map<LayoutAxisKey, Partial<PlotlyAxis>> {
+  ): Map<LayoutAxisKey, Partial<LayoutAxis>> {
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
@@ -1263,7 +1263,7 @@ class ChartUtils {
   getPlotlyAxisFormat(
     source: DhType.plot.SeriesDataSource,
     formatter: Formatter | null = null
-  ): Partial<PlotlyAxis> | null {
+  ): Partial<LayoutAxis> | null {
     const { dh } = this;
     const { axis, columnType } = source;
     const { formatPattern } = axis;
@@ -2109,10 +2109,10 @@ class ChartUtils {
             delta: {
               decreasing: {
                 color: indicator_decreasing,
-              } as Delta['increasing'],
+              },
               increasing: {
                 color: indicator_increasing,
-              } as Delta['decreasing'],
+              },
             },
             gauge: { bar: { color: indicator_gauge } },
           },
@@ -2173,15 +2173,23 @@ class ChartUtils {
       margin: { ...ChartUtils.DEFAULT_MARGIN },
       xaxis: this.makeLayoutAxis(dh.plot.AxisType.X, theme),
       yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
+      // plotly types polar and scene axes separately from cartesian axes, but we
+      // share the same defaults; attributes that don't apply are ignored
       polar: {
-        angularaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE, theme),
-        radialaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE, theme),
+        angularaxis: this.makeLayoutAxis(
+          dh.plot.AxisType.SHAPE,
+          theme
+        ) as PolarLayout['angularaxis'],
+        radialaxis: this.makeLayoutAxis(
+          dh.plot.AxisType.SHAPE,
+          theme
+        ) as PolarLayout['radialaxis'],
         bgcolor: theme.plot_bgcolor,
       },
       scene: {
-        xaxis: this.makeLayoutAxis(dh.plot.AxisType.X, theme),
-        yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
-        zaxis: this.makeLayoutAxis(null, theme),
+        xaxis: this.makeLayoutAxis(dh.plot.AxisType.X, theme) as Scene['xaxis'],
+        yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme) as Scene['yaxis'],
+        zaxis: this.makeLayoutAxis(null, theme) as Scene['zaxis'],
       },
       geo: {
         showcoastlines: true,
