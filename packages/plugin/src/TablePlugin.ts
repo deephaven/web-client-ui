@@ -1,11 +1,13 @@
 import type React from 'react';
+// Type-only: `@deephaven/iris-grid` and `@deephaven/grid` are optional peers so table
+// plugin types don't pull those dependency trees into every `@deephaven/plugin` consumer.
 import type {
   ColumnName,
   InputFilter,
   IrisGridContextMenuData,
   IrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
-import { type GridRange, type Selection } from '@deephaven/grid';
+import type { GridRange, Selection } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 
