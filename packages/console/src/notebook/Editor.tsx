@@ -123,9 +123,7 @@ class Editor extends Component<EditorProps, { error?: unknown }> {
     });
     this.editor.layout();
 
-    monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: MonacoUtils.provideLinks,
-    });
+    MonacoUtils.registerLinkProvider();
 
     onEditorInitialized(this.editor);
   }

@@ -181,6 +181,23 @@ describe('disableKeyBindings', () => {
   });
 });
 
+describe('registerLinkProvider', () => {
+  it('registers the plaintext link provider once', () => {
+    const registerLinkProvider = jest.spyOn(
+      monaco.languages,
+      'registerLinkProvider'
+    );
+
+    MonacoUtils.registerLinkProvider();
+    MonacoUtils.registerLinkProvider();
+
+    expect(registerLinkProvider).toHaveBeenCalledTimes(1);
+    expect(registerLinkProvider).toHaveBeenCalledWith('plaintext', {
+      provideLinks: MonacoUtils.provideLinks,
+    });
+  });
+});
+
 describe('provideLinks', () => {
   it('it should get a provideLinks function which should return an object with the links', () => {
     const { provideLinks } = MonacoUtils;

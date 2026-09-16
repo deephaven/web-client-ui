@@ -41,6 +41,8 @@ class MonacoUtils {
 
   private static keyCodeUtils?: { fromString: (key: string) => number };
 
+  private static linkProviderRegistration?: monaco.IDisposable;
+
   /**
    * Loads Monaco. Subsequent calls return the same promise.
    */
@@ -610,6 +612,26 @@ class MonacoUtils {
       (keyState.metaKey ? monaco.KeyMod.WinCtrl : 0) |
       keyCodeUtils.fromString(keyValue)
     );
+  }
+
+  /**
+   * Registers the plaintext link provider once Monaco has loaded. Providers
+   * are global to Monaco, so only the first call registers it.
+   */
+  static registerLinkProvider(): void {
+    if (MonacoUtils.monaco == null) {
+      MonacoUtils.whenLoaded(() => MonacoUtils.registerLinkProvider());
+      return;
+    }
+
+    if (MonacoUtils.linkProviderRegistration != null) {
+      return;
+    }
+
+    MonacoUtils.linkProviderRegistration =
+      MonacoUtils.getMonaco().languages.registerLinkProvider('plaintext', {
+        provideLinks: MonacoUtils.provideLinks,
+      });
   }
 
   static provideLinks(model: monaco.editor.ITextModel): {
