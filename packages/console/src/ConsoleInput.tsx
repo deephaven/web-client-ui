@@ -87,9 +87,10 @@ export class ConsoleInput extends PureComponent<
   componentDidUpdate(prevProps: ConsoleInputProps): void {
     const { session } = this.props;
     this.layoutEditor();
-    // If the session has changed, we need to destroy the old command editor and create a new one for the new session
+    // The document belongs to the session that opened it
     if (prevProps.session !== session) {
       this.closeDocument(prevProps.session);
+      this.createModel();
       this.openDocument(session);
     }
   }
@@ -198,20 +199,13 @@ export class ConsoleInput extends PureComponent<
   handleEditorInitialized(
     commandEditor: monaco.editor.IStandaloneCodeEditor
   ): void {
-    const { language, session } = this.props;
+    const { session } = this.props;
     const monaco = MonacoUtils.getMonaco();
     const element = this.commandContainer.current;
     assertNotNull(element);
 
     this.commandEditor = commandEditor;
-    const model = monaco.editor.createModel(
-      '',
-      language,
-      MonacoUtils.generateConsoleUri()
-    );
-    commandEditor.setModel(model);
-
-    MonacoUtils.setEOL(commandEditor);
+    this.createModel();
     this.openDocument(session);
 
     this.commandEditor.onDidChangeModelContent(() => {
@@ -261,7 +255,7 @@ export class ConsoleInput extends PureComponent<
         if (
           keyEvent.code === 'ArrowDown' &&
           !this.isSuggestionMenuPopulated() &&
-          lineNumber === model?.getLineCount()
+          lineNumber === commandEditor.getModel()?.getLineCount()
         ) {
           if (commandHistoryIndex != null && commandHistoryIndex > 0) {
             this.loadCommand(commandHistoryIndex - 1);
@@ -302,10 +296,31 @@ export class ConsoleInput extends PureComponent<
     this.commandEditor.focus();
 
     this.resizeObserver.observe(element);
+  }
+
+  /**
+   * Replaces the editor's model with an empty one for the current language.
+   * The model is kept in state so MonacoProviders follow it.
+   */
+  createModel(): void {
+    const { commandEditor } = this;
+    if (commandEditor == null) {
+      return;
+    }
+
+    const { language } = this.props;
+    const previousModel = commandEditor.getModel();
+    const model = MonacoUtils.getMonaco().editor.createModel(
+      '',
+      language,
+      MonacoUtils.generateConsoleUri()
+    );
+    commandEditor.setModel(model);
+    previousModel?.dispose();
+    MonacoUtils.setEOL(commandEditor);
 
     this.updateDimensions();
-
-    this.setState({ model: this.commandEditor.getModel() });
+    this.setState({ model });
   }
 
   handleEditorWillDestroy(): void {

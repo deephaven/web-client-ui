@@ -19,7 +19,10 @@ jest.mock('./monaco', () => ({
 
 // Monaco loads on demand, which takes longer than a test's default timeout
 beforeAll(async () => {
-  await MonacoUtils.load();
+  const monaco = await MonacoUtils.load();
+  // A model only takes on a language Monaco knows about
+  monaco.languages.register({ id: 'python' });
+  monaco.languages.register({ id: 'groovy' });
 }, 30000);
 
 function makeMockCommandHistoryStorage(): CommandHistoryStorage {
@@ -42,13 +45,14 @@ function makeSession(): dh.IdeSession {
 
 async function renderConsoleInput(
   session: dh.IdeSession,
-  ref: React.RefObject<ConsoleInput>
+  ref: React.RefObject<ConsoleInput>,
+  language = 'test'
 ) {
   const result = render(
     <ConsoleInput
       ref={ref}
       session={session}
-      language="test"
+      language={language}
       commandHistoryStorage={makeMockCommandHistoryStorage()}
       onSubmit={jest.fn()}
     />
@@ -111,6 +115,48 @@ describe('ConsoleInput session transition', () => {
 
     expect(session2.changeDocument).toHaveBeenCalled();
     expect(session1.changeDocument).not.toHaveBeenCalled();
+  });
+
+  it('opens an empty document for the new language, at a new URI, on session prop change', async () => {
+    const session1 = makeSession();
+    const session2 = makeSession();
+    const ref = React.createRef<ConsoleInput>();
+
+    const { rerender } = await renderConsoleInput(session1, ref, 'python');
+    const model1 = ref.current!.commandEditor!.getModel()!;
+    act(() => {
+      model1.setValue('draft = 1');
+    });
+
+    rerender(
+      <ConsoleInput
+        ref={ref}
+        session={session2}
+        language="groovy"
+        commandHistoryStorage={makeMockCommandHistoryStorage()}
+        onSubmit={jest.fn()}
+      />
+    );
+
+    const model2 = ref.current!.commandEditor!.getModel()!;
+    expect(model2).not.toBe(model1);
+    expect(model1.isDisposed()).toBe(true);
+    expect(model2.uri.toString()).not.toBe(model1.uri.toString());
+    expect(model2.getLanguageId()).toBe('groovy');
+    expect(model2.getValue()).toBe('');
+    // MonacoProviders receive the model through state
+    expect(ref.current!.state.model).toBe(model2);
+
+    expect(session1.closeDocument).toHaveBeenCalledWith({
+      textDocument: { uri: model1.uri.toString() },
+    });
+    expect(session2.openDocument).toHaveBeenCalledWith({
+      textDocument: expect.objectContaining({
+        uri: model2.uri.toString(),
+        languageId: 'groovy',
+        text: '',
+      }),
+    });
   });
 
   it('calls closeDocument on the last active session when the component unmounts', async () => {
