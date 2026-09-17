@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import { Workspace } from '@astral-sh/ruff-wasm-web';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -18,12 +18,13 @@ import {
   useDebouncedCallback,
   usePromiseFactory,
 } from '@deephaven/react-hooks';
-import { assertNotNull, EMPTY_FUNCTION } from '@deephaven/utils';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
+import Log from '@deephaven/log';
 import Editor from '../notebook/Editor';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
-import ruffSchema from './ruffSchema';
 import './RuffSettingsModal.scss';
 import MonacoProviders from './MonacoProviders';
+import MonacoUtils from './MonacoUtils';
 
 interface RuffSettingsModalProps {
   text: string;
@@ -34,27 +35,32 @@ interface RuffSettingsModalProps {
   defaultSettings?: Record<string, unknown>;
 }
 
-const RUFF_SETTINGS_URI = monaco.Uri.parse(
-  'inmemory://dh-config/ruff-settings.json'
-);
+const log = Log.module('RuffSettingsModal');
 
-function registerRuffSchema(): void {
-  const { schemas = [] } =
-    monaco.languages.json.jsonDefaults.diagnosticsOptions;
+const RUFF_SETTINGS_URI = 'inmemory://dh-config/ruff-settings.json';
+
+async function registerRuffSchema(): Promise<void> {
+  const { jsonDefaults } = MonacoUtils.getMonaco().languages.json;
+  const { schemas = [] } = jsonDefaults.diagnosticsOptions;
 
   if (!schemas.some(schema => schema.uri === 'json://ruff-schema')) {
     // Register the ruff schema so users get validation and completion
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    const { default: ruffSchema } = await import('./ruffSchema');
+    jsonDefaults.setDiagnosticsOptions({
       schemas: [
         ...schemas,
         {
           uri: 'json://ruff-schema',
-          fileMatch: [RUFF_SETTINGS_URI.toString()],
+          fileMatch: [RUFF_SETTINGS_URI],
           schema: ruffSchema,
         },
       ],
     });
   }
+}
+
+function disposeModel(editor: monaco.editor.IStandaloneCodeEditor): void {
+  editor.getModel()?.dispose();
 }
 
 async function getRuffVersion(): Promise<string> {
@@ -81,17 +87,12 @@ export default function RuffSettingsModal({
 
   const { data: ruffVersion } = usePromiseFactory(getRuffVersion);
 
-  const [model] = useState(() =>
-    monaco.editor.createModel(text, 'json', RUFF_SETTINGS_URI)
-  );
-
   const handleClose = useCallback((): void => {
     if (isOpen) {
       onClose();
       editorRef.current = undefined;
-      model.dispose();
     }
-  }, [isOpen, onClose, model]);
+  }, [isOpen, onClose]);
 
   const handleSave = useCallback((): void => {
     if (isOpen) {
@@ -105,9 +106,8 @@ export default function RuffSettingsModal({
   }, [isOpen, handleClose, onSave]);
 
   const handleReset = useCallback((): void => {
-    assertNotNull(model);
-    model.setValue(formattedDefaultSettings);
-  }, [model, formattedDefaultSettings]);
+    editorRef.current?.getModel()?.setValue(formattedDefaultSettings);
+  }, [formattedDefaultSettings]);
 
   const validate = useCallback(
     (val: string) => {
@@ -130,16 +130,24 @@ export default function RuffSettingsModal({
 
   const onEditorInitialized = useCallback(
     (editor: monaco.editor.IStandaloneCodeEditor): void => {
+      const monaco = MonacoUtils.getMonaco();
       editorRef.current = editor;
 
+      // The schema matches the settings by this URI
+      const model = monaco.editor.createModel(
+        text,
+        'json',
+        monaco.Uri.parse(RUFF_SETTINGS_URI)
+      );
+      editor.setModel(model);
       model.onDidChangeContent(() => {
         debouncedValidate(model.getValue());
       });
 
-      registerRuffSchema();
+      registerRuffSchema().catch(log.error);
       debouncedValidate(model.getValue());
     },
-    [debouncedValidate, model]
+    [debouncedValidate, text]
   );
 
   if (!isOpen) {
@@ -177,15 +185,15 @@ export default function RuffSettingsModal({
       <ModalBody style={{ height: '80vh' }}>
         <Editor
           onEditorInitialized={onEditorInitialized}
+          onEditorWillDestroy={disposeModel}
           settings={{
             readOnly,
-            value: text,
             language: 'json',
             folding: true,
             padding: { bottom: 16 },
             lineNumbers: 'on',
             overviewRulerLanes: 0,
-            model,
+            model: null,
           }}
         />
       </ModalBody>

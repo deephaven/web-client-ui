@@ -102,6 +102,8 @@ export class MarkdownPanel extends Component<
 
   editor?: monaco.editor.IStandaloneCodeEditor;
 
+  editClickPositionY?: number;
+
   setEditorPosition(clickPositionY: number): void {
     assertNotNull(this.markdownEditor);
     const { container: markdownEditorContainer } = this.markdownEditor;
@@ -133,38 +135,36 @@ export class MarkdownPanel extends Component<
 
   handleContainerDoubleClick(event: MouseEvent<Element>): void {
     const { isEditing } = this.state;
-    const dbClickPositionY = event.clientY;
 
     if (!isEditing) {
-      this.setState({ isEditing: true }, () => {
-        this.setEditorPosition(dbClickPositionY);
-      });
+      // The editor is created once Monaco has loaded, so the cursor is placed then
+      this.editClickPositionY = event.clientY;
+      this.setState({ isEditing: true });
     }
   }
 
   handleEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor): void {
     log.debug('Markdown Editor Initialized...');
     this.editor = editor;
+    if (this.editClickPositionY != null) {
+      this.setEditorPosition(this.editClickPositionY);
+      this.editClickPositionY = undefined;
+    } else {
+      editor.focus();
+    }
   }
 
   handleCreateMarkdown(): void {
     log.debug('create markdown...');
 
-    this.setState(
-      {
-        isStartPageShown: false,
-        content: '',
-        isEditing: true,
+    this.setState({
+      isStartPageShown: false,
+      content: '',
+      isEditing: true,
 
-        // eslint-disable-next-line react/no-unused-state
-        panelState: { content: '' },
-      },
-      () => {
-        if (this.editor != null && this.editor.focus != null) {
-          this.editor.focus();
-        }
-      }
-    );
+      // eslint-disable-next-line react/no-unused-state
+      panelState: { content: '' },
+    });
   }
 
   handleOpenMarkdown(markdown: ReactComponentConfig): void {
