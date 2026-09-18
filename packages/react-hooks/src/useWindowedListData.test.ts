@@ -142,7 +142,7 @@ describe('insert', () => {
 });
 
 describe('remove', () => {
-  it('should remove items for given keys', () => {
+  it('should remove items for given keys and prune removed / dangling keys from the selection', () => {
     const items = itemsFromSequence('0123456789');
     const { result } = initializeHookWithItems({ items });
 
@@ -150,10 +150,16 @@ describe('remove', () => {
     const expectedItems = itemsFromSequence('01_3__6789');
 
     act(() => {
+      // '1' is retained, '4' is to be removed, 'dangling' is originally dangling
+      result.current.setSelectedKeys(new Set(['1', '4', 'dangling']));
+    });
+
+    act(() => {
       result.current.remove(keysToRemove);
     });
 
     expect(result.current.items).toEqual(expectedItems);
+    expect(result.current.selectedKeys).toEqual(new Set(['1']));
   });
 });
 
