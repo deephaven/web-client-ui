@@ -104,7 +104,9 @@ export function useWindowedListData<T>({
         let prevSelectedKeys = prev.selectedKeys;
         if (prevSelectedKeys !== 'all') {
           const newItemKeys = new Set(nextItems.map(item => getKey(item)));
-          prevSelectedKeys = prevSelectedKeys.intersection(newItemKeys);
+          prevSelectedKeys = new Set(
+            [...prevSelectedKeys].filter(key => newItemKeys.has(key))
+          );
         }
         return {
           items: nextItems,
