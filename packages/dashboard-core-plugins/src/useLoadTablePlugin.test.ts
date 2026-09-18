@@ -1,11 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import React from 'react';
+import { PluginType } from '@deephaven/plugin';
 import {
-  PluginType,
-  type TablePlugin,
-  type LegacyTablePlugin,
-} from '@deephaven/plugin';
-import { type TablePluginComponent } from '@deephaven/plugin/table';
+  type LegacyTablePluginDefinition,
+  type TablePluginComponent,
+  type TablePluginDefinition,
+} from '@deephaven/plugin/table';
 import { TablePluginLoaderContext } from './TablePluginLoaderContext';
 import { useLoadTablePlugin } from './useLoadTablePlugin';
 
@@ -19,13 +19,13 @@ jest.mock('@deephaven/plugin', () => ({
 const MockTableComponent = jest.fn() as unknown as TablePluginComponent;
 const MockLegacyTableComponent = jest.fn() as unknown as TablePluginComponent;
 
-const tablePlugin: TablePlugin = {
+const tablePlugin: TablePluginDefinition = {
   name: 'test-table-plugin',
   type: PluginType.TABLE_PLUGIN,
   component: MockTableComponent,
 };
 
-const legacyTablePlugin: LegacyTablePlugin = {
+const legacyTablePlugin: LegacyTablePluginDefinition = {
   TablePlugin: MockLegacyTableComponent,
 };
 

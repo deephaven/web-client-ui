@@ -51,13 +51,24 @@ export function isLegacyAuthPlugin(
 export type PluginModuleMap = Map<string, VersionedPluginModuleExport>;
 
 /**
- * @deprecated Use TablePlugin instead
+ * Fallback component type for table plugin registrations. The root entry point
+ * cannot name `TablePluginComponent` without pulling `@deephaven/iris-grid` into
+ * every consumer's declarations, so the precise type is opt-in via the
+ * `@deephaven/plugin/table` subpath.
  */
-export type LegacyTablePlugin = {
-  // Typed loosely so the root declarations stay free of `@deephaven/iris-grid`.
-  // Import `TablePluginComponent` from `@deephaven/plugin/table` for the full type.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TablePlugin: React.ComponentType<any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type UnknownTablePluginComponent = React.ComponentType<any>;
+
+/**
+ * @deprecated Use TablePlugin instead
+ *
+ * Specialize with `TablePluginComponent` to keep the component contract, or use
+ * `LegacyTablePluginDefinition` from `@deephaven/plugin/table`.
+ */
+export type LegacyTablePlugin<
+  C extends UnknownTablePluginComponent = UnknownTablePluginComponent,
+> = {
+  TablePlugin: C;
 };
 
 export function isLegacyTablePlugin(
@@ -319,12 +330,15 @@ export function isWidgetDashboardPlugin(
   );
 }
 
-export interface TablePlugin extends Plugin {
+/**
+ * Specialize with `TablePluginComponent` to keep the component contract, or use
+ * `TablePluginDefinition` from `@deephaven/plugin/table`.
+ */
+export interface TablePlugin<
+  C extends UnknownTablePluginComponent = UnknownTablePluginComponent,
+> extends Plugin {
   type: typeof PluginType.TABLE_PLUGIN;
-  // Typed loosely so the root declarations stay free of `@deephaven/iris-grid`.
-  // Import `TablePluginComponent` from `@deephaven/plugin/table` for the full type.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component: React.ComponentType<any>;
+  component: C;
 }
 
 export function isTablePlugin(

@@ -10,6 +10,10 @@ import type {
 import type { GridRange, Selection } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
+import type {
+  LegacyTablePlugin,
+  TablePlugin as TablePluginRegistration,
+} from './PluginTypes';
 
 export interface TablePluginElement {
   getMenu?: (data: IrisGridContextMenuData) => ResolvableContextAction[];
@@ -69,4 +73,19 @@ export interface TablePluginProps<S = unknown> {
 
 export type TablePluginComponent<S = unknown> = React.ComponentType<
   TablePluginProps<S> & React.RefAttributes<TablePluginElement>
+>;
+
+/**
+ * `TablePlugin` registration with `component` checked against the full table
+ * plugin contract.
+ */
+export type TablePluginDefinition<S = unknown> = TablePluginRegistration<
+  TablePluginComponent<S>
+>;
+
+/**
+ * @deprecated Use TablePluginDefinition instead
+ */
+export type LegacyTablePluginDefinition<S = unknown> = LegacyTablePlugin<
+  TablePluginComponent<S>
 >;
