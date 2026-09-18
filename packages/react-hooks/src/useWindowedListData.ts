@@ -15,11 +15,16 @@ export type WindowedListData<T> = Pick<
   findItem: (key: Key) => T | null;
   insert: (index: number, values: Iterable<T>) => void;
   remove: (keys: Iterable<Key>) => void;
-  setItems: (items: T[]) => void;
+  setItems: (itemsOrUpdater: React.SetStateAction<T[]>) => void;
 };
 
 export interface UseWindowedListDataOptions<T> {
   getKey?: (item: T) => Key;
+}
+
+interface WindowedListDataState<T> {
+  items: T[];
+  selectedKeys: 'all' | Set<Key>;
 }
 
 /**
@@ -38,10 +43,28 @@ export interface UseWindowedListDataOptions<T> {
 export function useWindowedListData<T>({
   getKey = defaultGetKey,
 }: UseWindowedListDataOptions<T> = {}): WindowedListData<T> {
-  const [items, setItems] = useState<T[]>([]);
+  const [{ items, selectedKeys }, setDataState] = useState<
+    WindowedListDataState<T>
+  >({
+    items: [],
+    selectedKeys: new Set(),
+  });
 
-  const [selectedKeys, setSelectedKeys] = useState<'all' | Set<Key>>(
-    () => new Set()
+  const setItems = useCallback((upd: React.SetStateAction<T[]>) => {
+    setDataState(prev => ({
+      ...prev,
+      items: upd instanceof Function ? upd(prev.items) : upd,
+    }));
+  }, []);
+
+  const setSelectedKeys = useCallback(
+    (upd: React.SetStateAction<'all' | Set<Key>>) => {
+      setDataState(prev => ({
+        ...prev,
+        selectedKeys: upd instanceof Function ? upd(prev.selectedKeys) : upd,
+      }));
+    },
+    []
   );
 
   /** Determine if key matches an item's key */
@@ -73,29 +96,56 @@ export function useWindowedListData<T>({
     [findItem]
   );
 
+  /** Sets items and prunes selected keys based on new items */
+  const setItemsAndPruneKeys = useCallback(
+    (upd: React.SetStateAction<T[]>) => {
+      setDataState(prev => {
+        const nextItems = upd instanceof Function ? upd(prev.items) : upd;
+        let prevSelectedKeys = prev.selectedKeys;
+        if (prevSelectedKeys !== 'all') {
+          const newItemKeys = new Set(nextItems.map(item => getKey(item)));
+          prevSelectedKeys = new Set(
+            [...prevSelectedKeys].filter(key => newItemKeys.has(key))
+          );
+        }
+        return {
+          items: nextItems,
+          selectedKeys: prevSelectedKeys,
+        };
+      });
+    },
+    [getKey]
+  );
+
   /** Append items to the end of the list */
-  const append = useCallback((values: Iterable<T>) => {
-    setItems(prevItems => [...prevItems, ...values]);
-  }, []);
+  const append = useCallback(
+    (values: Iterable<T>) => {
+      setItems(prevItems => [...prevItems, ...values]);
+    },
+    [setItems]
+  );
 
   /** Insert items starting at the given index */
-  const insert = useCallback((index: number, values: Iterable<T>) => {
-    setItems(prevItems => [
-      ...prevItems.slice(0, index),
-      ...values,
-      ...prevItems.slice(index),
-    ]);
-  }, []);
+  const insert = useCallback(
+    (index: number, values: Iterable<T>) => {
+      setItems(prevItems => [
+        ...prevItems.slice(0, index),
+        ...values,
+        ...prevItems.slice(index),
+      ]);
+    },
+    [setItems]
+  );
 
   /** Remove items with the given keys */
   const remove = useCallback(
     (keys: Iterable<Key>) => {
       const keySet = new Set(keys);
-      setItems(prevItems =>
+      setItemsAndPruneKeys(prevItems =>
         prevItems.filter(item => !keySet.has(getKey(item)))
       );
     },
-    [getKey]
+    [getKey, setItemsAndPruneKeys]
   );
 
   /** Put a given item in the slot corresponding to a given key */
@@ -112,7 +162,7 @@ export function useWindowedListData<T>({
         ...prevItems.slice(i + 1),
       ]);
     },
-    [items, matchKey]
+    [items, matchKey, setItems]
   );
 
   /**
@@ -157,7 +207,7 @@ export function useWindowedListData<T>({
 
       setItems(newItems);
     },
-    [items, matchKey]
+    [items, matchKey, setItems]
   );
 
   const listData = useMemo(
@@ -170,20 +220,21 @@ export function useWindowedListData<T>({
       getItem,
       insert,
       remove,
-      setItems,
+      setItems: setItemsAndPruneKeys,
       setSelectedKeys,
       update,
     }),
     [
+      items,
+      selectedKeys,
       append,
       bulkUpdate,
       findItem,
       getItem,
       insert,
-      items,
       remove,
-      setItems,
-      selectedKeys,
+      setItemsAndPruneKeys,
+      setSelectedKeys,
       update,
     ]
   );
