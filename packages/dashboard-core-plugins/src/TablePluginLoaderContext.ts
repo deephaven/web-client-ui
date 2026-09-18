@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { type TablePluginComponent } from '@deephaven/plugin';
+import { type TablePluginComponent } from '@deephaven/plugin/table';
 
 /**
  * Context providing an optional function to load a table plugin by name.

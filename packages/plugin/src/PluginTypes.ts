@@ -9,7 +9,6 @@ import {
 } from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
-import type { TablePluginComponent } from './TablePlugin';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
@@ -55,7 +54,10 @@ export type PluginModuleMap = Map<string, VersionedPluginModuleExport>;
  * @deprecated Use TablePlugin instead
  */
 export type LegacyTablePlugin = {
-  TablePlugin: TablePluginComponent;
+  // Typed loosely so the root declarations stay free of `@deephaven/iris-grid`.
+  // Import `TablePluginComponent` from `@deephaven/plugin/table` for the full type.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TablePlugin: React.ComponentType<any>;
 };
 
 export function isLegacyTablePlugin(
@@ -319,7 +321,10 @@ export function isWidgetDashboardPlugin(
 
 export interface TablePlugin extends Plugin {
   type: typeof PluginType.TABLE_PLUGIN;
-  component: TablePluginComponent;
+  // Typed loosely so the root declarations stay free of `@deephaven/iris-grid`.
+  // Import `TablePluginComponent` from `@deephaven/plugin/table` for the full type.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: React.ComponentType<any>;
 }
 
 export function isTablePlugin(

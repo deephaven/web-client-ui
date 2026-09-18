@@ -14,6 +14,19 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./table": "./dist/table.js",
+    "./*.js": "./dist/*.js",
+    "./*": "./dist/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "table": [
+        "dist/table.d.ts"
+      ]
+    }
+  },
   "engines": {
     "node": ">=16"
   },

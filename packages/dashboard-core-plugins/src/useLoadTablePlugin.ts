@@ -1,10 +1,10 @@
 import { useCallback, useContext } from 'react';
 import {
-  type TablePluginComponent,
   isTablePlugin,
   isLegacyTablePlugin,
   usePlugins,
 } from '@deephaven/plugin';
+import { type TablePluginComponent } from '@deephaven/plugin/table';
 import Log from '@deephaven/log';
 import { TablePluginLoaderContext } from './TablePluginLoaderContext';
 

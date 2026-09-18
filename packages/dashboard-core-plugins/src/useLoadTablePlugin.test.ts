@@ -4,8 +4,8 @@ import {
   PluginType,
   type TablePlugin,
   type LegacyTablePlugin,
-  type TablePluginComponent,
 } from '@deephaven/plugin';
+import { type TablePluginComponent } from '@deephaven/plugin/table';
 import { TablePluginLoaderContext } from './TablePluginLoaderContext';
 import { useLoadTablePlugin } from './useLoadTablePlugin';
 
