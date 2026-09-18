@@ -14,7 +14,7 @@
   "source": "src/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "exports": {
     ".": "./dist/index.js",
