@@ -81,7 +81,7 @@ import {
 import type {
   TablePluginComponent,
   TablePluginElement,
-} from '@deephaven/plugin';
+} from '@deephaven/plugin/table';
 import clamp from 'lodash.clamp';
 import { IrisGridEvent } from '../events';
 import {

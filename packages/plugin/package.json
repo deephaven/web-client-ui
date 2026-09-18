@@ -14,6 +14,19 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./table": "./dist/table.js",
+    "./*.js": "./dist/*.js",
+    "./*": "./dist/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "table": [
+        "dist/table.d.ts"
+      ]
+    }
+  },
   "engines": {
     "node": ">=16"
   },
@@ -25,9 +38,7 @@
     "@deephaven/components": "file:../components",
     "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/golden-layout": "file:../golden-layout",
-    "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",
-    "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-types": "^1.0.0-dev0.40.4",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
@@ -36,7 +47,21 @@
     "nanoid": "^5.0.7"
   },
   "peerDependencies": {
+    "@deephaven/grid": ">=1.29.0",
+    "@deephaven/iris-grid": ">=1.29.0",
     "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@deephaven/grid": {
+      "optional": true
+    },
+    "@deephaven/iris-grid": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@deephaven/grid": "file:../grid",
+    "@deephaven/iris-grid": "file:../iris-grid"
   },
   "files": [
     "dist"
