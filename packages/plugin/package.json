@@ -34,8 +34,8 @@
     "nanoid": "^5.0.7"
   },
   "peerDependencies": {
-    "@deephaven/grid": "file:../grid",
-    "@deephaven/iris-grid": "file:../iris-grid",
+    "@deephaven/grid": ">=1.29.0",
+    "@deephaven/iris-grid": ">=1.29.0",
     "react": ">=16.8.0"
   },
   "peerDependenciesMeta": {
