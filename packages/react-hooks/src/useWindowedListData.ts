@@ -15,7 +15,7 @@ export type WindowedListData<T> = Pick<
   findItem: (key: Key) => T | null;
   insert: (index: number, values: Iterable<T>) => void;
   remove: (keys: Iterable<Key>) => void;
-  setItems: (items: T[]) => void;
+  setItems: (itemsOrUpdater: React.SetStateAction<T[]>) => void;
 };
 
 export interface UseWindowedListDataOptions<T> {
@@ -73,6 +73,30 @@ export function useWindowedListData<T>({
     [findItem]
   );
 
+  /** Sets items and prunes selected keys based on new items */
+  const setItemsAndPruneKeys = useCallback(
+    (itemsOrUpdater: React.SetStateAction<T[]>) => {
+      let next: T[] = [];
+
+      setItems(prev => {
+        next =
+          itemsOrUpdater instanceof Function
+            ? itemsOrUpdater(prev)
+            : itemsOrUpdater;
+        return next;
+      });
+
+      setSelectedKeys(prevSelectedKeys => {
+        if (prevSelectedKeys === 'all') {
+          return prevSelectedKeys;
+        }
+        const newItemKeys = new Set(next.map(item => getKey(item)));
+        return prevSelectedKeys.intersection(newItemKeys);
+      });
+    },
+    [getKey]
+  );
+
   /** Append items to the end of the list */
   const append = useCallback((values: Iterable<T>) => {
     setItems(prevItems => [...prevItems, ...values]);
@@ -91,11 +115,11 @@ export function useWindowedListData<T>({
   const remove = useCallback(
     (keys: Iterable<Key>) => {
       const keySet = new Set(keys);
-      setItems(prevItems =>
+      setItemsAndPruneKeys(prevItems =>
         prevItems.filter(item => !keySet.has(getKey(item)))
       );
     },
-    [getKey]
+    [getKey, setItemsAndPruneKeys]
   );
 
   /** Put a given item in the slot corresponding to a given key */
@@ -170,7 +194,7 @@ export function useWindowedListData<T>({
       getItem,
       insert,
       remove,
-      setItems,
+      setItems: setItemsAndPruneKeys,
       setSelectedKeys,
       update,
     }),
@@ -182,7 +206,7 @@ export function useWindowedListData<T>({
       insert,
       items,
       remove,
-      setItems,
+      setItemsAndPruneKeys,
       selectedKeys,
       update,
     ]

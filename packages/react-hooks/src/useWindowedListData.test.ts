@@ -157,6 +157,60 @@ describe('remove', () => {
   });
 });
 
+describe('setItems', () => {
+  it('should replace items with a plain array and prune selection to remaining keys', () => {
+    const items = itemsFromSequence('abcdefg');
+    const { result } = initializeHookWithItems({ items });
+
+    act(() => {
+      result.current.setSelectedKeys(new Set(['a', 'c', 'z']));
+    });
+
+    const newItems = itemsFromSequence('abc');
+
+    act(() => {
+      result.current.setItems(newItems);
+    });
+
+    expect(result.current.items).toEqual(newItems);
+    expect(result.current.selectedKeys).toEqual(new Set(['a', 'c']));
+  });
+
+  it('should replace items with a functional updater based on previous items and prune selection', () => {
+    const items = itemsFromSequence('abcdefg');
+    const { result } = initializeHookWithItems({ items });
+
+    act(() => {
+      result.current.setSelectedKeys(new Set(['a', 'g']));
+    });
+
+    act(() => {
+      result.current.setItems(prevItems => prevItems.slice(0, 3));
+    });
+
+    expect(result.current.items).toEqual(itemsFromSequence('abc'));
+    expect(result.current.selectedKeys).toEqual(new Set(['a']));
+  });
+
+  it('should preserve "all" selection regardless of argument form', () => {
+    const items = itemsFromSequence('abcdefg');
+
+    const { result: arrayFormResult } = initializeHookWithItems({ items });
+    act(() => {
+      arrayFormResult.current.setSelectedKeys('all');
+      arrayFormResult.current.setItems(itemsFromSequence('ab'));
+    });
+    expect(arrayFormResult.current.selectedKeys).toEqual('all');
+
+    const { result: functionFormResult } = initializeHookWithItems({ items });
+    act(() => {
+      functionFormResult.current.setSelectedKeys('all');
+      functionFormResult.current.setItems(prevItems => prevItems.slice(0, 2));
+    });
+    expect(functionFormResult.current.selectedKeys).toEqual('all');
+  });
+});
+
 describe('update', () => {
   it('should do nothing if given a non-existent key', () => {
     const items = itemsFromSequence('abc');
