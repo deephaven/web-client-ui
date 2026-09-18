@@ -24,19 +24,18 @@ import {
   type Config as PlotlyConfig,
   type Layout,
   type Icon,
-  type Data,
-  type PlotData,
   type ModeBarButtonAny,
   type PlotMouseEvent,
   type PlotSelectionEvent,
   type ClickAnnotationEvent,
   type LegendClickEvent,
 } from 'plotly.js';
-import type { PlotParams } from 'react-plotly.js';
+import type { Figure, PlotParams } from 'react-plotly.js';
 import { mergeRefs } from '@deephaven/react-hooks';
 import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
+import { type PlotData } from './plotly/plotlyTypes';
 import ChartModel from './ChartModel';
 import ChartErrorOverlay from './ChartErrorOverlay';
 import { type ChartTheme } from './ChartTheme';
@@ -101,7 +100,7 @@ interface ChartContainerProps extends Partial<Omit<ChartProps, 'theme'>> {
 }
 
 interface ChartState {
-  data: Partial<Data>[] | null;
+  data: Partial<PlotData>[] | null;
   /** An error specific to downsampling */
   downsamplingError: unknown;
   isDownsampleFinished: boolean;
@@ -304,7 +303,7 @@ class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished: boolean,
       isDownsampleInProgress: boolean,
       isDownsamplingDisabled: boolean,
-      data: Partial<Data>[],
+      data: Partial<PlotData>[],
       error: unknown,
       hasSelectionCallbacks: boolean
     ): Partial<PlotlyConfig> => {
@@ -505,7 +504,7 @@ class Chart extends Component<ChartProps, ChartState> {
             layout.datarevision += 1;
           }
           return {
-            data: detail as Partial<Data>[] | null,
+            data: detail as Partial<PlotData>[] | null,
             layout,
             revision: revision + 1,
           };
@@ -595,11 +594,11 @@ class Chart extends Component<ChartProps, ChartState> {
     }
   }
 
-  handlePlotUpdate(figure: Readonly<{ layout: Partial<Layout> }>): void {
+  handlePlotUpdate(figure: Readonly<Figure>): void {
     // User could have modified zoom/pan here, update the model dimensions
     // We don't need to update the datarevision, as we don't have any data changes
     // until an update comes back from the server anyway
-    const { layout } = figure;
+    const layout = figure.layout as Partial<Layout>;
     const ranges = ChartUtils.getLayoutRanges(layout);
 
     const isRangesChanged = !deepEqual(ranges, this.ranges);
@@ -680,7 +679,7 @@ class Chart extends Component<ChartProps, ChartState> {
       const { data } = this.state;
       const { onSettingsChanged } = this.props;
       if (data != null) {
-        const hiddenSeries = (data as Partial<PlotData>[]).reduce(
+        const hiddenSeries = data.reduce(
           (acc: string[], { name, visible }) =>
             name != null && visible === 'legendonly' ? [...acc, name] : acc,
           []
