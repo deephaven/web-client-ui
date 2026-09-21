@@ -54,7 +54,7 @@ export function useWindowedListData<T>({
     (itemsOrUpdater: React.SetStateAction<T[]>) => {
       setDataState(prev => {
         const nextItems =
-          itemsOrUpdater instanceof Function
+          typeof itemsOrUpdater === 'function'
             ? itemsOrUpdater(prev.items)
             : itemsOrUpdater;
 
@@ -72,7 +72,7 @@ export function useWindowedListData<T>({
     (itemsOrUpdater: React.SetStateAction<'all' | Set<Key>>) => {
       setDataState(prev => {
         const nextSelectedKeys =
-          itemsOrUpdater instanceof Function
+          typeof itemsOrUpdater === 'function'
             ? itemsOrUpdater(prev.selectedKeys)
             : itemsOrUpdater;
 
@@ -120,7 +120,7 @@ export function useWindowedListData<T>({
     (itemsOrUpdater: React.SetStateAction<T[]>) => {
       setDataState(prev => {
         const nextItems =
-          itemsOrUpdater instanceof Function
+          typeof itemsOrUpdater === 'function'
             ? itemsOrUpdater(prev.items)
             : itemsOrUpdater;
 
