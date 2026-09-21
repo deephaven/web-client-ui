@@ -217,6 +217,85 @@ describe('setItems', () => {
   });
 });
 
+describe('bail outs to avoid unnecessary re-renders', () => {
+  describe('setSelectedKeys', () => {
+    it('should return the same selectedKeys (and listData) reference when passed the current value', () => {
+      const { result } = renderHook(() => useWindowedListData<HasKey>());
+
+      act(() => {
+        result.current.setSelectedKeys(new Set(['a']));
+      });
+      const { selectedKeys } = result.current;
+      const listData = result.current;
+
+      act(() => {
+        result.current.setSelectedKeys(selectedKeys);
+      });
+
+      expect(result.current.selectedKeys).toBe(selectedKeys);
+      expect(result.current).toBe(listData);
+    });
+
+    it('should return the same selectedKeys (and listData) reference when the functional updater returns the previous value', () => {
+      const { result } = renderHook(() => useWindowedListData<HasKey>());
+
+      act(() => {
+        result.current.setSelectedKeys(new Set(['a']));
+      });
+      const { selectedKeys } = result.current;
+      const listData = result.current;
+
+      act(() => {
+        result.current.setSelectedKeys(prev => prev);
+      });
+
+      expect(result.current.selectedKeys).toBe(selectedKeys);
+      expect(result.current).toBe(listData);
+    });
+  });
+
+  describe('setItems (setItemsAndPruneKeys)', () => {
+    it('should return the same items (and listData) reference when the functional updater returns the previous value', () => {
+      const items = itemsFromSequence('abc');
+      const { result } = renderHook(() => useWindowedListData<HasKey>());
+
+      act(() => {
+        result.current.append(items);
+      });
+      const itemsRef = result.current.items;
+      const listData = result.current;
+
+      act(() => {
+        result.current.setItems(prevItems => prevItems);
+      });
+
+      expect(result.current.items).toBe(itemsRef);
+      expect(result.current).toBe(listData);
+    });
+
+    it('should reuse the previous selectedKeys reference when pruning removes no keys', () => {
+      const items = itemsFromSequence('abcdefg');
+      const { result } = renderHook(() => useWindowedListData<HasKey>());
+
+      act(() => {
+        result.current.append(items);
+      });
+
+      act(() => {
+        result.current.setSelectedKeys(new Set(['a', 'b']));
+      });
+      const selectedKeysBeforeSetItems = result.current.selectedKeys;
+
+      act(() => {
+        // New array reference with the same keys as before, so nothing is pruned.
+        result.current.setItems(itemsFromSequence('abcdefg'));
+      });
+
+      expect(result.current.selectedKeys).toBe(selectedKeysBeforeSetItems);
+    });
+  });
+});
+
 describe('update', () => {
   it('should do nothing if given a non-existent key', () => {
     const items = itemsFromSequence('abc');
