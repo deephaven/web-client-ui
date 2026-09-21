@@ -50,19 +50,38 @@ export function useWindowedListData<T>({
     selectedKeys: new Set(),
   });
 
-  const setItems = useCallback((upd: React.SetStateAction<T[]>) => {
-    setDataState(prev => ({
-      ...prev,
-      items: upd instanceof Function ? upd(prev.items) : upd,
-    }));
-  }, []);
+  const setItemsNoPrune = useCallback(
+    (itemsOrUpdater: React.SetStateAction<T[]>) => {
+      setDataState(prev => {
+        const nextItems =
+          itemsOrUpdater instanceof Function
+            ? itemsOrUpdater(prev.items)
+            : itemsOrUpdater;
+
+        if (nextItems === prev.items) {
+          return prev;
+        }
+
+        return { ...prev, items: nextItems };
+      });
+    },
+    []
+  );
 
   const setSelectedKeys = useCallback(
-    (upd: React.SetStateAction<'all' | Set<Key>>) => {
-      setDataState(prev => ({
-        ...prev,
-        selectedKeys: upd instanceof Function ? upd(prev.selectedKeys) : upd,
-      }));
+    (itemsOrUpdater: React.SetStateAction<'all' | Set<Key>>) => {
+      setDataState(prev => {
+        const nextSelectedKeys =
+          itemsOrUpdater instanceof Function
+            ? itemsOrUpdater(prev.selectedKeys)
+            : itemsOrUpdater;
+
+        if (nextSelectedKeys === prev.selectedKeys) {
+          return prev;
+        }
+
+        return { ...prev, selectedKeys: nextSelectedKeys };
+      });
     },
     []
   );
@@ -98,19 +117,36 @@ export function useWindowedListData<T>({
 
   /** Sets items and prunes selected keys based on new items */
   const setItemsAndPruneKeys = useCallback(
-    (upd: React.SetStateAction<T[]>) => {
+    (itemsOrUpdater: React.SetStateAction<T[]>) => {
       setDataState(prev => {
-        const nextItems = upd instanceof Function ? upd(prev.items) : upd;
-        let prevSelectedKeys = prev.selectedKeys;
-        if (prevSelectedKeys !== 'all') {
+        const nextItems =
+          itemsOrUpdater instanceof Function
+            ? itemsOrUpdater(prev.items)
+            : itemsOrUpdater;
+
+        let nextSelectedKeys = prev.selectedKeys;
+        if (prev.selectedKeys !== 'all') {
           const newItemKeys = new Set(nextItems.map(item => getKey(item)));
-          prevSelectedKeys = new Set(
-            [...prevSelectedKeys].filter(key => newItemKeys.has(key))
+          const prunedKeys = [...prev.selectedKeys].filter(key =>
+            newItemKeys.has(key)
           );
+          // prunedKeys must be a subset of previous keys, so just check length
+          nextSelectedKeys =
+            prunedKeys.length === prev.selectedKeys.size
+              ? prev.selectedKeys
+              : new Set(prunedKeys);
         }
+
+        if (
+          nextItems === prev.items &&
+          nextSelectedKeys === prev.selectedKeys
+        ) {
+          return prev;
+        }
+
         return {
           items: nextItems,
-          selectedKeys: prevSelectedKeys,
+          selectedKeys: nextSelectedKeys,
         };
       });
     },
@@ -120,21 +156,21 @@ export function useWindowedListData<T>({
   /** Append items to the end of the list */
   const append = useCallback(
     (values: Iterable<T>) => {
-      setItems(prevItems => [...prevItems, ...values]);
+      setItemsNoPrune(prevItems => [...prevItems, ...values]);
     },
-    [setItems]
+    [setItemsNoPrune]
   );
 
   /** Insert items starting at the given index */
   const insert = useCallback(
     (index: number, values: Iterable<T>) => {
-      setItems(prevItems => [
+      setItemsNoPrune(prevItems => [
         ...prevItems.slice(0, index),
         ...values,
         ...prevItems.slice(index),
       ]);
     },
-    [setItems]
+    [setItemsNoPrune]
   );
 
   /** Remove items with the given keys */
@@ -156,13 +192,13 @@ export function useWindowedListData<T>({
         return;
       }
 
-      setItems(prevItems => [
+      setItemsNoPrune(prevItems => [
         ...prevItems.slice(0, i),
         item,
         ...prevItems.slice(i + 1),
       ]);
     },
-    [items, matchKey, setItems]
+    [items, matchKey, setItemsNoPrune]
   );
 
   /**
@@ -205,9 +241,9 @@ export function useWindowedListData<T>({
         }
       });
 
-      setItems(newItems);
+      setItemsNoPrune(newItems);
     },
-    [items, matchKey, setItems]
+    [items, matchKey, setItemsNoPrune]
   );
 
   const listData = useMemo(
