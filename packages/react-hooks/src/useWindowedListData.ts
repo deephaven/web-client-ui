@@ -124,6 +124,10 @@ export function useWindowedListData<T>({
             ? itemsOrUpdater(prev.items)
             : itemsOrUpdater;
 
+        if (nextItems === prev.items) {
+          return prev;
+        }
+
         let nextSelectedKeys = prev.selectedKeys;
         if (prev.selectedKeys !== 'all') {
           const newItemKeys = new Set(nextItems.map(item => getKey(item)));
@@ -135,13 +139,6 @@ export function useWindowedListData<T>({
             prunedKeys.length === prev.selectedKeys.size
               ? prev.selectedKeys
               : new Set(prunedKeys);
-        }
-
-        if (
-          nextItems === prev.items &&
-          nextSelectedKeys === prev.selectedKeys
-        ) {
-          return prev;
         }
 
         return {
