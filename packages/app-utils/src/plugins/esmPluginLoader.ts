@@ -14,10 +14,11 @@ const SHARED_MODULES_KEY = '__DH_SHARED_PLUGIN_MODULES__';
 declare global {
   interface Window {
     [SHARED_MODULES_KEY]?: Record<string, unknown>;
-    esmsInitOptions?: Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    importShim?: (url: string) => Promise<any>;
   }
+}
+
+export interface PluginImportMap {
+  imports: Record<string, string>;
 }
 
 /** Reserved words that cannot be used as `export const <name>` identifiers. */
@@ -71,17 +72,17 @@ function isValidExportName(name: string): boolean {
 }
 
 /**
- * Specifiers that have already been registered in an injected import map.
- * Prevents re-injecting an existing specifier with a different URL, which
- * es-module-shims rejects in polyfill mode.
- */
-const injectedSpecifiers = new Set<string>();
-
-/**
  * Memoized host import map. The host singletons never change, so the blob
  * re-export modules are created once and reused across calls.
  */
-let hostImportMapCache: { imports: Record<string, string> } | null = null;
+let hostImportMapCache: PluginImportMap | null = null;
+
+/**
+ * Plugin entry sources that have already been fetched (for format detection),
+ * keyed by resolved URL. The es-module-shims source hook serves these so the
+ * entry is not fetched a second time when it is imported.
+ */
+const prefetchedSources = new Map<string, string>();
 
 function getSharedModules(): Record<string, unknown> {
   if (window[SHARED_MODULES_KEY] == null) {
@@ -132,9 +133,9 @@ function createHostReexportModule(specifier: string, value: unknown): string {
  * @param resolve The resolve map of host singletons (from remote-component.config)
  * @returns An import map `{ imports: { specifier: blobUrl } }`
  */
-export function buildHostImportMap(resolve: Record<string, unknown>): {
-  imports: Record<string, string>;
-} {
+export function buildHostImportMap(
+  resolve: Record<string, unknown>
+): PluginImportMap {
   if (hostImportMapCache != null) {
     return hostImportMapCache;
   }
@@ -165,7 +166,7 @@ export function buildPluginImportMap(
     package?: string | null;
   }[],
   modulePluginsUrl: string
-): { imports: Record<string, string> } {
+): PluginImportMap {
   const imports: Record<string, string> = {};
   plugins.forEach(({ name, main, package: packageName }) => {
     if (packageName != null) {
@@ -176,72 +177,94 @@ export function buildPluginImportMap(
 }
 
 /**
- * Inject an import map into the document head. Only specifiers that have not
- * already been injected are added, avoiding override errors in polyfill mode.
- * Injected before any ESM plugin is imported so es-module-shims can resolve the
- * plugins' bare and cross-plugin specifiers.
- * @param map The import map to inject
+ * es-module-shims source hook. Serves plugin entries that were already fetched
+ * for format detection, and defers to the default (network) loader for
+ * everything else (lazy chunks, cross-plugin imports not yet loaded, ...).
  */
-export function injectImportMap(map: {
-  imports: Record<string, string>;
-}): void {
-  const newImports: Record<string, string> = {};
-  Object.entries(map.imports).forEach(([specifier, url]) => {
-    if (!injectedSpecifiers.has(specifier)) {
-      newImports[specifier] = url;
-      injectedSpecifiers.add(specifier);
-    }
-  });
-
-  if (Object.keys(newImports).length === 0) {
-    return;
+const resolvePluginSource: NonNullable<ESMSInitOptions['source']> = async (
+  url,
+  fetchOpts,
+  parent,
+  defaultSourceHook
+) => {
+  const source = prefetchedSources.get(url);
+  if (source != null) {
+    prefetchedSources.delete(url);
+    return { type: 'js', source };
   }
+  return defaultSourceHook(url, fetchOpts, parent);
+};
 
-  const script = document.createElement('script');
-  script.type = 'importmap';
-  script.textContent = JSON.stringify({ imports: newImports });
-  document.head.appendChild(script);
-  log.debug('Injected plugin import map', newImports);
-}
+let esModuleShimsPromise: Promise<void> | null = null;
+let isEsModuleShimsReady = false;
 
 /**
- * Lazily load and initialize es-module-shims in polyfill mode. es-module-shims
- * exposes `window.importShim`, which we use to load ESM plugins so their imports
- * resolve through our injected import map (polyfilled on browsers that don't
- * support runtime-injected import maps, e.g. Firefox).
+ * Import map entries registered for plugins; the first mapping for a specifier
+ * wins. Kept locally so entries registered before es-module-shims has loaded
+ * can be applied once it is ready.
  */
-let esModuleShimsPromise: Promise<void> | null = null;
+const pluginImports: Record<string, string> = {};
 
+/**
+ * Lazily load and initialize es-module-shims in shim mode. Shim mode only
+ * processes modules loaded through `importShim`, so the host's own module
+ * scripts are never touched, import maps can be added at runtime on every
+ * browser, and our source hook can feed already-fetched plugin entries.
+ */
 export function ensureEsModuleShims(): Promise<void> {
   if (esModuleShimsPromise == null) {
-    // esmsInitOptions must be set before es-module-shims executes. Default
-    // (polyfill) mode passes through to native loading where supported.
+    // esmsInitOptions must be set before es-module-shims evaluates
     window.esmsInitOptions = {
       ...window.esmsInitOptions,
-      // Log when the polyfill engages instead of using the native loader.
-      onpolyfill: () => {
-        log.debug('es-module-shims polyfill engaged for plugin loading');
-      },
+      shimMode: true,
+      source: resolvePluginSource,
     };
     esModuleShimsPromise = import('es-module-shims').then(() => {
-      log.debug('es-module-shims loaded');
+      isEsModuleShimsReady = true;
+      window.importShim.addImportMap({ imports: pluginImports });
+      log.debug('es-module-shims loaded with import map', pluginImports);
     });
   }
   return esModuleShimsPromise;
 }
 
 /**
- * Load an ES module plugin from the provided URL via es-module-shims'
- * `importShim`, so bare specifiers and lazy dynamic imports resolve through the
- * injected import map.
- * @param pluginUrl The URL of the ESM plugin entry to load
+ * Register an import map so ESM plugins can resolve host singletons and
+ * cross-plugin package specifiers. Specifiers that are already mapped are left
+ * untouched. Does not load es-module-shims; entries are applied when it loads.
+ * @param map The import map to add
+ */
+export function addImportMap(map: PluginImportMap): void {
+  const imports: Record<string, string> = {};
+  Object.entries(map.imports).forEach(([specifier, url]) => {
+    if (!(specifier in pluginImports)) {
+      pluginImports[specifier] = url;
+      imports[specifier] = url;
+    }
+  });
+  if (Object.keys(imports).length === 0) {
+    return;
+  }
+  if (isEsModuleShimsReady) {
+    window.importShim.addImportMap({ imports });
+    log.debug('Added plugin import map', imports);
+  }
+}
+
+/**
+ * Load an ES module plugin whose entry source has already been fetched. The
+ * source is handed to es-module-shims through the source hook so it is not
+ * fetched again, while relative chunk imports still resolve against `pluginUrl`.
+ * @param pluginUrl The URL of the ESM plugin entry
+ * @param source The already-fetched entry source
  * @returns The loaded module exports
  */
-export async function loadEsModulePlugin(pluginUrl: string): Promise<unknown> {
+export async function loadEsModulePlugin(
+  pluginUrl: string,
+  source: string
+): Promise<unknown> {
   await ensureEsModuleShims();
-  if (window.importShim == null) {
-    throw new Error('es-module-shims did not initialize importShim');
-  }
+  prefetchedSources.set(new URL(pluginUrl, document.baseURI).href, source);
   return window.importShim(pluginUrl);
 }
 
@@ -265,26 +288,6 @@ export async function isEsModuleSource(source: string): Promise<boolean> {
     return exports.length > 0 || hasStaticImport;
   } catch (e) {
     log.warn('Failed to parse module source for ESM detection', e);
-    return false;
-  }
-}
-
-/**
- * Fetch a plugin entry and detect whether it is an ES module. Falls back to
- * `false` (CommonJS) when the source cannot be fetched or parsed.
- * @param pluginUrl The URL of the plugin entry
- * @returns True if the plugin entry is an ES module
- */
-export async function isEsModulePlugin(pluginUrl: string): Promise<boolean> {
-  try {
-    const res = await fetch(pluginUrl);
-    if (!res.ok || typeof res.text !== 'function') {
-      return false;
-    }
-    const source = await res.text();
-    return await isEsModuleSource(source);
-  } catch (e) {
-    log.warn(`Unable to detect module format for '${pluginUrl}'`, e);
     return false;
   }
 }
