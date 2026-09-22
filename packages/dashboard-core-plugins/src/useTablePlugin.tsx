@@ -36,7 +36,7 @@ interface UseTablePluginProps {
   /**
    * The current grid selection, including keyed selections.
    */
-  selection: Selection | null | undefined;
+  selection?: Selection | null;
 }
 
 /**
