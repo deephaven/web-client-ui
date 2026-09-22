@@ -1,13 +1,19 @@
 import type React from 'react';
+// Type-only: `@deephaven/iris-grid` and `@deephaven/grid` are optional peers so table
+// plugin types don't pull those dependency trees into every `@deephaven/plugin` consumer.
 import type {
   ColumnName,
   InputFilter,
   IrisGridContextMenuData,
   IrisGridTableModelTemplate,
 } from '@deephaven/iris-grid';
-import { type GridRange, type Selection } from '@deephaven/grid';
+import type { GridRange, Selection } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
+import type {
+  LegacyTablePlugin,
+  TablePlugin as TablePluginRegistration,
+} from './PluginTypes';
 
 export interface TablePluginElement {
   getMenu?: (data: IrisGridContextMenuData) => ResolvableContextAction[];
@@ -67,4 +73,19 @@ export interface TablePluginProps<S = unknown> {
 
 export type TablePluginComponent<S = unknown> = React.ComponentType<
   TablePluginProps<S> & React.RefAttributes<TablePluginElement>
+>;
+
+/**
+ * `TablePlugin` registration with `component` checked against the full table
+ * plugin contract.
+ */
+export type TablePluginDefinition<S = unknown> = TablePluginRegistration<
+  TablePluginComponent<S>
+>;
+
+/**
+ * @deprecated Use TablePluginDefinition instead
+ */
+export type LegacyTablePluginDefinition<S = unknown> = LegacyTablePlugin<
+  TablePluginComponent<S>
 >;

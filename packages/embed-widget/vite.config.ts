@@ -74,6 +74,12 @@ export default defineConfig(({ mode }) => {
                 find: /^@deephaven\/(.*)\/scss\/(.*)/,
                 replacement: `${packagesDir}/$1/scss/$2`,
               },
+              // Subpath entry points must precede the catch-all so they are not
+              // rewritten to `<pkg>/<subpath>/src`
+              {
+                find: /^@deephaven\/plugin\/table$/,
+                replacement: `${packagesDir}/plugin/src/table`,
+              },
               {
                 find: /^@deephaven\/(?!icons|jsapi-types)(.*)/, // Icons package can not import from src
                 replacement: `${packagesDir}/$1/src`,

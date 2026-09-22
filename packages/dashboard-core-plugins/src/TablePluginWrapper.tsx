@@ -2,7 +2,7 @@ import { forwardRef, useMemo } from 'react';
 import {
   type TablePluginProps,
   type TablePluginElement,
-} from '@deephaven/plugin';
+} from '@deephaven/plugin/table';
 import { type IrisGridType } from '@deephaven/iris-grid';
 import {
   LayoutUtils,

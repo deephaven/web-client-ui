@@ -75,6 +75,12 @@ module.exports = {
       './packages/mocks/src/pouchdb-browser.js'
     ),
     '^pouchdb-find': 'identity-obj-proxy',
+    // Subpath entry points must be listed before the catch-all so they are not
+    // rewritten to `packages/<pkg>/<subpath>/src`
+    '^@deephaven/plugin/table$': path.join(
+      __dirname,
+      './packages/plugin/src/table'
+    ),
     // All packages except icons and jsapi-types use src code
     '^@deephaven/(?!icons|jsapi-types)(.*)$': path.join(
       __dirname,
