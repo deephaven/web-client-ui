@@ -15,6 +15,7 @@ on:
       - 'feature/**'
   schedule:
     - cron: '0 0 * * *'
+
 env:
   DHC_VERSION: edge
 
@@ -45,7 +46,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-e2e-tests-${{ matrix.config }}
+      group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-e2e-tests-${{ matrix.config }}
       cancel-in-progress: true
 
     strategy:
