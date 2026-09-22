@@ -13,6 +13,8 @@ on:
       - main
       - 'release/**'
       - 'feature/**'
+  schedule:
+    - cron: '0 0 * * *'
 env:
   DHC_VERSION: edge
 
@@ -49,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: [chromium-1-1]
+        config: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && fromJSON('["chromium-1-1"]') || fromJSON('["chromium-1-1", "firefox-1-1", "webkit-1-2", "webkit-2-2"]') }}
 
     steps:
       - name: Checkout
