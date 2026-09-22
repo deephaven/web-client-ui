@@ -1,4 +1,6 @@
-module.exports = {
+const withLocalConfig = require('./jest.config.withLocal.cjs');
+
+module.exports = withLocalConfig({
   watchPlugins: ['jest-runner-eslint/watch-fix'],
   projects: [
     {
@@ -21,4 +23,4 @@ module.exports = {
       testEnvironment: 'node',
     },
   ],
-};
+});

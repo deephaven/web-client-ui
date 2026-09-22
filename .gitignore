@@ -43,6 +43,7 @@ packages/*/package-lock.json
 /tests/*-snapshots/*
 !/tests/*-snapshots/*-linux*
 vite.config.local.ts
+jest.config.local.cjs
 docker-compose.override.yml
 .nx/cache
 .nx/workspace-data
