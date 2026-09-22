@@ -13,6 +13,9 @@ on:
       - main
       - 'release/**'
       - 'feature/**'
+  schedule:
+    - cron: '0 0 * * *'
+
 env:
   DHC_VERSION: edge
 
@@ -20,7 +23,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-build
+      group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-build
       cancel-in-progress: true
 
     steps:
@@ -43,13 +46,13 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-e2e-tests-${{ matrix.config }}
+      group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-e2e-tests-${{ matrix.config }}
       cancel-in-progress: true
 
     strategy:
       fail-fast: false
       matrix:
-        config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
+        config: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && fromJSON('["chromium-1-1"]') || fromJSON('["chromium-1-1", "firefox-1-1", "webkit-1-2", "webkit-2-2"]') }}
 
     steps:
       - name: Checkout
@@ -194,10 +197,26 @@ jobs:
       - name: Merge into HTML Report
         run: |
           mkdir -p all-blob-reports
-          mv playwright-report-blob-chromium-1-1/report-chromium-1.zip all-blob-reports/chromium-1-1.zip
-          mv playwright-report-blob-firefox-1-1/report-firefox-1.zip all-blob-reports/firefox-1-1.zip
-          mv playwright-report-blob-webkit-1-2/report-webkit-1.zip all-blob-reports/webkit-1-2.zip
-          mv playwright-report-blob-webkit-2-2/report-webkit-2.zip all-blob-reports/webkit-2-2.zip
+          for dir in playwright-report-blob-*; do
+            [ -d "$dir" ] || continue
+            zip_file=$(find "$dir" -type f -name '*.zip' | head -n 1)
+            [ -n "$zip_file" ] || continue
+            shard_name=${dir#playwright-report-blob-}
+            cp "$zip_file" "all-blob-reports/${shard_name}.zip"
+          done
+
+          # download-artifact only nests under a per-artifact subdir when multiple artifacts
+          # match the pattern; with only one match its contents land here directly.
+          zip_file=$(find . -maxdepth 1 -type f -name '*.zip' | head -n 1)
+          if [ -n "$zip_file" ]; then
+            cp "$zip_file" "all-blob-reports/$(basename "$zip_file")"
+          fi
+
+          if ! find all-blob-reports -type f -name '*.zip' | grep -q .; then
+            echo "No blob report zip files were found after download."
+            exit 1
+          fi
+
           npx playwright merge-reports --reporter html,github ./all-blob-reports
 
       - name: Upload HTML report
