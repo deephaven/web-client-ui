@@ -194,7 +194,19 @@ jobs:
       - name: Merge into HTML Report
         run: |
           mkdir -p all-blob-reports
-          mv playwright-report-blob-chromium-1-1/report-chromium-1.zip all-blob-reports/chromium-1-1.zip
+          for dir in playwright-report-blob-*; do
+            [ -d "$dir" ] || continue
+            zip_file=$(find "$dir" -type f -name '*.zip' | head -n 1)
+            [ -n "$zip_file" ] || continue
+            shard_name=${dir#playwright-report-blob-}
+            cp "$zip_file" "all-blob-reports/${shard_name}.zip"
+          done
+
+          if ! find all-blob-reports -type f -name '*.zip' | grep -q .; then
+            echo "No blob report zip files were found after download."
+            exit 1
+          fi
+
           npx playwright merge-reports --reporter html,github ./all-blob-reports
 
       - name: Upload HTML report
