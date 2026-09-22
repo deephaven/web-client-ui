@@ -23,7 +23,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-build
+      group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-build
       cancel-in-progress: true
 
     steps:
