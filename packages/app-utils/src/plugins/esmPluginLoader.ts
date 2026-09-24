@@ -163,12 +163,13 @@ export function buildPluginImportMap(
   plugins: readonly {
     name: string;
     main: string;
-    package?: string | null;
+    loader?: { package?: string };
   }[],
   modulePluginsUrl: string
 ): PluginImportMap {
   const imports: Record<string, string> = {};
-  plugins.forEach(({ name, main, package: packageName }) => {
+  plugins.forEach(({ name, main, loader }) => {
+    const packageName = loader?.package;
     if (packageName != null) {
       imports[packageName] = `${modulePluginsUrl}/${name}/${main}`;
     }

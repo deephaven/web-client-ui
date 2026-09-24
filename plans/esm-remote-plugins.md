@@ -48,37 +48,33 @@ late / multiple import maps only work in Chrome 133+ and Safari 18.4+ —
 ([caniuse](https://caniuse.com/mdn-html_elements_script_type_importmap_multiple)).
 web-client-ui supports Firefox, so a native-only approach is not reliable.
 
-### Resolution: es-module-shims in polyfill mode
+### Resolution: es-module-shims in shim mode
 
 We use [`es-module-shims`](https://github.com/guybedford/es-module-shims) in
-**polyfill mode** (not shim mode). It injects a native `<script type="importmap">`
-and uses native `import()`. On modern browsers it passes through to the native
-loader (~5ms overhead). On Firefox / older browsers — where our runtime-injected
-map isn't natively honored — the polyfill engages (triggered by the bare-specifier
-static failure) and rewrites specifiers via blob URLs. MDN explicitly recommends
-this polyfill for non-supporting browsers.
+**shim mode**. Shim mode only processes modules loaded through the explicit
+`importShim()` API, so the host's own module scripts are never touched, and
+import maps can be added at runtime on every browser (including Firefox) via
+`importShim.addImportMap()`. Every plugin module therefore goes through the
+shim loader — specifiers are resolved and rewritten by es-module-shims rather
+than the native loader — which is what makes late, incremental import maps
+reliable across all supported browsers.
 
 ## Plan
 
 ### Phase 1 — Resolution infrastructure (`packages/app-utils/src/plugins`)
 
-- Add `es-module-shims` dependency. Load it `async` in
-  [`packages/code-studio/index.html`](../packages/code-studio/index.html) and
-  [`packages/embed-widget/index.html`](../packages/embed-widget/index.html), with
-  an `esms-options` script using **polyfill mode** (default; not `shimMode`).
+- Add `es-module-shims` dependency, initialized with `shimMode: true`.
 - New `esmPluginLoader.ts`:
   - `buildHostImportMap(resolve)` — for each `resolve` entry, create a blob ESM
     module that re-exports the live host instance (`default` plus named keys
     enumerated via `Object.keys`), returning
     `{ imports: { react: blobUrl, '@deephaven/components': blobUrl, ... } }`.
-  - `buildPluginImportMap(manifest, baseUrl)` — map each plugin's `package` to
-    its served entry URL so cross-plugin imports resolve up front.
-  - `injectImportMap(map)` — append **one** `<script type="importmap">` to
-    `<head>` **before** importing the first plugin module. We rely on
-    es-module-shims for the runtime / Firefox case rather than injecting a map
-    per dependency level.
-  - `loadEsModulePlugin(url)` — native `import(url)` (es-module-shims rewrites
-    dynamic import in polyfill mode).
+  - `buildPluginImportMap(manifest, baseUrl)` — map each plugin's
+    `loader.package` to its served entry URL so cross-plugin imports resolve up
+    front.
+  - `addImportMap(map)` — register the map with `importShim.addImportMap()`
+    before importing the first plugin module.
+  - `loadEsModulePlugin(url)` — `importShim(url)`.
 - Leave `loadRemoteModule.ts` (CJS path) untouched.
 
 ### Phase 2 — Loader integration (`PluginUtils.ts`)
@@ -100,7 +96,7 @@ this polyfill for non-supporting browsers.
   SCSS→CSS styling loading with the chunk.
 - A tiny static dev server (`sirv` / `http-server`) serving `dist/` plus a
   generated `manifest.json` with CORS on port 4100, exposed via a
-  `start:plugin-example` script. Set `VITE_JS_PLUGINS_DEV_PORT=4100` to proxy
+  `plugin-example` script. Set `VITE_JS_PLUGINS_DEV_PORT=4100` to proxy
   `/js-plugins` to it (existing `vite.config.ts` proxy).
 
 ### Phase 4 — Tests, docs & migration
@@ -133,14 +129,14 @@ this polyfill for non-supporting browsers.
 
 ## Verification
 
-1. `npm run start:plugin-example` + `VITE_JS_PLUGINS_DEV_PORT=4100 npm start`;
+1. `npm run plugin-example` + `VITE_JS_PLUGINS_DEV_PORT=4100 npm start`;
    confirm the example widget loads, the lazy chunk and its CSS fetch only on
    demand (Network tab), styles apply, and host React is shared (no
    duplicate-React errors).
 2. An existing CJS plugin still loads unchanged (auto-detect path).
 3. `npm run test:unit -- PluginUtils` passes the new ESM cases.
-4. Cross-browser smoke — Chromium (native passthrough) and Firefox (polyfill
-   engages) — both load the ESM plugin and its lazy CSS.
+4. Cross-browser smoke — Chromium and Firefox — both load the ESM plugin and
+   its lazy CSS through the shim loader.
 
 ## Implementation notes / deviations
 
@@ -154,7 +150,8 @@ holds):
   through the explicit `importShim()` API, so the "import map must exist before
   the affected module loads" timing constraint does not apply, and this keeps
   the feature self-contained with no per-app HTML changes. `esmsInitOptions`
-  (with an `onpolyfill` log hook) is set immediately before the dynamic import.
+  (`shimMode: true` plus a `source` hook that serves already-fetched plugin
+  entries) is set immediately before the dynamic import.
 - **Module format detection** fetches the entry once and uses `es-module-lexer`
   (`parse` → an ES module if it has any `export` or a static `import`). The
   fetch is guarded so existing test mocks (and non-fetchable entries) fall back
@@ -165,8 +162,8 @@ holds):
   registers each `resolve` entry in a global registry
   (`window.__DH_SHARED_PLUGIN_MODULES__`) and creates a blob-URL ES module that
   re-exports the live instance (default + valid named export keys). The host
-  map is memoized and injected specifiers are tracked to avoid re-injection
-  errors in polyfill mode.
+  map is memoized and registered specifiers are tracked so the first mapping
+  for a specifier wins and entries are never re-registered.
 - **Example plugin CSS injection** uses `vite-plugin-css-injected-by-js` with
   `relativeCSSInjection: true` so each lazy chunk's CSS is injected when that
   chunk loads (verified: the SCSS-derived CSS ships in the lazy chunk, not the

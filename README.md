@@ -74,9 +74,11 @@ ES module plugins can **code-split / lazy-load** parts of their UI via dynamic
 `import()`, so only the code needed for a given view is fetched. They resolve
 the same host singletons (`react`, `redux`, `@deephaven/*`, ...) provided by
 [remote-component.config.ts](packages/app-utils/src/plugins/remote-component.config.ts)
-through an import map the host injects at runtime, polyfilled by
-[es-module-shims](https://github.com/guybedford/es-module-shims) on browsers
-that don't support runtime-injected import maps (e.g. Firefox).
+through an import map the host registers at runtime with
+[es-module-shims](https://github.com/guybedford/es-module-shims). The host runs
+es-module-shims in **shim mode**, so every plugin module is loaded through
+`importShim()` on all browsers (including Chromium and Safari), and the host's
+own module scripts are never processed by the shim.
 
 To author an ES module plugin:
 
@@ -94,7 +96,7 @@ See [@deephaven/plugin-example](packages/plugin-example) for a complete,
 runnable example plus a tiny dev server. To try it locally:
 
 ```
-npm run start:plugin-example   # builds + serves on :4100
+npm run plugin-example   # builds + serves on :4100
 # then set VITE_JS_PLUGINS_DEV_PORT=4100 in packages/code-studio/.env.development.local
 npm start
 ```

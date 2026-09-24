@@ -82,8 +82,16 @@ describe('buildPluginImportMap', () => {
   it('maps each plugin package name to its served entry url', () => {
     const map = buildPluginImportMap(
       [
-        { name: 'plugin-a', main: 'index.js', package: '@scope/plugin-a' },
-        { name: 'plugin-b', main: 'dist/index.js', package: '@scope/plugin-b' },
+        {
+          name: 'plugin-a',
+          main: 'index.js',
+          loader: { package: '@scope/plugin-a' },
+        },
+        {
+          name: 'plugin-b',
+          main: 'dist/index.js',
+          loader: { package: '@scope/plugin-b' },
+        },
       ],
       'http://localhost/js-plugins'
     );
@@ -95,7 +103,10 @@ describe('buildPluginImportMap', () => {
 
   it('skips plugins without a package field', () => {
     const map = buildPluginImportMap(
-      [{ name: 'plugin-a', main: 'index.js' }],
+      [
+        { name: 'plugin-a', main: 'index.js' },
+        { name: 'plugin-b', main: 'index.js', loader: {} },
+      ],
       'http://localhost/js-plugins'
     );
     expect(map.imports).toEqual({});

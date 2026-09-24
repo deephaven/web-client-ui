@@ -148,6 +148,8 @@ and produce additional on-demand chunks.
 - Cross-plugin imports by package name work ESM→ESM. An ESM plugin importing a
   CJS plugin (or vice versa) by package name is not supported — migrate
   interdependent plugins together if they import each other.
-- The import map is injected at runtime and polyfilled by `es-module-shims` on
-  browsers without runtime-injected import map support (e.g. Firefox); on
-  Chromium/Safari it passes through to the native loader.
+- The import map is registered at runtime with `es-module-shims` running in
+  **shim mode**, so plugin modules are loaded through `importShim()` on every
+  browser rather than passing through to the native loader. Shim mode only
+  affects modules loaded via `importShim()`, so the host application's own
+  module scripts are unaffected.

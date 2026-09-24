@@ -40,8 +40,11 @@ function buildManifest() {
         name: PLUGIN_NAME,
         version: PLUGIN_VERSION,
         main: 'index.js',
-        // `package` enables other ESM plugins to import this one by package name.
-        package: PLUGIN_NAME,
+        // `loader.package` enables other ESM plugins to import this one by
+        // package name.
+        loader: {
+          package: PLUGIN_NAME,
+        },
       },
     ],
   };
@@ -73,9 +76,11 @@ const server = http.createServer((req, res) => {
     pathname = pathname.slice(`/${PLUGIN_NAME}`.length);
   }
 
-  // Prevent path traversal outside dist.
-  const filePath = path.normalize(path.join(distDir, pathname));
-  if (!filePath.startsWith(distDir)) {
+  // Prevent path traversal outside dist. Comparing the relative path rather
+  // than a string prefix avoids matching sibling directories like `dist-secret`.
+  const filePath = path.resolve(distDir, path.join('.', pathname));
+  const relative = path.relative(distDir, filePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     res.writeHead(403);
     res.end('Forbidden');
     return;
