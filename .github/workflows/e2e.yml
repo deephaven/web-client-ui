@@ -234,3 +234,20 @@ jobs:
       - name: Fail if any tests failed or cancelled
         run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+
+  slack-notify:
+    runs-on: ubuntu-24.04
+    needs: [build, e2e-results]
+    if: failure() && github.ref == 'refs/heads/main' && github.repository_owner == 'deephaven' && github.event_name == 'schedule'
+    steps:
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_DEV_UI }}
+          webhook-type: webhook-trigger
+          payload: |
+            {
+              "repository": "${{ github.repository }}",
+              "message": "${{ github.workflow }} nightly check failure",
+              "link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
