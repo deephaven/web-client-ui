@@ -16,7 +16,7 @@ import {
   getPluginModuleValue,
 } from '@deephaven/plugin';
 import loadCommonJsModule from './loadCommonJsModule';
-import { resolve } from './remote-component.config';
+import { esmResolve, resolve } from './remote-component.config';
 import {
   addImportMap,
   buildHostImportMap,
@@ -109,7 +109,7 @@ export async function loadModulePlugins(
     // Register import maps before loading any plugin so ESM plugins can
     // resolve host singletons (react, @deephaven/*, ...) and cross-plugin
     // package imports. Harmless for CommonJS plugins, which never use them.
-    addImportMap(buildHostImportMap(resolve));
+    addImportMap(buildHostImportMap(esmResolve));
     addImportMap(buildPluginImportMap(manifest.plugins, modulePluginsUrl));
 
     const levels = groupByDependencyLevel(manifest.plugins);

@@ -19,12 +19,44 @@ jest.mock('es-module-shims', () => {
   return {};
 });
 
+const blobsByUrl = new Map<string, Blob>();
+
 beforeAll(() => {
   // jsdom doesn't implement createObjectURL.
   let counter = 0;
-  // eslint-disable-next-line no-plusplus
-  URL.createObjectURL = jest.fn(() => `blob:mock-${counter++}`);
+  URL.createObjectURL = jest.fn((blob: Blob) => {
+    // eslint-disable-next-line no-plusplus
+    const url = `blob:mock-${counter++}`;
+    blobsByUrl.set(url, blob);
+    return url;
+  });
 });
+
+function readBlob(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}
+
+/**
+ * Evaluate a generated re-export module by rewriting its `export` statements
+ * into assignments, returning what an importer would see.
+ */
+async function evaluateReexportModule(
+  url: string
+): Promise<Record<string, unknown>> {
+  const source = await readBlob(blobsByUrl.get(url) as Blob);
+  const body = source
+    .replace('export default ', 'exports.default = ')
+    .replace(/export const (\w+) =/g, 'exports.$1 =');
+  const exports: Record<string, unknown> = {};
+  // eslint-disable-next-line no-new-func
+  new Function('window', 'exports', body)(window, exports);
+  return exports;
+}
 
 beforeEach(() => {
   delete (window as unknown as Record<string, unknown>)[SHARED_MODULES_KEY];
@@ -58,9 +90,12 @@ describe('isEsModuleSource', () => {
 });
 
 describe('buildHostImportMap', () => {
-  it('registers host singletons and maps specifiers to blob urls', () => {
-    const react = { useState: jest.fn(), default: {} };
-    const map = buildHostImportMap({ react });
+  it('re-exports default and named exports of host modules', async () => {
+    const react = { useState: jest.fn(), createElement: jest.fn() };
+    const Log = { module: jest.fn() };
+    const logInit = jest.fn();
+    const logModule = { default: Log, Log, logInit };
+    const map = buildHostImportMap({ react, '@deephaven/log': logModule });
 
     expect(map.imports.react).toMatch(/^blob:mock-/);
     expect(
@@ -68,6 +103,19 @@ describe('buildHostImportMap', () => {
         SHARED_MODULES_KEY
       ].react
     ).toBe(react);
+
+    // A module without an explicit default uses the value itself as default.
+    const reactExports = await evaluateReexportModule(map.imports.react);
+    expect(reactExports.default).toBe(react);
+    expect(reactExports.useState).toBe(react.useState);
+    expect(reactExports.createElement).toBe(react.createElement);
+
+    const logExports = await evaluateReexportModule(
+      map.imports['@deephaven/log']
+    );
+    expect(logExports.default).toBe(Log);
+    expect(logExports.Log).toBe(Log);
+    expect(logExports.logInit).toBe(logInit);
   });
 
   it('memoizes the result across calls', () => {

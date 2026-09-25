@@ -20,11 +20,10 @@ import * as DeephavenJsapiBootstrap from '@deephaven/jsapi-bootstrap';
 import * as DeephavenJsapiComponents from '@deephaven/jsapi-components';
 import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
 import * as DeephavenConsole from '@deephaven/console';
-import DeephavenLog from '@deephaven/log';
+import DeephavenLog, * as DeephavenLogModule from '@deephaven/log';
 import * as DeephavenReactHooks from '@deephaven/react-hooks';
 import * as DeephavenPlugin from '@deephaven/plugin';
 
-// eslint-disable-next-line import/prefer-default-export
 export const resolve: Record<string, unknown> = {
   react,
   'react-dom': ReactDOM,
@@ -45,4 +44,14 @@ export const resolve: Record<string, unknown> = {
   '@deephaven/log': DeephavenLog,
   '@deephaven/plugin': DeephavenPlugin,
   '@deephaven/react-hooks': DeephavenReactHooks,
+};
+
+/**
+ * Host modules for ES module plugins, as full module namespaces so both default
+ * and named imports resolve. `resolve` keeps the CommonJS `require` contract,
+ * where some entries are the default export only (e.g. `@deephaven/log`).
+ */
+export const esmResolve: Record<string, unknown> = {
+  ...resolve,
+  '@deephaven/log': DeephavenLogModule,
 };
