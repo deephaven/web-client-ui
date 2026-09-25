@@ -49,6 +49,8 @@
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
     "classnames": "^2.5.1",
+    "es-module-lexer": "^1.5.4",
+    "es-module-shims": "^2.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.merge": "^4.6.2",
     "lodash.throttle": "^4.1.1"

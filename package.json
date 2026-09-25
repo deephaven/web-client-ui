@@ -43,6 +43,7 @@
     "start": "run-s build:necessary dev",
     "start:app": "lerna run start --scope=@deephaven/code-studio --stream",
     "start:embed-widget": "lerna run start --scope=@deephaven/embed-widget --stream",
+    "plugin-example": "lerna run start --scope=@deephaven/plugin-example --stream",
     "test": "jest --watch --changedSince origin/main",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --config jest.config.unit.cjs --runInBand --watch",
     "test:unit": "npm run build:necessary && jest --config jest.config.unit.cjs",

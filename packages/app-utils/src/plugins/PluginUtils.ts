@@ -15,8 +15,15 @@ import {
   type PluginManifestPluginInfo,
   getPluginModuleValue,
 } from '@deephaven/plugin';
-import loadRemoteModule from './loadRemoteModule';
-import { resolve } from './remote-component.config';
+import loadCommonJsModule from './loadCommonJsModule';
+import { esmResolve, resolve } from './remote-component.config';
+import {
+  addImportMap,
+  buildHostImportMap,
+  buildPluginImportMap,
+  isEsModuleSource,
+  loadEsModulePlugin,
+} from './esmPluginLoader';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
 
@@ -36,15 +43,28 @@ export type { PluginManifest };
 export { getPluginModuleValue };
 
 /**
- * Imports a commonjs plugin module from the provided URL
+ * Imports a plugin module from the provided URL. The entry is fetched once and
+ * its format detected from the source: ES module plugins are handed to
+ * es-module-shims (so they can lazy-load chunks and resolve host singletons
+ * through the import map), while legacy CommonJS plugins are evaluated with a
+ * `require` backed by the host resolve map.
  * @param pluginUrl The URL of the plugin to load
  * @returns The loaded module
  */
 export async function loadModulePlugin(
   pluginUrl: string
 ): Promise<LegacyPlugin | { default: Plugin }> {
-  const myModule = await loadRemoteModule(pluginUrl);
-  return myModule;
+  const res = await fetch(pluginUrl);
+  if (!res.ok) {
+    throw new Error(`${res.status} ${res.statusText} (${pluginUrl})`);
+  }
+  const source = await res.text();
+  if (await isEsModuleSource(source)) {
+    return (await loadEsModulePlugin(pluginUrl, source)) as
+      | LegacyPlugin
+      | { default: Plugin };
+  }
+  return loadCommonJsModule(source);
 }
 
 /**
@@ -85,6 +105,12 @@ export async function loadModulePlugins(
     }
 
     log.debug('Plugin manifest loaded:', manifest);
+
+    // Register import maps before loading any plugin so ESM plugins can
+    // resolve host singletons (react, @deephaven/*, ...) and cross-plugin
+    // package imports. Harmless for CommonJS plugins, which never use them.
+    addImportMap(buildHostImportMap(esmResolve));
+    addImportMap(buildPluginImportMap(manifest.plugins, modulePluginsUrl));
 
     const levels = groupByDependencyLevel(manifest.plugins);
 

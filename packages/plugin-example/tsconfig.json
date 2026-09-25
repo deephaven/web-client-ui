@@ -1,0 +1,11 @@
+{
+  "extends": "@deephaven/tsconfig",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src", "vite.config.ts"]
+}
