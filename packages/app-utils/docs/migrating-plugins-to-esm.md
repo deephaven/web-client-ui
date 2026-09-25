@@ -82,7 +82,8 @@ Ensure the package is treated as an ES module and points at the ESM entry:
 }
 ```
 
-The `manifest.json` entry (`name`, `version`, `main`, `package`) stays the same.
+The `manifest.json` entry (`name`, `version`, `main`, and the nested
+`loader.package`) stays the same.
 
 ### 3. Inject per-chunk CSS via JS
 

@@ -122,8 +122,8 @@ reliable across all supported browsers.
 - `packages/app-utils/src/plugins/loadRemoteModule.ts` — CJS path, unchanged.
 - `packages/app-utils/src/plugins/remote-component.config.ts` — `resolve`
   singletons source.
-- `packages/code-studio/index.html`, `packages/embed-widget/index.html` —
-  es-module-shims script + `esms-options`.
+- `packages/app-utils/src/declarations.d.ts` — declares the `es-module-shims`
+  side-effect module for the lazy dynamic import.
 - `packages/plugin-example/**` (new) — example ESM plugin + static dev server.
 - `packages/app-utils/src/plugins/PluginUtils.test.ts` — new ESM cases.
 
@@ -153,11 +153,11 @@ holds):
   (`shimMode: true` plus a `source` hook that serves already-fetched plugin
   entries) is set immediately before the dynamic import.
 - **Module format detection** fetches the entry once and uses `es-module-lexer`
-  (`parse` → an ES module if it has any `export` or a static `import`). The
-  fetch is guarded so existing test mocks (and non-fetchable entries) fall back
-  to the CommonJS path. This incurs one extra fetch per plugin entry; the
-  browser cache mitigates the subsequent `importShim()`/`loadRemoteModule`
-  fetch.
+  (`parse` → an ES module if it has any `export` or a static `import`). A
+  failed fetch throws; there is no CommonJS fallback. Both paths consume the
+  already-fetched source: the ESM path hands it to es-module-shims via the
+  `source` hook, and the CommonJS path evaluates it directly, so the entry is
+  never fetched twice.
 - **Host singletons are exposed via blob ES modules.** `buildHostImportMap`
   registers each `resolve` entry in a global registry
   (`window.__DH_SHARED_PLUGIN_MODULES__`) and creates a blob-URL ES module that
