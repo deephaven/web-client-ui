@@ -1,10 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
+import { ErrorBoundary } from '@deephaven/components';
+import { MonacoUtils } from '@deephaven/console';
 import CustomColumnInput, {
   type CustomColumnInputProps,
 } from './CustomColumnInput';
+
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
 
 const TEST_ID = 'TEST_ID';
 
@@ -50,11 +57,26 @@ test('Fires change events', async () => {
   expect(mockOnChange).toBeCalledWith(TEST_ID, 'name', 'a');
 
   mockOnChange.mockClear();
+  await screen.findByRole('textbox', { name: /^Column Formula/ });
   await user.click(screen.getByText('Column Formula'));
   await user.keyboard('b');
   expect(mockOnChange).toBeCalledWith(TEST_ID, 'formula', 'b');
   await user.keyboard('[Backspace]');
   expect(mockOnChange).toBeCalledWith(TEST_ID, 'formula', 'b');
+});
+
+test('Surfaces a failed editor load to the error boundary', async () => {
+  const error = new Error('Chunk failed');
+  jest.spyOn(MonacoUtils, 'load').mockRejectedValueOnce(error);
+  const onError = jest.fn();
+  render(
+    <ErrorBoundary onError={onError} fallback={null}>
+      <Input />
+    </ErrorBoundary>
+  );
+  await waitFor(() =>
+    expect(onError).toHaveBeenCalledWith(error, expect.anything())
+  );
 });
 
 test('Fires delete event', async () => {

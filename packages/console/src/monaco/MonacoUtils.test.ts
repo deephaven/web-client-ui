@@ -48,6 +48,11 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  await MonacoUtils.load();
+}, 30000);
+
 beforeEach(() => {
   jest.clearAllMocks();
   expect.hasAssertions();
@@ -172,6 +177,23 @@ describe('disableKeyBindings', () => {
       label: '',
       keybindings,
       run: expect.any(Function),
+    });
+  });
+});
+
+describe('registerLinkProvider', () => {
+  it('registers the plaintext link provider once', () => {
+    const registerLinkProvider = jest.spyOn(
+      monaco.languages,
+      'registerLinkProvider'
+    );
+
+    MonacoUtils.registerLinkProvider();
+    MonacoUtils.registerLinkProvider();
+
+    expect(registerLinkProvider).toHaveBeenCalledTimes(1);
+    expect(registerLinkProvider).toHaveBeenCalledWith('plaintext', {
+      provideLinks: MonacoUtils.provideLinks,
     });
   });
 });
