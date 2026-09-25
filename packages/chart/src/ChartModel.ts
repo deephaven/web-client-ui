@@ -3,8 +3,9 @@
 
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter } from '@deephaven/jsapi-utils';
-import type { Layout, Data } from 'plotly.js';
+import type { Layout } from 'plotly.js';
 import { type FilterColumnMap, type FilterMap } from './ChartUtils';
+import { type PlotData } from './plotly/plotlyTypes';
 
 export type ChartEvent = DhType.Event<unknown>;
 
@@ -73,7 +74,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): Partial<Data>[] {
+  getData(): Partial<PlotData>[] {
     return [];
   }
 
