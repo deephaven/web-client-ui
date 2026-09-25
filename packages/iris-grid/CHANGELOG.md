@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.30.0](https://github.com/deephaven/web-client-ui/compare/v1.29.1...v1.30.0) (2026-09-25)
+
+### Bug Fixes
+
+- DH-23761: Make keyed selection type changes backwards compatible ([#2763](https://github.com/deephaven/web-client-ui/issues/2763)) ([6017167](https://github.com/deephaven/web-client-ui/commit/60171670bd5e5e1a4c7d67e4e5cb785929e06743))
+
 ## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
 
 ### Features

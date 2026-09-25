@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.30.0](https://github.com/deephaven/web-client-ui/compare/v1.29.1...v1.30.0) (2026-09-25)
+
+### Bug Fixes
+
+- DH-17594: useWindowedListData prunes selectedKeys ([#2760](https://github.com/deephaven/web-client-ui/issues/2760)) ([084f9be](https://github.com/deephaven/web-client-ui/commit/084f9beda86e08614cc74f4935178fb098fa1360))
+
 ## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
 
 **Note:** Version bump only for package @deephaven/react-hooks
