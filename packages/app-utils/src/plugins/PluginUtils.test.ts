@@ -325,10 +325,12 @@ describe('loadModulePlugins', () => {
 
     const pluginMap = await loadModulePlugins(BASE_URL);
 
-    expect(loadEsModulePlugin).toHaveBeenCalledWith(
-      `${BASE_URL}/test-plugin-a/index.js`,
-      PLUGIN_SOURCE
+    const pluginUrl = `${BASE_URL}/test-plugin-a/index.js`;
+    const pluginFetches = (global.fetch as jest.Mock).mock.calls.filter(
+      ([url]) => url === pluginUrl
     );
+    expect(pluginFetches.length).toBe(1);
+    expect(loadEsModulePlugin).toHaveBeenCalledWith(pluginUrl, PLUGIN_SOURCE);
     expect(loadCommonJsModule).not.toHaveBeenCalled();
     expect(pluginMap.get('test-plugin-a')).toEqual({
       ...pluginA,

@@ -13,8 +13,9 @@
   ],
   "scripts": {
     "build:plugin": "vite build",
+    "watch": "vite build --watch",
     "serve": "node serve.js",
-    "start": "vite build --watch & node serve.js"
+    "start": "run-p watch serve"
   },
   "dependencies": {
     "@deephaven/components": "file:../components",

@@ -2,17 +2,15 @@
 // injected via JS when the chunk loads, so it ships with the lazy chunk rather
 // than the plugin entry.
 
-$card-accent: #4c8bf5;
-
 .dh-example-plugin-card {
   margin-top: 16px;
   padding: 16px;
-  border: 1px solid $card-accent;
+  border: 1px solid var(--dh-color-accent);
   border-radius: 8px;
-  background: rgba($card-accent, 0.08);
+  background: var(--dh-color-highlight-selected);
 
   &__title {
     margin-top: 0;
-    color: $card-accent;
+    color: var(--dh-color-accent);
   }
 }
