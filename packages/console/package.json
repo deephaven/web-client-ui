@@ -48,8 +48,8 @@
     "shell-quote": "^1.7.2"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
