@@ -28,7 +28,7 @@ export interface GridSeparator {
 }
 
 /**
- * Abstract class that should be extended for column/row behaviour
+ * Abstract class that should be extended for column/row behavior
  * Override the necessary functions/properties
  */
 abstract class GridSeparatorMouseHandler extends GridMouseHandler {
@@ -169,9 +169,13 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     let resizeIndex: number | null =
       this.resizingItems[this.resizingItems.length - 1];
     while (resizeIndex != null) {
-      const itemOffset = getOrThrow(visibleOffsets, resizeIndex);
+      const itemOffset = visibleOffsets.get(resizeIndex);
+      const modelIndex = modelIndexes.get(resizeIndex);
+      if (itemOffset == null || modelIndex == null) {
+        break;
+      }
+
       const itemSize = point - margin - itemOffset - this.dragOffset;
-      const modelIndex = getOrThrow(modelIndexes, resizeIndex);
       const targetSize = this.targetSizes.get(modelIndex);
       const isResizingMultiple = this.resizingItems.length > 1;
       const hiddenIndex = this.hiddenItems.indexOf(resizeIndex);
@@ -184,7 +188,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
         calculatedSize != null &&
         Math.abs(itemSize - calculatedSize) <= theme.headerResizeSnapThreshold
       ) {
-        // Snapping behaviour to "natural" width
+        // Snapping behavior to "natural" width
         newSize = calculatedSize;
       } else if (
         targetSize !== undefined &&
@@ -204,8 +208,11 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
           this.resizingItems.pop();
           this.removeTargetSize(metrics, resizeIndex);
           resizeIndex = this.resizingItems[this.resizingItems.length - 1];
+          const previousModelIndex = modelIndexes.get(resizeIndex);
           this.dragOffset -=
-            this.targetSizes.get(getOrThrow(modelIndexes, resizeIndex)) ?? 0;
+            (previousModelIndex != null
+              ? this.targetSizes.get(previousModelIndex)
+              : undefined) ?? 0;
         } else {
           resizeIndex = this.getNextShownItem(resizeIndex, metrics);
           if (resizeIndex !== null) {
@@ -288,7 +295,10 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
 
   updateCursor(metrics: GridMetrics, itemIndex: VisibleIndex): void {
     const visibleSizes = metrics[this.visibleSizesProperty];
-    const itemSize = getOrThrow(visibleSizes, itemIndex);
+    const itemSize = visibleSizes.get(itemIndex);
+    if (itemSize == null) {
+      return;
+    }
     if (itemSize === 0) {
       this.cursor = this.hiddenCursor;
     } else {
@@ -302,7 +312,10 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     const calculatedSizes = metrics[this.calculatedSizesProperty];
     const treePadding = itemIndex === 0 ? metrics[this.treePaddingProperty] : 0;
 
-    const modelIndex = getOrThrow(modelIndexes, itemIndex);
+    const modelIndex = modelIndexes.get(itemIndex);
+    if (modelIndex == null) {
+      return;
+    }
     let targetSize = userSizes.get(modelIndex);
     if (targetSize == null || targetSize === 0) {
       targetSize = (calculatedSizes.get(modelIndex) ?? 0) + treePadding;
@@ -312,7 +325,10 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
 
   removeTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): void {
     const modelIndexes = metrics[this.modelIndexesProperty];
-    const modelIndex = getOrThrow(modelIndexes, itemIndex);
+    const modelIndex = modelIndexes.get(itemIndex);
+    if (modelIndex == null) {
+      return;
+    }
     this.targetSizes.delete(modelIndex);
   }
 }

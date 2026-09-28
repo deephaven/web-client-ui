@@ -1252,13 +1252,18 @@ export class GridRenderer {
       if (highlightedSeparator == null) {
         shouldDrawSeparator = false;
       } else {
-        shouldDrawSeparator = GridUtils.hasColumnSeparatorAtDepth(
-          model,
-          depth,
-          highlightedSeparator,
-          columnCount,
-          movedColumns
-        );
+        // Expanding columns hidden under the separator can push the dragged
+        // separator past the viewport, leaving it without metrics to draw with
+        shouldDrawSeparator =
+          allColumnXs.has(highlightedSeparator) &&
+          allColumnWidths.has(highlightedSeparator) &&
+          GridUtils.hasColumnSeparatorAtDepth(
+            model,
+            depth,
+            highlightedSeparator,
+            columnCount,
+            movedColumns
+          );
       }
 
       if (

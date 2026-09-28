@@ -375,3 +375,44 @@ describe('truncateToWidth', () => {
     );
   });
 });
+
+describe('drawColumnHeaders', () => {
+  it('does not throw when the dragged separator is outside the viewport', () => {
+    const renderer = new GridRenderer();
+    // Expanding columns hidden under the separator pushes column 2 out of view,
+    // so it no longer has entries in the viewport metrics
+    const metrics = {
+      ...makeMockGridMetrics(),
+      allColumnXs: new Map([
+        [0, 0],
+        [1, 100],
+      ]),
+      allColumnWidths: new Map([
+        [0, 100],
+        [1, 100],
+      ]),
+      visibleColumns: [0, 1],
+      floatingColumns: [],
+      columnCount: 3,
+      columnHeaderMaxDepth: 1,
+      movedColumns: [],
+      gridX: 0,
+      width: 200,
+      floatingLeftColumnCount: 0,
+      floatingLeftWidth: 0,
+      floatingRightWidth: 0,
+      columnHeaderHeight: 20,
+      userColumnWidths: new Map(),
+      calculatedColumnWidths: new Map(),
+    } as unknown as GridMetrics;
+    const renderState = {
+      ...makeMockGridRenderState({ metrics }),
+      draggingColumnSeparator: { index: 2, depth: 0 },
+      isDragging: true,
+    };
+
+    expect(() =>
+      renderer.drawColumnHeaders(renderState.context, renderState)
+    ).not.toThrow();
+  });
+});
