@@ -30,7 +30,7 @@ import {
   type ClickAnnotationEvent,
   type LegendClickEvent,
 } from 'plotly.js';
-import type { Figure, PlotParams } from 'react-plotly.js';
+import type { Figure } from 'react-plotly.js';
 import { mergeRefs } from '@deephaven/react-hooks';
 import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
@@ -266,9 +266,9 @@ class Chart extends Component<ChartProps, ChartState> {
 
   currentSeries: number;
 
-  PlotComponent: React.ComponentType<PlotParams>;
+  PlotComponent: ReturnType<typeof createPlotlyComponent>;
 
-  plot: RefObject<typeof this.PlotComponent>;
+  plot: RefObject<HTMLDivElement>;
 
   plotWrapper: RefObject<HTMLDivElement>;
 
@@ -805,12 +805,9 @@ class Chart extends Component<ChartProps, ChartState> {
     ) {
       // Call relayout to resize avoiding the debouncing plotly does
       // https://github.com/plotly/plotly.js/issues/2769#issuecomment-402099552
-      PlotlyProp.relayout(
-        (this.plot.current as unknown as { el: HTMLElement }).el,
-        {
-          autosize: true,
-        }
-      ).catch((e: unknown) => {
+      PlotlyProp.relayout(this.plot.current, {
+        autosize: true,
+      }).catch((e: unknown) => {
         log.debug('Unable to resize, promise rejected', e);
       });
     }
@@ -884,8 +881,6 @@ class Chart extends Component<ChartProps, ChartState> {
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapperMerged}>
         {isPlotShown && (
           <PlotComponent
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             ref={this.plot}
             data={data}
             layout={layout}
