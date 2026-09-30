@@ -5,6 +5,8 @@ import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
+// Vite turns a `?worker` import into a worker constructor, so Monaco stays lazy.
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import StyleGuideInit from './StyleGuideInit';
 

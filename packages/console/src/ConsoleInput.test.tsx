@@ -1,7 +1,8 @@
 import React from 'react';
 import dh from '@deephaven/jsapi-shim';
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { ConsoleInput } from './ConsoleInput';
+import MonacoUtils from './monaco/MonacoUtils';
 import { type CommandHistoryStorage } from './command-history';
 
 /**
@@ -15,6 +16,14 @@ jest.mock('./monaco', () => ({
     'line-height': '19px',
   },
 }));
+
+// Monaco loads on demand, which takes longer than a test's default timeout
+beforeAll(async () => {
+  const monaco = await MonacoUtils.load();
+  // A model only takes on a language Monaco knows about
+  monaco.languages.register({ id: 'python' });
+  monaco.languages.register({ id: 'groovy' });
+}, 30000);
 
 function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   return {
@@ -34,36 +43,40 @@ function makeSession(): dh.IdeSession {
   return session;
 }
 
-function renderConsoleInput(
+async function renderConsoleInput(
   session: dh.IdeSession,
-  ref: React.RefObject<ConsoleInput>
+  ref: React.RefObject<ConsoleInput>,
+  language = 'test'
 ) {
-  return render(
+  const result = render(
     <ConsoleInput
       ref={ref}
       session={session}
-      language="test"
+      language={language}
       commandHistoryStorage={makeMockCommandHistoryStorage()}
       onSubmit={jest.fn()}
     />
   );
+  // The editor, and its document, open once Monaco has loaded
+  await waitFor(() => expect(session.openDocument).toHaveBeenCalled());
+  return result;
 }
 
 describe('ConsoleInput session transition', () => {
-  it('notifies the initial session when the document is opened', () => {
+  it('notifies the initial session when the document is opened', async () => {
     const session = makeSession();
     const ref = React.createRef<ConsoleInput>();
-    renderConsoleInput(session, ref);
+    await renderConsoleInput(session, ref);
 
     expect(session.openDocument).toHaveBeenCalledTimes(1);
   });
 
-  it('calls closeDocument on the old session and openDocument on the new session on session prop change', () => {
+  it('calls closeDocument on the old session and openDocument on the new session on session prop change', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { rerender } = renderConsoleInput(session1, ref);
+    const { rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput
@@ -79,12 +92,12 @@ describe('ConsoleInput session transition', () => {
     expect(session2.openDocument).toHaveBeenCalledTimes(1);
   });
 
-  it('routes model edits only to the current session after a session replacement', () => {
+  it('routes model edits only to the current session after a session replacement', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { rerender } = renderConsoleInput(session1, ref);
+    const { rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput
@@ -104,12 +117,54 @@ describe('ConsoleInput session transition', () => {
     expect(session1.changeDocument).not.toHaveBeenCalled();
   });
 
-  it('calls closeDocument on the last active session when the component unmounts', () => {
+  it('opens an empty document for the new language, at a new URI, on session prop change', async () => {
     const session1 = makeSession();
     const session2 = makeSession();
     const ref = React.createRef<ConsoleInput>();
 
-    const { unmount, rerender } = renderConsoleInput(session1, ref);
+    const { rerender } = await renderConsoleInput(session1, ref, 'python');
+    const model1 = ref.current!.commandEditor!.getModel()!;
+    act(() => {
+      model1.setValue('draft = 1');
+    });
+
+    rerender(
+      <ConsoleInput
+        ref={ref}
+        session={session2}
+        language="groovy"
+        commandHistoryStorage={makeMockCommandHistoryStorage()}
+        onSubmit={jest.fn()}
+      />
+    );
+
+    const model2 = ref.current!.commandEditor!.getModel()!;
+    expect(model2).not.toBe(model1);
+    expect(model1.isDisposed()).toBe(true);
+    expect(model2.uri.toString()).not.toBe(model1.uri.toString());
+    expect(model2.getLanguageId()).toBe('groovy');
+    expect(model2.getValue()).toBe('');
+    // MonacoProviders receive the model through state
+    expect(ref.current!.state.model).toBe(model2);
+
+    expect(session1.closeDocument).toHaveBeenCalledWith({
+      textDocument: { uri: model1.uri.toString() },
+    });
+    expect(session2.openDocument).toHaveBeenCalledWith({
+      textDocument: expect.objectContaining({
+        uri: model2.uri.toString(),
+        languageId: 'groovy',
+        text: '',
+      }),
+    });
+  });
+
+  it('calls closeDocument on the last active session when the component unmounts', async () => {
+    const session1 = makeSession();
+    const session2 = makeSession();
+    const ref = React.createRef<ConsoleInput>();
+
+    const { unmount, rerender } = await renderConsoleInput(session1, ref);
 
     rerender(
       <ConsoleInput

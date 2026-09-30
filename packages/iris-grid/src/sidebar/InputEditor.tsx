@@ -1,5 +1,6 @@
 import React, { Component, type ReactElement } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
+import { Editor } from '@deephaven/console';
 import classNames from 'classnames';
 import './InputEditor.scss';
 
@@ -8,6 +9,7 @@ interface InputEditorProps {
   placeholder?: string;
   value: string;
   onContentChanged: (value?: string) => void;
+  onEditorInitialized?: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   editorSettings: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
   editorIndex: number;
   onTab: (editorIndex: number, shiftKey: boolean) => void;
@@ -36,6 +38,8 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
     super(props);
 
     this.handleContentChanged = this.handleContentChanged.bind(this);
+    this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
+    this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleEditorFocus = this.handleEditorFocus.bind(this);
     this.handleEditorBlur = this.handleEditorBlur.bind(this);
     this.handleContainerClick = this.handleContainerClick.bind(this);
@@ -45,25 +49,15 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
       isEditorFocused: false,
       isEditorEmpty: true,
     };
-    this.editorContainer = null;
   }
-
-  componentDidMount(): void {
-    this.initEditor();
-  }
-
-  componentWillUnmount(): void {
-    this.destroyEditor();
-  }
-
-  editorContainer: HTMLDivElement | null;
 
   editor?: monaco.editor.IStandaloneCodeEditor;
 
-  initEditor(): void {
-    const { value, editorSettings } = this.props;
-    const inputEditorSettings = {
-      copyWithSyntaxHighlighting: 'false',
+  getEditorSettings(): monaco.editor.IStandaloneEditorConstructionOptions {
+    const { value, editorSettings, placeholder } = this.props;
+    return {
+      ariaLabel: placeholder === '' ? undefined : placeholder,
+      copyWithSyntaxHighlighting: false,
       fixedOverflowWidgets: true,
       folding: false,
       fontFamily: 'Fira Mono',
@@ -90,29 +84,27 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
       automaticLayout: true,
       autoClosingBrackets: 'beforeWhitespace',
       ...editorSettings,
-    } as monaco.editor.IStandaloneEditorConstructionOptions;
-    if (!this.editorContainer) {
-      throw new Error('editorContainer is null');
-    }
-    this.editor = monaco.editor.create(
-      this.editorContainer,
-      inputEditorSettings
-    );
-    this.editor.layout();
-
-    // disable tab to spaces in this editor to improve tab navigation
-    this.editor.getModel()?.updateOptions({ tabSize: 0 });
-
-    // monaco does not propagate tab or enter events
-    this.editor.onKeyDown(this.handleKeyDown);
-
-    this.editor.onDidChangeModelContent(this.handleContentChanged);
-    this.editor.onDidFocusEditorText(this.handleEditorFocus);
-    this.editor.onDidBlurEditorText(this.handleEditorBlur);
+    };
   }
 
-  destroyEditor(): void {
-    this.editor?.dispose();
+  handleEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor): void {
+    const { onEditorInitialized } = this.props;
+    this.editor = editor;
+
+    // disable tab to spaces in this editor to improve tab navigation
+    editor.getModel()?.updateOptions({ tabSize: 0 });
+
+    // monaco does not propagate tab or enter events
+    editor.onKeyDown(this.handleKeyDown);
+
+    editor.onDidChangeModelContent(this.handleContentChanged);
+    editor.onDidFocusEditorText(this.handleEditorFocus);
+    editor.onDidBlurEditorText(this.handleEditorBlur);
+
+    onEditorInitialized?.(editor);
+  }
+
+  handleEditorWillDestroy(): void {
     this.editor = undefined;
   }
 
@@ -171,12 +163,11 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
         role="presentation"
         onClick={this.handleContainerClick}
       >
-        <div
-          className="editor-container"
-          ref={editorContainer => {
-            this.editorContainer = editorContainer;
-          }}
-          data-testid="custom-column-formula"
+        <Editor
+          className="w-100"
+          settings={this.getEditorSettings()}
+          onEditorInitialized={this.handleEditorInitialized}
+          onEditorWillDestroy={this.handleEditorWillDestroy}
         />
         {isEditorEmpty && !value && placeholder.length > 0 && (
           <div className="editor-placeholder text-muted">{placeholder}</div>

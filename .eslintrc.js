@@ -51,5 +51,29 @@ module.exports = {
         },
       ],
     })),
+    {
+      files: ['packages/*/src/**/*.@(ts|tsx)'],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['monaco-editor', 'monaco-editor/*'],
+                allowTypeImports: true,
+                message:
+                  'Monaco loads on demand. Use `import type`, render <Editor>, or use MonacoUtils.load() / MonacoUtils.getMonaco().',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/*/src/**/*.test.@(ts|tsx)'],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': 'off',
+      },
+    },
   ],
 };

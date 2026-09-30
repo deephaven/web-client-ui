@@ -3,7 +3,7 @@
  */
 import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 import './Editor.scss';
@@ -15,7 +15,7 @@ export interface EditorProps {
   settings: monaco.editor.IStandaloneEditorConstructionOptions;
 }
 
-class Editor extends Component<EditorProps, Record<string, never>> {
+class Editor extends Component<EditorProps, { error?: unknown }> {
   static defaultProps = {
     className: 'fill-parent-absolute',
     onEditorInitialized: (): void => undefined,
@@ -33,7 +33,9 @@ class Editor extends Component<EditorProps, Record<string, never>> {
   }
 
   componentDidMount(): void {
-    this.initEditor();
+    this.initEditor().catch(error => {
+      this.setState({ error });
+    });
 
     window.addEventListener('resize', this.handleResize);
   }
@@ -52,7 +54,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     if (this.editor) {
       const model = this.editor.getModel();
       assertNotNull(model);
-      monaco.editor.setModelLanguage(model, language);
+      MonacoUtils.getMonaco().editor.setModelLanguage(model, language);
     }
   }
 
@@ -74,7 +76,13 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     this.editor?.layout();
   }
 
-  initEditor(): void {
+  async initEditor(): Promise<void> {
+    const monaco = await MonacoUtils.load();
+    // Unmounted, or mounted again, while loading
+    if (this.container == null || this.editor != null) {
+      return;
+    }
+
     const { onEditorInitialized } = this.props;
     let { settings } = this.props;
     settings = {
@@ -94,7 +102,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       autoClosingBrackets: 'beforeWhitespace',
       ...settings,
     };
-    assertNotNull(this.container);
 
     this.editor = monaco.editor.create(this.container, settings);
 
@@ -116,16 +123,16 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     });
     this.editor.layout();
 
-    monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: MonacoUtils.provideLinks,
-    });
+    MonacoUtils.registerLinkProvider();
 
     onEditorInitialized(this.editor);
   }
 
   destroyEditor(): void {
     const { onEditorWillDestroy } = this.props;
-    assertNotNull(this.editor);
+    if (this.editor == null) {
+      return;
+    }
     onEditorWillDestroy(this.editor);
     this.editor.dispose();
     this.editor = undefined;
@@ -133,6 +140,11 @@ class Editor extends Component<EditorProps, Record<string, never>> {
 
   render(): ReactElement {
     const { className } = this.props;
+    const { error } = this.state;
+    if (error != null) {
+      // Surface a failed Monaco load to the nearest error boundary
+      throw error;
+    }
     return (
       <div
         className={classNames('editor-container', className)}

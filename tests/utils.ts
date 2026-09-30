@@ -289,6 +289,9 @@ export async function pasteInMonaco(
     document.getElementById(id)?.remove();
   }, inputId);
 
+  // The editor is created once Monaco loads, so it may not exist yet
+  await locator.locator('textarea').waitFor({ state: 'attached' });
+
   // Focus monaco
   await locator.click();
 

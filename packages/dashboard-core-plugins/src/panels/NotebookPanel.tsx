@@ -114,6 +114,7 @@ interface NotebookPanelState {
   isDashboardActive: boolean;
   isLoading: boolean;
   isLoaded: boolean;
+  isEditorInitialized: boolean;
   isPreview: boolean;
 
   savedChangeCount: number;
@@ -286,6 +287,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       isDashboardActive,
       isLoading: true,
       isLoaded: false,
+      isEditorInitialized: false,
       isPreview,
 
       savedChangeCount: 0,
@@ -812,10 +814,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
     this.editor = innerEditor;
+    this.setState({ isEditorInitialized: true });
   }
 
   handleEditorWillDestroy(): void {
     this.editor = undefined;
+    this.setState({ isEditorInitialized: false });
   }
 
   handleEditorChange(e: editor.IModelContentChangedEvent): void {
@@ -1083,7 +1087,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleRunAll(): void {
-    if (!this.notebook) {
+    if (this.notebook?.editor == null) {
       log.error('Editor is not initialized.');
       return;
     }
@@ -1091,7 +1095,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleRunSelected(): void {
-    if (!this.notebook) {
+    if (this.notebook?.editor == null) {
       log.error('Editor is not initialized.');
       return;
     }
@@ -1262,6 +1266,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       session,
       sessionLanguage,
       isLoaded,
+      isEditorInitialized,
     } = this.state;
     const settings = this.getSettings(
       initialSettings,
@@ -1270,7 +1275,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
     const runButtonsDisabled =
-      !isLoaded || !isSessionConnected || !isLanguageMatching;
+      !isLoaded ||
+      !isEditorInitialized ||
+      !isSessionConnected ||
+      !isLanguageMatching;
     const toolbarDisabled = !isLoaded;
     return this.getOverflowActions(
       isMinimapEnabled ?? false,
@@ -1295,6 +1303,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       error,
       isDashboardActive,
       isLoaded,
+      isEditorInitialized,
       isLoading,
       isPreview,
       fileMetadata,
@@ -1318,7 +1327,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
     const runButtonsDisabled =
-      !isLoaded || !isSessionConnected || !isLanguageMatching;
+      !isLoaded ||
+      !isEditorInitialized ||
+      !isSessionConnected ||
+      !isLanguageMatching;
     const toolbarDisabled = !isLoaded;
     const contextActions = [
       {

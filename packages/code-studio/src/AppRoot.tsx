@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { MonacoUtils } from '@deephaven/console';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
+// Vite turns a `?worker` import into a worker constructor, so Monaco stays lazy.
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import MonacoJsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import AppRouter from './main/AppRouter';
 

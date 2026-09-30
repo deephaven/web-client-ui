@@ -2,7 +2,7 @@
  * Completion provider for a code session
  */
 import { PureComponent } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
@@ -46,11 +46,17 @@ class MonacoProviders extends PureComponent<
       return MonacoProviders.initRuffPromise;
     }
 
-    MonacoProviders.initRuffPromise = init({}).then(() => {
-      log.debug('Initialized Ruff', Workspace.version());
-      MonacoProviders.isRuffInitialized = true;
-      MonacoProviders.updateRuffWorkspace();
-    });
+    // Ruff is only useful once an editor has loaded Monaco. Wait for that
+    // rather than loading Monaco here
+    MonacoProviders.initRuffPromise = new Promise<void>(resolve => {
+      MonacoUtils.whenLoaded(resolve);
+    })
+      .then(() => init({}))
+      .then(() => {
+        log.debug('Initialized Ruff', Workspace.version());
+        MonacoProviders.isRuffInitialized = true;
+        MonacoProviders.updateRuffWorkspace();
+      });
 
     return MonacoProviders.initRuffPromise;
   }
@@ -112,6 +118,7 @@ class MonacoProviders extends PureComponent<
   }
 
   static lintAllPython(): void {
+    const monaco = MonacoUtils.getMonaco();
     if (!MonacoProviders.isRuffEnabled) {
       monaco.editor.removeAllMarkers('ruff');
       return;
@@ -132,6 +139,7 @@ class MonacoProviders extends PureComponent<
       return;
     }
 
+    const monaco = MonacoUtils.getMonaco();
     const diagnostics = MonacoProviders.getDiagnostics(model);
     log.debug(`Linting Python document: ${model.uri.toString()}`, diagnostics);
 
@@ -166,7 +174,7 @@ class MonacoProviders extends PureComponent<
    * @returns Monaco kind
    */
   static lspToMonacoKind(kind: number | undefined): number {
-    const monacoKinds = monaco.languages.CompletionItemKind;
+    const monacoKinds = MonacoUtils.getMonaco().languages.CompletionItemKind;
     switch (kind) {
       case 1:
         return monacoKinds.Text;
@@ -272,6 +280,7 @@ class MonacoProviders extends PureComponent<
       };
     }
 
+    const monaco = MonacoUtils.getMonaco();
     const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
       const diagnosticRange = new monaco.Range(
         d.location.row,
@@ -452,6 +461,7 @@ class MonacoProviders extends PureComponent<
 
   componentDidMount(): void {
     const { language, session } = this.props;
+    const monaco = MonacoUtils.getMonaco();
 
     this.registeredCompletionProvider =
       monaco.languages.registerCompletionItemProvider(language, {

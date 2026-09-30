@@ -8,12 +8,31 @@ import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import { type Placement } from 'popper.js';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';
 import LogLevelMenuItem from './LogLevelMenuItem';
+import Editor from '../notebook/Editor';
 import { MonacoUtils } from '../monaco';
+
+const EDITOR_SETTINGS: monaco.editor.IStandaloneEditorConstructionOptions = {
+  copyWithSyntaxHighlighting: false,
+  fixedOverflowWidgets: true,
+  folding: false,
+  fontFamily: 'Fira Mono',
+  glyphMargin: false,
+  language: 'log',
+  lineDecorationsWidth: 0,
+  lineNumbers: 'off',
+  lineNumbersMinChars: 0,
+  minimap: { enabled: false },
+  readOnly: true,
+  renderLineHighlight: 'none',
+  scrollBeyondLastLine: false,
+  value: '',
+  wordWrap: 'on',
+};
 
 interface LogViewProps {
   session: dh.IdeSession;
@@ -63,6 +82,8 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     super(props);
 
     this.handleClearClick = this.handleClearClick.bind(this);
+    this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
+    this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleFlushTimeout = this.handleFlushTimeout.bind(this);
     this.handleLogMessage = this.handleLogMessage.bind(this);
     this.handleMenuItemClick = this.handleMenuItemClick.bind(this);
@@ -71,8 +92,6 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     this.handleToggleAllClick = this.handleToggleAllClick.bind(this);
 
     this.logLevelMenuItems = {};
-
-    this.editorContainer = null;
 
     this.bufferedMessages = [];
     this.messages = [];
@@ -84,7 +103,6 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   componentDidMount(): void {
     this.resetLogLevels();
-    this.initMonaco();
     this.startListening();
 
     window.addEventListener('resize', this.handleResize);
@@ -110,7 +128,6 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
   componentWillUnmount(): void {
     this.stopFlushTimer();
     this.stopListening();
-    this.destroyMonaco();
 
     window.removeEventListener('resize', this.handleResize);
   }
@@ -118,8 +135,6 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
   cancelListener?: () => void | null;
 
   editor?: monaco.editor.IStandaloneCodeEditor;
-
-  editorContainer: HTMLDivElement | null;
 
   logLevelMenuItems: Record<string, LogLevelMenuItem>;
 
@@ -211,25 +226,9 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     }
   }
 
-  initMonaco(): void {
-    assertNotNull(this.editorContainer);
-    this.editor = monaco.editor.create(this.editorContainer, {
-      copyWithSyntaxHighlighting: false,
-      fixedOverflowWidgets: true,
-      folding: false,
-      fontFamily: 'Fira Mono',
-      glyphMargin: false,
-      language: 'log',
-      lineDecorationsWidth: 0,
-      lineNumbers: 'off',
-      lineNumbersMinChars: 0,
-      minimap: { enabled: false },
-      readOnly: true,
-      renderLineHighlight: 'none',
-      scrollBeyondLastLine: false,
-      value: '',
-      wordWrap: 'on',
-    });
+  handleEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor): void {
+    this.editor = editor;
+    const monaco = MonacoUtils.getMonaco();
 
     // Override default Monaco keybindings for `escape` and `shift-escape`
     [
@@ -255,13 +254,13 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
         },
       });
     });
+
+    // Show anything logged before the editor existed
+    this.refreshLogText();
   }
 
-  destroyMonaco(): void {
-    if (this.editor) {
-      this.editor.dispose();
-      this.editor = undefined;
-    }
+  handleEditorWillDestroy(): void {
+    this.editor = undefined;
   }
 
   triggerFindWidget(): void {
@@ -556,11 +555,11 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
             />
           </Button>
         </div>
-        <div
+        <Editor
           className="log-pane-editor h-100 w-100"
-          ref={editorContainer => {
-            this.editorContainer = editorContainer;
-          }}
+          settings={EDITOR_SETTINGS}
+          onEditorInitialized={this.handleEditorInitialized}
+          onEditorWillDestroy={this.handleEditorWillDestroy}
         />
       </div>
     );

@@ -91,29 +91,6 @@ export default defineConfig(({ mode }) => {
       outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
       sourcemap: true,
-      rollupOptions: {
-        output: {
-          manualChunks: id => {
-            /**
-             * Without this, our chunk order may cause a circular reference
-             * by putting the helpers in the vendor or plotly chunk
-             * This causes failures with loading the compiled version
-             *
-             * See https://github.com/rollup/plugins/issues/591
-             */
-            if (id === '\0commonjsHelpers.js') {
-              return 'helpers';
-            }
-
-            if (id.includes('node_modules')) {
-              if (id.includes('plotly.js')) {
-                return 'plotly';
-              }
-              return 'vendor';
-            }
-          },
-        },
-      },
     },
     define: {
       'process.env': {},
