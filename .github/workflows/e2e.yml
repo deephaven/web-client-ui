@@ -21,6 +21,7 @@ env:
 
 jobs:
   build:
+    if: github.repository_owner == 'deephaven' || github.event_name != 'schedule'
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-build
