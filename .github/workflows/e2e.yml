@@ -23,6 +23,9 @@ jobs:
   global-conditions:
     if: github.repository_owner == 'deephaven' || github.event_name != 'schedule'
     runs-on: ubuntu-22.04
+    steps:
+      - name: Confirm workflow should run
+        run: echo "Global conditions passed"
 
   build:
     needs: global-conditions
