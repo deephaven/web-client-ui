@@ -41,8 +41,9 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
   // Columns that were hidden under the separator when starting a drag
   protected hiddenItems: VisibleIndex[] = [];
 
-  // The target width of the columns being resized
-  protected targetSizes: Map<ModelIndex, number> = new Map();
+  // The target width of the items being resized. Keyed by visible index so the
+  // sizes survive the items scrolling out of the metrics mid-drag.
+  protected targetSizes: Map<VisibleIndex, number> = new Map();
 
   protected dragOffset = 0;
 
@@ -176,7 +177,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       }
 
       const itemSize = point - margin - itemOffset - this.dragOffset;
-      const targetSize = this.targetSizes.get(modelIndex);
+      const targetSize = this.targetSizes.get(resizeIndex);
       const isResizingMultiple = this.resizingItems.length > 1;
       const hiddenIndex = this.hiddenItems.indexOf(resizeIndex);
       let calculatedSize = calculatedSizes.get(modelIndex);
@@ -206,18 +207,18 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       if (itemSize < -theme.headerResizeSnapThreshold && newSize === 0) {
         if (hiddenIndex >= 0 && isResizingMultiple) {
           this.resizingItems.pop();
-          this.removeTargetSize(metrics, resizeIndex);
+          this.removeTargetSize(resizeIndex);
           resizeIndex = this.resizingItems[this.resizingItems.length - 1];
-          const previousModelIndex = modelIndexes.get(resizeIndex);
-          this.dragOffset -=
-            (previousModelIndex != null
-              ? this.targetSizes.get(previousModelIndex)
-              : undefined) ?? 0;
+          this.dragOffset -= this.targetSizes.get(resizeIndex) ?? 0;
         } else {
-          resizeIndex = this.getNextShownItem(resizeIndex, metrics);
-          if (resizeIndex !== null) {
-            this.resizingItems.push(resizeIndex);
-            this.addTargetSize(metrics, resizeIndex);
+          const nextIndex = this.getNextShownItem(resizeIndex, metrics);
+          // Only take on another item if its target size is known, otherwise
+          // the drag offset can't be unwound when dragging back the other way
+          if (nextIndex !== null && this.addTargetSize(metrics, nextIndex)) {
+            this.resizingItems.push(nextIndex);
+            resizeIndex = nextIndex;
+          } else {
+            resizeIndex = null;
           }
         }
       } else if (
@@ -226,13 +227,17 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
         newSize === targetSize
       ) {
         if (hiddenIndex > 0) {
-          this.dragOffset += newSize;
-          resizeIndex = this.hiddenItems[hiddenIndex - 1];
-          this.resizingItems.push(resizeIndex);
-          this.addTargetSize(metrics, resizeIndex);
+          const nextIndex = this.hiddenItems[hiddenIndex - 1];
+          if (this.addTargetSize(metrics, nextIndex)) {
+            this.dragOffset += newSize;
+            this.resizingItems.push(nextIndex);
+            resizeIndex = nextIndex;
+          } else {
+            resizeIndex = null;
+          }
         } else if (isResizingMultiple) {
           this.resizingItems.pop();
-          this.removeTargetSize(metrics, resizeIndex);
+          this.removeTargetSize(resizeIndex);
           resizeIndex = this.resizingItems[this.resizingItems.length - 1];
         } else {
           resizeIndex = null;
@@ -306,7 +311,11 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     }
   }
 
-  addTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): void {
+  /**
+   * Record the size the item should snap back to while dragging.
+   * @returns False if the item has no metrics to derive a target size from
+   */
+  addTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): boolean {
     const modelIndexes = metrics[this.modelIndexesProperty];
     const userSizes = metrics[this.userSizesProperty];
     const calculatedSizes = metrics[this.calculatedSizesProperty];
@@ -314,22 +323,18 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
 
     const modelIndex = modelIndexes.get(itemIndex);
     if (modelIndex == null) {
-      return;
+      return false;
     }
     let targetSize = userSizes.get(modelIndex);
     if (targetSize == null || targetSize === 0) {
       targetSize = (calculatedSizes.get(modelIndex) ?? 0) + treePadding;
     }
-    this.targetSizes.set(modelIndex, targetSize);
+    this.targetSizes.set(itemIndex, targetSize);
+    return true;
   }
 
-  removeTargetSize(metrics: GridMetrics, itemIndex: VisibleIndex): void {
-    const modelIndexes = metrics[this.modelIndexesProperty];
-    const modelIndex = modelIndexes.get(itemIndex);
-    if (modelIndex == null) {
-      return;
-    }
-    this.targetSizes.delete(modelIndex);
+  removeTargetSize(itemIndex: VisibleIndex): void {
+    this.targetSizes.delete(itemIndex);
   }
 }
 

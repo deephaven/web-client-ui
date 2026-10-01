@@ -117,6 +117,22 @@ it('does not throw when dragging back over a column that left the viewport', () 
     1,
     0
   );
+
+  // Collapsing column 1 brings column 2 back into the viewport. Its target size
+  // must have been removed from the drag offset, otherwise it resizes relative
+  // to the wrong pointer position.
+  const restoredGrid = makeGrid(makeMetrics([0, 1, 2]));
+  expect(handler.onDrag(makeGridPoint(COLUMN_WIDTH * 2.5), restoredGrid)).toBe(
+    true
+  );
+
+  expect(restoredGrid.metricCalculator.resetColumnWidth).toHaveBeenCalledWith(
+    2
+  );
+  expect(restoredGrid.metricCalculator.setColumnWidth).toHaveBeenCalledWith(
+    1,
+    50
+  );
 });
 
 it('only sets the resize cursor while over a separator', () => {
