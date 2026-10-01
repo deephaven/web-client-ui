@@ -20,8 +20,12 @@ env:
   DHC_VERSION: edge
 
 jobs:
-  build:
+  global-conditions:
     if: github.repository_owner == 'deephaven' || github.event_name != 'schedule'
+    runs-on: ubuntu-22.04
+
+  build:
+    needs: global-conditions
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-build
@@ -185,9 +189,9 @@ jobs:
           delete: true
 
   merge-reports:
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.global-conditions.result == 'success' }}
     runs-on: ubuntu-22.04
-    needs: [e2e-tests]
+    needs: [global-conditions, e2e-tests]
 
     steps:
       - name: Download blob reports from GitHub Actions Artifacts
@@ -228,9 +232,9 @@ jobs:
           retention-days: 30
 
   e2e-results:
-    if: ${{ always() }}
+    if: ${{ always() && needs.global-conditions.result == 'success' }}
     runs-on: ubuntu-22.04
-    needs: [e2e-tests]
+    needs: [global-conditions, e2e-tests]
     steps:
       - name: Fail if any tests failed or cancelled
         run: exit 1
