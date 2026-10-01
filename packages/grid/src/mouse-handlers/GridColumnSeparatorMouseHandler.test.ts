@@ -9,15 +9,27 @@ import GridColumnSeparatorMouseHandler from './GridColumnSeparatorMouseHandler';
 const COLUMN_WIDTH = 100;
 
 /**
- * Metrics for a 3 column grid where columns 1 and 2 are hidden under the
+ * Metrics for a 3 column grid. By default columns 1 and 2 are hidden under the
  * separator at the right edge of column 0.
  */
-function makeMetrics(visibleColumns: number[]): GridMetrics {
+function makeMetrics(
+  visibleColumns: number[],
+  hiddenColumns: number[] = [1, 2]
+): GridMetrics {
+  const widthOf = (column: number) =>
+    hiddenColumns.includes(column) ? 0 : COLUMN_WIDTH;
+
   const allColumnWidths = new Map(
-    visibleColumns.map(column => [column, column === 0 ? COLUMN_WIDTH : 0])
+    visibleColumns.map(column => [column, widthOf(column)])
   );
+
+  let nextX = 0;
   const allColumnXs = new Map(
-    visibleColumns.map(column => [column, column === 0 ? 0 : COLUMN_WIDTH])
+    visibleColumns.map(column => {
+      const columnX = nextX;
+      nextX += widthOf(column);
+      return [column, columnX];
+    })
   );
 
   return {
@@ -60,6 +72,7 @@ function makeGrid(metrics: GridMetrics): Grid {
     props: { model: new MockGridModel() },
     getTheme: () => GridTheme,
     setState: jest.fn(),
+    forceUpdate: jest.fn(),
   } as unknown as Grid;
 }
 
@@ -80,4 +93,68 @@ it('does not throw when a resized column is pushed out of the viewport', () => {
   expect(() =>
     handler.onDrag(makeGridPoint(COLUMN_WIDTH * 6), scrolledGrid)
   ).not.toThrow();
+});
+
+it('does not throw when dragging back over a column that left the viewport', () => {
+  const handler = new GridColumnSeparatorMouseHandler(200);
+  const grid = makeGrid(makeMetrics([0, 1, 2]));
+
+  expect(handler.onDown(makeGridPoint(COLUMN_WIDTH), grid)).toBe(true);
+  expect(handler.onDrag(makeGridPoint(COLUMN_WIDTH * 4), grid)).toBe(true);
+
+  const scrolledGrid = makeGrid(makeMetrics([0, 1]));
+  expect(handler.onDrag(makeGridPoint(COLUMN_WIDTH * 6), scrolledGrid)).toBe(
+    true
+  );
+
+  // Dragging back left collapses column 1, so the handler resumes resizing
+  // column 2 while it is still outside the viewport
+  expect(() =>
+    handler.onDrag(makeGridPoint(COLUMN_WIDTH * 1.5), scrolledGrid)
+  ).not.toThrow();
+
+  expect(scrolledGrid.metricCalculator.setColumnWidth).toHaveBeenLastCalledWith(
+    1,
+    0
+  );
+});
+
+it('only sets the resize cursor while over a separator', () => {
+  const handler = new GridColumnSeparatorMouseHandler(200);
+  const grid = makeGrid(makeMetrics([0, 1, 2], []));
+
+  expect(handler.onMove(makeGridPoint(COLUMN_WIDTH), grid)).toBe(true);
+  expect(handler.cursor).toBe('col-resize');
+
+  expect(handler.onMove(makeGridPoint(COLUMN_WIDTH * 1.5), grid)).toBe(false);
+});
+
+it('resets the column width on double click of a separator', () => {
+  const handler = new GridColumnSeparatorMouseHandler(200);
+  const grid = makeGrid(makeMetrics([0, 1, 2], []));
+
+  expect(handler.onDoubleClick(makeGridPoint(COLUMN_WIDTH * 1.5), grid)).toBe(
+    false
+  );
+  expect(grid.metricCalculator.resetColumnWidth).not.toHaveBeenCalled();
+
+  expect(handler.onDoubleClick(makeGridPoint(COLUMN_WIDTH), grid)).toBe(true);
+  expect(grid.metricCalculator.resetColumnWidth).toHaveBeenCalledWith(0);
+});
+
+it('clears the separator state on mouse up', () => {
+  const handler = new GridColumnSeparatorMouseHandler(200);
+  const grid = makeGrid(makeMetrics([0, 1, 2], []));
+
+  // Not dragging, so nothing to clean up
+  expect(handler.onDrag(makeGridPoint(COLUMN_WIDTH), grid)).toBe(false);
+  expect(handler.onUp(makeGridPoint(COLUMN_WIDTH), grid)).toBe(false);
+  expect(grid.setState).not.toHaveBeenCalled();
+
+  expect(handler.onDown(makeGridPoint(COLUMN_WIDTH), grid)).toBe(true);
+  expect(handler.onUp(makeGridPoint(COLUMN_WIDTH), grid)).toBe(false);
+  expect(grid.setState).toHaveBeenLastCalledWith({
+    draggingColumnSeparator: null,
+    isDragging: false,
+  });
 });
