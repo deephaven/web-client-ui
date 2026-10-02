@@ -7,22 +7,42 @@ import {
 import { loadModulePlugins } from './PluginUtils';
 import { resolve } from './remote-component.config';
 
-jest.mock('./loadRemoteModule', () => {
-  const mockLoadRemoteModule = jest.fn();
+jest.mock('./loadCommonJsModule', () => {
+  const mockLoadCommonJsModule = jest.fn();
   return {
     __esModule: true,
-    default: mockLoadRemoteModule,
-    loadRemoteModule: mockLoadRemoteModule,
+    default: mockLoadCommonJsModule,
+    loadCommonJsModule: mockLoadCommonJsModule,
   };
 });
 
+// ESM plugin loading touches es-module-shims / blob URLs which aren't available
+// in jsdom. Mock it so loadModulePlugins exercises the CommonJS path by default;
+// individual tests can override isEsModuleSource to exercise the ESM path.
+jest.mock('./esmPluginLoader', () => ({
+  __esModule: true,
+  addImportMap: jest.fn(),
+  buildHostImportMap: jest.fn(() => ({ imports: {} })),
+  buildPluginImportMap: jest.fn(() => ({ imports: {} })),
+  isEsModuleSource: jest.fn().mockResolvedValue(false),
+  loadEsModulePlugin: jest.fn(),
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-const { default: loadRemoteModule } = require('./loadRemoteModule') as {
+const { default: loadCommonJsModule } = require('./loadCommonJsModule') as {
   default: jest.Mock;
 };
 
+const { isEsModuleSource, loadEsModulePlugin } =
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  require('./esmPluginLoader') as {
+    isEsModuleSource: jest.Mock;
+    loadEsModulePlugin: jest.Mock;
+  };
+
 describe('loadModulePlugins', () => {
   const BASE_URL = 'http://localhost:4100/plugins';
+  const PLUGIN_SOURCE = 'module.exports = {};';
 
   // Snapshot the resolve map and global.fetch once so each test starts
   // from a known baseline regardless of what previous tests added.
@@ -34,10 +54,13 @@ describe('loadModulePlugins', () => {
   }
 
   function mockManifest(plugins: PluginManifestPluginInfo[]) {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ plugins }),
-    });
+    global.fetch = jest
+      .fn()
+      .mockImplementation(async (url: string) =>
+        url.endsWith('/manifest.json')
+          ? { ok: true, json: async () => ({ plugins }) }
+          : { ok: true, text: async () => PLUGIN_SOURCE }
+      );
   }
 
   beforeEach(() => {
@@ -63,9 +86,9 @@ describe('loadModulePlugins', () => {
       { name: 'test-plugin-b', main: 'index.js', version: '2.0.0' },
     ]);
 
-    loadRemoteModule
-      .mockResolvedValueOnce(pluginA)
-      .mockResolvedValueOnce(pluginB);
+    loadCommonJsModule
+      .mockReturnValueOnce(pluginA)
+      .mockReturnValueOnce(pluginB);
 
     const pluginMap = await loadModulePlugins(BASE_URL);
 
@@ -93,7 +116,7 @@ describe('loadModulePlugins', () => {
       },
     ]);
 
-    loadRemoteModule.mockResolvedValueOnce(moduleExports);
+    loadCommonJsModule.mockReturnValueOnce(moduleExports);
 
     await loadModulePlugins(BASE_URL);
 
@@ -109,7 +132,7 @@ describe('loadModulePlugins', () => {
       { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
     ]);
 
-    loadRemoteModule.mockResolvedValueOnce(moduleExports);
+    loadCommonJsModule.mockReturnValueOnce(moduleExports);
 
     await loadModulePlugins(BASE_URL);
 
@@ -144,14 +167,13 @@ describe('loadModulePlugins', () => {
 
     // Plugin B depends on A, so it loads in the next level.
     // When plugin B loads, verify plugin A is already in the resolve map.
-    loadRemoteModule.mockResolvedValueOnce(moduleA).mockImplementationOnce(
-      () =>
-        new Promise(res => {
-          // At this point, plugin A should already be registered
-          expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBe(moduleA);
-          res(pluginB);
-        })
-    );
+    loadCommonJsModule
+      .mockReturnValueOnce(moduleA)
+      .mockImplementationOnce(() => {
+        // At this point, plugin A should already be registered
+        expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBe(moduleA);
+        return pluginB;
+      });
 
     await loadModulePlugins(BASE_URL);
 
@@ -167,9 +189,11 @@ describe('loadModulePlugins', () => {
       { name: 'test-plugin-b', main: 'index.js', version: '1.0.0' },
     ]);
 
-    loadRemoteModule
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce(pluginB);
+    loadCommonJsModule
+      .mockImplementationOnce(() => {
+        throw new Error('Evaluation error');
+      })
+      .mockReturnValueOnce(pluginB);
 
     const pluginMap = await loadModulePlugins(BASE_URL);
 
@@ -191,11 +215,34 @@ describe('loadModulePlugins', () => {
       },
     ]);
 
-    loadRemoteModule.mockRejectedValueOnce(new Error('Load failed'));
+    loadCommonJsModule.mockImplementationOnce(() => {
+      throw new Error('Load failed');
+    });
 
     await loadModulePlugins(BASE_URL);
 
     expect(resolve['@deephaven/js-plugin-test-plugin-a']).toBeUndefined();
+  });
+
+  it('does not register a plugin whose entry fails to fetch', async () => {
+    global.fetch = jest.fn().mockImplementation(async (url: string) =>
+      url.endsWith('/manifest.json')
+        ? {
+            ok: true,
+            json: async () => ({
+              plugins: [
+                { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
+              ],
+            }),
+          }
+        : { ok: false, status: 404, statusText: 'Not Found' }
+    );
+
+    const pluginMap = await loadModulePlugins(BASE_URL);
+
+    expect(pluginMap.size).toBe(0);
+    expect(loadCommonJsModule).not.toHaveBeenCalled();
+    expect(loadEsModulePlugin).not.toHaveBeenCalled();
   });
 
   it('returns empty map when manifest fetch fails', async () => {
@@ -234,7 +281,7 @@ describe('loadModulePlugins', () => {
       { name: 'test-plugin-multi', main: 'index.js', version: '1.0.0' },
     ]);
 
-    loadRemoteModule.mockResolvedValueOnce(multiPlugin);
+    loadCommonJsModule.mockReturnValueOnce(multiPlugin);
 
     const pluginMap = await loadModulePlugins(BASE_URL);
 
@@ -247,20 +294,48 @@ describe('loadModulePlugins', () => {
     expect(resolve['@deephaven/js-plugin-test-plugin-multi']).toBeUndefined();
   });
 
-  it('loads plugins from correct URLs based on manifest', async () => {
+  it('fetches each plugin entry exactly once from the manifest URL', async () => {
     const pluginA = makePlugin('test-plugin-a');
 
     mockManifest([
       { name: 'test-plugin-a', main: 'bundle.js', version: '1.0.0' },
     ]);
 
-    loadRemoteModule.mockResolvedValueOnce(pluginA);
+    loadCommonJsModule.mockReturnValueOnce(pluginA);
 
     await loadModulePlugins(BASE_URL);
 
-    expect(loadRemoteModule).toHaveBeenCalledWith(
-      `${BASE_URL}/test-plugin-a/bundle.js`
+    const pluginUrl = `${BASE_URL}/test-plugin-a/bundle.js`;
+    const pluginFetches = (global.fetch as jest.Mock).mock.calls.filter(
+      ([url]) => url === pluginUrl
     );
+    expect(pluginFetches.length).toBe(1);
+    expect(loadCommonJsModule).toHaveBeenCalledWith(PLUGIN_SOURCE);
+  });
+
+  it('loads ES module plugins with the already-fetched source', async () => {
+    const pluginA = makePlugin('test-plugin-a');
+
+    mockManifest([
+      { name: 'test-plugin-a', main: 'index.js', version: '1.0.0' },
+    ]);
+
+    isEsModuleSource.mockResolvedValueOnce(true);
+    loadEsModulePlugin.mockResolvedValueOnce({ default: pluginA });
+
+    const pluginMap = await loadModulePlugins(BASE_URL);
+
+    const pluginUrl = `${BASE_URL}/test-plugin-a/index.js`;
+    const pluginFetches = (global.fetch as jest.Mock).mock.calls.filter(
+      ([url]) => url === pluginUrl
+    );
+    expect(pluginFetches.length).toBe(1);
+    expect(loadEsModulePlugin).toHaveBeenCalledWith(pluginUrl, PLUGIN_SOURCE);
+    expect(loadCommonJsModule).not.toHaveBeenCalled();
+    expect(pluginMap.get('test-plugin-a')).toEqual({
+      ...pluginA,
+      version: '1.0.0',
+    });
   });
 
   it('uses manifest package field as resolve key when provided', async () => {
@@ -276,7 +351,7 @@ describe('loadModulePlugins', () => {
       },
     ]);
 
-    loadRemoteModule.mockResolvedValueOnce(moduleExports);
+    loadCommonJsModule.mockReturnValueOnce(moduleExports);
 
     await loadModulePlugins(BASE_URL);
 
