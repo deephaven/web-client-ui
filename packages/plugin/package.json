@@ -28,7 +28,7 @@
     }
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",

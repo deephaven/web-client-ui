@@ -2,14 +2,15 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import type { Datum, Layout, PlotData } from 'plotly.js';
+import type { Layout } from 'plotly.js';
+import { type PlotData } from './plotly/plotlyTypes';
 import ChartModel from './ChartModel';
 import { type ChartTheme, defaultChartTheme } from './ChartTheme';
 import ChartUtils from './ChartUtils';
 
 interface Series {
-  x: PlotData['x'];
-  y: PlotData['y'];
+  x: string[];
+  y: number[];
   s: number[];
   l: number[];
 }
@@ -125,7 +126,7 @@ class MockChartModel extends ChartModel {
     const erroryforward = [];
     const errorybackward = [];
     for (let i = 0; i < series.y.length; i += 1) {
-      const value = series.y[i] as number;
+      const value = series.y[i];
       erroryforward[i] = Math.round((value + 18) * 100) / 100;
       errorybackward[i] = Math.round((value - 18) * 100) / 100;
     }
@@ -135,7 +136,7 @@ class MockChartModel extends ChartModel {
 
     return {
       name: 'error',
-      x: (series.x as Datum[]).concat((series.x as Datum[]).slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
+      x: series.x.concat(series.x.slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
       y: errory,
       type: 'scatter',
       mode: 'line' as PlotData['mode'],

@@ -7,6 +7,7 @@ export * from './DownsamplingError';
 export { default as FigureChartModel } from './FigureChartModel';
 export { default as MockChartModel } from './MockChartModel';
 export { default as Plot } from './plotly/LazyPlot';
+export * from './plotly/plotlyTypes';
 export * from './ChartTheme';
 export * from './ChartThemeProvider';
 export { default as isFigureChartModel } from './isFigureChartModel';

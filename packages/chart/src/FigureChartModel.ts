@@ -4,14 +4,7 @@ import { debounce, set } from 'lodash';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { type Range } from '@deephaven/utils';
-import type {
-  Annotations,
-  Layout,
-  Data,
-  PlotData,
-  XAxisName,
-  YAxisName,
-} from 'plotly.js';
+import type { Annotation, Layout, XAxisName, YAxisName } from 'plotly.js';
 import {
   TableUtils,
   type DateTimeColumnFormatter,
@@ -28,6 +21,7 @@ import ChartUtils, {
   type FilterColumnMap,
   type FilterMap,
 } from './ChartUtils';
+import { type PlotData } from './plotly/plotlyTypes';
 
 const log = Log.module('FigureChartModel');
 
@@ -93,7 +87,7 @@ class FigureChartModel extends ChartModel {
 
   settings: Partial<ChartModelSettings>;
 
-  data: Partial<Data>[];
+  data: Partial<PlotData>[];
 
   layout: Partial<Layout>;
 
@@ -174,7 +168,7 @@ class FigureChartModel extends ChartModel {
           const yAxisIndex =
             (axisTypeMap.get(yAxis.type)?.findIndex(a => a === yAxis) ?? 0) + 1;
 
-          const annotation: Partial<Annotations> = {
+          const annotation: Partial<Annotation> = {
             align: 'center',
             x: 0.5,
             y: 1,
@@ -770,7 +764,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  getData(): Partial<Data>[] {
+  getData(): Partial<PlotData>[] {
     return this.data;
   }
 
