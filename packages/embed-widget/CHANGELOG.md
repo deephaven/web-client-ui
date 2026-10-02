@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.30.1](https://github.com/deephaven/web-client-ui/compare/v1.30.0...v1.30.1) (2026-10-02)
+
+### Performance Improvements
+
+- lazy load Monaco editor ([#2755](https://github.com/deephaven/web-client-ui/issues/2755)) ([3e491a1](https://github.com/deephaven/web-client-ui/commit/3e491a12bb35aa9089b9a298017cf477322cb6f0))
+
 ## [1.30.0](https://github.com/deephaven/web-client-ui/compare/v1.29.1...v1.30.0) (2026-09-25)
 
 ### ⚠ BREAKING CHANGES

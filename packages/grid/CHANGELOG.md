@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.30.1](https://github.com/deephaven/web-client-ui/compare/v1.30.0...v1.30.1) (2026-10-02)
+
+### Bug Fixes
+
+- DH-23715: Handle column resize separator dragged outside panel ([#2766](https://github.com/deephaven/web-client-ui/issues/2766)) ([0814367](https://github.com/deephaven/web-client-ui/commit/0814367572ac795c1c45bab6e0b07438e99fc218))
+
 ## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
 
 ### Features
