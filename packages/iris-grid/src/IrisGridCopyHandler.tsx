@@ -248,9 +248,10 @@ class IrisGridCopyHandler extends Component<
           ? copyOperation.selection.getUniqueRowCount()
           : null;
       const rowCount = uniqueCount ?? model.rowCount;
+      this.setState({ rowCount });
+
       if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
         this.setState({
-          rowCount,
           buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
           copyState:
             uniqueCount != null
