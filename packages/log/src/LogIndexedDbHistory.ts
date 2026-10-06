@@ -1,0 +1,517 @@
+/* eslint-disable no-console */
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { nanoid } from 'nanoid';
+import LogHistory from './LogHistory';
+import { LOG_PROXY_TYPE, type LogProxy } from './LogProxy';
+
+export type PersistedLogEntry = {
+  id?: number;
+  /** Identifies the page load that produced the entry, so exports can be grouped */
+  sessionId: string;
+  time: number;
+  type: LOG_PROXY_TYPE;
+  /** Pre-formatted at write time; raw log args are not structured-cloneable */
+  message: string;
+  stack?: string;
+};
+
+interface LogDbSchema extends DBSchema {
+  entries: {
+    key: number;
+    value: PersistedLogEntry;
+    indexes: { time: number };
+  };
+}
+
+export type LogIndexedDbHistoryOptions = {
+  dbName?: string;
+  maxEntries?: number;
+  maxAgeMs?: number;
+  flushIntervalMs?: number;
+  maxEntryLength?: number;
+  /**
+   * Fraction of the origin storage quota above which the oldest entries are
+   * trimmed. The quota is shared with other Deephaven stores (command history),
+   * so exceeding it risks eviction of the entire origin.
+   */
+  maxQuotaRatio?: number;
+  /** Entry count below which quota trimming stops. Defaults to QUOTA_TRIM_FLOOR. */
+  quotaTrimFloor?: number;
+  levels?: LOG_PROXY_TYPE[];
+};
+
+const STORE_NAME = 'entries';
+const TIME_INDEX = 'time';
+const DB_VERSION = 1;
+
+export const DEFAULT_DB_NAME = 'Deephaven.Logs';
+export const DEFAULT_MAX_ENTRIES = 20000;
+export const DEFAULT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+export const DEFAULT_FLUSH_INTERVAL_MS = 2000;
+export const DEFAULT_MAX_ENTRY_LENGTH = 4096;
+export const DEFAULT_MAX_QUOTA_RATIO = 0.8;
+
+/** Bounds memory if flushes are failing or the page is logging faster than it can write */
+const MAX_BUFFERED_ENTRIES = 5000;
+const FLUSHES_PER_PRUNE = 30;
+/** Fraction of entries dropped when over the quota ratio */
+const QUOTA_TRIM_RATIO = 0.25;
+/**
+ * Quota pressure is measured across the whole origin but only this store can be
+ * trimmed, so below this many entries the bloat is someone else's and further
+ * trimming would discard logs for no benefit.
+ */
+const QUOTA_TRIM_FLOOR = 1000;
+const SESSION_SEPARATOR = '=====';
+
+/**
+ * Caps a single entry so one runaway log line cannot consume the storage budget.
+ * @param value - The formatted message or stack
+ * @param maxLength - Characters to keep before truncating
+ */
+function truncate(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+  return `${value.slice(0, maxLength)}... [truncated ${
+    value.length - maxLength
+  } chars]`;
+}
+
+type LogDb = IDBPDatabase<LogDbSchema>;
+
+/**
+ * Removes the given entries in one transaction. Every delete request is issued
+ * synchronously so the transaction cannot auto-commit partway through the batch.
+ * @param db - Open log database
+ * @param keys - Primary keys of the entries to remove
+ */
+async function deleteKeys(db: LogDb, keys: number[]): Promise<void> {
+  if (keys.length === 0) {
+    return;
+  }
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  await Promise.all([...keys.map(key => tx.store.delete(key)), tx.done]);
+}
+
+/**
+ * Enforces the age limit.
+ * @param db - Open log database
+ * @param cutoff - Epoch ms at or before which entries are removed
+ */
+async function deleteOlderThan(db: LogDb, cutoff: number): Promise<void> {
+  const keys = await db.getAllKeysFromIndex(
+    STORE_NAME,
+    TIME_INDEX,
+    IDBKeyRange.upperBound(cutoff)
+  );
+  await deleteKeys(db, keys);
+}
+
+/**
+ * Enforces the count and quota limits.
+ * @param db - Open log database
+ * @param count - Number of oldest entries to remove; no-op when not positive
+ */
+async function deleteOldest(db: LogDb, count: number): Promise<void> {
+  if (count <= 0) {
+    return;
+  }
+  // Auto-increment keys ascend with insertion order, so the oldest sort first
+  const keys = await db.getAllKeys(STORE_NAME);
+  await deleteKeys(db, keys.slice(0, count));
+}
+
+/**
+ * Asks the browser to exempt this origin from automatic eviction. Chrome grants
+ * silently, Firefox prompts, and Safari only honors it for installed web apps.
+ * @returns Whether protection was granted; false also covers denial and browsers
+ * that do not implement the API
+ */
+async function requestPersistentStorage(): Promise<boolean> {
+  try {
+    return (await navigator?.storage?.persist?.()) ?? false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Persists browser logs to IndexedDB so they survive a reload. Subscribes to
+ * the same LogProxy events as LogHistory, but batches writes rather than
+ * storing in memory.
+ */
+export class LogIndexedDbHistory {
+  private proxy: LogProxy;
+
+  private dbName: string;
+
+  private maxEntries: number;
+
+  private maxAgeMs: number;
+
+  private flushIntervalMs: number;
+
+  private maxEntryLength: number;
+
+  private maxQuotaRatio: number;
+
+  private quotaTrimFloor: number;
+
+  private levels: LOG_PROXY_TYPE[];
+
+  private sessionId = nanoid();
+
+  private buffer: PersistedLogEntry[] = [];
+
+  private dbPromise: Promise<IDBPDatabase<LogDbSchema>> | null = null;
+
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
+
+  private flushCount = 0;
+
+  /** In-flight prune, so concurrent callers cannot each trim the same overflow */
+  private prunePromise: Promise<void> | null = null;
+
+  private isEnabled = false;
+
+  /** Set while writing so logs emitted by IndexedDB failures cannot recurse */
+  private isFlushing = false;
+
+  /** Captured before LogProxy patches console, so errors here are not re-captured */
+  private reportError: (...data: unknown[]) => void;
+
+  lastError: unknown = null;
+
+  /**
+   * Whether the browser exempted this origin from automatic eviction. When
+   * false, entries may be discarded well before the age limit.
+   */
+  isPersistent = false;
+
+  /**
+   * @param proxy - Source of console events; must be enabled for anything to be captured
+   * @param options - Retention and batching overrides
+   */
+  constructor(proxy: LogProxy, options: LogIndexedDbHistoryOptions = {}) {
+    this.proxy = proxy;
+    this.dbName = options.dbName ?? DEFAULT_DB_NAME;
+    this.maxEntries = options.maxEntries ?? DEFAULT_MAX_ENTRIES;
+    this.maxAgeMs = options.maxAgeMs ?? DEFAULT_MAX_AGE_MS;
+    this.flushIntervalMs = options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+    this.maxEntryLength = options.maxEntryLength ?? DEFAULT_MAX_ENTRY_LENGTH;
+    this.maxQuotaRatio = options.maxQuotaRatio ?? DEFAULT_MAX_QUOTA_RATIO;
+    this.quotaTrimFloor = options.quotaTrimFloor ?? QUOTA_TRIM_FLOOR;
+    this.levels = options.levels ?? Object.values(LOG_PROXY_TYPE);
+    this.reportError = console.error.bind(console);
+  }
+
+  /** Identifies entries written by this page load. Changes on every reload. */
+  getSessionId(): string {
+    return this.sessionId;
+  }
+
+  /**
+   * Starts capturing. Subscribes to the proxy, schedules periodic flushes, and
+   * kicks off a prune to clear out entries left by previous sessions. Silently
+   * does nothing where IndexedDB is unavailable, such as private browsing.
+   */
+  enable(): void {
+    if (this.isEnabled) {
+      return;
+    }
+
+    if (typeof indexedDB === 'undefined') {
+      this.reportError(
+        'LogIndexedDbHistory: IndexedDB unavailable, log persistence disabled'
+      );
+      return;
+    }
+
+    this.levels.forEach(level => {
+      this.proxy.addEventListener(level, this.addHistory);
+    });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', this.handleFlushRequest);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener(
+        'visibilitychange',
+        this.handleVisibilityChange
+      );
+    }
+
+    this.flushTimer = setInterval(
+      this.handleFlushRequest,
+      this.flushIntervalMs
+    );
+    this.isEnabled = true;
+
+    this.prune().catch(this.handleError);
+  }
+
+  /**
+   * Stops capturing and writes out whatever is still buffered. Persisted
+   * entries are left in place; use clear to remove them.
+   */
+  disable(): void {
+    if (!this.isEnabled) {
+      return;
+    }
+
+    this.levels.forEach(level => {
+      this.proxy.removeEventListener(level, this.addHistory);
+    });
+
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pagehide', this.handleFlushRequest);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener(
+        'visibilitychange',
+        this.handleVisibilityChange
+      );
+    }
+
+    if (this.flushTimer != null) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+
+    this.isEnabled = false;
+
+    this.flush();
+  }
+
+  /**
+   * Buffers a console event. Formatting happens here rather than at write time
+   * because the raw arguments may be DOM nodes or proxies, which IndexedDB
+   * cannot structured-clone.
+   * @param event - Console event dispatched by the proxy
+   */
+  private addHistory = ({ type, detail }: CustomEvent<unknown[]>): void => {
+    if (this.isFlushing) {
+      return;
+    }
+
+    const entry: PersistedLogEntry = {
+      sessionId: this.sessionId,
+      time: Date.now(),
+      type: type as LOG_PROXY_TYPE,
+      message: truncate(LogHistory.formatMessages(detail), this.maxEntryLength),
+    };
+
+    switch (type) {
+      case LOG_PROXY_TYPE.ERROR:
+      case LOG_PROXY_TYPE.UNCAUGHT_ERROR:
+        entry.stack = Error().stack;
+        break;
+      default:
+        break;
+    }
+
+    this.buffer.push(entry);
+
+    if (this.buffer.length > MAX_BUFFERED_ENTRIES) {
+      this.buffer.splice(0, this.buffer.length - MAX_BUFFERED_ENTRIES);
+    }
+  };
+
+  /** Interval and pagehide handler. Flush swallows its own errors. */
+  private handleFlushRequest = (): void => {
+    this.flush();
+  };
+
+  /**
+   * Flushes when the page is backgrounded, which is the last reliable chance to
+   * write before a mobile browser discards the tab.
+   */
+  private handleVisibilityChange = (): void => {
+    if (document.visibilityState === 'hidden') {
+      this.flush();
+    }
+  };
+
+  /**
+   * Shuts persistence down on an unrecoverable storage error so a failing store
+   * cannot stall logging. The error is kept on lastError for debugging.
+   * @param error - Failure raised by IndexedDB
+   */
+  private handleError = (error: unknown): void => {
+    this.lastError = error;
+    this.buffer = [];
+    this.reportError(
+      'LogIndexedDbHistory: disabling log persistence after error',
+      error
+    );
+    this.disable();
+  };
+
+  /**
+   * Opens the database once and reuses the promise. A rejection is cached
+   * deliberately so repeated failures do not retry on every flush.
+   */
+  private open(): Promise<IDBPDatabase<LogDbSchema>> {
+    if (this.dbPromise == null) {
+      this.dbPromise = openDB<LogDbSchema>(this.dbName, DB_VERSION, {
+        upgrade(db) {
+          const store = db.createObjectStore(STORE_NAME, {
+            keyPath: 'id',
+            autoIncrement: true,
+          });
+          store.createIndex(TIME_INDEX, 'time');
+        },
+      });
+      requestPersistentStorage().then(granted => {
+        this.isPersistent = granted;
+      });
+    }
+    return this.dbPromise;
+  }
+
+  /**
+   * Writes everything buffered since the last flush. Entries are dropped
+   * rather than requeued on failure to keep memory bounded.
+   */
+  async flush(): Promise<void> {
+    if (this.isFlushing || this.buffer.length === 0) {
+      return;
+    }
+
+    const entries = this.buffer;
+    this.buffer = [];
+    this.isFlushing = true;
+
+    try {
+      const db = await this.open();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      await Promise.all([
+        ...entries.map(entry => tx.store.add(entry)),
+        tx.done,
+      ]);
+
+      this.flushCount += 1;
+      if (this.flushCount % FLUSHES_PER_PRUNE === 0) {
+        await this.prune();
+      }
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.isFlushing = false;
+    }
+  }
+
+  /**
+   * Enforces the age, count, and quota limits. Runs on enable and on every
+   * FLUSHES_PER_PRUNE flushes; callers may also invoke it directly.
+   * Concurrent calls share one run, since two overlapping prunes would each
+   * trim the same overflow and delete twice as much as intended.
+   */
+  async prune(): Promise<void> {
+    if (this.prunePromise == null) {
+      this.prunePromise = this.pruneNow().finally(() => {
+        this.prunePromise = null;
+      });
+    }
+    return this.prunePromise;
+  }
+
+  /** Prune implementation. Call prune instead so runs stay coalesced. */
+  private async pruneNow(): Promise<void> {
+    const db = await this.open();
+
+    await deleteOlderThan(db, Date.now() - this.maxAgeMs);
+    await deleteOldest(db, (await db.count(STORE_NAME)) - this.maxEntries);
+
+    const count = await db.count(STORE_NAME);
+    if (count > this.quotaTrimFloor && (await this.isOverQuota())) {
+      const excess = Math.ceil(count * QUOTA_TRIM_RATIO);
+      await deleteOldest(db, Math.min(excess, count - this.quotaTrimFloor));
+    }
+  }
+
+  /**
+   * Reports whether the origin is close enough to its storage quota to risk
+   * eviction. The estimate covers the whole origin, not just this store, which
+   * is the point: eviction clears every database at once, so the command
+   * history going over would take these logs with it.
+   * @returns False when the browser cannot provide an estimate
+   */
+  private async isOverQuota(): Promise<boolean> {
+    try {
+      const estimate = await navigator?.storage?.estimate?.();
+      if (
+        estimate?.usage == null ||
+        !(estimate.quota != null && estimate.quota > 0)
+      ) {
+        return false;
+      }
+      return estimate.usage / estimate.quota > this.maxQuotaRatio;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Formats every persisted entry, including prior sessions, using the same
+   * per-line format as LogHistory so both export files parse identically.
+   * Entries are ordered by time and headed by a marker whenever the session
+   * changes. Pending entries are flushed first.
+   * @returns Empty string when nothing is persisted
+   */
+  async getFormattedHistory(): Promise<string> {
+    await this.flush();
+
+    const db = await this.open();
+    const entries = await db.getAllFromIndex(STORE_NAME, TIME_INDEX);
+
+    if (entries.length === 0) {
+      return '';
+    }
+
+    // Without eviction protection the browser may have dropped older entries,
+    // which is the first thing to rule out when history looks truncated
+    const lines: string[] = [
+      `${SESSION_SEPARATOR} eviction protection: ${
+        this.isPersistent ? 'granted' : 'not granted'
+      } ${SESSION_SEPARATOR}`,
+    ];
+    let lastSessionId: string | null = null;
+
+    entries.forEach(entry => {
+      if (entry.sessionId !== lastSessionId) {
+        const current = entry.sessionId === this.sessionId ? ' (current)' : '';
+        lines.push(
+          `${SESSION_SEPARATOR} session ${entry.sessionId}${current} ${SESSION_SEPARATOR}`
+        );
+        lastSessionId = entry.sessionId;
+      }
+
+      const stack =
+        entry.stack != null
+          ? `\n${LogHistory.formatStack(entry.stack, entry.type)}`
+          : '';
+      lines.push(
+        `${new Date(entry.time).toISOString()} ${entry.type}\t${
+          entry.message
+        }${stack}`
+      );
+    });
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Discards every persisted entry across all sessions, plus anything buffered.
+   * Intended for a user-facing action or a logout hook, since the logs may hold
+   * query text and table names.
+   */
+  async clear(): Promise<void> {
+    this.buffer = [];
+    const db = await this.open();
+    await db.clear(STORE_NAME);
+  }
+}
+
+export default LogIndexedDbHistory;
