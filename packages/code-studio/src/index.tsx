@@ -10,8 +10,7 @@ import { assertNotNull } from '@deephaven/utils';
 
 logInit(
   parseInt(import.meta.env.VITE_LOG_LEVEL ?? '', 10),
-  import.meta.env.VITE_ENABLE_LOG_PROXY === 'true',
-  { persist: import.meta.env.VITE_ENABLE_LOG_PERSISTENCE === 'true' }
+  import.meta.env.VITE_ENABLE_LOG_PROXY === 'true'
 );
 
 preloadTheme();

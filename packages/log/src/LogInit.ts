@@ -15,17 +15,12 @@ declare global {
   }
 }
 
-export type LogInitOptions = LogIndexedDbHistoryOptions & {
-  /** Persist logs to IndexedDB so they survive a reload. Off by default. */
-  persist?: boolean;
-};
-
 export const logProxy = new LogProxy();
 export const logHistory = new LogHistory(logProxy);
 
 let logIndexedDbHistory: LogIndexedDbHistory | null = null;
 
-/** Null unless log persistence was enabled via logInit. */
+/** Null until logInit runs, and when the proxy is disabled. */
 export function getLogIndexedDbHistory(): LogIndexedDbHistory | null {
   return logIndexedDbHistory;
 }
@@ -33,24 +28,17 @@ export function getLogIndexedDbHistory(): LogIndexedDbHistory | null {
 export function logInit(
   logLevel = 2,
   enableProxy = true,
-  options: LogInitOptions = {}
+  options: LogIndexedDbHistoryOptions = {}
 ): void {
   Log.setLogLevel(logLevel);
-
-  const { persist = false, ...persistenceOptions } = options;
 
   if (enableProxy) {
     logProxy.enable();
     logHistory.enable();
 
     // Persistence reads the proxy's events, so it is unavailable without it
-    if (persist) {
-      logIndexedDbHistory = new LogIndexedDbHistory(
-        logProxy,
-        persistenceOptions
-      );
-      logIndexedDbHistory.enable();
-    }
+    logIndexedDbHistory = new LogIndexedDbHistory(logProxy, options);
+    logIndexedDbHistory.enable();
   }
 
   if (window != null) {
