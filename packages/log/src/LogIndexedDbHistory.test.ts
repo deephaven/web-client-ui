@@ -1,11 +1,44 @@
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
-import LogIndexedDbHistory from './LogIndexedDbHistory';
+import { openDB } from 'idb';
+import LogIndexedDbHistory, {
+  type PersistedLogEntry,
+} from './LogIndexedDbHistory';
 import LogProxy, { LOG_PROXY_TYPE } from './LogProxy';
 
 let proxy: LogProxy;
 let history: LogIndexedDbHistory;
 let dbCount = 0;
+
+/**
+ * Reads the store directly, so it does not trigger the flush that
+ * getFormattedHistory performs. Polls because writes are fire-and-forget.
+ */
+async function waitForPersisted(
+  dbName: string,
+  message: string
+): Promise<PersistedLogEntry[]> {
+  let entries: PersistedLogEntry[] = [];
+
+  for (let i = 0; i < 100; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const db = await openDB(dbName, 1);
+    // eslint-disable-next-line no-await-in-loop
+    entries = (await db.getAll('entries')) as PersistedLogEntry[];
+    db.close();
+
+    if (entries.some(entry => entry.message === message)) {
+      return entries;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise(resolve => {
+      setTimeout(resolve, 5);
+    });
+  }
+
+  return entries;
+}
 
 function makeHistory(
   options: ConstructorParameters<typeof LogIndexedDbHistory>[1] = {}
@@ -69,6 +102,60 @@ describe('writing', () => {
 
     expect(lines[logLine + 1]).not.toMatch(/^\s/);
     expect(lines[errorLine + 1]).toMatch(/^\s/);
+  });
+
+  it('persists errors without waiting for a flush', async () => {
+    const dbName = 'test-logs-error-flush';
+    history = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+    });
+    history.enable();
+
+    /* eslint-disable no-console */
+    console.log('waits for the next tick');
+    console.error('written immediately');
+    /* eslint-enable no-console */
+
+    const persisted = await waitForPersisted(dbName, 'written immediately');
+    expect(persisted.map(entry => entry.message)).toContain(
+      'written immediately'
+    );
+    // The error flush drains the whole buffer, so earlier entries ride along
+    expect(persisted).toHaveLength(2);
+  });
+
+  it('does not write non-error entries immediately', async () => {
+    const dbName = 'test-logs-throttle-defer';
+    history = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+    });
+    history.enable();
+    await history.prune();
+
+    // eslint-disable-next-line no-console
+    console.log('still buffered');
+
+    const db = await openDB(dbName, 1);
+    const persisted = await db.getAll('entries');
+    db.close();
+
+    expect(persisted).toHaveLength(0);
+  });
+
+  it('writes buffered entries once the throttle window elapses', async () => {
+    const dbName = 'test-logs-throttle-window';
+    history = new LogIndexedDbHistory(proxy, { dbName, flushIntervalMs: 10 });
+    history.enable();
+
+    // eslint-disable-next-line no-console
+    console.log('flushed by throttle');
+
+    const persisted = await waitForPersisted(dbName, 'flushed by throttle');
+    expect(persisted.map(entry => entry.message)).toContain(
+      'flushed by throttle'
+    );
   });
 
   it('truncates entries longer than maxEntryLength', async () => {

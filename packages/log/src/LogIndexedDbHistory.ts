@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import throttle from 'lodash.throttle';
 import { nanoid } from 'nanoid';
 import LogHistory from './LogHistory';
 import { LOG_PROXY_TYPE, type LogProxy } from './LogProxy';
@@ -27,6 +28,7 @@ export type LogIndexedDbHistoryOptions = {
   dbName?: string;
   maxEntries?: number;
   maxAgeMs?: number;
+  /** Milliseconds a non-error entry may sit buffered before being written. */
   flushIntervalMs?: number;
   maxEntryLength?: number;
   /**
@@ -166,7 +168,11 @@ export class LogIndexedDbHistory {
 
   private dbPromise: Promise<IDBPDatabase<LogDbSchema>> | null = null;
 
-  private flushTimer: ReturnType<typeof setInterval> | null = null;
+  /**
+   * Trailing-edge only, so a burst coalesces into one write and nothing is
+   * written during the startup log flood.
+   */
+  private throttledFlush: ReturnType<typeof throttle<() => void>>;
 
   private flushCount = 0;
 
@@ -204,6 +210,13 @@ export class LogIndexedDbHistory {
     this.quotaTrimFloor = options.quotaTrimFloor ?? QUOTA_TRIM_FLOOR;
     this.levels = options.levels ?? Object.values(LOG_PROXY_TYPE);
     this.reportError = console.error.bind(console);
+    this.throttledFlush = throttle(
+      () => {
+        this.flush();
+      },
+      this.flushIntervalMs,
+      { leading: false, trailing: true }
+    );
   }
 
   /** Identifies entries written by this page load. Changes on every reload. */
@@ -242,10 +255,6 @@ export class LogIndexedDbHistory {
       );
     }
 
-    this.flushTimer = setInterval(
-      this.handleFlushRequest,
-      this.flushIntervalMs
-    );
     this.isEnabled = true;
 
     this.prune().catch(this.handleError);
@@ -274,10 +283,8 @@ export class LogIndexedDbHistory {
       );
     }
 
-    if (this.flushTimer != null) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
-    }
+    // Drop the pending trailing call; the flush below covers it
+    this.throttledFlush.cancel();
 
     this.isEnabled = false;
 
@@ -287,7 +294,8 @@ export class LogIndexedDbHistory {
   /**
    * Buffers a console event. Formatting happens here rather than at write time
    * because the raw arguments may be DOM nodes or proxies, which IndexedDB
-   * cannot structured-clone.
+   * cannot structured-clone. Errors flush immediately; everything else
+   * schedules a throttled flush.
    * @param event - Console event dispatched by the proxy
    */
   private addHistory = ({ type, detail }: CustomEvent<unknown[]>): void => {
@@ -302,10 +310,12 @@ export class LogIndexedDbHistory {
       message: truncate(LogHistory.formatMessages(detail), this.maxEntryLength),
     };
 
+    let isError = false;
     switch (type) {
       case LOG_PROXY_TYPE.ERROR:
       case LOG_PROXY_TYPE.UNCAUGHT_ERROR:
         entry.stack = Error().stack;
+        isError = true;
         break;
       default:
         break;
@@ -316,9 +326,18 @@ export class LogIndexedDbHistory {
     if (this.buffer.length > MAX_BUFFERED_ENTRIES) {
       this.buffer.splice(0, this.buffer.length - MAX_BUFFERED_ENTRIES);
     }
+
+    // Errors often precede a crash or a user-initiated reload, so they cannot
+    // wait for the next interval tick
+    if (isError) {
+      this.throttledFlush.cancel();
+      this.flush();
+    } else {
+      this.throttledFlush();
+    }
   };
 
-  /** Interval and pagehide handler. Flush swallows its own errors. */
+  /** pagehide handler. Flush swallows its own errors. */
   private handleFlushRequest = (): void => {
     this.flush();
   };
