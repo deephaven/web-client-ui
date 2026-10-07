@@ -571,22 +571,69 @@ describe('user-scoped export', () => {
     );
   });
 
-  it('prunes bindings for sessions with no remaining entries', async () => {
-    const dbName = 'test-logs-orphans';
-    const alice = await pageLoad(dbName, 'alice', { after: 'alice private' });
+  it("keeps a user's entries private when another tab prunes before they are written", async () => {
+    const dbName = 'test-logs-cross-tab-prune';
+    const tabA = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+    });
+    tabA.enable();
+    tabA.setUser('alice');
+    // eslint-disable-next-line no-console
+    console.log('alice private');
 
-    history = new LogIndexedDbHistory(proxy, { dbName, maxEntries: 0 });
+    // Another tab prunes while tab A's entry is still buffered
+    const tabB = new LogIndexedDbHistory(new LogProxy(), { dbName });
+    tabB.enable();
+    await tabB.prune();
+    tabB.disable();
+
+    await tabA.flush();
+    tabA.disable();
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
     history.enable();
     history.setUser('bob');
-    await history.getFormattedHistory();
+
+    expect(await history.getFormattedHistory()).not.toContain('alice private');
+  });
+
+  it("keeps a previous user's buffered entries private after an in-tab switch and prune", async () => {
+    const dbName = 'test-logs-switch-prune';
+    history = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+    });
+    history.enable();
+
+    history.setUser('alice');
+    // eslint-disable-next-line no-console
+    console.log('alice private');
+    history.setUser('bob');
     await history.prune();
 
-    const db = await openDB(dbName);
-    const sessionIds = await db.getAllKeys('sessions');
-    db.close();
+    expect(await history.getFormattedHistory()).not.toContain('alice private');
+  });
 
-    expect(sessionIds).not.toContain(alice.getSessionId());
-    expect(sessionIds).toContain(history.getSessionId());
+  it('stores the user on each entry', async () => {
+    const dbName = 'test-logs-entry-user';
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+
+    // eslint-disable-next-line no-console
+    console.log('before login');
+    history.setUser('alice');
+    // eslint-disable-next-line no-console
+    console.log('after login');
+    await history.flush();
+
+    const db = await openDB(dbName);
+    const persisted = (await db.getAll('entries')) as PersistedLogEntry[];
+    db.close();
+    expect(persisted.map(({ message, user }) => ({ message, user }))).toEqual([
+      { message: 'before login', user: undefined },
+      { message: 'after login', user: 'alice' },
+    ]);
   });
 });
 

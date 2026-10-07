@@ -9,6 +9,11 @@ export type PersistedLogEntry = {
   id?: number;
   /** Identifies the page load that produced the entry, so exports can be grouped */
   sessionId: string;
+  /**
+   * User logged in when the entry was buffered; absent before login. Stored on
+   * the entry so attribution cannot be lost separately from it.
+   */
+  user?: string;
   time: number;
   type: LOG_PROXY_TYPE;
   /** Pre-formatted at write time; raw log args are not structured-cloneable */
@@ -23,19 +28,9 @@ interface LogDbSchema extends DBSchema {
   entries: {
     key: number;
     value: PersistedLogEntry;
-    indexes: { time: number; sessionId: string };
-  };
-  sessions: {
-    key: string;
-    value: SessionRecord;
+    indexes: { time: number };
   };
 }
-
-/** Binds a session to the user logged in during it. Unbound sessions have no record. */
-type SessionRecord = {
-  sessionId: string;
-  user: string;
-};
 
 export type LogIndexedDbHistoryOptions = {
   dbName?: string;
@@ -66,9 +61,7 @@ export type LogIndexedDbHistoryOptions = {
 };
 
 const STORE_NAME = 'entries';
-const SESSIONS_STORE = 'sessions';
 const TIME_INDEX = 'time';
-const SESSION_INDEX = 'sessionId';
 const DB_VERSION = 1;
 
 export const DEFAULT_DB_NAME = 'Deephaven.Logs';
@@ -199,11 +192,8 @@ export class LogIndexedDbHistory {
 
   private dbPromise: Promise<IDBPDatabase<LogDbSchema>> | null = null;
 
-  /** User bound to the current session; null until the first setUser */
+  /** User logged in during the current session; null until the first setUser */
   private sessionUser: string | null = null;
-
-  /** Pending write of the current session's binding, awaited before exports */
-  private bindPromise: Promise<void> = Promise.resolve();
 
   /**
    * Trailing-edge only, so a burst coalesces into one write and nothing is
@@ -280,9 +270,9 @@ export class LogIndexedDbHistory {
   }
 
   /**
-   * Binds subsequent logs to a user, so exports only include that user's
-   * sessions and sessions that never logged in. Each login starts a new
-   * session, leaving the pre-login logs unbound and visible to every user.
+   * Attributes subsequent logs to a user, so exports only include that user's
+   * logs and logs from before anyone logged in. Each login starts a new
+   * session, so a session never mixes pre-login and logged-in entries.
    * @param name - The authenticated user; '' where the server provides no name
    */
   setUser(name: string): void {
@@ -290,31 +280,9 @@ export class LogIndexedDbHistory {
       return;
     }
 
-    // Buffered entries keep the session they were logged under
+    // Buffered entries keep the session and user they were logged under
     this.sessionId = nanoid();
     this.sessionUser = name;
-
-    if (this.isEnabled) {
-      this.bindCurrentSession();
-    }
-  }
-
-  /** Persists the current session's user, so later page loads can filter it. */
-  private bindCurrentSession(): void {
-    if (this.sessionUser == null) {
-      return;
-    }
-    const record: SessionRecord = {
-      sessionId: this.sessionId,
-      user: this.sessionUser,
-    };
-    // Chained so an export waits for every binding, not just the latest
-    this.bindPromise = this.bindPromise
-      .then(() => this.open())
-      .then(async db => {
-        await db.put(SESSIONS_STORE, record);
-      })
-      .catch(this.handleError);
   }
 
   /**
@@ -350,7 +318,6 @@ export class LogIndexedDbHistory {
 
     this.isEnabled = true;
 
-    this.bindCurrentSession();
     this.prune().catch(this.handleError);
   }
 
@@ -400,6 +367,9 @@ export class LogIndexedDbHistory {
       type: type as LOG_PROXY_TYPE,
       message: truncate(LogHistory.formatMessages(detail), this.maxEntryLength),
     };
+    if (this.sessionUser != null) {
+      entry.user = this.sessionUser;
+    }
 
     // formatMessages reduces an Error to its message, so capture the stacks here
     const errorStacks = detail
@@ -495,8 +465,6 @@ export class LogIndexedDbHistory {
             autoIncrement: true,
           });
           entries.createIndex(TIME_INDEX, 'time');
-          entries.createIndex(SESSION_INDEX, 'sessionId');
-          db.createObjectStore(SESSIONS_STORE, { keyPath: 'sessionId' });
         },
       });
       requestPersistentStorage().then(granted => {
@@ -534,10 +502,6 @@ export class LogIndexedDbHistory {
         const entries = this.buffer;
         this.buffer = [];
 
-        // Bindings land first, so a crash can never leave a user's entries
-        // on disk looking unbound
-        // eslint-disable-next-line no-await-in-loop
-        await this.bindPromise;
         // eslint-disable-next-line no-await-in-loop
         const db = await this.open();
         const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -586,30 +550,6 @@ export class LogIndexedDbHistory {
       const excess = Math.ceil(count * QUOTA_TRIM_RATIO);
       await deleteOldest(db, Math.min(excess, count - this.quotaTrimFloor));
     }
-
-    await this.deleteOrphanedSessions(db);
-  }
-
-  /**
-   * Removes bindings for sessions whose entries have all been pruned. The
-   * current session is kept, since its entries may still be buffered.
-   * @param db - Open log database
-   */
-  private async deleteOrphanedSessions(db: LogDb): Promise<void> {
-    const sessionIds = await db.getAllKeys(SESSIONS_STORE);
-    const counts = await Promise.all(
-      sessionIds.map(id =>
-        db.countFromIndex(STORE_NAME, SESSION_INDEX, IDBKeyRange.only(id))
-      )
-    );
-    const orphaned = sessionIds.filter(
-      (id, i) => counts[i] === 0 && id !== this.sessionId
-    );
-    if (orphaned.length === 0) {
-      return;
-    }
-    const tx = db.transaction(SESSIONS_STORE, 'readwrite');
-    await Promise.all([...orphaned.map(id => tx.store.delete(id)), tx.done]);
   }
 
   /**
@@ -637,29 +577,18 @@ export class LogIndexedDbHistory {
   /**
    * Formats the persisted entries visible to the current user, using the same
    * per-line format as LogHistory so both export files parse identically.
-   * Includes the current session, sessions bound to the current user, and
-   * sessions that never logged in. Entries are ordered by time and headed by a
-   * marker whenever the session changes. Pending entries are flushed first.
+   * Includes the current user's entries and entries from before anyone logged
+   * in. Entries are ordered by time and headed by a marker whenever the session
+   * changes. Pending entries are flushed first.
    * @returns Empty string when nothing visible is persisted
    */
   async getFormattedHistory(): Promise<string> {
     await this.flush();
-    await this.bindPromise;
 
     const db = await this.open();
-    const [allEntries, sessions] = await Promise.all([
-      db.getAllFromIndex(STORE_NAME, TIME_INDEX),
-      db.getAll(SESSIONS_STORE),
-    ]);
-
-    const owners = new Map(sessions.map(s => [s.sessionId, s.user]));
-    const entries = allEntries.filter(entry => {
-      if (entry.sessionId === this.sessionId) {
-        return true;
-      }
-      const owner = owners.get(entry.sessionId);
-      return owner === undefined || owner === this.sessionUser;
-    });
+    const entries = (await db.getAllFromIndex(STORE_NAME, TIME_INDEX)).filter(
+      entry => entry.user == null || entry.user === this.sessionUser
+    );
 
     if (entries.length === 0) {
       return '';
@@ -676,11 +605,10 @@ export class LogIndexedDbHistory {
 
     entries.forEach(entry => {
       if (entry.sessionId !== lastSessionId) {
-        const owner = owners.get(entry.sessionId);
         const user =
-          owner === undefined
+          entry.user == null
             ? ' (not logged in)'
-            : ` (user: ${JSON.stringify(owner)})`;
+            : ` (user: ${JSON.stringify(entry.user)})`;
         const current = entry.sessionId === this.sessionId ? ' (current)' : '';
         lines.push(
           `${SESSION_SEPARATOR} session ${entry.sessionId}${user}${current} ${SESSION_SEPARATOR}`
@@ -712,27 +640,11 @@ export class LogIndexedDbHistory {
     return lines.join('\n');
   }
 
-  /**
-   * Discards every persisted entry across all sessions, plus anything buffered.
-   * The current session stays bound to its user, so logs written afterwards
-   * are not exposed to other users.
-   */
+  /** Discards every persisted entry across all sessions, plus anything buffered. */
   async clear(): Promise<void> {
     this.buffer = [];
-    await this.bindPromise;
     const db = await this.open();
-    const tx = db.transaction([STORE_NAME, SESSIONS_STORE], 'readwrite');
-    const sessions = tx.objectStore(SESSIONS_STORE);
-    const writes: Promise<unknown>[] = [
-      tx.objectStore(STORE_NAME).clear(),
-      sessions.clear(),
-    ];
-    if (this.sessionUser != null) {
-      writes.push(
-        sessions.put({ sessionId: this.sessionId, user: this.sessionUser })
-      );
-    }
-    await Promise.all([...writes, tx.done]);
+    await db.clear(STORE_NAME);
   }
 }
 
