@@ -709,6 +709,26 @@ describe('pruning', () => {
     expect(formatted).toContain('third');
   });
 
+  it('prunes by count during large batches without waiting for the flush interval', async () => {
+    history = makeHistory({ maxEntries: 100, dbName: 'test-logs-batches' });
+    history.enable();
+    await history.prune();
+
+    for (let batch = 0; batch < 3; batch += 1) {
+      for (let i = 0; i < 50; i += 1) {
+        // eslint-disable-next-line no-console
+        console.log(`batch ${batch} entry ${i}`);
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await history.flush();
+    }
+
+    const db = await openDB('test-logs-batches');
+    const count = await db.count('entries');
+    db.close();
+    expect(count).toBe(100);
+  });
+
   it('trims the oldest entries when over the quota ratio', async () => {
     const estimate = jest.fn().mockResolvedValue({ usage: 95, quota: 100 });
     Object.defineProperty(navigator, 'storage', {

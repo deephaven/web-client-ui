@@ -76,6 +76,8 @@ export const DEFAULT_MAX_QUOTA_RATIO = 0.8;
 /** Bounds memory if flushes are failing or the page is logging faster than it can write */
 const MAX_BUFFERED_ENTRIES = 5000;
 const FLUSHES_PER_PRUNE = 30;
+/** Prunes early once this fraction of maxEntries has been written, so a log storm cannot overshoot the cap by much */
+const PRUNE_WRITE_RATIO = 0.1;
 /** Fraction of entries dropped when over the quota ratio */
 const QUOTA_TRIM_RATIO = 0.25;
 /**
@@ -207,7 +209,9 @@ export class LogIndexedDbHistory {
    */
   private throttledErrorFlush: ReturnType<typeof throttle<() => void>>;
 
-  private flushCount = 0;
+  private flushesSincePrune = 0;
+
+  private writesSincePrune = 0;
 
   /** In-flight prune, so concurrent callers cannot each trim the same overflow */
   private prunePromise: Promise<void> | null = null;
@@ -512,8 +516,12 @@ export class LogIndexedDbHistory {
           tx.done,
         ]);
 
-        this.flushCount += 1;
-        if (this.flushCount % FLUSHES_PER_PRUNE === 0) {
+        this.flushesSincePrune += 1;
+        this.writesSincePrune += entries.length;
+        if (
+          this.flushesSincePrune >= FLUSHES_PER_PRUNE ||
+          this.writesSincePrune >= this.maxEntries * PRUNE_WRITE_RATIO
+        ) {
           // eslint-disable-next-line no-await-in-loop
           await this.prune();
         }
@@ -525,13 +533,16 @@ export class LogIndexedDbHistory {
   }
 
   /**
-   * Enforces the age, count, and quota limits. Runs on enable and on every
-   * FLUSHES_PER_PRUNE flushes; callers may also invoke it directly.
+   * Enforces the age, count, and quota limits. Runs on enable, every
+   * FLUSHES_PER_PRUNE flushes, and whenever writes approach the count limit;
+   * callers may also invoke it directly.
    * Concurrent calls share one run, since two overlapping prunes would each
    * trim the same overflow and delete twice as much as intended.
    */
   async prune(): Promise<void> {
     if (this.prunePromise == null) {
+      this.flushesSincePrune = 0;
+      this.writesSincePrune = 0;
       this.prunePromise = this.pruneNow().finally(() => {
         this.prunePromise = null;
       });
