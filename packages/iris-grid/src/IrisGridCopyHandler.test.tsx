@@ -10,6 +10,8 @@ import IrisGridCopyHandler, {
   type CopySelectionOperation,
 } from './IrisGridCopyHandler';
 import type IrisGridProxyModel from './IrisGridProxyModel';
+import { KeyedSelection } from './KeyedSelection';
+import * as IrisGridSelectionUtils from './IrisGridSelectionUtils';
 
 jest.mock('@deephaven/utils', () => ({
   ...jest.requireActual('@deephaven/utils'),
@@ -117,6 +119,42 @@ it('copies immediately if less than 10,000 rows of data', async () => {
     expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
   );
 });
+
+it.each([3, 10000])(
+  'shows the row count when copying %i uniquely keyed rows without confirmation',
+  async rowCount => {
+    const model = makeModel();
+    const selection = new KeyedSelection({
+      getModel: () => ({ hasUniqueSelectionKeys: true }) as never,
+      selectedKeys: new Set(
+        Array.from({ length: rowCount }, (_, index) => `${index}`)
+      ),
+    });
+    const snapshot = jest
+      .spyOn(IrisGridSelectionUtils, 'textSnapshotFromSelection')
+      .mockResolvedValue(DEFAULT_EXPECTED_TEXT);
+
+    try {
+      mountCopySelection({
+        model,
+        copyOperation: { ...makeCopySelectionOperation(), selection },
+      });
+
+      expect(
+        screen.getByText(
+          `Fetching ${rowCount.toLocaleString()} rows for clipboard...`
+        )
+      ).toBeInTheDocument();
+      expect(snapshot).toHaveBeenCalled();
+
+      await waitFor(() =>
+        expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+      );
+    } finally {
+      snapshot.mockRestore();
+    }
+  }
+);
 
 it('prompts to copy if more than 10,000 rows of data', async () => {
   const user = userEvent.setup({ delay: null });
