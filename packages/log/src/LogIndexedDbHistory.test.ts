@@ -153,6 +153,33 @@ describe('writing', () => {
     expect(await history.getFormattedHistory()).toContain('storm 99');
   });
 
+  it('writes entries logged during an in-flight flush before it resolves', async () => {
+    const dbName = 'test-logs-mid-flush';
+    history = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+    });
+    history.enable();
+    await history.prune();
+
+    // eslint-disable-next-line no-console
+    console.log('before flush');
+    const inFlight = history.flush();
+    // eslint-disable-next-line no-console
+    console.log('during flush');
+    // A pagehide or export arriving mid-write shares the same drain
+    expect(history.flush()).toBe(inFlight);
+    await inFlight;
+
+    const db = await openDB(dbName);
+    const persisted = (await db.getAll('entries')) as PersistedLogEntry[];
+    db.close();
+    expect(persisted.map(entry => entry.message)).toEqual([
+      'before flush',
+      'during flush',
+    ]);
+  });
+
   it('does not write non-error entries immediately', async () => {
     const dbName = 'test-logs-throttle-defer';
     history = new LogIndexedDbHistory(proxy, {

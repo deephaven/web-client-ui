@@ -224,8 +224,11 @@ export class LogIndexedDbHistory {
 
   private isEnabled = false;
 
-  /** Set while writing so a flush cannot schedule another from its own logging */
-  private isFlushing = false;
+  /**
+   * In-flight flush. Shared by all callers so a pagehide or export arriving
+   * mid-write waits for, and is covered by, the same drain.
+   */
+  private flushPromise: Promise<void> | null = null;
 
   private reportError: (...data: unknown[]) => void;
 
@@ -432,10 +435,8 @@ export class LogIndexedDbHistory {
       this.buffer.splice(0, this.buffer.length - MAX_BUFFERED_ENTRIES);
     }
 
-    // Scheduling a write from inside one would recurse through IndexedDB's own
-    // error logging. The entry is already buffered, so the in-flight flush's
-    // successor picks it up.
-    if (this.isFlushing) {
+    // The in-flight flush drains the buffer before it resolves
+    if (this.flushPromise != null) {
       return;
     }
 
@@ -506,37 +507,55 @@ export class LogIndexedDbHistory {
   }
 
   /**
-   * Writes everything buffered since the last flush. Entries are dropped
+   * Writes everything buffered, including entries logged while the write is in
+   * progress. Concurrent callers share one in-flight flush. Entries are dropped
    * rather than requeued on failure to keep memory bounded.
    */
-  async flush(): Promise<void> {
-    if (this.isFlushing || this.buffer.length === 0) {
-      return;
+  flush(): Promise<void> {
+    if (this.flushPromise == null) {
+      if (this.buffer.length === 0) {
+        return Promise.resolve();
+      }
+      this.flushPromise = this.drain().finally(() => {
+        this.flushPromise = null;
+        // Covers entries logged after the drain's last check but before this
+        if (this.isEnabled && this.buffer.length > 0) {
+          this.throttledFlush();
+        }
+      });
     }
+    return this.flushPromise;
+  }
 
-    const entries = this.buffer;
-    this.buffer = [];
-    this.isFlushing = true;
-
+  /** Flush implementation. Call flush instead so writes stay serialized. */
+  private async drain(): Promise<void> {
     try {
-      // Bindings land first, so a crash can never leave a user's entries
-      // on disk looking unbound
-      await this.bindPromise;
-      const db = await this.open();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      await Promise.all([
-        ...entries.map(entry => tx.store.add(entry)),
-        tx.done,
-      ]);
+      while (this.buffer.length > 0) {
+        const entries = this.buffer;
+        this.buffer = [];
 
-      this.flushCount += 1;
-      if (this.flushCount % FLUSHES_PER_PRUNE === 0) {
-        await this.prune();
+        // Bindings land first, so a crash can never leave a user's entries
+        // on disk looking unbound
+        // eslint-disable-next-line no-await-in-loop
+        await this.bindPromise;
+        // eslint-disable-next-line no-await-in-loop
+        const db = await this.open();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all([
+          ...entries.map(entry => tx.store.add(entry)),
+          tx.done,
+        ]);
+
+        this.flushCount += 1;
+        if (this.flushCount % FLUSHES_PER_PRUNE === 0) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.prune();
+        }
       }
     } catch (error) {
+      // Clears the buffer and disables, which also ends the drain
       this.handleError(error);
-    } finally {
-      this.isFlushing = false;
     }
   }
 
