@@ -271,11 +271,12 @@ export class LogIndexedDbHistory {
 
   /**
    * Attributes subsequent logs to a user, so exports only include that user's
-   * logs and logs from before anyone logged in. Each login starts a new
-   * session, so a session never mixes pre-login and logged-in entries.
-   * @param name - The authenticated user; '' where the server provides no name
+   * logs and logs from before anyone logged in. Each login and logout starts a
+   * new session, so a session never mixes users or pre-login entries.
+   * @param name - The authenticated user; '' where the server provides no name;
+   * null on logout
    */
-  setUser(name: string): void {
+  setUser(name: string | null): void {
     if (this.sessionUser === name) {
       return;
     }

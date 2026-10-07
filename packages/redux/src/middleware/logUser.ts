@@ -22,7 +22,15 @@ const logUser: Middleware = store => next => action => {
       getLogIndexedDbHistory()?.setUser(name);
     }
   }
-  return next(action);
+
+  const hadUser = (store.getState() as RootState).user != null;
+  const result = next(action);
+  // Logging out clears the user through actions this package doesn't know,
+  // such as a full store reset, so watch the state rather than the action
+  if (hadUser && (store.getState() as RootState).user == null) {
+    getLogIndexedDbHistory()?.setUser(null);
+  }
+  return result;
 };
 
 export default logUser;

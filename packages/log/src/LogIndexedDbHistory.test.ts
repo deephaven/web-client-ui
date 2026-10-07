@@ -615,6 +615,27 @@ describe('user-scoped export', () => {
     expect(await history.getFormattedHistory()).not.toContain('alice private');
   });
 
+  it("hides the previous user's logs after logout", async () => {
+    history = makeHistory();
+    history.enable();
+
+    history.setUser('alice');
+    const aliceSession = history.getSessionId();
+    // eslint-disable-next-line no-console
+    console.log('alice private');
+
+    history.setUser(null);
+    expect(history.getSessionId()).not.toBe(aliceSession);
+    // eslint-disable-next-line no-console
+    console.log('login screen');
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).not.toContain('alice private');
+    expect(formatted).toContain(
+      `===== session ${history.getSessionId()} (not logged in) (current) =====`
+    );
+  });
+
   it('stores the user on each entry', async () => {
     const dbName = 'test-logs-entry-user';
     history = new LogIndexedDbHistory(proxy, { dbName });

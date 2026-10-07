@@ -19,12 +19,21 @@ const setUser = jest.fn();
 function dispatch(
   action: AnyAction,
   stateBefore: Record<string, unknown>,
-  next: Dispatch = jest.fn(a => a)
+  {
+    stateAfter = stateBefore,
+    next = jest.fn(a => a),
+  }: { stateAfter?: Record<string, unknown>; next?: Dispatch } = {}
 ): void {
+  let state = stateBefore;
   const store = TestUtils.createMockProxy<MiddlewareAPI>({
-    getState: () => stateBefore,
+    getState: () => state,
   });
-  logUser(store)(next)(action);
+  const reduce: Dispatch = a => {
+    const result = next(a);
+    state = stateAfter;
+    return result;
+  };
+  logUser(store)(reduce)(action);
 }
 
 beforeEach(() => {
@@ -47,7 +56,7 @@ it('switches the user before the action reaches later middleware', () => {
   dispatch(
     { type: SET_USER, payload: { name: 'alice' } },
     { user: null },
-    next
+    { next }
   );
 
   expect(next).toHaveBeenCalled();
@@ -85,6 +94,22 @@ it('ignores a null payload, which clears the user rather than setting one', () =
 
 it('ignores other actions', () => {
   dispatch({ type: 'OTHER' }, { user: { name: 'alice' } });
+
+  expect(setUser).not.toHaveBeenCalled();
+});
+
+it('clears the user when any action resets it, such as a logout store reset', () => {
+  dispatch(
+    { type: 'RESET_REDUX' },
+    { user: { name: 'alice' } },
+    { stateAfter: { user: null } }
+  );
+
+  expect(setUser).toHaveBeenCalledWith(null);
+});
+
+it('does not clear when there was no user to begin with', () => {
+  dispatch({ type: 'RESET_REDUX' }, { user: null });
 
   expect(setUser).not.toHaveBeenCalled();
 });
