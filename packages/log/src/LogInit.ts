@@ -36,8 +36,11 @@ export function logInit(
     logProxy.enable();
     logHistory.enable();
 
-    // Persistence reads the proxy's events, so it is unavailable without it
-    logIndexedDbHistory = new LogIndexedDbHistory(logProxy, options);
+    // Persistence reads the proxy's events, so it is unavailable without it.
+    // Reused so repeat calls don't subscribe a second sink.
+    if (logIndexedDbHistory == null) {
+      logIndexedDbHistory = new LogIndexedDbHistory(logProxy, options);
+    }
     logIndexedDbHistory.enable();
   }
 
