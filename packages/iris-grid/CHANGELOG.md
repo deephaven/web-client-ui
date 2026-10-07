@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.31.0](https://github.com/deephaven/web-client-ui/compare/v1.30.1...v1.31.0) (2026-10-07)
+
+### ⚠ BREAKING CHANGES
+
+- `ChartModel.getData()` now returns
+  `Partial<PlotData>[]`
+  using the `PlotData` type exported from `@deephaven/chart` instead of
+  plotly's `Partial<Data>[]`, and `@deephaven/chart` no longer depends on
+  `@types/plotly.js`. These are just types breaking changes, there should
+  be no
+  runtime breaking changes with the `@deephaven/js-plugin-plotly-express`
+  plugin.
+
+  ***
+
+### Features
+
+- DH-23610: update plotly.js to v4.1.1 ([#2759](https://github.com/deephaven/web-client-ui/issues/2759))
+
+### Bug Fixes
+
+- DH-23900: Fix Copy Missing Row Count for KeyedSelection ([#2769](https://github.com/deephaven/web-client-ui/issues/2769)) ([95bd24d](https://github.com/deephaven/web-client-ui/commit/95bd24d9a35e5f33612e312e3d2f29e07567c4a4))
+
 ## [1.30.1](https://github.com/deephaven/web-client-ui/compare/v1.30.0...v1.30.1) (2026-10-02)
 
 ### Performance Improvements
