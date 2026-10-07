@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
+import LogHistory from './LogHistory';
 import LogIndexedDbHistory, {
   type PersistedLogEntry,
 } from './LogIndexedDbHistory';
@@ -404,6 +405,34 @@ describe('pruning', () => {
 });
 
 describe('failure handling', () => {
+  it('reports storage failures to the in-memory history', async () => {
+    const memoryHistory = new LogHistory(proxy);
+    memoryHistory.enable();
+    const open = jest
+      .spyOn(
+        LogIndexedDbHistory.prototype as unknown as {
+          open: () => Promise<unknown>;
+        },
+        'open'
+      )
+      .mockRejectedValue(new Error('open blew up'));
+
+    try {
+      history = makeHistory();
+      history.enable();
+      // eslint-disable-next-line no-console
+      console.log('entry');
+      await history.flush();
+
+      expect(history.lastError).toBeInstanceOf(Error);
+      expect(memoryHistory.getFormattedHistory()).toContain(
+        'disabling log persistence'
+      );
+    } finally {
+      open.mockRestore();
+      memoryHistory.disable();
+    }
+  });
   it('disables itself when IndexedDB is unavailable', () => {
     const original = globalThis.indexedDB;
     // @ts-expect-error forcing the unsupported case

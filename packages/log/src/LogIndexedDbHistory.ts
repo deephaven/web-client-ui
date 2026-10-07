@@ -198,7 +198,6 @@ export class LogIndexedDbHistory {
   /** Set while writing so a flush cannot schedule another from its own logging */
   private isFlushing = false;
 
-  /** Captured before LogProxy patches console, so errors here are not re-captured */
   private reportError: (...data: unknown[]) => void;
 
   lastError: unknown = null;
@@ -387,11 +386,13 @@ export class LogIndexedDbHistory {
   private handleError = (error: unknown): void => {
     this.lastError = error;
     this.buffer = [];
+    // Unsubscribe first so the report reaches the in-memory history without
+    // re-entering this failing store
+    this.disable();
     this.reportError(
       'LogIndexedDbHistory: disabling log persistence after error',
       error
     );
-    this.disable();
   };
 
   /**
