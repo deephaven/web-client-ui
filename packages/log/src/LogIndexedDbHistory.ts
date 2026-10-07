@@ -30,6 +30,11 @@ export type LogIndexedDbHistoryOptions = {
   maxAgeMs?: number;
   /** Milliseconds a non-error entry may sit buffered before being written. */
   flushIntervalMs?: number;
+  /**
+   * Minimum spacing between error-triggered writes. The first error in a window
+   * is written immediately; a storm of them coalesces into one write per window.
+   */
+  errorFlushIntervalMs?: number;
   maxEntryLength?: number;
   /**
    * Fraction of the origin storage quota above which the oldest entries are
@@ -50,6 +55,7 @@ export const DEFAULT_DB_NAME = 'Deephaven.Logs';
 export const DEFAULT_MAX_ENTRIES = 20000;
 export const DEFAULT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 export const DEFAULT_FLUSH_INTERVAL_MS = 2000;
+export const DEFAULT_ERROR_FLUSH_INTERVAL_MS = 250;
 export const DEFAULT_MAX_ENTRY_LENGTH = 4096;
 export const DEFAULT_MAX_QUOTA_RATIO = 0.8;
 
@@ -154,6 +160,8 @@ export class LogIndexedDbHistory {
 
   private flushIntervalMs: number;
 
+  private errorFlushIntervalMs: number;
+
   private maxEntryLength: number;
 
   private maxQuotaRatio: number;
@@ -174,6 +182,12 @@ export class LogIndexedDbHistory {
    */
   private throttledFlush: ReturnType<typeof throttle<() => void>>;
 
+  /**
+   * Leading edge, so the first error is written at once while an error storm
+   * still costs at most one transaction per window.
+   */
+  private throttledErrorFlush: ReturnType<typeof throttle<() => void>>;
+
   private flushCount = 0;
 
   /** In-flight prune, so concurrent callers cannot each trim the same overflow */
@@ -181,7 +195,7 @@ export class LogIndexedDbHistory {
 
   private isEnabled = false;
 
-  /** Set while writing so logs emitted by IndexedDB failures cannot recurse */
+  /** Set while writing so a flush cannot schedule another from its own logging */
   private isFlushing = false;
 
   /** Captured before LogProxy patches console, so errors here are not re-captured */
@@ -205,6 +219,8 @@ export class LogIndexedDbHistory {
     this.maxEntries = options.maxEntries ?? DEFAULT_MAX_ENTRIES;
     this.maxAgeMs = options.maxAgeMs ?? DEFAULT_MAX_AGE_MS;
     this.flushIntervalMs = options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+    this.errorFlushIntervalMs =
+      options.errorFlushIntervalMs ?? DEFAULT_ERROR_FLUSH_INTERVAL_MS;
     this.maxEntryLength = options.maxEntryLength ?? DEFAULT_MAX_ENTRY_LENGTH;
     this.maxQuotaRatio = options.maxQuotaRatio ?? DEFAULT_MAX_QUOTA_RATIO;
     this.quotaTrimFloor = options.quotaTrimFloor ?? QUOTA_TRIM_FLOOR;
@@ -216,6 +232,13 @@ export class LogIndexedDbHistory {
       },
       this.flushIntervalMs,
       { leading: false, trailing: true }
+    );
+    this.throttledErrorFlush = throttle(
+      () => {
+        this.flush();
+      },
+      this.errorFlushIntervalMs,
+      { leading: true, trailing: true }
     );
   }
 
@@ -283,8 +306,9 @@ export class LogIndexedDbHistory {
       );
     }
 
-    // Drop the pending trailing call; the flush below covers it
+    // Drop the pending trailing calls; the flush below covers them
     this.throttledFlush.cancel();
+    this.throttledErrorFlush.cancel();
 
     this.isEnabled = false;
 
@@ -299,10 +323,6 @@ export class LogIndexedDbHistory {
    * @param event - Console event dispatched by the proxy
    */
   private addHistory = ({ type, detail }: CustomEvent<unknown[]>): void => {
-    if (this.isFlushing) {
-      return;
-    }
-
     const entry: PersistedLogEntry = {
       sessionId: this.sessionId,
       time: Date.now(),
@@ -327,11 +347,18 @@ export class LogIndexedDbHistory {
       this.buffer.splice(0, this.buffer.length - MAX_BUFFERED_ENTRIES);
     }
 
+    // Scheduling a write from inside one would recurse through IndexedDB's own
+    // error logging. The entry is already buffered, so the in-flight flush's
+    // successor picks it up.
+    if (this.isFlushing) {
+      return;
+    }
+
     // Errors often precede a crash or a user-initiated reload, so they cannot
-    // wait for the next interval tick
+    // wait for the regular window
     if (isError) {
       this.throttledFlush.cancel();
-      this.flush();
+      this.throttledErrorFlush();
     } else {
       this.throttledFlush();
     }

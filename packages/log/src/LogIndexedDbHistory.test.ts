@@ -125,6 +125,33 @@ describe('writing', () => {
     expect(persisted).toHaveLength(2);
   });
 
+  it('coalesces an error storm into a bounded number of writes', async () => {
+    const dbName = 'test-logs-error-storm';
+    history = new LogIndexedDbHistory(proxy, {
+      dbName,
+      flushIntervalMs: 100000,
+      errorFlushIntervalMs: 100000,
+    });
+    history.enable();
+    await history.prune();
+
+    /* eslint-disable no-console */
+    for (let i = 0; i < 100; i += 1) {
+      console.error(`storm ${i}`);
+    }
+    /* eslint-enable no-console */
+
+    const persisted = await waitForPersisted(dbName, 'storm 0');
+
+    // The leading edge writes once; the remaining errors wait for the trailing
+    // edge rather than each opening their own transaction
+    expect(persisted.length).toBeLessThan(100);
+    expect(persisted.map(entry => entry.message)).toContain('storm 0');
+
+    // Nothing is lost, it is just written later
+    expect(await history.getFormattedHistory()).toContain('storm 99');
+  });
+
   it('does not write non-error entries immediately', async () => {
     const dbName = 'test-logs-throttle-defer';
     history = new LogIndexedDbHistory(proxy, {
