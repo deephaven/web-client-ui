@@ -23,7 +23,7 @@ async function waitForPersisted(
 
   for (let i = 0; i < 100; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const db = await openDB(dbName, 1);
+    const db = await openDB(dbName);
     // eslint-disable-next-line no-await-in-loop
     entries = (await db.getAll('entries')) as PersistedLogEntry[];
     db.close();
@@ -165,7 +165,7 @@ describe('writing', () => {
     // eslint-disable-next-line no-console
     console.log('still buffered');
 
-    const db = await openDB(dbName, 1);
+    const db = await openDB(dbName);
     const persisted = await db.getAll('entries');
     db.close();
 
@@ -288,10 +288,198 @@ describe('cross-session persistence', () => {
     console.log('new');
 
     const formatted = await history.getFormattedHistory();
-    expect(formatted).toContain(`===== session ${first.getSessionId()} =====`);
     expect(formatted).toContain(
-      `===== session ${history.getSessionId()} (current) =====`
+      `===== session ${first.getSessionId()} (not logged in) =====`
     );
+    expect(formatted).toContain(
+      `===== session ${history.getSessionId()} (not logged in) (current) =====`
+    );
+  });
+});
+
+describe('user-scoped export', () => {
+  /**
+   * Simulates one page load: optionally logs before login, logs in, logs
+   * after login, then unloads.
+   */
+  async function pageLoad(
+    dbName: string,
+    user: string | null,
+    { before, after }: { before?: string; after?: string }
+  ): Promise<LogIndexedDbHistory> {
+    const page = new LogIndexedDbHistory(proxy, { dbName });
+    page.enable();
+    /* eslint-disable no-console */
+    if (before != null) {
+      console.log(before);
+    }
+    if (user != null) {
+      page.setUser(user);
+    }
+    if (after != null) {
+      console.log(after);
+    }
+    /* eslint-enable no-console */
+    await page.flush();
+    page.disable();
+    return page;
+  }
+
+  it("hides another user's logs but shares pre-login logs", async () => {
+    const dbName = 'test-logs-users';
+    await pageLoad(dbName, 'alice', {
+      before: 'alice pre-login',
+      after: 'alice private',
+    });
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    history.setUser('bob');
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).not.toContain('alice private');
+    expect(formatted).toContain('alice pre-login');
+  });
+
+  it("keeps a user's earlier sessions after another user logs in", async () => {
+    const dbName = 'test-logs-returning-user';
+    await pageLoad(dbName, 'alice', { after: 'alice first' });
+    await pageLoad(dbName, 'bob', { after: 'bob only' });
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    history.setUser('alice');
+    // eslint-disable-next-line no-console
+    console.log('alice second');
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).toContain('alice first');
+    expect(formatted).toContain('alice second');
+    expect(formatted).not.toContain('bob only');
+  });
+
+  it('only shows unbound sessions before anyone logs in', async () => {
+    const dbName = 'test-logs-logged-out';
+    await pageLoad(dbName, 'alice', {
+      before: 'login screen',
+      after: 'alice private',
+    });
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).toContain('login screen');
+    expect(formatted).not.toContain('alice private');
+  });
+
+  it('starts a new session when a different user logs in without a reload', async () => {
+    const dbName = 'test-logs-in-tab-switch';
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+
+    history.setUser('alice');
+    const aliceSession = history.getSessionId();
+    // eslint-disable-next-line no-console
+    console.log('alice private');
+
+    history.setUser('bob');
+    expect(history.getSessionId()).not.toBe(aliceSession);
+
+    // Buffered before the switch, so it stays in alice's session
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).not.toContain('alice private');
+  });
+
+  it('keeps the session when the same user is set again', () => {
+    history = makeHistory();
+    history.enable();
+
+    history.setUser('alice');
+    const sessionId = history.getSessionId();
+    history.setUser('alice');
+
+    expect(history.getSessionId()).toBe(sessionId);
+  });
+
+  it('binds a session whose user was set before enable', async () => {
+    const dbName = 'test-logs-set-before-enable';
+    const page = new LogIndexedDbHistory(proxy, { dbName });
+    page.setUser('alice');
+    page.enable();
+    // eslint-disable-next-line no-console
+    console.log('alice private');
+    await page.flush();
+    page.disable();
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    history.setUser('bob');
+
+    expect(await history.getFormattedHistory()).not.toContain('alice private');
+  });
+
+  it('labels each session with its user', async () => {
+    const dbName = 'test-logs-labels';
+    const alice = await pageLoad(dbName, 'alice', { after: 'alice private' });
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    // eslint-disable-next-line no-console
+    console.log('login screen');
+    const preLogin = history.getSessionId();
+    history.setUser('alice');
+    // eslint-disable-next-line no-console
+    console.log('alice again');
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).toContain(
+      `===== session ${alice.getSessionId()} (user: "alice") =====`
+    );
+    expect(formatted).toContain(
+      `===== session ${preLogin} (not logged in) =====`
+    );
+    expect(formatted).toContain(
+      `===== session ${history.getSessionId()} (user: "alice") (current) =====`
+    );
+  });
+
+  it('keeps the current session bound after clear', async () => {
+    const dbName = 'test-logs-clear-binding';
+    const page = new LogIndexedDbHistory(proxy, { dbName });
+    page.enable();
+    page.setUser('alice');
+    await page.clear();
+    // eslint-disable-next-line no-console
+    console.log('alice after clear');
+    await page.flush();
+    page.disable();
+
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    history.setUser('bob');
+
+    expect(await history.getFormattedHistory()).not.toContain(
+      'alice after clear'
+    );
+  });
+
+  it('prunes bindings for sessions with no remaining entries', async () => {
+    const dbName = 'test-logs-orphans';
+    const alice = await pageLoad(dbName, 'alice', { after: 'alice private' });
+
+    history = new LogIndexedDbHistory(proxy, { dbName, maxEntries: 0 });
+    history.enable();
+    history.setUser('bob');
+    await history.getFormattedHistory();
+    await history.prune();
+
+    const db = await openDB(dbName);
+    const sessionIds = await db.getAllKeys('sessions');
+    db.close();
+
+    expect(sessionIds).not.toContain(alice.getSessionId());
+    expect(sessionIds).toContain(history.getSessionId());
   });
 });
 
