@@ -45,7 +45,14 @@ export type LogIndexedDbHistoryOptions = {
    * is written immediately; a storm of them coalesces into one write per window.
    */
   errorFlushIntervalMs?: number;
+  /** Characters of a formatted message kept before truncating. */
   maxEntryLength?: number;
+  /**
+   * Characters of a stack kept before truncating. Larger than the message limit
+   * because stacks list the most recent frame first, so truncation only drops
+   * the deepest framework frames.
+   */
+  maxStackLength?: number;
   /**
    * Fraction of the origin storage quota above which the oldest entries are
    * trimmed. The quota is shared with other Deephaven stores (command history),
@@ -69,6 +76,7 @@ export const DEFAULT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 export const DEFAULT_FLUSH_INTERVAL_MS = 2000;
 export const DEFAULT_ERROR_FLUSH_INTERVAL_MS = 250;
 export const DEFAULT_MAX_ENTRY_LENGTH = 4096;
+export const DEFAULT_MAX_STACK_LENGTH = 16384;
 export const DEFAULT_MAX_QUOTA_RATIO = 0.8;
 
 /** Bounds memory if flushes are failing or the page is logging faster than it can write */
@@ -176,6 +184,8 @@ export class LogIndexedDbHistory {
 
   private maxEntryLength: number;
 
+  private maxStackLength: number;
+
   private maxQuotaRatio: number;
 
   private quotaTrimFloor: number;
@@ -239,6 +249,7 @@ export class LogIndexedDbHistory {
     this.errorFlushIntervalMs =
       options.errorFlushIntervalMs ?? DEFAULT_ERROR_FLUSH_INTERVAL_MS;
     this.maxEntryLength = options.maxEntryLength ?? DEFAULT_MAX_ENTRY_LENGTH;
+    this.maxStackLength = options.maxStackLength ?? DEFAULT_MAX_STACK_LENGTH;
     this.maxQuotaRatio = options.maxQuotaRatio ?? DEFAULT_MAX_QUOTA_RATIO;
     this.quotaTrimFloor = options.quotaTrimFloor ?? QUOTA_TRIM_FLOOR;
     this.levels = options.levels ?? Object.values(LOG_PROXY_TYPE);
@@ -389,10 +400,14 @@ export class LogIndexedDbHistory {
     let isError = false;
     switch (type) {
       case LOG_PROXY_TYPE.ERROR:
-      case LOG_PROXY_TYPE.UNCAUGHT_ERROR:
-        entry.stack = Error().stack;
+      case LOG_PROXY_TYPE.UNCAUGHT_ERROR: {
+        const { stack } = Error();
+        if (stack != null) {
+          entry.stack = truncate(stack, this.maxStackLength);
+        }
         isError = true;
         break;
+      }
       default:
         break;
     }

@@ -186,6 +186,20 @@ describe('writing', () => {
     );
   });
 
+  it('truncates stacks longer than maxStackLength', async () => {
+    const dbName = 'test-logs-stack-length';
+    history = new LogIndexedDbHistory(proxy, { dbName, maxStackLength: 20 });
+    history.enable();
+
+    // eslint-disable-next-line no-console
+    console.error('error with a long stack');
+
+    // Read raw, since the export drops the top frames that the cap keeps
+    const persisted = await waitForPersisted(dbName, 'error with a long stack');
+    const { stack } = persisted[0];
+    expect(stack).toMatch(/^.{20}\.\.\. \[truncated \d+ chars\]$/s);
+  });
+
   it('truncates entries longer than maxEntryLength', async () => {
     history = makeHistory({ maxEntryLength: 10 });
     history.enable();
