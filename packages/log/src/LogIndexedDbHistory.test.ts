@@ -263,6 +263,72 @@ describe('eviction protection', () => {
   });
 });
 
+describe('error stacks', () => {
+  function makeError(): Error {
+    return new Error('thrown here');
+  }
+
+  it("records a logged error's own stack and where it was logged", async () => {
+    history = makeHistory();
+    history.enable();
+    const error = makeError();
+
+    // eslint-disable-next-line no-console
+    console.error('Request failed', error);
+
+    const formatted = await history.getFormattedHistory();
+    expect(formatted).toContain('Error: thrown here');
+    expect(formatted).toContain('makeError');
+    expect(formatted).toContain('logged from:');
+  });
+
+  it('records the thrown stack for an uncaught error, not the event dispatch', async () => {
+    const dbName = 'test-logs-uncaught';
+    history = new LogIndexedDbHistory(proxy, { dbName });
+    history.enable();
+    const error = makeError();
+
+    window.dispatchEvent(
+      new ErrorEvent('error', { error, message: 'Uncaught Error' })
+    );
+
+    const [entry] = await waitForPersisted(
+      dbName,
+      'Error: thrown here\tUncaught Error'
+    );
+    expect(entry.type).toBe(LOG_PROXY_TYPE.UNCAUGHT_ERROR);
+    expect(entry.stack).toBeUndefined();
+    expect(entry.errorStacks).toEqual([error.stack]);
+  });
+
+  it('truncates error stacks longer than maxStackLength', async () => {
+    const dbName = 'test-logs-error-stack-length';
+    history = new LogIndexedDbHistory(proxy, { dbName, maxStackLength: 20 });
+    history.enable();
+
+    // eslint-disable-next-line no-console
+    console.error('Request failed', makeError());
+
+    const [entry] = await waitForPersisted(
+      dbName,
+      'Request failed\tError: thrown here'
+    );
+    expect(entry.errorStacks?.[0]).toMatch(
+      /^.{20}\.\.\. \[truncated \d+ chars\]$/s
+    );
+  });
+
+  it('omits the logged from label when there is no error object', async () => {
+    history = makeHistory();
+    history.enable();
+
+    // eslint-disable-next-line no-console
+    console.error('plain error message');
+
+    expect(await history.getFormattedHistory()).not.toContain('logged from:');
+  });
+});
+
 describe('cross-session persistence', () => {
   it('retains entries written by a previous session', async () => {
     const dbName = 'test-logs-shared';

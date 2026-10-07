@@ -13,7 +13,10 @@ export type PersistedLogEntry = {
   type: LOG_PROXY_TYPE;
   /** Pre-formatted at write time; raw log args are not structured-cloneable */
   message: string;
+  /** Where an error entry was logged from. Not recorded for uncaught errors. */
   stack?: string;
+  /** Own stacks of any Error objects passed to the log call */
+  errorStacks?: string[];
 };
 
 interface LogDbSchema extends DBSchema {
@@ -48,9 +51,7 @@ export type LogIndexedDbHistoryOptions = {
   /** Characters of a formatted message kept before truncating. */
   maxEntryLength?: number;
   /**
-   * Characters of a stack kept before truncating. Larger than the message limit
-   * because stacks list the most recent frame first, so truncation only drops
-   * the deepest framework frames.
+   * Characters of a stack kept before truncating. Defaults to larger than the message limit.
    */
   maxStackLength?: number;
   /**
@@ -397,10 +398,19 @@ export class LogIndexedDbHistory {
       message: truncate(LogHistory.formatMessages(detail), this.maxEntryLength),
     };
 
+    // formatMessages reduces an Error to its message, so capture the stacks here
+    const errorStacks = detail
+      .filter((arg): arg is Error => arg instanceof Error)
+      .flatMap(error => (error.stack != null ? [error.stack] : []))
+      .map(stack => truncate(stack, this.maxStackLength));
+    if (errorStacks.length > 0) {
+      entry.errorStacks = errorStacks;
+    }
+
     let isError = false;
     switch (type) {
-      case LOG_PROXY_TYPE.ERROR:
-      case LOG_PROXY_TYPE.UNCAUGHT_ERROR: {
+      case LOG_PROXY_TYPE.ERROR: {
+        // Captures where console.error was called, which the logged arguments don't record
         const { stack } = Error();
         if (stack != null) {
           entry.stack = truncate(stack, this.maxStackLength);
@@ -408,6 +418,10 @@ export class LogIndexedDbHistory {
         isError = true;
         break;
       }
+      case LOG_PROXY_TYPE.UNCAUGHT_ERROR:
+        // The current stack here is only the browser's error event dispatch
+        isError = true;
+        break;
       default:
         break;
     }
@@ -655,14 +669,24 @@ export class LogIndexedDbHistory {
         lastSessionId = entry.sessionId;
       }
 
-      const stack =
+      const errorStacks = (entry.errorStacks ?? []).map(
+        stack =>
+          `\n\t${stack
+            .split('\n')
+            .map(line => line.trim())
+            .join('\n\t')}`
+      );
+      // Labeled so the call site cannot be mistaken for more of the error's frames
+      const loggedFrom =
         entry.stack != null
-          ? `\n${LogHistory.formatStack(entry.stack, entry.type)}`
+          ? `${
+              errorStacks.length > 0 ? '\n\tlogged from:' : ''
+            }\n${LogHistory.formatStack(entry.stack, entry.type)}`
           : '';
       lines.push(
         `${new Date(entry.time).toISOString()} ${entry.type}\t${
           entry.message
-        }${stack}`
+        }${errorStacks.join('')}${loggedFrom}`
       );
     });
 
