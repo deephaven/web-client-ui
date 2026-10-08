@@ -110,6 +110,7 @@
     "conventional-changelog-conventionalcommits": "10.3.0",
     "cross-env": "^7.0.2",
     "eslint": "^8.29.0",
+    "fake-indexeddb": "^6.2.5",
     "identity-obj-proxy": "^3.0.0",
     "jasmine": "4.0.2",
     "jest": "^29.3.1",
