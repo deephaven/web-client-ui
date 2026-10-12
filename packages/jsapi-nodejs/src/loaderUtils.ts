@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
 import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
@@ -110,7 +111,9 @@ export async function loadModules<TMainModule>(
   const mainModulePath = path.join(serverStorageDir, firstFileName);
 
   if (targetModuleType === 'esm') {
-    return import(mainModulePath);
+    // ESM `import()` requires a URL. A bare absolute path is rejected on Windows
+    // because the drive letter (e.g. `C:`) is parsed as a URL scheme.
+    return import(pathToFileURL(mainModulePath).href);
   }
 
   // eslint-disable-next-line import/no-dynamic-require, global-require
