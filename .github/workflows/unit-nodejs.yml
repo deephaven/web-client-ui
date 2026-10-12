@@ -1,8 +1,10 @@
-# Runs @deephaven/jsapi-nodejs `node --test` suites against the built package
-# on each OS, since module loading behavior differs by platform (e.g. Windows
+# Runs `test:node` scripts (`node --test` suites against built output) on each
+# OS, since Node module loading behavior differs by platform (e.g. Windows
 # absolute paths are not valid ESM import specifiers).
+# When adding `test:node` to a package, add it to the `paths` filters and the
+# build `--scope` below.
 
-name: jsapi-nodejs Tests
+name: Unit Tests (Node.js)
 
 on:
   push:
@@ -12,7 +14,7 @@ on:
       - 'feature/**'
     paths:
       - 'packages/jsapi-nodejs/**'
-      - '.github/workflows/jsapi-nodejs.yml'
+      - '.github/workflows/unit-nodejs.yml'
   pull_request:
     branches:
       - main
@@ -20,7 +22,7 @@ on:
       - 'feature/**'
     paths:
       - 'packages/jsapi-nodejs/**'
-      - '.github/workflows/jsapi-nodejs.yml'
+      - '.github/workflows/unit-nodejs.yml'
 jobs:
   node-test:
     strategy:
@@ -47,4 +49,4 @@ jobs:
         run: npx lerna run build --scope=@deephaven/jsapi-nodejs
 
       - name: Test
-        run: npm run test:node --workspace=@deephaven/jsapi-nodejs
+        run: npx lerna run test:node
