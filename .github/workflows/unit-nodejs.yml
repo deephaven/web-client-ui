@@ -1,0 +1,52 @@
+# Runs `test:node` scripts (`node --test` suites against built output) on each
+# OS, since Node module loading behavior differs by platform (e.g. Windows
+# absolute paths are not valid ESM import specifiers).
+# When adding `test:node` to a package, add it to the `paths` filters and the
+# build `--scope` below.
+
+name: Unit Tests (Node.js)
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'feature/**'
+    paths:
+      - 'packages/jsapi-nodejs/**'
+      - '.github/workflows/unit-nodejs.yml'
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+      - 'feature/**'
+    paths:
+      - 'packages/jsapi-nodejs/**'
+      - '.github/workflows/unit-nodejs.yml'
+jobs:
+  node-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit
+
+      - name: Build
+        run: npx lerna run build --scope=@deephaven/jsapi-nodejs
+
+      - name: Test
+        run: npx lerna run test:node
