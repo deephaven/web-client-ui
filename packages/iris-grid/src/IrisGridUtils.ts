@@ -788,8 +788,6 @@ class IrisGridUtils {
     const columnSet = new Set<ModelIndex>();
     for (let i = 0; i < ranges.length; i += 1) {
       const range = ranges[i];
-      assertNotNull(range.startColumn);
-      assertNotNull(range.endColumn);
       for (
         let c = range.startColumn ?? 0;
         c <= (range.endColumn ?? allColumns.length - 1);

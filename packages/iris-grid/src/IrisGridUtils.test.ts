@@ -453,6 +453,29 @@ describe('getNextVisibleColumns', () => {
   });
 });
 
+describe('columnsFromRanges', () => {
+  const columns = irisGridTestUtils.makeColumns(5);
+
+  it('returns all columns for a full row range', () => {
+    expect(
+      IrisGridUtils.columnsFromRanges([GridRange.makeRow(1)], columns)
+    ).toEqual(columns);
+  });
+
+  it('handles ranges with one open column bound, e.g. row selection with hidden column', () => {
+    const ranges = GridRange.subtractRangesFromRanges(
+      [GridRange.makeRow(1)],
+      [GridRange.makeColumn(2)]
+    );
+    expect(IrisGridUtils.columnsFromRanges(ranges, columns)).toEqual([
+      columns[0],
+      columns[1],
+      columns[3],
+      columns[4],
+    ]);
+  });
+});
+
 describe('validate copy ranges', () => {
   function testRanges(ranges, expectedResult = true) {
     expect(IrisGridUtils.isValidSnapshotRanges(ranges)).toBe(expectedResult);
