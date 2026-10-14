@@ -147,20 +147,6 @@ async function deleteOldest(db: LogDb, count: number): Promise<void> {
 }
 
 /**
- * Asks the browser to exempt this origin from automatic eviction. Chrome grants
- * silently, Firefox prompts, and Safari only honors it for installed web apps.
- * @returns Whether protection was granted; false also covers denial and browsers
- * that do not implement the API
- */
-async function requestPersistentStorage(): Promise<boolean> {
-  try {
-    return (await navigator?.storage?.persist?.()) ?? false;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Persists browser logs to IndexedDB so they survive a reload. Subscribes to
  * the same LogProxy events as LogHistory, but batches writes rather than
  * storing in memory.
@@ -227,12 +213,6 @@ export class LogIndexedDbHistory {
   private reportError: (...data: unknown[]) => void;
 
   lastError: unknown = null;
-
-  /**
-   * Whether the browser exempted this origin from automatic eviction. When
-   * false, entries may be discarded well before the age limit.
-   */
-  isPersistent = false;
 
   /**
    * @param proxy - Source of console events; must be enabled for anything to be captured
@@ -472,9 +452,6 @@ export class LogIndexedDbHistory {
           entries.createIndex(TIME_INDEX, 'time');
         },
       });
-      requestPersistentStorage().then(granted => {
-        this.isPersistent = granted;
-      });
     }
     return this.dbPromise;
   }
@@ -606,13 +583,7 @@ export class LogIndexedDbHistory {
       return '';
     }
 
-    // Without eviction protection the browser may have dropped older entries,
-    // which is the first thing to rule out when history looks truncated
-    const lines: string[] = [
-      `${SESSION_SEPARATOR} eviction protection: ${
-        this.isPersistent ? 'granted' : 'not granted'
-      } ${SESSION_SEPARATOR}`,
-    ];
+    const lines: string[] = [];
     let lastSessionId: string | null = null;
 
     entries.forEach(entry => {

@@ -256,33 +256,8 @@ describe('writing', () => {
   });
 });
 
-describe('eviction protection', () => {
-  it.each([
-    [true, 'granted'],
-    [false, 'not granted'],
-  ])('reports persist() returning %s in the history', async (granted, text) => {
-    Object.defineProperty(navigator, 'storage', {
-      configurable: true,
-      value: {
-        persist: jest.fn().mockResolvedValue(granted),
-        estimate: jest.fn().mockResolvedValue({ usage: 1, quota: 100 }),
-      },
-    });
-
-    history = makeHistory();
-    history.enable();
-    await history.prune();
-
-    // eslint-disable-next-line no-console
-    console.log('an entry');
-
-    expect(await history.getFormattedHistory()).toContain(
-      `eviction protection: ${text}`
-    );
-    expect(history.isPersistent).toBe(granted);
-  });
-
-  it('omits the header when nothing is persisted', async () => {
+describe('formatted history', () => {
+  it('is empty when nothing is persisted', async () => {
     history = makeHistory();
     history.enable();
 
@@ -733,7 +708,7 @@ describe('pruning', () => {
     const estimate = jest.fn().mockResolvedValue({ usage: 95, quota: 100 });
     Object.defineProperty(navigator, 'storage', {
       configurable: true,
-      value: { estimate, persist: jest.fn().mockResolvedValue(true) },
+      value: { estimate },
     });
 
     history = makeHistory({ maxQuotaRatio: 0.8, quotaTrimFloor: 1 });
@@ -759,7 +734,6 @@ describe('pruning', () => {
       // Permanently over quota, as if command history were filling the origin
       value: {
         estimate: jest.fn().mockResolvedValue({ usage: 99, quota: 100 }),
-        persist: jest.fn().mockResolvedValue(true),
       },
     });
 
