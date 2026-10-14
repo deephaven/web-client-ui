@@ -361,7 +361,11 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
      */
     this.cursor = 'move';
 
-    this.moveDraggingColumn(gridPoint.x, grid, event.movementX);
+    this.moveDraggingColumn(
+      gridPoint.x,
+      grid,
+      event.movementX / grid.getCanvasScale().x
+    );
 
     return true;
   }

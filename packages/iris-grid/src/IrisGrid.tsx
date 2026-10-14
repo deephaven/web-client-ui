@@ -4604,6 +4604,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  /**
+   * Ratio of on-screen size to layout size for the grid, for converting layout-pixel metrics to screen coordinates.
+   * @returns The x and y scale factors
+   */
+  getGridScale(): { x: number; y: number } {
+    return this.grid?.getCanvasScale() ?? { x: 1, y: 1 };
+  }
+
   getColumnBoundingRect(): DOMRect {
     const { metrics, shownColumnTooltip } = this.state;
     assertNotNull(metrics);
@@ -4611,6 +4619,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const gridRect = this.gridWrapper?.getBoundingClientRect();
     const popperMargin = 20;
     assertNotNull(gridRect);
+    const { x: scaleX, y: scaleY } = this.getGridScale();
     const {
       columnHeaderHeight,
       allColumnXs,
@@ -4626,20 +4635,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const left =
       gridRect.left +
-      clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin);
+      clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) *
+        scaleX;
 
     return {
-      top: gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight,
-      left:
-        gridRect.left +
-        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
-      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight,
-      right:
-        gridRect.left +
-        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
-        1,
+      top:
+        gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight * scaleY,
+      left,
+      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight * scaleY,
+      right: left + 1,
       width: 1,
-      height: columnHeaderHeight,
+      height: columnHeaderHeight * scaleY,
       x: left,
       y: gridRect.top,
       toJSON: () => {

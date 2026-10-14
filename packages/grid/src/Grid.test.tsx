@@ -1702,3 +1702,33 @@ describe('accessibility fallback content', () => {
     expect(within(table).queryByText('0,0')).toBeNull();
   });
 });
+
+describe('css transform scale', () => {
+  const SCALE = 2;
+
+  function makeScaledGrid(scale: number): Grid {
+    const component = makeGridComponent();
+    jest
+      .spyOn(component.canvas as HTMLCanvasElement, 'getBoundingClientRect')
+      .mockReturnValue(
+        new DOMRect(100, 50, VIEW_SIZE * scale, VIEW_SIZE * scale)
+      );
+    return component;
+  }
+
+  it('reports the ratio of rendered to layout size', () => {
+    const component = makeScaledGrid(SCALE);
+    expect(component.getCanvasScale()).toEqual({ x: SCALE, y: SCALE });
+  });
+
+  it('maps client coordinates back to layout coordinates', () => {
+    const component = makeScaledGrid(SCALE);
+    const { rowHeaderWidth, columnHeaderHeight } = defaultTheme;
+    const point = component.getGridPointFromEvent({
+      clientX: 100 + (rowHeaderWidth + 1) * SCALE,
+      clientY: 50 + (columnHeaderHeight + 1) * SCALE,
+    } as MouseEvent);
+    expect(point.column).toBe(0);
+    expect(point.row).toBe(0);
+  });
+});

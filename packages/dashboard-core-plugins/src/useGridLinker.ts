@@ -99,6 +99,7 @@ export function useGridLinker(
       }
       const { metrics } = irisGrid.state;
       assertNotNull(metrics);
+      const { x: scaleX, y: scaleY } = irisGrid.getGridScale();
       const {
         columnHeaderHeight,
         allColumnXs,
@@ -115,11 +116,11 @@ export function useGridLinker(
       const x = clamp(
         visibleIndex > right
           ? rect.right
-          : rect.left + columnX + columnWidth * 0.5,
+          : rect.left + (columnX + columnWidth * 0.5) * scaleX,
         rect.left,
         rect.right
       );
-      const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth;
+      const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth * scaleY;
 
       return [x, y];
     },

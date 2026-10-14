@@ -734,9 +734,28 @@ class Grid extends PureComponent<GridProps, GridState> {
     assertIsDefined(this.canvas);
 
     const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const { x: scaleX, y: scaleY } = this.getCanvasScale(rect);
+    const x = (event.clientX - rect.left) / scaleX;
+    const y = (event.clientY - rect.top) / scaleY;
     return this.getGridPointFromXY(x, y);
+  }
+
+  /**
+   * Ratio of on-screen size to layout size for the canvas, which differs from 1 when a CSS transform scales an ancestor.
+   * Screen-space values such as clientX or movementX must be divided by this to get layout pixels.
+   * @param rect The canvas bounding rect, if already read, to avoid forcing another layout
+   * @returns The x and y scale factors
+   */
+  getCanvasScale(rect?: DOMRect): { x: number; y: number } {
+    const { canvas } = this;
+    if (canvas == null) {
+      return { x: 1, y: 1 };
+    }
+    const bounds = rect ?? canvas.getBoundingClientRect();
+    return {
+      x: canvas.clientWidth > 0 ? bounds.width / canvas.clientWidth : 1,
+      y: canvas.clientHeight > 0 ? bounds.height / canvas.clientHeight : 1,
+    };
   }
 
   getGridPointFromXY(x: Coordinate, y: Coordinate): GridPoint {
@@ -1010,9 +1029,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const rect = canvasWrapper.current.getBoundingClientRect();
-    const width = Math.floor(rect.width);
-    const height = Math.floor(rect.height);
+    const width = canvasWrapper.current.clientWidth;
+    const height = canvasWrapper.current.clientHeight;
 
     // avoid triggering a dom re-calc if size hasn't changed
     if (
