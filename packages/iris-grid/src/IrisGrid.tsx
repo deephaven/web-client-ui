@@ -4635,8 +4635,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const left =
       gridRect.left +
-      clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) *
-        scaleX;
+      clamp(
+        (columnX + columnWidth / 2) * scaleX,
+        popperMargin,
+        width * scaleX - popperMargin
+      );
 
     return {
       top:

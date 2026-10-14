@@ -1731,4 +1731,23 @@ describe('css transform scale', () => {
     expect(point.column).toBe(0);
     expect(point.row).toBe(0);
   });
+
+  it('sizes the canvas from the wrapper layout size, not its scaled bounds', () => {
+    const component = makeGridComponent();
+    const canvas = component.canvas as HTMLCanvasElement;
+    jest
+      .spyOn(
+        component.canvasWrapper.current as HTMLDivElement,
+        'getBoundingClientRect'
+      )
+      .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE * SCALE, VIEW_SIZE * SCALE));
+    // Force updateCanvasScale past its unchanged-size early return
+    canvas.style.width = '1px';
+    canvas.style.height = '1px';
+
+    component.updateCanvas();
+
+    expect(canvas.style.width).toBe(`${VIEW_SIZE}px`);
+    expect(canvas.style.height).toBe(`${VIEW_SIZE}px`);
+  });
 });
