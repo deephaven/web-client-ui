@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { type Key, useCallback } from 'react';
+import { type Key, useCallback, type JSX } from 'react';
 import type { DOMRefValue, FocusableRef } from '@react-types/shared';
 import { SpectrumComboBox, Item, type SpectrumComboBoxProps } from './spectrum';
 import TextWithTooltip from './TextWithTooltip';
@@ -11,7 +11,7 @@ export interface SearchableComboboxProps<TItem, TKey extends Key>
   > {
   getItemDisplayText: (item: TItem | null | undefined) => string | null;
   getKey: (item: TItem | null | undefined) => TKey | null;
-  scrollRef: React.RefObject<DOMRefValue>;
+  scrollRef: React.RefObject<DOMRefValue | null>;
   onSelectionChange: (key: TKey | null) => void;
 }
 

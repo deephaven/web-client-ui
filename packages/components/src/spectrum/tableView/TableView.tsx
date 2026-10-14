@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode, type JSX } from 'react';
 import type { SpectrumTableProps } from '@adobe/react-spectrum';
 import type { Key } from '@react-types/shared';
 import type { KeyedItem } from '@deephaven/utils';

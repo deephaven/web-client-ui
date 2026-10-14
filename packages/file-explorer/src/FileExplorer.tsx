@@ -1,7 +1,13 @@
 import { BasicModal } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { type CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type JSX,
+} from 'react';
 import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
 import {
   type FileStorageItem,

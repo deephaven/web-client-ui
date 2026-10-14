@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, type JSX } from 'react';
 import classNames from 'classnames';
 import {
   Button,

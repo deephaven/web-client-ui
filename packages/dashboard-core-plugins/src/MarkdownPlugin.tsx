@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, type JSX } from 'react';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,

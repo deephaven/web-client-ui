@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { nanoid } from 'nanoid';
 
-type RadioItemProps = {
+export type RadioItemProps = {
   /** Whether this value is currently checked or not */
   checked?: boolean;
 

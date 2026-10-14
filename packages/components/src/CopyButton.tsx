@@ -2,6 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsPassFilled, vsCopy } from '@deephaven/icons';
 import { useCopyToClipboard } from '@deephaven/react-hooks';
+import type { JSX } from 'react';
 import { ActionButton, Icon, Text, type ActionButtonProps } from './spectrum';
 import { Tooltip } from './popper';
 

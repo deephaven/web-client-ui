@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, type JSX } from 'react';
 import { Provider } from 'react-redux';
 import { FontBootstrap } from '@deephaven/components';
 import '@deephaven/components/scss/BaseStyleSheet.scss';

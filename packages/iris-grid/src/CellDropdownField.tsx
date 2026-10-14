@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, type JSX } from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Item, Picker, type ItemKey } from '@deephaven/components';

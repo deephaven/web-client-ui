@@ -4,6 +4,7 @@ import React, {
   useRef,
   useEffect,
   useMemo,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import {

@@ -3,6 +3,7 @@ import { type dh } from '@deephaven/jsapi-types';
 import IrisGrid from '@deephaven/iris-grid';
 import { LoadingOverlay } from '@deephaven/components';
 import { getErrorMessage } from '@deephaven/utils';
+import type { JSX } from 'react';
 import { PandasReloadButton } from './panels/PandasReloadButton';
 import { useIrisGridModel } from './useIrisGridModel';
 

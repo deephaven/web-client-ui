@@ -2,7 +2,7 @@ import {
   TableView as SpectrumTableView,
   type SpectrumTableProps,
 } from '@adobe/react-spectrum';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import type { DOMRefValue } from '@react-types/shared';
 import {
   extractSpectrumLastChildHTMLElement,

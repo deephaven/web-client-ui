@@ -28,7 +28,7 @@
  * </div>
  *
  */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import classNames from 'classnames';
 import { type PopperOptions } from 'popper.js';
 import { Popper } from '../popper';
@@ -120,11 +120,11 @@ class DropdownMenu extends PureComponent<DropdownMenuProps> {
     }
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
   parent: Element | null;
 
-  popper: React.RefObject<Popper>;
+  popper: React.RefObject<Popper | null>;
 
   isOpen: boolean;
 

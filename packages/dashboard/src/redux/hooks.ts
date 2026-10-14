@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { type PluginData, type RootState } from '@deephaven/redux';
-import { getPluginDataForDashboard } from './selectors';
+import { getPluginDataForDashboard, useAppDispatch } from './selectors';
 import { setDashboardPluginData } from './actions';
 
 /**
@@ -14,7 +14,7 @@ export function useDashboardPluginData<T = PluginData>(
   dashboardId: string,
   pluginId: string
 ): [T, (data: T) => void] {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const data = useSelector((store: RootState) =>
     getPluginDataForDashboard<T>(store, dashboardId, pluginId)
   );

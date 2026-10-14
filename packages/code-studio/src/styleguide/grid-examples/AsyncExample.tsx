@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type JSX,
+} from 'react';
 import { Grid, type GridMetrics, ViewportDataGridModel } from '@deephaven/grid';
 
 /**

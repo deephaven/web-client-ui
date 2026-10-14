@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, type JSX } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { MonacoThemeProvider } from '@deephaven/console';
 import { isExternalThemeEnabled, ThemeProvider } from '@deephaven/components';

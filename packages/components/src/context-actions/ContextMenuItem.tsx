@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, type JSX } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronRight, type IconDefinition } from '@deephaven/icons';
@@ -70,9 +70,12 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
         displayShortcut,
         'data-testid': dataTestId,
       };
-      return React.cloneElement(element, {
-        forwardedProps,
-      });
+      return React.cloneElement(
+        element as React.ReactElement<{
+          forwardedProps: typeof forwardedProps;
+        }>,
+        { forwardedProps }
+      );
     }
 
     const displayShortcut =

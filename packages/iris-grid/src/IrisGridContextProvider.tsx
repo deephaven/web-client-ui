@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- exports non-component values alongside the provider */
-import React, { createContext, type ReactNode, useMemo } from 'react';
+import React, { createContext, type ReactNode, useMemo, type JSX } from 'react';
 import { useTheme } from '@deephaven/components';
 import {
   type CellInputRendererFn,

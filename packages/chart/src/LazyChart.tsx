@@ -1,5 +1,5 @@
 import { LoadingOverlay } from '@deephaven/components';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type JSX } from 'react';
 
 const Chart = lazy(() => import('./Chart.js'));
 

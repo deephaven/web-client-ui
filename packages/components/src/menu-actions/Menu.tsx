@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import ContextActionUtils, {
   type ContextAction,
 } from '../context-actions/ContextActionUtils';
@@ -96,7 +96,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
     cancelAnimationFrame(this.rAF);
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
   oldFocus: Element | null;
 

@@ -1,4 +1,4 @@
-import { forwardRef, lazy, Suspense } from 'react';
+import { forwardRef, lazy, Suspense, type JSX } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import type IrisGridType from './IrisGrid';
 import type { IrisGridProps } from './IrisGrid';

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, type JSX } from 'react';
 import { Item, Picker } from '@adobe/react-spectrum';
 import type { Key } from '@react-types/shared';
 import useTheme from './useTheme';

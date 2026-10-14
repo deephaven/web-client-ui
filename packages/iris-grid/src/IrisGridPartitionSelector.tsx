@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import memoizee from 'memoizee';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, type ItemKey } from '@deephaven/components';

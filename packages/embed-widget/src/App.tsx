@@ -1,5 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type JSX,
+} from 'react';
+import { useSelector } from 'react-redux';
 import { nanoid } from 'nanoid';
 import {
   AppDashboards,
@@ -27,6 +33,7 @@ import {
   type CreateDashboardPayload,
   setDashboardPluginData,
   emitPanelOpen,
+  useAppDispatch,
   useCreateDashboardListener,
 } from '@deephaven/dashboard';
 import {
@@ -72,7 +79,7 @@ function App(): JSX.Element {
   const connection = useConnection();
   const client = useClient();
   const user = useUser();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const serverConfig = useServerConfig();
 
   // Update the browser title when the widget name is available

@@ -21,7 +21,7 @@ async function createChartModel(
   dh: typeof DhType,
   metadata: ChartPanelMetadata,
   panelFetch: () => Promise<DhType.plot.Figure | DhType.Table>,
-  panelState?: GLChartPanelState
+  panelState?: GLChartPanelState | null
 ): Promise<ChartModel> {
   let settings = {};
   let tableName = '';

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, type JSX } from 'react';
 import {
   Item,
   type ItemKey,
@@ -7,14 +7,13 @@ import {
   useTheme,
 } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
-import { useDispatch } from 'react-redux';
 import { getSettings, updateSettings } from '@deephaven/redux';
-import { useAppSelector } from '@deephaven/dashboard';
+import { useAppDispatch, useAppSelector } from '@deephaven/dashboard';
 
 export function ThemeSectionContent(): JSX.Element {
   const theme = useTheme();
   const settings = useAppSelector(getSettings);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const updateDensity = useCallback(
     (density: ItemKey | null) => {

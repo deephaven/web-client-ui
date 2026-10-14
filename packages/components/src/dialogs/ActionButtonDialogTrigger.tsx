@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react';
+import { type ReactElement, type JSX } from 'react';
 import type { StyleProps } from '@react-types/shared';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

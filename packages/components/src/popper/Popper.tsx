@@ -15,7 +15,7 @@
  * </Popper>
  */
 
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
@@ -167,7 +167,7 @@ class Popper extends Component<PopperProps, PopperState> {
 
   element: HTMLDivElement;
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
   nodeRef = React.createRef<HTMLDivElement>();
 

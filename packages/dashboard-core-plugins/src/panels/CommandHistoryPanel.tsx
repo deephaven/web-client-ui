@@ -1,4 +1,4 @@
-import React, { Component, type RefObject } from 'react';
+import React, { Component, type RefObject, type JSX } from 'react';
 import { connect } from 'react-redux';
 import { type ContextAction, ContextActions } from '@deephaven/components';
 import {
@@ -96,7 +96,7 @@ class CommandHistoryPanel extends Component<
     this.pending.cancel();
   }
 
-  container: RefObject<CommandHistory>;
+  container: RefObject<CommandHistory | null>;
 
   pending: Pending;
 

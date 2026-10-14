@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, type JSX } from 'react';
 import {
   Heading as SpectrumHeading,
   type HeadingProps as SpectrumHeadingProps,

@@ -12,7 +12,7 @@ export function useOnScrollOffsetChangeCallback(
   onChange: (offset: number) => void,
   debounceMs = 0
 ): (event: Event) => void {
-  const debounceTimeout = useRef<number>();
+  const debounceTimeout = useRef<number>(undefined);
   const previousOffsetRef = useRef(0);
 
   return useCallback(

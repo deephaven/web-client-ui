@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import { useDndContext } from '@dnd-kit/core';

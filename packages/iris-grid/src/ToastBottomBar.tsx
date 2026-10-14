@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type JSX,
+} from 'react';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './PendingDataBottomBar.scss';
@@ -21,7 +27,7 @@ export function ToastBottomBar({
   onExited,
 }: ToastBottomBarProps): JSX.Element {
   const [isShown, setIsShown] = useState(false);
-  const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const timeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const prevChildren = usePrevious(children);
 
   const startTimer = useCallback(() => {

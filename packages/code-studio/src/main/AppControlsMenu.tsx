@@ -6,6 +6,7 @@ import React, {
   useMemo,
   type ReactNode,
   type ReactElement,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import {
@@ -61,8 +62,8 @@ function DragSourceMenuItem(props: DragSourceMenuItemProps): JSX.Element {
     closeMenu,
   } = forwardedProps;
 
-  const startX = useRef<number>();
-  const startY = useRef<number>();
+  const startX = useRef<number>(undefined);
+  const startY = useRef<number>(undefined);
   const startObject = useRef<EventTarget | null>(null);
 
   // used to prevent double clicking inserting an object twice

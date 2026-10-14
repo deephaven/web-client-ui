@@ -1,5 +1,5 @@
 import deepEqual from 'fast-deep-equal';
-import type { Reducer } from 'redux';
+import type { AnyAction, Reducer } from 'redux';
 
 /**
  * Setup a replace reducer for a specific action type.
@@ -10,7 +10,7 @@ export default function replaceByIdReducer<S extends Record<string, unknown>>(
   type: string,
   initialState: S = {} as never,
   checkIfChanged = true
-): Reducer<S> {
+): Reducer<S, AnyAction> {
   return (state = initialState, action?) => {
     switch (action?.type) {
       case type: {

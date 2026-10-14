@@ -78,7 +78,7 @@ export default function RuffSettingsModal({
 }: RuffSettingsModalProps): React.ReactElement | null {
   const [isValid, setIsValid] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>(undefined);
 
   const formattedDefaultSettings = useMemo(
     () => JSON.stringify(defaultSettings, null, 2),

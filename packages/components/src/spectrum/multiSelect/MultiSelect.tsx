@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo, useRef } from 'react';
+import React, { useCallback, useId, useMemo, useRef, type JSX } from 'react';
 import type { DOMRefValue } from '@react-types/shared';
 import type { Placement } from '@react-types/overlays';
 import { Field } from '@react-spectrum/label';

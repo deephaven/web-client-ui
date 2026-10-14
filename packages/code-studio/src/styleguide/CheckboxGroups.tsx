@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { CheckboxGroup, Flex, Text } from '@deephaven/components';
 // eslint-disable-next-line no-restricted-imports
 import { Checkbox } from '@adobe/react-spectrum';

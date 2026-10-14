@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import classNames from 'classnames';
 import ContextMenu from './ContextMenu';
 import ContextActionUtils, { type MenuItem } from './ContextActionUtils';
@@ -53,9 +53,9 @@ class ContextMenuRoot extends Component<
     }
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
-  openMenu: React.RefObject<ContextMenu>;
+  openMenu: React.RefObject<ContextMenu | null>;
 
   handleContextMenu(e: MouseEvent): void {
     if (!this.container.current) {

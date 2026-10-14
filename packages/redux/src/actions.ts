@@ -26,9 +26,10 @@ import type {
 } from './store';
 import { getSettings } from './selectors';
 
-export interface PayloadAction<P = unknown> extends Action<string> {
+// Type alias rather than interface so it is assignable to redux 5's UnknownAction
+export type PayloadAction<P = unknown> = Action<string> & {
   payload: P;
-}
+};
 
 export type PayloadActionCreator<P> = (payload: P) => PayloadAction<P>;
 
@@ -87,7 +88,7 @@ export const saveWorkspace =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    undefined,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -107,7 +108,7 @@ export const updateWorkspaceData =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    undefined,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -133,7 +134,7 @@ export const updateNotebookSettings =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    undefined,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -155,7 +156,7 @@ export const updateSettings =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    undefined,
     PayloadAction<unknown>
   > =>
   dispatch =>

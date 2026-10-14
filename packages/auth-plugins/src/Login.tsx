@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { RandomAreaPlotAnimation } from '@deephaven/components';
 import './Login.scss';
 

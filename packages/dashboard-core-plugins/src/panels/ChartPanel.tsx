@@ -138,7 +138,7 @@ interface OwnProps extends DashboardPanelProps {
    */
   containerRef?: React.Ref<HTMLDivElement>;
 
-  panelState?: GLChartPanelState;
+  panelState?: GLChartPanelState | null;
 
   /**
    * Optional Plotly event handlers forwarded to the underlying Chart/Plotly
@@ -160,9 +160,9 @@ interface StateProps {
   inputFilters: InputFilter[];
   links: Link[];
   isLinkerActive: boolean;
-  source?: dh.Table;
-  sourcePanel?: PanelComponent;
-  columnSelectionValidator?: ColumnSelectionValidator;
+  source?: dh.Table | null;
+  sourcePanel?: PanelComponent | null;
+  columnSelectionValidator?: ColumnSelectionValidator | null;
   settings: Partial<WorkspaceSettings>;
 }
 
@@ -197,7 +197,7 @@ interface ChartPanelState {
   columnMap: ColumnMap;
 
   // eslint-disable-next-line react/no-unused-state
-  panelState?: GLChartPanelState;
+  panelState?: GLChartPanelState | null;
 }
 
 interface LoadState {
@@ -370,7 +370,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     }
   }
 
-  panelContainer: RefObject<HTMLDivElement>;
+  panelContainer: RefObject<HTMLDivElement | null>;
 
   pending: Pending;
 
@@ -484,7 +484,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     (
       columnMap: ColumnMap,
       linkedColumnMap: LinkedColumnMap,
-      columnSelectionValidator?: ColumnSelectionValidator
+      columnSelectionValidator?: ColumnSelectionValidator | null
     ) =>
       Array.from(columnMap.values()).map(column => ({
         name: column.name,

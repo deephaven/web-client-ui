@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface UsePopoverOnScrollRefResult<T> {
-  ref: React.RefObject<T>;
+  ref: React.RefObject<T | null>;
   onOpenChange: (isOpen: boolean) => void;
 }
 
@@ -57,7 +57,7 @@ export function usePopoverOnScrollRef<T>(
     };
   }, [onScroll, scrollAreaEl, scrollToInitialPosition]);
 
-  const scrollTimeoutRef = useRef<number>();
+  const scrollTimeoutRef = useRef<number>(undefined);
 
   // Popovers for picker components only exist when the popover opens, so we
   // have to wait to attach scroll listeners

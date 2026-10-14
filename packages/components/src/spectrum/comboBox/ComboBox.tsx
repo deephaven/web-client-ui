@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import {
   ComboBox as SpectrumComboBox,
   type SpectrumComboBoxProps,

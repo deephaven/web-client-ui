@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import throttle from 'lodash.throttle';
 import GoldenLayout from '@deephaven/golden-layout';

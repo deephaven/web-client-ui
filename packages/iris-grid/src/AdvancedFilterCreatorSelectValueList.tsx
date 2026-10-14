@@ -1,5 +1,5 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { PureComponent, type ReactElement } from 'react';
+import React, { PureComponent, type ReactElement, type JSX } from 'react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { type Formatter } from '@deephaven/jsapi-utils';
 import {

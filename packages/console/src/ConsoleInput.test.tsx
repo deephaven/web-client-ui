@@ -45,7 +45,7 @@ function makeSession(): dh.IdeSession {
 
 async function renderConsoleInput(
   session: dh.IdeSession,
-  ref: React.RefObject<ConsoleInput>,
+  ref: React.RefObject<ConsoleInput | null>,
   language = 'test'
 ) {
   const result = render(

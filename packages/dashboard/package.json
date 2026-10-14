@@ -39,7 +39,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "react-redux": "^7.2.4"
+    "react-redux": "^7.2.4 || ^8.0.0 || ^9.0.0"
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",

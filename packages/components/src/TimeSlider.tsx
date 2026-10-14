@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
   useEffect,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import TimeInput, {
@@ -312,7 +313,7 @@ function TrackFills(props: TrackFillsProps): JSX.Element {
 }
 
 type HandleProps = {
-  track: React.RefObject<HTMLDivElement>;
+  track: React.RefObject<HTMLDivElement | null>;
   time: number;
   setTime: (time: number) => void;
   'data-testid'?: string;

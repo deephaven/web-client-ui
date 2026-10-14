@@ -10,6 +10,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {

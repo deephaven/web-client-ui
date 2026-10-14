@@ -4,6 +4,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type JSX,
 } from 'react';
 import Log from '@deephaven/log';
 import { DEFAULT_PRELOAD_DATA_VARIABLES, type ThemeData } from './ThemeModel';

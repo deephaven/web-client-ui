@@ -1,5 +1,4 @@
-import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, type JSX } from 'react';
 import {
   Content,
   ContextualHelp,
@@ -8,10 +7,10 @@ import {
   Text,
 } from '@deephaven/components';
 import { getWebGL, getWebGLEditable, updateSettings } from '@deephaven/redux';
-import { useAppSelector } from '@deephaven/dashboard';
+import { useAppDispatch, useAppSelector } from '@deephaven/dashboard';
 
 function AdvancedSectionContent(): JSX.Element {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const webgl = useAppSelector(getWebGL);
   const webglEditable = useAppSelector(getWebGLEditable);
 

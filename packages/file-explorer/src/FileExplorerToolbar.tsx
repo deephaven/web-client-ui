@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { Button, DebouncedSearchInput } from '@deephaven/components';
 import { vsNewFile, vsNewFolder } from '@deephaven/icons';
 import './FileExplorerToolbar.scss';

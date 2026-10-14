@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, type JSX } from 'react';
 import '@fontsource/fira-mono/400.css';
 import '@fontsource/fira-mono/500.css';
 import '@fontsource/fira-mono/700.css';

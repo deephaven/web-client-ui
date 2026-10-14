@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { vsClose, vsChevronLeft } from '@deephaven/icons';
 import './Page.scss';
 import Button from '../Button';

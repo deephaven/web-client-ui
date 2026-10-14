@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import type { JSX } from 'react';
+
 function SvgBarIcon(
   props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
 ): JSX.Element {

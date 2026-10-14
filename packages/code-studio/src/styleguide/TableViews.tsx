@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, type JSX } from 'react';
 import type { Key, SortDescriptor } from '@react-types/shared';
 import {
   Flex,

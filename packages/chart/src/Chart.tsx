@@ -1,4 +1,9 @@
-import React, { Component, type ReactElement, type RefObject } from 'react';
+import React, {
+  Component,
+  type ReactElement,
+  type RefObject,
+  type JSX,
+} from 'react';
 import deepEqual from 'fast-deep-equal';
 import memoize from 'memoize-one';
 import {
@@ -268,9 +273,9 @@ class Chart extends Component<ChartProps, ChartState> {
 
   PlotComponent: ReturnType<typeof createPlotlyComponent>;
 
-  plot: RefObject<HTMLDivElement>;
+  plot: RefObject<HTMLDivElement | null>;
 
-  plotWrapper: RefObject<HTMLDivElement>;
+  plotWrapper: RefObject<HTMLDivElement | null>;
 
   plotWrapperMerged: React.RefCallback<HTMLDivElement>;
 
