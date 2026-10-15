@@ -44,9 +44,17 @@ as the fix, even temporarily, even if they make the suite green:
   `.soft()`, widening a numeric tolerance) unless the previous assertion was
   provably wrong on its own terms, independent of this failure
 - Wrapping the failure in `try`/`catch` so it no longer throws
-- Adding `test.skip()` or `test.fixme()` as the fix — quarantining is
-  sometimes right (see below), but it is a deliberate, labeled decision, not a
-  silent way to close the issue
+- Quarantining the test — `test.skip()`/`test.fixme()` is never the answer to a
+  flake. A skipped test stops producing runs, so its flake history stops
+  accumulating and the evidence needed to diagnose it is lost for good. The
+  goal is a fixed flake, not a quiet suite; we would rather keep seeing a
+  failure than stop being able to explain it.
+
+  The one legitimate use is a _conditional_ skip for a known platform
+  limitation, with the condition and reason stated — as in
+  `tests/command-history.spec.ts`, which skips only under Playwright's webkit
+  build and says why. That is a permanent environment guard, not a flake
+  quarantine.
 
 ## Required approach
 
@@ -68,22 +76,50 @@ as the fix, even temporarily, even if they make the suite green:
   it or open a separate application-bug issue — don't adjust the test to
   tolerate broken behavior.
 
-## When quarantine is the right fix
+## When you cannot find the root cause
 
-If the test is correctly failing because of an intentional, recent product
-change it hasn't caught up with yet, the right PR may be to skip the test with
-a linked follow-up issue and a comment explaining what changed — not a
-same-PR rewrite of the assertion to match the new behavior, unless you're
-confident that new behavior is intended.
+Do not guess, and do not quarantine. Make the _next_ occurrence diagnosable
+instead:
+
+1. Add the instrumentation that would have told you what went wrong — attach
+   application state, the relevant log history, or failed network requests via
+   `testInfo.attach()` so it lands in the report the triage pipeline reads.
+   Prefer application-level state over browser console or network noise, which
+   the Playwright trace already captures.
+2. Label the issue `diagnostics-added`. The triage pipeline reads that label
+   and records the next recurrence as a diagnostics round rather than a failed
+   fix, so it does not count toward the two attempts before escalation.
+3. Open the PR with the instrumentation and a written handoff: what you ruled
+   out and how, what hypotheses remain, and exactly what the next session
+   should look for in the new output.
+
+The flake recurring after this is the expected outcome, not a failure. The
+next session gets the issue back with your diagnostics attached.
+
+Instrumentation must be additive. Do not change which assertion fails or how
+it fails — that changes the error fingerprint, which opens a new issue and
+discards the accumulated history for this one.
+
+If the test is failing because of an intentional, recent product change it
+hasn't caught up with yet, that is not a flake: update the test to match the
+intended behavior and say in the PR what changed and why you're confident the
+new behavior is intended.
 
 ## Required evidence in the PR description
 
 ```
 ## Root cause
-<what was actually wrong, referencing the context bundle's fingerprint/error>
+<what was actually wrong, referencing the context bundle's fingerprint/error.
+If you could not establish one, say so plainly and fill in Handoff below
+instead of Fix.>
 
 ## Fix
 <what changed and why this addresses the root cause, not the symptom>
+
+## Handoff (diagnostics-only PRs)
+<what you ruled out and how; what hypotheses remain; what the next session
+should look for in the new output. Confirm the issue is labeled
+`diagnostics-added`.>
 
 ## Evidence
 Ran the affected test(s) N times before and after the fix:
@@ -105,11 +141,13 @@ instead.
 ## When to stop and escalate
 
 The triage pipeline routes a fingerprint to a human once it has recurred after
-2 automated fix attempts, so you won't be assigned those. Within a single
-assignment, if your first attempt's evidence run still shows failures, it's
-fine to try once more. If a second attempt still doesn't hold, stop and
-comment explaining what you tried, why it didn't work, and what you'd want a
-human to weigh in on.
+2 automated fix attempts, so you won't be assigned those. Diagnostics rounds
+don't count toward that total, so adding instrumentation is always preferable
+to a speculative fix. Within a single assignment, if your first attempt's
+evidence run still shows failures, it's fine to try once more. If a second
+attempt still doesn't hold, stop, add the diagnostics that would narrow it
+next time, and comment explaining what you tried, why it didn't work, and what
+you'd want a human to weigh in on.
 
 ## Scope constraints
 

@@ -40,7 +40,9 @@ import path from 'node:path';
 
 type TestStatus = 'expected' | 'unexpected' | 'flaky' | 'skipped';
 type FailingStatus = 'flaky' | 'unexpected';
-type FixOutcome = 'recurred' | 'held';
+// 'instrumented' marks an attempt that deliberately only added diagnostics, so the failure
+// coming back is the expected outcome and must not spend one of the tries before escalation.
+type FixOutcome = 'recurred' | 'held' | 'instrumented';
 type Classification =
   | 'chronic_flake'
   | 'new_flake'
@@ -131,6 +133,7 @@ interface Bundle {
   flakeRate: number;
   historyWindow: number;
   priorFixAttempts: number;
+  diagnosticsAttempts: number;
   priorPullRequests: string[];
   traceAttachments: string[];
 }
@@ -216,6 +219,7 @@ interface GithubIssue {
   number: number;
   state: 'open' | 'closed';
   body?: string;
+  labels?: { name?: string }[];
   // Present only when the item is really a pull request; the issues endpoint returns both.
   pull_request?: unknown;
 }
@@ -297,6 +301,9 @@ const SENSITIVE_PATH_PATTERNS = (process.env.SENSITIVE_PATH_PATTERNS ?? '')
 const BASE_LABEL = 'e2e-failure';
 const AGENT_LABEL = 'auto-investigate';
 const HUMAN_LABEL = 'needs-human';
+// Set by an agent whose PR only added diagnostics. Read during the issue-state refresh and then
+// dropped by the next labelsFor() update, so each diagnostics round is counted exactly once.
+const DIAGNOSTICS_LABEL = 'diagnostics-added';
 const CLASSIFICATION_LABELS: Record<Classification, string> = {
   chronic_flake: 'chronic-flake',
   new_flake: 'new-flake',
@@ -448,8 +455,11 @@ function fingerprintState(history: HistoryStore, fp: string): FingerprintState {
   return history.fingerprints[fp];
 }
 
-function recurredAttempts(state: FingerprintState | undefined): FixAttempt[] {
-  return (state?.fixAttempts ?? []).filter(a => a.outcome === 'recurred');
+function attemptsWithOutcome(
+  state: FingerprintState | undefined,
+  outcome: FixOutcome
+): FixAttempt[] {
+  return (state?.fixAttempts ?? []).filter(a => a.outcome === outcome);
 }
 
 // Aggregate across every test sharing a fingerprint -- one root cause can span
@@ -547,7 +557,9 @@ function decide({
   if (isSensitivePath(testFiles)) {
     return { route: 'escalate', reason: 'sensitive_path' };
   }
-  if (recurredAttempts(state).length >= ESCALATE_AFTER_ATTEMPTS) {
+  if (
+    attemptsWithOutcome(state, 'recurred').length >= ESCALATE_AFTER_ATTEMPTS
+  ) {
     return { route: 'escalate', reason: 'repeat_fix_attempts_failed' };
   }
   return { route: 'auto_fix_candidate', reason: classification };
@@ -572,11 +584,14 @@ const CLASSIFICATION_MESSAGES: Record<Classification, string> = {
 
 const GUARDRAIL = [
   '**Guardrail.** Do not resolve this by adding `waitForTimeout`/sleeps, raising `retries` or `timeout`,',
-  'loosening an assertion, or wrapping the failure in `try`/`catch`. Prefer Playwright web-first,',
-  'auto-retrying assertions (`await expect(locator).toBeVisible()`). If you cannot establish a root cause,',
-  'quarantine the test with `test.skip` plus a comment linking back to this issue rather than guessing.',
-  'Re-run the affected spec(s) at least 10 times before and after (`--repeat-each=10`) and report the',
-  'counts honestly in the PR. See `.github/instructions/playwright.instructions.md` for the full policy and required PR description format.',
+  'loosening an assertion, wrapping the failure in `try`/`catch`, or skipping the test. Prefer Playwright',
+  'web-first, auto-retrying assertions (`await expect(locator).toBeVisible()`). If you cannot establish a',
+  'root cause, do not guess and do not quarantine: add the diagnostics that would identify it on the next',
+  `occurrence, label this issue \`${DIAGNOSTICS_LABEL}\`, and use the PR to record what you ruled out and`,
+  'what the next session should look for. A recurrence after a diagnostics-only round is expected and does',
+  'not count as a failed fix. Re-run the affected spec(s) at least 10 times before and after',
+  '(`--repeat-each=10`) and report the counts honestly in the PR. See',
+  '`.github/instructions/playwright.instructions.md` for the full policy and required PR description format.',
 ].join(' ');
 
 // Caps error/snapshot text length so issue bodies stay within GitHub's size limits.
@@ -616,6 +631,9 @@ function buildIssueBody(decision: Decision, ctx: RunContext): string {
     `**Fingerprint:** \`${b.fingerprint}\` · **Classification:** \`${b.classification}\` · **Route:** \`${decision.route}\` (${decision.reason})`,
     `**Flake rate:** ${b.flakeRate} over the last ${b.historyWindow} recorded nightly run(s)`,
     `**Prior automated fix attempts that recurred:** ${b.priorFixAttempts}`,
+    b.diagnosticsAttempts > 0
+      ? `**Diagnostics-only rounds so far:** ${b.diagnosticsAttempts} — a previous session added logging instead of guessing at a fix. Read it in the artifacts below before re-investigating.`
+      : null,
     '',
     `**Tests sharing this fingerprint (${b.tests.length}):**`,
     ...b.tests.map(
@@ -1072,7 +1090,8 @@ async function main(): Promise<void> {
         pageSnapshot: group.find(g => g.pageSnapshot)?.pageSnapshot ?? '',
         flakeRate: Number(flakeRate.toFixed(2)),
         historyWindow,
-        priorFixAttempts: recurredAttempts(state).length,
+        priorFixAttempts: attemptsWithOutcome(state, 'recurred').length,
+        diagnosticsAttempts: attemptsWithOutcome(state, 'instrumented').length,
         priorPullRequests: [],
         traceAttachments: [...new Set(group.flatMap(g => g.attachments))],
       },
@@ -1084,6 +1103,8 @@ async function main(): Promise<void> {
   // Re-read open/closed state from GitHub: an issue may have been closed by a human or by an
   // agent's merged PR since the last run, and the cached history has no way to know that.
   const seenThisRun = new Set(groups.keys());
+  // Fingerprints whose closing attempt only added diagnostics, per the label the agent set.
+  const diagnosticsOnly = new Set<string>();
   if (gh) {
     // Only fingerprints with a previously opened issue need their GitHub state refreshed.
     const tracked = Object.entries(history.fingerprints)
@@ -1107,6 +1128,9 @@ async function main(): Promise<void> {
         try {
           const issue = await gh.getIssue(state.issueNumber as number);
           state.issueState = issue.state;
+          if (issue.labels?.some(l => l.name === DIAGNOSTICS_LABEL) === true) {
+            diagnosticsOnly.add(fp);
+          }
         } catch (err) {
           console.warn(
             `Could not refresh issue #${state.issueNumber} for ${fp}: ${
@@ -1127,9 +1151,10 @@ async function main(): Promise<void> {
     )
     .forEach(([fp, state]) => {
       if (seenThisRun.has(fp)) {
-        // The issue was closed as fixed and the same fingerprint came back: the fix did not hold.
+        // Closed and back again. A diagnostics-only round expects exactly this, so it is
+        // recorded apart from real fix attempts and leaves the escalation budget intact.
         state.fixAttempts.push({
-          outcome: 'recurred',
+          outcome: diagnosticsOnly.has(fp) ? 'instrumented' : 'recurred',
           issueNumber: state.issueNumber as number,
           runId: ctx.runId,
           at: ctx.timestamp,
@@ -1137,7 +1162,11 @@ async function main(): Promise<void> {
         state.cleanRunsSinceClose = 0;
       } else {
         state.cleanRunsSinceClose = (state.cleanRunsSinceClose ?? 0) + 1;
-        const alreadyHeld = state.fixAttempts.at(-1)?.outcome === 'held';
+        // Ignore diagnostics rounds when looking back, or one at the tail would hide an
+        // earlier 'held' and let a duplicate be appended.
+        const alreadyHeld =
+          state.fixAttempts.filter(a => a.outcome !== 'instrumented').at(-1)
+            ?.outcome === 'held';
         if (state.cleanRunsSinceClose >= HOLD_CONFIRM_RUNS && !alreadyHeld) {
           state.fixAttempts.push({
             outcome: 'held',
@@ -1152,7 +1181,14 @@ async function main(): Promise<void> {
   // Recount after recording recurrences so escalation takes effect on this run.
   decisions.forEach(decision => {
     const state = history.fingerprints[decision.bundle.fingerprint];
-    decision.bundle.priorFixAttempts = recurredAttempts(state).length;
+    decision.bundle.priorFixAttempts = attemptsWithOutcome(
+      state,
+      'recurred'
+    ).length;
+    decision.bundle.diagnosticsAttempts = attemptsWithOutcome(
+      state,
+      'instrumented'
+    ).length;
     if (
       decision.route === 'auto_fix_candidate' &&
       decision.bundle.priorFixAttempts >= ESCALATE_AFTER_ATTEMPTS

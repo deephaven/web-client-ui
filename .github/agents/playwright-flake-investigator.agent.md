@@ -104,7 +104,10 @@ one of:
 
 ## Unresolved failures
 
-If you cannot establish a plausible root cause, do NOT invent a fix.
+If you cannot establish a plausible root cause, do NOT invent a fix and do NOT
+quarantine the test.
 
-Instead, document the investigation and identify what additional
-instrumentation or evidence is needed.
+Add the instrumentation that would identify the cause on the next occurrence,
+label the issue `diagnostics-added`, and document the investigation and what
+the next session should look for. See "When you cannot find the root cause" in
+`.github/instructions/playwright.instructions.md`.
