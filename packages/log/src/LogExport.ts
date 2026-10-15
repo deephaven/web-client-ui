@@ -1,6 +1,11 @@
 import JSZip from 'jszip';
 import { configure } from 'safe-stable-stringify';
 import type LogHistory from './LogHistory';
+import { getLogIndexedDbHistory } from './LogInit';
+
+export interface LogHistorySource {
+  getFormattedHistory: () => string | Promise<string>;
+}
 
 // List of paths to ignore
 // '' represents the root object
@@ -109,6 +114,7 @@ function formatDate(date: Date): string {
  * @param ignoreList List of JSON paths to ignore in redux data. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`). Wildcards (*) are accepted in the path.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
  * @param maximumDepth The maximum depth to serialize the redux data to. Objects at the maximum depth will be replaced with "[Object]" or "[Array]".
+ * @param persistedHistory Logs retained across sessions, included as console-history.txt. Defaults to the store created by logInit, if any.
  * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
@@ -117,11 +123,25 @@ export async function exportLogs(
   reduxData?: Record<string, unknown>,
   ignoreList: string[][] = DEFAULT_PATH_IGNORE_LIST,
   fileNamePrefix = `${formatDate(new Date())}_support_logs`,
-  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH
+  maximumDepth: number = DEFAULT_MAXIMUM_DEPTH,
+  persistedHistory: LogHistorySource | null = getLogIndexedDbHistory()
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
+
+  if (persistedHistory != null) {
+    // A failed read must not cost us the rest of the archive
+    try {
+      const history = await persistedHistory.getFormattedHistory();
+      if (history !== '') {
+        folder.file('console-history.txt', history);
+      }
+    } catch (e) {
+      folder.file('console-history.txt', `Failed to read persisted logs: ${e}`);
+    }
+  }
+
   if (metadata != null) {
     folder.file('metadata.json', getFormattedMetadata(metadata));
   }

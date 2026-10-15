@@ -4,6 +4,7 @@ import { store } from '@deephaven/redux';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
+import { getLogIndexedDbHistory } from '@deephaven/log';
 import { type Plugin } from '@deephaven/plugin';
 import {
   ContextActions,
@@ -59,6 +60,9 @@ export function AppBootstrap({
   const [logoutCount, setLogoutCount] = useState(0);
   const onLogin = useCallback(() => undefined, []);
   const onLogout = useCallback(() => {
+    // Logout keeps this page and its log history, so drop the user to keep the
+    // login screen's export from including the previous user's logs
+    getLogIndexedDbHistory()?.setUser(null);
     requestAnimationFrame(() => {
       setLogoutCount(value => value + 1);
     });

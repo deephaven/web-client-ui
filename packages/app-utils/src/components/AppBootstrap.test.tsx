@@ -4,6 +4,11 @@ import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type PluginModuleMap, PluginsContext } from '@deephaven/plugin';
 import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
+import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
+import {
+  getLogIndexedDbHistory,
+  type LogIndexedDbHistory,
+} from '@deephaven/log';
 import type {
   CoreClient,
   IdeConnection,
@@ -39,6 +44,12 @@ jest.mock('@deephaven/jsapi-components', () => ({
   ...jest.requireActual('@deephaven/jsapi-components'),
   useBroadcastChannel: jest.fn(() => mockChannel),
   useBroadcastLoginListener: jest.fn(),
+}));
+
+jest.mock('@deephaven/log', () => ({
+  __esModule: true,
+  ...jest.requireActual('@deephaven/log'),
+  getLogIndexedDbHistory: jest.fn(() => null),
 }));
 
 const mockChildText = 'Mock Child';
@@ -192,4 +203,26 @@ it('should log in automatically when the anonymous handler is supported', async 
   expect(screen.queryByTestId('auth-base-loading')).toBeNull();
   expect(screen.queryByTestId('connection-bootstrap-loading')).toBeNull();
   expectMockChild().not.toBeNull();
+});
+
+it('clears the persisted-log user on logout', () => {
+  const setUser = jest.fn();
+  asMock(getLogIndexedDbHistory).mockReturnValue(
+    TestUtils.createMockProxy<LogIndexedDbHistory>({ setUser })
+  );
+  const client = TestUtils.createMockProxy<CoreClient>({
+    getAuthConfigValues: jest.fn(
+      () =>
+        new Promise<[string, string][]>(() => {
+          // Never resolves, so the test does not depend on login
+        })
+    ),
+    getServerConfigValues: mockGetServerConfigValues,
+  });
+  renderComponent(client);
+
+  const onLogout = asMock(useBroadcastLoginListener).mock.calls[0][1];
+  onLogout?.(TestUtils.createMockProxy());
+
+  expect(setUser).toHaveBeenCalledWith(null);
 });

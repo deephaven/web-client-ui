@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
 import { performance } from 'perf_hooks';
+import { deserialize, serialize } from 'v8';
 import 'jest-canvas-mock';
 import './__mocks__/dh-core';
 import Log from '@deephaven/log';
@@ -77,6 +78,14 @@ Object.defineProperty(window, 'TextDecoder', {
 
 Object.defineProperty(window, 'TextEncoder', {
   value: TextEncoder,
+});
+
+// jsdom does not implement structuredClone, which IndexedDB relies on.
+// v8 serialization gives real structured-clone semantics; the Uint8Array copy
+// keeps the Buffer return type assignable to deserialize across TS versions.
+Object.defineProperty(window, 'structuredClone', {
+  value: (value: unknown) => deserialize(new Uint8Array(serialize(value))),
+  writable: true,
 });
 
 Object.defineProperty(document, 'fonts', {
