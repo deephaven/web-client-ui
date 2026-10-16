@@ -50,6 +50,7 @@
             "label": "Select rows or columns",
             "path": "customize/selection.md"
           },
+          { "label": "Editable grid", "path": "customize/editable.md" },
           { "label": "Frozen columns", "path": "customize/frozen.md" },
           { "label": "Canvas options", "path": "customize/canvas-options.md" },
           { "label": "Sticky behavior", "path": "customize/sticky-behavior.md" }
