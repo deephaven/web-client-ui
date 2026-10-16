@@ -317,6 +317,9 @@ class ServerModel extends GridModel {
   }
 
   async setValues(edits) {
+    if (edits.some(({ column, row }) => this.pending.has(`${column},${row}`))) {
+      throw new Error('A selected cell is still saving. Wait and try again.');
+    }
     edits.forEach(({ column, row, text }) => {
       this.data[row][column] = text;
       this.pending.add(`${column},${row}`);
