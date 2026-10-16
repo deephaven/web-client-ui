@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, type JSX } from 'react';
 import classNames from 'classnames';
 import { Button } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';

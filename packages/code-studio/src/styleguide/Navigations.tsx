@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type JSX,
+} from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
 import { type IconProp } from '@fortawesome/fontawesome-svg-core';
 import {

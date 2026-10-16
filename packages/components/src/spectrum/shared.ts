@@ -14,6 +14,8 @@ import type {
   SectionProps as SpectrumSectionProps,
 } from '@react-types/shared';
 
+import type { JSX } from 'react';
+
 export { Item } from '@adobe/react-spectrum';
 export type {
   ItemProps,

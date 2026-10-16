@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
@@ -62,9 +62,9 @@ class SearchInput extends PureComponent<SearchInputProps> {
     this.inputField.current?.select();
   }
 
-  inputField: React.RefObject<HTMLInputElement>;
+  inputField: React.RefObject<HTMLInputElement | null>;
 
-  searchChangeSelection: React.RefObject<HTMLDivElement>;
+  searchChangeSelection: React.RefObject<HTMLDivElement | null>;
 
   setInputPaddingRight(): void {
     const inputField = this.inputField.current;

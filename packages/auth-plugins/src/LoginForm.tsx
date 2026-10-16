@@ -1,6 +1,6 @@
 import { LoadingSpinner } from '@deephaven/components';
 import classNames from 'classnames';
-import React, { type FormEventHandler } from 'react';
+import React, { type FormEventHandler, type JSX } from 'react';
 import './LoginForm.scss';
 
 export interface LoginFormProps {

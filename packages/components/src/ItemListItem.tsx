@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import classNames from 'classnames';
 import './ItemListItem.scss';
 import Log from '@deephaven/log';
@@ -106,7 +106,7 @@ class ItemListItem extends Component<ItemListItemProps, Record<string, never>> {
     this.itemRef = React.createRef();
   }
 
-  itemRef: React.RefObject<HTMLDivElement>;
+  itemRef: React.RefObject<HTMLDivElement | null>;
 
   handleBlur(e: React.FocusEvent<HTMLDivElement>): void {
     const { itemIndex, onBlur } = this.props;

@@ -1,4 +1,4 @@
-import React, { type Key, useMemo, useRef } from 'react';
+import React, { type Key, useMemo, useRef, type JSX } from 'react';
 import {
   createHtmlPortalNode,
   type HtmlPortalNode,

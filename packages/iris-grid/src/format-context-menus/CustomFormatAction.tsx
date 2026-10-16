@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import { Tooltip } from '@deephaven/components';
 import { DOMUtils } from '@deephaven/utils';
 
@@ -48,7 +48,7 @@ class CustomFormatAction extends Component<CustomFormatActionProps> {
     this.inputRef = React.createRef();
   }
 
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 
   handleInputChange(): void {
     const { onChange } = this.props;

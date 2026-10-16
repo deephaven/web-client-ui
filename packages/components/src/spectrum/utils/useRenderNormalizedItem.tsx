@@ -1,5 +1,5 @@
 import { isElementOfType } from '@deephaven/react-hooks';
-import { type Key, type ReactElement, useCallback } from 'react';
+import { type Key, type ReactElement, useCallback, type JSX } from 'react';
 import ActionGroup from '../ActionGroup';
 import ActionMenu from '../ActionMenu';
 import { ItemContent } from '../ItemContent';

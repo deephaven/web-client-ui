@@ -1,4 +1,9 @@
-import { type ReactElement, type ReactNode, useCallback } from 'react';
+import {
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  type JSX,
+} from 'react';
 import type { SpectrumLabelableProps } from '@react-types/shared';
 import { vsTrash } from '@deephaven/icons';
 import { ActionButtonDialogTrigger, ConfirmationDialog } from '../dialogs';

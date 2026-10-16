@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, type JSX } from 'react';
 import { SplitButtonGroup } from './SplitButtonGroup';
 import Button from './Button';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';

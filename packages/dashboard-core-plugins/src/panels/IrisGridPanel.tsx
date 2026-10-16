@@ -413,9 +413,9 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  irisGrid: RefObject<IrisGridType>;
+  irisGrid: RefObject<IrisGridType | null>;
 
-  pluginRef: RefObject<TablePluginElement>;
+  pluginRef: RefObject<TablePluginElement | null>;
 
   modelPromise?: CancelablePromise<IrisGridModel>;
 

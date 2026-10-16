@@ -1,6 +1,8 @@
 import classNames from 'classnames';
 import './Logo.css';
 
+import type { JSX } from 'react';
+
 interface LogoProps {
   className?: string;
   style?: React.CSSProperties;

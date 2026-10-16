@@ -1,4 +1,4 @@
-import React, { cloneElement, useCallback, useState } from 'react';
+import React, { cloneElement, useCallback, useState, type JSX } from 'react';
 import {
   Checkbox,
   ComboBox,

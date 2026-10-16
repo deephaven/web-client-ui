@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
@@ -8,6 +7,7 @@ import {
   type PanelComponent,
   PanelEvent,
   updateDashboardData,
+  useAppDispatch,
   useListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
@@ -35,7 +35,7 @@ export type FilterPluginProps = Partial<DashboardPluginComponentProps>;
 export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id: localDashboardId, layout, registerComponent } = props;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [panelColumns] = useState(
     () => new Map<FilterColumnSourceId, FilterColumn[]>()
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhPandas, dhTable, vsGraph, vsPreview } from '@deephaven/icons';
 import { useApi } from '@deephaven/jsapi-bootstrap';

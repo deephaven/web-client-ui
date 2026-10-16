@@ -8,6 +8,8 @@ import { nanoid } from 'nanoid';
 import * as React from 'react';
 import type ReactReconciler from 'react-reconciler';
 
+import type { JSX } from 'react';
+
 /**
  * Represents a react-internal Fiber node.
  */

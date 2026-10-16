@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { LOGIN_OPTIONS_REQUEST } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';

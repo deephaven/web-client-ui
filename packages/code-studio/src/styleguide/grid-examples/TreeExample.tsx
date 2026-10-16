@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { Grid, MockTreeGridModel } from '@deephaven/grid';
 
 function TreeExample(): JSX.Element {

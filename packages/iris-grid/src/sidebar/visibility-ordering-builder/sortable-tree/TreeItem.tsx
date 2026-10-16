@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useMemo } from 'react';
+import React, { useMemo, type JSX } from 'react';
 import classNames from 'classnames';
 import type { FlattenedItem } from './types';
 import './TreeItem.scss';

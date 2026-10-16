@@ -55,7 +55,7 @@ function makeComponent(
   settings = DEFAULT_SETTINGS,
   props = {}
 ) {
-  let ref: React.RefObject<IrisGrid>;
+  let ref: React.RefObject<IrisGrid | null>;
   function IrisGridWithRef() {
     ref = useRef<IrisGrid>(null);
     // eslint-disable-next-line react/jsx-props-no-spreading
@@ -983,7 +983,7 @@ describe('controlled sorts and quick filters', () => {
     const sorts = [{ column: 'A', direction: 'ASC', isAbs: false }] as const;
     jest.spyOn(component, 'updateSorts');
 
-    component.requestSortsChange(sorts);
+    act(() => component.requestSortsChange(sorts));
 
     expect(onSortsChange).toHaveBeenCalledWith(sorts);
     expect(component.updateSorts).toHaveBeenCalledWith(sorts);
@@ -1016,7 +1016,7 @@ describe('controlled sorts and quick filters', () => {
     ]);
     jest.spyOn(component, 'updateQuickFilters');
 
-    component.requestQuickFiltersChange(quickFilters);
+    act(() => component.requestQuickFiltersChange(quickFilters));
 
     expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
     expect(component.updateQuickFilters).toHaveBeenCalledWith(quickFilters);

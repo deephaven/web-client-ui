@@ -1,6 +1,6 @@
 import { type ContextAction, ContextActions } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, type JSX } from 'react';
 import FileList from './FileList';
 import { FileListItem, type FileListRenderItemProps } from './FileListItem';
 import { DEFAULT_ROW_HEIGHT } from './FileListUtils';

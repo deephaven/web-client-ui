@@ -1,5 +1,4 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, useState, type JSX } from 'react';
 import {
   Switch,
   ActionButton,
@@ -9,7 +8,7 @@ import {
   Heading,
   Content,
 } from '@deephaven/components';
-import { useAppSelector } from '@deephaven/dashboard';
+import { useAppDispatch, useAppSelector } from '@deephaven/dashboard';
 import { getNotebookSettings, updateNotebookSettings } from '@deephaven/redux';
 import { vsSettings } from '@deephaven/icons';
 import {
@@ -21,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export function EditorSectionContent(): JSX.Element {
   const notebookSettings = useAppSelector(getNotebookSettings);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const {
     isMinimapEnabled,
     formatOnSave,

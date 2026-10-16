@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type {
@@ -18,7 +19,7 @@ import Log from '@deephaven/log';
 import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
 import { ErrorBoundary } from '@deephaven/components';
 import { type RootState } from '@deephaven/redux';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import PanelManager, { type ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
@@ -29,7 +30,7 @@ import {
 } from './DashboardUtils';
 import PanelEvent from './PanelEvent';
 import { useListener } from './layout';
-import { getDashboardData, updateDashboardData } from './redux';
+import { getDashboardData, updateDashboardData, useAppDispatch } from './redux';
 import {
   type PanelConfig,
   type PanelComponentType,
@@ -92,7 +93,7 @@ export function DashboardLayout({
   dehydrate = dehydrateDefault,
   panelWrapper,
 }: DashboardLayoutProps): JSX.Element {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const data =
     useSelector<RootState>(state => getDashboardData(state, id)) ??
     EMPTY_OBJECT;
@@ -101,7 +102,7 @@ export function DashboardLayout({
   const [isItemDragging, setIsItemDragging] = useState(false);
   // `lastConfig` is intentionally a ref rather than state so it can be written synchronously inside the throttled body before `onLayoutChange` runs.
   // This guarantees any subsequent render triggered by the parent observes the latest value, regardless of how that render was scheduled (see DH-21843).
-  const lastConfigRef = useRef<DashboardLayoutConfig>();
+  const lastConfigRef = useRef<DashboardLayoutConfig>(undefined);
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
   );
@@ -399,12 +400,15 @@ export function DashboardLayout({
           // Have fallback be an empty array so that we don't show the error message over entire app
           // Look into using toast message in the future
           <ErrorBoundary fallback={[]}>
-            {React.cloneElement(child as ReactElement, {
-              id,
-              layout,
-              panelManager,
-              registerComponent,
-            })}
+            {React.cloneElement(
+              child as ReactElement<Record<string, unknown>>,
+              {
+                id,
+                layout,
+                panelManager,
+                registerComponent,
+              }
+            )}
           </ErrorBoundary>
         ) : null
       )}

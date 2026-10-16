@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, type JSX } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import useCreateClient from './useCreateClient';
 

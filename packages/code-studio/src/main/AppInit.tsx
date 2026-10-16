@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState, type JSX } from 'react';
+import { useSelector } from 'react-redux';
 import {
   LoadingOverlay,
   Shortcut,
   ShortcutRegistry,
 } from '@deephaven/components';
-import { DEFAULT_DASHBOARD_ID, setDashboardData } from '@deephaven/dashboard';
+import {
+  DEFAULT_DASHBOARD_ID,
+  setDashboardData,
+  useAppDispatch,
+} from '@deephaven/dashboard';
 import {
   setDashboardConnection,
   setDashboardSessionWrapper,
@@ -54,7 +58,7 @@ function AppInit(): JSX.Element {
   const serverConfig = useServerConfig();
   const user = useUser();
   const workspace = useSelector<RootState>(getWorkspace);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();

@@ -4,6 +4,7 @@ import React, {
   type RefObject,
   type MouseEvent,
   type MouseEventHandler,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import Markdown, { type Options } from 'react-markdown';
@@ -76,9 +77,9 @@ export class MarkdownNotebook extends PureComponent<
 
   commands: Map<number, string>;
 
-  codeElements: Map<number, React.RefObject<HTMLDivElement>>;
+  codeElements: Map<number, React.RefObject<HTMLDivElement | null>>;
 
-  editorScrollView: RefObject<HTMLDivElement>;
+  editorScrollView: RefObject<HTMLDivElement | null>;
 
   updateHasCode(): void {
     const { hasCode } = this.state;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { Grid, MockDataBarGridModel } from '@deephaven/grid';
 import type { ColorMap } from '@deephaven/grid';
 

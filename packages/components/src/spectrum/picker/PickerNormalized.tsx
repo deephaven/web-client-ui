@@ -1,5 +1,6 @@
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import cl from 'classnames';
+import type { JSX } from 'react';
 import type { PickerNormalizedProps } from './PickerProps';
 
 import usePickerNormalizedProps from './usePickerNormalizedProps';

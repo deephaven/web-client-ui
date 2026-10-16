@@ -39,7 +39,7 @@ interface PanelState {
 }
 
 interface MarkdownPanelProps extends DashboardPanelProps {
-  panelState: PanelState;
+  panelState: PanelState | null;
   closedPanels: ClosedPanel[];
 }
 
@@ -49,7 +49,7 @@ interface MarkdownPanelState {
   content?: string | null;
 
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState;
+  panelState: PanelState | null;
 }
 
 export class MarkdownPanel extends Component<

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { type CSSProperties, forwardRef, useMemo } from 'react';
+import { type CSSProperties, forwardRef, useMemo, type JSX } from 'react';
 import {
   useLocale,
   View as SpectrumView,

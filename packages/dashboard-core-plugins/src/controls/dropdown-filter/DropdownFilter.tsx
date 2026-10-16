@@ -8,6 +8,7 @@ import React, {
   type MouseEvent,
   type ReactElement,
   type RefObject,
+  type JSX,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -156,7 +157,7 @@ export class DropdownFilter extends Component<
     this.sendUpdate.flush();
   }
 
-  dropdownRef: RefObject<HTMLSelectElement>;
+  dropdownRef: RefObject<HTMLSelectElement | null>;
 
   getCompatibleColumns = memoize(
     (source: LinkPoint, columns: readonly DropdownFilterColumn[]) =>

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, type JSX } from 'react';
 import classNames from 'classnames';
 import { Draggable } from '@hello-pangea/dnd';
 import { type IconDefinition, vsClose } from '@deephaven/icons';
@@ -14,7 +14,7 @@ interface NavTabProps {
   onSelect: (key: string) => void;
   onClose?: (key: string) => void;
   isActive: boolean;
-  activeRef: React.RefObject<HTMLDivElement>;
+  activeRef: React.RefObject<HTMLDivElement | null>;
   index: number;
   isDraggable: boolean;
   contextActions?: ResolvableContextAction | ResolvableContextAction[];

@@ -36,7 +36,7 @@ interface DraggableLists {
 
 interface DraggableListsState {
   items: Array<unknown[]>;
-  lists: Array<React.RefObject<DraggableListInput>>;
+  lists: Array<React.RefObject<DraggableListInput | null>>;
   selectedRanges: Array<Range[]>;
 }
 
@@ -65,7 +65,8 @@ class DraggableLists extends Component<
     for (let i = 0; i < DRAG_LIST_TITLES.length; i += 1) {
       items[i] = makeItems(DRAG_LIST_TITLES[i]);
       selectedRanges[i] = [];
-      lists[i] = React.createRef() as React.RefObject<DraggableListInput>;
+      lists[i] =
+        React.createRef() as React.RefObject<DraggableListInput | null>;
     }
 
     this.state = {
@@ -171,7 +172,7 @@ class DraggableLists extends Component<
     (
       items: unknown[],
       selectedRanges: Range[],
-      ref: React.RefObject<DraggableListInput>,
+      ref: React.RefObject<DraggableListInput | null>,
       listIndex: number
     ) => (
       <DraggableListInput

@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';

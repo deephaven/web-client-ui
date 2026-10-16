@@ -124,9 +124,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
   debouncedCommitChanges: DebouncedFunc<() => void>;
 
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
 
-  addFormatRuleButtonRef: RefObject<HTMLButtonElement>;
+  addFormatRuleButtonRef: RefObject<HTMLButtonElement | null>;
 
   lastFormatRuleIndex: number;
 

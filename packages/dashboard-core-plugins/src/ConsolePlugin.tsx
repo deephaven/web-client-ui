@@ -11,6 +11,7 @@ import {
   LayoutUtils,
   type PanelComponent,
   type PanelHydrateFunction,
+  useAppDispatch,
   useListener,
   usePanelRegistration,
 } from '@deephaven/dashboard';
@@ -18,8 +19,7 @@ import { FileUtils } from '@deephaven/file-explorer';
 import { type CloseOptions, isComponent } from '@deephaven/golden-layout';
 import { type dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { useCallback, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useCallback, useRef, useState, type JSX } from 'react';
 import { nanoid } from 'nanoid';
 import { ConsoleEvent, NotebookEvent } from './events';
 import {
@@ -82,7 +82,7 @@ export function ConsolePlugin(
 
   useConfigureRuff();
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const getConsolePanel = useCallback(
     () => panelManager.getLastUsedPanelOfType(ConsolePanel),

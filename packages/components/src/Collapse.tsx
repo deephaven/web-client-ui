@@ -1,5 +1,5 @@
 // Port of https://github.com/react-bootstrap/react-bootstrap/blob/master/src/Collapse.js
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 

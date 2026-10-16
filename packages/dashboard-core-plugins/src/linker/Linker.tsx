@@ -1,4 +1,4 @@
-import React, { Component, type ErrorInfo } from 'react';
+import React, { Component, type ErrorInfo, type JSX } from 'react';
 import { connect, type ConnectedProps } from 'react-redux';
 import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';

@@ -1,4 +1,4 @@
-import React, { Component, type ErrorInfo } from 'react';
+import React, { Component, type ErrorInfo, type JSX } from 'react';
 import classNames from 'classnames';
 import {
   Button,
@@ -120,7 +120,7 @@ export class LinkerOverlayContent extends Component<
     window.removeEventListener('resize', this.handleResize, true);
   }
 
-  dialogRef: React.RefObject<HTMLInputElement>;
+  dialogRef: React.RefObject<HTMLInputElement | null>;
 
   /** Gets the on screen points for a link start or end spec */
   getPointFromLinkPoint(linkPoint: LinkPoint): LinkerCoordinate {

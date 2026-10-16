@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, type JSX } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from './AuthHandlerTypes';
 import { type AuthPlugin, type AuthPluginProps } from './AuthPlugin';

@@ -6,7 +6,7 @@ import DropdownFilter, { type DropdownFilterProps } from './DropdownFilter';
 import { type LinkPoint } from '../../linker/LinkerUtils';
 
 type MakeContainerProps = Partial<DropdownFilterProps> & {
-  ref?: React.RefObject<DropdownFilter>;
+  ref?: React.RefObject<DropdownFilter | null>;
 };
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);

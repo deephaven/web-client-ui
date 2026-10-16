@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type JSX } from 'react';
 import { type SpectrumListViewProps } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';

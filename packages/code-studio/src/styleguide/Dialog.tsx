@@ -20,7 +20,7 @@ interface DialogState {
 }
 
 interface Dialog {
-  sampleInput: React.RefObject<HTMLInputElement>;
+  sampleInput: React.RefObject<HTMLInputElement | null>;
 }
 
 class Dialog extends Component<unknown, DialogState> {

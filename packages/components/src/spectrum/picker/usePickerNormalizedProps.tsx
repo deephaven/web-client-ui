@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, type JSX } from 'react';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import type { DOMRef, Key } from '@react-types/shared';
 import {

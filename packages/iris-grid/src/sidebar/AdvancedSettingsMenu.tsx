@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { Menu, type SwitchMenuItemDef } from '@deephaven/components';
 import AdvancedSettingsType from './AdvancedSettingsType';
 

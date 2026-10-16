@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import { type PopperOptions } from 'popper.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsCheck, type IconDefinition } from '@deephaven/icons';
@@ -96,13 +96,13 @@ class CustomTimeSelect extends Component<
     };
   }
 
-  csContainer: React.RefObject<HTMLDivElement>;
+  csContainer: React.RefObject<HTMLDivElement | null>;
 
-  menuContainer: React.RefObject<HTMLDivElement>;
+  menuContainer: React.RefObject<HTMLDivElement | null>;
 
-  button: React.RefObject<HTMLButtonElement>;
+  button: React.RefObject<HTMLButtonElement | null>;
 
-  input: React.RefObject<TimeInputElement>;
+  input: React.RefObject<TimeInputElement | null>;
 
   getSelectedText(): string {
     const { options, value, placeholder } = this.props;

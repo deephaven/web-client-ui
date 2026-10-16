@@ -4,6 +4,7 @@ import {
   isValidElement,
   type ReactNode,
   useState,
+  type JSX,
 } from 'react';
 import cl from 'classnames';
 import { isElementOfType, useCheckOverflow } from '@deephaven/react-hooks';

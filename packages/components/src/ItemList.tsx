@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import memoize from 'memoizee';
 import {
   FixedSizeList as List,
@@ -230,9 +230,9 @@ export class ItemList<T> extends PureComponent<
     window.removeEventListener('mouseup', this.handleWindowMouseUp);
   }
 
-  list: React.RefObject<List>;
+  list: React.RefObject<List | null>;
 
-  listContainer: React.RefObject<HTMLDivElement>;
+  listContainer: React.RefObject<HTMLDivElement | null>;
 
   getItemSelected = memoize(
     (index: number, selectedRanges: readonly Range[]) =>

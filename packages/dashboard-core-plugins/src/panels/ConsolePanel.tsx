@@ -1,6 +1,11 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
-import React, { PureComponent, type ReactElement, type RefObject } from 'react';
+import React, {
+  PureComponent,
+  type ReactElement,
+  type RefObject,
+  type JSX,
+} from 'react';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
@@ -163,7 +168,7 @@ export class ConsolePanel extends PureComponent<
     this.objectSubscriptionCleanup?.();
   }
 
-  consoleRef: RefObject<Console>;
+  consoleRef: RefObject<Console | null>;
 
   objectSubscriptionCleanup?: () => void;
 

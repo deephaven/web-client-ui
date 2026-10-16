@@ -20,7 +20,7 @@ interface DraggableListInputState {
 }
 
 interface DraggableListInput {
-  itemList: React.RefObject<DraggableItemList<unknown>>;
+  itemList: React.RefObject<DraggableItemList<unknown> | null>;
   selectedItems: Array<unknown>;
 }
 class DraggableListInput extends PureComponent<

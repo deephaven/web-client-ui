@@ -289,9 +289,9 @@ export class DropdownFilterPanel extends Component<
 
   dateTimeFormatter: DateTimeColumnFormatter;
 
-  dropdownFilterRef: RefObject<DropdownFilter>;
+  dropdownFilterRef: RefObject<DropdownFilter | null>;
 
-  panelContainer: RefObject<HTMLDivElement>;
+  panelContainer: RefObject<HTMLDivElement | null>;
 
   pending: Pending;
 

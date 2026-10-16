@@ -76,7 +76,7 @@ describe('PanelErrorBoundary', () => {
         isLoading: false,
         isLoaded: false,
       }),
-      expect.any(Object)
+      undefined
     );
   });
 

@@ -297,13 +297,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
   cancelListener?: () => void;
 
-  consolePane: RefObject<HTMLDivElement>;
+  consolePane: RefObject<HTMLDivElement | null>;
 
-  consoleInput: RefObject<ConsoleInput>;
+  consoleInput: RefObject<ConsoleInput | null>;
 
-  consoleHistoryScrollPane: RefObject<HTMLDivElement>;
+  consoleHistoryScrollPane: RefObject<HTMLDivElement | null>;
 
-  consoleHistoryContent: RefObject<HTMLDivElement>;
+  consoleHistoryContent: RefObject<HTMLDivElement | null>;
 
   pending: Pending;
 

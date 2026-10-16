@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import {
   ListView as SpectrumListView,
   type SpectrumListViewProps,

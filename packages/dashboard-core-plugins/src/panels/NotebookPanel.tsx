@@ -90,8 +90,8 @@ interface PanelState {
 interface NotebookPanelMappedProps {
   notebookSettings: NotebookSetting;
   fileStorage: FileStorage;
-  session?: dh.IdeSession;
-  sessionLanguage?: string;
+  session?: dh.IdeSession | null;
+  sessionLanguage?: string | null;
 }
 
 interface NotebookPanelProps
@@ -122,8 +122,8 @@ interface NotebookPanelState {
   fileMetadata: FileMetadata | null;
   settings: editor.IStandaloneEditorConstructionOptions;
 
-  session?: dh.IdeSession;
-  sessionLanguage?: string;
+  session?: dh.IdeSession | null;
+  sessionLanguage?: string | null;
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState;
@@ -1481,7 +1481,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 onChange={this.handleEditorChange}
                 onRunCommand={this.handleRunCommand}
                 session={session}
-                sessionLanguage={sessionLanguage}
+                sessionLanguage={sessionLanguage ?? undefined}
                 onEditorInitialized={this.handleEditorInitialized}
                 onEditorWillDestroy={this.handleEditorWillDestroy}
                 settings={settings}

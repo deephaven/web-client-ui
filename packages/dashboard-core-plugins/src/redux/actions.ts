@@ -19,7 +19,7 @@ export const setDashboardConnection =
   (
     id: string,
     connection: dh.IdeConnection
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { connection }));
 
@@ -32,7 +32,7 @@ export const setDashboardSessionWrapper =
   (
     id: string,
     sessionWrapper: SessionWrapper
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { sessionWrapper }));
 
@@ -45,7 +45,7 @@ export const setDashboardLinks =
   (
     id: string,
     links: Link[]
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { links }));
 
@@ -58,7 +58,7 @@ export const addDashboardLinks =
   (
     id: string,
     newLinks: Link[]
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   (dispatch, getState) => {
     const links = getLinksForDashboard(getState(), id);
     const filtered = newLinks.filter(
@@ -81,7 +81,7 @@ export const deleteDashboardLinks =
   (
     id: string,
     linkIds: string[]
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   (dispatch, getState) => {
     const links = getLinksForDashboard(getState(), id);
     const newLinks = links.filter(link => !linkIds.includes(link.id));
@@ -97,7 +97,7 @@ export const setDashboardIsolatedLinkerPanelId =
   (
     id: string,
     isolatedLinkerPanelId: string | string[] | undefined
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { isolatedLinkerPanelId }));
 
@@ -110,7 +110,7 @@ export const setDashboardColumnSelectionValidator =
   (
     id: string,
     columnSelectionValidator: ColumnSelectionValidator | undefined
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { columnSelectionValidator }));
 
@@ -123,7 +123,7 @@ export const setDashboardConsoleSettings =
   (
     id: string,
     consoleSettings: Record<string, unknown>
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { consoleSettings }));
 
@@ -136,6 +136,6 @@ export const setDashboardFilterSets =
   (
     id: string,
     filterSets: FilterSet[]
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { filterSets }));

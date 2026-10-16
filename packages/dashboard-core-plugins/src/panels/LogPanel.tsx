@@ -1,6 +1,6 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
 import type { dh } from '@deephaven/jsapi-types';
@@ -15,11 +15,11 @@ import { getDashboardSessionWrapper } from '../redux';
 const log = Log.module('LogPanel');
 
 interface LogPanelProps extends DashboardPanelProps {
-  session?: dh.IdeSession;
+  session?: dh.IdeSession | null;
 }
 
 interface LogPanelState {
-  session?: dh.IdeSession;
+  session?: dh.IdeSession | null;
 }
 
 class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {

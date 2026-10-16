@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import { Button, SearchInput } from '@deephaven/components';
 import { ObjectIcon } from '@deephaven/console';
@@ -54,7 +55,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);
   const [searchText, setSearchText] = useState('');
   const searchField = useRef<SearchInput>(null);
-  const selectStartEvent = useRef<SelectStartEvent>();
+  const selectStartEvent = useRef<SelectStartEvent>(undefined);
 
   /**
    * Send object to be created, if an event is passed object

@@ -191,9 +191,9 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.search.cancel();
   }
 
-  ungroupedList: RefObject<DraggableItemList<dh.Column>>;
+  ungroupedList: RefObject<DraggableItemList<dh.Column> | null>;
 
-  groupedList: RefObject<DraggableItemList<string>>;
+  groupedList: RefObject<DraggableItemList<string> | null>;
 
   handleSearchChange(event: ChangeEvent<HTMLInputElement>): void {
     const searchFilter = event.target.value;

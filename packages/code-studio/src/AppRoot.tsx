@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, type JSX } from 'react';
 import { MonacoUtils } from '@deephaven/console';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
 // Vite turns a `?worker` import into a worker constructor, so Monaco stays lazy.

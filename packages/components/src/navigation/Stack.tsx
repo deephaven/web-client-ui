@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type JSX,
+} from 'react';
 import { usePrevious } from '@deephaven/react-hooks';
 import './Stack.scss';
 import { SlideTransition } from '../transitions';

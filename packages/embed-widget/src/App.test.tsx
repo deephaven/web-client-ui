@@ -24,12 +24,16 @@ jest.mock('@deephaven/app-utils', () => ({
   useUser: jest.fn(() => ({ name: 'test-user' })),
 }));
 
-jest.mock('@deephaven/dashboard', () => ({
-  getAllDashboardsData: jest.fn(() => ({})),
-  setDashboardPluginData: jest.fn(),
-  emitPanelOpen: jest.fn(),
-  useCreateDashboardListener: jest.fn(),
-}));
+jest.mock('@deephaven/dashboard', () => {
+  const allDashboardsData = {};
+  return {
+    getAllDashboardsData: jest.fn(() => allDashboardsData),
+    setDashboardPluginData: jest.fn(),
+    emitPanelOpen: jest.fn(),
+    useAppDispatch: jest.fn(() => jest.fn()),
+    useCreateDashboardListener: jest.fn(),
+  };
+});
 
 jest.mock('@deephaven/plugin', () => ({
   useDashboardPlugins: jest.fn(() => []),

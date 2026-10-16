@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import './SelectValueList.scss';
 import classNames from 'classnames';
 import memoize from 'memoizee';
@@ -61,7 +61,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
     this.sendViewportUpdate();
   }
 
-  list: React.RefObject<HTMLDivElement>;
+  list: React.RefObject<HTMLDivElement | null>;
 
   topRow: number | null;
 

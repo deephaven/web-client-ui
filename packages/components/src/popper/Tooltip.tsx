@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import { flushSync } from 'react-dom';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
@@ -123,9 +123,9 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
     }
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
-  popper: React.RefObject<Popper>;
+  popper: React.RefObject<Popper | null>;
 
   parent: HTMLElement | null;
 

@@ -1,4 +1,4 @@
-import type { Reducer } from 'redux';
+import type { AnyAction, Reducer } from 'redux';
 
 /**
  * Setup a replace reducer for a specific action type.
@@ -9,7 +9,7 @@ import type { Reducer } from 'redux';
 export default function replaceReducer<S>(
   type: string,
   initialState: S
-): Reducer<S> {
+): Reducer<S, AnyAction> {
   return (state = initialState, action?) => {
     switch (action?.type) {
       case type: {

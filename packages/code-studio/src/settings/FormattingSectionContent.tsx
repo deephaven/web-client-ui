@@ -82,10 +82,6 @@ export class FormattingSectionContent extends PureComponent<
   FormattingSectionContentProps,
   FormattingSectionContentState
 > {
-  static defaultProps = {
-    scrollTo: (): void => undefined,
-  };
-
   static inputDebounceTime = 250;
 
   constructor(props: FormattingSectionContentProps) {
@@ -162,7 +158,7 @@ export class FormattingSectionContent extends PureComponent<
 
   pendingUpdates: Partial<WorkspaceSettings>[];
 
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
 
   getCachedDateTimeFormatOptions = memoize(
     (

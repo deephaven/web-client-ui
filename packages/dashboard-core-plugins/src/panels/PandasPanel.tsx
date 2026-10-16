@@ -31,7 +31,7 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
   static COMPONENT = 'PandasPanel';
 
   // eslint-disable-next-line react/sort-comp
-  private irisGridRef: RefObject<IrisGridPanel>;
+  private irisGridRef: RefObject<IrisGridPanel | null>;
 
   private model: IrisGridModel | null = null;
 

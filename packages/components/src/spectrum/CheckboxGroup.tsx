@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import { isElementOfType } from '@deephaven/react-hooks';
-import React, { type ReactNode, useMemo } from 'react';
+import React, { type ReactNode, useMemo, type JSX } from 'react';
 import {
   Checkbox,
   CheckboxGroup as SpectrumCheckboxGroup,

@@ -1,6 +1,11 @@
-import { type ReactElement } from 'react';
+import { type ReactElement, type JSX } from 'react';
 import { ListBox } from '@adobe/react-spectrum';
-import type { DOMRef, LoadingState, Selection } from '@react-types/shared';
+import type {
+  CollectionElement,
+  DOMRef,
+  LoadingState,
+  Selection,
+} from '@react-types/shared';
 
 export interface MultiSelectListBoxProps {
   /** DOMRef forwarded to the inner Spectrum `<ListBox>`. */
@@ -54,7 +59,7 @@ export function MultiSelectListBox({
       isLoading={loadingState === 'loadingMore'}
       UNSAFE_style={{ maxHeight: 'inherit' }}
     >
-      {children}
+      {children as CollectionElement<unknown>[]}
     </ListBox>
   );
 }

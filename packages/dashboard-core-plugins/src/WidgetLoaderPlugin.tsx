@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect, forwardRef } from 'react';
+import { useMemo, useCallback, useEffect, forwardRef, type JSX } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import { nanoid } from 'nanoid';
 import {

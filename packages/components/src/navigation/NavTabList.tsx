@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import clamp from 'lodash.clamp';
@@ -192,7 +193,7 @@ function NavTabList({
   makeContextActions,
   renderAfterTabContent,
 }: NavTabListProps): React.ReactElement {
-  const containerRef = useRef<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>(undefined);
   const [isOverflowing, setIsOverflowing] = useState(true);
   const [isDashboardTabMenuShown, setIsDashboardTabMenuShown] = useState(false);
   const [disableScrollLeft, setDisableScrollLeft] = useState(true);

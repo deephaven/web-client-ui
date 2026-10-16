@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, type JSX } from 'react';
 import classNames from 'classnames';
 import { DOMUtils } from '@deephaven/utils';
 import './LoadingSpinner.scss';

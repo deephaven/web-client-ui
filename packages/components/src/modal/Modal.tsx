@@ -40,7 +40,7 @@ function Modal({
   toggle,
   'data-testid': dataTestId,
 }: ModalProps): React.ReactElement | null {
-  const element = useRef<HTMLElement>();
+  const element = useRef<HTMLElement>(undefined);
   const background = useRef<HTMLDivElement>(null);
   const backdropFade = useRef<HTMLDivElement>(null);
   const [backgroundClicked, setBackgroundClicked] = useState(false);

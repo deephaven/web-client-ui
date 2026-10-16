@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type JSX,
+} from 'react';
 import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { SELECTION_DIRECTION } from './GridRange';

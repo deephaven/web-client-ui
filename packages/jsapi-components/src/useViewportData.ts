@@ -93,7 +93,8 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   // don't invalidate the memoization of `onTableUpdated`. This prevents
   // `useTableListener` from unnecessarily re-subscribing to the same event over
   // and over.
-  const onTableUpdatedRef = useRef<(event: OnTableUpdatedEvent) => void>();
+  const onTableUpdatedRef =
+    useRef<(event: OnTableUpdatedEvent) => void>(undefined);
   onTableUpdatedRef.current = useMemo(
     () => createOnTableUpdatedHandler(viewportData, deserializeRow),
     [deserializeRow, viewportData]

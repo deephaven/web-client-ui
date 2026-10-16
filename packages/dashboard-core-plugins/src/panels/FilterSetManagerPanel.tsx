@@ -55,7 +55,7 @@ interface PanelState {
 interface FilterSetManagerPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-  panelState: PanelState;
+  panelState: PanelState | null;
   filterSets: FilterSet[];
   localDashboardId: string;
   dashboardOpenedPanelMap: Map<string | string[], PanelComponent>;
@@ -70,7 +70,7 @@ interface FilterSetManagerPanelState {
   selectedId?: string | string[];
   isValueShown: boolean;
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState; // Dehydrated panel state that can load this panel
+  panelState: PanelState | null; // Dehydrated panel state that can load this panel
 }
 
 function hasSetPanelState(panel: PanelComponent): panel is PanelComponent & {

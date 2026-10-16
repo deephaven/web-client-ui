@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, type ReactNode, type JSX } from 'react';
 import {
   Cell,
   Column,

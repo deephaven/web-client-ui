@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, type JSX } from 'react';
 import classNames from 'classnames';
 import { Draggable } from '@hello-pangea/dnd';
 import { Button } from '@deephaven/components';

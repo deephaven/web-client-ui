@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type JSX } from 'react';
 import { Text } from './spectrum';
 import stylesCommon from './SpectrumComponent.module.scss';
 import { type PopperOptions, Tooltip } from './popper';

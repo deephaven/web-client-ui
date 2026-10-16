@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useRef,
   type ReactElement,
+  type JSX,
 } from 'react';
 import classNames from 'classnames';
 import {
@@ -268,7 +269,7 @@ class VisibilityOrderingBuilderInner extends PureComponent<
 
   list: HTMLDivElement | null;
 
-  virtualizerRef: React.RefObject<Virtualizer<HTMLElement, Element>> =
+  virtualizerRef: React.RefObject<Virtualizer<HTMLElement, Element> | null> =
     React.createRef();
 
   /**

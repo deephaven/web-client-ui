@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoizee';
 import {
@@ -174,7 +174,7 @@ class DraggableItemList<T> extends PureComponent<
     };
   }
 
-  itemList: React.RefObject<ItemList<T>>;
+  itemList: React.RefObject<ItemList<T> | null>;
 
   selectItem(itemIndex: number): void {
     this.itemList.current?.selectItem(itemIndex);

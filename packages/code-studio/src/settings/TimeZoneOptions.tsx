@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { TimeUtils } from '@deephaven/utils';
 
 export default function TimeZoneOptions(): JSX.Element {

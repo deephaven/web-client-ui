@@ -1,4 +1,4 @@
-import thunk from 'redux-thunk';
+import { thunk } from 'redux-thunk';
 import logger from './logger';
 import crashReporter from './crashReporter';
 import logUser from './logUser';
