@@ -99,13 +99,14 @@ export function useGridLinker(
       }
       const { metrics } = irisGrid.state;
       assertNotNull(metrics);
-      const { x: scaleX, y: scaleY } = irisGrid.getGridScale();
       const {
         columnHeaderHeight,
         allColumnXs,
         allColumnWidths,
         right,
         columnHeaderMaxDepth,
+        scaleX,
+        scaleY,
       } = metrics;
       const columnIndex = model.getColumnIndexByName(columnName);
       assertNotNull(columnIndex);

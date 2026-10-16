@@ -9,7 +9,7 @@ import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
 import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
-import { type VisibleIndex } from './GridMetrics';
+import { type GridMetrics, type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
 import { type CellInputRendererRegistry } from './GridRendererTypes';
 
@@ -1713,12 +1713,14 @@ describe('css transform scale', () => {
       .mockReturnValue(
         new DOMRect(100, 50, VIEW_SIZE * scale, VIEW_SIZE * scale)
       );
+    component.updateMetrics();
     return component;
   }
 
-  it('reports the ratio of rendered to layout size', () => {
+  it('includes the ratio of rendered to layout size in the metrics', () => {
     const component = makeScaledGrid(SCALE);
-    expect(component.getCanvasScale()).toEqual({ x: SCALE, y: SCALE });
+    const { scaleX, scaleY } = component.metrics as GridMetrics;
+    expect({ scaleX, scaleY }).toEqual({ scaleX: SCALE, scaleY: SCALE });
   });
 
   it('maps client coordinates back to layout coordinates', () => {

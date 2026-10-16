@@ -4604,14 +4604,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  /**
-   * Ratio of on-screen size to layout size for the grid, for converting layout-pixel metrics to screen coordinates.
-   * @returns The x and y scale factors
-   */
-  getGridScale(): { x: number; y: number } {
-    return this.grid?.getCanvasScale() ?? { x: 1, y: 1 };
-  }
-
   getColumnBoundingRect(): DOMRect {
     const { metrics, shownColumnTooltip } = this.state;
     assertNotNull(metrics);
@@ -4619,13 +4611,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const gridRect = this.gridWrapper?.getBoundingClientRect();
     const popperMargin = 20;
     assertNotNull(gridRect);
-    const { x: scaleX, y: scaleY } = this.getGridScale();
     const {
       columnHeaderHeight,
       allColumnXs,
       allColumnWidths,
       width,
       columnHeaderMaxDepth,
+      scaleX,
+      scaleY,
     } = metrics;
     const columnX = allColumnXs.get(shownColumnTooltip);
     const columnWidth = allColumnWidths.get(shownColumnTooltip);

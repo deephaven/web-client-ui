@@ -733,29 +733,13 @@ class Grid extends PureComponent<GridProps, GridState> {
   getGridPointFromEvent(event: GridMouseEvent): GridPoint {
     assertIsDefined(this.canvas);
 
+    if (!this.metrics) throw new Error('metrics must be set');
+
     const rect = this.canvas.getBoundingClientRect();
-    const { x: scaleX, y: scaleY } = this.getCanvasScale(rect);
+    const { scaleX, scaleY } = this.metrics;
     const x = (event.clientX - rect.left) / scaleX;
     const y = (event.clientY - rect.top) / scaleY;
     return this.getGridPointFromXY(x, y);
-  }
-
-  /**
-   * Ratio of on-screen size to layout size for the canvas, which differs from 1 when a CSS transform scales an ancestor.
-   * Screen-space values such as clientX or movementX must be divided by this to get layout pixels.
-   * @param rect The canvas bounding rect, if already read, to avoid forcing another layout
-   * @returns The x and y scale factors
-   */
-  getCanvasScale(rect?: DOMRect): { x: number; y: number } {
-    const { canvas } = this;
-    if (canvas == null) {
-      return { x: 1, y: 1 };
-    }
-    const bounds = rect ?? canvas.getBoundingClientRect();
-    return {
-      x: canvas.clientWidth > 0 ? bounds.width / canvas.clientWidth : 1,
-      y: canvas.clientHeight > 0 ? bounds.height / canvas.clientHeight : 1,
-    };
   }
 
   getGridPointFromXY(x: Coordinate, y: Coordinate): GridPoint {
@@ -773,6 +757,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     const context = this.canvasContext;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = width > 0 ? rect.width / width : 1;
+    const scaleY = height > 0 ? rect.height / height : 1;
     const {
       left,
       top,
@@ -792,6 +779,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       topOffset,
       width,
       height,
+      scaleX,
+      scaleY,
       context,
       theme,
       model,
