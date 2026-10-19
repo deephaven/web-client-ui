@@ -733,9 +733,12 @@ class Grid extends PureComponent<GridProps, GridState> {
   getGridPointFromEvent(event: GridMouseEvent): GridPoint {
     assertIsDefined(this.canvas);
 
+    if (!this.metrics) throw new Error('metrics must be set');
+
     const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const { scaleX, scaleY } = this.metrics;
+    const x = (event.clientX - rect.left) / scaleX;
+    const y = (event.clientY - rect.top) / scaleY;
     return this.getGridPointFromXY(x, y);
   }
 
@@ -754,6 +757,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     const context = this.canvasContext;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = width > 0 ? rect.width / width : 1;
+    const scaleY = height > 0 ? rect.height / height : 1;
     const {
       left,
       top,
@@ -773,6 +779,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       topOffset,
       width,
       height,
+      scaleX,
+      scaleY,
       context,
       theme,
       model,
@@ -1010,9 +1018,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const rect = canvasWrapper.current.getBoundingClientRect();
-    const width = Math.floor(rect.width);
-    const height = Math.floor(rect.height);
+    const width = canvasWrapper.current.clientWidth;
+    const height = canvasWrapper.current.clientHeight;
 
     // avoid triggering a dom re-calc if size hasn't changed
     if (

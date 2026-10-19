@@ -4617,6 +4617,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       allColumnWidths,
       width,
       columnHeaderMaxDepth,
+      scaleX,
+      scaleY,
     } = metrics;
     const columnX = allColumnXs.get(shownColumnTooltip);
     const columnWidth = allColumnWidths.get(shownColumnTooltip);
@@ -4626,20 +4628,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const left =
       gridRect.left +
-      clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin);
+      clamp(
+        (columnX + columnWidth / 2) * scaleX,
+        popperMargin,
+        width * scaleX - popperMargin
+      );
 
     return {
-      top: gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight,
-      left:
-        gridRect.left +
-        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin),
-      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight,
-      right:
-        gridRect.left +
-        clamp(columnX + columnWidth / 2, popperMargin, width - popperMargin) +
-        1,
+      top:
+        gridRect.top + (columnHeaderMaxDepth - 1) * columnHeaderHeight * scaleY,
+      left,
+      bottom: gridRect.top + columnHeaderMaxDepth * columnHeaderHeight * scaleY,
+      right: left + 1,
       width: 1,
-      height: columnHeaderHeight,
+      height: columnHeaderHeight * scaleY,
       x: left,
       y: gridRect.top,
       toJSON: () => {

@@ -35,6 +35,10 @@ export interface GridMetricState {
   width: number;
   height: number;
 
+  // On-screen to layout size ratio of the canvas, differs from 1 when a CSS transform scales the grid
+  scaleX?: number;
+  scaleY?: number;
+
   // The canvas context
   context: CanvasRenderingContext2D;
 
@@ -212,6 +216,8 @@ export class GridMetricCalculator {
       topOffset,
       width,
       height,
+      scaleX = 1,
+      scaleY = 1,
       theme,
       model,
       movedRows,
@@ -581,6 +587,10 @@ export class GridMetricCalculator {
       // Canvas width/height
       width,
       height,
+
+      // Canvas on-screen to layout size ratio
+      scaleX,
+      scaleY,
 
       // Max x/y coordinate of the grid (does not include headers)
       maxX,

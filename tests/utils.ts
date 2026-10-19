@@ -61,17 +61,21 @@ export async function gotoPage(
  * @param name Name of the table or plot
  */
 async function openPanel(page: Page, name: PanelNames): Promise<void> {
-  // open the tables/plot button
-  const dropdownButton = page.getByRole('button', { name: 'Panels' });
-  await dropdownButton.click();
-
-  // search for the table/plot
   const search = page.getByPlaceholder('Find Table, Plot or Widget');
-  await search.type(name);
 
-  // open the table/plot
-  const openButton = page.getByRole('button', { name, exact: true });
-  await openButton.click();
+  // The panels menu closes when it loses focus and its list fills in after load, so retry the whole sequence
+  await expect(async () => {
+    // The button toggles the menu, so only click it when the menu is closed
+    if (!(await search.isVisible())) {
+      await page
+        .getByRole('button', { name: 'Panels' })
+        .click({ timeout: 5000 });
+    }
+    await search.fill(name, { timeout: 5000 });
+    await page
+      .getByTestId(`panel-list-item-${name}-button`)
+      .click({ timeout: 5000 });
+  }).toPass({ timeout: 45000 });
 }
 
 /**

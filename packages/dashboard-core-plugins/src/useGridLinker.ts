@@ -105,6 +105,8 @@ export function useGridLinker(
         allColumnWidths,
         right,
         columnHeaderMaxDepth,
+        scaleX,
+        scaleY,
       } = metrics;
       const columnIndex = model.getColumnIndexByName(columnName);
       assertNotNull(columnIndex);
@@ -115,11 +117,11 @@ export function useGridLinker(
       const x = clamp(
         visibleIndex > right
           ? rect.right
-          : rect.left + columnX + columnWidth * 0.5,
+          : rect.left + (columnX + columnWidth * 0.5) * scaleX,
         rect.left,
         rect.right
       );
-      const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth;
+      const y = rect.top + columnHeaderHeight * columnHeaderMaxDepth * scaleY;
 
       return [x, y];
     },

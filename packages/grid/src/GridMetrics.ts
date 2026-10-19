@@ -97,6 +97,11 @@ export type GridMetrics = {
   width: number;
   height: number;
 
+  // Canvas on-screen to layout size ratio. Divide screen-space values (clientX, movementX) by this to get layout pixels,
+  // multiply layout-space values by this to get screen pixels
+  scaleX: number;
+  scaleY: number;
+
   // Max x/y coordinate of the grid (does not include headers)
   maxX: Coordinate;
   maxY: Coordinate;

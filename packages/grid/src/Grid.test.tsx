@@ -9,7 +9,7 @@ import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
 import MockGridModel from './MockGridModel';
 import MockGridData from './MockGridData';
-import { type VisibleIndex } from './GridMetrics';
+import { type GridMetrics, type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
 import { type CellInputRendererRegistry } from './GridRendererTypes';
 
@@ -1700,5 +1700,98 @@ describe('accessibility fallback content', () => {
 
     const table = getFallback(component).getByRole('table');
     expect(within(table).queryByText('0,0')).toBeNull();
+  });
+});
+
+describe('css transform scale', () => {
+  const SCALE = 2;
+
+  function makeScaledGrid(scale: number): Grid {
+    const component = makeGridComponent();
+    jest
+      .spyOn(component.canvas as HTMLCanvasElement, 'getBoundingClientRect')
+      .mockReturnValue(
+        new DOMRect(100, 50, VIEW_SIZE * scale, VIEW_SIZE * scale)
+      );
+    component.updateMetrics();
+    return component;
+  }
+
+  it('includes the ratio of rendered to layout size in the metrics', () => {
+    const component = makeScaledGrid(SCALE);
+    const { scaleX, scaleY } = component.metrics as GridMetrics;
+    expect({ scaleX, scaleY }).toEqual({ scaleX: SCALE, scaleY: SCALE });
+  });
+
+  it('maps client coordinates back to layout coordinates', () => {
+    const component = makeScaledGrid(SCALE);
+    const { rowHeaderWidth, columnHeaderHeight } = defaultTheme;
+    const point = component.getGridPointFromEvent({
+      clientX: 100 + (rowHeaderWidth + 1) * SCALE,
+      clientY: 50 + (columnHeaderHeight + 1) * SCALE,
+    } as MouseEvent);
+    expect(point.column).toBe(0);
+    expect(point.row).toBe(0);
+  });
+
+  it('sizes the canvas from the wrapper layout size, not its scaled bounds', () => {
+    const component = makeGridComponent();
+    const canvas = component.canvas as HTMLCanvasElement;
+    jest
+      .spyOn(
+        component.canvasWrapper.current as HTMLDivElement,
+        'getBoundingClientRect'
+      )
+      .mockReturnValue(new DOMRect(0, 0, VIEW_SIZE * SCALE, VIEW_SIZE * SCALE));
+    // Force updateCanvasScale past its unchanged-size early return
+    canvas.style.width = '1px';
+    canvas.style.height = '1px';
+
+    component.updateCanvas();
+
+    expect(canvas.style.width).toBe(`${VIEW_SIZE}px`);
+    expect(canvas.style.height).toBe(`${VIEW_SIZE}px`);
+  });
+
+  it('follows the layout size and keeps the scale when the container resizes', () => {
+    const RESIZED = 600;
+    const component = makeScaledGrid(SCALE);
+    const canvas = component.canvas as HTMLCanvasElement;
+    const wrapper = component.canvasWrapper.current as HTMLDivElement;
+
+    // A flex resize changes layout size only; the rendered size stays layout size times the scale
+    [wrapper, canvas].forEach(element => {
+      Object.defineProperty(element, 'clientWidth', {
+        value: RESIZED,
+        configurable: true,
+      });
+      Object.defineProperty(element, 'clientHeight', {
+        value: RESIZED,
+        configurable: true,
+      });
+    });
+    jest
+      .spyOn(canvas, 'getBoundingClientRect')
+      .mockReturnValue(new DOMRect(100, 50, RESIZED * SCALE, RESIZED * SCALE));
+
+    component.handleResize();
+
+    expect(canvas.style.width).toBe(`${RESIZED}px`);
+    expect(canvas.style.height).toBe(`${RESIZED}px`);
+    const { width, height, scaleX, scaleY } = component.metrics as GridMetrics;
+    expect({ width, height, scaleX, scaleY }).toEqual({
+      width: RESIZED,
+      height: RESIZED,
+      scaleX: SCALE,
+      scaleY: SCALE,
+    });
+
+    const { rowHeaderWidth, columnHeaderHeight } = defaultTheme;
+    const point = component.getGridPointFromEvent({
+      clientX: 100 + (rowHeaderWidth + 1) * SCALE,
+      clientY: 50 + (columnHeaderHeight + 1) * SCALE,
+    } as MouseEvent);
+    expect(point.column).toBe(0);
+    expect(point.row).toBe(0);
   });
 });
