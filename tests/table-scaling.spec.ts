@@ -42,6 +42,12 @@ async function getRenderedScale(page: Page): Promise<number> {
  * A transform does not notify the grid, so move the mouse over it to have it refresh its metrics.
  */
 async function scaleGrid(page: Page, scale: number): Promise<void> {
+  // Remove tooltip pointer events from interfering with the grid
+  await page.addStyleTag({
+    content:
+      '.popper-container:has(.popper-tooltip), .popper-container:has(.popper-tooltip) * { pointer-events: none !important; }',
+  });
+
   await page.locator(GRID).evaluate((element, value) => {
     const grid = element as HTMLElement;
     grid.style.transformOrigin = '0 0';
