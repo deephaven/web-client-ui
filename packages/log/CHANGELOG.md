@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
+
+### Features
+
+- DH-23321: Persist Browser Logs to IndexedDB ([#2770](https://github.com/deephaven/web-client-ui/issues/2770)) ([c4c0bdd](https://github.com/deephaven/web-client-ui/commit/c4c0bdd521c3856d71b97ef25fd743fb7eba4523))
+
 ## [1.8.0](https://github.com/deephaven/web-client-ui/compare/v1.7.1...v1.8.0) (2025-10-16)
 
 ### Bug Fixes

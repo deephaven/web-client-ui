@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
+
+### Bug Fixes
+
+- DH-23999: Fix Hidden Column Break Filter by Value ([#2772](https://github.com/deephaven/web-client-ui/issues/2772)) ([6988dce](https://github.com/deephaven/web-client-ui/commit/6988dce53af64d767c65393259d247c07fd6e752))
+
 ## [1.31.0](https://github.com/deephaven/web-client-ui/compare/v1.30.1...v1.31.0) (2026-10-07)
 
 ### ⚠ BREAKING CHANGES

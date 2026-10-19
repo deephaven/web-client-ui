@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
+
+### Bug Fixes
+
+- DH-24025: Windows esm import paths ([#2773](https://github.com/deephaven/web-client-ui/issues/2773)) ([5819838](https://github.com/deephaven/web-client-ui/commit/581983882efbf174c66257eb1cbe1b6564f906fa))
+
 ## [1.29.0](https://github.com/deephaven/web-client-ui/compare/v1.28.1...v1.29.0) (2026-09-11)
 
 **Note:** Version bump only for package @deephaven/jsapi-nodejs
