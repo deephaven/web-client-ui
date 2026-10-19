@@ -6,52 +6,63 @@ Grid supports editing cells, filling a selection with a value, and pasting from 
 
 The model below stores its data in an array and accepts every edit. Double-click a cell, or select one and start typing, to edit it.
 
-```jsx live noInline
-class EditableModel extends GridModel {
-  constructor(data, columnHeaders) {
+```tsx live noInline
+class EditableModel extends GridModel implements EditableGridModel {
+  private data: (string | number)[][];
+
+  private columnHeaders: string[];
+
+  constructor(data: (string | number)[][], columnHeaders: string[]) {
     super();
     this.data = data;
     this.columnHeaders = columnHeaders;
   }
 
-  get rowCount() {
+  get rowCount(): number {
     return this.data.length;
   }
 
-  get columnCount() {
+  get columnCount(): number {
     return this.columnHeaders.length;
   }
 
-  textForCell(column, row) {
+  textForCell(column: ModelIndex, row: ModelIndex): string {
     return `${this.data[row][column]}`;
   }
 
-  textForColumnHeader(column) {
+  textForColumnHeader(column: ModelIndex): string {
     return this.columnHeaders[column];
   }
 
-  get isEditable() {
+  get isEditable(): boolean {
     return true;
   }
 
-  isEditableRange(range) {
+  isEditableRange(range: GridRange): boolean {
     return true;
   }
 
-  isValidForCell(column, row, value) {
+  isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean {
     return true;
   }
 
-  editValueForCell(column, row) {
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
     return this.textForCell(column, row);
   }
 
-  async setValueForCell(column, row, value) {
+  async setValueForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    value: string
+  ): Promise<void> {
     await this.setValues([{ column, row, text: value }]);
   }
 
-  async setValueForRanges(ranges, value) {
-    const edits = [];
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    value: string
+  ): Promise<void> {
+    const edits: EditOperation[] = [];
     GridRange.forEachCell(
       GridRange.boundedRanges(ranges, this.columnCount, this.rowCount),
       (column, row) => edits.push({ column, row, text: value })
@@ -59,14 +70,14 @@ class EditableModel extends GridModel {
     await this.setValues(edits);
   }
 
-  async setValues(edits) {
+  async setValues(edits: readonly EditOperation[]): Promise<void> {
     edits.forEach(({ column, row, text }) => {
       this.data[row][column] = text;
     });
   }
 }
 
-function EditableGridExample() {
+function EditableGridExample(): JSX.Element {
   const model = useMemo(
     () =>
       new EditableModel(
@@ -109,29 +120,13 @@ A few things to note:
 | Click outside the editor                                 | Commits the edit.                                                                                                             |
 | <kbd>Ctrl</kbd>+<kbd>V</kbd> (<kbd>⌘</kbd> on macOS)     | Pastes by calling `setValues`. A single value fills every selected cell; tab-separated rows paste as a block.                 |
 
-## Model methods
-
-Grid calls the following `EditableGridModel` members. Row and column arguments are model indexes.
-
-| Member                                | Purpose                                                                                                                                                     |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isEditable`                          | Whether the model accepts edits. Grid rejects pastes when this is `false`.                                                                                  |
-| `isEditableRange(range)`              | Whether the cells in `range` can be edited. Called with a single cell before opening the editor, and with each selected range before pasting.               |
-| `editValueForCell(column, row)`       | The text to show in the editor. Can differ from `textForCell`, for example to edit a raw number that is displayed formatted.                                |
-| `isValidForCell(column, row, value)`  | Whether `value` is valid for the cell. Called as the user types to outline invalid values in red, and before committing. Invalid values can't be committed. |
-| `setValueForCell(column, row, value)` | Saves a single cell.                                                                                                                                        |
-| `setValueForRanges(ranges, value)`    | Saves the same value to every cell in `ranges`.                                                                                                             |
-| `setValues(edits)`                    | Saves a list of `{ column, row, text }` edits.                                                                                                              |
-
-The three `set` methods return a promise. If the promise rejects, Grid passes the error to its `onError` prop.
-
 ## Validation and read-only columns
 
 In this example, the Name column is read-only, Goals and Salary only accept whole numbers, and Team can't be empty. Salary displays as currency, but `editValueForCell` returns the raw number so users don't have to type the currency formatting. Type an invalid value to see the editor outlined in red. Paste invalid text, or paste into the Name column, to see an error.
 
 Grid only checks `isValidForCell` for the active cell. Pasted values and the other cells in a <kbd>Ctrl</kbd>+<kbd>Enter</kbd> fill aren't checked, so `setValues` validates every edit and throws if any are invalid.
 
-```jsx live noInline
+```tsx live noInline
 const NAME = 0;
 const TEAM = 1;
 const GOALS = 2;
@@ -143,40 +138,42 @@ const currency = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 
-class PlayerModel extends GridModel {
-  constructor(data) {
+class PlayerModel extends GridModel implements EditableGridModel {
+  private data: (string | number)[][];
+
+  constructor(data: (string | number)[][]) {
     super();
     this.data = data;
   }
 
-  get rowCount() {
+  get rowCount(): number {
     return this.data.length;
   }
 
-  get columnCount() {
+  get columnCount(): number {
     return 4;
   }
 
-  textForColumnHeader(column) {
+  textForColumnHeader(column: ModelIndex): string {
     return ['Name', 'Team', 'Goals', 'Salary'][column];
   }
 
-  textForCell(column, row) {
+  textForCell(column: ModelIndex, row: ModelIndex): string {
     const value = this.data[row][column];
-    return column === SALARY ? currency.format(value) : `${value}`;
+    return column === SALARY ? currency.format(value as number) : `${value}`;
   }
 
-  get isEditable() {
+  get isEditable(): boolean {
     return true;
   }
 
-  isEditableRange(range) {
+  isEditableRange(range: GridRange): boolean {
     // Name is the first column, so only ranges that start after it are editable.
     // A null startColumn means the range spans every column.
     return range.startColumn != null && range.startColumn > NAME;
   }
 
-  isValidForCell(column, row, value) {
+  isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean {
     switch (column) {
       case TEAM:
         return value.trim().length > 0;
@@ -188,16 +185,23 @@ class PlayerModel extends GridModel {
     }
   }
 
-  editValueForCell(column, row) {
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
     return `${this.data[row][column]}`;
   }
 
-  async setValueForCell(column, row, value) {
+  async setValueForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    value: string
+  ): Promise<void> {
     await this.setValues([{ column, row, text: value }]);
   }
 
-  async setValueForRanges(ranges, value) {
-    const edits = [];
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    value: string
+  ): Promise<void> {
+    const edits: EditOperation[] = [];
     GridRange.forEachCell(
       GridRange.boundedRanges(ranges, this.columnCount, this.rowCount),
       (column, row) => edits.push({ column, row, text: value })
@@ -205,7 +209,7 @@ class PlayerModel extends GridModel {
     await this.setValues(edits);
   }
 
-  async setValues(edits) {
+  async setValues(edits: readonly EditOperation[]): Promise<void> {
     const invalid = edits.find(
       ({ column, row, text }) =>
         !this.isEditableRange(GridRange.makeCell(column, row)) ||
@@ -222,7 +226,7 @@ class PlayerModel extends GridModel {
   }
 }
 
-function ValidationExample() {
+function ValidationExample(): JSX.Element {
   const model = useMemo(
     () =>
       new PlayerModel([
@@ -244,8 +248,8 @@ render(<ValidationExample />);
 
 Edits usually need to be saved somewhere else. Since the `set` methods are asynchronous, they can wait for a server response. This example shows edits immediately in gray while a simulated save is in progress, then rolls back to the last saved value if the save fails. Enter a value containing "fail" to see the rollback.
 
-```jsx live noInline
-function saveToServer(edits) {
+```tsx live noInline
+function saveToServer(edits: readonly EditOperation[]): Promise<void> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (edits.some(({ text }) => text.toLowerCase().includes('fail'))) {
@@ -257,58 +261,78 @@ function saveToServer(edits) {
   });
 }
 
-class ServerModel extends GridModel {
-  constructor(data, columnHeaders, onChange) {
+class ServerModel extends GridModel implements EditableGridModel {
+  private data: string[][];
+
+  private savedData: string[][];
+
+  private columnHeaders: string[];
+
+  private onChange: () => void;
+
+  private pending = new Set<string>();
+
+  constructor(data: string[][], columnHeaders: string[], onChange: () => void) {
     super();
     this.data = data;
     this.savedData = data.map(row => [...row]);
     this.columnHeaders = columnHeaders;
     this.onChange = onChange;
-    this.pending = new Set();
   }
 
-  get rowCount() {
+  get rowCount(): number {
     return this.data.length;
   }
 
-  get columnCount() {
+  get columnCount(): number {
     return this.columnHeaders.length;
   }
 
-  textForCell(column, row) {
-    return `${this.data[row][column]}`;
+  textForCell(column: ModelIndex, row: ModelIndex): string {
+    return this.data[row][column];
   }
 
-  textForColumnHeader(column) {
+  textForColumnHeader(column: ModelIndex): string {
     return this.columnHeaders[column];
   }
 
-  colorForCell(column, row, theme) {
+  colorForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    theme: GridThemeType
+  ): string {
     return this.pending.has(`${column},${row}`) ? '#888888' : theme.textColor;
   }
 
-  get isEditable() {
+  get isEditable(): boolean {
     return true;
   }
 
-  isEditableRange(range) {
+  isEditableRange(range: GridRange): boolean {
     return true;
   }
 
-  isValidForCell(column, row, value) {
+  isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean {
     return true;
   }
 
-  editValueForCell(column, row) {
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
     return this.textForCell(column, row);
   }
 
-  async setValueForCell(column, row, value) {
+  async setValueForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    value: string
+  ): Promise<void> {
     await this.setValues([{ column, row, text: value }]);
   }
 
-  async setValueForRanges(ranges, value) {
-    const edits = [];
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    value: string
+  ): Promise<void> {
+    const edits: EditOperation[] = [];
     GridRange.forEachCell(
       GridRange.boundedRanges(ranges, this.columnCount, this.rowCount),
       (column, row) => edits.push({ column, row, text: value })
@@ -316,7 +340,7 @@ class ServerModel extends GridModel {
     await this.setValues(edits);
   }
 
-  async setValues(edits) {
+  async setValues(edits: readonly EditOperation[]): Promise<void> {
     if (edits.some(({ column, row }) => this.pending.has(`${column},${row}`))) {
       throw new Error('A selected cell is still saving. Wait and try again.');
     }
@@ -345,8 +369,8 @@ class ServerModel extends GridModel {
   }
 }
 
-function ServerExample() {
-  const grid = useRef();
+function ServerExample(): JSX.Element {
+  const grid = useRef<Grid>(null);
   const model = useMemo(
     () =>
       new ServerModel(
@@ -384,58 +408,69 @@ Set `preservesExistingValue` to `true` on the render function so typing a charac
 
 This example edits the Team column with a dropdown. Use the arrow keys to pick a team, then press <kbd>Enter</kbd> to commit or <kbd>Escape</kbd> to cancel.
 
-```jsx live noInline
+```tsx live noInline
 const TEAMS = ['Boston', 'Pittsburgh', 'Toronto'];
 const TEAM = 1;
 
-class TeamModel extends GridModel {
-  constructor(data) {
+type OptionsRestriction = ColumnRestriction & { options: string[] };
+
+class TeamModel extends GridModel implements EditableGridModel {
+  private data: string[][];
+
+  constructor(data: string[][]) {
     super();
     this.data = data;
   }
 
-  get rowCount() {
+  get rowCount(): number {
     return this.data.length;
   }
 
-  get columnCount() {
+  get columnCount(): number {
     return 2;
   }
 
-  textForCell(column, row) {
+  textForCell(column: ModelIndex, row: ModelIndex): string {
     return this.data[row][column];
   }
 
-  textForColumnHeader(column) {
+  textForColumnHeader(column: ModelIndex): string {
     return ['Name', 'Team'][column];
   }
 
-  getColumnRestrictions(column) {
+  getColumnRestrictions(column: ModelIndex): OptionsRestriction[] {
     return column === TEAM ? [{ type: 'options', options: TEAMS }] : [];
   }
 
-  get isEditable() {
+  get isEditable(): boolean {
     return true;
   }
 
-  isEditableRange(range) {
+  isEditableRange(range: GridRange): boolean {
     return true;
   }
 
-  isValidForCell(column, row, value) {
+  isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean {
     return column !== TEAM || TEAMS.includes(value);
   }
 
-  editValueForCell(column, row) {
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
     return this.textForCell(column, row);
   }
 
-  async setValueForCell(column, row, value) {
+  async setValueForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    value: string
+  ): Promise<void> {
     await this.setValues([{ column, row, text: value }]);
   }
 
-  async setValueForRanges(ranges, value) {
-    const edits = [];
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    value: string
+  ): Promise<void> {
+    const edits: EditOperation[] = [];
     GridRange.forEachCell(
       GridRange.boundedRanges(ranges, this.columnCount, this.rowCount),
       (column, row) => edits.push({ column, row, text: value })
@@ -443,7 +478,7 @@ class TeamModel extends GridModel {
     await this.setValues(edits);
   }
 
-  async setValues(edits) {
+  async setValues(edits: readonly EditOperation[]): Promise<void> {
     const invalid = edits.find(
       ({ column, row, text }) => !this.isValidForCell(column, row, text)
     );
@@ -457,11 +492,18 @@ class TeamModel extends GridModel {
   }
 }
 
-function SelectInput({ value, restrictions, onDone, onCancel, style }) {
+function SelectInput({
+  value = '',
+  restrictions,
+  onDone,
+  onCancel,
+  style,
+}: CellInputProps): JSX.Element {
   const [selected, setSelected] = useState(value);
   const isDone = useRef(false);
+  const { options } = restrictions[0] as OptionsRestriction;
 
-  const finish = callback => {
+  const finish = (callback: () => void): void => {
     // Committing focuses the grid, which blurs the select and would commit again
     if (isDone.current) return;
     isDone.current = true;
@@ -474,18 +516,18 @@ function SelectInput({ value, restrictions, onDone, onCancel, style }) {
       value={selected}
       style={{ ...style, width: '100%', height: '100%' }}
       onChange={event => setSelected(event.target.value)}
-      onBlur={() => finish(() => onDone(selected, { direction: null }))}
+      onBlur={() => finish(() => onDone?.(selected, { direction: null }))}
       onKeyDown={event => {
         // Stop the grid from handling keys while the editor is open
         event.stopPropagation();
         if (event.key === 'Enter') {
-          finish(() => onDone(selected, {}));
+          finish(() => onDone?.(selected, {}));
         } else if (event.key === 'Escape') {
-          finish(onCancel);
+          finish(() => onCancel?.());
         }
       }}
     >
-      {restrictions[0].options.map(option => (
+      {options.map(option => (
         <option key={option} value={option}>
           {option}
         </option>
@@ -494,14 +536,16 @@ function SelectInput({ value, restrictions, onDone, onCancel, style }) {
   );
 }
 
-function renderSelectInput(props) {
-  return <SelectInput {...props} />;
-}
+const renderSelectInput: CellInputRendererFn = props => (
+  <SelectInput {...props} />
+);
 renderSelectInput.preservesExistingValue = true;
 
-const cellInputRendererRegistry = new Map([['options', renderSelectInput]]);
+const cellInputRendererRegistry: CellInputRendererRegistry = new Map([
+  ['options', renderSelectInput],
+]);
 
-function CustomEditorExample() {
+function CustomEditorExample(): JSX.Element {
   const model = useMemo(
     () =>
       new TeamModel([
@@ -523,4 +567,10 @@ function CustomEditorExample() {
 }
 
 render(<CustomEditorExample />);
+```
+
+## API reference
+
+```{autodoc} EditableGridModel
+
 ```
