@@ -110,6 +110,50 @@ async function getCellPoint(
   };
 }
 
+/** Layout size of the canvas, which follows its flex container and ignores any transform */
+async function getLayoutSize(
+  page: Page
+): Promise<{ width: number; height: number }> {
+  return page.locator(CANVAS).evaluate(element => ({
+    width: element.clientWidth,
+    height: element.clientHeight,
+  }));
+}
+
+/** Wait for the canvas layout size to stop changing, e.g. after a resize or a bar's open animation */
+async function waitForStableLayoutSize(page: Page): Promise<void> {
+  await expect
+    .poll(async () => {
+      const before = await getLayoutSize(page);
+      await page.waitForTimeout(300);
+      const after = await getLayoutSize(page);
+      return before.width === after.width && before.height === after.height;
+    })
+    .toBe(true);
+}
+
+/**
+ * Click a cell and check the click selected it.
+ * Go to Row starts from the cursor, so it reports which cell was clicked. It toggles, so call this once per page.
+ */
+async function expectClickSelectsCell(
+  page: Page,
+  scale: number,
+  column: string,
+  row: number
+): Promise<void> {
+  // A column tooltip left open by the earlier hover would cover the cell and swallow the click
+  await page.mouse.move(0, 0);
+  await expect(page.locator('.column-statistics')).toHaveCount(0);
+
+  const { x, y } = await getCellPoint(page, column, row, scale);
+  await page.mouse.click(x, y);
+
+  await page.keyboard.press('ControlOrMeta+g');
+  await expect(page.getByTestId('goto-row-input')).toHaveValue(`${row + 1}`);
+  await expect(page.locator('#column-name-select')).toHaveValue(column);
+}
+
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, '');
 });
@@ -121,13 +165,45 @@ SCALES.forEach(scale => {
     }) => {
       await openScaledTable(page, scale);
 
-      const { x, y } = await getCellPoint(page, 'y', 5, scale);
-      await page.mouse.click(x, y);
+      await expectClickSelectsCell(page, scale, 'y', 5);
+    });
 
-      // Go to Row starts from the cursor, so it reports which cell was clicked
-      await page.keyboard.press('ControlOrMeta+g');
-      await expect(page.getByTestId('goto-row-input')).toHaveValue('6');
-      await expect(page.locator('#column-name-select')).toHaveValue('y');
+    test('clicks still select the cell under the pointer after the panel resizes', async ({
+      page,
+    }) => {
+      await openScaledTable(page, scale);
+      const before = await getLayoutSize(page);
+
+      // Shrinks the golden layout panels, which are flex items
+      // Playwright default viewport is like 1280 x 720 which is larger
+      await page.setViewportSize({ width: 1000, height: 600 });
+      await waitForStableLayoutSize(page);
+
+      const after = await getLayoutSize(page);
+      expect(after.width).toBeLessThan(before.width);
+      expect(after.height).toBeLessThan(before.height);
+      expect(await getRenderedScale(page)).toBeCloseTo(scale, 1);
+
+      await expectClickSelectsCell(page, scale, 'y', 5);
+    });
+
+    test('clicks still select the cell under the pointer after a sibling bar resizes the grid', async ({
+      page,
+    }) => {
+      await openScaledTable(page, scale);
+      const before = await getLayoutSize(page);
+
+      // The search bar is a flex sibling above the grid, so opening it shrinks the grid's height
+      await page.locator(CANVAS).focus();
+      await page.keyboard.press('ControlOrMeta+Shift+f');
+      await expect(page.locator('.iris-grid-bar')).not.toHaveCount(0);
+      await waitForStableLayoutSize(page);
+
+      const after = await getLayoutSize(page);
+      expect(after.height).toBeLessThan(before.height);
+      expect(await getRenderedScale(page)).toBeCloseTo(scale, 1);
+
+      await expectClickSelectsCell(page, scale, 'y', 5);
     });
 
     test('dragging a column separator resizes the column by the distance dragged', async ({
