@@ -1,0 +1,68 @@
+# Builds package docs and syncs them to the Deephaven docs site (salmon).
+# Pushes to main deploy the `main` version; release tags deploy that version.
+name: Docs Deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'packages/*/docs/**'
+      - 'packages/*/src/**'
+      - 'scripts/build-docs.mjs'
+      - '.github/workflows/docs-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g. 1.2.3). Use "main" to deploy the main branch.'
+        required: true
+        default: 'main'
+
+jobs:
+  docs-sync:
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write # Required to upload to AWS
+      contents: read
+    concurrency:
+      group: docs-sync-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Version
+        id: version
+        env:
+          REF_NAME: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+        # Remove the 'v' prefix from release tags
+        run: |
+          VERSION="${REF_NAME#v}"
+          if [ "$VERSION" = "main" ]; then REF="main"; else REF="v$VERSION"; fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.version.outputs.ref }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit
+
+      - name: Build docs
+        run: npm run docs
+
+      - name: Sync grid docs to the salmon bucket
+        uses: deephaven/salmon-sync@v1
+        with:
+          source: packages/grid/build/docs
+          destination: deephaven/web-client-ui/grid/${{ steps.version.outputs.version }}
+          production: true
+          temporary: false
+          aws-role: ${{ vars.DOCS_AWS_ROLE }}

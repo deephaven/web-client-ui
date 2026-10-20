@@ -55,7 +55,8 @@
     "e2e:update-snapshots": "playwright test --update-snapshots=changed",
     "e2e:docker": "./tests/docker-scripts/run.sh web-ui-tests",
     "e2e:update-ci-snapshots": "./tests/docker-scripts/run.sh web-ui-update-snapshots",
-    "e2e:record": "node scripts/e2e-record.mjs"
+    "e2e:record": "node scripts/e2e-record.mjs",
+    "docs": "lerna run docs --stream"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {

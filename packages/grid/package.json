@@ -19,7 +19,8 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
+    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist",
+    "docs": "node ../../scripts/build-docs.mjs ."
   },
   "peerDependencies": {
     "react": ">=16.8.0"

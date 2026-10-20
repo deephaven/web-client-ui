@@ -45,6 +45,7 @@ We use Chrome for development with the React and Redux extensions.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
 - `npm run preview`: Runs the Vite preview server for the built code-studio and embed-widget. These will open on ports 4000 and 4010 respectively.
 - `npm run e2e`: Runs the Playwright end-to-end tests locally. See [E2E Tests](#e2e-tests) for more details.
+- `npm run docs`: Builds package documentation for publishing. See [Documentation](#documentation) for more details.
 
 If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to point to your local DHC. This is needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
@@ -120,6 +121,34 @@ A standalone application with it's own entry point. Recommend copying the [embed
 ### Component/library package
 
 A component/library package that can be imported into other packages. Recommend copying the [components](./packages/components/) package, removing any dependencies and files not required.
+
+## Documentation
+
+Some packages, such as [grid](./packages/grid/docs/), have markdown docs in a `docs` folder that are published to the [Deephaven docs site](https://deephaven.io/). The `sidebar.json` in each `docs` folder defines the navigation.
+
+Docs must be built before publishing. Run `npm run docs` to build every package that has docs, or `npm run docs` in a single package directory. The output is written to the gitignored `build/docs` folder of each package. Publish that folder, not the source `docs` folder.
+
+The [Docs Deploy](./.github/workflows/docs-deploy.yml) workflow builds the docs and syncs them to the docs site. Pushes to `main` deploy the `main` version, and release tags (`v*`) deploy that version. To redeploy a version, run the workflow manually with the version number, or `main`. New packages with docs need a sync step added to the workflow, and a matching entry in the docs site config.
+
+### API reference
+
+To add API reference generated from JSDoc, add an `autodoc` fenced code block with the name of a symbol exported by the package:
+
+````md
+## API reference
+
+```{autodoc} EditableGridModel
+
+```
+````
+
+When the docs are built, the block is replaced with the symbol's description and a section for each public member, with headings one level below the heading the block is under. Methods are rendered with the docs site's `ParamTable` component, the same way as the deephaven.ui API reference. Symbols are resolved from the `source` entry in the package's `package.json`. The build fails if a symbol isn't exported, and warns about members without a JSDoc description.
+
+To add docs to a new package, add a `docs` script to its `package.json`:
+
+```json
+"docs": "node ../../scripts/build-docs.mjs ."
+```
 
 ## Unit Tests
 
