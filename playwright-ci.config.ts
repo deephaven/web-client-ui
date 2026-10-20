@@ -9,6 +9,9 @@ const config: PlaywrightTestConfig = {
       port: 4000,
       timeout: 60 * 1000,
       reuseExistingServer: false,
+      // Playwright discards webServer stdout by default, which hides proxy and asset-serving
+      // errors that only show up on the runs we are trying to diagnose.
+      stdout: 'pipe',
     },
     {
       command:
@@ -16,6 +19,7 @@ const config: PlaywrightTestConfig = {
       port: 4010,
       timeout: 60 * 1000,
       reuseExistingServer: false,
+      stdout: 'pipe',
     },
   ],
 

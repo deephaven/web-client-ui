@@ -1,0 +1,51 @@
+name: 'Copilot Setup Steps'
+# This file has a special meaning to GitHub Copilot coding agent: it must
+# live at exactly this path, on the default branch, and contain a job named
+# `copilot-setup-steps`. GitHub runs that job in its own Actions-backed
+# sandbox *before* Copilot starts working on an assigned issue, so the agent
+# doesn't have to guess how to install your dependencies.
+#
+# For this pipeline specifically: without this, Copilot's sandbox has no
+# browser binaries, and it can't actually re-run the flaky Playwright test
+# to verify a fix -- exactly the "prove it before/after" step required by
+# .github/instructions/playwright.instructions.md.
+#
+# Also runs on push/pull_request touching this file so you can validate
+# changes to it without waiting for a real Copilot session.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # Must be named exactly this -- Copilot won't pick up the job otherwise.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci
+
+      # @deephaven/icons generates SVGs the other packages import, so nothing
+      # else builds or type-checks until this runs.
+      - name: Build necessary packages
+        run: npm run build:necessary
+
+      # --with-deps also installs the OS-level libraries the browsers need.
+      # playwright.config.ts defines chromium, firefox, and webkit projects.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps

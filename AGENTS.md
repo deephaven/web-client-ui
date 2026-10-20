@@ -50,3 +50,7 @@ The web UI does not work standalone — it requires a `deephaven-core` server on
 - **Describe current functionality:** Do not describe previous bugs in production code.
 - **Comment the "why":** Explain the underlying business logic, non-obvious constraints, or the specific problem the code is solving if necessary.
 - **Keep it functional:** Assume the developer reading the code already understands the programming language and general architecture of the application. Only comment when necessary.
+
+## Task-specific policies
+
+- Fixing a flaky Playwright test (issues labeled `auto-investigate`): see `.github/instructions/playwright.instructions.md`.
