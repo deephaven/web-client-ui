@@ -39,8 +39,31 @@ The app supports query params to configure the grid:
 
 - `rows`: Number of rows (default: 1000000)
 - `cols`: Number of columns (default: 100)
+- `text`: `short` cell text, or `long` text that is truncated in every cell (default: `short`)
 
 Example: `http://localhost:4020/?rows=100000&cols=50`
+
+## Render breakdown
+
+[`tests/grid-perf/grid-render-breakdown.spec.ts`](./grid-render-breakdown.spec.ts) splits grid draw time into model/text processing and raw canvas drawing. It uses the perf app's `window.runRenderBreakdown()` ([`renderBreakdown.ts`](./app/src/renderBreakdown.ts)), which times these variants against the exact cells, positions, and strings the grid has on screen, once per animation frame:
+
+| Variant                   | Measures                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `full`                    | The grid's complete `drawCanvas`                                                                                         |
+| `cellText`                | The grid's cell text drawing, with a warm truncation cache                                                               |
+| `cellTextColdCache`       | `cellText` with the truncation cache cleared first                                                                       |
+| `textLookup`              | The model and truncation cache work for each cell, without drawing                                                       |
+| `rawText`                 | Per column clip and `fillText` of precomputed strings, the floor for drawing that much text                              |
+| `rawTextWithContextState` | `rawText` plus the per cell `save`/`restore`, `textAlign`, `fillStyle`, and `measureText` calls `TextCellRenderer` makes |
+
+`cpu` is the synchronous time spent in the draw call, and `frame` is the time between animation frames, which also includes rasterization. It runs at every display profile with both `short` and `long` text, and appends results to `test-results/grid-render-breakdown.jsonl`.
+
+```bash
+# With the perf app running
+npm run e2e:grid-render-breakdown
+```
+
+The breakdown can also be run by hand from the browser console on the perf app with `await runRenderBreakdown({ iterations: 60, warmup: 10 })`.
 
 ## Display scaling (4K) benchmarks
 
