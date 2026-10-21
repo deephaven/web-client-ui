@@ -10,6 +10,69 @@ export const HORIZONTAL_SCROLL_STEP = 400;
 const RESULTS_FILE =
   process.env.PERF_RESULTS_FILE ?? 'test-results/grid-perf-results.jsonl';
 
+export interface DisplayProfile {
+  name: string;
+  viewport: { width: number; height: number };
+  deviceScaleFactor: number;
+}
+
+/**
+ * The grid canvas backing store is its CSS size multiplied by the device pixel
+ * ratio. A 4K monitor at low OS scaling shows many more cells, and at high OS
+ * scaling fills many more pixels per cell, so each profile isolates one of
+ * those costs. Compare results against the 1080p baseline rather than as
+ * absolute numbers.
+ */
+export const DISPLAY_PROFILES: readonly DisplayProfile[] = [
+  {
+    name: '1080p baseline',
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 1,
+  },
+  {
+    name: '4K at 100%',
+    viewport: { width: 3840, height: 2160 },
+    deviceScaleFactor: 1,
+  },
+  {
+    name: '4K at 150%',
+    viewport: { width: 2560, height: 1440 },
+    deviceScaleFactor: 1.5,
+  },
+  {
+    name: '4K at 200%',
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 2,
+  },
+];
+
+/**
+ * Asserts the grid canvas backing store was sized for the emulated display, so
+ * a display profile benchmark can't silently measure a 1x canvas.
+ */
+export async function verifyDisplayProfile(
+  page: Page,
+  grid: Locator,
+  profile: DisplayProfile
+): Promise<void> {
+  expect(await page.evaluate(() => window.devicePixelRatio)).toBe(
+    profile.deviceScaleFactor
+  );
+
+  const canvas = grid.locator('canvas').first();
+  await expect
+    .poll(
+      () =>
+        canvas.evaluate((element: HTMLCanvasElement) =>
+          Math.abs(
+            element.width - element.clientWidth * window.devicePixelRatio
+          )
+        ),
+      { message: 'Grid canvas was not scaled to the device pixel ratio' }
+    )
+    .toBeLessThan(1);
+}
+
 export interface FPSResult {
   fps: number;
   avgFrameTime: number;

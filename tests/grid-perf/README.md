@@ -41,3 +41,25 @@ The app supports query params to configure the grid:
 - `cols`: Number of columns (default: 100)
 
 Example: `http://localhost:4020/?rows=100000&cols=50`
+
+## Display scaling (4K) benchmarks
+
+Both specs also run a `display scaling` suite. It repeats representative benchmarks under the display profiles in [`utils.ts`](./utils.ts) (`DISPLAY_PROFILES`), using Playwright viewport and `deviceScaleFactor` emulation:
+
+| Profile        | Viewport (CSS px) | Device pixel ratio | What it stresses                          |
+| -------------- | ----------------- | ------------------ | ----------------------------------------- |
+| 1080p baseline | 1920×1080         | 1                  | Reference point                           |
+| 4K at 100%     | 3840×2160         | 1                  | Many more visible cells                   |
+| 4K at 150%     | 2560×1440         | 1.5                | More cells, and fractional canvas scaling |
+| 4K at 200%     | 1920×1080         | 2                  | Same cells as 1080p, 4× the canvas pixels |
+
+The grid sizes its canvas backing store to CSS size × device pixel ratio, so comparing these profiles shows whether a slowdown comes from the number of cells drawn or from the number of pixels filled. Each test first asserts that the canvas was actually scaled to the emulated ratio.
+
+Run only these benchmarks with:
+
+```bash
+npm run e2e:performance -- --grep "display scaling"
+npm run e2e:grid-performance -- --grep "display scaling"
+```
+
+Headless chromium (including CI) usually rasterizes the canvas in software, so compare each 4K result with the 1080p baseline from the same run rather than reading absolute FPS. For numbers closer to a real GPU, add `--headed`.

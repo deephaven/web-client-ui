@@ -2,11 +2,13 @@
 import { test, type Locator, type Page } from '@playwright/test';
 import { gotoPage, openTable, waitForLoadingDone } from '../utils';
 import {
+  DISPLAY_PROFILES,
   logResults,
   scrollGrid,
   scrollGridHorizontal,
   startFPSMeasurement,
   stopFPSMeasurement,
+  verifyDisplayProfile,
   verifyHorizontalScrollRange,
 } from './utils';
 
@@ -284,5 +286,74 @@ test.describe('grid performance stress tests', () => {
 
     const result = await stopFPSMeasurement(page);
     logResults('Combined H+V Scroll', result, { minFps: 28 });
+  });
+});
+
+/**
+ * Runs representative benchmarks at 4K resolutions and OS scaling factors.
+ * Run only these with `npm run e2e:performance -- --grep "display scaling"`.
+ */
+test.describe('grid display scaling benchmarks', () => {
+  test.skip(
+    !process.env.RUN_PERF_TESTS,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
+  test.describe.configure({ mode: 'serial' });
+
+  DISPLAY_PROFILES.forEach(profile => {
+    test.describe(`display scaling - ${profile.name}`, () => {
+      test.use({
+        viewport: profile.viewport,
+        deviceScaleFactor: profile.deviceScaleFactor,
+      });
+
+      test.beforeEach(async ({ page }) => {
+        await gotoPage(page, '');
+      });
+
+      test('scroll performance - perf_all_types_big', async ({ page }) => {
+        await openTable(page, 'perf_all_types_big');
+        await waitForLoadingDone(page);
+
+        const grid = getGrid(page);
+        await verifyDisplayProfile(page, grid, profile);
+
+        await startFPSMeasurement(page);
+
+        await scrollGrid(page, grid, 5000);
+        await scrollGrid(page, grid, -3000);
+        await scrollGrid(page, grid, 2000);
+        await scrollGrid(page, grid, -4000);
+
+        const result = await stopFPSMeasurement(page);
+        logResults(`All Types Big Table Scroll (${profile.name})`, result, {
+          minFps: 30,
+        });
+      });
+
+      test('horizontal scroll performance - long strings', async ({ page }) => {
+        await openTable(page, 'perf_long_strings');
+        await waitForLoadingDone(page);
+
+        const grid = getGrid(page);
+        await verifyDisplayProfile(page, grid, profile);
+        await verifyHorizontalScrollRange(
+          page,
+          grid,
+          HORIZONTAL_SCROLL_DISTANCE
+        );
+
+        await startFPSMeasurement(page);
+
+        await scrollGridHorizontal(page, grid, HORIZONTAL_SCROLL_DISTANCE);
+        await scrollGridHorizontal(page, grid, -HORIZONTAL_SCROLL_DISTANCE);
+
+        const result = await stopFPSMeasurement(page);
+        logResults(`Long Strings Horizontal Scroll (${profile.name})`, result, {
+          minFps: 24,
+        });
+      });
+    });
   });
 });
