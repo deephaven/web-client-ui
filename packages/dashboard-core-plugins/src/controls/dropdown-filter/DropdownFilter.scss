@@ -40,7 +40,7 @@ $dropdown-filter-icon-size: 31px;
 
   .dropdown-filter-settings-grid {
     display: grid;
-    grid-template-columns: max-content min-max(min-content, 350px);
+    grid-template-columns: max-content minmax(min-content, 350px);
     column-gap: $spacer-2;
     row-gap: $spacer-2;
     padding-bottom: $spacer;

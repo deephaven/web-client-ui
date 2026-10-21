@@ -48,7 +48,7 @@ $filter-set-manager-icon-size: 31px;
 
   .filter-set-manager-settings-grid {
     display: grid;
-    grid-template-columns: max-content min-max(min-content, 350px);
+    grid-template-columns: max-content minmax(min-content, 350px);
     column-gap: $spacer-2;
     row-gap: $spacer-2;
     padding-bottom: $spacer;
