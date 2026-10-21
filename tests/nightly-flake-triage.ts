@@ -285,6 +285,7 @@ const COPILOT_ASSIGNEE = 'copilot-swe-agent[bot]';
 const COPILOT_CUSTOM_AGENT =
   process.env.COPILOT_CUSTOM_AGENT ?? 'playwright-flake-investigator';
 const COPILOT_BASE_BRANCH = process.env.COPILOT_BASE_BRANCH ?? 'main';
+const COPILOT_MODEL = process.env.COPILOT_MODEL ?? 'claude-sonnet-5.5';
 // Cap how many fingerprints get handed to an agent per run so one bad night can't open a
 // dozen concurrent sessions and PRs. Adjust as needed.
 const MAX_AGENT_ASSIGNMENTS_PER_RUN = Number(
@@ -841,6 +842,8 @@ function makeClient(token: string, repository: string): GithubClient {
             const agentHeaders = {
               ...headers,
               Authorization: `Bearer ${COPILOT_ASSIGN_TOKEN}`,
+              'GraphQL-Features':
+                'issues_copilot_assignment_api_support,coding_agent_model_selection',
             };
 
             // Copilot only starts a session on an unassigned -> assigned transition. Closing an
@@ -867,6 +870,7 @@ function makeClient(token: string, repository: string): GithubClient {
                   target_repo: repository,
                   base_branch: COPILOT_BASE_BRANCH,
                   custom_agent: COPILOT_CUSTOM_AGENT,
+                  model: COPILOT_MODEL,
                 },
               }),
             });
