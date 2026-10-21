@@ -15,11 +15,13 @@ module.exports = withLocalConfig({
       runner: 'jest-runner-stylelint',
       testMatch: [
         '<rootDir>/packages/*/src/**/*.css',
-        '<rootDir>/packages/*/src/**/*.scss',
-        '<rootDir>/packages/*/scss/**/*.scss',
+        '<rootDir>/packages/*/styles/**/*.css',
       ],
-      testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
-      moduleFileExtensions: ['css', 'scss'],
+      testPathIgnorePatterns: [
+        '<rootDir>/packages/golden-layout/*',
+        '<rootDir>/packages/components/styles/bootstrap.css',
+      ],
+      moduleFileExtensions: ['css'],
       testEnvironment: 'node',
     },
   ],

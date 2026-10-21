@@ -18,10 +18,8 @@
     "node": ">=10"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s build:babel build:sass build:theme",
-    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist ./scss/BaseStyleSheet.scss:./css/BaseStyleSheet.css",
-    "build:theme": "sass --embed-sources --style=compressed --load-path=../../node_modules ./src/theme:./dist/theme"
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --copy-files --no-copy-ignored --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
     "@adobe/react-spectrum": "3.47.0",
@@ -77,8 +75,9 @@
   "files": [
     "dist",
     "scss",
-    "css",
-    "assets"
+    "styles",
+    "assets",
+    "!dist/**/__snapshots__"
   ],
   "sideEffects": [
     "*.css"

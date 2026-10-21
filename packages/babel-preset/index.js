@@ -40,8 +40,8 @@ module.exports = api => ({
     [
       'transform-rename-import',
       {
-        // The babel-plugin-add-import-extension adds the .js to .scss imports, just convert them back to .css
-        original: '^(.+?)\\.s?css(\\?(?:inline|raw))?\\.js$',
+        // babel-plugin-add-import-extension also adds .js to .css imports, so remove it again
+        original: '^(.+?)\\.css(\\?(?:inline|raw))?\\.js$',
         replacement: '$1.css$2',
       },
     ],
