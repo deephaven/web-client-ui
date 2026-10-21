@@ -11,7 +11,7 @@ import throttle from 'lodash.throttle';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfig, Settings } from '@deephaven/golden-layout';
 import { useResizeObserver } from '@deephaven/react-hooks';
-import './layout/GoldenLayout.scss';
+import './layout/GoldenLayout.css';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
 import DashboardLayout, { type DashboardLayoutConfig } from './DashboardLayout';
@@ -20,7 +20,7 @@ import {
   type PanelHydrateFunction,
   type PanelProps,
 } from './DashboardPlugin';
-import './Dashboard.scss';
+import './Dashboard.css';
 import { LayoutManagerContext } from './layout';
 import { DashboardIdContext } from './useDashboardId';
 import { FiberProvider } from './useFiber';

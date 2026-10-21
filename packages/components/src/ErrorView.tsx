@@ -13,7 +13,7 @@ import {
 } from '@deephaven/react-hooks';
 import CopyButton from './CopyButton';
 import Button from './Button';
-import './ErrorView.scss';
+import './ErrorView.css';
 
 export type ErrorViewerProps = {
   /** The message to display in the error view */

@@ -24,7 +24,7 @@ import {
   vsTrash,
   vsWarning,
 } from '@deephaven/icons';
-import './CsvOverlay.scss';
+import './CsvOverlay.css';
 import { assertNotNull, TextUtils } from '@deephaven/utils';
 
 interface CsvOverlayProps {

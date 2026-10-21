@@ -27,7 +27,7 @@ import TimeSliderInputs from './TimeSliderInputs';
 import Tooltips from './Tooltips';
 import Toast from './Toast';
 import Typograpy from './Typography';
-import './StyleGuide.scss';
+import './StyleGuide.css';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
 import ThemeColors from './ThemeColors';

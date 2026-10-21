@@ -10,7 +10,7 @@ import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import { buildColorGroups, INVALID_COLOR_BORDER_STYLE } from './colorUtils';
 import SampleSection from './SampleSection';
-import styles from './ThemeColors.module.scss';
+import styles from './ThemeColors.module.css';
 
 function buildSwatchDataGroups() {
   return {

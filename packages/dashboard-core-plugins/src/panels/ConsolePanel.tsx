@@ -43,7 +43,7 @@ import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './CorePanel';
 import { getDashboardSessionWrapper } from '../redux';
-import './ConsolePanel.scss';
+import './ConsolePanel.css';
 
 const log = Log.module('ConsolePanel');
 

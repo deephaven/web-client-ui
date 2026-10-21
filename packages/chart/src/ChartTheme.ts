@@ -4,7 +4,7 @@ import {
 } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { ColorUtils } from '@deephaven/utils';
-import chartThemeRaw from './ChartTheme.module.scss';
+import chartThemeRaw from './ChartTheme.module.css';
 
 const log = Log.module('ChartTheme');
 

@@ -4,7 +4,7 @@ import { type IconDefinition } from '@deephaven/icons';
 import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
-import './HierarchicalCheckboxMenu.scss';
+import './HierarchicalCheckboxMenu.css';
 import Button from './Button';
 
 export type HierarchicalCheckboxValueMap = Map<

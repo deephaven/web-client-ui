@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 import classNames from 'classnames';
 import { DOMUtils } from '@deephaven/utils';
-import './LoadingSpinner.scss';
+import './LoadingSpinner.css';
 
 type LoadingSpinnerProps = {
   className?: string;

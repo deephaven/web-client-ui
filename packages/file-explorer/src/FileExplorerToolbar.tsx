@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, DebouncedSearchInput } from '@deephaven/components';
 import { vsNewFile, vsNewFolder } from '@deephaven/icons';
-import './FileExplorerToolbar.scss';
+import './FileExplorerToolbar.css';
 
 type FileExplorerToolbarProps = {
   createFile: () => void;

@@ -4,7 +4,7 @@ import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import PanelEvent from './PanelEvent';
 import LayoutUtils from './layout/LayoutUtils';
-import './PanelErrorBoundary.scss';
+import './PanelErrorBoundary.css';
 
 const log = Log.module('PanelErrorBoundary');
 

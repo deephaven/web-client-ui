@@ -8,7 +8,7 @@ import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
 import { DbNameValidator, type EventT } from '@deephaven/utils';
 import CustomColumnInput from './CustomColumnInput';
-import './CustomColumnBuilder.scss';
+import './CustomColumnBuilder.css';
 import IrisGridModel from '../IrisGridModel';
 
 export type CustomColumnKey = 'eventKey' | 'name' | 'formula';

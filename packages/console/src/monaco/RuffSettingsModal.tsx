@@ -22,7 +22,7 @@ import { EMPTY_FUNCTION } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import Editor from '../notebook/Editor';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
-import './RuffSettingsModal.scss';
+import './RuffSettingsModal.css';
 import MonacoProviders from './MonacoProviders';
 import MonacoUtils from './MonacoUtils';
 

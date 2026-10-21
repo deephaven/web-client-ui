@@ -30,7 +30,7 @@ import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import './RollupRows.scss';
+import './RollupRows.css';
 import type { dh } from '@deephaven/jsapi-types';
 import type IrisGridModel from '../IrisGridModel';
 import { type ColumnName } from '../CommonTypes';

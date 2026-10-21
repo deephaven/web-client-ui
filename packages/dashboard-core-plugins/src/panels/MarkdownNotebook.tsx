@@ -13,7 +13,7 @@ import rehypeMathjax from 'rehype-mathjax';
 import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
-import './MarkdownNotebook.scss';
+import './MarkdownNotebook.css';
 import { type ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
 import { assertNotNull } from '@deephaven/utils';
 

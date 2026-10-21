@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { Button, LoadingSpinner } from '@deephaven/components';
 import { vsClose } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
-import './ConsoleHistoryResultInProgress.scss';
+import './ConsoleHistoryResultInProgress.css';
 
 interface ConsoleHistoryResultInProgressProps {
   onCancelClick: () => void;

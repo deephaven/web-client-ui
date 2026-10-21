@@ -15,7 +15,7 @@ import ItemList, {
   type ItemListProps,
 } from './ItemList';
 import { Tooltip } from './popper';
-import './DraggableItemList.scss';
+import './DraggableItemList.css';
 
 export type DraggableRenderItemProps<T> = RenderItemProps<T> & {
   isClone?: boolean;

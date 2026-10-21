@@ -6,7 +6,7 @@ import React, {
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { vsFilter, dhFilterFilled } from '@deephaven/icons';
-import './FilterInputField.scss';
+import './FilterInputField.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { DebouncedFunc } from 'lodash';
 import { Button } from '@deephaven/components';

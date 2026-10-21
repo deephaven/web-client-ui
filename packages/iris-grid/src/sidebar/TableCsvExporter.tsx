@@ -24,7 +24,7 @@ import { vsWarning } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TimeUtils } from '@deephaven/utils';
 import { nanoid } from 'nanoid';
-import './TableCsvExporter.scss';
+import './TableCsvExporter.css';
 import Log from '@deephaven/log';
 import type IrisGridModel from '../IrisGridModel';
 import IrisGridUtils from '../IrisGridUtils';

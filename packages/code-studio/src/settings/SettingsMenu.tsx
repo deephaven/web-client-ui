@@ -37,7 +37,7 @@ import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
 import ShortcutSectionContent from './ShortcutsSectionContent';
-import './SettingsMenu.scss';
+import './SettingsMenu.css';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 import {
   getFormattedPluginInfo,

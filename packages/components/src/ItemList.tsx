@@ -11,7 +11,7 @@ import Log from '@deephaven/log';
 import { RangeUtils, type Range } from '@deephaven/utils';
 import ItemListItem from './ItemListItem';
 import { ContextActionUtils } from './context-actions';
-import './ItemList.scss';
+import './ItemList.css';
 
 const log = Log.module('ItemList');
 const MIN_DRAG_DELTA = 5;

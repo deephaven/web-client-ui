@@ -15,7 +15,7 @@ import { assertNotNull, Pending } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { type CoreConsoleSession } from '../ConsoleEvents';
-import './CommandHistoryPanel.scss';
+import './CommandHistoryPanel.css';
 import Panel from './CorePanel';
 import { getDashboardSessionWrapper } from '../redux';
 

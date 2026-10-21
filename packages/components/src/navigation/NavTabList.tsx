@@ -19,7 +19,7 @@ import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
-import './NavTabList.scss';
+import './NavTabList.css';
 import {
   type ContextAction,
   type ResolvableContextAction,

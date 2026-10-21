@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@deephaven/redux';
-import '@deephaven/components/scss/BaseStyleSheet.scss';
+import '@deephaven/components/styles/BaseStyleSheet.css';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import { getLogIndexedDbHistory } from '@deephaven/log';

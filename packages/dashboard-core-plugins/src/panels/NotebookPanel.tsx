@@ -60,7 +60,7 @@ import { ConsoleEvent, NotebookEvent } from '../events';
 import { type CoreConsoleSession } from '../ConsoleEvents';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './CorePanel';
-import './NotebookPanel.scss';
+import './NotebookPanel.css';
 
 const MarkdownNotebook = lazy(() => import('./MarkdownNotebook'));
 

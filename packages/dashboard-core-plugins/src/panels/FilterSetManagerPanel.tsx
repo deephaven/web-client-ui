@@ -33,7 +33,7 @@ import DropdownFilterPanel from './DropdownFilterPanel';
 import InputFilterPanel, {
   type PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
-import './FilterSetManagerPanel.scss';
+import './FilterSetManagerPanel.css';
 import { type FilterChangeEvent } from '../FilterEvents';
 
 const log = Log.module('FilterSetManagerPanel');
