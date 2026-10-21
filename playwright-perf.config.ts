@@ -11,6 +11,8 @@ import CiConfig from './playwright-ci.config';
  *   resources and skews the frame times the benchmarks measure.
  * - Runs chromium only, serially with a single worker and no retries, so
  *   results are comparable between runs.
+ * - Clears the results files before the run, so a report only covers the
+ *   benchmarks that just ran.
  *
  * In CI it builds on `playwright-ci.config.ts` so the preview servers are
  * started the same way as the rest of the e2e suite.
@@ -21,6 +23,8 @@ const config: PlaywrightTestConfig = {
   ...BaseConfig,
 
   testDir: './tests/grid-perf',
+
+  globalSetup: require.resolve('./tests/grid-perf/globalSetup.ts'),
 
   fullyParallel: false,
   workers: 1,

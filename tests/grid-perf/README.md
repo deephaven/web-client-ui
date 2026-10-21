@@ -1,6 +1,6 @@
 # Grid Performance Testing
 
-For performance-sensitive changes to the Grid component, there are two ways to benchmark. Both suites are skipped unless `RUN_PERF_TESTS` is set, since frame timings are too resource sensitive for CI.
+For performance-sensitive changes to the Grid component, there are two ways to benchmark. Both suites are skipped unless `RUN_PERF_TESTS` is set, since frame timings are too resource sensitive to run with the rest of the e2e tests. CI runs `e2e:performance` in its own job and posts the report as a PR comment without gating the build.
 
 Both run through [`playwright-perf.config.ts`](../../playwright-perf.config.ts), which disables video and trace capture and runs chromium only with a single worker, so recording overhead and parallelism don't skew the frame times.
 
@@ -12,7 +12,7 @@ Both run through [`playwright-perf.config.ts`](../../playwright-perf.config.ts),
 npm run e2e:performance
 ```
 
-Each benchmark appends its metrics to `test-results/grid-perf-results.jsonl`. Run [`scripts/grid-perf-report.mjs`](../../scripts/grid-perf-report.mjs) afterwards to turn them into a markdown table.
+Each benchmark appends its metrics to `test-results/grid-perf-results.jsonl`, which is cleared at the start of every run. Run [`scripts/grid-perf-report.mjs`](../../scripts/grid-perf-report.mjs) afterwards to turn them into a markdown table.
 
 The `Build and End-to-end Tests` workflow runs this suite in chromium after the e2e matrix and publishes the report to the job summary, an artifact, and a PR comment. Runner timings are noisy, so the job never fails the build.
 

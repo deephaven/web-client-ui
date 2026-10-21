@@ -2,9 +2,12 @@
 import { test, type Locator, type Page } from '@playwright/test';
 import { gotoPage, openTable, waitForLoadingDone } from '../utils';
 import {
+  combinedScroll,
   DISPLAY_PROFILES,
   logResults,
+  rapidScroll,
   scrollGrid,
+  scrollSequence,
   scrollGridHorizontal,
   startFPSMeasurement,
   stopFPSMeasurement,
@@ -53,9 +56,6 @@ test.describe('grid scroll performance benchmarks', () => {
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
-  // Run tests serially to avoid resource contention
-  test.describe.configure({ mode: 'serial' });
-
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, '');
   });
@@ -92,27 +92,16 @@ test.describe('grid scroll performance benchmarks', () => {
     test('scroll performance - perf_all_types_big', async ({ page }) => {
       await startFPSMeasurement(page);
 
-      // Scroll down significantly and back
-      await scrollGrid(page, getGrid(page), 5000);
-      await scrollGrid(page, getGrid(page), -3000);
-      await scrollGrid(page, getGrid(page), 2000);
-      await scrollGrid(page, getGrid(page), -4000);
+      await scrollSequence(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('All Types Big Table Scroll', result, { minFps: 30 });
     });
 
     test('rapid scroll performance', async ({ page }) => {
-      // Ensure the pointer is over the grid so wheel events target it
-      await getGrid(page).hover();
-
       await startFPSMeasurement(page);
 
-      // Rapid small scrolls (simulates fast mouse wheel)
-      for (let i = 0; i < 50; i += 1) {
-        await page.mouse.wheel(0, 200);
-        await page.waitForTimeout(8); // ~120fps input rate
-      }
+      await rapidScroll(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('Rapid Scroll', result, { minFps: 24 });
@@ -128,10 +117,7 @@ test.describe('grid scroll performance benchmarks', () => {
     test('scroll performance - long strings', async ({ page }) => {
       await startFPSMeasurement(page);
 
-      await scrollGrid(page, getGrid(page), 5000);
-      await scrollGrid(page, getGrid(page), -3000);
-      await scrollGrid(page, getGrid(page), 2000);
-      await scrollGrid(page, getGrid(page), -4000);
+      await scrollSequence(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('Long Strings Scroll', result, { minFps: 24 });
@@ -153,18 +139,9 @@ test.describe('grid scroll performance benchmarks', () => {
     });
 
     test('rapid scroll performance - long strings', async ({ page }) => {
-      const box = await getGrid(page).boundingBox();
-      if (!box) throw new Error('Grid not found');
-
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-
       await startFPSMeasurement(page);
 
-      // Rapid small scrolls (simulates fast mouse wheel)
-      for (let i = 0; i < 50; i += 1) {
-        await page.mouse.wheel(0, 200);
-        await page.waitForTimeout(8); // ~120fps input rate
-      }
+      await rapidScroll(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('Long Strings Rapid Scroll', result, { minFps: 20 });
@@ -180,10 +157,7 @@ test.describe('grid scroll performance benchmarks', () => {
     test('scroll performance - huge strings', async ({ page }) => {
       await startFPSMeasurement(page);
 
-      await scrollGrid(page, getGrid(page), 5000);
-      await scrollGrid(page, getGrid(page), -3000);
-      await scrollGrid(page, getGrid(page), 2000);
-      await scrollGrid(page, getGrid(page), -4000);
+      await scrollSequence(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('Huge Strings Scroll', result, { minFps: 20 });
@@ -203,18 +177,9 @@ test.describe('grid scroll performance benchmarks', () => {
     });
 
     test('rapid scroll performance - huge strings', async ({ page }) => {
-      const box = await getGrid(page).boundingBox();
-      if (!box) throw new Error('Grid not found');
-
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-
       await startFPSMeasurement(page);
 
-      // Rapid small scrolls (simulates fast mouse wheel)
-      for (let i = 0; i < 50; i += 1) {
-        await page.mouse.wheel(0, 200);
-        await page.waitForTimeout(8); // ~120fps input rate
-      }
+      await rapidScroll(page, getGrid(page));
 
       const result = await stopFPSMeasurement(page);
       logResults('Huge Strings Rapid Scroll', result, { minFps: 15 });
@@ -228,9 +193,6 @@ test.describe('grid performance stress tests', () => {
     !process.env.RUN_PERF_TESTS,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
-
-  // Run tests serially to avoid resource contention
-  test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, '');
@@ -268,21 +230,9 @@ test.describe('grid performance stress tests', () => {
     await openTable(page, 'perf_all_types_big');
     await waitForLoadingDone(page);
 
-    const grid = getGrid(page);
-    const box = await grid.boundingBox();
-    if (!box) throw new Error('Grid not found');
-
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-
     await startFPSMeasurement(page);
 
-    // Combined horizontal and vertical scrolling
-    for (let i = 0; i < 20; i += 1) {
-      await page.mouse.wheel(500, 500);
-      await page.waitForTimeout(32);
-      await page.mouse.wheel(-300, 300);
-      await page.waitForTimeout(32);
-    }
+    await combinedScroll(page, getGrid(page));
 
     const result = await stopFPSMeasurement(page);
     logResults('Combined H+V Scroll', result, { minFps: 28 });
@@ -298,8 +248,6 @@ test.describe('grid display scaling benchmarks', () => {
     !process.env.RUN_PERF_TESTS,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
-
-  test.describe.configure({ mode: 'serial' });
 
   DISPLAY_PROFILES.forEach(profile => {
     test.describe(`display scaling - ${profile.name}`, () => {
@@ -321,10 +269,7 @@ test.describe('grid display scaling benchmarks', () => {
 
         await startFPSMeasurement(page);
 
-        await scrollGrid(page, grid, 5000);
-        await scrollGrid(page, grid, -3000);
-        await scrollGrid(page, grid, 2000);
-        await scrollGrid(page, grid, -4000);
+        await scrollSequence(page, grid);
 
         const result = await stopFPSMeasurement(page);
         logResults(`All Types Big Table Scroll (${profile.name})`, result, {

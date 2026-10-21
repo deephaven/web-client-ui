@@ -177,7 +177,7 @@ See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/aut
 - `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
 - `npm run e2e:codegen`: Runs Playwright in codegen mode which can help with creating tests. See [Playwright Codegen](https://playwright.dev/docs/codegen/) for more details.
 - `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
-- `npm run e2e:performance`: Runs grid performance benchmark tests against the main app (requires a Deephaven server). Skipped by default in CI due to resource constraints.
+- `npm run e2e:performance`: Runs grid performance benchmark tests against the main app (requires a Deephaven server). In CI these run in a separate job that reports results as a PR comment and never fails the build, because frame timings on shared runners are noisy.
 
 For benchmarking performance-sensitive Grid changes, see [Grid Performance Testing](./tests/grid-perf/README.md).
 

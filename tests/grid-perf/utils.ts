@@ -7,8 +7,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export const HORIZONTAL_SCROLL_STEP = 400;
 
 /** Line delimited results consumed by `scripts/grid-perf-report.mjs` */
-const RESULTS_FILE =
+export const RESULTS_FILE =
   process.env.PERF_RESULTS_FILE ?? 'test-results/grid-perf-results.jsonl';
+
+/** Line delimited results from `grid-render-breakdown.spec.ts` */
+export const BREAKDOWN_RESULTS_FILE =
+  process.env.PERF_BREAKDOWN_RESULTS_FILE ??
+  'test-results/grid-render-breakdown.jsonl';
 
 export interface DisplayProfile {
   name: string;
@@ -179,6 +184,50 @@ export async function scrollGrid(
 }
 
 /**
+ * Scrolls down and back up by uneven amounts, so the grid renders rows it has
+ * not just drawn on each pass
+ */
+export async function scrollSequence(page: Page, grid: Locator): Promise<void> {
+  await scrollGrid(page, grid, 5000);
+  await scrollGrid(page, grid, -3000);
+  await scrollGrid(page, grid, 2000);
+  await scrollGrid(page, grid, -4000);
+}
+
+/**
+ * Sends small wheel events faster than the display refreshes, as a fast mouse
+ * wheel or trackpad does
+ */
+export async function rapidScroll(page: Page, grid: Locator): Promise<void> {
+  const box = await grid.boundingBox();
+  if (!box) throw new Error('Grid not found');
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+
+  for (let i = 0; i < 50; i += 1) {
+    await page.mouse.wheel(0, 200);
+    await page.waitForTimeout(8); // ~120fps input rate
+  }
+}
+
+/**
+ * Scrolls diagonally, alternating horizontal direction
+ */
+export async function combinedScroll(page: Page, grid: Locator): Promise<void> {
+  const box = await grid.boundingBox();
+  if (!box) throw new Error('Grid not found');
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+
+  for (let i = 0; i < 20; i += 1) {
+    await page.mouse.wheel(500, 500);
+    await page.waitForTimeout(32);
+    await page.mouse.wheel(-300, 300);
+    await page.waitForTimeout(32);
+  }
+}
+
+/**
  * Scrolls the given element horizontally using mouse wheel events
  */
 export async function scrollGridHorizontal(
@@ -266,6 +315,15 @@ export async function verifyHorizontalScrollRange(
  * Appends a benchmark result so it can be aggregated into a report after the
  * run. Benchmarks run serially, so appends never interleave.
  */
+/**
+ * @param count Number of frames
+ * @param total Total frames measured
+ * @returns The count as a percentage of the total
+ */
+function percent(count: number, total: number): string {
+  return total === 0 ? '0.0%' : `${((count / total) * 100).toFixed(1)}%`;
+}
+
 function recordResult(
   testName: string,
   result: FPSResult,
@@ -299,16 +357,16 @@ export function logResults(
   );
   console.log(`  Total frames: ${result.frameCount}`);
   console.log(
-    `  Dropped frames (>33ms): ${result.droppedFrames} (${(
-      (result.droppedFrames / result.frameCount) *
-      100
-    ).toFixed(1)}%)`
+    `  Dropped frames (>33ms): ${result.droppedFrames} (${percent(
+      result.droppedFrames,
+      result.frameCount
+    )})`
   );
   console.log(
-    `  Stalled frames (>=500ms): ${result.stalledFrames} (${(
-      (result.stalledFrames / result.frameCount) *
-      100
-    ).toFixed(1)}%)`
+    `  Stalled frames (>=500ms): ${result.stalledFrames} (${percent(
+      result.stalledFrames,
+      result.frameCount
+    )})`
   );
   console.log(`  Expected min FPS: ${expected.minFps}`);
 }

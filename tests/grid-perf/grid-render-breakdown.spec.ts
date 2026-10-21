@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
-import { DISPLAY_PROFILES, verifyDisplayProfile } from './utils';
+import {
+  BREAKDOWN_RESULTS_FILE,
+  DISPLAY_PROFILES,
+  verifyDisplayProfile,
+} from './utils';
 // Types only, the perf app is not an installed package
 // eslint-disable-next-line import/no-relative-packages
 import type {
@@ -24,10 +28,6 @@ import type {
  */
 
 const PERF_APP_URL = 'http://localhost:4020';
-
-const RESULTS_FILE =
-  process.env.PERF_BREAKDOWN_RESULTS_FILE ??
-  'test-results/grid-render-breakdown.jsonl';
 
 const TEXT_MODES = ['short', 'long'] as const;
 
@@ -72,8 +72,6 @@ test.describe('grid render breakdown', () => {
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
-  test.describe.configure({ mode: 'serial' });
-
   // Slow variants take up to a few hundred ms per frame at 4K
   test.setTimeout(5 * 60 * 1000);
 
@@ -105,9 +103,11 @@ test.describe('grid render breakdown', () => {
           const name = `Render Breakdown (${profile.name}, ${textMode} text)`;
           console.log(formatBreakdown(name, breakdown));
 
-          fs.mkdirSync(path.dirname(RESULTS_FILE), { recursive: true });
+          fs.mkdirSync(path.dirname(BREAKDOWN_RESULTS_FILE), {
+            recursive: true,
+          });
           fs.appendFileSync(
-            RESULTS_FILE,
+            BREAKDOWN_RESULTS_FILE,
             `${JSON.stringify({ name, ...breakdown })}\n`
           );
           await testInfo.attach('render-breakdown', {

@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop -- benchmark input must be sequential */
 import { test } from '@playwright/test';
 import {
+  combinedScroll,
   DISPLAY_PROFILES,
   logResults,
   scrollGrid,
@@ -34,8 +35,6 @@ test.describe('grid perf app - stress tests', () => {
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
-  test.describe.configure({ mode: 'serial' });
-
   test('scroll performance - 1M rows', async ({ page }) => {
     await page.goto(`${PERF_APP_URL}/?rows=1000000&cols=100`);
     await page.waitForSelector('canvas');
@@ -58,13 +57,7 @@ test.describe('grid perf app - stress tests', () => {
 
     await startFPSMeasurement(page);
 
-    // Horizontal and vertical scrolling
-    for (let i = 0; i < 20; i += 1) {
-      await page.mouse.wheel(500, 500);
-      await page.waitForTimeout(32);
-      await page.mouse.wheel(-300, 300);
-      await page.waitForTimeout(32);
-    }
+    await combinedScroll(page, page.locator('canvas').first());
 
     const result = await stopFPSMeasurement(page);
     logResults('500 Columns Scroll', result, { minFps: 28 });
@@ -110,8 +103,6 @@ test.describe('grid perf app - display scaling', () => {
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
-  test.describe.configure({ mode: 'serial' });
-
   DISPLAY_PROFILES.forEach(profile => {
     test.describe(`display scaling - ${profile.name}`, () => {
       test.use({
@@ -143,19 +134,9 @@ test.describe('grid perf app - display scaling', () => {
         await page.waitForSelector('canvas');
         await verifyDisplayProfile(page, page.locator('body'), profile);
 
-        const canvas = page.locator('canvas').first();
-        const box = await canvas.boundingBox();
-        if (!box) throw new Error('Grid canvas not found');
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-
         await startFPSMeasurement(page);
 
-        for (let i = 0; i < 20; i += 1) {
-          await page.mouse.wheel(500, 500);
-          await page.waitForTimeout(32);
-          await page.mouse.wheel(-300, 300);
-          await page.waitForTimeout(32);
-        }
+        await combinedScroll(page, page.locator('canvas').first());
 
         const result = await stopFPSMeasurement(page);
         logResults(`500 Columns Scroll (${profile.name})`, result, {

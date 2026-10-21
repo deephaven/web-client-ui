@@ -192,9 +192,8 @@ jobs:
           delete: true
 
   performance-tests:
-    if: ${{ !cancelled() }}
     runs-on: ubuntu-22.04
-    needs: [build, e2e-tests]
+    needs: build
     # Frame timings on shared runners are noisy, so this reports numbers instead of gating.
     continue-on-error: true
     timeout-minutes: 45
