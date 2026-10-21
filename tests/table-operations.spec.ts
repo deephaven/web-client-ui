@@ -381,7 +381,7 @@ test('organize columns', async ({ page }) => {
 
   const dropIndicator = page
     .locator('.visibility-ordering-list')
-    .locator('.marching-ants');
+    .locator('.dh-marching-ants');
   await test.step('Drag', async () => {
     const floatOption = page.getByRole('button', {
       name: 'Toggle visibility Float',

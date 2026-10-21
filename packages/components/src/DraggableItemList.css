@@ -22,41 +22,29 @@
     outline: 0;
   }
 
-  &.two-dragged,
-  &.multiple-dragged {
-    .item-list-item-content {
-      &::before {
-        content: ' ';
-        background: var(--dh-color-accent-bg);
-        box-shadow: 0 0.1rem 1rem var(--dh-color-dropshadow);
-        border-radius: 4px;
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        top: 4px;
-        left: 2px;
-        opacity: 0.8;
-        z-index: -1;
-      }
-    }
+  /* Stacked cards behind the dragged item when dragging multiple items */
+  &.two-dragged .item-list-item-content::before,
+  &.multiple-dragged .item-list-item-content::before,
+  &.multiple-dragged .item-list-item-content::after {
+    content: ' ';
+    background: var(--dh-color-accent-bg);
+    box-shadow: var(--dh-box-shadow);
+    border-radius: var(--dh-border-radius);
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 4px;
+    left: 2px;
+    opacity: 0.8;
+    z-index: -1;
   }
-  &.multiple-dragged {
-    .item-list-item-content {
-      &::after {
-        content: ' ';
-        background: var(--dh-color-accent-bg);
-        box-shadow: 0 0.1rem 1rem var(--dh-color-dropshadow);
-        border-radius: 4px;
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        /* It looked weird with 8px */
-        top: 7px;
-        left: 4px;
-        opacity: 0.6;
-        z-index: -2;
-      }
-    }
+
+  &.multiple-dragged .item-list-item-content::after {
+    /* It looked weird with 8px */
+    top: 7px;
+    left: 4px;
+    opacity: 0.6;
+    z-index: -2;
   }
 
   .fa-grip-vertical {
@@ -147,49 +135,6 @@
           background-color: var(--dh-color-item-list-selected-bg);
         }
       }
-    }
-  }
-
-  /*
-   * Sometimes @hello-pangea/dnd still adds the `is-dragging-over` class even though drop is disabled
-   * only show the ants if drop isn't disabled
-   */
-  &.is-dragging-over:not(.is-drop-disabled) {
-    .item-list-scroll-pane {
-      background-image: linear-gradient(
-          to right,
-          var(--dh-color-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to right,
-          var(--dh-color-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to bottom,
-          var(--dh-color-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to bottom,
-          var(--dh-color-bg) 50%,
-          var(--dh-color-fg) 50%
-        );
-      background-size:
-        8px 1px,
-        8px 1px,
-        1px 8px,
-        1px 8px;
-      background-position:
-        0 top,
-        0 bottom,
-        left 0,
-        right 0;
-      background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-      animation: march 0.5s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
     }
   }
 }

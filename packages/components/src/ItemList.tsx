@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, { PureComponent } from 'react';
+import classNames from 'classnames';
 import memoize from 'memoizee';
 import {
   FixedSizeList as List,
@@ -69,6 +70,8 @@ export type ItemListProps<T> = {
   disableSelect: boolean;
   renderItem: RenderItemFn<T>;
   focusSelector: string;
+  // Additional class name for the scrolling element, e.g. `dh-marching-ants`
+  scrollPaneClassName?: string;
   'data-testid'?: string;
 };
 
@@ -800,6 +803,7 @@ export class ItemList<T> extends PureComponent<
       overscanCount,
       renderItem,
       rowHeight,
+      scrollPaneClassName,
       'data-testid': dataTestId,
     } = this.props;
     const { selectedRanges, isStuckToBottom } = this.state;
@@ -807,7 +811,7 @@ export class ItemList<T> extends PureComponent<
       <AutoSizer className="item-list-auto-sizer" onResize={this.handleResize}>
         {({ width, height }) => (
           <List
-            className="item-list-scroll-pane"
+            className={classNames('item-list-scroll-pane', scrollPaneClassName)}
             height={height}
             width={width}
             initialScrollOffset={isStuckToBottom ? itemCount * rowHeight : 0}

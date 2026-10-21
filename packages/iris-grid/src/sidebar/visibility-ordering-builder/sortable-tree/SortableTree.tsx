@@ -122,7 +122,7 @@ export default function SortableTree<T>({
     <div
       className={classNames(
         'tree-container',
-        activeId != null && 'marching-ants'
+        activeId != null && 'dh-marching-ants'
       )}
       style={{
         height: `${virtualizer.getTotalSize()}px`,

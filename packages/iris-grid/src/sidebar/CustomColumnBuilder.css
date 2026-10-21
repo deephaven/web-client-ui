@@ -6,40 +6,7 @@
   .droppable-container {
     padding: 1px;
     &.dragging {
-      background-image: linear-gradient(
-          to right,
-          var(--dh-color-surface-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to right,
-          var(--dh-color-surface-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to bottom,
-          var(--dh-color-surface-bg) 50%,
-          var(--dh-color-fg) 50%
-        ),
-        linear-gradient(
-          to bottom,
-          var(--dh-color-surface-bg) 50%,
-          var(--dh-color-fg) 50%
-        );
-      background-size:
-        8px 1px,
-        8px 1px,
-        1px 8px,
-        1px 8px;
-      background-position:
-        0 top,
-        0 bottom,
-        left 0,
-        right 0;
-      background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-      animation: march 0.5s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
+      --dh-marching-ants-gap-color: var(--dh-color-surface-bg);
     }
   }
 

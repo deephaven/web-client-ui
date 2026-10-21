@@ -92,40 +92,9 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 /* Placeholder Container of target position */
 .lm_dropTargetIndicator {
-  background-image: linear-gradient(
-      to right,
-      var(--dh-color-black) 50%,
-      var(--dh-color-white) 50%
-    ),
-    linear-gradient(
-      to right,
-      var(--dh-color-black) 50%,
-      var(--dh-color-white) 50%
-    ),
-    linear-gradient(
-      to bottom,
-      var(--dh-color-black) 50%,
-      var(--dh-color-white) 50%
-    ),
-    linear-gradient(
-      to bottom,
-      var(--dh-color-black) 50%,
-      var(--dh-color-white) 50%
-    );
-  background-size:
-    8px 1px,
-    8px 1px,
-    1px 8px,
-    1px 8px;
-  background-position:
-    0 top,
-    0 bottom,
-    left 0,
-    right 0;
-  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  animation: march 0.5s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  /* Border from .dh-marching-ants in @deephaven/components BaseStyleSheet.css */
+  --dh-marching-ants-color: var(--dh-color-white);
+  --dh-marching-ants-gap-color: var(--dh-color-black);
 
   box-sizing: border-box;
   transition: all var(--dh-transition-mid) ease;
@@ -252,10 +221,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
          */
         background-size: 8px;
         background-color: var(--dh-color-fg);
-        mask-image: var(--dh-svg-icon-close-tab);
-        mask-position: center center;
-        mask-repeat: no-repeat;
-        mask-size: 8px;
+        mask: var(--dh-svg-icon-close-tab) center / 8px no-repeat;
 
         content: '';
         position: absolute;
@@ -326,57 +292,40 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
      */
     background-size: auto;
     background-color: var(--dh-color-fg);
-    mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII=');
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: auto;
+    mask: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII=')
+      center / auto no-repeat;
   }
 
   /* Icon to Maximize Pane, so it will fill the entire GoldenLayout Container */
   .lm_maximise {
     background-size: 16px;
     background-color: var(--dh-color-fg);
-    mask-image: var(--dh-svg-icon-maximise);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    mask: var(--dh-svg-icon-maximise) center / 16px no-repeat;
   }
 
   .lm_tabdropdown {
     background-size: 16px;
     background-color: var(--dh-color-fg);
-    mask-image: var(--dh-svg-icon-tab-dropdown);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    mask: var(--dh-svg-icon-tab-dropdown) center / 16px no-repeat;
   }
 
   /* Icon to Close Pane and so remove it from GoldenLayout Container */
   .lm_close {
     background-size: 16px;
     background-color: var(--dh-color-fg);
-    mask-image: var(--dh-svg-icon-close);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    mask: var(--dh-svg-icon-close) center / 16px no-repeat;
   }
 
   .lm_tabnextbutton {
     background-size: 16px;
     background-color: var(--dh-color-fg);
-    mask-image: var(--dh-svg-icon-next);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    mask: var(--dh-svg-icon-next) center / 16px no-repeat;
   }
 
   .lm_tabpreviousbutton {
     background-size: 16px;
     background-color: var(--dh-color-fg);
-    mask-image: var(--dh-svg-icon-prev);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    mask: var(--dh-svg-icon-prev) center / 16px no-repeat;
   }
 }
 
@@ -453,10 +402,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     .lm_maximise {
       background-size: 16px;
       background-color: var(--dh-color-fg);
-      mask-image: var(--dh-svg-icon-minimise);
-      mask-position: center center;
-      mask-repeat: no-repeat;
-      mask-size: 16px;
+      mask: var(--dh-svg-icon-minimise) center / 16px no-repeat;
     }
   }
 }

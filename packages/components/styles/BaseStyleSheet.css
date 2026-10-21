@@ -945,7 +945,50 @@ input[type='number']::-webkit-inner-spin-button {
   transition: transform var(--dh-transition-mid) ease-out;
 }
 
-/* used by marching ants animation */
+/*
+ * Animated dashed border ("marching ants"), e.g. for drop targets. Override
+ * --dh-marching-ants-color and --dh-marching-ants-gap-color on the element or
+ * an ancestor to change the colors. The border is drawn with background
+ * images, so elements using this class must set `background-color` rather
+ * than the `background` shorthand, which would reset it.
+ */
+.dh-marching-ants {
+  background-image: linear-gradient(
+      to right,
+      var(--dh-marching-ants-gap-color, var(--dh-color-bg)) 50%,
+      var(--dh-marching-ants-color, var(--dh-color-fg)) 50%
+    ),
+    linear-gradient(
+      to right,
+      var(--dh-marching-ants-gap-color, var(--dh-color-bg)) 50%,
+      var(--dh-marching-ants-color, var(--dh-color-fg)) 50%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--dh-marching-ants-gap-color, var(--dh-color-bg)) 50%,
+      var(--dh-marching-ants-color, var(--dh-color-fg)) 50%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--dh-marching-ants-gap-color, var(--dh-color-bg)) 50%,
+      var(--dh-marching-ants-color, var(--dh-color-fg)) 50%
+    );
+  background-size:
+    8px 1px,
+    8px 1px,
+    1px 8px,
+    1px 8px;
+  background-position:
+    0 top,
+    0 bottom,
+    left 0,
+    right 0;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  animation: march 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 @keyframes march {
   from {
     background-position:

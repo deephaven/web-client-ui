@@ -507,6 +507,7 @@ function NavTabList({
               {...provided.droppableProps}
               className={classNames('nav nav-tabs', {
                 dragging: snapshot.draggingFromThisWith,
+                'dh-marching-ants': snapshot.draggingFromThisWith,
               })}
               role="tablist"
               onScroll={handleScroll}

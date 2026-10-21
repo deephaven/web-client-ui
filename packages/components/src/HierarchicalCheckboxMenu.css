@@ -13,10 +13,7 @@
 
   .cs-caret {
     background-size: 10px 6px;
-    mask-image: var(--dh-svg-icon-selector-caret);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 10px 6px;
+    mask: var(--dh-svg-icon-selector-caret) center / 10px 6px no-repeat;
     background-color: var(--dh-color-selector-fg);
     width: 10px;
     height: 6px;

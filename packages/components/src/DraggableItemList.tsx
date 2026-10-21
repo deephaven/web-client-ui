@@ -28,7 +28,7 @@ type DraggableRenderItemFn<T> = (
 
 type DraggableItemListProps<T> = Omit<
   ItemListProps<T>,
-  'overscanCount' | 'focusSelector' | 'isDragSelect'
+  'overscanCount' | 'focusSelector' | 'isDragSelect' | 'scrollPaneClassName'
 > & {
   className: string;
   draggingItemClassName: string;
@@ -37,6 +37,10 @@ type DraggableItemListProps<T> = Omit<
   hasPlaceholder: boolean;
   // Whether to allow dragging items from this list
   isDragDisabled: boolean;
+  // Highlight the list as a drop target, e.g. while a drag is in progress
+  // elsewhere. It is also highlighted while an item is dragged over it, unless
+  // drop is disabled.
+  isDropTarget?: boolean;
 
   renderItem: DraggableRenderItemFn<T>;
   style: React.CSSProperties;
@@ -319,6 +323,7 @@ class DraggableItemList<T> extends PureComponent<
       isDoubleClickSelect,
       isDragDisabled,
       isDropDisabled,
+      isDropTarget,
       hasPlaceholder,
       isMultiSelect,
       isStickyBottom,
@@ -382,6 +387,13 @@ class DraggableItemList<T> extends PureComponent<
                 renderItem
               )}
               rowHeight={rowHeight}
+              // @hello-pangea/dnd can report isDraggingOver even when drop is
+              // disabled, so only highlight the list if drop is allowed
+              scrollPaneClassName={classNames({
+                'dh-marching-ants':
+                  isDropTarget === true ||
+                  (snapshot.isDraggingOver && !isDropDisabled),
+              })}
               selectedRanges={selectedRanges}
             />
             {hasPlaceholder && provided.placeholder}

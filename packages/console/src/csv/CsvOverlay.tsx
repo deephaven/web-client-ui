@@ -249,7 +249,7 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     return (
       <div
         ref={this.divElem}
-        className="csv-overlay fill-parent-absolute"
+        className="csv-overlay dh-marching-ants fill-parent-absolute"
         onDragOver={CsvOverlay.handleDragOver}
         onDrop={this.handleDrop}
         tabIndex={-1}

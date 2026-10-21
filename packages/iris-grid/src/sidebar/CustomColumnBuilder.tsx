@@ -405,6 +405,7 @@ class CustomColumnBuilder extends Component<
                 {...provided.droppableProps}
                 className={classNames('droppable-container', {
                   dragging: snapshot.draggingFromThisWith,
+                  'dh-marching-ants': snapshot.draggingFromThisWith,
                 })}
               >
                 {this.renderInputs()}

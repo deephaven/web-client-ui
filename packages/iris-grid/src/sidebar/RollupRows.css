@@ -100,81 +100,10 @@
     .rollup-rows-group-by {
       .placeholder {
         border: dashed 1px transparent;
-        background-image: linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          );
-        background-size:
-          8px 1px,
-          8px 1px,
-          1px 8px,
-          1px 8px;
-        background-position:
-          0 top,
-          0 bottom,
-          left 0,
-          right 0;
-        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-        animation: march 0.5s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
 
         &.is-dragging-over {
           background-color: var(--dh-color-item-list-selected-hover-bg);
         }
-      }
-
-      .item-list-scroll-pane {
-        background-image: linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          );
-        background-size:
-          8px 1px,
-          8px 1px,
-          1px 8px,
-          1px 8px;
-        background-position:
-          0 top,
-          0 bottom,
-          left 0,
-          right 0;
-        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-        animation: march 0.5s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
       }
 
       .draggable-item-list.is-dragging-over {
@@ -195,43 +124,6 @@
 
     .rollup-rows-available-columns
       .draggable-item-list:not(.is-dragging-from-this) {
-      .item-list-scroll-pane {
-        background-image: linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to right,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          ),
-          linear-gradient(
-            to bottom,
-            var(--dh-color-bg) 50%,
-            var(--dh-color-fg) 50%
-          );
-        background-size:
-          8px 1px,
-          8px 1px,
-          1px 8px,
-          1px 8px;
-        background-position:
-          0 top,
-          0 bottom,
-          left 0,
-          right 0;
-        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-        animation: march 0.5s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-      }
-
       &.is-dragging-over {
         .item-list-scroll-pane {
           background-color: var(--dh-color-item-list-selected-hover-bg);

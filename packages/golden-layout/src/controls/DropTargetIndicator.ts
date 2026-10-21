@@ -2,7 +2,7 @@ import $ from 'jquery';
 
 export default class DropTargetIndicator {
   private static _template =
-    '<div class="lm_dropTargetIndicator"><div class="lm_inner"></div></div>';
+    '<div class="lm_dropTargetIndicator dh-marching-ants"><div class="lm_inner"></div></div>';
 
   element = $(DropTargetIndicator._template);
 
