@@ -58,21 +58,26 @@
 }
 
 @media (max-width: 767.98px) {
-  .login-container .login-box {
-    flex-direction: column;
-    margin: 3rem;
-  }
-  .login-container .login-box .logo {
-    width: 100%;
-    min-height: 165px;
-    border-radius: 4px 4px 0 0;
-  }
-  .login-container .login-box .logo img {
-    width: 80%;
-    max-width: 350px;
-  }
-  .login-container .login-box .login-form {
-    max-width: 100%;
-    border-radius: 0 0 4px 4px;
+  .login-container {
+    .login-box {
+      flex-direction: column;
+      margin: var(--dh-spacer-5);
+
+      .logo {
+        width: 100%;
+        min-height: 165px;
+        border-radius: var(--dh-border-radius) var(--dh-border-radius) 0 0;
+
+        img {
+          width: 80%;
+          max-width: 350px;
+        }
+      }
+
+      .login-form {
+        max-width: 100%;
+        border-radius: 0 0 var(--dh-border-radius) var(--dh-border-radius);
+      }
+    }
   }
 }

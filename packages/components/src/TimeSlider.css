@@ -1,17 +1,12 @@
-@use 'sass:math';
-
-@import '../scss/custom.scss';
-
-$track-height: 15px;
-$handle-size: $track-height;
-$popover-width: 90px;
-$track-background: $gray-500;
-$tick-color: $gray-900;
-$tick-label-color: $gray-300;
+:root {
+  --time-slider-track-height: 15px;
+}
 
 .time-slider {
+  --handle-size: var(--time-slider-track-height);
+
   width: 100%;
-  padding-bottom: $spacer;
+  padding-bottom: var(--dh-spacer-3);
   overflow: hidden;
 
   .time-slider-popovers {
@@ -20,9 +15,9 @@ $tick-label-color: $gray-300;
     margin: 0 4px;
 
     .handle-popper {
-      padding: $spacer-2;
-      width: $popover-width;
-      border-radius: $border-radius;
+      padding: var(--dh-spacer-2);
+      width: 90px;
+      border-radius: var(--dh-border-radius);
       background: var(--dh-color-subdued-content-bg);
       flex-shrink: 0;
       text-align: center;
@@ -32,7 +27,7 @@ $tick-label-color: $gray-300;
         color: var(--dh-color-modified);
       }
       input {
-        padding: $input-padding-y 0;
+        padding: var(--dh-input-padding-y) 0;
         text-align: center;
       }
     }
@@ -45,9 +40,9 @@ $tick-label-color: $gray-300;
 
   .track {
     margin: 4px;
-    height: $track-height;
-    background: $track-background;
-    border-radius: $track-height * 0.5;
+    height: var(--time-slider-track-height);
+    background: var(--dh-color-gray-500);
+    border-radius: calc(var(--time-slider-track-height) * 0.5);
     position: relative;
 
     .track-fills {
@@ -56,11 +51,11 @@ $tick-label-color: $gray-300;
       left: 0;
       width: 100%;
       height: 100%;
-      border-radius: $track-height * 0.5;
+      border-radius: calc(var(--time-slider-track-height) * 0.5);
       overflow: hidden;
 
       .track-fill {
-        border-radius: $track-height * 0.5;
+        border-radius: calc(var(--time-slider-track-height) * 0.5);
         background: var(--dh-color-accent-bg);
         height: 100%;
         width: 100%;
@@ -80,39 +75,43 @@ $tick-label-color: $gray-300;
     .handle-track {
       position: absolute;
       width: 100%;
-      height: $track-height;
+      height: var(--time-slider-track-height);
       top: 0;
       left: 0;
       pointer-events: none;
 
       &:focus-within {
-        z-index: 2; //put the current handle on top
+        z-index: 2; /* put the current handle on top */
       }
 
       .handle {
         display: block;
-        height: $handle-size;
-        width: $handle-size;
+        height: var(--handle-size);
+        width: var(--handle-size);
         border-radius: 50%;
         position: absolute;
         top: 0;
         left: 0;
         padding: 0;
-        background: $gray-300;
+        background: var(--dh-color-gray-700);
         border: 1px solid transparent;
-        transition: $btn-transition;
+        transition:
+          color 0.12s ease-in-out,
+          background-color 0.12s ease-in-out,
+          border-color 0.12s ease-in-out,
+          box-shadow 0.12s ease-in-out;
         cursor: grab;
         pointer-events: all;
-        // opacity: 0.3;
+        /* opacity: 0.3; */
 
         &:hover {
-          background: $gray-100;
+          background: var(--dh-color-gray-900);
         }
         &:focus {
-          background: $gray-100;
+          background: var(--dh-color-gray-900);
           outline: 0;
-          border: 1px solid $input-focus-border-color;
-          box-shadow: $input-btn-focus-box-shadow;
+          border: 1px solid var(--dh-color-input-focus-border);
+          box-shadow: var(--dh-input-focus-box-shadow);
           transform: scale(1.15);
         }
       }
@@ -128,9 +127,9 @@ $tick-label-color: $gray-300;
       flex-direction: row;
       div {
         display: block;
-        width: percentage(math.div(1, 24)); //one box per hour in day
-        height: $track-height;
-        border-right: 1px solid $tick-color;
+        width: calc(100% / 24); /* one box per hour in day */
+        height: var(--time-slider-track-height);
+        border-right: 1px solid var(--dh-color-gray-75);
       }
       div:last-child {
         border-right: none;
@@ -142,7 +141,7 @@ $tick-label-color: $gray-300;
     position: relative;
     width: 100%;
     user-select: none;
-    color: $tick-label-color;
+    color: var(--dh-color-gray-700);
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -150,30 +149,29 @@ $tick-label-color: $gray-300;
     overflow: hidden;
 
     .tick-label {
-      width: percentage(
-        math.div(1, 24)
-      ); // the first label is outside of wrapper and always visible
-
+      /* the first label is outside of wrapper and always visible */
+      width: calc(100% / 24);
       text-align: left;
       font-size: 0.9rem;
     }
 
-    //if less then min width, the visible tick labels wrap into overflow hidden zone,
-    //while the absolutely positioned children stay in place
+    /*
+     * if less then min width, the visible tick labels wrap into overflow hidden zone,
+     * while the absolutely positioned children stay in place
+     */
     .tick-label-wrapper {
-      width: 100% - percentage(math.div(1, 24)); // minus the first label
-      min-width: 300px; // point where extra labels wrap
-      margin-left: percentage(math.div(1, 24)) * 0.5 * -1; // offset by half so that labels fall on ticks, not between
+      width: calc(100% - 100% / 24); /* minus the first label */
+      min-width: 300px; /* point where extra labels wrap */
+      /* offset by half so that labels fall on ticks, not between */
+      margin-left: calc(-100% / 24 / 2);
       display: flex;
 
       .tick-label {
         text-align: center;
         visibility: hidden;
-        width: percentage(
-          math.div(1, 23)
-        ); //remaining number of labels excluding first
+        width: calc(100% / 23); /* remaining number of labels excluding first */
 
-        // used to center text in a box potentially smaller then the text it contains
+        /* used to center text in a box potentially smaller then the text it contains */
         &::before {
           content: '';
           margin-left: -100%;
@@ -184,7 +182,7 @@ $tick-label-color: $gray-300;
         }
       }
 
-      //choose which tick labels to display if greater then wrapper min-width
+      /* choose which tick labels to display if greater then wrapper min-width */
       .tick-label:nth-child(4),
       .tick-label:nth-child(8),
       .tick-label:nth-child(12),
@@ -194,22 +192,21 @@ $tick-label-color: $gray-300;
         visibility: visible;
       }
 
-      //these tick labels are aboslutely positioned, so always visible
+      /* these tick labels are aboslutely positioned, so always visible */
       div:nth-child(12) {
         position: absolute;
         top: 0;
-        left: percentage(math.div(1, 23)) * 11;
+        left: calc(100% / 23 * 11);
       }
       div:nth-child(13) {
-        margin-left: percentage(
-          math.div(1, 24)
-        ); //compensate the labels to the right to account for removed 12th label
+        /* compensate the labels to the right to account for removed 12th label */
+        margin-left: calc(100% / 24);
       }
       div:nth-child(24) {
         position: absolute;
-        direction: rtl; //causes text to overflow to the left, and still be visible
+        direction: rtl; /* causes text to overflow to the left, and still be visible */
         top: 0;
-        right: 0; //force label to be at end
+        right: 0; /* force label to be at end */
         text-align: right;
         &::before,
         &::after {

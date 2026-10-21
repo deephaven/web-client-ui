@@ -1,19 +1,14 @@
-@import '@deephaven/components/scss/custom.scss';
-
-$login-box-width: 605px;
-$login-box-min-height: 310px;
-
 .login-form {
-  max-width: $login-box-width * 0.5;
-  min-height: $login-box-min-height;
+  max-width: 302.5px;
+  min-height: 310px;
   background: var(--dh-color-login-form-bg);
-  border-radius: 0 $border-radius $border-radius 0;
+  border-radius: 0 var(--dh-border-radius) var(--dh-border-radius) 0;
   display: flex;
   flex-grow: 1;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: $spacer 0;
+  padding: var(--dh-spacer-3) 0;
 
   fieldset {
     padding: 0;
@@ -33,7 +28,7 @@ $login-box-min-height: 310px;
   }
 
   .flex-spacer:empty {
-    content: ''; // just to make a empty div to have height
+    content: ''; /* just to make a empty div to have height */
   }
 
   .status-message {
@@ -41,28 +36,28 @@ $login-box-min-height: 310px;
   }
 
   .error-message {
-    color: $danger;
+    color: var(--dh-color-negative-bg);
     width: 100%;
     word-break: break-word;
-    margin-top: $spacer-1;
-    margin-bottom: $spacer-1;
+    margin-top: var(--dh-spacer-1);
+    margin-bottom: var(--dh-spacer-1);
   }
 
   .btn-primary {
     min-width: 118px;
   }
 
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
   .is-initializing {
     opacity: 0;
-    animation: fade-in $transition 1s forwards;
+    animation: fade-in var(--dh-transition) 1s forwards;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

@@ -1,23 +1,21 @@
-@import '../scss/custom.scss';
-
 .search-group {
   position: relative;
 
   .form-control {
-    padding-right: 1.75rem; // leave space for search icon and cancel button from browser
+    padding-right: 1.75rem; /* leave space for search icon and cancel button from browser */
   }
 
   .search-end-content {
     color: var(--dh-color-search-icon);
     pointer-events: none;
     position: absolute;
-    right: $spacer-2;
+    right: var(--dh-spacer-2);
     top: 0;
     bottom: 0;
     height: 100%;
     display: flex;
     align-items: center;
-    gap: $spacer-1;
+    gap: var(--dh-spacer-1);
   }
 
   .search-end-placeholder {
@@ -25,23 +23,26 @@
   }
 
   ::-webkit-search-cancel-button {
-    $icon-size: 16px;
-    @include icon-image-mask(var(--dh-svg-icon-search-cancel), $icon-size);
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask: var(--dh-svg-icon-search-cancel) center / 16px no-repeat;
 
-    // Need to specify -webkit-appearance: none for Chrome
+    /* Need to specify -webkit-appearance: none for Chrome */
     -webkit-appearance: none;
-    height: $icon-size;
-    width: $icon-size;
+    height: 16px;
+    width: 16px;
     opacity: 0.4;
     transition: opacity 300ms ease;
-    &:hover {
-      opacity: 1;
-    }
+  }
+
+  /* Nesting cannot be used here, `&` cannot represent a pseudo-element */
+  ::-webkit-search-cancel-button:hover {
+    opacity: 1;
   }
 
   .search-change-selection {
     position: absolute;
-    right: $spacer-1;
+    right: var(--dh-spacer-1);
     top: 0;
     height: 100%;
     display: flex;
@@ -50,17 +51,17 @@
 
   .search-change-button {
     padding: 1px 2px;
-    height: calc(100% - $spacer-2);
+    height: calc(100% - var(--dh-spacer-2));
   }
 
   .search-change-text,
   .search-match {
-    background-color: fg-opacity(20);
+    background-color: color-mix(in srgb, var(--dh-color-fg) 20%, transparent);
     border-radius: 20px;
     padding: 0 5px;
   }
 
   .search-match {
-    margin: 0 $spacer-1;
+    margin: 0 var(--dh-spacer-1);
   }
 }

@@ -1,7 +1,5 @@
-@import '../../IrisGrid.scss';
-
 .visibility-search-list {
-  width: 0.75 * $table-sidebar-max-width;
+  width: 240px;
   border: 1px solid var(--dh-color-popover-border);
 
   .popper-arrow {
@@ -9,11 +7,11 @@
   }
 
   .tree-item {
-    padding: $spacer-1;
+    padding: var(--dh-spacer-1);
   }
 
   .no-results {
-    padding: $spacer-1;
+    padding: var(--dh-spacer-1);
     margin: auto;
     color: var(--dh-color-text-disabled);
   }
@@ -31,7 +29,7 @@
      * since popper needs to know the internal height to limit the container after
      */
     max-height: 100vh;
-    padding: $spacer-1;
+    padding: var(--dh-spacer-1);
     overflow: auto;
     flex-grow: 1;
     flex-shrink: 1;
