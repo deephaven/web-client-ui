@@ -11,7 +11,7 @@ import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = {
   shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
-  updateSettings: typeof updateSettingsAction;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
 };
 
 function ShortcutSectionContent({
