@@ -91,7 +91,7 @@
   .rollup-rows-available-columns {
     display: flex;
     flex-direction: column;
-    background-color: var(--dh-color-surface);
+    background-color: var(--dh-color-surface-bg);
     flex-grow: 1;
     .draggable-item-list {
       flex-grow: 1;
