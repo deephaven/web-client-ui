@@ -198,6 +198,31 @@ describe('fastMemoize', () => {
       expect(memoized(String(target))).toBe('string');
       expect(fn).toHaveBeenCalledTimes(2);
     });
+
+    it('keys symbols by identity rather than description', () => {
+      const fn = jest.fn((value: symbol) => value);
+      const memoized = fastMemoize(fn, 10);
+      const first = Symbol('a');
+      const second = Symbol('a');
+
+      expect(memoized(first)).toBe(first);
+      expect(memoized(second)).toBe(second);
+      expect(memoized(first)).toBe(first);
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('matches long strings by value', () => {
+    const fn = jest.fn((text: string) => text.length);
+    const memoized = fastMemoize(fn, 10);
+    const text = 'x'.repeat(25000);
+
+    expect(memoized(text)).toBe(25000);
+    // Built separately so it is a different string instance with equal contents
+    expect(memoized(['x'.repeat(12500), 'x'.repeat(12500)].join(''))).toBe(
+      25000
+    );
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   describe('cache limit', () => {

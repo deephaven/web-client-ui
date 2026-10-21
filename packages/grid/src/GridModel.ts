@@ -7,11 +7,36 @@ import {
   type GridTheme,
   type NullableGridColor,
 } from './GridTheme';
-import fastMemoize from './fastMemoize';
+import fastMemoize, { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
 import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
+
+/**
+ * Gets how much of a cell's text to search for links, so a link that is cut off
+ * by truncation is still found whole
+ * @param text The full text of the cell
+ * @param visibleLength The length of the visible text
+ * @returns The length of text to search from the start
+ */
+function getLinkSearchLength(text: string, visibleLength: number): number {
+  // If no text is truncated, then directly search in text
+  if (visibleLength >= text.length) {
+    return text.length;
+  }
+
+  // To check for links, we should check to the first space after the truncatedText length
+  const indexOfProceedingWhitespace = text
+    .slice(visibleLength - 1, LINK_TRUNCATION_LENGTH)
+    .search(/\s/); // index or -1 if not found
+
+  // If it doesn't exist, use the minimum between length of the original text and 5000
+  if (indexOfProceedingWhitespace === -1) {
+    return Math.min(LINK_TRUNCATION_LENGTH, text.length);
+  }
+  return visibleLength + indexOfProceedingWhitespace;
+}
 
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
@@ -199,44 +224,37 @@ abstract class GridModel<
    * @param column The model column
    * @param row The model row
    * @param visibleLength The length of the visible text
-   * @returns An array of Tokens in the cell
+   * @returns An array of Tokens in the cell. It is shared with other calls, so must not be modified
    */
   tokensForCell(
     column: ModelIndex,
     row: ModelIndex,
     visibleLength: number = LINK_TRUNCATION_LENGTH
-  ): Token[] {
+  ): readonly Token[] {
     const text = this.textForCell(column, row);
+    if (text == null) {
+      return EMPTY_ARRAY;
+    }
+    // Only the start of a very long text is ever searched, so cut it down to
+    // that before scanning it or using it as a cache key
+    const searchText =
+      text.length > MAX_HASHED_STRING_LENGTH
+        ? text.slice(0, getLinkSearchLength(text, visibleLength))
+        : text;
     // Only http(s) urls and emails are tokenized, so text without a colon or an
     // at sign cannot contain one. This runs for every visible cell of every
     // frame, so it is worth skipping the cache lookup entirely.
-    if (text == null || (!text.includes(':') && !text.includes('@'))) {
-      return EMPTY_ARRAY as unknown as Token[];
+    if (!searchText.includes(':') && !searchText.includes('@')) {
+      return EMPTY_ARRAY;
     }
-    return this.getCachedTokensInText(text, visibleLength);
+    return this.getCachedTokensInText(searchText, visibleLength);
   }
 
   getCachedTokensInText = fastMemoize(
-    (text: string, visibleLength: number): Token[] => {
-      // If no text is truncated, then directly search in text
-      if (visibleLength >= text.length) {
-        return GridUtils.findTokensWithProtocolInText(text);
-      }
-
-      // To check for links, we should check to the first space after the truncatedText length
-      const indexOfProceedingWhitespace = text
-        .slice(visibleLength - 1, LINK_TRUNCATION_LENGTH)
-        .search(/\s/); // index or -1 if not found
-
-      let lengthOfContent = visibleLength + indexOfProceedingWhitespace;
-      // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
-      if (indexOfProceedingWhitespace === -1) {
-        lengthOfContent = Math.min(LINK_TRUNCATION_LENGTH, text.length);
-      }
-      const contentToCheckForLinks = text.substring(0, lengthOfContent);
-
-      return GridUtils.findTokensWithProtocolInText(contentToCheckForLinks);
-    },
+    (text: string, visibleLength: number): Token[] =>
+      GridUtils.findTokensWithProtocolInText(
+        text.substring(0, getLinkSearchLength(text, visibleLength))
+      ),
     10000
   );
 

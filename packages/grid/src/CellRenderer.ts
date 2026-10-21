@@ -9,7 +9,7 @@ import {
 import GridRenderer from './GridRenderer';
 import { type GridRenderState } from './GridRendererTypes';
 import { type GridColor } from './GridTheme';
-import fastMemoize from './fastMemoize';
+import fastMemoize, { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
 
 export type CellRenderType = 'text' | 'dataBar';
 
@@ -86,7 +86,7 @@ abstract class CellRenderer {
     context.fillText(markerText, textX, textY);
   }
 
-  getCachedTruncatedString = fastMemoize(
+  private cachedTruncateToWidth = fastMemoize(
     (
       context: CanvasRenderingContext2D,
       text: string,
@@ -105,6 +105,34 @@ abstract class CellRenderer {
       ),
     10000
   );
+
+  getCachedTruncatedString = (
+    context: CanvasRenderingContext2D,
+    text: string,
+    width: number,
+    fontWidthLower?: number,
+    fontWidthUpper?: number,
+    truncationChar?: string
+  ): string => {
+    // Truncation never reads past the most characters that fit, so a very long
+    // text is cut down to that before it is used as a cache key. The extra
+    // character keeps it longer than what fits, so it is still truncated.
+    const key =
+      text.length > MAX_HASHED_STRING_LENGTH
+        ? text.slice(
+            0,
+            GridRenderer.getMaxTruncatedLength(width, fontWidthLower) + 1
+          )
+        : text;
+    return this.cachedTruncateToWidth(
+      context,
+      key,
+      width,
+      fontWidthLower,
+      fontWidthUpper,
+      truncationChar
+    );
+  };
 }
 
 export default CellRenderer;
