@@ -97,7 +97,7 @@
   }
 
   &:hover:not(:disabled) .handle {
-    background-color: var(--dh-color-gray-900, #fcfcfa);
+    background-color: var(--dh-color-gray-900);
   }
 
   &.is-invalid,
@@ -113,12 +113,12 @@
 
   &:disabled {
     background-color: var(--dh-color-gray-300);
-    border-color: var(--dh-color-black, #1a171a);
+    border-color: var(--dh-color-black);
     cursor: not-allowed;
   }
 
   &:disabled.active {
-    border-color: var(--dh-color-black, #1a171a);
+    border-color: var(--dh-color-black);
     /* background-color: $gray-800; */
     .handle {
       background-color: var(--dh-color-gray-500);

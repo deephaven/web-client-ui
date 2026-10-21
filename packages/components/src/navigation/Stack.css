@@ -9,7 +9,7 @@
   .pushing-view {
     width: 100%;
     height: 100%;
-    background: var(--dh-color-content-bg, #2d2a2e);
+    background: var(--dh-color-content-bg);
     position: absolute;
   }
 

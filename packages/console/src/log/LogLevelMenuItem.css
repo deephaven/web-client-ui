@@ -20,7 +20,7 @@
 }
 
 .log-level-menu-item.STDOUT {
-  color: var(--dh-color-fg, #f0f0ee);
+  color: var(--dh-color-fg);
 }
 
 .log-level-menu-item.WARN {

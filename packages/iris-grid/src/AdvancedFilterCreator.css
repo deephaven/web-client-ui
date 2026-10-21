@@ -52,7 +52,7 @@
       }
 
       &.active {
-        color: var(--dh-color-fg, #f0f0ee);
+        color: var(--dh-color-fg);
       }
     }
   }
@@ -75,7 +75,7 @@
     .btn-link.filter-operator,
     .btn-link.btn-filter-item {
       font-size: 12px;
-      color: var(--dh-color-fg, #f0f0ee);
+      color: var(--dh-color-fg);
       text-decoration: underline;
       margin-right: 0;
 
@@ -102,9 +102,9 @@
         text-decoration: none;
 
         &.active {
-          color: var(--dh-color-fg, #f0f0ee);
+          color: var(--dh-color-fg);
           &:hover {
-            color: var(--dh-color-fg, #f0f0ee);
+            color: var(--dh-color-fg);
             cursor: default;
           }
         }

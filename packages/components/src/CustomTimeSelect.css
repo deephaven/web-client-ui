@@ -40,7 +40,7 @@
 
 .cs-menu-container {
   .cs-divider {
-    background-color: var(--dh-color-black, #1a171a);
+    background-color: var(--dh-color-black);
   }
 
   .cs-custom-container {
@@ -76,7 +76,7 @@
   }
 
   .cs-option-btn:hover {
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     background-color: var(--dh-color-item-list-hover-bg);
   }
   .cs-option-btn:focus {

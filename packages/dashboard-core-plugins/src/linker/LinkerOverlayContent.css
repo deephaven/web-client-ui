@@ -16,7 +16,7 @@
     position: absolute;
     right: var(--toast-outer-padding);
     bottom: var(--toast-outer-padding);
-    background: var(--dh-color-content-bg, #2d2a2e);
+    background: var(--dh-color-content-bg);
     width: 400px;
     pointer-events: auto;
     box-shadow: var(--dh-box-shadow);

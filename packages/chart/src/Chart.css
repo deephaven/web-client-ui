@@ -8,7 +8,7 @@
    * See comments on IDS-4808
    * https://illumon.aha.io/comments/6737799632463662636
    */
-  color: var(--dh-color-fg, #f0f0ee) !important;
+  color: var(--dh-color-fg) !important;
   border: 0 !important;
   border-radius: 2px !important;
   background: var(--dh-color-plotly-notifier-note-bg) !important;
@@ -22,7 +22,7 @@
   color: var(--dh-color-gray-600) !important;
   transition: all 0.2s ease-in-out !important;
   &:hover {
-    color: var(--dh-color-fg, #f0f0ee) !important;
+    color: var(--dh-color-fg) !important;
   }
 }
 

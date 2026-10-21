@@ -42,7 +42,7 @@
 
   &:hover {
     background: var(--dh-color-item-list-hover-bg);
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     text-decoration: none;
 
     .shortcut {

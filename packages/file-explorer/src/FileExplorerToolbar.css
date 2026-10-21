@@ -1,8 +1,8 @@
 .file-explorer-toolbar {
   --toolbar-padding: var(--dh-spacer-1);
 
-  background: var(--dh-color-content-bg, #2d2a2e);
-  border-bottom: 2px solid var(--dh-color-bg, #1a171a);
+  background: var(--dh-color-content-bg);
+  border-bottom: 2px solid var(--dh-color-bg);
   display: flex;
   flex-direction: row;
   flex-grow: 0;

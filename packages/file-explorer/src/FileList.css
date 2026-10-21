@@ -154,7 +154,7 @@
   .dnd-placeholder-content {
     padding: var(--dh-spacer-1) var(--dh-spacer-3);
     background: var(--dh-color-accent-down-bg);
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     border-radius: var(--dh-border-radius);
   }
 }

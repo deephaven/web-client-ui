@@ -44,8 +44,8 @@
     }
 
     .btn-cancel {
-      color: var(--dh-color-gray-900, #fcfcfa);
-      border-color: var(--dh-color-gray-900, #fcfcfa);
+      color: var(--dh-color-gray-900);
+      border-color: var(--dh-color-gray-900);
       margin-right: 0.5em;
     }
 

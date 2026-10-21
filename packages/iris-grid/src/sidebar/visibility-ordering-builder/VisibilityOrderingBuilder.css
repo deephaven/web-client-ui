@@ -66,7 +66,7 @@
   }
 
   .vertical-divider {
-    border-left: 1px solid var(--dh-color-black, #1a171a);
+    border-left: 1px solid var(--dh-color-black);
     padding-right: var(--dh-spacer-1);
     margin-left: var(--dh-spacer-1);
     height: 1rem;

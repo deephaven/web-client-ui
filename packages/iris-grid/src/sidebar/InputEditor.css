@@ -32,7 +32,7 @@
     left: 8px;
     top: 10px;
     font-size: 1rem;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     user-select: none;
   }
 }

@@ -66,8 +66,8 @@ html {
 
 body {
   min-height: 100%;
-  background-color: var(--dh-color-bg, #1a171a);
-  color: var(--dh-color-fg, #f0f0ee);
+  background-color: var(--dh-color-bg);
+  color: var(--dh-color-fg);
   margin: 0;
   padding: 0;
   overscroll-behavior: none;
@@ -76,7 +76,7 @@ body {
 
 #root {
   .app {
-    background-color: var(--dh-color-bg, #1a171a);
+    background-color: var(--dh-color-bg);
     height: 100vh;
     width: 100vw;
   }
@@ -659,14 +659,14 @@ input[type='number']::-webkit-inner-spin-button {
 /********** Browser Default Overides *********/
 ::selection {
   /* blink/webkit */
-  color: var(--dh-color-fg, #f0f0ee);
+  color: var(--dh-color-fg);
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 ::-moz-selection {
   /* moz */
-  color: var(--dh-color-fg, #f0f0ee);
+  color: var(--dh-color-fg);
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
@@ -801,7 +801,7 @@ input[type='number']::-webkit-inner-spin-button {
    */
   .custom-select {
     background-color: inherit !important;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     /* bg image, size and position for 2 layers */
     background-image: var(--dh-svg-icon-select-indicator),
       linear-gradient(0deg, var(--dh-color-input-bg), var(--dh-color-input-bg));
@@ -819,7 +819,7 @@ input[type='number']::-webkit-inner-spin-button {
     /* make the dotted duplicate focus line on firefox go away */
     &:-moz-focusring {
       color: transparent;
-      text-shadow: 0 0 0 var(--dh-color-fg, #f0f0ee) !important;
+      text-shadow: 0 0 0 var(--dh-color-fg) !important;
     }
 
     &:hover {
@@ -887,7 +887,7 @@ input[type='number']::-webkit-inner-spin-button {
 
     &:-moz-focusring {
       color: transparent;
-      text-shadow: 0 0 0 var(--dh-color-fg, #f0f0ee) !important;
+      text-shadow: 0 0 0 var(--dh-color-fg) !important;
     }
   }
 

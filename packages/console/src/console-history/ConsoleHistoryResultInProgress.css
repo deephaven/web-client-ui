@@ -9,7 +9,7 @@
 
   .badge {
     background-color: var(--dh-color-gray-500);
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     font-size: var(--console-history-result-in-progress-font-size);
     font-weight: 400;
     gap: 4px;

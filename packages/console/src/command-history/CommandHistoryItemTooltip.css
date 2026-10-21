@@ -23,7 +23,7 @@
         text-align: right;
         color: var(--dh-color-gray-600);
         .time-string {
-          color: var(--dh-color-fg, #f0f0ee);
+          color: var(--dh-color-fg);
         }
       }
       .error-message {

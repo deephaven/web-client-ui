@@ -2,7 +2,7 @@
   background-color: var(--dh-color-gray-75);
 
   .command-history-disconnected-message {
-    background-color: var(--dh-color-content-bg, #2d2a2e);
+    background-color: var(--dh-color-content-bg);
     color: var(--dh-color-gray-600);
     display: flex;
     flex-direction: column;

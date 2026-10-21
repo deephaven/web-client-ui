@@ -21,7 +21,7 @@
     }
   }
   .invalid-feedback {
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     background-color: var(--dh-color-negative-bg);
     font-size: 0.9rem;
     margin-top: 0;

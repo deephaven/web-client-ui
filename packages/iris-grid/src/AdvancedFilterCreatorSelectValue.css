@@ -22,7 +22,7 @@
   }
 
   .btn-link {
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     text-decoration: underline;
   }
 

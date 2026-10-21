@@ -23,7 +23,7 @@
     text-align: right;
     padding-right: 15px;
     padding-top: 7px;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
   }
 
   .console-input-inner-wrapper {

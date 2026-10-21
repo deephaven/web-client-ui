@@ -37,7 +37,7 @@
   blockquote {
     border-left: 0.25em solid var(--dh-color-gray-600);
     padding: 0 1em;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
   }
 
   pre {
@@ -72,11 +72,11 @@
     }
 
     code {
-      color: var(--dh-color-fg, #f0f0ee);
+      color: var(--dh-color-fg);
       background: var(--dh-color-gray-200);
       padding: var(--dh-spacer-2);
       border-radius: var(--dh-border-radius);
-      border: 1px solid var(--dh-color-black, #1a171a);
+      border: 1px solid var(--dh-color-black);
       overflow: auto;
       display: block;
     }
@@ -115,8 +115,8 @@
 @keyframes flash {
   0% {
     text-shadow:
-      0 0 5px var(--dh-color-content-bg, #2d2a2e),
-      0 0 20px var(--dh-color-content-bg, #2d2a2e);
+      0 0 5px var(--dh-color-content-bg),
+      0 0 20px var(--dh-color-content-bg);
   }
 
   50% {
@@ -127,7 +127,7 @@
 
   100% {
     text-shadow:
-      0 0 5px var(--dh-color-content-bg, #2d2a2e),
-      0 0 20px var(--dh-color-content-bg, #2d2a2e);
+      0 0 5px var(--dh-color-content-bg),
+      0 0 20px var(--dh-color-content-bg);
   }
 }

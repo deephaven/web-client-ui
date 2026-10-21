@@ -6,7 +6,7 @@
 }
 
 .dropdown-filter {
-  background: var(--dh-color-bg, #1a171a);
+  background: var(--dh-color-bg);
 
   .error-message {
     color: var(--dh-color-negative-bg);
@@ -19,7 +19,7 @@
     position: relative;
     overflow: auto;
     height: 100%;
-    background: var(--dh-color-content-bg, #2d2a2e);
+    background: var(--dh-color-content-bg);
   }
 
   .dropdown-filter-card-content {
@@ -85,7 +85,7 @@
 
     input {
       font-size: x-large;
-      color: var(--dh-color-fg, #f0f0ee);
+      color: var(--dh-color-fg);
       text-align: center;
       background: transparent;
       border: none;

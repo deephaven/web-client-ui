@@ -33,7 +33,7 @@
         background-color: var(--dh-color-item-list-selected-hover-bg);
 
         svg:not(.color-swatch) {
-          color: var(--dh-color-fg, #f0f0ee);
+          color: var(--dh-color-fg);
         }
       }
     }
@@ -64,24 +64,12 @@
   .marching-ants {
     background-image: linear-gradient(
         to right,
-        var(--dh-color-bg, #1a171a) 50%,
-        var(--dh-color-fg, #f0f0ee) 50%
+        var(--dh-color-bg) 50%,
+        var(--dh-color-fg) 50%
       ),
-      linear-gradient(
-        to right,
-        var(--dh-color-bg, #1a171a) 50%,
-        var(--dh-color-fg, #f0f0ee) 50%
-      ),
-      linear-gradient(
-        to bottom,
-        var(--dh-color-bg, #1a171a) 50%,
-        var(--dh-color-fg, #f0f0ee) 50%
-      ),
-      linear-gradient(
-        to bottom,
-        var(--dh-color-bg, #1a171a) 50%,
-        var(--dh-color-fg, #f0f0ee) 50%
-      );
+      linear-gradient(to right, var(--dh-color-bg) 50%, var(--dh-color-fg) 50%),
+      linear-gradient(to bottom, var(--dh-color-bg) 50%, var(--dh-color-fg) 50%),
+      linear-gradient(to bottom, var(--dh-color-bg) 50%, var(--dh-color-fg) 50%);
     background-size:
       8px 1px,
       8px 1px,

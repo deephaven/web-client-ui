@@ -27,15 +27,15 @@
   blockquote {
     border-left: 0.25em solid var(--dh-color-gray-600);
     padding: 0 1em;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
   }
 
   code {
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     background: var(--dh-color-gray-400);
     padding: 0.2em;
     border-radius: var(--dh-border-radius);
-    border: 1px solid var(--dh-color-black, #1a171a);
+    border: 1px solid var(--dh-color-black);
   }
 
   pre > code {

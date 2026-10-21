@@ -23,7 +23,7 @@
   max-width: 120px;
   min-width: 45px;
   background-color: var(--dh-color-visual-purple);
-  color: var(--dh-color-black, #1a171a);
+  color: var(--dh-color-black);
 
   label {
     max-width: 100%;
@@ -34,13 +34,13 @@
   }
 
   &.is-dark-bg {
-    color: var(--dh-color-white, #f0f0ee);
+    color: var(--dh-color-white);
   }
 
   &.is-system-type {
     &.system-type-prod {
       background-color: var(--dh-color-accent-down-bg);
-      color: var(--dh-color-fg, #f0f0ee);
+      color: var(--dh-color-fg);
     }
 
     &.system-type-dev {

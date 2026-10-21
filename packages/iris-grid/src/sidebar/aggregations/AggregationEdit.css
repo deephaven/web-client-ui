@@ -24,7 +24,7 @@
       color: var(--dh-color-gray-600);
 
       &.active {
-        color: var(--dh-color-fg, #f0f0ee);
+        color: var(--dh-color-fg);
       }
     }
   }

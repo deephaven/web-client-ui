@@ -15,7 +15,7 @@
   .aci-option-btn {
     border: none;
     width: 100%;
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
     white-space: nowrap;
     background: none;
@@ -29,7 +29,7 @@
   }
 
   .aci-option-btn:hover {
-    color: var(--dh-color-fg, #f0f0ee);
+    color: var(--dh-color-fg);
     background-color: var(--dh-color-item-list-hover-bg);
   }
   .aci-option-btn:focus {

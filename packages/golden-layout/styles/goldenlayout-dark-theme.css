@@ -61,13 +61,13 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 /* Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low) */
 .lm_goldenlayout {
-  background: var(--dh-color-bg, #1a171a);
+  background: var(--dh-color-bg);
   position: absolute;
 }
 
 /* Single Pane content (area in which final dragged content is contained) */
 .lm_content {
-  background: var(--dh-color-content-bg, #2d2a2e);
+  background: var(--dh-color-content-bg);
   overflow: visible;
 }
 
@@ -94,23 +94,23 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 .lm_dropTargetIndicator {
   background-image: linear-gradient(
       to right,
-      var(--dh-color-black, #1a171a) 50%,
-      var(--dh-color-white, #f0f0ee) 50%
+      var(--dh-color-black) 50%,
+      var(--dh-color-white) 50%
     ),
     linear-gradient(
       to right,
-      var(--dh-color-black, #1a171a) 50%,
-      var(--dh-color-white, #f0f0ee) 50%
+      var(--dh-color-black) 50%,
+      var(--dh-color-white) 50%
     ),
     linear-gradient(
       to bottom,
-      var(--dh-color-black, #1a171a) 50%,
-      var(--dh-color-white, #f0f0ee) 50%
+      var(--dh-color-black) 50%,
+      var(--dh-color-white) 50%
     ),
     linear-gradient(
       to bottom,
-      var(--dh-color-black, #1a171a) 50%,
-      var(--dh-color-white, #f0f0ee) 50%
+      var(--dh-color-black) 50%,
+      var(--dh-color-white) 50%
     );
   background-size:
     8px 1px,
@@ -159,7 +159,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   height: var(--lm-tab-height);
   padding-top: 0;
   background: var(--dh-color-golden-layout-tab-header-bg);
-  box-shadow: inset 0 -1px 0 0 var(--dh-color-bg, #1a171a);
+  box-shadow: inset 0 -1px 0 0 var(--dh-color-bg);
   /*
    * inset box shadows with 0-blur used to draw borders without impacting spacing or GL size calculations.
    * golden layout default styling doesnt have the same border styling we want
@@ -193,7 +193,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     min-width: 10ch;
     margin: 0;
     padding: 0 0 0 var(--lm-tab-padding-x);
-    box-shadow: inset -1px -1px 0 0 var(--dh-color-bg, #1a171a); /* acting as bottom and right border */
+    box-shadow: inset -1px -1px 0 0 var(--dh-color-bg); /* acting as bottom and right border */
     transition:
       color var(--dh-transition),
       background-color var(--dh-transition);
@@ -278,7 +278,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   background-color: var(--lm-tab-active-background);
   color: var(--lm-tab-active-color);
   padding-bottom: 0;
-  box-shadow: inset -1px 0 0 0 var(--dh-color-bg, #1a171a); /* act as right border only when active */
+  box-shadow: inset -1px 0 0 0 var(--dh-color-bg); /* act as right border only when active */
   /* also kills the default shadow, doesn't work well with our design */
 }
 
@@ -287,7 +287,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   /* top focus indicator, right border */
   box-shadow:
     inset 0 1px var(--dh-color-accent-bg),
-    inset -1px 0 0 0 var(--dh-color-bg, #1a171a);
+    inset -1px 0 0 0 var(--dh-color-bg);
 }
 
 .lm_header .lm_tab.lm_active .lm_close_tab,
@@ -298,7 +298,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 .lm_window_blur {
   .lm_header .lm_tab.lm_active.lm_focusin {
-    box-shadow: inset -1px 0 0 0 var(--dh-color-bg, #1a171a);
+    box-shadow: inset -1px 0 0 0 var(--dh-color-bg);
   }
 }
 

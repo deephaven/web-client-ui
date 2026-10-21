@@ -1,7 +1,7 @@
 .column-statistics {
   min-width: 175px;
   max-width: 350px;
-  color: var(--dh-color-fg, #f0f0ee);
+  color: var(--dh-color-fg);
   text-align: left;
   font-size: small;
   font-weight: 300;

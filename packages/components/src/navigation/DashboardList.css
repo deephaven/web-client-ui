@@ -36,7 +36,7 @@
       &:hover,
       &:focus,
       &.focused {
-        color: var(--dh-color-fg, #f0f0ee);
+        color: var(--dh-color-fg);
         background-color: var(--dh-color-highlight-hover);
         text-decoration: none;
       }

@@ -4,7 +4,7 @@
   padding-left: 3px; /* padding to align it with find widget box */
   padding-bottom: 1px;
   z-index: 11; /* monaco source sets find widget at 10 */
-  background: var(--dh-color-content-bg, #2d2a2e);
+  background: var(--dh-color-content-bg);
 
   div {
     display: inline-block;
@@ -18,14 +18,14 @@
 
 .log-pane-editor {
   .monaco-editor .scroll-decoration {
-    box-shadow: var(--dh-color-black, #1a171a) 0 10px 10px -10px inset;
+    box-shadow: var(--dh-color-black) 0 10px 10px -10px inset;
     height: 10px;
   }
 }
 
 .log-pane-editor .find-widget {
   box-shadow: none !important;
-  background: var(--dh-color-content-bg, #2d2a2e) !important;
+  background: var(--dh-color-content-bg) !important;
   margin-right: 48px;
 
   .button[title*='Close' i],
@@ -69,7 +69,7 @@
     text-decoration: underline;
 
     &:hover {
-      color: var(--dh-color-white, #f0f0ee);
+      color: var(--dh-color-white);
     }
   }
 }
