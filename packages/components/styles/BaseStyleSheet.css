@@ -163,8 +163,7 @@ button:focus {
   }
 }
 
-.btn-sm,
-.btn-group-sm > .btn {
+.btn-sm {
   height: 28px;
   line-height: 28px;
 }
@@ -637,11 +636,6 @@ input[type='number']::-webkit-inner-spin-button {
   }
 }
 /* stylelint-enable no-descending-specificity */
-
-/* Hide the default dropdown caret, in favor of implicitly adding our own via svg and fontawesome */
-.input-group-append .dropdown-toggle::after {
-  display: none;
-}
 
 /* Add extra */
 .search-group.console-menu {

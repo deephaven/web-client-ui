@@ -8,14 +8,14 @@
      * when zoomed, actual width can be a fractional width, and that rounding up can cause overflow
      */
     width: 100% !important; /* override inline width */
-    font-family: var(--font-family-sans-serif);
+    font-family: var(--dh-font-family-sans);
     .overflow-guard {
       width: 100% !important; /* override inline width */
     }
 
     /* set font for menus */
     .shadow-root-host {
-      font-family: var(--font-family-sans-serif);
+      font-family: var(--dh-font-family-sans);
     }
   }
   .monaco-editor .detected-link {
