@@ -5,6 +5,10 @@ name: 'Copilot Setup Steps'
 # sandbox *before* Copilot starts working on an assigned issue, so the agent
 # doesn't have to guess how to install your dependencies.
 #
+# It runs for every cloud agent session in this repo, not just the flake
+# investigator, and GitHub has no per-agent setup file, so keep it cheap.
+# Code review has its own file: copilot-code-review.yml.
+#
 # For this pipeline specifically: without this, Copilot's sandbox has no
 # browser binaries, and it can't actually re-run the flaky Playwright test
 # to verify a fix -- exactly the "prove it before/after" step required by
