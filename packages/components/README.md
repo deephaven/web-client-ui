@@ -16,7 +16,7 @@ Then, import and use the components from the package:
 import React from "react";
 import ReactDOM from "react-dom";
 import { Button, ThemeProvider } from "@deephaven/components";
-import "@deephaven/components/scss/BaseStyleSheet.scss";
+import "@deephaven/components/styles/BaseStyleSheet.css";
 
 ReactDOM.render(
   <React.StrictMode>
