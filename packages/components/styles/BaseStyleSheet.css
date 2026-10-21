@@ -1,16 +1,39 @@
-// Import our custom variables and bootstrap
-// Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
-@import './custom.scss';
-@import './bootstrap_imports.scss';
+@import './bootstrap.css';
 
 :root {
+  /* Design tokens that do not vary by theme */
+  --dh-spacer-0: 0;
+  --dh-spacer-1: 0.25rem;
+  --dh-spacer-2: 0.5rem;
+  --dh-spacer-3: 1rem;
+  --dh-spacer-4: 1.5rem;
+  --dh-spacer-5: 3rem;
+  --dh-border-radius: 4px;
+  --dh-box-shadow: 0 0.1rem 1rem var(--dh-color-dropshadow);
+  --dh-transition: 0.15s;
+  --dh-transition-mid: 0.2s;
+  --dh-transition-long: 0.3s;
+  --dh-transition-slow: 0.6s;
+  --dh-font-family-sans: 'Fira Sans', -apple-system, blinkmacsystemfont,
+    'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif;
+  --dh-font-family-mono: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  --dh-input-border-width: 1px;
+  --dh-input-padding-x: 0.75rem;
+  /* Matches Spectrum's 32px input height with a 1.3 line height */
+  --dh-input-padding-y: 0.42145rem;
+  --dh-input-height: calc(1.3em + 0.8429rem + 2px);
+  --dh-input-focus-box-shadow: 0 0 0 0.2rem
+    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
   --dh-svg-inline-icon-size: 16px;
 
   color: var(--dh-color-text);
 
   .spectrum-theme-provider {
-    // This is important for portals with rounded corners (e.g. Popover) so that
-    // the underlying background color shows.
+    /*
+     * This is important for portals with rounded corners (e.g. Popover) so that
+     * the underlying background color shows.
+     */
     --dh-spectrum-theme-provider-bg: unset;
 
     background-color: var(--dh-spectrum-theme-provider-bg);
@@ -18,24 +41,24 @@
   }
 }
 
-//Various non-variable css overides
-//Overide default size from 16px to 14px. We need density.
+/* Various non-variable css overides */
+/* Overide default size from 16px to 14px. We need density. */
 html {
   font-size: 14px;
   min-height: 100%;
 }
 
-// override
+/* override */
 .text-black-50 {
-  color: bg-opacity(50) !important;
+  color: color-mix(in srgb, var(--dh-color-bg) 50%, transparent) !important;
 }
 .text-white-50 {
-  color: fg-opacity(50) !important;
+  color: color-mix(in srgb, var(--dh-color-fg) 50%, transparent) !important;
 }
 
-// deephaven-icons are designed on a 16px grid
-// and look best at that size. Default icon size back to 16px
-// vertical alignment changed to best match icon set against 14px text
+/* deephaven-icons are designed on a 16px grid */
+/* and look best at that size. Default icon size back to 16px */
+/* vertical alignment changed to best match icon set against 14px text */
 .svg-inline--fa {
   font-size: var(--dh-svg-inline-icon-size);
   vertical-align: -3px;
@@ -43,8 +66,8 @@ html {
 
 body {
   min-height: 100%;
-  background-color: $background;
-  color: $foreground;
+  background-color: var(--dh-color-bg, #1a171a);
+  color: var(--dh-color-fg, #f0f0ee);
   margin: 0;
   padding: 0;
   overscroll-behavior: none;
@@ -53,7 +76,7 @@ body {
 
 #root {
   .app {
-    background-color: $background;
+    background-color: var(--dh-color-bg, #1a171a);
     height: 100vh;
     width: 100vw;
   }
@@ -102,14 +125,14 @@ a.custom-link,
       content: '';
       box-sizing: content-box;
       position: absolute;
-      background: accent-opacity(10);
+      background: color-mix(in srgb, var(--dh-color-accent) 10%, transparent);
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      border-radius: $border-radius;
-      border: 1px solid $primary;
-      box-shadow: $input-btn-focus-box-shadow;
+      border-radius: var(--dh-border-radius);
+      border: 1px solid var(--dh-color-accent-bg);
+      box-shadow: var(--dh-input-focus-box-shadow);
     }
   }
 }
@@ -117,21 +140,21 @@ a.custom-link,
 /********** BUTTONS *********/
 
 button:focus {
-  outline: 0; // it's fine, we've set our own focus states.
+  outline: 0; /* it's fine, we've set our own focus states. */
 }
 
-//Make btns a minumum size
+/* Make btns a minumum size */
 .btn {
   min-width: 7rem;
-  // Matching Spectrum styles
+  /* Matching Spectrum styles */
   -webkit-font-smoothing: antialiased;
-  // the following is to match spectrum buttons
+  /* the following is to match spectrum buttons */
   height: 32px;
-  // vertical-align: top;
+  /* vertical-align: top; */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  // match spectrum button custom padding
+  /* match spectrum button custom padding */
   padding: 4px 14px 3px 14px;
   gap: 6px;
 
@@ -140,7 +163,8 @@ button:focus {
   }
 }
 
-.btn-sm {
+.btn-sm,
+.btn-group-sm > .btn {
   height: 28px;
   line-height: 28px;
 }
@@ -153,8 +177,8 @@ span.btn-disabled-wrapper {
   }
 }
 
-// We use disabled success buttons as success messages in a few places.
-// We should stop doing that, and phase them out when we have toasts.
+/* We use disabled success buttons as success messages in a few places. */
+/* We should stop doing that, and phase them out when we have toasts. */
 .btn-success {
   &.disabled,
   &:disabled {
@@ -167,46 +191,46 @@ span.btn-disabled-wrapper {
 
 .btn-link {
   min-width: unset;
-  padding: $spacer-1;
+  padding: var(--dh-spacer-1);
 
   .svg-inline--fa {
     align-self: center;
   }
 
   &:not(.btn-link-icon) {
-    border: $input-border-width solid transparent;
-    border-radius: $border-radius;
+    border: var(--dh-input-border-width) solid transparent;
+    border-radius: var(--dh-border-radius);
 
     &:focus {
-      background: accent-opacity(10);
-      border: $input-border-width solid $primary;
-      box-shadow: $input-btn-focus-box-shadow;
+      background: color-mix(in srgb, var(--dh-color-accent) 10%, transparent);
+      border: var(--dh-input-border-width) solid var(--dh-color-accent-bg);
+      box-shadow: var(--dh-input-focus-box-shadow);
     }
 
     &:hover {
-      background: accent-opacity(15);
+      background: color-mix(in srgb, var(--dh-color-accent) 15%, transparent);
     }
 
     &:active {
       content: '';
-      background: accent-opacity(30);
+      background: color-mix(in srgb, var(--dh-color-accent) 30%, transparent);
     }
   }
 }
 
-// can be set on other btn-modifiers, be more specific to override
+/* can be set on other btn-modifiers, be more specific to override */
 .btn.btn-cancelable:hover {
-  background-color: $danger;
-  border-color: $danger;
+  background-color: var(--dh-color-negative-bg);
+  border-color: var(--dh-color-negative-bg);
 
   &:focus {
-    box-shadow: 0 0 0 $btn-focus-width var(--dh-color-focus);
+    box-shadow: 0 0 0 0.2rem var(--dh-color-focus);
   }
 
   &:not(:disabled):not(.disabled):active {
     background: var(--dh-color-negative-down-bg);
     border-color: var(--dh-color-negative-down-bg);
-    box-shadow: 0 0 0 $btn-focus-width var(--dh-color-focus);
+    box-shadow: 0 0 0 0.2rem var(--dh-color-focus);
   }
 }
 
@@ -220,7 +244,7 @@ span.btn-disabled-wrapper {
 }
 
 .btn-spinner {
-  padding: $btn-padding-y 1rem;
+  padding: 0.42145rem 1rem;
 }
 
 .btn-link.no-underline,
@@ -236,8 +260,8 @@ span.btn-disabled-wrapper {
 .btn-link-icon {
   position: relative;
   border: 0;
-  padding-left: $spacer-1;
-  padding-right: $spacer-1;
+  padding-left: var(--dh-spacer-1);
+  padding-right: var(--dh-spacer-1);
 
   &::after {
     content: '';
@@ -246,12 +270,16 @@ span.btn-disabled-wrapper {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: $input-border-width solid transparent;
-    border-radius: $border-radius;
+    border: var(--dh-input-border-width) solid transparent;
+    border-radius: var(--dh-border-radius);
     height: 100%;
-    padding-left: calc(100% - #{$input-border-width} * 2);
-    // padding used in place of width, still need to account for border width
-    transition: $btn-transition;
+    padding-left: calc(100% - var(--dh-input-border-width) * 2);
+    /* padding used in place of width, still need to account for border width */
+    transition:
+      color 0.12s ease-in-out,
+      background-color 0.12s ease-in-out,
+      border-color 0.12s ease-in-out,
+      box-shadow 0.12s ease-in-out;
   }
 
   &:focus {
@@ -259,28 +287,28 @@ span.btn-disabled-wrapper {
     text-decoration: none;
     box-shadow: none;
     &::after {
-      background: accent-opacity(10);
-      border: $input-border-width solid $primary;
-      box-shadow: $input-btn-focus-box-shadow;
+      background: color-mix(in srgb, var(--dh-color-accent) 10%, transparent);
+      border: var(--dh-input-border-width) solid var(--dh-color-accent-bg);
+      box-shadow: var(--dh-input-focus-box-shadow);
     }
   }
 
   &:hover {
     &::after {
-      background: accent-opacity(15);
+      background: color-mix(in srgb, var(--dh-color-accent) 15%, transparent);
     }
   }
 
   &:active {
     &::after {
       content: '';
-      background: accent-opacity(30);
+      background: color-mix(in srgb, var(--dh-color-accent) 30%, transparent);
     }
   }
 }
 
 .btn-icon {
-  // used in chart builder and conditional formatting
+  /* used in chart builder and conditional formatting */
   text-align: center;
   padding: 0;
   min-width: 0;
@@ -321,7 +349,7 @@ span.btn-disabled-wrapper {
   &.active {
     outline: none;
     box-shadow: none;
-    color: $primary;
+    color: var(--dh-color-accent-bg);
 
     svg,
     img {
@@ -332,12 +360,12 @@ span.btn-disabled-wrapper {
 
 .btn-inline {
   min-width: 2.75rem;
-  padding: 0 $spacer-1;
-  border-radius: $border-radius;
+  padding: 0 var(--dh-spacer-1);
+  border-radius: var(--dh-border-radius);
   background: var(--dh-color-action-bg);
   border: 1px solid var(--dh-color-action-border);
   color: var(--dh-color-action-fg);
-  font-weight: $font-weight-normal;
+  font-weight: 400;
 
   .svg-inline--fa {
     align-self: center;
@@ -349,7 +377,7 @@ span.btn-disabled-wrapper {
     color: var(--dh-color-action-active-fg);
 
     &:focus-visible {
-      border: 1px solid $input-focus-border-color;
+      border: 1px solid var(--dh-color-input-focus-border);
     }
 
     &:not(:disabled):not(.disabled):hover {
@@ -369,7 +397,7 @@ span.btn-disabled-wrapper {
   }
 
   &:focus-visible {
-    border: 1px solid $input-focus-border-color;
+    border: 1px solid var(--dh-color-input-focus-border);
   }
 
   &:not(:disabled):not(.disabled):hover {
@@ -385,9 +413,9 @@ span.btn-disabled-wrapper {
 
 .btn-secondary.disabled,
 .btn-secondary:disabled {
-  // look more disabled
-  background-color: $secondary;
-  border-color: $secondary;
+  /* look more disabled */
+  background-color: var(--dh-color-neutral-bg);
+  border-color: var(--dh-color-neutral-bg);
   opacity: 0.35;
 }
 
@@ -403,25 +431,25 @@ span.btn-disabled-wrapper {
 
   > .btn:not(:first-child):not(:hover):not(:focus) {
     &.btn-primary {
-      border-left: $btn-border-width solid $primary-hover;
+      border-left: 2px solid var(--dh-color-accent-hover-bg);
     }
     &.btn-secondary {
-      border-left: $btn-border-width solid $gray-600;
+      border-left: 2px solid var(--dh-color-gray-500);
     }
     &.btn-danger {
-      border-left: $btn-border-width solid $danger-hover;
+      border-left: 2px solid var(--dh-color-negative-hover-bg);
     }
   }
 }
 
 .btn-link-icon-only {
-  padding-left: $spacer-2;
-  padding-right: $spacer-2;
+  padding-left: var(--dh-spacer-2);
+  padding-right: var(--dh-spacer-2);
 }
 
 /********** TABLES *********/
 
-//Tabular numbers apply to tables only
+/* Tabular numbers apply to tables only */
 table,
 .table {
   font-feature-settings: 'tnum';
@@ -430,11 +458,11 @@ table,
 /********** FORMS *********/
 
 form label {
-  color: $gray-200;
+  color: var(--dh-color-gray-800);
 }
 
 form label small {
-  color: $gray-400;
+  color: var(--dh-color-gray-600);
 }
 
 .form-control.focus,
@@ -453,7 +481,7 @@ form label small {
 }
 
 .form-control.btn:focus-visible {
-  box-shadow: $input-btn-focus-box-shadow;
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .form-control:disabled {
@@ -466,16 +494,16 @@ form label small {
 }
 
 .form-control:disabled::placeholder {
-  color: $gray-500;
+  color: var(--dh-color-gray-500);
 }
 
 .form-control[type='password'] {
   letter-spacing: 0.2rem;
 }
 
-//Select, Checkboxes and Radios
+/* Select, Checkboxes and Radios */
 .custom-control-label {
-  user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
+  user-select: none; /* checkboxs are label pseudo elements, clicking can toggle text selection otherwise */
 }
 
 .custom-control-input:disabled ~ .custom-control-label::before {
@@ -491,8 +519,8 @@ form label small {
 .custom-radio {
   .custom-control-input:checked ~ .custom-control-label {
     &::after {
-      mask: escape-svg($custom-radio-indicator-icon-checked) 4px / 6px 6px
-        no-repeat;
+      mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='black'/%3e%3c/svg%3e")
+        4px/6px 6px no-repeat;
       background: var(--dh-color-input-bg);
     }
   }
@@ -501,16 +529,16 @@ form label small {
 .custom-checkbox {
   .custom-control-input:checked ~ .custom-control-label {
     &::after {
-      mask: escape-svg($custom-checkbox-indicator-icon-checked) 50%/75% 75%
-        no-repeat;
+      mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='black' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z'/%3e%3c/svg%3e")
+        50%/75% 75% no-repeat;
       background: var(--dh-color-input-bg);
     }
   }
 
   .custom-control-input:indeterminate ~ .custom-control-label {
     &::after {
-      mask: escape-svg($custom-checkbox-indicator-icon-indeterminate) 50%/65%
-        65% no-repeat;
+      mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3e%3cpath stroke='black' d='M0 2h4'/%3e%3c/svg%3e")
+        50%/65% 65% no-repeat;
       background: var(--dh-color-input-bg);
     }
   }
@@ -526,11 +554,8 @@ form label small {
 }
 
 .custom-select {
-  $caret-size: 10px 6px;
-  $error-size: 16px;
-
   background-image: var(--dh-svg-icon-select-indicator);
-  background-size: $caret-size;
+  background-size: 10px 6px;
 
   &:focus {
     box-shadow: none;
@@ -539,7 +564,9 @@ form label small {
   &.is-invalid,
   &.is-invalid:focus {
     border-color: var(--dh-color-form-control-error);
-    background-size: $caret-size, $error-size;
+    background-size:
+      10px 6px,
+      16px;
     background-image: var(--dh-svg-icon-select-indicator),
       var(--dh-svg-icon-error);
   }
@@ -582,27 +609,27 @@ input[type='number']::-webkit-inner-spin-button {
   margin: 0;
 }
 
-//Dropdowns on text inputs
+/* Dropdowns on text inputs */
 /* stylelint-disable no-descending-specificity -- keep with input section */
 .input-group-append .btn {
-  background-color: $input-bg;
-  padding: $btn-padding-y 0.5rem;
+  background-color: var(--dh-color-input-bg);
+  padding: 0.42145rem 0.5rem;
 }
 
 .input-group > .input-group-append > .btn {
   min-width: auto;
-  border-top-right-radius: $border-radius;
-  border-bottom-right-radius: $border-radius;
+  border-top-right-radius: var(--dh-border-radius);
+  border-bottom-right-radius: var(--dh-border-radius);
 }
 
 .input-group > .input-group-append.cb-dropdown > .btn {
-  border: 1px solid $input-border-color;
+  border: 1px solid var(--dh-color-input-border);
 
   &:focus {
-    border-color: $input-focus-border-color;
+    border-color: var(--dh-color-input-focus-border);
   }
   &:disabled {
-    background-color: $input-disabled-bg;
+    background-color: var(--dh-color-input-disabled-bg);
     border-color: var(--dh-color-input-disabled-border);
     .cb-caret {
       background-color: var(--dh-color-icon-disabled-fg);
@@ -611,58 +638,58 @@ input[type='number']::-webkit-inner-spin-button {
 }
 /* stylelint-enable no-descending-specificity */
 
-//Hide the default dropdown caret, in favor of implicitly adding our own via svg and fontawesome
+/* Hide the default dropdown caret, in favor of implicitly adding our own via svg and fontawesome */
 .input-group-append .dropdown-toggle::after {
   display: none;
 }
 
-//Add extra
+/* Add extra */
 .search-group.console-menu {
-  padding: $spacer-1;
+  padding: var(--dh-spacer-1);
 
   .search-icon {
-    right: $spacer-3;
+    right: var(--dh-spacer-3);
   }
 }
 
 /********** Modal Styling *********/
 
-// No using default modal styling
+/* No using default modal styling */
 
 /********** Browser Default Overides *********/
 ::selection {
-  //blink/webkit
-  color: $foreground;
+  /* blink/webkit */
+  color: var(--dh-color-fg, #f0f0ee);
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 ::-moz-selection {
-  //moz
-  color: $foreground;
+  /* moz */
+  color: var(--dh-color-fg, #f0f0ee);
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 .masked-input::selection {
-  //blink/webkit
+  /* blink/webkit */
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 .masked-input::-moz-selection {
-  //moz
+  /* moz */
   background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
-// make width same as monaco scrollbar
+/* make width same as monaco scrollbar */
 ::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
 
-// style the same as monaco scrollbar
+/* style the same as monaco scrollbar */
 ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--dh-color-scrollbar) 18%, transparent);
   border-radius: 0;
@@ -674,7 +701,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-corner {
-  background: bg-opacity(10);
+  background: color-mix(in srgb, var(--dh-color-bg) 10%, transparent);
 }
 
 ::-webkit-scrollbar-track:horizontal {
@@ -696,32 +723,32 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /********** Monaco Overides *********/
-//Note many monaco style are set inline, making overrides require !important
+/* Note many monaco style are set inline, making overrides require !important */
 
-// fixes IDS-7262 where 'hidden' aria-container impacts firefox layout, remove if resolved
-// https://github.com/microsoft/monaco-editor/issues/2168
+/* fixes IDS-7262 where 'hidden' aria-container impacts firefox layout, remove if resolved */
+/* https://github.com/microsoft/monaco-editor/issues/2168 */
 .monaco-aria-container {
   display: none;
 }
 
 .monaco-editor {
-  // Hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster
+  /* Hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster */
   .editor-widget.suggest-widget.message,
   .parameter-hints-widget.message {
     display: none;
   }
 
   .monaco-hover hr {
-    margin-bottom: 4px !important; // Monaco sets this to -4 which causes items below a dividing line to collide w/ the line
+    margin-bottom: 4px !important; /* Monaco sets this to -4 which causes items below a dividing line to collide w/ the line */
   }
 
   .parameter-hints-widget {
-    z-index: 30 !important; // Need to make above golden-layout, but below completion item widget at z=40
+    z-index: 30 !important; /* Need to make above golden-layout, but below completion item widget at z=40 */
   }
 
   .find-widget {
     &.visible {
-      // For some reason the height of this is set improperly in 0.18.1
+      /* For some reason the height of this is set improperly in 0.18.1 */
       min-height: 34px;
       textarea.input {
         min-height: 23px;
@@ -735,23 +762,24 @@ input[type='number']::-webkit-inner-spin-button {
 
     :focus:not(.input) {
       outline: 0;
-      border: 1px solid $input-focus-border-color !important;
-      box-shadow: $input-btn-focus-box-shadow;
+      border: 1px solid var(--dh-color-input-focus-border) !important;
+      box-shadow: var(--dh-input-focus-box-shadow);
     }
 
     .monaco-checkbox:focus {
       border: none !important;
+      /* can't use regular border due to position of checkbox */
       box-shadow:
-        $input-btn-focus-box-shadow,
-        0 0 0 1px $input-focus-border-color; //can't use regular border due to position of checkbox
+        var(--dh-input-focus-box-shadow),
+        0 0 0 1px var(--dh-color-input-focus-border);
     }
   }
 
   .monaco-inputbox {
-    border-radius: $border-radius;
+    border-radius: var(--dh-border-radius);
 
     &.synthetic-focus {
-      border: 1px solid $input-focus-border-color !important;
+      border: 1px solid var(--dh-color-input-focus-border) !important;
       outline: 0 !important;
     }
 
@@ -763,74 +791,103 @@ input[type='number']::-webkit-inner-spin-button {
 
 /********** Browser Hacks *********/
 
-//Moz specific hacks
+/* Moz specific hacks */
 /* stylelint-disable-next-line function-url-quotes */
 @-moz-document url-prefix() {
-  $caret-position: right $custom-select-padding-x;
-  $error-position: right (1 + $custom-select-padding-x);
-  $svg-caret: var(--dh-svg-icon-select-indicator);
-  $svg-caret-hover: var(--dh-svg-icon-select-indicator-hover);
-  $svg-error: var(--dh-svg-icon-error);
-
-  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...
-  //Hack: turn the background to inherit, then apply a background gradient that is inputbg color to inputbg color
-  //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
+  /*
+   * Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...
+   * Hack: turn the background to inherit, then apply a background gradient that is inputbg color to inputbg color
+   * for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
+   */
   .custom-select {
     background-color: inherit !important;
-    color: $foreground;
-    // bg image, size and position for 2 layers
-    background-image: $svg-caret, solid-gradient($input-bg);
+    color: var(--dh-color-fg, #f0f0ee);
+    /* bg image, size and position for 2 layers */
+    background-image: var(--dh-svg-icon-select-indicator),
+      linear-gradient(0deg, var(--dh-color-input-bg), var(--dh-color-input-bg));
     background-size:
       10px 6px,
       cover;
-    background-position-x: $caret-position, center;
+    background-position-x:
+      right 0.75rem,
+      center;
     background-position-y:
       bottom 50%,
       center;
     background-repeat: no-repeat;
 
-    //make the dotted duplicate focus line on firefox go away
+    /* make the dotted duplicate focus line on firefox go away */
     &:-moz-focusring {
       color: transparent;
-      text-shadow: 0 0 0 $foreground !important;
+      text-shadow: 0 0 0 var(--dh-color-fg, #f0f0ee) !important;
     }
 
     &:hover {
-      background-image: $svg-caret-hover, solid-gradient($input-bg);
+      background-image: var(--dh-svg-icon-select-indicator-hover),
+        linear-gradient(
+          0deg,
+          var(--dh-color-input-bg),
+          var(--dh-color-input-bg)
+        );
     }
 
     &.is-invalid,
     &.is-invalid:focus {
-      // bg image, size and position for 3 layers
-      background-image: $svg-caret, $svg-error, solid-gradient($input-bg);
+      /* bg image, size and position for 3 layers */
+      background-image: var(--dh-svg-icon-select-indicator),
+        var(--dh-svg-icon-error),
+        linear-gradient(
+          0deg,
+          var(--dh-color-input-bg),
+          var(--dh-color-input-bg)
+        );
       background-size:
         10px 6px,
         16px,
         cover;
-      background-position-x: $caret-position, $error-position, center;
+      background-position-x:
+        right 0.75rem,
+        right 1.75rem,
+        center;
     }
 
     &.is-invalid:hover {
-      background-image: $svg-caret-hover, $svg-error, solid-gradient($input-bg);
+      background-image: var(--dh-svg-icon-select-indicator-hover),
+        var(--dh-svg-icon-error),
+        linear-gradient(
+          0deg,
+          var(--dh-color-input-bg),
+          var(--dh-color-input-bg)
+        );
     }
 
     &:disabled {
-      background-image: $svg-caret, solid-gradient($input-disabled-bg);
+      background-image: var(--dh-svg-icon-select-indicator),
+        linear-gradient(
+          0deg,
+          var(--dh-color-input-disabled-bg),
+          var(--dh-color-input-disabled-bg)
+        );
 
       &.is-invalid {
-        background-image: $svg-caret, $svg-error,
-          solid-gradient($input-disabled-bg);
+        background-image: var(--dh-svg-icon-select-indicator),
+          var(--dh-svg-icon-error),
+          linear-gradient(
+            0deg,
+            var(--dh-color-input-disabled-bg),
+            var(--dh-color-input-disabled-bg)
+          );
       }
     }
   }
 
   .console-creator .custom-select {
     background-image: var(--dh-svg-icon-select-indicator),
-      solid-gradient($gray-700);
+      linear-gradient(0deg, var(--dh-color-gray-400), var(--dh-color-gray-400));
 
     &:-moz-focusring {
       color: transparent;
-      text-shadow: 0 0 0 $foreground !important;
+      text-shadow: 0 0 0 var(--dh-color-fg, #f0f0ee) !important;
     }
   }
 
@@ -846,7 +903,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 .fade-enter-active {
   opacity: 1;
-  transition: opacity $transition ease-out;
+  transition: opacity var(--dh-transition) ease-out;
 }
 
 .fade-exit {
@@ -855,7 +912,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 .fade-exit-active {
   opacity: 0.01;
-  transition: opacity $transition ease-out;
+  transition: opacity var(--dh-transition) ease-out;
 }
 
 .slide-left-enter {
@@ -864,7 +921,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 .slide-left-enter-active {
   transform: none;
-  transition: transform $transition-mid ease-out;
+  transition: transform var(--dh-transition-mid) ease-out;
 }
 
 .slide-left-exit {
@@ -873,7 +930,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 .slide-left-exit-active {
   transform: translate3d(100%, 0, 0);
-  transition: transform $transition-mid ease-out;
+  transition: transform var(--dh-transition-mid) ease-out;
 }
 
 .slide-right-enter {
@@ -882,7 +939,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 .slide-right-enter-active {
   transform: none;
-  transition: transform $transition-mid ease-out;
+  transition: transform var(--dh-transition-mid) ease-out;
 }
 
 .slide-right-exit {
@@ -891,10 +948,10 @@ input[type='number']::-webkit-inner-spin-button {
 
 .slide-right-exit-active {
   transform: translate3d(-100%, 0, 0);
-  transition: transform $transition-mid ease-out;
+  transition: transform var(--dh-transition-mid) ease-out;
 }
 
-/// used by marching ants animation
+/* used by marching ants animation */
 @keyframes march {
   from {
     background-position:
@@ -906,10 +963,10 @@ input[type='number']::-webkit-inner-spin-button {
 
   to {
     background-position:
-      $ant-size top,
-      $ant-size bottom,
-      left $ant-size,
-      right $ant-size;
+      8px top,
+      8px bottom,
+      left 8px,
+      right 8px;
   }
 }
 

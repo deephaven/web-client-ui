@@ -47,7 +47,6 @@
     "@react-types/shared": "3.34.0",
     "@react-types/textfield": "3.13.0",
     "@spectrum-icons/ui": "3.7.0",
-    "bootstrap": "4.6.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
     "lodash.clamp": "^4.0.3",
@@ -74,7 +73,6 @@
   },
   "files": [
     "dist",
-    "scss",
     "styles",
     "assets",
     "!dist/**/__snapshots__"
