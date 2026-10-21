@@ -1,0 +1,97 @@
+.custom-column-builder-container {
+  .section-title {
+    padding: var(--dh-spacer-3);
+  }
+
+  .droppable-container {
+    padding: 1px;
+    &.dragging {
+      background-image: linear-gradient(
+          to right,
+          var(--dh-color-surface-bg) 50%,
+          var(--dh-color-fg, #f0f0ee) 50%
+        ),
+        linear-gradient(
+          to right,
+          var(--dh-color-surface-bg) 50%,
+          var(--dh-color-fg, #f0f0ee) 50%
+        ),
+        linear-gradient(
+          to bottom,
+          var(--dh-color-surface-bg) 50%,
+          var(--dh-color-fg, #f0f0ee) 50%
+        ),
+        linear-gradient(
+          to bottom,
+          var(--dh-color-surface-bg) 50%,
+          var(--dh-color-fg, #f0f0ee) 50%
+        );
+      background-size:
+        8px 1px,
+        8px 1px,
+        1px 8px,
+        1px 8px;
+      background-position:
+        0 top,
+        0 bottom,
+        left 0,
+        right 0;
+      background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+      animation: march 0.5s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+  }
+
+  .draggable-container {
+    background: var(--dh-color-surface-bg);
+
+    .btn-drag-handle {
+      cursor: grab;
+    }
+
+    &.dragging {
+      background: var(--dh-color-accent-bg);
+      box-shadow: var(--dh-box-shadow);
+
+      .btn {
+        color: var(--dh-color-accent-contrast);
+      }
+    }
+  }
+
+  .custom-column-input-container {
+    padding: var(--dh-spacer-3);
+  }
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+    word-wrap: break-word;
+    margin-bottom: var(--dh-spacer-4);
+    font-size: 1rem;
+    p {
+      margin-bottom: var(--dh-spacer-1);
+    }
+    .error-box {
+      padding: var(--dh-spacer-1);
+      border-radius: var(--dh-border-radius);
+      background: color-mix(in srgb, var(--dh-color-negative) 28%, transparent);
+    }
+  }
+
+  .custom-column-builder-footer {
+    margin: var(--dh-spacer-3);
+    display: flex;
+    flex-direction: column;
+
+    .btn-apply {
+      min-width: 10rem;
+    }
+  }
+
+  hr {
+    background: var(--dh-color-gray-300);
+    margin: 0;
+    width: 100%;
+  }
+}

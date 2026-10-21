@@ -1,0 +1,107 @@
+:root {
+  --command-history-item-selection-border-color: var(
+    --dh-color-item-list-selected-border
+  );
+  --command-history-item-selected-color: var(--dh-color-item-list-selected-fg);
+  --command-history-item-border-width: 1px;
+}
+
+.command-history {
+  --item-list-color: var(--dh-color-gray-600);
+  .command-history-item {
+    width: 100%;
+    padding: 0 var(--dh-input-padding-x);
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .item-list-item {
+    padding: 0;
+    width: 100%;
+    background: transparent;
+    color: var(--item-list-color);
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    line-height: 27px; /* CommandHistory.ITEM_HEIGHT - borders */
+    border: var(--command-history-item-border-width) solid transparent; /* we need a spacer border so stuff doesn't move on us when we apply a border-color */
+  }
+
+  .item-list-item.is-focused {
+    /* We don't want the keyboard selection to appear, only items that are actually selected */
+    background-color: transparent;
+    color: var(--item-list-color);
+  }
+
+  .item-list-item:focus {
+    outline: none;
+  }
+
+  .item-list-item.active {
+    outline: none;
+    background-color: var(--dh-color-item-list-selected-inactive-bg);
+    color: var(--item-list-color);
+  }
+}
+
+/* for selected items, apply border on left and right */
+.command-history:focus-within .item-list-item.active {
+  background-color: var(--dh-color-item-list-selected-bg);
+  color: var(--command-history-item-selected-color);
+  /*
+   * because of border mitre, we use pseudo elements to act as borders
+   * otherwise we get mitre gap beteween the borders
+   */
+  ::before,
+  ::after {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--command-history-item-border-width));
+    /* times 2 the bottom border is actually the top of next item */
+    bottom: calc(-1 * var(--command-history-item-border-width) * 2);
+    width: var(--command-history-item-border-width);
+    background-color: var(--command-history-item-selection-border-color);
+  }
+  ::before {
+    left: calc(-1 * var(--command-history-item-border-width));
+  }
+  ::after {
+    right: calc(-1 * var(--command-history-item-border-width));
+  }
+}
+
+.command-history .item-list-item:hover {
+  background-color: var(--dh-color-item-list-hover-bg);
+  color: var(--command-history-item-selected-color);
+}
+
+.command-history:focus-within .item-list-item.active:hover {
+  background-color: var(--dh-color-item-list-selected-hover-bg);
+  color: var(--command-history-item-selected-color);
+}
+
+/* apply border to top of the first item in the list if its selected, and the first selected after a non-selected item */
+.command-history:focus-within .item-list-item:not(.active) + .active,
+.command-history:focus-within .item-list-item.active:first-of-type {
+  border-top: var(--command-history-item-border-width) solid
+    var(--command-history-item-selection-border-color);
+}
+
+/* there's no easy way to get the last select item in a grouping, so we apply the end border */
+/* to the TOP of the first non-selected item, ie. the previous selection group */
+.command-history:focus-within .active + .item-list-item:not(.active) {
+  border-top: var(--command-history-item-border-width) solid
+    var(--command-history-item-selection-border-color);
+}
+
+/* since there is no item after the last item in teh selection, we apply the border to the bottom of the last selected element */
+.command-history:focus-within .item-list-item.active:last-of-type {
+  border-bottom: var(--command-history-item-border-width) solid
+    var(--command-history-item-selection-border-color);
+  ::before,
+  ::after {
+    /* not times 2, because there is no next item */
+    bottom: calc(-1 * var(--command-history-item-border-width));
+  }
+}

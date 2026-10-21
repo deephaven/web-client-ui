@@ -1,0 +1,39 @@
+.editor-container {
+  .monaco-editor {
+    /* override default scroll container shadow to match our global shadows */
+    --vscode-scrollbar-shadow: var(--dh-color-dropshadow);
+
+    /*
+     * monaco editor sets an inline width in pixels which are rounded up to the nearest pixel.
+     * when zoomed, actual width can be a fractional width, and that rounding up can cause overflow
+     */
+    width: 100% !important; /* override inline width */
+    font-family: var(--font-family-sans-serif);
+    .overflow-guard {
+      width: 100% !important; /* override inline width */
+    }
+
+    /* set font for menus */
+    .shadow-root-host {
+      font-family: var(--font-family-sans-serif);
+    }
+  }
+  .monaco-editor .detected-link {
+    color: var(--dh-color-gray-600);
+  }
+}
+
+/* Override Monaco's default markdown popups (i.e signature help) to resemble VS Code closer */
+/* The classes come from Monaco itself, not core or web-client-ui */
+.rendered-markdown.markdown-docs {
+  min-width: 12rem;
+
+  hr {
+    background-color: var(--dh-color-gray-600);
+    height: 1px;
+  }
+
+  blockquote {
+    margin-left: var(--dh-spacer-4);
+  }
+}

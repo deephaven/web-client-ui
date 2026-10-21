@@ -1,0 +1,101 @@
+.markdown-editor-container {
+  --edit-hint-height: 30px;
+
+  padding: 5px;
+
+  .edit-hint {
+    padding: 5px 20px;
+    text-align: right;
+    width: 100%;
+    min-height: var(--edit-hint-height);
+    height: var(--edit-hint-height);
+    opacity: 0;
+    user-select: none;
+    transition: opacity var(--dh-transition) ease-out;
+  }
+
+  .markdown-editor-container {
+    height: calc(100% - var(--edit-hint-height) - 10px);
+    padding: 0 15px;
+    overflow: auto;
+  }
+
+  &:hover .edit-hint.viewing {
+    opacity: 1;
+  }
+
+  blockquote {
+    border-left: 0.25em solid var(--dh-color-gray-600);
+    padding: 0 1em;
+    color: var(--dh-color-fg, #f0f0ee);
+  }
+
+  code {
+    color: var(--dh-color-fg, #f0f0ee);
+    background: var(--dh-color-gray-400);
+    padding: 0.2em;
+    border-radius: var(--dh-border-radius);
+    border: 1px solid var(--dh-color-black, #1a171a);
+  }
+
+  pre > code {
+    display: block;
+    padding: var(--dh-spacer-2);
+  }
+}
+
+.markdown-panel-start-page {
+  overflow: auto;
+  padding: 50px;
+  .markdown-panel-start-page-container {
+    .markdown-panel-start-list {
+      padding-bottom: 20px;
+      .list-title {
+        padding-left: calc(1rem + 2px);
+      }
+      .list-item {
+        color: var(--dh-color-accent-bg);
+        border-radius: 25px;
+        width: 28rem;
+        max-width: 28rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+
+        button.title {
+          padding: 0.375rem 1rem;
+          color: var(--dh-color-accent-bg);
+          text-align: left;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        button.icon {
+          visibility: hidden;
+          position: relative;
+          background: none;
+          border: none;
+          color: var(--dh-color-gray-500);
+          cursor: pointer;
+          margin: 0;
+          padding: 0.375px;
+          padding-right: 1.75rem;
+        }
+
+        &:hover {
+          background: var(--dh-color-gray-300);
+          button.icon {
+            visibility: visible;
+
+            &:hover {
+              color: var(--dh-color-accent-bg);
+            }
+            &:focus {
+              outline: none;
+            }
+          }
+        }
+      }
+    }
+  }
+}

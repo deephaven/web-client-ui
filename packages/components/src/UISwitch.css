@@ -1,0 +1,127 @@
+:root {
+  --ui-switch-size: 15px;
+  --ui-switch-handle-padding: 1px;
+}
+
+.btn-switch {
+  --switch-width: 40px;
+  --switch-handle-size: calc(
+    var(--ui-switch-size) - (var(--ui-switch-handle-padding) * 2)
+  );
+  --switch-background-active-color: var(--dh-color-accent-bg);
+
+  display: inline-block;
+  font-size: 0.6rem;
+  color: var(--dh-color-gray-700);
+  background: var(--dh-color-gray-300);
+  padding: 0;
+  min-width: var(--switch-width);
+  width: var(--switch-width);
+  overflow: hidden;
+  border: 1px solid var(--dh-color-input-border);
+  height: calc(var(--ui-switch-size) + var(--ui-switch-handle-padding) * 2);
+
+  .handle {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 1px;
+    width: var(--switch-handle-size);
+    height: var(--switch-handle-size);
+    border-radius: var(--switch-handle-size);
+    background-color: var(--dh-color-gray-700);
+    transform: translateX(0);
+    transition:
+      transform var(--dh-transition) ease-in,
+      background-color var(--dh-transition);
+  }
+
+  ::before,
+  ::after {
+    width: var(--ui-switch-size);
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    line-height: var(--switch-handle-size);
+    color: var(--dh-color-gray-700);
+    letter-spacing: 0.75px;
+    transition: opacity var(--dh-transition);
+  }
+
+  ::before {
+    content: 'Off';
+    left: calc(var(--ui-switch-size) + 2px);
+    text-align: right;
+  }
+
+  ::after {
+    content: 'On';
+    color: var(--dh-color-accent-contrast);
+    left: calc(-1 * var(--ui-switch-size) - 1px);
+    text-align: left;
+    opacity: 0;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--dh-input-focus-box-shadow);
+    border-color: var(--dh-color-input-focus-border);
+  }
+
+  &.active {
+    background: var(--switch-background-active-color);
+    transition: background-color var(--dh-transition);
+    border-color: var(--switch-background-active-color);
+
+    &:focus {
+      border-color: var(--dh-color-input-focus-border);
+    }
+
+    .handle {
+      transform: translateX(
+        calc(
+          var(--switch-width) - var(--ui-switch-size) -
+            var(--ui-switch-handle-padding) * 2
+        )
+      );
+      transition: transform var(--dh-transition) ease-in;
+    }
+    ::before {
+      opacity: 0;
+    }
+    ::after {
+      opacity: 1;
+    }
+  }
+
+  &:hover:not(:disabled) .handle {
+    background-color: var(--dh-color-gray-900, #fcfcfa);
+  }
+
+  &.is-invalid,
+  &:focus.is-invalid {
+    border-color: var(--dh-color-negative-bg);
+  }
+
+  &.is-invalid.active,
+  &:focus.is-invalid.active {
+    border-color: var(--dh-color-negative-bg);
+    background-color: var(--dh-color-negative-bg);
+  }
+
+  &:disabled {
+    background-color: var(--dh-color-gray-300);
+    border-color: var(--dh-color-black, #1a171a);
+    cursor: not-allowed;
+  }
+
+  &:disabled.active {
+    border-color: var(--dh-color-black, #1a171a);
+    /* background-color: $gray-800; */
+    .handle {
+      background-color: var(--dh-color-gray-500);
+    }
+  }
+}

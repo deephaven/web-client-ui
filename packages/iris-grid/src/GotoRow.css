@@ -1,0 +1,51 @@
+.iris-grid-bottom-bar.goto-row {
+  height: auto;
+}
+
+.goto-row {
+  background-color: var(--dh-color-content-bg, #2d2a2e);
+  border-top: 1px solid var(--dh-color-black, #1a171a);
+  display: block;
+
+  .goto-row-row {
+    display: flex;
+    padding: var(--dh-spacer-2);
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--dh-spacer-2);
+  }
+
+  .goto-row-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--dh-spacer-2);
+    flex-wrap: wrap;
+  }
+
+  .goto-row-text {
+    min-width: 10ch;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .goto-row-close {
+    display: flex;
+  }
+
+  input {
+    max-width: calc(
+      var(--dh-input-padding-x) + 12ch + var(--dh-input-padding-x)
+    );
+  }
+  select {
+    max-width: calc(
+      var(--dh-input-padding-x) + 25ch + var(--dh-input-padding-x)
+    );
+  }
+  .is-inactive {
+    color: var(--dh-color-gray-600);
+  }
+  .goto-value-date-time-input {
+    min-width: 30ch;
+  }
+}

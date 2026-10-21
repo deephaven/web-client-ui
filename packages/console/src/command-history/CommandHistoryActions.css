@@ -1,0 +1,8 @@
+.command-history-actions {
+  flex-shrink: 0;
+  margin-bottom: var(--dh-spacer-1);
+
+  > *:first-child {
+    margin: 0 var(--dh-spacer-1) 0 0;
+  }
+}

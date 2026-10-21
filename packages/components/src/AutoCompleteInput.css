@@ -1,0 +1,38 @@
+.aci-container {
+  flex-grow: 1;
+}
+
+.aci-options {
+  max-height: 200px;
+  border-radius: var(--dh-border-radius);
+  overflow: auto;
+  user-select: none;
+
+  .no-match {
+    padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+  }
+
+  .aci-option-btn {
+    border: none;
+    width: 100%;
+    color: var(--dh-color-fg, #f0f0ee);
+    padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+    white-space: nowrap;
+    background: none;
+    text-align: left;
+  }
+  .aci-option-btn.keyboard-active {
+    background-color: var(--dh-color-item-list-selected-bg);
+    &:hover {
+      background-color: var(--dh-color-item-list-selected-hover-bg);
+    }
+  }
+
+  .aci-option-btn:hover {
+    color: var(--dh-color-fg, #f0f0ee);
+    background-color: var(--dh-color-item-list-hover-bg);
+  }
+  .aci-option-btn:focus {
+    outline: none;
+  }
+}

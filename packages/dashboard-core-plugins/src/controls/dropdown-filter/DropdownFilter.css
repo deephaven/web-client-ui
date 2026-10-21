@@ -1,0 +1,103 @@
+.dropdown-filter-panel-component {
+  .lm_content {
+    /* Allow content to overflow above headers, so flip animation works properly */
+    overflow: visible;
+  }
+}
+
+.dropdown-filter {
+  background: var(--dh-color-bg, #1a171a);
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+    margin-bottom: var(--dh-spacer-4);
+    font-size: 1rem;
+  }
+
+  .dropdown-filter-settings-card,
+  .dropdown-filter-value-card {
+    position: relative;
+    overflow: auto;
+    height: 100%;
+    background: var(--dh-color-content-bg, #2d2a2e);
+  }
+
+  .dropdown-filter-card-content {
+    margin: auto;
+    padding: var(--dh-spacer-1);
+  }
+
+  /* Settings side */
+  .dropdown-filter-settings-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dropdown-filter-settings-grid {
+    display: grid;
+    grid-template-columns: max-content minmax(min-content, 350px);
+    column-gap: var(--dh-spacer-2);
+    row-gap: var(--dh-spacer-2);
+    padding-bottom: var(--dh-spacer-3);
+
+    label {
+      padding-top: calc(var(--dh-input-padding-y) + 2px);
+      margin-bottom: 0;
+    }
+
+    .text-muted {
+      grid-column-start: 2;
+    }
+  }
+
+  .dropdown-filter-settings-buttons {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  /* Filter side */
+  .dropdown-filter-value-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dropdown-filter-column {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: var(--dh-spacer-2);
+    color: var(--dh-color-gray-600);
+    font-size: small;
+  }
+
+  .dropdown-filter-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .dropdown-filter-value-input {
+    max-width: 100%;
+    padding: var(--dh-spacer-1);
+
+    input {
+      font-size: x-large;
+      color: var(--dh-color-fg, #f0f0ee);
+      text-align: center;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--dh-color-gray-600);
+      max-width: 100%;
+
+      &:focus {
+        outline: none;
+        border-bottom: 1px solid var(--dh-color-input-focus-border);
+        box-shadow: 0 0.2rem 0
+          color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+      }
+    }
+  }
+}

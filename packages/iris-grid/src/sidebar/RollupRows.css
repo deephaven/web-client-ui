@@ -1,0 +1,242 @@
+.rollup-rows {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  outline: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+
+  .section-title {
+    margin: 0 var(--dh-spacer-2);
+    padding-bottom: 0;
+  }
+
+  .top-menu,
+  .bottom-menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: var(--dh-spacer-1);
+    z-index: 2;
+
+    .btn-link-icon {
+      min-width: 1rem;
+      padding: 0 var(--dh-spacer-2);
+      margin-right: var(--dh-spacer-1);
+      &:first-of-type {
+        margin-left: var(--dh-spacer-1);
+      }
+
+      &.active {
+        color: var(--dh-color-fg, #f0f0ee);
+      }
+    }
+
+    .label {
+      font-weight: 500;
+    }
+  }
+
+  .bottom-menu {
+    margin-left: 0;
+    padding-left: var(--dh-spacer-2);
+    border-top: 1px solid var(--dh-color-hr);
+    padding-top: var(--dh-spacer-2);
+    .custom-checkbox {
+      font-size: smaller;
+      margin-left: var(--dh-spacer-1);
+      .custom-control-label {
+        padding-top: 2px;
+      }
+    }
+  }
+
+  .item-list-scroll-pane {
+    border: none;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .rollup-rows-group-by {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--dh-color-gray-300);
+
+    .draggable-item-list {
+      flex-grow: 1;
+      /* group-list-height assigned from JS */
+      min-height: calc(
+        var(--group-list-height) + var(--placeholder-height, 0px)
+      );
+    }
+
+    .btn-delete-grouping {
+      height: 26px;
+      margin-right: var(--dh-spacer-2);
+      padding: 0 var(--dh-spacer-2);
+    }
+
+    .placeholder {
+      margin: var(--dh-spacer-2);
+      padding: var(--dh-spacer-3);
+      text-align: center;
+      border: dashed 1px;
+      text-wrap: pretty;
+    }
+  }
+
+  .rollup-rows-available-columns {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--dh-color-surface-bg);
+    flex-grow: 1;
+    .draggable-item-list {
+      flex-grow: 1;
+    }
+  }
+
+  &.is-dragging {
+    .rollup-rows-group-by {
+      .placeholder {
+        border: dashed 1px transparent;
+        background-image: linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          );
+        background-size:
+          8px 1px,
+          8px 1px,
+          1px 8px,
+          1px 8px;
+        background-position:
+          0 top,
+          0 bottom,
+          left 0,
+          right 0;
+        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+        animation: march 0.5s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+
+        &.is-dragging-over {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
+      }
+
+      .item-list-scroll-pane {
+        background-image: linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          );
+        background-size:
+          8px 1px,
+          8px 1px,
+          1px 8px,
+          1px 8px;
+        background-position:
+          0 top,
+          0 bottom,
+          left 0,
+          right 0;
+        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+        animation: march 0.5s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+
+      .draggable-item-list.is-dragging-over {
+        .item-list-scroll-pane {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
+
+        &:not(.is-dragging-from-this) {
+          /*
+           * placeholder doesn't add height with current AutoSizer
+           * so add the height of the placeholder manually
+           * rowHeight variable assigned from JS
+           */
+          --placeholder-height: var(--row-height);
+        }
+      }
+    }
+
+    .rollup-rows-available-columns
+      .draggable-item-list:not(.is-dragging-from-this) {
+      .item-list-scroll-pane {
+        background-image: linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to right,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          ),
+          linear-gradient(
+            to bottom,
+            var(--dh-color-bg, #1a171a) 50%,
+            var(--dh-color-fg, #f0f0ee) 50%
+          );
+        background-size:
+          8px 1px,
+          8px 1px,
+          1px 8px,
+          1px 8px;
+        background-position:
+          0 top,
+          0 bottom,
+          left 0,
+          right 0;
+        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+        animation: march 0.5s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+
+      &.is-dragging-over {
+        .item-list-scroll-pane {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
+      }
+    }
+  }
+}

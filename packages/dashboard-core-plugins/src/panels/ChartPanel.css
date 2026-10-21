@@ -1,0 +1,45 @@
+.iris-chart-panel {
+  overflow: hidden;
+
+  &.disconnected,
+  &.inactive,
+  &.input-required {
+    .chart-container {
+      filter: grayscale(100%);
+    }
+  }
+  &.disconnected {
+    .chart-container {
+      opacity: 0.18;
+    }
+  }
+}
+
+.chart-panel-overlay {
+  background-color: color-mix(in srgb, var(--dh-color-bg) 80%, transparent);
+  backdrop-filter: blur(1px);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+
+  .chart-panel-overlay-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    white-space: pre-line;
+    max-width: 450px;
+    margin: var(--dh-spacer-3);
+
+    .info-message {
+      font-size: 1.2rem;
+    }
+  }
+}

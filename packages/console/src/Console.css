@@ -1,0 +1,39 @@
+.iris-console {
+  display: flex;
+
+  .console-pane {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    .scroll-pane {
+      flex-grow: 1;
+    }
+
+    /* acts as scroll decoration element */
+    .scroll-pane::before {
+      content: '';
+      display: block;
+      position: absolute;
+      width: 100%;
+      box-shadow: var(--dh-color-dropshadow) 0 6px 6px -6px inset;
+      height: 6px;
+      opacity: 0;
+      transition: opacity var(--dh-transition-long);
+      pointer-events: none;
+    }
+
+    .scroll-pane.scroll-decoration::before {
+      opacity: 1;
+    }
+
+    .console-csv-container {
+      position: relative;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+  }
+}

@@ -1,0 +1,58 @@
+.max-memory {
+  position: relative;
+  color: var(--dh-color-gray-700);
+  background-color: var(--dh-color-gray-75);
+  border: 1px solid var(--dh-color-bg, #1a171a);
+  width: 4.25rem;
+  vertical-align: middle;
+  text-align: center;
+  user-select: none;
+  z-index: 1;
+}
+
+.total-memory,
+.used-memory {
+  position: absolute;
+  inset: 0;
+  margin: 1px;
+  z-index: -1;
+}
+
+.total-memory {
+  background-color: var(--dh-color-gray-400);
+}
+
+.used-memory {
+  background-color: var(--dh-color-gray-500);
+}
+
+.heap-overflow {
+  background-color: var(--dh-color-visual-red);
+}
+
+.heap-tooltip {
+  padding: var(--dh-spacer-1);
+  width: 200px;
+}
+
+.heap-usage-info-row {
+  display: flex;
+  color: var(--dh-color-fg, #f0f0ee);
+  padding: var(--dh-spacer-1);
+  justify-content: space-between;
+}
+
+.heap-plot {
+  display: flex;
+  align-items: center;
+}
+
+.heading-bottom-border {
+  border-bottom: 1px solid var(--dh-color-gray-75);
+  margin-bottom: var(--dh-spacer-1);
+}
+
+.heap-utilisation-text {
+  margin-top: var(--dh-spacer-1);
+  color: var(--dh-color-gray-600);
+}

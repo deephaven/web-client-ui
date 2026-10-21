@@ -1,0 +1,466 @@
+/* stylelint-disable no-descending-specificity */
+
+/* ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged */
+/* is added to the body class, prevents overflow in our app context */
+:root {
+  --lm-tab-height: 28px;
+  --lm-tab-padding-x: 6px;
+  --lm-tab-hover-color: var(--dh-color-gray-700);
+  --lm-tab-active-color: var(--dh-color-text);
+  --lm-tab-active-background: var(--dh-color-golden-layout-tab-selected-bg);
+}
+.lm_dragging {
+  overflow: hidden;
+  pointer-events: none;
+
+  /* we still need events on our header for scroll while dragging to work */
+  .lm_goldenlayout .lm_header {
+    pointer-events: auto;
+
+    /* disable other control buttons during drag */
+    .lm_controls > li {
+      pointer-events: none;
+
+      &.lm_tabpreviousbutton,
+      &.lm_tabnextbutton {
+        pointer-events: auto;
+      }
+    }
+  }
+}
+
+/* disable hover styling during drag (pointer-events still needed) */
+body:not(.lm_dragging) .lm_header .lm_tab:not(.lm_active):hover {
+  color: var(--lm-tab-hover-color);
+}
+
+body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
+  opacity: 0.35;
+
+  &:hover {
+    opacity: 1;
+
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+/* give visual indication of the bounds of a nested golden-layout while dragging */
+.lm_goldenlayout .lm_goldenlayout.lm_dragging {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: var(--dh-color-highlight-selected);
+    border: 1px dashed var(--dh-color-hover-border);
+    pointer-events: none;
+    z-index: 9999;
+  }
+}
+
+/* Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low) */
+.lm_goldenlayout {
+  background: var(--dh-color-bg, #1a171a);
+  position: absolute;
+}
+
+/* Single Pane content (area in which final dragged content is contained) */
+.lm_content {
+  background: var(--dh-color-content-bg, #2d2a2e);
+  overflow: visible;
+}
+
+/* Single Pane content during Drag (style of moving window following mouse) */
+.lm_dragProxy {
+  .lm_content {
+    height: 100%;
+    width: 100%;
+    box-shadow: var(--dh-box-shadow);
+  }
+  .lm_header {
+    height: var(--lm-tab-height);
+    box-shadow: none;
+
+    .lm_tab,
+    .lm_tab.lm_active {
+      border: 0;
+      box-shadow: var(--dh-box-shadow);
+    }
+  }
+}
+
+/* Placeholder Container of target position */
+.lm_dropTargetIndicator {
+  background-image: linear-gradient(
+      to right,
+      var(--dh-color-black, #1a171a) 50%,
+      var(--dh-color-white, #f0f0ee) 50%
+    ),
+    linear-gradient(
+      to right,
+      var(--dh-color-black, #1a171a) 50%,
+      var(--dh-color-white, #f0f0ee) 50%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--dh-color-black, #1a171a) 50%,
+      var(--dh-color-white, #f0f0ee) 50%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--dh-color-black, #1a171a) 50%,
+      var(--dh-color-white, #f0f0ee) 50%
+    );
+  background-size:
+    8px 1px,
+    8px 1px,
+    1px 8px,
+    1px 8px;
+  background-position:
+    0 top,
+    0 bottom,
+    left 0,
+    right 0;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  animation: march 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+
+  box-sizing: border-box;
+  transition: all var(--dh-transition-mid) ease;
+
+  /* Inner Placeholder */
+  .lm_inner {
+    box-sizing: border-box;
+    border: 1px solid transparent; /* offset shadow using a transparent border */
+    box-shadow: inset 0 0 1rem 1px var(--dh-color-dropshadow);
+    opacity: 1; /* set opacity back to 1, default 0.2 and backroudn was solid. */
+    background: color-mix(in srgb, var(--dh-color-accent) 10%, transparent);
+  }
+}
+
+/* Separator line (handle to change pane size) */
+.lm_splitter {
+  background: var(--dh-color-gray-600);
+  opacity: 0.001;
+  transition: opacity var(--dh-transition) ease;
+
+  &:hover, /* When hovered by mouse...*/
+  &.lm_dragging {
+    background: var(--dh-color-gray-700);
+    opacity: 1;
+  }
+}
+
+/* Pane Header (container of Tabs for each pane) */
+.lm_header {
+  box-sizing: content-box; /* golden-layout sets a js height using a content box model */
+  height: var(--lm-tab-height);
+  padding-top: 0;
+  background: var(--dh-color-golden-layout-tab-header-bg);
+  box-shadow: inset 0 -1px 0 0 var(--dh-color-bg, #1a171a);
+  /*
+   * inset box shadows with 0-blur used to draw borders without impacting spacing or GL size calculations.
+   * golden layout default styling doesnt have the same border styling we want
+   * this trick is used elsewhere in the header as well for the same purpose
+   */
+  user-select: none;
+
+  .lm_controls {
+    > li {
+      height: 100%;
+      width: 24px;
+    }
+  }
+
+  &.lm_selectable {
+    cursor: pointer;
+  }
+}
+
+.lm_header,
+.lm_tabdropdown_list {
+  /* Single Tab container. A single Tab is set for each pane, a group of Tabs are contained in ".lm_header" */
+  .lm_tab {
+    display: flex;
+    align-items: center;
+    font-family: var(--dh-font-family-sans);
+    background-color: var(--dh-color-golden-layout-tab-bg);
+    color: var(--dh-color-gray-600);
+    height: var(--lm-tab-height);
+    font-size: 12px;
+    min-width: 10ch;
+    margin: 0;
+    padding: 0 0 0 var(--lm-tab-padding-x);
+    box-shadow: inset -1px -1px 0 0 var(--dh-color-bg, #1a171a); /* acting as bottom and right border */
+    transition:
+      color var(--dh-transition),
+      background-color var(--dh-transition);
+    max-width: 12.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+
+    .lm_title {
+      flex-grow: 1;
+      padding-right: var(--lm-tab-padding-x);
+      /*
+       * add equalized spacing for tabs without close buttons
+       * so that when a tab is longer then min-width it still
+       * is balanced with equal padding. Extra padding is then
+       * removed from tabs with close buttons via negative margin
+       */
+    }
+
+    .lm_title_before {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Close Tab Icon */
+    .lm_close_tab {
+      margin-left: calc(-1 * var(--lm-tab-padding-x));
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      width: 18px;
+      height: 100%;
+      opacity: 0;
+      /*
+       * intentionally no transition on close icon
+       * we want the button to appear instantly
+       */
+
+      &::before {
+        /*
+         * used for hover background
+         * which is a different shape then the hit area
+         */
+        content: '';
+        position: absolute;
+        inset: 3px 3px 3px 1px; /* looks better offset */
+        border-radius: 2px;
+        background-color: var(--dh-color-highlight-selected-hover);
+        opacity: 0;
+        transition: opacity var(--dh-transition) ease;
+      }
+
+      &::after {
+        /*
+         * since this is a mask, we need to isolate it
+         * so it doesn't mask our hover background
+         */
+        background-size: 8px;
+        background-color: var(--dh-color-fg);
+        mask-image: var(--dh-svg-icon-close-tab);
+        mask-position: center center;
+        mask-repeat: no-repeat;
+        mask-size: 8px;
+
+        content: '';
+        position: absolute;
+        inset: 0 2px 0 0; /* looks better offset */
+      }
+    }
+  }
+}
+
+/* If Pane Header (container of Tabs for each pane) is selected (used only if addition of new Contents is made "by selection" and not "by drag") */
+.lm_selected {
+  .lm_header {
+    background-color: var(--lm-tab-active-background);
+  }
+}
+
+.lm_header .lm_tab.lm_active,
+.lm_header .lm_tab.lm_active:hover {
+  height: var(--lm-tab-height);
+  background-color: var(--lm-tab-active-background);
+  color: var(--lm-tab-active-color);
+  padding-bottom: 0;
+  box-shadow: inset -1px 0 0 0 var(--dh-color-bg, #1a171a); /* act as right border only when active */
+  /* also kills the default shadow, doesn't work well with our design */
+}
+
+.lm_header .lm_tab.lm_active.lm_focusin,
+.lm_header .lm_tab.lm_active:hover.lm_focusin {
+  /* top focus indicator, right border */
+  box-shadow:
+    inset 0 1px var(--dh-color-accent-bg),
+    inset -1px 0 0 0 var(--dh-color-bg, #1a171a);
+}
+
+.lm_header .lm_tab.lm_active .lm_close_tab,
+.lm_header .lm_tab.lm_active:hover .lm_close_tab {
+  /* show close button on active tab */
+  opacity: 0.35;
+}
+
+.lm_window_blur {
+  .lm_header .lm_tab.lm_active.lm_focusin {
+    box-shadow: inset -1px 0 0 0 var(--dh-color-bg, #1a171a);
+  }
+}
+
+/* Pane controls (popout, maximize, minimize, close) */
+.lm_controls {
+  /* All Pane controls shares these */
+  > li {
+    opacity: 0.4;
+    transition: opacity var(--dh-transition) ease;
+
+    position: relative;
+    background-position: center center;
+    background-repeat: no-repeat;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  /* Icon to PopOut Pane, so move it to a different Browser Window */
+  .lm_popout {
+    /*
+     * Leaving this inline since it is a PNG. We should convert it to a 16px
+     * SVG like other icons and move to a css variable so it can be overridden.
+     */
+    background-size: auto;
+    background-color: var(--dh-color-fg);
+    mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII=');
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: auto;
+  }
+
+  /* Icon to Maximize Pane, so it will fill the entire GoldenLayout Container */
+  .lm_maximise {
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask-image: var(--dh-svg-icon-maximise);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+  }
+
+  .lm_tabdropdown {
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask-image: var(--dh-svg-icon-tab-dropdown);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+  }
+
+  /* Icon to Close Pane and so remove it from GoldenLayout Container */
+  .lm_close {
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask-image: var(--dh-svg-icon-close);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+  }
+
+  .lm_tabnextbutton {
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask-image: var(--dh-svg-icon-next);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+  }
+
+  .lm_tabpreviousbutton {
+    background-size: 16px;
+    background-color: var(--dh-color-fg);
+    mask-image: var(--dh-svg-icon-prev);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+  }
+}
+
+.lm_tabdropdown_list {
+  z-index: 1000;
+  background: var(--dh-color-popover-bg);
+  box-shadow: var(--dh-box-shadow);
+  border-radius: var(--dh-border-radius);
+  max-width: 12rem;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+
+  .lm_tabdropdown_search {
+    padding: var(--dh-spacer-1);
+    input {
+      padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+      line-height: 1.3;
+      color: var(--dh-color-input-fg);
+      background-color: var(--dh-color-input-bg);
+      border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+      border-radius: var(--dh-border-radius);
+      max-width: 100%;
+
+      &::placeholder {
+        color: var(--dh-color-input-placeholder);
+        opacity: 1;
+      }
+
+      &:focus {
+        border-color: var(--dh-color-input-focus-border);
+        box-shadow: var(--dh-input-focus-box-shadow);
+        outline: 0;
+      }
+    }
+  }
+
+  .lm_tabs {
+    padding: 0;
+  }
+
+  .lm_tab {
+    background: transparent;
+    color: var(--lm-tab-hover-color);
+    box-shadow: none;
+
+    &.lm_keyboard_active {
+      color: var(--lm-tab-hover-color);
+      background-color: var(--dh-color-highlight-selected);
+
+      &:hover {
+        background-color: var(--dh-color-highlight-selected-hover);
+      }
+    }
+
+    &:hover {
+      color: var(--lm-tab-active-color);
+      background-color: var(--dh-color-highlight-hover);
+    }
+  }
+}
+
+/* If a specific Pane is maximized */
+.lm_maximised {
+  border: 15px solid color-mix(in srgb, var(--dh-color-bg) 80%, transparent);
+  height: 100% !important;
+  width: 100% !important;
+  .lm_items {
+    box-shadow: var(--dh-box-shadow);
+  }
+
+  /* Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change) */
+  .lm_controls {
+    .lm_maximise {
+      background-size: 16px;
+      background-color: var(--dh-color-fg);
+      mask-image: var(--dh-svg-icon-minimise);
+      mask-position: center center;
+      mask-repeat: no-repeat;
+      mask-size: 16px;
+    }
+  }
+}
+
+.lm_tabs:empty + .lm_controls .lm_maximise {
+  display: none;
+}

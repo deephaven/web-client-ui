@@ -1,0 +1,72 @@
+.aggregation-edit {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .top-menu {
+    background-color: var(--dh-color-gray-300);
+    padding: 0 var(--dh-spacer-2);
+    .form-inline {
+      .custom-control {
+        padding-top: var(--dh-spacer-2);
+        padding-bottom: var(--dh-spacer-2);
+
+        label {
+          justify-content: left;
+        }
+      }
+      .spacer {
+        flex-grow: 1;
+      }
+    }
+
+    .btn-link-icon {
+      color: var(--dh-color-gray-600);
+
+      &.active {
+        color: var(--dh-color-fg, #f0f0ee);
+      }
+    }
+  }
+  .aggregation-edit-item-list {
+    flex-grow: 1;
+
+    .item-list-scroll-pane {
+      border: none;
+
+      .item-list-item {
+        padding-left: var(--dh-spacer-2);
+        padding-right: var(--dh-spacer-2);
+        display: flex;
+
+        &:hover {
+          label {
+            background-color: var(--dh-color-item-list-hover-bg);
+            color: var(--dh-color-item-list-selected-fg);
+          }
+        }
+
+        .custom-control {
+          flex-grow: 1;
+          display: flex;
+
+          label {
+            padding-top: 1px;
+            padding-left: var(--dh-spacer-2);
+            padding-right: var(--dh-spacer-2);
+            flex-grow: 1;
+            border-radius: var(--dh-border-radius);
+            margin-bottom: var(--dh-spacer-2);
+            border: var(--dh-input-border-width) solid transparent;
+          }
+
+          &:focus-within label,
+          input[type='checkbox']:active + label {
+            background-color: var(--dh-color-item-list-selected-bg);
+            color: var(--dh-color-item-list-selected-fg);
+          }
+        }
+      }
+    }
+  }
+}

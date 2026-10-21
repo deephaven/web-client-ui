@@ -1,0 +1,185 @@
+.advanced-filter-creator {
+  padding: 0.5rem 0.75rem;
+
+  .btn-link {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  hr {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    background: var(--dh-color-gray-300);
+  }
+
+  .form-row.justify-content-end {
+    margin-right: 0;
+  }
+
+  .advanced-filter-column-name {
+    padding-bottom: 0.5rem;
+    .column-type {
+      font-style: italic;
+      color: var(--dh-color-gray-600);
+      font-weight: normal;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  .title-bar {
+    display: flex;
+    align-items: baseline;
+    user-select: none;
+
+    .advanced-filter-title {
+      flex-grow: 1;
+    }
+  }
+
+  .advanced-filter-menu-buttons {
+    .sort-operator {
+      &.btn {
+        font-size: 14px;
+        color: var(--dh-color-gray-600);
+        text-decoration: none;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-left: var(--dh-spacer-2);
+      }
+
+      &.active {
+        color: var(--dh-color-fg, #f0f0ee);
+      }
+    }
+  }
+
+  .add-filter-item,
+  .advanced-filter-creator-filter-operator {
+    user-select: none;
+    padding-right: 25px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: calc(-1 * var(--dh-spacer-3));
+    transition: var(--dh-transition) opacity;
+    span {
+      font-size: 14px;
+      padding-top: 4px;
+      padding-right: var(--dh-spacer-1);
+      color: var(--dh-color-gray-700);
+    }
+
+    .btn-link.filter-operator,
+    .btn-link.btn-filter-item {
+      font-size: 12px;
+      color: var(--dh-color-fg, #f0f0ee);
+      text-decoration: underline;
+      margin-right: 0;
+
+      &:hover {
+        color: var(--dh-color-accent-bg);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .add-filter-item.hidden {
+    transition: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .advanced-filter-creator-filter-operator {
+    .filter-operator {
+      &:not(.active) {
+        color: var(--dh-color-gray-600);
+      }
+
+      &.btn-link {
+        text-decoration: none;
+
+        &.active {
+          color: var(--dh-color-fg, #f0f0ee);
+          &:hover {
+            color: var(--dh-color-fg, #f0f0ee);
+            cursor: default;
+          }
+        }
+
+        &:hover {
+          color: var(--dh-color-accent-bg);
+        }
+
+        &:focus {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  /*
+   * The component renders a <form> wrapping all interactive content; make it
+   * the flex column so the values list can claim remaining vertical space.
+   */
+  > form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+
+    > .advanced-filter-values-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
+  .advanced-filter-creator-select-value {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+
+    .select-value-list-wrapper {
+      flex: 1 1 auto;
+      min-height: 120px;
+      /*
+       * Establishes a containing block for the absolutely-positioned scroll
+       * pane so it cannot grow to fit the (huge) virtual list content.
+       */
+      position: relative;
+      overflow: hidden;
+    }
+
+    /*
+     * Pin the scroll pane to fill its wrapper. Without this, the fixed
+     * height: 120px rule or the inner virtual list's intrinsic height
+     * (itemCount × rowHeight) would size the pane and defeat virtualization.
+     */
+    .select-value-list-scroll-pane {
+      position: absolute;
+      inset: 0;
+      height: auto;
+      max-height: none;
+      min-height: 0;
+    }
+  }
+}
+
+/* Maximized state dimensions for the advanced filter dialog. */
+.popper-container.maximized {
+  .advanced-filter-creator {
+    width: min(94vw, 2200px) !important;
+    height: 85vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,58 @@
+.advanced-filter-creator-select-value {
+  .select-value-list-scroll-pane {
+    min-height: 120px;
+    height: 120px;
+    max-height: 120px;
+    overflow-x: auto;
+  }
+
+  .advanced-filter-creator-select-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: var(--dh-spacer-1);
+  }
+
+  .row-count-info {
+    /* same vertical padding as a btn-links that are on the same line */
+    padding-top: calc(var(--dh-spacer-1) + 2px);
+    padding-bottom: calc(var(--dh-spacer-1) + 2px);
+    color: var(--dh-color-gray-600);
+    user-select: none;
+  }
+
+  .btn-link {
+    color: var(--dh-color-fg, #f0f0ee);
+    text-decoration: underline;
+  }
+
+  .btn-link:hover {
+    color: var(--dh-color-accent-bg);
+  }
+
+  .select-value-list-wrapper {
+    position: relative;
+    display: flex;
+    background: var(--dh-color-input-bg);
+
+    .value-list-item label {
+      white-space: nowrap;
+    }
+
+    .loading-list {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: center;
+
+      .fa-layers {
+        margin: auto;
+      }
+    }
+  }
+}

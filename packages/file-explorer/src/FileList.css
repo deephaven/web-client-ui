@@ -1,0 +1,160 @@
+.file-list {
+  --item-list-border-width: 1px;
+  --item-list-selected-nofocus-bg: var(
+    --dh-color-item-list-selected-inactive-bg
+  );
+  --item-list-selection-border-color: var(--dh-color-item-list-selected-border);
+  --item-list-selected-color: var(--dh-color-item-list-selected-fg);
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  .file-list-depth-line {
+    margin-left: 5px;
+    padding-bottom: 2px;
+    width: 8px;
+    height: 100%;
+    border-left: 1px solid var(--dh-color-gray-500);
+    box-sizing: content-box;
+  }
+
+  .item-list-scroll-pane {
+    border: none;
+    border-radius: 0;
+  }
+
+  .item-list-item {
+    padding: 0 var(--dh-input-padding-x);
+    color: var(--dh-color-gray-600);
+    border: var(--item-list-border-width) solid transparent; /* we need a spacer border so stuff doesn't move on us when we apply a border-color */
+    -webkit-user-drag: none; /* we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac */
+    cursor: pointer;
+
+    &.is-focused {
+      background-color: var(--item-list-selected-nofocus-bg);
+    }
+
+    &.active {
+      background-color: var(--item-list-selected-nofocus-bg);
+    }
+
+    &:focus,
+    &.active,
+    &:hover,
+    &.is-focused {
+      color: var(--item-list-selected-color);
+    }
+  }
+
+  .truncation-wrapper {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+  }
+
+  .item-icon {
+    margin-right: var(--dh-spacer-1);
+  }
+
+  &:focus-within {
+    &.item-list-item.is-focused {
+      background-color: var(--dh-color-item-list-selected-bg);
+    }
+
+    /* for selected items, apply border on left and right */
+    .item-list-item.active {
+      background-color: var(--dh-color-item-list-selected-bg);
+      color: var(--item-list-selected-color);
+      /*
+       * because of border mitre, we use pseudo elements to act as borders
+       * otherwise we get mitre gap beteween the borders
+       */
+      ::before,
+      ::after {
+        content: '';
+        position: absolute;
+        top: calc(-1 * var(--item-list-border-width));
+        /* times 2 the bottom border is actually the top of next item */
+        bottom: calc(-1 * var(--item-list-border-width) * 2);
+        width: var(--item-list-border-width);
+        background-color: var(--item-list-selection-border-color);
+      }
+      ::before {
+        left: calc(-1 * var(--item-list-border-width));
+      }
+      ::after {
+        right: calc(-1 * var(--item-list-border-width));
+      }
+    }
+  }
+
+  &.is-dragging {
+    cursor: grabbing;
+
+    .item-list-item {
+      &.active {
+        opacity: 0.5;
+      }
+    }
+
+    .is-in-drop-target,
+    .is-exact-drop-target {
+      color: var(--dh-color-item-list-drop-target-fg);
+    }
+  }
+
+  /* stylelint-disable no-descending-specificity */
+  &:not(.is-dragging) {
+    .item-list-item:hover {
+      background-color: var(--dh-color-item-list-hover-bg);
+      color: var(--item-list-selected-color);
+    }
+    &:focus-within .item-list-item.active:hover {
+      background-color: var(--dh-color-item-list-selected-hover-bg);
+      color: var(--item-list-selected-color);
+    }
+  }
+
+  /* apply border to top of the first item in the list if its selected, and the first selected after a non-selected item */
+  &:focus-within .item-list-item:not(.active) + .active,
+  &:focus-within .item-list-item.active:first-of-type {
+    border-top: var(--item-list-border-width) solid
+      var(--item-list-selection-border-color);
+  }
+
+  /*
+   * there's no easy way to get the last select item in a grouping, so we apply the end border
+   * to the TOP of the first non-selected item, ie. the previous selection group
+   */
+  &:focus-within .item-list-item.active + .item-list-item:not(.active) {
+    border-top: var(--item-list-border-width) solid
+      var(--item-list-selection-border-color);
+  }
+
+  /* since there is no item after the last item in teh selection, we apply the border to the bottom of the last selected element */
+  &:focus-within .item-list-item.active:last-of-type {
+    border-bottom: var(--item-list-border-width) solid
+      var(--item-list-selection-border-color);
+    ::before,
+    ::after {
+      bottom: 0; /* not times 2 because there is no next item */
+    }
+  }
+  /* stylelint-enable no-descending-specificity */
+}
+
+.file-list-dnd-placeholder {
+  position: absolute;
+  top: -100px;
+  right: 0;
+
+  .dnd-placeholder-content {
+    padding: var(--dh-spacer-1) var(--dh-spacer-3);
+    background: var(--dh-color-accent-down-bg);
+    color: var(--dh-color-fg, #f0f0ee);
+    border-radius: var(--dh-border-radius);
+  }
+}

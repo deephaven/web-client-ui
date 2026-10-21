@@ -1,0 +1,32 @@
+.file-explorer-toolbar {
+  --toolbar-padding: var(--dh-spacer-1);
+
+  background: var(--dh-color-content-bg, #2d2a2e);
+  border-bottom: 2px solid var(--dh-color-bg, #1a171a);
+  display: flex;
+  flex-direction: row;
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 100%;
+  position: relative;
+  align-items: center;
+  padding: var(--toolbar-padding);
+
+  .file-explorer-toolbar-buttons {
+    display: flex;
+    padding-right: var(--toolbar-padding);
+  }
+  .file-explorer-toolbar-search {
+    display: flex;
+    flex-grow: 1;
+    .search-group {
+      width: 100%;
+    }
+  }
+  .btn {
+    min-width: var(--dh-input-height);
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 17px;
+  }
+}
