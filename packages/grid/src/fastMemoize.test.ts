@@ -91,14 +91,71 @@ describe('fastMemoize', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
+    it('does not collide when arguments contain the separator and type tag', () => {
+      const fn = jest.fn((...args: string[]) => args.join('|'));
+      const memoized = fastMemoize(fn, 10);
+
+      expect(memoized('a\u0000string\u0002b', 'c')).toBe(
+        'a\u0000string\u0002b|c'
+      );
+      expect(memoized('a', 'b\u0000string\u0002c')).toBe(
+        'a|b\u0000string\u0002c'
+      );
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not collide truncation calls whose text and truncation char contain key sequences', () => {
+      const truncate = jest.fn(
+        (
+          _context: object,
+          text: string,
+          width: number,
+          fontWidthLower: number,
+          fontWidthUpper: number,
+          truncationChar: string
+        ) =>
+          `${text}|${width}|${fontWidthLower}|${fontWidthUpper}|${truncationChar}`
+      );
+      const memoized = fastMemoize(truncate, 10);
+      const context = {};
+      const numberFragment = (value: number): string =>
+        `\u0000number\u0002${value}`;
+      const stringTag = '\u0000string\u0002';
+
+      // The text of the first call spells out the numeric arguments of the
+      // second, and the second's truncation char spells out the first's
+      const firstText = `abc${numberFragment(100)}${numberFragment(
+        5
+      )}${numberFragment(9)}${stringTag}…`;
+      const secondTruncationChar = `…${numberFragment(1)}${numberFragment(
+        1
+      )}${numberFragment(1)}${stringTag}…`;
+
+      const first = memoized(context, firstText, 1, 1, 1, '…');
+      const second = memoized(context, 'abc', 100, 5, 9, secondTruncationChar);
+
+      expect(first).toBe(`${firstText}|1|1|1|…`);
+      expect(second).toBe(`abc|100|5|9|${secondTruncationChar}`);
+      expect(truncate).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not collide a call with no arguments and an explicit undefined', () => {
+      const fn = jest.fn((...args: unknown[]) => args.length);
+      const memoized = fastMemoize(fn, 10);
+
+      expect(memoized()).toBe(0);
+      expect(memoized(undefined)).toBe(1);
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
+
     it('treats a missing argument as distinct from an explicit undefined', () => {
       const fn = jest.fn((a: string, b?: string) => `${a}/${b}`);
       const memoized = fastMemoize(fn, 10);
 
       expect(memoized('a')).toBe('a/undefined');
       expect(memoized('a', undefined)).toBe('a/undefined');
-      // Arity is part of the key, so this caches an extra entry rather than
-      // risking a collision with a genuinely different call
+      // The argument count is part of the key, so this caches an extra entry
+      // rather than risking a collision with a genuinely different call
       expect(fn).toHaveBeenCalledTimes(2);
     });
   });

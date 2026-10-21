@@ -9,10 +9,10 @@
  * found more time spent inside memoizee than in the truncation and
  * tokenization it was caching.
  *
- * This flattens the arguments into one string key and does a single `Map`
- * lookup. There is no eviction queue to maintain because the entire cache is
- * dropped once it fills, which is the behaviour `memoizeClear` already settled
- * on to avoid LRU thrashing.
+ * This flattens the arguments into one length prefixed string key and does a
+ * single `Map` lookup. There is no eviction queue to maintain because the
+ * entire cache is dropped once it fills, which is the behaviour `memoizeClear`
+ * already settled on to avoid LRU thrashing.
  *
  * The returned function does not forward `this`, so the memoized function must
  * not depend on it.
@@ -53,9 +53,13 @@ export function fastMemoize<A extends unknown[], R>(
   const cache = new Map<string, R>();
 
   return (...args: A): R => {
-    let key = argKey(args[0]);
-    for (let i = 1; i < args.length; i += 1) {
-      key += `\u0000${argKey(args[i])}`;
+    // Each fragment is prefixed with its length so the key can only be read one
+    // way, whatever separators or type tags the arguments themselves contain.
+    // Starting with the count keeps `fn()` and `fn(undefined)` apart.
+    let key = `${args.length}`;
+    for (let i = 0; i < args.length; i += 1) {
+      const fragment = argKey(args[i]);
+      key += `\u0000${fragment.length}\u0000${fragment}`;
     }
 
     // Only fall back to `has` when the value is undefined, so a hit costs one lookup
