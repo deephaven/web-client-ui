@@ -9,6 +9,11 @@ name: 'Copilot Setup Steps'
 # investigator, and GitHub has no per-agent setup file, so keep it cheap.
 # Code review has its own file: copilot-code-review.yml.
 #
+# Setup time comes out of the same session limit as the agent's own work, so
+# every step has its own timeout: a stalled download must fail fast rather than
+# leave the agent minutes to work. Setup runs before the agent's firewall is
+# enabled, so anything that needs the network belongs here, not in the agent.
+#
 # For this pipeline specifically: without this, Copilot's sandbox has no
 # browser binaries, and it can't actually re-run the flaky Playwright test
 # to verify a fix -- exactly the "prove it before/after" step required by
@@ -33,23 +38,59 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
+        timeout-minutes: 3
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node.js
+        timeout-minutes: 3
         uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install project dependencies
+        timeout-minutes: 6
         run: npm ci
 
       # @deephaven/icons generates SVGs the other packages import, so nothing
       # else builds or type-checks until this runs.
       - name: Build necessary packages
+        timeout-minutes: 6
         run: npm run build:necessary
 
-      # --with-deps also installs the OS-level libraries the browsers need.
-      # playwright.config.ts defines chromium, firefox, and webkit projects.
+      # Download time for this step has ranged from under two minutes to nearly
+      # an hour, which points at stalled connections rather than slow ones. Short
+      # attempts with a retry beat one long wait. --with-deps also installs the
+      # OS libraries the browsers need; playwright.config.ts defines chromium,
+      # firefox, and webkit projects.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        timeout-minutes: 12
+        run: |
+          for attempt in 1 2 3; do
+            start=$(date +%s)
+            if timeout 240 npx playwright install --with-deps; then
+              echo "Playwright browsers installed on attempt ${attempt} in $(( $(date +%s) - start ))s"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed or timed out after $(( $(date +%s) - start ))s"
+          done
+          echo "Playwright browsers could not be installed; the agent cannot run e2e tests"
+          exit 1
+
+      # The agent's firewall blocks the registry, so the core server image that
+      # scripts/e2e-agent-up.sh needs has to be pulled here. It is the last step
+      # because a failing setup step skips the ones after it.
+      - name: Pre-pull core server image
+        timeout-minutes: 8
+        run: |
+          for attempt in 1 2 3; do
+            start=$(date +%s)
+            if timeout 150 docker compose -f tests/docker-scripts/docker-compose.yml pull dhc-server; then
+              echo "Core server image pulled on attempt ${attempt} in $(( $(date +%s) - start ))s"
+              docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep deephaven/server
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed or timed out after $(( $(date +%s) - start ))s"
+          done
+          echo "Core server image could not be pulled; the agent cannot run e2e tests"
+          exit 1
