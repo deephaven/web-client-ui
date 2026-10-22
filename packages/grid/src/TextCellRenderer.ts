@@ -213,7 +213,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
   getCachedTokenBoxesForVisibleCell = memoizeClear(
     (
       truncatedText: string,
-      tokens: Token[],
+      tokens: readonly Token[],
       // _font and _baseline are passed in so value is re-calculated when they change
       // They should already be set on the `context`, so they are not used in this method
       _font: string,
