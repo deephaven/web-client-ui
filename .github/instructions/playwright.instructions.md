@@ -86,9 +86,11 @@ instead:
    `testInfo.attach()` so it lands in the report the triage pipeline reads.
    Prefer application-level state over browser console or network noise, which
    the Playwright trace already captures.
-2. Label the issue `diagnostics-added`. The triage pipeline reads that label
-   and records the next recurrence as a diagnostics round rather than a failed
-   fix, so it does not count toward the two attempts before escalation.
+2. Declare the round in the PR description by putting `Round type: diagnostics-only`
+   on its own line (see the template below). You cannot edit labels or issues,
+   so do not try. The triage pipeline reads that line from the merged PR and
+   records the next recurrence as a diagnostics round rather than a failed fix,
+   so it does not count toward the two attempts before escalation.
 3. Open the PR with the instrumentation and a written handoff: what you ruled
    out and how, what hypotheses remain, and exactly what the next session
    should look for in the new output.
@@ -108,6 +110,8 @@ new behavior is intended.
 ## Required evidence in the PR description
 
 ```
+Round type: <fix | diagnostics-only>
+
 ## Root cause
 <what was actually wrong, referencing the context bundle's fingerprint/error.
 If you could not establish one, say so plainly and fill in Handoff below
@@ -118,8 +122,7 @@ instead of Fix.>
 
 ## Handoff (diagnostics-only PRs)
 <what you ruled out and how; what hypotheses remain; what the next session
-should look for in the new output. Confirm the issue is labeled
-`diagnostics-added`.>
+should look for in the new output.>
 
 ## Evidence
 Ran the affected test(s) N times before and after the fix:
@@ -134,9 +137,24 @@ Ran the affected test(s) N times before and after the fix:
 Re-run the changed test at least 10 times as part of preparing the PR
 (`npx playwright test path/to/spec.ts --repeat-each=10`) and report
 before/after counts honestly, including if the fix didn't fully resolve it.
+
 That command needs the app on `localhost:4000/ide/` and a core server on
-`:10000`; if you don't have both, use the self-contained `npm run e2e:docker`
-instead.
+`:10000`. Start both yourself rather than skipping the run:
+
+```
+docker compose -f tests/docker-scripts/docker-compose.yml \
+  -f tests/docker-scripts/docker-compose.agent.yml up -d --wait dhc-server
+VITE_PLAYWRIGHT_CSS=1 npm run start:app &
+```
+
+`VITE_PLAYWRIGHT_CSS=1` loads the same stylesheet CI's build uses to calm
+animations; without it the app behaves differently from CI. Wait for
+`localhost:4000/ide/` to respond before running Playwright.
+
+If Docker, the image pull, or the server is unavailable in your environment,
+say exactly which step failed in the PR and report the evidence run as not
+performed. Do not substitute reasoning for a run, and do not call a change
+verified on the strength of unit tests, lint or types alone.
 
 ## When to stop and escalate
 

@@ -227,7 +227,20 @@ interface GithubIssue {
 // Minimal shape of the cross-referenced entries in an issue's timeline.
 interface TimelineEvent {
   event?: string;
-  source?: { issue?: { html_url?: string; pull_request?: unknown } };
+  source?: {
+    issue?: {
+      html_url?: string;
+      body?: string | null;
+      pull_request?: { merged_at?: string | null };
+    };
+  };
+}
+
+// A pull request that referenced an issue, with what triage needs to judge that round.
+interface LinkedPullRequest {
+  url: string;
+  body: string;
+  mergedAt: string | null;
 }
 
 // Thin wrapper over the subset of the GitHub REST API this script needs.
@@ -240,7 +253,7 @@ interface GithubClient {
   comment: (number: number, body: string) => Promise<unknown>;
   createIssue: (payload: Record<string, unknown>) => Promise<GithubIssue>;
   fetchIssuesWithLabel: (label: string) => Promise<GithubIssue[]>;
-  fetchLinkedPullRequests: (number: number) => Promise<string[]>;
+  fetchLinkedPullRequests: (number: number) => Promise<LinkedPullRequest[]>;
   // null when no user token is configured, since agent assignment requires one.
   assignAgent: ((number: number) => Promise<unknown>) | null;
 }
@@ -302,9 +315,12 @@ const SENSITIVE_PATH_PATTERNS = (process.env.SENSITIVE_PATH_PATTERNS ?? '')
 const BASE_LABEL = 'e2e-failure';
 const AGENT_LABEL = 'auto-investigate';
 const HUMAN_LABEL = 'needs-human';
-// Set by an agent whose PR only added diagnostics. Read during the issue-state refresh and then
-// dropped by the next labelsFor() update, so each diagnostics round is counted exactly once.
+// Agents can't edit labels, so their PRs declare a diagnostics-only round in the description and
+// triage reads it from there. The label stays as a manual override for people, and is dropped by
+// the next labelsFor() update so each round is counted exactly once.
 const DIAGNOSTICS_LABEL = 'diagnostics-added';
+const DIAGNOSTICS_ROUND_PATTERN =
+  /^\s*Round type:\s*`?diagnostics-only`?\s*$/im;
 const CLASSIFICATION_LABELS: Record<Classification, string> = {
   chronic_flake: 'chronic-flake',
   new_flake: 'new-flake',
@@ -588,8 +604,9 @@ const GUARDRAIL = [
   'loosening an assertion, wrapping the failure in `try`/`catch`, or skipping the test. Prefer Playwright',
   'web-first, auto-retrying assertions (`await expect(locator).toBeVisible()`). If you cannot establish a',
   'root cause, do not guess and do not quarantine: add the diagnostics that would identify it on the next',
-  `occurrence, label this issue \`${DIAGNOSTICS_LABEL}\`, and use the PR to record what you ruled out and`,
-  'what the next session should look for. A recurrence after a diagnostics-only round is expected and does',
+  `occurrence, state \`Round type: diagnostics-only\` on its own line in the PR description, and use the PR`,
+  'to record what you ruled out and what the next session should look for. You cannot edit labels, so',
+  'do not try. A recurrence after a diagnostics-only round is expected and does',
   'not count as a failed fix. Re-run the affected spec(s) at least 10 times before and after',
   '(`--repeat-each=10`) and report the counts honestly in the PR. See',
   '`.github/instructions/playwright.instructions.md` for the full policy and required PR description format.',
@@ -818,19 +835,30 @@ function makeClient(token: string, repository: string): GithubClient {
       return all;
     },
     // Pull requests that referenced this issue, i.e. the fixes already attempted for it.
-    async fetchLinkedPullRequests(number: number): Promise<string[]> {
+    async fetchLinkedPullRequests(
+      number: number
+    ): Promise<LinkedPullRequest[]> {
       const events = await request<TimelineEvent[]>(
         `/repos/${owner}/${repo}/issues/${number}/timeline?per_page=100`
       );
-      const urls = (events ?? [])
-        .filter(
-          e =>
-            e.event === 'cross-referenced' &&
-            e.source?.issue?.pull_request !== undefined
-        )
-        .map(e => e.source?.issue?.html_url)
-        .filter((url): url is string => Boolean(url));
-      return [...new Set(urls)];
+      const found = new Map<string, LinkedPullRequest>();
+      (events ?? []).forEach(e => {
+        const source = e.source?.issue;
+        if (
+          e.event !== 'cross-referenced' ||
+          source?.pull_request === undefined ||
+          source.html_url === undefined ||
+          source.html_url === ''
+        ) {
+          return;
+        }
+        found.set(source.html_url, {
+          url: source.html_url,
+          body: source.body ?? '',
+          mergedAt: source.pull_request.merged_at ?? null,
+        });
+      });
+      return [...found.values()];
     },
     assignAgent:
       COPILOT_ASSIGN_TOKEN === ''
@@ -1107,7 +1135,8 @@ async function main(): Promise<void> {
   // Re-read open/closed state from GitHub: an issue may have been closed by a human or by an
   // agent's merged PR since the last run, and the cached history has no way to know that.
   const seenThisRun = new Set(groups.keys());
-  // Fingerprints whose closing attempt only added diagnostics, per the label the agent set.
+  // Fingerprints whose closing round only added diagnostics, per the merged PR's declaration or
+  // a manually applied label.
   const diagnosticsOnly = new Set<string>();
   if (gh) {
     // Only fingerprints with a previously opened issue need their GitHub state refreshed.
@@ -1134,6 +1163,17 @@ async function main(): Promise<void> {
           state.issueState = issue.state;
           if (issue.labels?.some(l => l.name === DIAGNOSTICS_LABEL) === true) {
             diagnosticsOnly.add(fp);
+          } else if (issue.state === 'closed' && seenThisRun.has(fp)) {
+            // Only a recurrence needs judging, so only those pay for the timeline call.
+            const merged = (await gh.fetchLinkedPullRequests(issue.number))
+              .filter(pr => pr.mergedAt !== null)
+              .sort(
+                (a, b) =>
+                  Date.parse(b.mergedAt ?? '') - Date.parse(a.mergedAt ?? '')
+              );
+            if (DIAGNOSTICS_ROUND_PATTERN.test(merged[0]?.body ?? '')) {
+              diagnosticsOnly.add(fp);
+            }
           }
         } catch (err) {
           console.warn(
@@ -1214,8 +1254,9 @@ async function main(): Promise<void> {
             history.fingerprints[decision.bundle.fingerprint];
           if (issueNumber === undefined) return;
           try {
-            decision.bundle.priorPullRequests =
-              await gh.fetchLinkedPullRequests(issueNumber);
+            decision.bundle.priorPullRequests = (
+              await gh.fetchLinkedPullRequests(issueNumber)
+            ).map(pr => pr.url);
           } catch (err) {
             console.warn(
               `Could not list prior fix PRs for #${issueNumber}: ${

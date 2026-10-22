@@ -108,6 +108,7 @@ If you cannot establish a plausible root cause, do NOT invent a fix and do NOT
 quarantine the test.
 
 Add the instrumentation that would identify the cause on the next occurrence,
-label the issue `diagnostics-added`, and document the investigation and what
-the next session should look for. See "When you cannot find the root cause" in
+state `Round type: diagnostics-only` in the PR description, and document the
+investigation and what the next session should look for. You cannot edit
+labels or issues. See "When you cannot find the root cause" in
 `.github/instructions/playwright.instructions.md`.
