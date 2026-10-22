@@ -9,7 +9,10 @@ import {
 import GridRenderer from './GridRenderer';
 import { type GridRenderState } from './GridRendererTypes';
 import { type GridColor } from './GridTheme';
-import fastMemoize, { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
+import fastMemoize, {
+  CELL_CACHE_SIZE,
+  MAX_HASHED_STRING_LENGTH,
+} from './fastMemoize';
 
 export type CellRenderType = 'text' | 'dataBar';
 
@@ -103,7 +106,7 @@ abstract class CellRenderer {
         fontWidthUpper,
         truncationChar
       ),
-    10000
+    CELL_CACHE_SIZE
   );
 
   getCachedTruncatedString = (

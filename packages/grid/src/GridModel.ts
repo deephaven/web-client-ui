@@ -6,7 +6,7 @@ import {
   type GridTheme,
   type NullableGridColor,
 } from './GridTheme';
-import fastMemoize from './fastMemoize';
+import fastMemoize, { CELL_CACHE_SIZE } from './fastMemoize';
 import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
@@ -239,7 +239,7 @@ abstract class GridModel<
       GridUtils.findTokensWithProtocolInText(
         text.substring(0, getLinkSearchLength(text, visibleLength))
       ),
-    10000
+    CELL_CACHE_SIZE
   );
 
   renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {

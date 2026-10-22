@@ -35,6 +35,15 @@
  */
 export const MAX_HASHED_STRING_LENGTH = 16383;
 
+/**
+ * Entries for a cache that is hit once per visible cell. If a single frame
+ * draws more distinct cells than the cache holds, it clears partway through
+ * every frame and never serves a hit. A maximized grid with minimum width
+ * columns shows about 7,500 cells on a 4K display and 13,500 on a 5K display
+ * at 100% scaling, so this leaves room for larger displays too.
+ */
+export const CELL_CACHE_SIZE = 50000;
+
 type CacheNode = Map<unknown, unknown>;
 
 /**
