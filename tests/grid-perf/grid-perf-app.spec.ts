@@ -3,8 +3,11 @@ import { test } from '@playwright/test';
 import {
   combinedScroll,
   DISPLAY_PROFILES,
+  type DisplayProfile,
+  hoverGrid,
   logResults,
   scrollGrid,
+  scrollSequence,
   startFPSMeasurement,
   stopFPSMeasurement,
   verifyDisplayProfile,
@@ -142,6 +145,73 @@ test.describe('grid perf app - display scaling', () => {
         logResults(`500 Columns Scroll (${profile.name})`, result, {
           minFps: 28,
         });
+      });
+    });
+  });
+});
+
+/**
+ * Fills large displays at 100% scaling with minimum width columns, so a single
+ * frame draws more cells than the text caches in the grid hold. At 4K this
+ * is about 7,500 cells and at 5K about 13,500. If the caches are smaller than
+ * one frame, they clear on every frame and nothing is ever served from them.
+ * Run only these with `npm run e2e:grid-performance -- --grep "dense"`.
+ */
+test.describe('grid perf app - dense displays', () => {
+  test.skip(
+    !process.env.RUN_PERF_TESTS,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
+  const DENSE_PROFILES: readonly DisplayProfile[] = [
+    {
+      name: '4K at 100%',
+      viewport: { width: 3840, height: 2160 },
+      deviceScaleFactor: 1,
+    },
+    {
+      name: '5K at 100%',
+      viewport: { width: 5120, height: 2880 },
+      deviceScaleFactor: 1,
+    },
+  ];
+
+  DENSE_PROFILES.forEach(profile => {
+    test.describe(`dense display - ${profile.name}`, () => {
+      test.use({
+        viewport: profile.viewport,
+        deviceScaleFactor: profile.deviceScaleFactor,
+      });
+
+      test.beforeEach(async ({ page }) => {
+        test.setTimeout(240000);
+
+        // MockGridModel cells are short enough to keep every column at the
+        // minimum width, and 200 columns is more than either display shows
+        await page.goto(`${PERF_APP_URL}/?rows=1000000&cols=200`);
+        await page.waitForSelector('canvas');
+        await verifyDisplayProfile(page, page.locator('body'), profile);
+      });
+
+      test('hover performance', async ({ page }) => {
+        await startFPSMeasurement(page);
+
+        // Hover redraws the same cells every frame, so they should all be
+        // served from the caches. One pass is enough moves on a display this
+        // tall, and keeps slow frames within the test timeout.
+        await hoverGrid(page, page.locator('body'), 1);
+
+        const result = await stopFPSMeasurement(page);
+        logResults(`Dense Hover (${profile.name})`, result, { minFps: 20 });
+      });
+
+      test('scroll performance', async ({ page }) => {
+        await startFPSMeasurement(page);
+
+        await scrollSequence(page, page.locator('canvas').first());
+
+        const result = await stopFPSMeasurement(page);
+        logResults(`Dense Scroll (${profile.name})`, result, { minFps: 20 });
       });
     });
   });
