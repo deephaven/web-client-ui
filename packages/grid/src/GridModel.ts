@@ -1,4 +1,3 @@
-import { EMPTY_ARRAY } from '@deephaven/utils';
 import { EventTarget, type Event } from 'event-target-shim';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { type ModelIndex } from './GridMetrics';
@@ -7,7 +6,7 @@ import {
   type GridTheme,
   type NullableGridColor,
 } from './GridTheme';
-import fastMemoize, { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
+import fastMemoize from './fastMemoize';
 import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
@@ -232,22 +231,7 @@ abstract class GridModel<
     visibleLength: number = LINK_TRUNCATION_LENGTH
   ): readonly Token[] {
     const text = this.textForCell(column, row);
-    if (text == null) {
-      return EMPTY_ARRAY;
-    }
-    // Only the start of a very long text is ever searched, so cut it down to
-    // that before scanning it or using it as a cache key
-    const searchText =
-      text.length > MAX_HASHED_STRING_LENGTH
-        ? text.slice(0, getLinkSearchLength(text, visibleLength))
-        : text;
-    // Only http(s) urls and emails are tokenized, so text without a colon or an
-    // at sign cannot contain one. This runs for every visible cell of every
-    // frame, so it is worth skipping the cache lookup entirely.
-    if (!searchText.includes(':') && !searchText.includes('@')) {
-      return EMPTY_ARRAY;
-    }
-    return this.getCachedTokensInText(searchText, visibleLength);
+    return this.getCachedTokensInText(text, visibleLength);
   }
 
   getCachedTokensInText = fastMemoize(
