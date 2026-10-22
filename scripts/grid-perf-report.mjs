@@ -6,6 +6,9 @@
  * Usage:
  *   node scripts/grid-perf-report.mjs [results-file]
  *
+ * Set PERF_BENCHMARK_OUTCOME to the benchmark step's outcome to flag partial
+ * results from a failed run.
+ *
  * Writes the report to stdout, to test-results/grid-perf-report.md, and to
  * $GITHUB_STEP_SUMMARY when running in a GitHub action.
  */
@@ -100,9 +103,20 @@ const belowTargetCount = [...results.values()].filter(
   result => result.fps < result.minFps
 ).length;
 
+const benchmarkOutcome = process.env.PERF_BENCHMARK_OUTCOME;
+const incompleteWarning =
+  benchmarkOutcome != null &&
+  benchmarkOutcome !== '' &&
+  benchmarkOutcome !== 'success'
+    ? `> [!WARNING]
+> The benchmark run did not succeed (outcome: \`${benchmarkOutcome}\`), so these results are incomplete.
+
+`
+    : '';
+
 const report = `### Grid scroll performance
 
-${results.size} benchmark${
+${incompleteWarning}${results.size} benchmark${
   results.size === 1 ? '' : 's'
 }, ${belowTargetCount} below target.
 

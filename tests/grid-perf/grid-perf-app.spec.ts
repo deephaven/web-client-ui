@@ -11,6 +11,7 @@ import {
   startFPSMeasurement,
   stopFPSMeasurement,
   verifyDisplayProfile,
+  PERF_TESTS_ENABLED,
 } from './utils';
 
 /**
@@ -34,7 +35,7 @@ const PERF_APP_URL = 'http://localhost:4020';
 
 test.describe('grid perf app - stress tests', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -92,7 +93,7 @@ test.describe('grid perf app - stress tests', () => {
     }
 
     const result = await stopFPSMeasurement(page);
-    logResults('Sustained Scroll (3s)', result, { minFps: 30 });
+    logResults('Perf App Sustained Scroll (3s)', result, { minFps: 30 });
   });
 });
 
@@ -102,7 +103,7 @@ test.describe('grid perf app - stress tests', () => {
  */
 test.describe('grid perf app - display scaling', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -159,7 +160,7 @@ test.describe('grid perf app - display scaling', () => {
  */
 test.describe('grid perf app - dense displays', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 

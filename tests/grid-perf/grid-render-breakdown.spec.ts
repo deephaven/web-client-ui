@@ -5,13 +5,15 @@ import {
   BREAKDOWN_RESULTS_FILE,
   DISPLAY_PROFILES,
   verifyDisplayProfile,
+  PERF_TESTS_ENABLED,
 } from './utils';
 // Types only, the perf app is not an installed package
-// eslint-disable-next-line import/no-relative-packages
+/* eslint-disable import/no-relative-packages */
 import type {
   BreakdownVariant,
   RenderBreakdownResult,
 } from './app/src/renderBreakdown';
+/* eslint-enable import/no-relative-packages */
 
 /**
  * Splits grid draw time into model/text processing and raw canvas drawing for
@@ -68,7 +70,7 @@ function formatBreakdown(
 
 test.describe('grid render breakdown', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -101,6 +103,7 @@ test.describe('grid render breakdown', () => {
           expect(breakdown.visibleCells).toBeGreaterThan(0);
 
           const name = `Render Breakdown (${profile.name}, ${textMode} text)`;
+          // eslint-disable-next-line no-console
           console.log(formatBreakdown(name, breakdown));
 
           fs.mkdirSync(path.dirname(BREAKDOWN_RESULTS_FILE), {

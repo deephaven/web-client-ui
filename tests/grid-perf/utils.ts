@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { expect, type Locator, type Page } from '@playwright/test';
 
+/** Frame timings are too resource sensitive to run with the rest of the e2e tests */
+export const PERF_TESTS_ENABLED = (process.env.RUN_PERF_TESTS ?? '') !== '';
+
 /** Wheel delta applied per horizontal scroll step */
 export const HORIZONTAL_SCROLL_STEP = 400;
 
@@ -88,20 +91,27 @@ export interface FPSResult {
   stalledFrames: number;
 }
 
+type FPSWindow = Window & {
+  perfFrameTimings?: number[];
+  perfFpsRunning?: boolean;
+};
+
 /**
  * Injects an FPS counter into the page that measures frame timings
  */
 export async function startFPSMeasurement(page: Page): Promise<void> {
   await page.evaluate(() => {
-    (window as any).__frameTimings = [];
-    (window as any).__fpsRunning = true;
+    const fpsWindow = window as FPSWindow;
+    const timings: number[] = [];
+    fpsWindow.perfFrameTimings = timings;
+    fpsWindow.perfFpsRunning = true;
     let lastTime = performance.now();
 
     function measureFrame() {
-      if (!(window as any).__fpsRunning) return;
+      if (fpsWindow.perfFpsRunning !== true) return;
 
       const now = performance.now();
-      (window as any).__frameTimings.push(now - lastTime);
+      timings.push(now - lastTime);
       lastTime = now;
       requestAnimationFrame(measureFrame);
     }
@@ -114,8 +124,9 @@ export async function startFPSMeasurement(page: Page): Promise<void> {
  */
 export async function stopFPSMeasurement(page: Page): Promise<FPSResult> {
   const timings = await page.evaluate(() => {
-    (window as any).__fpsRunning = false;
-    return (window as any).__frameTimings as number[];
+    const fpsWindow = window as FPSWindow;
+    fpsWindow.perfFpsRunning = false;
+    return fpsWindow.perfFrameTimings ?? [];
   });
 
   // Only drop non-positive/invalid timings; retain long frames (stalls) so
@@ -323,6 +334,8 @@ export async function getGridSignature(grid: Locator): Promise<string> {
 
       let hash = 0;
       for (let i = 0; i < data.length; i += 4) {
+        // Truncate to a 32 bit int so the hash doesn't lose precision
+        // eslint-disable-next-line no-bitwise
         hash = (Math.imul(hash, 31) + data[i]) | 0;
       }
       return String(hash);
@@ -396,6 +409,7 @@ export function logResults(
 ): void {
   recordResult(testName, result, expected);
 
+  /* eslint-disable no-console */
   console.log(`\n${testName}:`);
   console.log(`  Average FPS: ${result.fps.toFixed(1)}`);
   console.log(`  Avg frame time: ${result.avgFrameTime.toFixed(2)}ms`);
@@ -418,4 +432,5 @@ export function logResults(
     )})`
   );
   console.log(`  Expected min FPS: ${expected.minFps}`);
+  /* eslint-enable no-console */
 }

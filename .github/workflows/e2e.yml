@@ -217,6 +217,7 @@ jobs:
         run: docker load -i e2e-ci.tar.gz
 
       - name: Run performance tests
+        id: benchmarks
         # Create test-results first, otherwise the bind mount creates it as root and the report step can't write into it
         run: |
           mkdir -p test-results
@@ -224,6 +225,9 @@ jobs:
 
       - name: Build report
         if: ${{ !cancelled() }}
+        # Results from a failed run are still useful, but the report flags them as incomplete
+        env:
+          PERF_BENCHMARK_OUTCOME: ${{ steps.benchmarks.outcome }}
         run: node scripts/grid-perf-report.mjs
 
       - name: Upload report

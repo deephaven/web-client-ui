@@ -14,6 +14,7 @@ import {
   stopFPSMeasurement,
   verifyDisplayProfile,
   verifyHorizontalScrollRange,
+  PERF_TESTS_ENABLED,
 } from './utils';
 
 /**
@@ -53,7 +54,7 @@ function getGrid(page: Page): Locator {
 test.describe('grid scroll performance benchmarks', () => {
   // Skip by default - these tests are flaky in CI due to resource constraints
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -191,7 +192,7 @@ test.describe('grid scroll performance benchmarks', () => {
 test.describe('grid performance stress tests', () => {
   // Skip by default - these tests are flaky in CI due to resource constraints
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -247,7 +248,7 @@ test.describe('grid performance stress tests', () => {
  */
 test.describe('grid hover performance benchmarks', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
@@ -307,7 +308,7 @@ test.describe('grid hover performance benchmarks', () => {
  */
 test.describe('grid display scaling benchmarks', () => {
   test.skip(
-    !process.env.RUN_PERF_TESTS,
+    !PERF_TESTS_ENABLED,
     'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
   );
 
