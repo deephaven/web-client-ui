@@ -10,7 +10,7 @@
   }
 
   &.invalid {
-    border-color: 'danger';
+    border-color: var(--dh-color-form-control-error);
   }
 
   .editor-container {

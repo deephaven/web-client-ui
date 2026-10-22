@@ -35,8 +35,8 @@
   }
 
   .cb-input.is-invalid + .cb-dropdown .btn {
-    border-color: 'danger';
-    color: 'danger';
+    border-color: var(--dh-color-form-control-error);
+    color: var(--dh-color-form-control-error);
   }
 
   /*
