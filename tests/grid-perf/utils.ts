@@ -252,6 +252,55 @@ export async function scrollGridHorizontal(
   }
 }
 
+/** Pointer travel per hover step, about half a row so most steps change row */
+const HOVER_STEP = 10;
+
+/**
+ * Sweeps the pointer down and back up the grid body while weaving across the
+ * columns. Every mouse move updates the grid's hover state and redraws the
+ * canvas, so this measures the row and column hover background redraws.
+ * @param page The page to move the mouse on
+ * @param grid The grid to hover
+ * @param passes Number of round trips from the top of the grid to the bottom
+ * @param delay Milliseconds to wait between mouse moves
+ */
+export async function hoverGrid(
+  page: Page,
+  grid: Locator,
+  passes = 3,
+  delay = 16
+): Promise<void> {
+  const box = await grid.locator('canvas').first().boundingBox();
+  if (!box) throw new Error('Grid canvas not found');
+
+  // Inset past the column headers and scrollbars so the pointer is always
+  // over a data cell
+  const left = box.x + 20;
+  const right = box.x + box.width - 30;
+  const top = box.y + 40;
+  const bottom = box.y + box.height - 30;
+  const width = right - left;
+  const stepCount = Math.floor((bottom - top) / HOVER_STEP);
+  // Cross the grid horizontally a few times on each vertical pass
+  const weavePeriod = Math.max(1, Math.floor(stepCount / 3));
+
+  const moveTo = async (step: number): Promise<void> => {
+    const phase = (step % (weavePeriod * 2)) / weavePeriod;
+    const x = left + width * (phase <= 1 ? phase : 2 - phase);
+    await page.mouse.move(x, top + step * HOVER_STEP);
+    await page.waitForTimeout(delay);
+  };
+
+  for (let pass = 0; pass < passes; pass += 1) {
+    for (let step = 0; step <= stepCount; step += 1) {
+      await moveTo(step);
+    }
+    for (let step = stepCount; step >= 0; step -= 1) {
+      await moveTo(step);
+    }
+  }
+}
+
 /**
  * Hashes a strip of the grid canvas covering the column headers and first rows.
  * The grid draws to a single canvas, so this is the only way to observe that

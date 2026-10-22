@@ -4,6 +4,7 @@ import { gotoPage, openTable, waitForLoadingDone } from '../utils';
 import {
   combinedScroll,
   DISPLAY_PROFILES,
+  hoverGrid,
   logResults,
   rapidScroll,
   scrollGrid,
@@ -240,6 +241,67 @@ test.describe('grid performance stress tests', () => {
 });
 
 /**
+ * Moving the pointer over the grid redraws the canvas to update the row and
+ * column hover backgrounds, without any scrolling or data fetching.
+ * Run only these with `npm run e2e:performance -- --grep "hover"`.
+ */
+test.describe('grid hover performance benchmarks', () => {
+  test.skip(
+    !process.env.RUN_PERF_TESTS,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
+  });
+
+  test.describe('perf_all_types_big table performance', () => {
+    test.beforeEach(async ({ page }) => {
+      // Enough columns to fill the viewport, so the row hover is drawn at
+      // every pointer position
+      await openTable(page, 'perf_all_types_big');
+      await waitForLoadingDone(page);
+    });
+
+    test('hover performance - perf_all_types_big', async ({ page }) => {
+      await startFPSMeasurement(page);
+
+      await hoverGrid(page, getGrid(page));
+
+      const result = await stopFPSMeasurement(page);
+      logResults('All Types Big Table Hover', result, { minFps: 30 });
+    });
+
+    test('rapid hover performance - perf_all_types_big', async ({ page }) => {
+      await startFPSMeasurement(page);
+
+      // Mouse moves faster than the display refreshes, as a high polling
+      // rate mouse sends them
+      await hoverGrid(page, getGrid(page), 3, 8);
+
+      const result = await stopFPSMeasurement(page);
+      logResults('All Types Big Table Rapid Hover', result, { minFps: 30 });
+    });
+  });
+
+  test.describe('long string table performance', () => {
+    test.beforeEach(async ({ page }) => {
+      await openTable(page, 'perf_long_strings');
+      await waitForLoadingDone(page);
+    });
+
+    test('hover performance - long strings', async ({ page }) => {
+      await startFPSMeasurement(page);
+
+      await hoverGrid(page, getGrid(page));
+
+      const result = await stopFPSMeasurement(page);
+      logResults('Long Strings Hover', result, { minFps: 24 });
+    });
+  });
+});
+
+/**
  * Runs representative benchmarks at 4K resolutions and OS scaling factors.
  * Run only these with `npm run e2e:performance -- --grep "display scaling"`.
  */
@@ -297,6 +359,23 @@ test.describe('grid display scaling benchmarks', () => {
         const result = await stopFPSMeasurement(page);
         logResults(`Long Strings Horizontal Scroll (${profile.name})`, result, {
           minFps: 24,
+        });
+      });
+
+      test('hover performance - perf_all_types_big', async ({ page }) => {
+        await openTable(page, 'perf_all_types_big');
+        await waitForLoadingDone(page);
+
+        const grid = getGrid(page);
+        await verifyDisplayProfile(page, grid, profile);
+
+        await startFPSMeasurement(page);
+
+        await hoverGrid(page, grid);
+
+        const result = await stopFPSMeasurement(page);
+        logResults(`All Types Big Table Hover (${profile.name})`, result, {
+          minFps: 30,
         });
       });
     });
