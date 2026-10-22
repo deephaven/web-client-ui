@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { Grid, MockGridModel } from '@deephaven/grid';
 
 function QuadrillionExample(): JSX.Element {

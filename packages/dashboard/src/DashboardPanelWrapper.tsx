@@ -1,4 +1,4 @@
-import { useCallback, useState, type PropsWithChildren } from 'react';
+import { useCallback, useState, type PropsWithChildren, type JSX } from 'react';
 import Log from '@deephaven/log';
 import { PersistentStateProvider } from './PersistentStateContext';
 import type { PanelProps } from './DashboardPlugin';

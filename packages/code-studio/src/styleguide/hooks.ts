@@ -7,7 +7,7 @@ import { contrastColor } from './colorUtils';
  */
 export function useContrastFgColorRef<
   T extends HTMLElement,
->(): React.RefObject<T> {
+>(): React.RefObject<T | null> {
   const ref = useRef<T>(null);
 
   useLayoutEffect(() => {

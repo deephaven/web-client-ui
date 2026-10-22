@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type JSX } from 'react';
 import Log from '@deephaven/log';
 import usePlugins from './usePlugins';
 import {

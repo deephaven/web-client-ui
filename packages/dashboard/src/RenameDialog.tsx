@@ -64,7 +64,7 @@ export default class RenameDialog extends PureComponent<
     }
   }
 
-  renameInputRef: RefObject<HTMLInputElement>;
+  renameInputRef: RefObject<HTMLInputElement | null>;
 
   resetState(): void {
     const { value } = this.props;

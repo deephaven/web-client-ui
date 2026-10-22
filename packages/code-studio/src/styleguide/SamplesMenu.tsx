@@ -1,4 +1,10 @@
-import React, { type Key, useCallback, useEffect, useState } from 'react';
+import React, {
+  type Key,
+  useCallback,
+  useEffect,
+  useState,
+  type JSX,
+} from 'react';
 // eslint-disable-next-line no-restricted-imports
 import {
   ActionButton,

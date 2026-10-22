@@ -1,7 +1,7 @@
 /**
  * Just a simple utility class for displaying a popup menu.
  */
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import Log from '@deephaven/log';
 import ContextActionUtils, {
   type ResolvableContextAction,
@@ -153,7 +153,7 @@ class ContextActions extends Component<
     }
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
   handleContextMenu(e: MouseEvent): void {
     const { ignoreClassNames = [] } = this.props;

@@ -109,8 +109,8 @@ async function renderOnceAndWait(
     })
   );
 
-  // Gets rid of "wrap in act" warnings. Likely lets effects flush on mount too
-  await waitFor(() => expect(hookResult.result.current).toBeDefined());
+  // Flush the initial effects and their promise resolutions inside act
+  await act(async () => undefined);
 
   return hookResult;
 }

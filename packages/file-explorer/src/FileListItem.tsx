@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { Tooltip, type RenderItemProps } from '@deephaven/components';
 import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';

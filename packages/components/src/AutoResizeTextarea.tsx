@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, type JSX } from 'react';
 import classNames from 'classnames';
 
 import './AutoResizeTextarea.scss';

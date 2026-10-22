@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useMemo } from 'react';
+import { createContext, type ReactNode, useMemo, type JSX } from 'react';
 import { useTheme } from '@deephaven/components';
 import defaultChartTheme, { type ChartTheme } from './ChartTheme';
 

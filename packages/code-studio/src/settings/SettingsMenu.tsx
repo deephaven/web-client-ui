@@ -3,6 +3,7 @@ import React, {
   Fragment,
   type ReactElement,
   type RefObject,
+  type JSX,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -112,7 +113,7 @@ export class SettingsMenu extends Component<
     this.broadcastChannel.close();
   }
 
-  menuContentRef: RefObject<HTMLDivElement>;
+  menuContentRef: RefObject<HTMLDivElement | null>;
 
   broadcastChannel: BroadcastChannel;
 

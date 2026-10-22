@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import debounce from 'lodash.debounce';
 import SearchInput from './SearchInput';
 
@@ -49,7 +49,7 @@ class DebouncedSearchInput extends PureComponent<
     }
   }
 
-  searchInput: React.RefObject<SearchInput>;
+  searchInput: React.RefObject<SearchInput | null>;
 
   focus(): void {
     this.searchInput.current?.focus();

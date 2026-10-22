@@ -1,9 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, useState, type JSX } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { updateWorkspaceData } from '@deephaven/redux';
 import { Dashboard, type DashboardProps } from './Dashboard';
-import { updateDashboardData } from './redux';
+import { updateDashboardData, useAppDispatch } from './redux';
 import { type DashboardLayoutConfig } from './DashboardLayout';
 import { DEFAULT_DASHBOARD_ID } from './DashboardConstants';
 
@@ -20,7 +19,7 @@ export function LazyDashboard({
   ...rest
 }: LazyDashboardProps): JSX.Element {
   const [isLoaded, setIsLoaded] = useState(isActive);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleLayoutConfigChange = useCallback(
     (config?: DashboardLayoutConfig) => {

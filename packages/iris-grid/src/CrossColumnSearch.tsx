@@ -77,7 +77,7 @@ class CrossColumnSearch extends PureComponent<
     };
   }
 
-  searchField: React.RefObject<SearchInput>;
+  searchField: React.RefObject<SearchInput | null>;
 
   focus(): void {
     this.searchField.current?.focus();

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { act, render } from '@testing-library/react';
 import SlideTransition from './SlideTransition';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { BasicModal, Button, Checkbox } from '@deephaven/components';
 import SampleSection from './SampleSection';
 

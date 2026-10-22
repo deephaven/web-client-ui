@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import classNames from 'classnames';
 import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {

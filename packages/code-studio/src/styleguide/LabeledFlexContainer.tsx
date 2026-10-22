@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, type JSX } from 'react';
 import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import { Flex, Text } from '@deephaven/components';
 

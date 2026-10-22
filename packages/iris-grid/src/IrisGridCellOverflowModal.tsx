@@ -30,7 +30,7 @@ export default function IrisGridCellOverflowModal({
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isFormatted, setIsFormatted] = useState(false);
   const [canFormat, setCanFormat] = useState(false);
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>(undefined);
 
   // Update format button on open
   useEffect(

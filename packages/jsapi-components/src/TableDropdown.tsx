@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type JSX,
+} from 'react';
 import { Option, Select } from '@deephaven/components';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { type dh as DhType } from '@deephaven/jsapi-types';

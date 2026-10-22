@@ -377,7 +377,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   canvasContext: CanvasRenderingContext2D | null;
 
   // The wrapper element for the canvas, used for sizing
-  canvasWrapper: RefObject<HTMLDivElement>;
+  canvasWrapper: RefObject<HTMLDivElement | null>;
 
   // Listen for resizing of the element and update the canvas appropriately
   resizeObserver: ResizeObserver;

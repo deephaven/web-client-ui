@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { nanoid } from 'nanoid';
+import { type RadioItemProps } from './RadioItem';
 
 type RadioGroupProps = {
   /** The radio items to populate this radio. Should be of type RadioItem. */
-  children?: React.ReactElement | React.ReactElement[];
+  children?:
+    | React.ReactElement<RadioItemProps>
+    | React.ReactElement<RadioItemProps>[];
 
   /** The name to use for the radio items. If not specified, a name is automatically generated */
   name?: string;

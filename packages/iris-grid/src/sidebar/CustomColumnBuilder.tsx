@@ -1,4 +1,4 @@
-import React, { Component, type ReactElement } from 'react';
+import React, { Component, type ReactElement, type JSX } from 'react';
 import classNames from 'classnames';
 import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';

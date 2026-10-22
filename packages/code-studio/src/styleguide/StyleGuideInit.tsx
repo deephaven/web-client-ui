@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, type JSX } from 'react';
 import { connect } from 'react-redux';
 import {
   type CustomizableWorkspace,

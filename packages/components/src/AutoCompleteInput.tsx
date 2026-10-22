@@ -16,7 +16,7 @@
  * @param onEnter called when the Enter key is typed in the input element
  *
  */
-import React, { Component } from 'react';
+import React, { Component, type JSX } from 'react';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
@@ -128,13 +128,13 @@ class AutoCompleteInput extends Component<
     this.input = React.createRef();
   }
 
-  popper: React.RefObject<Popper>;
+  popper: React.RefObject<Popper | null>;
 
-  cbContainer: React.RefObject<HTMLDivElement>;
+  cbContainer: React.RefObject<HTMLDivElement | null>;
 
-  menuContainer: React.RefObject<HTMLDivElement>;
+  menuContainer: React.RefObject<HTMLDivElement | null>;
 
-  input: React.RefObject<HTMLInputElement>;
+  input: React.RefObject<HTMLInputElement | null>;
 
   setInputWidth(): void {
     if (this.cbContainer.current) {

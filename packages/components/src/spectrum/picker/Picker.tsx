@@ -4,7 +4,7 @@ import {
 } from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
-import React from 'react';
+import React, { type JSX } from 'react';
 import { useMergeRef } from '@deephaven/react-hooks';
 import type { NormalizedItem } from '../utils';
 import type { PickerProps } from './PickerProps';

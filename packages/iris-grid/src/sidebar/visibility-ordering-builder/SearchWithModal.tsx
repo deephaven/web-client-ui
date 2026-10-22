@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, type JSX } from 'react';
 import { type DragStartEvent, useDndMonitor } from '@dnd-kit/core';
 import type { TextFieldRef } from '@react-types/textfield';
 import { GridUtils } from '@deephaven/grid';

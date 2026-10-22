@@ -109,7 +109,7 @@ export class ConsoleInput extends PureComponent<
 
   resizeObserver: ResizeObserver;
 
-  commandContainer: RefObject<HTMLDivElement>;
+  commandContainer: RefObject<HTMLDivElement | null>;
 
   commandEditor?: monaco.editor.IStandaloneCodeEditor;
 

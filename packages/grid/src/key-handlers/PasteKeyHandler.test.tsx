@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import type { JSX } from 'react';
 import { parseValueFromElement, parseValueFromText } from './PasteKeyHandler';
 
 function makeElementFromJsx(jsx: JSX.Element): HTMLElement {

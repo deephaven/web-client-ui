@@ -12,6 +12,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import {
   type FileStorageItem,
@@ -89,7 +90,7 @@ export function FileList(props: FileListProps): JSX.Element {
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
   const [selectedRanges, setSelectedRanges] = useState([] as readonly Range[]);
 
-  const focusedIndex = useRef<number | null>();
+  const focusedIndex = useRef<number | null>(undefined);
 
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);

@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';

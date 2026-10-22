@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 // disabled for tab-index on focus traps, which are intentionally non-interactive
 
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import memoize from 'memoize-one';
@@ -190,7 +190,7 @@ class AdvancedFilterCreator extends PureComponent<
     }
   }
 
-  focusTrapContainer: React.RefObject<HTMLFormElement>;
+  focusTrapContainer: React.RefObject<HTMLFormElement | null>;
 
   debounceTimeout?: ReturnType<typeof setTimeout>;
 

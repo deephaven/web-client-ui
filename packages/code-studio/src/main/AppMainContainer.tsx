@@ -361,7 +361,7 @@ export class AppMainContainer extends Component<
   /** Map from dashboard ID to remover functions for close dashboard listener */
   closeDashboardListenerRemovers: Map<string, () => void>;
 
-  importElement: RefObject<HTMLInputElement>;
+  importElement: RefObject<HTMLInputElement | null>;
 
   widgetListenerRemover?: () => void;
 

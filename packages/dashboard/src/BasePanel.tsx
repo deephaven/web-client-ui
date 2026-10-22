@@ -139,7 +139,7 @@ class BasePanel extends PureComponent<BasePanelProps, BasePanelState> {
     glEventHub.emit(PanelEvent.UNMOUNT, componentPanel ?? this);
   }
 
-  ref: React.RefObject<HTMLDivElement>;
+  ref: React.RefObject<HTMLDivElement | null>;
 
   handleTab(tab: Tab): void {
     if (tab != null) {

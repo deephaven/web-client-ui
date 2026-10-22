@@ -1,4 +1,4 @@
-import React, { Component, type MouseEvent } from 'react';
+import React, { Component, type MouseEvent, type JSX } from 'react';
 import memoize from 'memoize-one';
 import classNames from 'classnames';
 import {

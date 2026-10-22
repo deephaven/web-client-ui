@@ -1,5 +1,5 @@
 import { MultiSelectNormalized } from '@deephaven/components';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, type JSX } from 'react';
 import { type MultiPickerWithTableProps } from './MultiPickerProps';
 import { useMultiPickerProps } from './utils';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { useDebouncedValue } from '@deephaven/react-hooks';
 
 export type DebouncedModalProps = {
@@ -6,7 +6,7 @@ export type DebouncedModalProps = {
   blockInteraction?: boolean;
 
   /** Children to render after the alloted debounce time */
-  children: React.ReactElement;
+  children: React.ReactElement<{ isOpen?: boolean }>;
 
   /** Time to debounce */
   debounceMs: number;

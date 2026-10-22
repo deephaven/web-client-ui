@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, type JSX } from 'react';
 import { connect } from 'react-redux';
 import { Shortcut, ShortcutRegistry } from '@deephaven/components';
 import {
@@ -11,7 +11,7 @@ import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = {
   shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
-  updateSettings: typeof updateSettingsAction;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
 };
 
 function ShortcutSectionContent({

@@ -1,4 +1,10 @@
-import React, { type ReactNode, useCallback, useEffect, useRef } from 'react';
+import React, {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  type JSX,
+} from 'react';
 import classNames from 'classnames';
 import './CardFlip.scss';
 

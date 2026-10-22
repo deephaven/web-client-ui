@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Log from '@deephaven/log';

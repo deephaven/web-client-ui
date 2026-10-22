@@ -14,7 +14,7 @@ export function useOnScrollRef<T>(
     ref: T | null
   ) => HTMLElement | null = identityExtractHTMLElement
 ): (element: T | null) => void {
-  const cleanupRef = useRef<() => void>();
+  const cleanupRef = useRef<() => void>(undefined);
 
   // Cleanup on unmount
   useEffect(() => () => cleanupRef.current?.(), []);

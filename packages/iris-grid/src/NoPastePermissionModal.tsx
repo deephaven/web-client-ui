@@ -7,6 +7,8 @@ import {
   ModalHeader,
 } from '@deephaven/components';
 
+import type { JSX } from 'react';
+
 export type NoPastePermissionModalProps = {
   isOpen: boolean;
   onClose: () => void;

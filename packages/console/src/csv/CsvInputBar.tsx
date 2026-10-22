@@ -136,7 +136,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     }
   }
 
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
 
   handleCancel(): void {
     const { onClose } = this.props;

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, type JSX } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { vsClose } from '@deephaven/icons';

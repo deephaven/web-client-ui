@@ -124,9 +124,9 @@ class CsvOverlay extends Component<CsvOverlayProps, CsvOverlayState> {
     this.divElem.current?.removeEventListener('paste', this.handlePasteEvent);
   }
 
-  fileElem: RefObject<HTMLInputElement>;
+  fileElem: RefObject<HTMLInputElement | null>;
 
-  divElem: RefObject<HTMLDivElement>;
+  divElem: RefObject<HTMLDivElement | null>;
 
   handleSelectFile(): void {
     if (this.fileElem.current) {

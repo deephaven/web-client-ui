@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsEmptyWindow } from '@deephaven/icons';
 import { Content, Heading, Icon, IllustratedMessage } from './spectrum';

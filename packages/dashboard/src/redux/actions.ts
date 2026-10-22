@@ -37,7 +37,7 @@ export const updateDashboardData =
   (
     id: string,
     data: DashboardData
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   (dispatch, getState) =>
     dispatch(
       setDashboardData(id, {
@@ -59,7 +59,7 @@ export const setDashboardPluginData =
     id: string,
     pluginId: string,
     data: PluginData
-  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  ): ThunkAction<unknown, RootState, undefined, Action<string>> =>
   (dispatch, getState) =>
     dispatch(
       setDashboardData(id, {

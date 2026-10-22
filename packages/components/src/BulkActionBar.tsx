@@ -1,4 +1,5 @@
 import type { ItemElement, StyleProps } from '@react-types/shared';
+import type { JSX } from 'react';
 import { ActionBar } from './spectrum';
 import commonStyles from './SpectrumComponent.module.scss';
 

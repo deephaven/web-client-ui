@@ -1,4 +1,9 @@
-import { cloneElement, type ReactElement, type ReactNode } from 'react';
+import {
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { ensureArray } from '@deephaven/utils';
 import {
   getItemTextValue,
@@ -181,14 +186,14 @@ export function filterJsxChildrenByKeys(
       const section = child as SectionElement<unknown>;
       const filteredChildren = filterJsxChildrenByKeys(
         ensureArray(section.props.children).filter(
-          (c): c is ReactElement => c != null
+          (c): c is ItemElement<unknown> => isValidElement(c)
         ),
         survivingKeys
       );
       if (filteredChildren.length > 0) {
         result.push(
-          cloneElement(section as ReactElement, {
-            children: filteredChildren,
+          cloneElement(section, {
+            children: filteredChildren as ItemElement<unknown>[],
           })
         );
       }

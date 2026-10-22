@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { Button, LoadingSpinner } from '@deephaven/components';
@@ -42,7 +42,7 @@ export function PendingDataBottomBar({
 }: PendingDataBottomBarProps): JSX.Element {
   const [isSuccessShown, setIsSuccessShown] = useState(false);
   const [wasSuccessShown, setWasSuccessShown] = useState(false);
-  const successTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const successTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const prevIsSaving = usePrevious(isSaving);
   const errorMessage = useMemo(() => {
     if (pendingDataErrors.size === 0) {

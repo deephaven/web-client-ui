@@ -1,5 +1,7 @@
 import CrossSmall from '@spectrum-icons/ui/CrossSmall';
 
+import type { JSX } from 'react';
+
 export interface MultiSelectTagProps {
   tagKey: string;
   label: string;

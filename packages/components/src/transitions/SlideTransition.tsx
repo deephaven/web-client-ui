@@ -1,5 +1,5 @@
 // SlideTransition class uses CSSTransition with slide-left and slide-right classNames, depending on the prop direction. The transition is 250ms long.
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, type JSX } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import type { CSSTransitionProps } from 'react-transition-group/CSSTransition';
 import type { EndHandler } from 'react-transition-group/Transition';

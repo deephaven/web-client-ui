@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { PromiseUtils, type CancelablePromise } from '@deephaven/utils';
@@ -163,11 +163,11 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     cancelAnimationFrame(this.rAF);
   }
 
-  container: React.RefObject<HTMLDivElement>;
+  container: React.RefObject<HTMLDivElement | null>;
 
   oldFocus: Element | null;
 
-  activeSubMenuRef: React.RefObject<HTMLDivElement>;
+  activeSubMenuRef: React.RefObject<HTMLDivElement | null>;
 
   subMenuTimer: number;
 

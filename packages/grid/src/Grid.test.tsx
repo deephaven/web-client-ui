@@ -34,7 +34,7 @@ function makeGridComponent(
     onSelectionChanged: jest.fn(),
   }
 ): Grid {
-  let ref: React.RefObject<Grid>;
+  let ref: React.RefObject<Grid | null>;
   function GridWithRef() {
     ref = useRef<Grid>(null);
     return (
@@ -916,7 +916,12 @@ describe('mac specific shortcut tests', () => {
 
 describe('truncate to width', () => {
   const context = TestUtils.createMockProxy<CanvasRenderingContext2D>({
-    measureText: jest.fn(str => ({ width: str.length * 10 }) as TextMetrics),
+    measureText: jest.fn(
+      str =>
+        ({
+          width: str.length * 10,
+        }) as TextMetrics
+    ),
   });
 
   function expectTruncate(
@@ -1012,7 +1017,7 @@ describe('paste tests', () => {
       model: GridModel = new MockGridModel(),
       isStickyBottom = true
     ): Grid {
-      let ref: React.RefObject<Grid>;
+      let ref: React.RefObject<Grid | null>;
       function GridWithRef() {
         ref = useRef<Grid>(null);
         return (
@@ -1527,7 +1532,7 @@ describe('cellInputRendererRegistry', () => {
       [RESTRICTION_TYPE, customRenderer],
     ]) as unknown as CellInputRendererRegistry;
 
-    let ref: React.RefObject<Grid>;
+    let ref: React.RefObject<Grid | null>;
     function GridWithRegistry() {
       ref = useRef<Grid>(null);
       return (
@@ -1566,7 +1571,7 @@ describe('cellInputRendererRegistry', () => {
       [RESTRICTION_TYPE, customRenderer],
     ]) as unknown as CellInputRendererRegistry;
 
-    let ref: React.RefObject<Grid>;
+    let ref: React.RefObject<Grid | null>;
     function GridWithRegistry() {
       ref = useRef<Grid>(null);
       return (

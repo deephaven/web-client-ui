@@ -1,4 +1,4 @@
-import React, { type ComponentType, forwardRef } from 'react';
+import React, { type ComponentType, forwardRef, type JSX } from 'react';
 import { canHaveRef } from './ComponentUtils';
 import { useXComponent, type XComponentType } from './XComponentMap';
 

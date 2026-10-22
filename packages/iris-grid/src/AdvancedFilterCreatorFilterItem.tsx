@@ -1,5 +1,5 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type JSX } from 'react';
 import { Button, Select } from '@deephaven/components';
 import {
   getLabelForBooleanFilter,

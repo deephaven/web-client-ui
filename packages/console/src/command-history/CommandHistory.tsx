@@ -214,9 +214,9 @@ class CommandHistory extends Component<
 
   pending: Pending;
 
-  searchInputRef: RefObject<SearchInput>;
+  searchInputRef: RefObject<SearchInput | null>;
 
-  itemListRef: React.RefObject<ItemList<CommandHistoryStorageItem>>;
+  itemListRef: React.RefObject<ItemList<CommandHistoryStorageItem> | null>;
 
   /**
    * Retrieves the selected commands as an array.

@@ -20,7 +20,7 @@ import {
 import SampleSection from './SampleSection';
 
 interface DropdownMenus {
-  button: React.RefObject<HTMLDivElement>;
+  button: React.RefObject<HTMLDivElement | null>;
 }
 
 interface DropdownMenusState {

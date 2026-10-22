@@ -1,4 +1,5 @@
 import { PickerNormalized } from '@deephaven/components';
+import type { JSX } from 'react';
 import { type PickerProps } from './PickerProps';
 import { usePickerProps } from './utils';
 

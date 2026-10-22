@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 
 export type PersistentStateContextType = {

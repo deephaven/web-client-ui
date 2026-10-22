@@ -1,4 +1,4 @@
-import React, { Component, type RefObject } from 'react';
+import React, { Component, type RefObject, type JSX } from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
@@ -25,7 +25,7 @@ export interface PanelState {
 interface InputFilterPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-  panelState: PanelState;
+  panelState: PanelState | null;
   columns: InputFilterColumn[];
 }
 
@@ -38,7 +38,7 @@ interface InputFilterPanelState {
   wasFlipped: boolean;
   skipUpdate: boolean;
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState; // Dehydrated panel state that can load this panel}
+  panelState: PanelState | null; // Dehydrated panel state that can load this panel}
 }
 class InputFilterPanel extends Component<
   InputFilterPanelProps,
@@ -105,7 +105,7 @@ class InputFilterPanel extends Component<
     }
   }
 
-  inputFilterRef: RefObject<InputFilter>;
+  inputFilterRef: RefObject<InputFilter | null>;
 
   handleChange({
     column,

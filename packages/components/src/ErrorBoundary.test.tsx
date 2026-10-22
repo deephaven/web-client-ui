@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { render } from '@testing-library/react';
 import { TestUtils } from '@deephaven/test-utils';
 import ErrorBoundary, { type ErrorBoundaryProps } from './ErrorBoundary';

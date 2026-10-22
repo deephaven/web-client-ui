@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type JSX } from 'react';
 import { usePersistentState } from '@deephaven/dashboard';
 import { type TablePluginElement } from '@deephaven/plugin/table';
 import {

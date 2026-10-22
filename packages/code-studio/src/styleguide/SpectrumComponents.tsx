@@ -1,5 +1,5 @@
 /* eslint-disable react/style-prop-object */
-import React from 'react';
+import React, { type JSX } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import {
   ActionButton,

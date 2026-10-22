@@ -4,6 +4,7 @@ import React, {
   type CSSProperties,
   type ReactElement,
   type ReactNode,
+  type JSX,
 } from 'react';
 import memoize from 'memoizee';
 import classNames from 'classnames';
@@ -1164,13 +1165,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   tableSaver: TableSaver | null;
 
-  crossColumnRef: React.RefObject<CrossColumnSearch>;
+  crossColumnRef: React.RefObject<CrossColumnSearch | null>;
 
   isAnimating: boolean;
 
-  filterInputRef: React.RefObject<FilterInputField>;
+  filterInputRef: React.RefObject<FilterInputField | null>;
 
-  gotoRowRef: React.RefObject<GotoRowElement>;
+  gotoRowRef: React.RefObject<GotoRowElement | null>;
 
   isCopying: boolean;
 
@@ -1200,9 +1201,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   lastMetricCalculatorFactory?: GetMetricCalculatorType;
 
-  slideTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
+  slideTransitionRef: React.RefObject<HTMLDivElement | null> =
+    React.createRef();
 
-  bottomTransitionRef: React.RefObject<HTMLDivElement> = React.createRef();
+  bottomTransitionRef: React.RefObject<HTMLDivElement | null> =
+    React.createRef();
 
   get gridWrapper(): HTMLDivElement | null {
     return this.grid?.canvasWrapper.current ?? null;

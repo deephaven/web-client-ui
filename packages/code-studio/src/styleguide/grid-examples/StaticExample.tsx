@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type JSX } from 'react';
 import { Grid, StaticDataGridModel } from '@deephaven/grid';
 
 function StaticExample(): JSX.Element {

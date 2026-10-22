@@ -107,7 +107,7 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
     this.sendUpdate.flush();
   }
 
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
 
   getItemLabel = memoizee(
     (columns: InputFilterColumn[], index: number) => {

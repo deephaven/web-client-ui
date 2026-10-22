@@ -50,7 +50,7 @@ it('renders Chart with the model after fetch resolves', async () => {
 
   expect(MockChart).toHaveBeenCalledWith(
     expect.objectContaining({ model: { mock: 'model' } }),
-    expect.anything()
+    undefined
   );
 });
 
@@ -61,6 +61,6 @@ it('passes settings from Redux to Chart', async () => {
 
   expect(MockChart).toHaveBeenCalledWith(
     expect.objectContaining({ settings: expect.any(Object) }),
-    expect.anything()
+    undefined
   );
 });

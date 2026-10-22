@@ -1,5 +1,4 @@
 import {
-  type LegacyRef,
   type MutableRefObject,
   type Ref,
   type RefCallback,
@@ -14,7 +13,7 @@ import {
  * @returns A ref callback that will set the value on all refs
  */
 export function mergeRefs<T = unknown>(
-  ...refs: readonly (MutableRefObject<T> | LegacyRef<T> | null | undefined)[]
+  ...refs: readonly (MutableRefObject<T> | Ref<T> | null | undefined)[]
 ): RefCallback<T> {
   return newRef => {
     refs.forEach(ref => {

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type JSX,
+} from 'react';
 import type { ItemKey } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh as DhType } from '@deephaven/jsapi-types';

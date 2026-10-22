@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, type JSX } from 'react';
 import cl from 'classnames';
 import { CopyButton, Tooltip, useTheme } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';

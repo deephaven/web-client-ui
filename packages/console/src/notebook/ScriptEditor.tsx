@@ -112,7 +112,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
 
   editor?: editor.IStandaloneCodeEditor;
 
-  editorComponent: RefObject<Editor>;
+  editorComponent: RefObject<Editor | null>;
 
   getValue(): string | null {
     if (this.editor) {

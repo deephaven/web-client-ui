@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import { createPortal } from 'react-dom';
 import {

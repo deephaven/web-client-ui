@@ -1,4 +1,5 @@
 import cl from 'classnames';
+import type { JSX } from 'react';
 import { MultiSelect } from './MultiSelect';
 import { type MultiSelectNormalizedProps } from './MultiSelectProps';
 import { useMultiSelectNormalizedProps } from './useMultiSelectNormalizedProps';

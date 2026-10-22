@@ -1,4 +1,13 @@
-import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
+import {
+  applyMiddleware,
+  legacy_createStore as createStore,
+  compose,
+  combineReducers,
+  type AnyAction,
+  type Reducer,
+  type ReducersMapObject,
+} from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -166,13 +175,27 @@ const composeEnhancers: typeof compose =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?? compose;
 
-const store = createStore<RootState, PayloadAction, unknown, unknown>(
-  combineReducers(reducerRegistry.reducers),
-  composeEnhancers(applyMiddleware(...rootMiddleware))
+// Reducers are registered dynamically, so the combined state can't be inferred as RootState
+function combineRootReducers(
+  reducersMap: ReducersMapObject
+): Reducer<RootState, PayloadAction> {
+  return combineReducers(reducersMap) as unknown as Reducer<
+    RootState,
+    PayloadAction
+  >;
+}
+
+// Permissive like redux-thunk 2's global Dispatch augmentation, so thunks with any extra argument or action type can be dispatched
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RootThunkDispatch = ThunkDispatch<RootState, any, AnyAction>;
+
+const store = createStore(
+  combineRootReducers(reducerRegistry.reducers),
+  composeEnhancers(applyMiddleware<RootThunkDispatch>(...rootMiddleware))
 );
 
 reducerRegistry.setListener(newReducers => {
-  store.replaceReducer(combineReducers(newReducers));
+  store.replaceReducer(combineRootReducers(newReducers));
 });
 
 export type AppStore = typeof store;

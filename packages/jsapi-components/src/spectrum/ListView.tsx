@@ -7,6 +7,7 @@ import {
 } from '@deephaven/components';
 import { type dh as DhType } from '@deephaven/jsapi-types';
 import { type Settings } from '@deephaven/jsapi-utils';
+import type { JSX } from 'react';
 import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';

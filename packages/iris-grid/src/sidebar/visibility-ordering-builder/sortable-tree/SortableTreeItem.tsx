@@ -1,5 +1,10 @@
 /* eslint-disable import/prefer-default-export */
-import React, { type CSSProperties, useCallback, useMemo } from 'react';
+import React, {
+  type CSSProperties,
+  useCallback,
+  useMemo,
+  type JSX,
+} from 'react';
 import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TreeItem, type TreeItemProps } from './TreeItem';
