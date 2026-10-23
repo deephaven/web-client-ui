@@ -139,29 +139,22 @@ Re-run the changed test at least 10 times as part of preparing the PR
 before/after counts honestly, including if the fix didn't fully resolve it.
 
 That command needs the app on `localhost:4000/ide/` and a core server on
-`:10000`. Your session has a hard time limit, so start them as your first
-action, before reading traces or code:
+`:10000`. Start both yourself rather than skipping the run:
 
 ```
-bash scripts/e2e-agent-up.sh
+docker compose -f tests/docker-scripts/docker-compose.yml \
+  -f tests/docker-scripts/docker-compose.agent.yml up -d --wait dhc-server
+VITE_PLAYWRIGHT_CSS=1 npm run start:app &
 ```
 
-It limits every step and always ends with `READY` or `FAILED <step>`, so it
-cannot hang. Run it as a plain foreground command and read its output. Do not
-write your own `docker compose ... --wait` or `npm run start:app` commands,
-which block indefinitely when something is wrong. If it prints `FAILED`, copy
-that line and the output above it into the PR description and stop trying to
-run e2e tests; continue with the investigation and report the evidence run as
-not performed.
+`VITE_PLAYWRIGHT_CSS=1` loads the same stylesheet CI's build uses to calm
+animations; without it the app behaves differently from CI. Wait for
+`localhost:4000/ide/` to respond before running Playwright.
 
-Once it prints `READY`, put a limit on each test run, for example
-`timeout 600 npx playwright test path/to/spec.ts --project=chromium --repeat-each=10`.
-`VITE_PLAYWRIGHT_CSS=1`, which the script sets, loads the stylesheet CI's build
-uses to calm animations, so the app matches CI.
-
-Do not substitute reasoning for a run, and do not call a change verified on
-the strength of unit tests, lint or types alone. If you ran nothing, say so and
-say why.
+If Docker, the image pull, or the server is unavailable in your environment,
+say exactly which step failed in the PR and report the evidence run as not
+performed. Do not substitute reasoning for a run, and do not call a change
+verified on the strength of unit tests, lint or types alone.
 
 ## When to stop and escalate
 
