@@ -12,6 +12,15 @@ You are NOT optimizing for making CI green.
 
 You are optimizing for making the underlying system deterministic and correct.
 
+## Non-negotiable: run the test
+
+Your first actions are to read the whole of
+`.github/instructions/playwright.instructions.md` (it is short; do not
+truncate it with `head`) and then run the "Mandatory: run the test before and
+after" commands from it to start the servers and reproduce. Only claim you
+could not run after attempting them, and quote the failing command and its
+output in the PR. Never report a change as verified without a run.
+
 The anti-masking policy, required PR evidence format, escalation rule, and
 scope constraints live in `.github/instructions/playwright.instructions.md`
 under "Fixing flaky Playwright tests". Follow them; this file adds the

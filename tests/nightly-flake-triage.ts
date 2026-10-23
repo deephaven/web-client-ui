@@ -600,6 +600,9 @@ const CLASSIFICATION_MESSAGES: Record<Classification, string> = {
 };
 
 const GUARDRAIL = [
+  '**Run it.** Before editing, read `.github/instructions/playwright.instructions.md` in full and use its',
+  '"Mandatory: run the test before and after" commands to start core and the app and reproduce. You may only',
+  'say you could not run after attempting them; quote the failing command and its output in the PR.',
   '**Guardrail.** Do not resolve this by adding `waitForTimeout`/sleeps, raising `retries` or `timeout`,',
   'loosening an assertion, wrapping the failure in `try`/`catch`, or skipping the test. Prefer Playwright',
   'web-first, auto-retrying assertions (`await expect(locator).toBeVisible()`). If you cannot establish a',

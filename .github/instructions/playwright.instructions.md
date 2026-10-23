@@ -31,6 +31,29 @@ artifacts, and how many prior automated fix attempts recurred. Read all of it
 before writing code — the flake rate, classification, and prior-attempt count
 change what a correct fix looks like.
 
+## Mandatory: run the test before and after (do this first)
+
+A change you did not run is not a fix. Before editing anything, start the
+servers and reproduce; after editing, repeat with
+`npx playwright test path/to/spec.ts --repeat-each=10` and report
+before/after counts in the PR, including if the fix did not fully resolve it.
+The run needs the app on `localhost:4000/ide/` and a core server on `:10000`:
+
+```
+docker compose -f tests/docker-scripts/docker-compose.yml \
+  -f tests/docker-scripts/docker-compose.agent.yml up -d --wait dhc-server
+VITE_PLAYWRIGHT_CSS=1 npm run start:app &
+```
+
+Wait for `localhost:4000/ide/` to respond. `VITE_PLAYWRIGHT_CSS=1` matches
+CI's stylesheet; without it the app behaves differently.
+
+You may only say you could not run the test after actually attempting the two
+commands above. In the PR, quote the failing command and its error output and
+mark the evidence run as not performed. "No docker" or "no core server" with
+no command output is not acceptable. Never substitute reasoning, unit tests,
+lint, or types for a run, and never call an unrun change verified.
+
 ## Banned moves
 
 These make a failure stop showing up without fixing anything. Do not use them
@@ -45,16 +68,9 @@ as the fix, even temporarily, even if they make the suite green:
   provably wrong on its own terms, independent of this failure
 - Wrapping the failure in `try`/`catch` so it no longer throws
 - Quarantining the test — `test.skip()`/`test.fixme()` is never the answer to a
-  flake. A skipped test stops producing runs, so its flake history stops
-  accumulating and the evidence needed to diagnose it is lost for good. The
-  goal is a fixed flake, not a quiet suite; we would rather keep seeing a
-  failure than stop being able to explain it.
-
-  The one legitimate use is a _conditional_ skip for a known platform
-  limitation, with the condition and reason stated — as in
-  `tests/command-history.spec.ts`, which skips only under Playwright's webkit
-  build and says why. That is a permanent environment guard, not a flake
-  quarantine.
+  flake: a skipped test stops producing the history needed to diagnose it. The
+  only legitimate use is a _conditional_ skip for a known platform limitation
+  with the reason stated, as in `tests/command-history.spec.ts` (webkit).
 
 ## Required approach
 
@@ -134,27 +150,7 @@ Ran the affected test(s) N times before and after the fix:
 (if applicable) the application code causing the failure>
 ```
 
-Re-run the changed test at least 10 times as part of preparing the PR
-(`npx playwright test path/to/spec.ts --repeat-each=10`) and report
-before/after counts honestly, including if the fix didn't fully resolve it.
-
-That command needs the app on `localhost:4000/ide/` and a core server on
-`:10000`. Start both yourself rather than skipping the run:
-
-```
-docker compose -f tests/docker-scripts/docker-compose.yml \
-  -f tests/docker-scripts/docker-compose.agent.yml up -d --wait dhc-server
-VITE_PLAYWRIGHT_CSS=1 npm run start:app &
-```
-
-`VITE_PLAYWRIGHT_CSS=1` loads the same stylesheet CI's build uses to calm
-animations; without it the app behaves differently from CI. Wait for
-`localhost:4000/ide/` to respond before running Playwright.
-
-If Docker, the image pull, or the server is unavailable in your environment,
-say exactly which step failed in the PR and report the evidence run as not
-performed. Do not substitute reasoning for a run, and do not call a change
-verified on the strength of unit tests, lint or types alone.
+How to run is under "Mandatory: run the test before and after" above.
 
 ## When to stop and escalate
 
