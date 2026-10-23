@@ -1,0 +1,191 @@
+.context-actions-listener {
+  display: none;
+}
+
+.context-menu-root {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1060;
+
+  &.active {
+    pointer-events: all;
+  }
+}
+
+.context-menu-container {
+  pointer-events: auto;
+  position: fixed;
+  background-color: var(--dh-color-popover-bg);
+  color: var(--dh-color-text);
+  z-index: initial;
+  min-width: 10rem;
+  max-width: 30rem;
+  text-align: left;
+  border-radius: var(--dh-border-radius);
+  background-clip: border-box;
+  box-shadow: var(--dh-box-shadow);
+  max-height: 100vh;
+  overflow-y: auto;
+
+  &.has-overflow {
+    /*
+     * Fixes #IDS-7035. Intrinsic width of "overflow:auto"
+     * element doesn't grow to accomodate its scrollbar.
+     * https://bugzilla.mozilla.org/show_bug.cgi?id=764076
+     * class is added in the verifyPosition calc, forcing a redraw
+     * that will include a forced scrollbar as part of intrinsic width
+     */
+
+    /* update: happens in safari as well */
+    overflow-y: scroll;
+  }
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: var(--dh-color-gray-400);
+  }
+
+  .custom-menu-item {
+    width: 100%;
+    color: var(--dh-color-text);
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+  }
+
+  .btn-context-menu {
+    border: none;
+    width: 100%;
+    /*
+     * not sure exactly why, but safari is creating an uncessary scrollbar
+     * if these are rem units that cause a fractional pixel
+     * maybe calculating overflow with full precision when in fixed parent
+     */
+    padding: 4px 8px;
+    color: var(--dh-color-text);
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+
+    .btn-context-menu-wrapper {
+      /* firefox can misbehave with buttons as display: flex */
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .icon {
+      margin-right: 0.5rem;
+      width: 1rem;
+      flex-grow: 0;
+      text-align: center;
+    }
+    .icon.outline {
+      stroke: var(--dh-color-popover-bg);
+      stroke-width: 60;
+    }
+
+    .title {
+      flex: 1 1 auto;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .shortcut {
+      color: var(--dh-color-gray-600);
+      margin-left: 0.5rem;
+      justify-self: flex-end;
+      flex: 1 1 auto;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .submenu-indicator {
+      color: var(--dh-color-text);
+      flex-grow: 0;
+      justify-self: flex-end;
+    }
+    .submenu-indicator.disabled {
+      color: var(--dh-color-text-disabled);
+    }
+  }
+
+  .btn-context-menu.menu-title {
+    user-select: none;
+    cursor: default;
+    background: var(--dh-color-content-bg);
+  }
+
+  .btn-context-menu.keyboard-active {
+    background-color: var(--dh-color-keyboard-selected-bg);
+  }
+
+  .btn-context-menu:focus,
+  .btn-context-menu.active {
+    background-color: var(--dh-color-item-list-hover-bg);
+  }
+
+  .btn-context-menu:focus {
+    outline: none;
+  }
+
+  .btn-context-menu.active,
+  .btn-context-menu.keyboard-active,
+  .btn-context-menu:focus:not(.disabled) {
+    color: var(--dh-color-item-list-selected-fg);
+  }
+
+  .btn-context-menu.active .shortcut,
+  .btn-context-menu.keyboard-active .shortcut,
+  .btn-context-menu:focus:not(.disabled) .shortcut {
+    color: var(--dh-color-gray-700);
+  }
+
+  .btn-context-menu.disabled {
+    color: var(--dh-color-text-disabled);
+    background-color: var(--dh-color-popover-bg);
+  }
+
+  .context-menu-item:last-child > .btn-context-menu {
+    border-bottom-left-radius: var(--dh-border-radius);
+    border-bottom-right-radius: var(--dh-border-radius);
+  }
+
+  .context-menu-item:first-child > .btn-context-menu {
+    border-top-left-radius: var(--dh-border-radius);
+    border-top-right-radius: var(--dh-border-radius);
+  }
+
+  .context-menu-group-header {
+    margin: var(--dh-spacer-2) var(--dh-input-padding-x) var(--dh-spacer-1)
+      var(--dh-input-padding-x);
+    color: var(--dh-color-gray-700);
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: default;
+    user-select: none;
+    font-weight: 500;
+    border-bottom: 1px solid var(--dh-color-hr);
+  }
+
+  .loading {
+    padding: 0.25rem 1.5rem;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+}
+
+.context-menu-container:focus {
+  outline: none;
+}

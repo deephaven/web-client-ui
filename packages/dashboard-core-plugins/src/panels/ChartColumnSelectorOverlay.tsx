@@ -1,7 +1,7 @@
 import React, { type MouseEventHandler, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { SocketedButton } from '@deephaven/components';
-import './ChartColumnSelectorOverlay.scss';
+import './ChartColumnSelectorOverlay.css';
 
 export interface SelectorColumn {
   name: string;

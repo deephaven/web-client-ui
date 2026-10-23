@@ -5,7 +5,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import { Plot, useChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
 import { useAsyncInterval, useIsMountedRef } from '@deephaven/react-hooks';
-import './HeapUsage.scss';
+import './HeapUsage.css';
 
 const log = Log.module('HeapUsage');
 

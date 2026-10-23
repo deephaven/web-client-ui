@@ -1,0 +1,42 @@
+.table-csv-exporter {
+  padding: 0 var(--dh-spacer-2);
+
+  .custom-radio:not(:last-child) {
+    margin-bottom: var(--dh-spacer-2);
+  }
+
+  .radio-input-row {
+    display: flex;
+    align-items: center;
+    margin-left: var(--spectrum-global-dimension-size-125);
+    margin-top: var(--spectrum-global-dimension-size-85);
+    margin-right: var(--dh-spacer-2);
+
+    .form-control {
+      min-width: 0;
+    }
+
+    > *:not(:last-child) {
+      margin-right: var(--dh-spacer-1);
+    }
+  }
+
+  .checkbox-options {
+    margin-bottom: var(--dh-spacer-2);
+  }
+
+  .section-footer {
+    .error-message {
+      color: var(--dh-color-negative-bg);
+    }
+
+    .download-status {
+      margin-bottom: var(--dh-spacer-3);
+    }
+
+    .btn-downloading {
+      align-self: flex-end;
+      min-width: 10rem;
+    }
+  }
+}

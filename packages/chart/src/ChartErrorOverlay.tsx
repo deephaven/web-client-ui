@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 import { CopyButton, Button } from '@deephaven/components';
-import './ChartErrorOverlay.scss';
+import './ChartErrorOverlay.css';
 
 interface ChartErrorOverlayProps {
   errorMessage: string;

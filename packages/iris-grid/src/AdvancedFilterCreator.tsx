@@ -34,7 +34,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import { nanoid } from 'nanoid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
-import './AdvancedFilterCreator.scss';
+import './AdvancedFilterCreator.css';
 import type IrisGridModel from './IrisGridModel';
 import { type AdvancedFilterOptions } from './CommonTypes';
 

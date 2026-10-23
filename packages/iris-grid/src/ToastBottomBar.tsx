@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import './PendingDataBottomBar.scss';
+import './PendingDataBottomBar.css';
 
 const HIDE_TIMEOUT = 3000;
 

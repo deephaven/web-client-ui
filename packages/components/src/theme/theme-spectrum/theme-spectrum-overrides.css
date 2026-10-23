@@ -1,10 +1,9 @@
 [class*='spectrum'] {
-  /* --font-family-sans-serif is defined in Bootstrap's _root.scss. We want
-  Spectrum to use the same default font-family */
-  font-family: var(--font-family-sans-serif) !important;
+  /* Spectrum uses the same default font-family as the rest of the app */
+  font-family: var(--dh-font-family-sans) !important;
 }
 
-/* Override _reboot.scss */
+/* Override Bootstrap's reboot styles */
 label[class*='spectrum-'] {
   margin-bottom: 0;
 }

@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Item, Picker, type ItemKey } from '@deephaven/components';
 import { SELECTION_DIRECTION, type CellInputProps } from '@deephaven/grid';
-import './CellDropdownField.scss';
+import './CellDropdownField.css';
 
 export type CellDropdownFieldProps = CellInputProps & {
   /** The list of allowed values to display in the dropdown. */

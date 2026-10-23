@@ -11,7 +11,7 @@ import { type Placement } from 'popper.js';
 import type * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
-import './LogView.scss';
+import './LogView.css';
 import LogLevelMenuItem from './LogLevelMenuItem';
 import Editor from '../notebook/Editor';
 import { MonacoUtils } from '../monaco';

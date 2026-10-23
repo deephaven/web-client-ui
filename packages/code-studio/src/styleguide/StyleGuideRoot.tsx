@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { FontBootstrap } from '@deephaven/components';
-import '@deephaven/components/scss/BaseStyleSheet.scss';
+import '@deephaven/components/styles/BaseStyleSheet.css';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';

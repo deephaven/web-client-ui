@@ -23,7 +23,7 @@ import debounce from 'lodash.debounce';
 import { type PopperOptions } from 'popper.js';
 import { Popper } from './popper';
 
-import './AutoCompleteInput.scss';
+import './AutoCompleteInput.css';
 
 const DEBOUNCE_DELAY = 100;
 

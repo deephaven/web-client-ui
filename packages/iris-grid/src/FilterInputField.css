@@ -1,0 +1,109 @@
+.iris-grid-input-autosized-wrapper {
+  position: absolute;
+  display: inline-grid;
+  height: 100%;
+  align-items: center;
+  z-index: 1; /* appear above adjacent cell buttons */
+
+  .advanced-filter-button {
+    position: absolute;
+    top: 2px;
+    right: var(--dh-spacer-1);
+    height: 23px;
+    margin: 0;
+  }
+
+  /* hidden element to set width */
+  &::after {
+    content: attr(data-value) ' ';
+    width: auto;
+    height: 100%;
+    border: var(--dh-input-border-width) solid;
+    padding: 3px 2px 3px 3px;
+    margin-right: 24px; /* leave space for filter-button */
+    overflow: hidden;
+    visibility: hidden;
+    white-space: nowrap;
+    grid-area: 1/1;
+    /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: normal;
+    font-family: 'fira sans', sans-serif;
+    font-feature-settings: 'tnum';
+  }
+
+  .iris-grid-input-field {
+    position: absolute;
+    color: var(--dh-color-text);
+    background: var(--dh-color-grid-filter-bar-expanded-bg);
+    border: 1px solid var(--dh-color-input-border);
+    width: 100%;
+    height: 100%;
+    padding: 3px 2px 3px 3px;
+    border-radius: 1px;
+    /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: normal;
+    font-family: 'fira sans', sans-serif;
+    font-feature-settings: 'tnum';
+
+    &.iris-grid-has-filter {
+      /*
+       * This is a hack to get the filter bar inputs to match the canvas rendered equivalent
+       * --dh-color-filter-bar-expanded-active-bg relies on transparency of being drawn overtop of
+       * the grid background. Since we can't do that here, we need to mimic the effect by stacking
+       * backgrounds using a single color linear gradients as a hack. Performance is not an issue
+       * since it only applies to the selected filter bar cell.
+       */
+      background: linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-bg)
+        ),
+        linear-gradient(var(--dh-color-grid-bg) 100%, var(--dh-color-grid-bg));
+    }
+
+    &.active {
+      /* the canvas color to mimic here is based on the above, with yet another color stacked on top in */
+      background: linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-cell-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-cell-bg)
+        ),
+        linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-bg)
+        ),
+        linear-gradient(var(--dh-color-grid-bg) 100%, var(--dh-color-grid-bg));
+    }
+
+    &:focus {
+      outline: 0;
+      border: 1px solid var(--dh-color-input-focus-border);
+      box-shadow: var(--dh-input-focus-box-shadow);
+    }
+
+    &.error {
+      color: var(--dh-color-negative-bg);
+      &:focus {
+        box-shadow:
+          inset 0 0 0 2px var(--dh-color-negative-bg),
+          var(--dh-input-focus-box-shadow);
+      }
+    }
+  }
+}
+
+/*
+ * Firefox doesn't support font-feature-settings on canvas so we shouldn't use
+ * it here either: https://bugzilla.mozilla.org/show_bug.cgi?id=1580953
+ * Not nested since @-moz-document is not allowed inside a style rule.
+ */
+@-moz-document url-prefix('') {
+  .iris-grid-input-autosized-wrapper::after,
+  .iris-grid-input-autosized-wrapper .iris-grid-input-field {
+    font-feature-settings: normal;
+  }
+}

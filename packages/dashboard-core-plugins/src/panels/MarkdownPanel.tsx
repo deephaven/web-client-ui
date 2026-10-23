@@ -24,7 +24,7 @@ import { LoadingOverlay } from '@deephaven/components';
 import Panel from './CorePanel';
 import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
-import './MarkdownPanel.scss';
+import './MarkdownPanel.css';
 import type MarkdownEditorType from '../controls/markdown/MarkdownEditor';
 import MarkdownUtils from '../controls/markdown/MarkdownUtils';
 

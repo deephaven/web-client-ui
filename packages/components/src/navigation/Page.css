@@ -1,0 +1,30 @@
+.navigation-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+
+  /* reset font back to default, otherwise we get styling intended for table */
+  font-family: var(--dh-font-family-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+
+  .navigation-title-bar {
+    display: flex;
+
+    .navigation-title {
+      font-weight: 500;
+      flex-grow: 1;
+      text-align: center;
+      padding-top: 0.6em;
+    }
+  }
+
+  .navigation-content {
+    background-color: transparent;
+    overflow: hidden;
+    flex-grow: 1;
+    position: relative;
+  }
+}

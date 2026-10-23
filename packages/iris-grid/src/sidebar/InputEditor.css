@@ -1,0 +1,38 @@
+.input-editor-wrapper {
+  position: relative;
+  border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+  background: var(--dh-color-input-bg);
+  border-radius: var(--dh-border-radius);
+
+  &.focused {
+    border-color: var(--dh-color-input-focus-border);
+    box-shadow: var(--dh-input-focus-box-shadow);
+  }
+
+  &.invalid {
+    border-color: var(--dh-color-form-control-error);
+  }
+
+  .editor-container {
+    min-height: 69px;
+
+    .monaco-editor .margin {
+      background-color: var(--dh-color-input-bg);
+    }
+
+    .monaco-editor,
+    .monaco-editor-background,
+    .monaco-editor .inputarea.ime-input {
+      background-color: var(--dh-color-input-bg);
+    }
+  }
+
+  .editor-placeholder {
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    font-size: 1rem;
+    color: var(--dh-color-fg);
+    user-select: none;
+  }
+}

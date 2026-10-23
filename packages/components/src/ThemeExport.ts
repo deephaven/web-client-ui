@@ -1,6 +1,6 @@
-import ThemeExport from './ThemeExport.module.scss';
+import ThemeExport from './ThemeExport.module.css';
 
-// Note that TypeScript does not know what keys exist on ThemeExport.module.scss
+// Note that TypeScript does not know what keys exist on ThemeExport.module.css
 // It only knows it's an object with strings for keys and values
 
 const transitions = {

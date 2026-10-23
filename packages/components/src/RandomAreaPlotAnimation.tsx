@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
-import './RandomAreaPlotAnimation.scss';
+import './RandomAreaPlotAnimation.css';
 import { resolveCssVariablesInRecord, useTheme } from './theme';
 
 const VOLATILITY = 0.025; // how spikey the data gets

@@ -24,7 +24,7 @@ import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
 import { nanoid } from 'nanoid';
 import Log from '@deephaven/log';
-import './DropdownFilter.scss';
+import './DropdownFilter.css';
 import { type LinkPoint } from '../../linker/LinkerUtils';
 
 const log = Log.module('DropdownFilter');

@@ -1,5 +1,5 @@
-const CSS_INLINE_IMPORT_REGEX = /\.s?css\?(inline|raw)$/;
-const CSS_MODULE_IMPORT_REGEX = /([^/]+)\.module\.s?css/;
+const CSS_INLINE_IMPORT_REGEX = /\.css\?(inline|raw)$/;
+const CSS_MODULE_IMPORT_REGEX = /([^/]+)\.module\.css/;
 
 /**
  * Babel transform plugin to mock CSS imports for unit testing purposes. This
@@ -52,7 +52,7 @@ module.exports = function mockCssImportPlugin({ types: t }) {
             ])
           );
         }
-        // Replace (s)css imports that have ?inline or ?raw query strings with a
+        // Replace css imports that have ?inline or ?raw query strings with a
         // const variable declaration.
         // e.g.
         // import './saturn.css?inline';

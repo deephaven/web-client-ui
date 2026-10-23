@@ -10,7 +10,7 @@ import { Code } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
-import './ConsoleHistoryItem.scss';
+import './ConsoleHistoryItem.css';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 import ConsoleHistoryItemActions from './ConsoleHistoryItemActions';
 

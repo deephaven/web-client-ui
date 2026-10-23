@@ -1,0 +1,69 @@
+.console-input-wrapper {
+  --console-input-radius: var(--dh-border-radius);
+  --console-input-bg: var(--dh-color-input-bg);
+  --console-input-surface-bg: var(--dh-color-surface-bg);
+  --console-input-border-color: var(--dh-color-input-border);
+  --console-input-hover-border-color: var(--dh-color-input-hover-border);
+
+  background-color: var(--console-input-surface-bg);
+  padding: 4px;
+  min-height: 40px;
+  display: flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 100%;
+
+  &::before {
+    content: '>';
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 33px;
+    font-family: var(--dh-font-family-mono);
+    font-size: 12px;
+    text-align: right;
+    padding-right: 15px;
+    padding-top: 7px;
+    color: var(--dh-color-fg);
+  }
+
+  .console-input-inner-wrapper {
+    min-width: 0;
+    flex-grow: 1;
+    border-radius: var(--console-input-radius);
+    border: var(--dh-input-border-width) solid var(--console-input-border-color);
+    transition:
+      border-color 0.15s ease-in-out,
+      box-shadow 0.15s ease-in-out;
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+
+    .monaco-editor {
+      /*
+       * can't use as part of editor theme since that is global
+       * and we want to apply this only to this specific editor
+       */
+      /* stylelint-disable-next-line custom-property-pattern */
+      --vscode-editorGutter-background: var(--console-input-bg);
+      --vscode-editor-background: var(--console-input-bg);
+
+      border-radius: var(--console-input-radius);
+
+      .overflow-guard {
+        border-radius: var(--console-input-radius);
+      }
+    }
+
+    &:hover,
+    &.hover {
+      border-color: var(--console-input-hover-border-color);
+    }
+
+    &:focus,
+    &.focus {
+      border-color: var(--dh-color-input-focus-border);
+      box-shadow: var(--dh-input-focus-box-shadow);
+      outline: none;
+    }
+  }
+}

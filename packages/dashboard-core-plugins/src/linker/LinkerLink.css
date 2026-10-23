@@ -1,0 +1,185 @@
+:root {
+  --linker-link-dash-size: 10;
+}
+
+.linker-overlay {
+  --link-width: 3;
+  --selectable-width: 20;
+  --dash-color-1: var(--dh-color-visual-cyan);
+  --filter-source-dash-color-1: var(--dh-color-visual-purple);
+  --invalid-dash-color-1: var(--dh-color-gray-700);
+  --dash-delete-color-1: var(--dh-color-visual-negative);
+  .linker-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    .link-dot,
+    .link-triangle {
+      fill: var(--dash-color-1);
+    }
+
+    path {
+      stroke-width: var(--link-width);
+      fill: transparent;
+      stroke: var(--dh-color-cyan-700);
+      pointer-events: none;
+      transition: stroke var(--dh-transition) ease-out;
+    }
+
+    path.link-foreground {
+      stroke: var(--dash-color-1);
+      stroke-dasharray: var(--linker-link-dash-size);
+      animation: dash-forward 1.5s linear infinite;
+    }
+
+    path.link-select {
+      stroke-width: var(--selectable-width);
+      fill: transparent;
+      stroke: transparent;
+      pointer-events: stroke;
+      cursor: pointer;
+    }
+
+    &.link-is-selected {
+      z-index: 20;
+
+      .link-dot,
+      .link-triangle {
+        fill: var(--dh-color-accent-bg);
+      }
+      path {
+        stroke-width: var(--link-width);
+        stroke: var(--dh-color-accent-400);
+        &.link-select {
+          stroke-width: var(--selectable-width);
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: var(--dh-color-accent-bg);
+      }
+    }
+
+    &.link-filter-source {
+      .link-dot,
+      .link-triangle {
+        fill: var(--filter-source-dash-color-1);
+      }
+      path {
+        stroke-width: var(--link-width);
+        stroke: var(--dh-color-purple-500);
+        &.link-select {
+          stroke-width: var(--selectable-width);
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: var(--filter-source-dash-color-1);
+      }
+    }
+
+    &.link-invalid {
+      .link-dot,
+      .link-triangle {
+        fill: var(--invalid-dash-color-1);
+      }
+      path {
+        stroke-width: var(--link-width);
+        stroke: var(--dh-color-gray-400);
+        &.link-select {
+          stroke-width: var(--selectable-width);
+          stroke: transparent;
+        }
+      }
+
+      path.link-foreground {
+        stroke: var(--invalid-dash-color-1);
+      }
+    }
+
+    &.disabled path.link-select {
+      pointer-events: none;
+    }
+
+    &.hovering {
+      z-index: 10;
+    }
+
+    path.link-select:hover ~ path.link-background {
+      stroke: var(--dh-color-accent-hover-bg);
+    }
+
+    path.link-select:hover ~ path.link-foreground,
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      stroke: var(--dh-color-accent-bg);
+    }
+
+    path.link-select:hover ~ .link-dot,
+    path.link-select:hover ~ .link-triangle {
+      fill: var(--dh-color-accent-bg);
+    }
+
+    &.danger-delete {
+      path.link-select {
+        cursor:
+          url('../../assets/svg/cursor-unlinker.svg') 8 8,
+          pointer;
+      }
+
+      path.link-select:hover ~ path.link-background {
+        stroke: var(--dh-color-negative-down-bg);
+      }
+
+      path.link-select:hover ~ path.link-foreground,
+      path.link-select:hover ~ .link-dot,
+      path.link-select:hover ~ .link-triangle {
+        stroke: var(--dash-delete-color-1);
+      }
+
+      path.link-select:hover ~ .link-dot,
+      path.link-select:hover ~ .link-triangle {
+        fill: var(--dash-delete-color-1);
+      }
+    }
+  }
+
+  .btn-fab {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+    min-width: var(--dh-input-height);
+    min-height: var(--dh-input-height);
+    height: var(--dh-input-height);
+    width: var(--dh-input-height);
+    line-height: 1.25rem; /* vertical centering for text inside fa-layer */
+    padding: 0;
+    margin: 0;
+    z-index: 30;
+    box-shadow: var(--dh-box-shadow);
+    .fa-layers {
+      display: inline-flex;
+      justify-content: center;
+      b {
+        /* comparison operator */
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  .btn-fab.btn-delete:hover {
+    background-color: var(--dash-delete-color-1);
+    border-color: var(--dash-delete-color-1);
+  }
+}
+
+@keyframes dash-forward {
+  to {
+    stroke-dashoffset: calc(var(--linker-link-dash-size) * -2);
+  }
+}

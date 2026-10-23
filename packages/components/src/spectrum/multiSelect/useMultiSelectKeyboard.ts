@@ -238,7 +238,7 @@ export function useMultiSelectKeyboard({
   }, [searchText]);
 
   // Spectrum's <ListBox> doesn't expose its own focus management, so we mark the focused option
-  // with data-dh-focused for SCSS styling and copy the option's id onto
+  // with data-dh-focused for CSS styling and copy the option's id onto
   // the input's aria-activedescendant.
   useEffect(() => {
     const container = listBoxContainerRef.current;

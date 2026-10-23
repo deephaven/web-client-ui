@@ -10,7 +10,7 @@ import type {
   IrisGridTreeItemData,
   FlattenedIrisGridTreeItem,
 } from './sortable-tree/utilities';
-import './SearchWithModal.scss';
+import './SearchWithModal.css';
 import MemoizedSearchItem from './SearchItem';
 
 interface SearchWithModalProps {

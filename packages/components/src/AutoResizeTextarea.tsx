@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import classNames from 'classnames';
 
-import './AutoResizeTextarea.scss';
+import './AutoResizeTextarea.css';
 
 interface AutoResizeTextareaProps {
   value: string;

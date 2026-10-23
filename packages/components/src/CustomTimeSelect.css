@@ -1,0 +1,87 @@
+.cs-container {
+  flex-wrap: nowrap;
+
+  .cs-dropdown .cs-btn {
+    color: var(--dh-color-input-fg);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--dh-border-radius);
+    border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+    min-width: 14rem;
+    font-weight: 400;
+
+    .cs-caret {
+      background-size: 10px 6px;
+      mask: var(--dh-svg-icon-selector-caret) center / 10px 6px no-repeat;
+      background-color: var(--dh-color-selector-fg);
+      width: 10px;
+      height: 6px;
+      margin-right: 4px;
+    }
+  }
+
+  .cs-dropdown:hover .cs-btn:not(:disabled) .cs-caret {
+    background-color: var(--dh-color-selector-hover-fg);
+  }
+
+  .cs-dropdown-invalid .cs-btn-invalid {
+    border-color: var(--dh-color-negative-bg);
+  }
+
+  .cs-btn:focus {
+    border-color: var(--dh-color-input-focus-border);
+  }
+}
+
+.cs-menu-container {
+  .cs-divider {
+    background-color: var(--dh-color-black);
+  }
+
+  .cs-custom-container {
+    display: flex;
+    direction: row;
+  }
+
+  .custom-label {
+    padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+  }
+  .cs-options {
+    max-height: 400px;
+    overflow: auto;
+  }
+  .cs-option-btn {
+    border: none;
+    width: 100%;
+    color: var(--dh-color-item-list-selected-fg);
+    padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: transparent;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    display: block;
+  }
+  .cs-option-btn.keyboard-active {
+    background-color: var(--dh-color-item-list-selected-bg);
+    &:hover {
+      background-color: var(--dh-color-item-list-selected-hover-bg);
+    }
+  }
+
+  .cs-option-btn:hover {
+    color: var(--dh-color-fg);
+    background-color: var(--dh-color-item-list-hover-bg);
+  }
+  .cs-option-btn:focus {
+    outline: none;
+  }
+
+  .cs-options:first-child {
+    border-top-left-radius: var(--dh-border-radius);
+    border-top-right-radius: var(--dh-border-radius);
+  }
+}

@@ -1,0 +1,179 @@
+:root {
+  --console-history-item-font-size: 12px;
+  --console-history-item-button-height: 26px;
+  --console-history-item-button-vert-margin: 4px;
+}
+
+.console-history-item-command,
+.console-history-item-result {
+  display: flex;
+}
+
+.console-history-item-command {
+  position: relative;
+  white-space: pre-line;
+}
+
+.console-history-actions {
+  position: absolute;
+  gap: var(--dh-spacer-1);
+  top: 0;
+  right: var(--dh-spacer-2);
+  display: none;
+  align-items: center;
+  background-color: var(--dh-color-neutral-hover-bg);
+  border-radius: var(--dh-border-radius);
+  padding: var(--dh-spacer-1);
+}
+
+.console-history-item-command-tooltip-active {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-command:hover {
+  background-color: var(--dh-color-neutral-hover-bg);
+
+  .console-history-actions {
+    display: flex;
+  }
+}
+
+.console-history-item-result .log-message {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* adjust gutter tick to align in the middle of button results */
+.console-result-buttons .console-history-item-result .console-history-gutter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-height: calc(
+    var(--console-history-item-button-height) +
+      var(--console-history-item-button-vert-margin) +
+      var(--console-history-item-button-vert-margin)
+  );
+}
+
+.console-history-item-result {
+  --error-gutter-width: 15px;
+  .btn-console-object {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dh-spacer-1);
+    text-align: left;
+    font-size: var(--console-history-item-font-size);
+    padding-left: var(--dh-spacer-3);
+    margin: var(--console-history-item-button-vert-margin)
+      var(--console-history-item-button-vert-margin)
+      var(--console-history-item-button-vert-margin) 0;
+    height: var(--console-history-item-button-height);
+    border-radius: var(--console-history-item-button-height);
+  }
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+    display: flex;
+    overflow: hidden;
+    user-select: text;
+
+    .error-gutter {
+      padding: 0;
+      flex-basis: var(--error-gutter-width);
+
+      .error-btn-link {
+        min-width: var(--error-gutter-width);
+        background-color: transparent;
+        border: 0;
+        text-align: left;
+        padding-left: 0;
+        padding-right: 0;
+        color: color-mix(in srgb, var(--dh-color-negative) 50%, transparent);
+        transition:
+          color 0.12s ease-in-out,
+          background-color 0.12s ease-in-out,
+          border-color 0.12s ease-in-out,
+          box-shadow 0.12s ease-in-out;
+      }
+
+      .error-btn-link:hover,
+      .error-btn-link--active {
+        color: var(--dh-color-negative-bg);
+      }
+    }
+
+    .error-content {
+      flex-grow: 1;
+      white-space: normal;
+      cursor: default;
+      overflow: visible;
+      text-overflow: ellipsis;
+    }
+
+    .console-error-text-trigger {
+      cursor: pointer;
+      color: var(--dh-color-negative-bg);
+      display: inline-block;
+      margin-right: var(--dh-spacer-1);
+      border: 1px solid transparent;
+      border-radius: var(--dh-border-radius);
+      overflow: visible;
+      white-space: pre-wrap;
+      /* keyboard navigation only focus state */
+      &:focus {
+        outline: 0;
+      }
+      &:focus-visible {
+        border: 1px solid
+          color-mix(in srgb, var(--dh-color-negative) 50%, transparent);
+      }
+    }
+  }
+}
+
+.console-history-actions-1 {
+  /*
+   * actions are centered over the line
+   * note that the actions are much wider than the line itself
+   */
+  top: calc(-1 * (var(--dh-spacer-3) * 0.875));
+}
+
+.console-history-actions-2 {
+  /* actions are centered over the line */
+  top: calc(-1 * (var(--dh-spacer-1) * 0.5));
+}
+
+.console-command-result:last-child .console-history-actions-1 {
+  /* pushed down so that the actions are visible */
+  top: calc(-1 * var(--dh-spacer-4));
+}
+
+.console-command-result:first-child .console-history-actions-1 {
+  /* pushed up to prevent layout shifts */
+  top: var(--dh-spacer-0);
+}
+
+.console-history-item-contextual-help-content {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: var(--dh-spacer-1) var(--dh-spacer-3);
+  text-align: left;
+  margin-bottom: var(--dh-spacer-2);
+  white-space: nowrap;
+}
+
+.console-history-item-contextual-help {
+  section[class*='spectrum-ContextualHelp-dialog'] {
+    /*
+     * The default size of the contextual help is only 250px and is too small.
+     * Just set a size automatically based on the content.
+     */
+    width: fit-content;
+    min-width: 150px;
+  }
+}

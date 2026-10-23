@@ -52,7 +52,7 @@ import clamp from 'lodash.clamp';
 import throttle from 'lodash.throttle';
 import { useUndoRedo } from '@deephaven/react-hooks';
 import Log from '@deephaven/log';
-import './VisibilityOrderingBuilder.scss';
+import './VisibilityOrderingBuilder.css';
 import { type DisplayColumn } from '../../IrisGridModel';
 import type IrisGridModel from '../../IrisGridModel';
 import { type ColumnName } from '../../CommonTypes';

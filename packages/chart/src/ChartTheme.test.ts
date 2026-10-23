@@ -3,7 +3,7 @@
 import { TestUtils } from '@deephaven/test-utils';
 import { resolveCssVariablesInRecord } from '@deephaven/components';
 import { defaultChartTheme } from './ChartTheme';
-import chartThemeRaw from './ChartTheme.module.scss';
+import chartThemeRaw from './ChartTheme.module.css';
 
 jest.mock('@deephaven/components', () => ({
   ...jest.requireActual('@deephaven/components'),

@@ -1,0 +1,29 @@
+@import '@deephaven/golden-layout/styles/goldenlayout-base.css';
+@import '@deephaven/golden-layout/styles/goldenlayout-dark-theme.css';
+
+/* Styling for behaviours not part of the default golden layout package */
+
+.lm_tab .editor-unsaved-indicator {
+  display: none;
+  width: 8px;
+  height: 8px;
+  margin-right: var(--dh-spacer-1);
+  border-radius: 50%;
+  background: var(--dh-color-accent-bg);
+
+  &.is-unsaved {
+    display: inline-block;
+  }
+}
+
+.lm_dragging {
+  /* disable plotly pointer events while dragging golden layout */
+  .js-plotly-plot .plotly {
+    svg,
+    g,
+    rect,
+    path {
+      pointer-events: none !important;
+    }
+  }
+}

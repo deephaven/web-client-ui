@@ -27,7 +27,7 @@ import { useMultiSelectLoadingSpinner } from './useMultiSelectLoadingSpinner';
 import { useMultiSelectScrollListener } from './useMultiSelectScrollListener';
 import { MultiSelectTag } from './MultiSelectTag';
 import { MultiSelectListBox } from './MultiSelectListBox';
-import './MultiSelect.scss';
+import './MultiSelect.css';
 
 /**
  * Convert a Spectrum dimension value (e.g. `"size-3000"`) to its CSS variable

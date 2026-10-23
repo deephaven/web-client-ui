@@ -16,7 +16,7 @@ import {
 } from './command-history';
 import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
 import Editor from './notebook/Editor';
-import './ConsoleInput.scss';
+import './ConsoleInput.css';
 
 const log = Log.module('ConsoleInput');
 

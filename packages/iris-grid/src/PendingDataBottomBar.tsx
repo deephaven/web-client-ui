@@ -4,7 +4,7 @@ import { vsPass, vsWarning } from '@deephaven/icons';
 import { Button, LoadingSpinner } from '@deephaven/components';
 import { usePrevious } from '@deephaven/react-hooks';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import './PendingDataBottomBar.scss';
+import './PendingDataBottomBar.css';
 import { type PendingDataErrorMap, type PendingDataMap } from './CommonTypes';
 
 const HIDE_TIMEOUT = 3000;

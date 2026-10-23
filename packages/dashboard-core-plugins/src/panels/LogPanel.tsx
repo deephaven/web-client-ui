@@ -7,7 +7,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import { type DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { type RootState } from '@deephaven/redux';
-import './LogPanel.scss';
+import './LogPanel.css';
 import Panel from './CorePanel';
 import { type CoreConsoleSession } from '../ConsoleEvents';
 import { getDashboardSessionWrapper } from '../redux';

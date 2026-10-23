@@ -59,7 +59,7 @@ import {
   IntegerFormatContextMenu,
   TextAlignmentFormatContextMenu,
 } from '../format-context-menus';
-import './IrisGridContextMenuHandler.scss';
+import './IrisGridContextMenuHandler.css';
 import SHORTCUTS from '../IrisGridShortcuts';
 import type IrisGrid from '../IrisGrid';
 import {

@@ -138,7 +138,7 @@ import {
   type IrisGridThemeType,
 } from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
-import './IrisGrid.scss';
+import './IrisGrid.css';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
 import {
   Aggregations,

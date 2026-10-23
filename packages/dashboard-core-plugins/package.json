@@ -18,8 +18,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
+    "build:babel": "babel ./src --out-dir ./dist --copy-files --no-copy-ignored --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
     "@deephaven/chart": "file:../chart",

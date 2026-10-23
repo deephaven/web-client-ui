@@ -1,0 +1,67 @@
+.notebook-title {
+  &.is-preview {
+    font-style: italic;
+  }
+}
+
+.notebook-session-not-connected {
+  padding: var(--dh-spacer-2);
+  color: var(--dh-color-gray-500);
+}
+
+.notebook-container {
+  display: flex;
+  flex-direction: column;
+
+  .notebook-toolbar {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    background: var(--dh-color-content-bg);
+    border-bottom: 2px solid var(--dh-color-bg);
+    padding: var(--dh-spacer-1) var(--dh-spacer-2);
+    gap: var(--dh-spacer-1);
+    container-type: inline-size;
+    overflow: hidden;
+
+    .notebook-toolbar-actions {
+      display: contents;
+    }
+
+    .btn-overflow {
+      margin-left: auto;
+    }
+
+    .btn-play:hover,
+    .btn-play-selected:hover {
+      color: var(--dh-color-visual-green);
+    }
+
+    .icon-create-pq {
+      transform: translate(0, -4px);
+    }
+  }
+}
+
+/*
+ * Hide buttons one-by-one (right-to-left) as the toolbar narrows; the overflow
+ * (⋮) menu keeps every action reachable. Each breakpoint is the 32px overflow
+ * button plus 32px (button incl. gap) for every action button kept visible.
+ */
+@container (width < 128px) {
+  .notebook-toolbar .btn-save {
+    display: none;
+  }
+}
+
+@container (width < 96px) {
+  .notebook-toolbar .btn-run-selected {
+    display: none;
+  }
+}
+
+@container (width < 64px) {
+  .notebook-toolbar .btn-run {
+    display: none;
+  }
+}
