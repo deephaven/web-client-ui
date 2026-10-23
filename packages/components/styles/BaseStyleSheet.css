@@ -18,6 +18,9 @@
     'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif;
   --dh-font-family-mono: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
     'Courier New', monospace;
+  /* Bootstrap's names, still read by plugins built for older versions */
+  --font-family-sans-serif: var(--dh-font-family-sans);
+  --font-family-monospace: var(--dh-font-family-mono);
   --dh-input-border-width: 1px;
   --dh-input-padding-x: 0.75rem;
   /* Matches Spectrum's 32px input height with a 1.3 line height */
