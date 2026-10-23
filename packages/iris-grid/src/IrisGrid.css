@@ -86,9 +86,12 @@
   }
 
   .grid-wrapper {
-    font:
-      12px 'fira sans',
-      sans-serif;
+    /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: normal;
+    font-family: 'fira sans', sans-serif;
     font-feature-settings: 'tnum';
     transition: all var(--dh-transition-mid);
 

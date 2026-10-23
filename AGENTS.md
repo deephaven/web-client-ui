@@ -50,6 +50,7 @@ The web UI does not work standalone — it requires a `deephaven-core` server on
 - Constants local to a component are custom properties declared on the component's root selector. `@media` and `@container` conditions cannot use custom properties, so they use literal values.
 - Packages ship CSS as written (Babel copies it to `dist/`). The apps' Vite builds minify CSS with Lightning CSS (`build.cssMinify`), which also adds prefixes and lowers syntax only as needed for the browserslist targets (`build.cssTarget`).
 - Only conditional rules (`@media`, `@supports`, `@container`, `@layer`) may be nested inside a style rule, and `&` cannot stand for a pseudo-element; write those rules unnested.
+- Do not combine the `font` shorthand with `font-feature-settings` or `font-variant-*` in one rule: Lightning CSS moves the shorthand after them, and the shorthand resets them. Use longhands instead.
 - Do not nest rules under a selector list whose selectors have different specificity (e.g. `.a, .a:hover { .b {} }`): native nesting wraps the list in `:is()`, which raises the specificity of every selector to the highest one.
 
 ### Code Commenting Rules
