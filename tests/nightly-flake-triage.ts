@@ -220,6 +220,7 @@ interface GithubIssue {
   state: 'open' | 'closed';
   body?: string;
   labels?: { name?: string }[];
+  assignees?: { login?: string }[];
   // Present only when the item is really a pull request; the issues endpoint returns both.
   pull_request?: unknown;
 }
@@ -1355,16 +1356,16 @@ async function main(): Promise<void> {
       return;
     }
 
-    // Only hand the issue to an agent when a fresh session is warranted: a brand-new issue, or
-    // one reopening because a previous fix didn't hold. A still-failing open issue already has
-    // a session or a human looking at it.
+    // Only hand the issue to an agent when nobody is on it: a brand-new issue, one reopening
+    // because a previous fix didn't hold, or a recurring open issue with no assignee (e.g. an
+    // earlier assignment failed). An assigned issue already has a session or a human on it.
     let shouldAssign = false;
 
     try {
       if (issueNumber !== undefined) {
         // Fall back to the freshly fetched state when the cache has no record of this issue.
         const reopening = (state.issueState ?? known?.state) === 'closed';
-        await gh?.updateIssue(issueNumber, {
+        const updated = await gh?.updateIssue(issueNumber, {
           body,
           labels,
           ...(reopening ? { state: 'open' } : {}),
@@ -1378,7 +1379,8 @@ async function main(): Promise<void> {
         state.issueState = 'open';
         state.issueNumber = issueNumber;
         decision.issue = issueNumber;
-        shouldAssign = wantsAgent && reopening;
+        shouldAssign =
+          wantsAgent && (reopening || (updated?.assignees ?? []).length === 0);
         console.log(
           `  [${decision.route}] ${fp} -> ${
             reopening ? 'reopened' : 'updated'
@@ -1480,7 +1482,7 @@ async function main(): Promise<void> {
       } escalated to a human, ${byRoute('no_action').length} suppressed`,
       `- Agent assignments this run: ${agentAssigned} of ${agentEligible} eligible (cap ${MAX_AGENT_ASSIGNMENTS_PER_RUN}, ranked by flake rate)`,
       agentAssigned < agentEligible
-        ? '- _An agent is only assigned when an issue is opened or reopened; eligible fingerprints whose issue was already open keep the session or human already working on them._'
+        ? '- _An agent is only assigned to issues that are new, reopened, or have no assignee; eligible fingerprints already assigned keep the session or human working on them._'
         : null,
       COPILOT_ASSIGN_TOKEN === ''
         ? '- _`COPILOT_ASSIGN_TOKEN` is unset — issues were labeled but not assigned to an agent._'
