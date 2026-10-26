@@ -236,6 +236,32 @@ jobs:
 
           npx playwright merge-reports --reporter html,github,json ./all-blob-reports
 
+      # The triage job only downloads report.json, so path-backed text attachments (such as
+      # error-context snapshots) would be unreachable there; merge-reports leaves them on disk here.
+      - name: Inline text attachments into JSON report
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const MAX_BYTES = 200000;
+          const report = JSON.parse(fs.readFileSync('report.json', 'utf8'));
+          const isText = t => /^text\//.test(t ?? '') || t === 'application/json';
+          const visit = node => {
+            if (Array.isArray(node)) return node.forEach(visit);
+            if (node === null || typeof node !== 'object') return;
+            if (Array.isArray(node.attachments)) {
+              node.attachments.forEach(a => {
+                if (!a.path || a.body !== undefined || !isText(a.contentType)) return;
+                if (!fs.existsSync(a.path) || fs.statSync(a.path).size > MAX_BYTES) return;
+                a.body = fs.readFileSync(a.path).toString('base64');
+                delete a.path;
+              });
+            }
+            Object.values(node).forEach(visit);
+          };
+          visit(report);
+          fs.writeFileSync('report.json', JSON.stringify(report));
+          EOF
+
       - name: Upload HTML report
         id: upload-html
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

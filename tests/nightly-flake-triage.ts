@@ -1057,7 +1057,7 @@ async function main(): Promise<void> {
     (suite.suites ?? []).forEach(child =>
       walk(
         child,
-        suite.title !== undefined ? [...titlePath, suite.title] : titlePath
+        child.title !== undefined ? [...titlePath, child.title] : titlePath
       )
     );
   }
@@ -1192,6 +1192,10 @@ async function main(): Promise<void> {
 
   // Judge the previous fix for every fingerprint whose issue was closed: it recurred if the
   // failure is back tonight, or held once HOLD_CONFIRM_RUNS clean runs have passed since.
+  // A recurrence is only recorded once the issue is actually reopened (step 4), otherwise a
+  // suppressed or failed reopen would count the same closure again on a later night.
+  const decisionByFp = new Map(decisions.map(d => [d.bundle.fingerprint, d]));
+  const pendingRecurrences = new Map<string, FixOutcome>();
   Object.entries(history.fingerprints)
     .filter(
       ([, state]) =>
@@ -1199,15 +1203,14 @@ async function main(): Promise<void> {
     )
     .forEach(([fp, state]) => {
       if (seenThisRun.has(fp)) {
-        // Closed and back again. A diagnostics-only round expects exactly this, so it is
-        // recorded apart from real fix attempts and leaves the escalation budget intact.
-        state.fixAttempts.push({
-          outcome: diagnosticsOnly.has(fp) ? 'instrumented' : 'recurred',
-          issueNumber: state.issueNumber as number,
-          runId: ctx.runId,
-          at: ctx.timestamp,
-        });
         state.cleanRunsSinceClose = 0;
+        if (decisionByFp.get(fp)?.route === 'no_action') return;
+        // A diagnostics-only round expects to recur, so it is recorded apart from real fix
+        // attempts and leaves the escalation budget intact.
+        pendingRecurrences.set(
+          fp,
+          diagnosticsOnly.has(fp) ? 'instrumented' : 'recurred'
+        );
       } else {
         state.cleanRunsSinceClose = (state.cleanRunsSinceClose ?? 0) + 1;
         // Ignore diagnostics rounds when looking back, or one at the tail would hide an
@@ -1226,17 +1229,17 @@ async function main(): Promise<void> {
       }
     });
 
-  // Recount after recording recurrences so escalation takes effect on this run.
+  // Recount including tonight's pending recurrence so escalation takes effect on this run.
   decisions.forEach(decision => {
-    const state = history.fingerprints[decision.bundle.fingerprint];
-    decision.bundle.priorFixAttempts = attemptsWithOutcome(
-      state,
-      'recurred'
-    ).length;
-    decision.bundle.diagnosticsAttempts = attemptsWithOutcome(
-      state,
-      'instrumented'
-    ).length;
+    const fp = decision.bundle.fingerprint;
+    const state = history.fingerprints[fp];
+    const pending = pendingRecurrences.get(fp);
+    decision.bundle.priorFixAttempts =
+      attemptsWithOutcome(state, 'recurred').length +
+      (pending === 'recurred' ? 1 : 0);
+    decision.bundle.diagnosticsAttempts =
+      attemptsWithOutcome(state, 'instrumented').length +
+      (pending === 'instrumented' ? 1 : 0);
     if (
       decision.route === 'auto_fix_candidate' &&
       decision.bundle.priorFixAttempts >= ESCALATE_AFTER_ATTEMPTS
@@ -1274,20 +1277,18 @@ async function main(): Promise<void> {
 
   // ---- 4. open or update one issue per fingerprint ----
 
-  // Rank agent candidates by flake rate so the cap spends its budget on the fingerprints with
-  // the worst track record; ties break toward the one affecting more tests. Only
-  // auto_fix_candidate routes are eligible -- escalate/no_action stay off the agent's plate.
-  const assignable = new Set(
-    decisions
-      .filter(d => d.route === 'auto_fix_candidate')
-      .sort(
-        (a, b) =>
-          b.bundle.flakeRate - a.bundle.flakeRate ||
-          b.bundle.tests.length - a.bundle.tests.length
-      )
-      .slice(0, MAX_AGENT_ASSIGNMENTS_PER_RUN)
-      .map(d => d.bundle.fingerprint)
+  // Process agent candidates first, worst track record first, so the cap spends its budget on
+  // them; ties break toward the fingerprint affecting more tests. escalate/no_action routes
+  // never get an agent. The cap counts assignment attempts, not eligible fingerprints, so issues
+  // that already have an assignee don't use it up.
+  decisions.sort(
+    (a, b) =>
+      Number(b.route === 'auto_fix_candidate') -
+        Number(a.route === 'auto_fix_candidate') ||
+      b.bundle.flakeRate - a.bundle.flakeRate ||
+      b.bundle.tests.length - a.bundle.tests.length
   );
+  let assignmentAttempts = 0;
 
   // Fall back to matching by the embedded marker if history lost track of an issue number
   // (e.g. a cold cache), so a fingerprint doesn't get a duplicate issue opened for it.
@@ -1343,33 +1344,47 @@ async function main(): Promise<void> {
     const issueNumber = state.issueNumber ?? known?.number;
     // Keep the rendered issue on the decision so a dry run is reviewable.
     decision.rendered = { title: buildTitle(decision.bundle), labels, body };
-    const wantsAgent = assignable.has(fp);
+    const wantsAgent = decision.route === 'auto_fix_candidate';
 
     if (dryRun) {
+      const wouldAssign =
+        wantsAgent && assignmentAttempts < MAX_AGENT_ASSIGNMENTS_PER_RUN;
+      if (wouldAssign) assignmentAttempts += 1;
       console.log(
         `  [${decision.route}] ${fp} (${decision.reason}) - would ${
           issueNumber !== undefined ? `update #${issueNumber}` : 'open an issue'
-        }${wantsAgent ? ' and assign the agent' : ''}`
+        }${wouldAssign ? ' and assign the agent' : ''}`
       );
       decision.issue = issueNumber ?? null;
-      decision.assigned = wantsAgent;
+      decision.assigned = wouldAssign;
       return;
     }
 
-    // Only hand the issue to an agent when nobody is on it: a brand-new issue, one reopening
-    // because a previous fix didn't hold, or a recurring open issue with no assignee (e.g. an
-    // earlier assignment failed). An assigned issue already has a session or a human on it.
+    // Only hand the issue to an agent when nobody is on it: a brand-new issue, or an open one
+    // with no assignee (reopening clears it, and an earlier assignment may have been skipped or
+    // failed). An assigned issue already has a session or a human on it.
     let shouldAssign = false;
 
     try {
       if (issueNumber !== undefined) {
         // Fall back to the freshly fetched state when the cache has no record of this issue.
         const reopening = (state.issueState ?? known?.state) === 'closed';
+        // Clearing the assignee on reopen is what lets a new session start later, even if this
+        // run can't assign (cap reached or no token).
         const updated = await gh?.updateIssue(issueNumber, {
           body,
           labels,
-          ...(reopening ? { state: 'open' } : {}),
+          ...(reopening ? { state: 'open', assignees: [] } : {}),
         });
+        const outcome = pendingRecurrences.get(fp);
+        if (reopening && outcome !== undefined) {
+          state.fixAttempts.push({
+            outcome,
+            issueNumber,
+            runId: ctx.runId,
+            at: ctx.timestamp,
+          });
+        }
         await gh?.comment(
           issueNumber,
           reopening
@@ -1379,8 +1394,7 @@ async function main(): Promise<void> {
         state.issueState = 'open';
         state.issueNumber = issueNumber;
         decision.issue = issueNumber;
-        shouldAssign =
-          wantsAgent && (reopening || (updated?.assignees ?? []).length === 0);
+        shouldAssign = wantsAgent && (updated?.assignees ?? []).length === 0;
         console.log(
           `  [${decision.route}] ${fp} -> ${
             reopening ? 'reopened' : 'updated'
@@ -1415,7 +1429,12 @@ async function main(): Promise<void> {
         console.log(
           `  [${decision.route}] ${fp} -> #${decision.issue} not assigned (COPILOT_ASSIGN_TOKEN unset)`
         );
+      } else if (assignmentAttempts >= MAX_AGENT_ASSIGNMENTS_PER_RUN) {
+        console.log(
+          `  [${decision.route}] ${fp} -> #${decision.issue} not assigned (cap of ${MAX_AGENT_ASSIGNMENTS_PER_RUN} reached; retried next recurrence)`
+        );
       } else {
+        assignmentAttempts += 1;
         try {
           await gh.assignAgent(decision.issue);
           decision.assigned = true;
