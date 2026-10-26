@@ -1,4 +1,4 @@
-:root {
+.iris-grid-bottom-bar {
   --iris-grid-bottom-bar-height: 50px;
   --iris-grid-bottom-bar-ease-out-bounce-back: cubic-bezier(
     0.175,
@@ -6,9 +6,7 @@
     0.32,
     1.275
   );
-}
 
-.iris-grid-bottom-bar {
   position: absolute;
   bottom: calc(-1 * var(--iris-grid-bottom-bar-height));
   left: 0;

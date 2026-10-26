@@ -1,8 +1,5 @@
-:root {
-  --time-slider-track-height: 15px;
-}
-
 .time-slider {
+  --time-slider-track-height: 15px;
   --handle-size: var(--time-slider-track-height);
 
   width: 100%;
@@ -95,11 +92,7 @@
         padding: 0;
         background: var(--dh-color-gray-700);
         border: 1px solid transparent;
-        transition:
-          color 0.12s ease-in-out,
-          background-color 0.12s ease-in-out,
-          border-color 0.12s ease-in-out,
-          box-shadow 0.12s ease-in-out;
+        transition: var(--dh-btn-transition);
         cursor: grab;
         pointer-events: all;
         /* opacity: 0.3; */

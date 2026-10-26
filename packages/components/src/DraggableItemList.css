@@ -83,7 +83,7 @@
       padding: calc(var(--dh-spacer-1) * 0.5) var(--dh-spacer-1) 0
         var(--dh-spacer-2);
       border: var(--draggable-item-border);
-      line-height: 1.3;
+      line-height: var(--dh-input-line-height);
 
       &:hover {
         background-color: var(--draggable-item-hover-bg);

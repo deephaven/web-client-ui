@@ -1,5 +1,10 @@
 .advanced-filter-creator {
-  padding: 0.5rem 0.75rem;
+  /* Bootstrap's popover body padding */
+  --advanced-filter-creator-padding-y: 0.5rem;
+  --advanced-filter-creator-padding-x: 0.75rem;
+
+  padding: var(--advanced-filter-creator-padding-y)
+    var(--advanced-filter-creator-padding-x);
 
   .btn-link {
     padding-left: 0.25rem;
@@ -7,10 +12,10 @@
   }
 
   hr {
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
-    margin-bottom: 0.5rem;
-    margin-top: 0.5rem;
+    margin-left: calc(-1 * var(--advanced-filter-creator-padding-x));
+    margin-right: calc(-1 * var(--advanced-filter-creator-padding-x));
+    margin-bottom: var(--advanced-filter-creator-padding-y);
+    margin-top: var(--advanced-filter-creator-padding-y);
     background: var(--dh-color-gray-300);
   }
 
@@ -19,7 +24,7 @@
   }
 
   .advanced-filter-column-name {
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--advanced-filter-creator-padding-y);
     .column-type {
       font-style: italic;
       color: var(--dh-color-gray-600);

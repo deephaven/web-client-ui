@@ -6,9 +6,9 @@
 
   /* reset font back to default, otherwise we get styling intended for table */
   font-family: var(--dh-font-family-sans);
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: var(--dh-font-size-base);
+  font-weight: var(--dh-font-weight-base);
+  line-height: var(--dh-line-height-base);
 
   .navigation-title-bar {
     display: flex;

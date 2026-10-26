@@ -1,6 +1,7 @@
+/* Sized by the --login-box-* properties of the surrounding Login */
 .login-form {
-  max-width: 302.5px;
-  min-height: 310px;
+  max-width: calc(var(--login-box-width) * 0.5);
+  min-height: var(--login-box-min-height);
   background: var(--dh-color-login-form-bg);
   border-radius: 0 var(--dh-border-radius) var(--dh-border-radius) 0;
   display: flex;

@@ -1,9 +1,6 @@
-:root {
+.btn-switch {
   --ui-switch-size: 15px;
   --ui-switch-handle-padding: 1px;
-}
-
-.btn-switch {
   --switch-width: 40px;
   --switch-handle-size: calc(
     var(--ui-switch-size) - (var(--ui-switch-handle-padding) * 2)

@@ -2,13 +2,6 @@
 
 /* ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged */
 /* is added to the body class, prevents overflow in our app context */
-:root {
-  --lm-tab-height: 28px;
-  --lm-tab-padding-x: 6px;
-  --lm-tab-hover-color: var(--dh-color-gray-700);
-  --lm-tab-active-color: var(--dh-color-text);
-  --lm-tab-active-background: var(--dh-color-golden-layout-tab-selected-bg);
-}
 .lm_dragging {
   overflow: hidden;
   pointer-events: none;
@@ -57,6 +50,17 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     pointer-events: none;
     z-index: 9999;
   }
+}
+
+/* The drag proxy and tab dropdown list are appended to body, outside .lm_goldenlayout */
+.lm_goldenlayout,
+.lm_dragProxy,
+.lm_tabdropdown_list {
+  --lm-tab-height: 28px;
+  --lm-tab-padding-x: 6px;
+  --lm-tab-hover-color: var(--dh-color-gray-700);
+  --lm-tab-active-color: var(--dh-color-text);
+  --lm-tab-active-background: var(--dh-color-golden-layout-tab-selected-bg);
 }
 
 /* Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low) */
@@ -330,7 +334,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 }
 
 .lm_tabdropdown_list {
-  z-index: 1000;
+  z-index: var(--dh-z-index-dropdown);
   background: var(--dh-color-popover-bg);
   box-shadow: var(--dh-box-shadow);
   border-radius: var(--dh-border-radius);
@@ -343,7 +347,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     padding: var(--dh-spacer-1);
     input {
       padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
-      line-height: 1.3;
+      line-height: var(--dh-input-line-height);
       color: var(--dh-color-input-fg);
       background-color: var(--dh-color-input-bg);
       border: var(--dh-input-border-width) solid var(--dh-color-input-border);

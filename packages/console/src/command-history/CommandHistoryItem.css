@@ -1,12 +1,9 @@
-:root {
+.command-history {
   --command-history-item-selection-border-color: var(
     --dh-color-item-list-selected-border
   );
   --command-history-item-selected-color: var(--dh-color-item-list-selected-fg);
   --command-history-item-border-width: 1px;
-}
-
-.command-history {
   --item-list-color: var(--dh-color-gray-600);
   .command-history-item {
     width: 100%;

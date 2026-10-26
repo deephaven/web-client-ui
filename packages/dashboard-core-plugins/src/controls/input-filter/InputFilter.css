@@ -82,7 +82,7 @@
       &:focus {
         outline: none;
         border-bottom: 1px solid var(--dh-color-input-focus-border);
-        box-shadow: 0 0.2rem 0
+        box-shadow: 0 var(--dh-focus-ring-width) 0
           color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
       }
     }

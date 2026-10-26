@@ -1,8 +1,5 @@
-:root {
-  --linker-link-dash-size: 10;
-}
-
 .linker-overlay {
+  --linker-link-dash-size: 10;
   --link-width: 3;
   --selectable-width: 20;
   --dash-color-1: var(--dh-color-visual-cyan);
@@ -157,7 +154,8 @@
     min-height: var(--dh-input-height);
     height: var(--dh-input-height);
     width: var(--dh-input-height);
-    line-height: 1.25rem; /* vertical centering for text inside fa-layer */
+    /* vertical centering for text inside fa-layer */
+    line-height: var(--dh-font-size-lg);
     padding: 0;
     margin: 0;
     z-index: 30;
@@ -167,7 +165,7 @@
       justify-content: center;
       b {
         /* comparison operator */
-        font-size: 1.25rem;
+        font-size: var(--dh-font-size-lg);
       }
     }
   }

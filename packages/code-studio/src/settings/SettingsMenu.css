@@ -1,8 +1,5 @@
-:root {
-  --settings-menu-padding: var(--dh-spacer-3);
-}
-
 .app-settings-menu {
+  --settings-menu-padding: var(--dh-spacer-3);
   --settings-menu-bg: var(--dh-color-surface-bg);
   --dh-color-hr: var(--dh-color-gray-500);
 
@@ -15,7 +12,7 @@
   right: 0;
   bottom: 0;
   width: 400px;
-  z-index: 1050;
+  z-index: var(--dh-z-index-modal);
 
   .btn-delete-format-rule {
     font-size: 18px;

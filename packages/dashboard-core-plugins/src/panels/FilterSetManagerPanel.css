@@ -3,7 +3,7 @@
 }
 
 .screen-flash-overlay {
-  z-index: 1070;
+  z-index: var(--dh-z-index-tooltip);
   position: absolute;
   top: 0;
   left: 0;

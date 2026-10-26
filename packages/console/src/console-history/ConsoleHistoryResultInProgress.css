@@ -1,17 +1,15 @@
-:root {
+.console-history-result-in-progress {
   --console-history-result-in-progress-font-size: 12px;
   --console-history-result-in-progress-button-vert-margin: 4px;
   --console-history-result-in-progress-button-height: 26px;
-}
 
-.console-history-result-in-progress {
   user-select: none;
 
   .badge {
     background-color: var(--dh-color-gray-500);
     color: var(--dh-color-fg);
     font-size: var(--console-history-result-in-progress-font-size);
-    font-weight: 400;
+    font-weight: var(--dh-font-weight-base);
     gap: 4px;
     margin: var(--console-history-result-in-progress-button-vert-margin)
       var(--console-history-result-in-progress-button-vert-margin)

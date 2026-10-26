@@ -1,8 +1,6 @@
-:root {
-  --console-status-bar-icon-connected-color: var(--dh-color-gray-600);
-}
-
 .console-pane-status-bar {
+  --console-status-bar-icon-connected-color: var(--dh-color-gray-600);
+
   display: flex;
   gap: 3px;
   align-items: center;

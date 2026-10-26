@@ -43,6 +43,6 @@
   .card-flip--show-front,
   .card-flip--show-back {
     /* increase z-index while flipping so perspective appears above everything */
-    z-index: 1060;
+    z-index: var(--dh-z-index-popover);
   }
 }

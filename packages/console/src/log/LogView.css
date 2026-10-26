@@ -38,7 +38,7 @@
   .popper-content {
     .context-menu-container {
       background: var(--dh-color-gray-400);
-      font-size: 0.875rem;
+      font-size: var(--dh-font-size-sm);
       min-width: 0;
     }
     .popper-arrow {

@@ -1,8 +1,8 @@
-:root {
-  --iris-grid-table-sidebar-max-width: 320px;
-}
-
 .iris-grid {
+  --iris-grid-table-sidebar-max-width: 320px;
+
+  /* Matches header-height in IrisGridTheme.module.css */
+  --iris-grid-header-height: 30px;
   --table-sidebar-bg: var(--dh-color-surface-bg);
   --dh-color-hr: var(--dh-color-gray-500);
 
@@ -99,8 +99,8 @@
       position: absolute;
       top: 0;
       right: 0;
-      height: 30px;
-      width: 30px;
+      height: var(--iris-grid-header-height);
+      width: var(--iris-grid-header-height);
       background-color: var(--dh-color-grid-header-bg);
       border-bottom: 1px solid var(--dh-color-grid-header-separator);
       transition:

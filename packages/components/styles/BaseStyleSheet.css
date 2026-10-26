@@ -21,13 +21,41 @@
   /* Bootstrap's names, still read by plugins built for older versions */
   --font-family-sans-serif: var(--dh-font-family-sans);
   --font-family-monospace: var(--dh-font-family-mono);
+  --dh-font-size-base: 1rem;
+  --dh-font-size-sm: 0.875rem;
+  --dh-font-size-lg: 1.25rem;
+  --dh-font-weight-base: 400;
+  --dh-line-height-base: 1.5;
+  /* Stacking order for overlays, from Bootstrap */
+  --dh-z-index-dropdown: 1000;
+  --dh-z-index-sticky: 1020;
+  --dh-z-index-fixed: 1030;
+  --dh-z-index-modal-backdrop: 1040;
+  --dh-z-index-modal: 1050;
+  --dh-z-index-popover: 1060;
+  --dh-z-index-tooltip: 1070;
+  --dh-focus-ring-width: 0.2rem;
+  /* Shared by inputs and buttons */
   --dh-input-border-width: 1px;
+  --dh-input-line-height: 1.3;
   --dh-input-padding-x: 0.75rem;
-  /* Matches Spectrum's 32px input height with a 1.3 line height */
+  /* Matches Spectrum's 32px input height with the line height above */
   --dh-input-padding-y: 0.42145rem;
-  --dh-input-height: calc(1.3em + 0.8429rem + 2px);
-  --dh-input-focus-box-shadow: 0 0 0 0.2rem
+  --dh-input-height: calc(
+    var(--dh-input-line-height) * 1em + 2 * var(--dh-input-padding-y) + 2 *
+      var(--dh-input-border-width)
+  );
+  --dh-input-focus-box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  --dh-btn-border-width: 2px;
+  --dh-btn-padding-x: 1.5rem;
+  --dh-btn-transition: color 0.12s ease-in-out,
+    background-color 0.12s ease-in-out, border-color 0.12s ease-in-out,
+    box-shadow 0.12s ease-in-out;
+  --dh-select-caret-width: 10px;
+  --dh-select-caret-height: 6px;
+  --dh-tooltip-padding-y: 0.25rem;
+  --dh-tooltip-padding-x: 0.5rem;
   --dh-svg-inline-icon-size: 16px;
 
   color: var(--dh-color-text);
@@ -226,13 +254,13 @@ span.btn-disabled-wrapper {
   border-color: var(--dh-color-negative-bg);
 
   &:focus {
-    box-shadow: 0 0 0 0.2rem var(--dh-color-focus);
+    box-shadow: 0 0 0 var(--dh-focus-ring-width) var(--dh-color-focus);
   }
 
   &:not(:disabled):not(.disabled):active {
     background: var(--dh-color-negative-down-bg);
     border-color: var(--dh-color-negative-down-bg);
-    box-shadow: 0 0 0 0.2rem var(--dh-color-focus);
+    box-shadow: 0 0 0 var(--dh-focus-ring-width) var(--dh-color-focus);
   }
 }
 
@@ -246,7 +274,7 @@ span.btn-disabled-wrapper {
 }
 
 .btn-spinner {
-  padding: 0.42145rem 1rem;
+  padding: var(--dh-input-padding-y) 1rem;
 }
 
 .btn-link.no-underline,
@@ -277,11 +305,7 @@ span.btn-disabled-wrapper {
     height: 100%;
     padding-left: calc(100% - var(--dh-input-border-width) * 2);
     /* padding used in place of width, still need to account for border width */
-    transition:
-      color 0.12s ease-in-out,
-      background-color 0.12s ease-in-out,
-      border-color 0.12s ease-in-out,
-      box-shadow 0.12s ease-in-out;
+    transition: var(--dh-btn-transition);
   }
 
   &:focus {
@@ -433,13 +457,15 @@ span.btn-disabled-wrapper {
 
   > .btn:not(:first-child):not(:hover):not(:focus) {
     &.btn-primary {
-      border-left: 2px solid var(--dh-color-accent-hover-bg);
+      border-left: var(--dh-btn-border-width) solid
+        var(--dh-color-accent-hover-bg);
     }
     &.btn-secondary {
-      border-left: 2px solid var(--dh-color-gray-500);
+      border-left: var(--dh-btn-border-width) solid var(--dh-color-gray-500);
     }
     &.btn-danger {
-      border-left: 2px solid var(--dh-color-negative-hover-bg);
+      border-left: var(--dh-btn-border-width) solid
+        var(--dh-color-negative-hover-bg);
     }
   }
 }
@@ -479,7 +505,8 @@ form label small {
   background-image: var(--dh-svg-icon-error);
 }
 .form-control.is-invalid:focus {
-  box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
+    var(--dh-color-form-control-error-shadow);
 }
 
 .form-control.btn:focus-visible {
@@ -555,9 +582,18 @@ form label small {
   }
 }
 
+/* Down caret of the custom select buttons, e.g. CustomTimeSelect */
+.cs-caret {
+  width: var(--dh-select-caret-width);
+  height: var(--dh-select-caret-height);
+  background-color: var(--dh-color-selector-fg);
+  mask: var(--dh-svg-icon-selector-caret) center / var(--dh-select-caret-width)
+    var(--dh-select-caret-height) no-repeat;
+}
+
 .custom-select {
   background-image: var(--dh-svg-icon-select-indicator);
-  background-size: 10px 6px;
+  background-size: var(--dh-select-caret-width) var(--dh-select-caret-height);
 
   &:focus {
     box-shadow: none;
@@ -567,7 +603,7 @@ form label small {
   &.is-invalid:focus {
     border-color: var(--dh-color-form-control-error);
     background-size:
-      10px 6px,
+      var(--dh-select-caret-width) var(--dh-select-caret-height),
       16px;
     background-image: var(--dh-svg-icon-select-indicator),
       var(--dh-svg-icon-error);
@@ -577,7 +613,8 @@ form label small {
       var(--dh-svg-icon-error);
   }
   &.is-invalid:focus {
-    box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+    box-shadow: 0 0 0 var(--dh-focus-ring-width)
+      var(--dh-color-form-control-error-shadow);
   }
 }
 
@@ -615,7 +652,7 @@ input[type='number']::-webkit-inner-spin-button {
 /* stylelint-disable no-descending-specificity -- keep with input section */
 .input-group-append .btn {
   background-color: var(--dh-color-input-bg);
-  padding: 0.42145rem 0.5rem;
+  padding: var(--dh-input-padding-y) 0.5rem;
 }
 
 .input-group > .input-group-append > .btn {
@@ -803,10 +840,10 @@ input[type='number']::-webkit-inner-spin-button {
     background-image: var(--dh-svg-icon-select-indicator),
       linear-gradient(0deg, var(--dh-color-input-bg), var(--dh-color-input-bg));
     background-size:
-      10px 6px,
+      var(--dh-select-caret-width) var(--dh-select-caret-height),
       cover;
     background-position-x:
-      right 0.75rem,
+      right var(--dh-input-padding-x),
       center;
     background-position-y:
       bottom 50%,
@@ -839,11 +876,11 @@ input[type='number']::-webkit-inner-spin-button {
           var(--dh-color-input-bg)
         );
       background-size:
-        10px 6px,
+        var(--dh-select-caret-width) var(--dh-select-caret-height),
         16px,
         cover;
       background-position-x:
-        right 0.75rem,
+        right var(--dh-input-padding-x),
         right 1.75rem,
         center;
     }
@@ -956,6 +993,9 @@ input[type='number']::-webkit-inner-spin-button {
  * than the `background` shorthand, which would reset it.
  */
 .dh-marching-ants {
+  --dh-marching-ants-length: 8px;
+  --dh-marching-ants-thickness: 1px;
+
   background-image: linear-gradient(
       to right,
       var(--dh-marching-ants-gap-color, var(--dh-color-bg)) 50%,
@@ -977,10 +1017,10 @@ input[type='number']::-webkit-inner-spin-button {
       var(--dh-marching-ants-color, var(--dh-color-fg)) 50%
     );
   background-size:
-    8px 1px,
-    8px 1px,
-    1px 8px,
-    1px 8px;
+    var(--dh-marching-ants-length) var(--dh-marching-ants-thickness),
+    var(--dh-marching-ants-length) var(--dh-marching-ants-thickness),
+    var(--dh-marching-ants-thickness) var(--dh-marching-ants-length),
+    var(--dh-marching-ants-thickness) var(--dh-marching-ants-length);
   background-position:
     0 top,
     0 bottom,
@@ -1003,10 +1043,10 @@ input[type='number']::-webkit-inner-spin-button {
 
   to {
     background-position:
-      8px top,
-      8px bottom,
-      left 8px,
-      right 8px;
+      var(--dh-marching-ants-length) top,
+      var(--dh-marching-ants-length) bottom,
+      left var(--dh-marching-ants-length),
+      right var(--dh-marching-ants-length);
   }
 }
 

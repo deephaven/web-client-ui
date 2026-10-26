@@ -1,7 +1,3 @@
-:root {
-  --dropdown-menu-arrow-width: 5px;
-}
-
 .menu-actions-listener {
   display: none;
 }
@@ -23,6 +19,7 @@
 }
 
 .menu-popper {
+  --dropdown-menu-arrow-width: 5px;
   --menu-bg: var(--dh-color-popover-bg);
 
   padding: 0;

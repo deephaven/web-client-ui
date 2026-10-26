@@ -1,29 +1,22 @@
-:root {
+.btn-socketed {
   --socketed-button-bg: var(--dh-color-action-bg);
   --socketed-button-disabled-bg: var(--dh-color-action-disabled-bg);
   --socketed-button-disabled-border-color: var(
     --dh-color-action-disabled-border
   );
   --socketed-button-socket-size: 18px;
-}
-
-.btn-socketed {
   --socket-button-hover-border: var(--dh-color-hover-border);
 
   position: relative;
   display: inline-block;
   border: var(--dh-input-border-width) solid var(--dh-color-input-border);
-  padding: 0.42145rem 1.5rem;
+  padding: var(--dh-input-padding-y) var(--dh-btn-padding-x);
   color: var(--dh-color-neutral-contrast);
   background: var(--socketed-button-bg);
-  line-height: 1.3;
+  line-height: var(--dh-input-line-height);
   user-select: none;
   border-radius: var(--dh-border-radius);
-  transition:
-    color 0.12s ease-in-out,
-    background-color 0.12s ease-in-out,
-    border-color 0.12s ease-in-out,
-    box-shadow 0.12s ease-in-out;
+  transition: var(--dh-btn-transition);
   cursor: pointer;
 
   &::after {
@@ -38,11 +31,7 @@
     height: var(--socketed-button-socket-size);
     border-radius: 50%;
     border: var(--dh-input-border-width) solid var(--dh-color-input-border);
-    transition:
-      color 0.12s ease-in-out,
-      background-color 0.12s ease-in-out,
-      border-color 0.12s ease-in-out,
-      box-shadow 0.12s ease-in-out;
+    transition: var(--dh-btn-transition);
   }
 
   &:focus {
@@ -147,7 +136,7 @@
 
 .btn-socketed.is-invalid:focus,
 .btn-socketed.btn-socketed-linked.is-invalid:focus {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-negative) 35%, transparent);
 }
 

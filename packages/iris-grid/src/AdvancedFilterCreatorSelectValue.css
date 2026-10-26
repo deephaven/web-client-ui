@@ -15,8 +15,8 @@
 
   .row-count-info {
     /* same vertical padding as a btn-links that are on the same line */
-    padding-top: calc(var(--dh-spacer-1) + 2px);
-    padding-bottom: calc(var(--dh-spacer-1) + 2px);
+    padding-top: calc(var(--dh-spacer-1) + var(--dh-btn-border-width));
+    padding-bottom: calc(var(--dh-spacer-1) + var(--dh-btn-border-width));
     color: var(--dh-color-gray-600);
     user-select: none;
   }

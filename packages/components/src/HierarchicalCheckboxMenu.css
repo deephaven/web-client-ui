@@ -2,21 +2,16 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--dh-input-padding-x);
   justify-content: space-between;
   border-radius: var(--dh-border-radius);
   border: var(--dh-input-border-width) solid var(--dh-color-input-border);
   color: var(--dh-color-input-fg);
   background-color: var(--dh-color-selector-bg);
-  padding: 0.42145rem 0.75rem;
-  font-weight: 400;
+  padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+  font-weight: var(--dh-font-weight-base);
 
   .cs-caret {
-    background-size: 10px 6px;
-    mask: var(--dh-svg-icon-selector-caret) center / 10px 6px no-repeat;
-    background-color: var(--dh-color-selector-fg);
-    width: 10px;
-    height: 6px;
     margin-right: 4px;
     flex-shrink: 0;
   }

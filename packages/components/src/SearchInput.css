@@ -1,4 +1,6 @@
 .search-group {
+  --search-input-icon-size: 16px;
+
   position: relative;
 
   .form-control {
@@ -23,14 +25,15 @@
   }
 
   ::-webkit-search-cancel-button {
-    background-size: 16px;
+    background-size: var(--search-input-icon-size);
     background-color: var(--dh-color-fg);
-    mask: var(--dh-svg-icon-search-cancel) center / 16px no-repeat;
+    mask: var(--dh-svg-icon-search-cancel) center /
+      var(--search-input-icon-size) no-repeat;
 
     /* Need to specify -webkit-appearance: none for Chrome */
     -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
+    height: var(--search-input-icon-size);
+    width: var(--search-input-icon-size);
     opacity: 0.4;
     transition: opacity 300ms ease;
   }

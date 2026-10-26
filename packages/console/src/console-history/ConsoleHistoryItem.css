@@ -1,9 +1,3 @@
-:root {
-  --console-history-item-font-size: 12px;
-  --console-history-item-button-height: 26px;
-  --console-history-item-button-vert-margin: 4px;
-}
-
 .console-history-item-command,
 .console-history-item-result {
   display: flex;
@@ -60,6 +54,9 @@
 }
 
 .console-history-item-result {
+  --console-history-item-font-size: 12px;
+  --console-history-item-button-height: 26px;
+  --console-history-item-button-vert-margin: 4px;
   --error-gutter-width: 15px;
   .btn-console-object {
     display: inline-flex;
@@ -93,11 +90,7 @@
         padding-left: 0;
         padding-right: 0;
         color: color-mix(in srgb, var(--dh-color-negative) 50%, transparent);
-        transition:
-          color 0.12s ease-in-out,
-          background-color 0.12s ease-in-out,
-          border-color 0.12s ease-in-out,
-          box-shadow 0.12s ease-in-out;
+        transition: var(--dh-btn-transition);
       }
 
       .error-btn-link:hover,

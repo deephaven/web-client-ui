@@ -66,7 +66,7 @@
     border-radius: var(--dh-border-radius);
     background: var(--dh-color-tooltip-bg);
     color: var(--dh-color-tooltip-fg);
-    padding: 0.25rem 0.5rem;
+    padding: var(--dh-tooltip-padding-y) var(--dh-tooltip-padding-x);
     box-shadow: var(--dh-color-tooltip-box-shadow);
 
     /* Already set by plotly, just setting again in case it changes in the future so body shadow appears under arrow tip */

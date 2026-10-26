@@ -46,18 +46,10 @@ section {
 
 body {
   margin: 0;
-  font-family:
-    'Fira Sans',
-    -apple-system,
-    blinkmacsystemfont,
-    'Segoe UI',
-    'Roboto',
-    'Helvetica Neue',
-    arial,
-    sans-serif;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
+  font-family: var(--dh-font-family-sans);
+  font-size: var(--dh-font-size-base);
+  font-weight: var(--dh-font-weight-base);
+  line-height: var(--dh-line-height-base);
   color: var(--dh-color-white);
   text-align: left;
   background-color: var(--dh-color-black);
@@ -1723,7 +1715,7 @@ a.close.disabled {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1050;
+  z-index: var(--dh-z-index-modal);
   display: none;
   width: 100%;
   height: 100%;
@@ -1809,7 +1801,7 @@ a.close.disabled {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1040;
+  z-index: var(--dh-z-index-modal-backdrop);
   width: 100vw;
   height: 100vh;
   background-color: var(--dh-color-black);

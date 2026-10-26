@@ -1,13 +1,11 @@
-:root {
+.iris-grid-copy-handler {
   --iris-grid-copy-handler-ease-out-bounce-back: cubic-bezier(
     0.175,
     0.885,
     0.32,
     1.275
   );
-}
 
-.iris-grid-copy-handler {
   position: absolute;
   bottom: -50px;
   left: 0;
