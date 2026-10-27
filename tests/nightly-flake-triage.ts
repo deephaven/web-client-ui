@@ -100,6 +100,8 @@ interface FingerprintState {
   lastSeenAt?: string;
   lastSeenRunId?: string;
   openedAt?: string;
+  // Diagnostics-only PRs already counted as an exempt round; each may exempt only one recurrence.
+  consumedDiagnosticsPrs?: string[];
 }
 
 // Root shape of the history.json cache restored/saved via actions/cache.
@@ -1142,6 +1144,8 @@ async function main(): Promise<void> {
   // Fingerprints whose closing round only added diagnostics, per the merged PR's declaration or
   // a manually applied label.
   const diagnosticsOnly = new Set<string>();
+  // The merged diagnostics PR behind each fingerprint's exemption, consumed once it is reopened.
+  const diagnosticsPrByFp = new Map<string, string>();
   if (gh) {
     // Only fingerprints with a previously opened issue need their GitHub state refreshed.
     const tracked = Object.entries(history.fingerprints)
@@ -1175,8 +1179,14 @@ async function main(): Promise<void> {
                 (a, b) =>
                   Date.parse(b.mergedAt ?? '') - Date.parse(a.mergedAt ?? '')
               );
-            if (DIAGNOSTICS_ROUND_PATTERN.test(merged[0]?.body ?? '')) {
+            const latest = merged[0];
+            if (
+              latest !== undefined &&
+              DIAGNOSTICS_ROUND_PATTERN.test(latest.body) &&
+              !(state.consumedDiagnosticsPrs ?? []).includes(latest.url)
+            ) {
               diagnosticsOnly.add(fp);
+              diagnosticsPrByFp.set(fp, latest.url);
             }
           }
         } catch (err) {
@@ -1384,6 +1394,13 @@ async function main(): Promise<void> {
             runId: ctx.runId,
             at: ctx.timestamp,
           });
+          const diagnosticsPr = diagnosticsPrByFp.get(fp);
+          if (outcome === 'instrumented' && diagnosticsPr !== undefined) {
+            state.consumedDiagnosticsPrs = [
+              ...(state.consumedDiagnosticsPrs ?? []),
+              diagnosticsPr,
+            ];
+          }
         }
         await gh?.comment(
           issueNumber,
