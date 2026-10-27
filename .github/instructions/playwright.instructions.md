@@ -35,7 +35,7 @@ change what a correct fix looks like.
 
 A change you did not run is not a fix. Before editing anything, start the
 servers and reproduce; after editing, repeat with
-`npx playwright test path/to/spec.ts --repeat-each=10` and report
+`npx playwright test --config=playwright-ci.config.ts path/to/spec.ts --repeat-each=10` and report
 before/after counts in the PR, including if the fix did not fully resolve it.
 The run needs a core server on `:10000` and the production build served on
 `localhost:4000/ide/` and `localhost:4010`, exactly as nightly CI does.

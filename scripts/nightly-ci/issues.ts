@@ -67,9 +67,9 @@ function reproCommand(bundle: Bundle): string {
     ...new Set(bundle.tests.map(t => t.project).filter(Boolean)),
   ];
   const flags = projects.map(p => `--project=${p}`).join(' ');
-  return `npx playwright test ${files.join(' ')}${
-    flags ? ` ${flags}` : ''
-  } --repeat-each=10`;
+  return `npx playwright test --config=playwright-ci.config.ts ${files.join(
+    ' '
+  )}${flags ? ` ${flags}` : ''} --repeat-each=10`;
 }
 
 // Renders the full markdown body for a fingerprint's GitHub issue.
