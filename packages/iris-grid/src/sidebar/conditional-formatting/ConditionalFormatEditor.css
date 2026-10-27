@@ -27,7 +27,7 @@
 
   .error-message {
     color: var(--dh-color-negative-bg);
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     margin-bottom: var(--dh-spacer-4);
     font-size: 1rem;
     p {

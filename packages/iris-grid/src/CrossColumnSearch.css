@@ -16,8 +16,8 @@
   .cross-column-scroll {
     display: grid;
     grid-template-columns: max-content auto;
-    grid-column-gap: 0.5rem;
-    grid-row-gap: 0;
+    column-gap: 0.5rem;
+    row-gap: 0;
     overflow-y: auto;
     max-height: 15rem;
     padding: 0.2rem 0.5rem;

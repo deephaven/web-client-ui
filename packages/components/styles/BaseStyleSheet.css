@@ -826,7 +826,7 @@ input[type='number']::-webkit-inner-spin-button {
 /********** Browser Hacks *********/
 
 /* Moz specific hacks */
-/* stylelint-disable-next-line function-url-quotes */
+/* stylelint-disable-next-line function-url-quotes, at-rule-no-vendor-prefix, at-rule-prelude-no-invalid */
 @-moz-document url-prefix() {
   /*
    * Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...

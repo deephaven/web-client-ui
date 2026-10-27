@@ -101,6 +101,7 @@
  * it here either: https://bugzilla.mozilla.org/show_bug.cgi?id=1580953
  * Not nested since @-moz-document is not allowed inside a style rule.
  */
+/* stylelint-disable-next-line at-rule-no-vendor-prefix */
 @-moz-document url-prefix('') {
   .iris-grid-input-autosized-wrapper::after,
   .iris-grid-input-autosized-wrapper .iris-grid-input-field {

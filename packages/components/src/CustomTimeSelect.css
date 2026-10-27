@@ -37,7 +37,6 @@
 
   .cs-custom-container {
     display: flex;
-    direction: row;
   }
 
   .custom-label {

@@ -31,7 +31,7 @@
       user-select: text;
       user-select: contain;
       white-space: pre-wrap;
-      word-break: break-word;
+      overflow-wrap: anywhere;
       overflow: auto;
       text-overflow: clip;
       cursor: default;

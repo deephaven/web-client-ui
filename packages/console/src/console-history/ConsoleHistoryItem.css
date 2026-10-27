@@ -38,7 +38,7 @@
 
 .console-history-item-result .log-message {
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* adjust gutter tick to align in the middle of button results */

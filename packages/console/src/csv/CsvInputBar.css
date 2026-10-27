@@ -1,7 +1,7 @@
 .csv-progress-container {
   display: grid;
   grid-template-columns: max-content 1fr max-content max-content;
-  grid-gap: 10px;
+  gap: 10px;
   align-items: center;
   padding: var(--dh-spacer-2);
   background-color: var(--dh-color-surface-bg);
