@@ -319,7 +319,7 @@ jobs:
           COPILOT_ASSIGN_TOKEN: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
           REPORT_ARTIFACT_URL: ${{ needs.merge-reports.outputs.report-url }}
         run: |
-          node ./tests/nightly-flake-triage.ts \
+          node ./scripts/nightly-ci/nightly-flake-triage.ts \
             --report ./report.json \
             --history ./.test-health/history.json \
             --out ./.test-health/decisions.json

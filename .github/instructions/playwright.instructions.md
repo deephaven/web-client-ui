@@ -24,7 +24,7 @@ The rest of this file applies whenever you are assigned an issue labeled
 `auto-investigate` (these also carry `e2e-failure` plus a classification
 label: `chronic-flake`, `new-flake`, `persistent-failure`, or
 `new-hard-failure`). These issues are opened by the nightly triage pipeline in
-`tests/nightly-flake-triage.ts`, not by a person, and embed a context bundle:
+`scripts/nightly-ci/nightly-flake-triage.ts`, not by a person, and embed a context bundle:
 the error, stack trace, flake rate over the last `historyWindow` nightly runs,
 every other test sharing the same `fingerprint`, links to trace/screenshot
 artifacts, and how many prior automated fix attempts recurred. Read all of it

@@ -31,7 +31,7 @@ investigation protocol on top. See `AGENTS.md` for repo setup and commands.
 Before modifying code:
 
 1. Read the entire failure report, including the context bundle embedded in
-   the issue body by `tests/nightly-flake-triage.ts`.
+   the issue body by `scripts/nightly-ci/nightly-flake-triage.ts`.
 2. Inspect all available Playwright artifacts.
 3. Inspect the trace, screenshot, video, console errors, network failures,
    and application logs when available.
