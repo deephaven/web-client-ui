@@ -229,3 +229,19 @@ export interface CliArgs {
   out?: string;
   [flag: string]: string | boolean | undefined;
 }
+
+// Mutable state shared by the triage steps; `gh` is null in a dry run.
+export interface TriageState {
+  history: HistoryStore;
+  ctx: RunContext;
+  gh: GithubClient | null;
+  decisions: Decision[];
+  seenThisRun: Set<string>;
+  existingByFingerprint: Map<
+    string,
+    { number: number; state: 'open' | 'closed' }
+  >;
+  diagnosticsOnly: Set<string>;
+  diagnosticsPrByFp: Map<string, string>;
+  pendingRecurrences: Map<string, FixOutcome>;
+}
