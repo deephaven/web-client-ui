@@ -6,7 +6,10 @@ import {
   type GridTheme,
   type NullableGridColor,
 } from './GridTheme';
-import fastMemoize, { CELL_CACHE_SIZE } from './fastMemoize';
+import fastMemoize, {
+  CELL_CACHE_SIZE,
+  MAX_HASHED_STRING_LENGTH,
+} from './fastMemoize';
 import GridUtils, { type Token } from './GridUtils';
 import { type CellRenderType } from './CellRenderer';
 
@@ -231,7 +234,13 @@ abstract class GridModel<
     visibleLength: number = LINK_TRUNCATION_LENGTH
   ): readonly Token[] {
     const text = this.textForCell(column, row);
-    return this.getCachedTokensInText(text, visibleLength);
+    // Links are only searched a bounded distance past the visible text, so a
+    // very long text is cut down to that before it is used as a cache key.
+    const key =
+      text.length > MAX_HASHED_STRING_LENGTH
+        ? text.substring(0, getLinkSearchLength(text, visibleLength))
+        : text;
+    return this.getCachedTokensInText(key, visibleLength);
   }
 
   getCachedTokensInText = fastMemoize(

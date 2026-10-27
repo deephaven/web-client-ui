@@ -1,4 +1,4 @@
-import { type LinkToken } from './GridUtils';
+import GridUtils, { type LinkToken } from './GridUtils';
 import MockGridModel from './MockGridModel';
 import { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
 
@@ -74,6 +74,23 @@ describe('tokensForCell', () => {
     const model = new MockGridModel({ editedData: [[text]] });
 
     expect(model.tokensForCell(0, 0, 100)).toHaveLength(0);
+  });
+
+  it('shares a cache entry between very long texts that only differ past the link search', () => {
+    const findTokens = jest.spyOn(GridUtils, 'findTokensWithProtocolInText');
+    const base = `https://deephaven.io ${'Lorem ipsum '.repeat(2000)}`;
+    expect(base.length).toBeGreaterThan(MAX_HASHED_STRING_LENGTH);
+    const model = new MockGridModel({
+      editedData: [[`${base}1`, `${base}2`]],
+    });
+
+    const first = model.tokensForCell(0, 0, 100);
+    const second = model.tokensForCell(0, 1, 100);
+
+    expect(first).toHaveLength(1);
+    expect(second).toBe(first);
+    expect(findTokens).toHaveBeenCalledTimes(1);
+    findTokens.mockRestore();
   });
 
   it('should return an empty array for a cell with no tokens', () => {
