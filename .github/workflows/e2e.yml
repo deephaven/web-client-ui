@@ -279,7 +279,7 @@ jobs:
 
   triage:
     # Nightly only: PR and push runs must not open issues or write the history cache.
-    if: ${{ !cancelled() && github.event_name == 'schedule' }}
+    if: ${{ !cancelled() && github.event_name == 'schedule' && needs.merge-reports.result == 'success' }}
     runs-on: ubuntu-22.04
     needs: [merge-reports]
     permissions:

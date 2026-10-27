@@ -350,17 +350,23 @@ function stripAnsi(text = ''): string {
 // Strip anything that varies run-to-run (ids, line numbers, timestamps) so
 // the same underlying bug hashes to the same fingerprint every time.
 function normalizeError(message = '', stackTop = ''): string {
-  return stripAnsi(`${message}\n${stackTop}`)
-    .replace(
-      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-      '<uuid>'
-    )
-    .replace(/:\d+:\d+/g, ':<line>:<col>')
-    .replace(/\b\d{10,13}\b/g, '<timestamp>')
-    .replace(/\b\d+(\.\d+)?m?s\b/g, '<duration>')
-    .replace(/\b\d+\b/g, '<n>') // numbers
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    stripAnsi(`${message}\n${stackTop}`)
+      .replace(
+        /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+        '<uuid>'
+      )
+      .replace(/:\d+:\d+/g, ':<line>:<col>')
+      // generateId() in tests/utils.ts: 21+ chars of [0-9a-z] with at least one digit, possibly
+      // embedded in text or prefixed with `_`, so the boundary is captured instead of using `\b`
+      // (and lookbehind is lint-forbidden).
+      .replace(/(^|[^0-9a-z])(?=[a-z]*\d)[0-9a-z]{21,}(?![0-9a-z])/g, '$1<id>')
+      .replace(/\b\d{10,13}\b/g, '<timestamp>')
+      .replace(/\b\d+(\.\d+)?m?s\b/g, '<duration>')
+      .replace(/\b\d+\b/g, '<n>') // numbers
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 // first application/test-related frame in the stack trace
@@ -845,7 +851,7 @@ function makeClient(token: string, repository: string): GithubClient {
       number: number
     ): Promise<LinkedPullRequest[]> {
       const events = await request<TimelineEvent[]>(
-        `/repos/${owner}/${repo}/issues/${number}/timeline?per_page=100`
+        `/repos/${owner}/${repo}/issues/${number}/timeline?per_page=200`
       );
       const found = new Map<string, LinkedPullRequest>();
       (events ?? []).forEach(e => {

@@ -37,18 +37,26 @@ A change you did not run is not a fix. Before editing anything, start the
 servers and reproduce; after editing, repeat with
 `npx playwright test path/to/spec.ts --repeat-each=10` and report
 before/after counts in the PR, including if the fix did not fully resolve it.
-The run needs the app on `localhost:4000/ide/` and a core server on `:10000`:
+The run needs a core server on `:10000` and the production build served on
+`localhost:4000/ide/` and `localhost:4010`, exactly as nightly CI does.
+`playwright-ci.config.ts` starts both preview servers itself, so do not run
+`npm run start:app` (the dev server serves no production assets and would hold
+port 4000):
 
 ```
 docker compose -f tests/docker-scripts/docker-compose.yml \
   -f tests/docker-scripts/docker-compose.agent.yml up -d --wait dhc-server
-VITE_PLAYWRIGHT_CSS=1 npm run start:app &
+VITE_PLAYWRIGHT_CSS=1 npm run build
+npm run e2e -- --config=playwright-ci.config.ts --project=chromium \
+  path/to/spec.ts --repeat-each=10
 ```
 
-Wait for `localhost:4000/ide/` to respond. `VITE_PLAYWRIGHT_CSS=1` matches
-CI's stylesheet; without it the app behaves differently.
+Use the project named in the issue's reproduce command if it is not chromium.
+`VITE_PLAYWRIGHT_CSS=1` matches CI's stylesheet; without it the app behaves
+differently. The build takes several minutes; run it once before reproducing
+and again after any app-code change.
 
-You may only say you could not run the test after actually attempting the two
+You may only say you could not run the test after actually attempting the
 commands above. In the PR, quote the failing command and its error output and
 mark the evidence run as not performed. "No docker" or "no core server" with
 no command output is not acceptable. Never substitute reasoning, unit tests,
