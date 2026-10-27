@@ -374,10 +374,6 @@ export async function verifyHorizontalScrollRange(
 }
 
 /**
- * Appends a benchmark result so it can be aggregated into a report after the
- * run. Benchmarks run serially, so appends never interleave.
- */
-/**
  * @param count Number of frames
  * @param total Total frames measured
  * @returns The count as a percentage of the total
@@ -386,6 +382,10 @@ function percent(count: number, total: number): string {
   return total === 0 ? '0.0%' : `${((count / total) * 100).toFixed(1)}%`;
 }
 
+/**
+ * Appends a benchmark result so it can be aggregated into a report after the
+ * run. Benchmarks run serially, so appends never interleave.
+ */
 function recordResult(
   testName: string,
   result: FPSResult,
