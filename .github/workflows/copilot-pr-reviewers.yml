@@ -3,7 +3,7 @@ name: 'Copilot PR Reviewers'
 # the web-reviewers team instead and drop individual reviewers.
 on:
   pull_request_target:
-    types: [opened, ready_for_review, review_requested]
+    types: [ready_for_review, review_requested]
 
 permissions: {}
 

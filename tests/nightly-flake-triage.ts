@@ -735,14 +735,8 @@ function buildIssueBody(decision: Decision, ctx: RunContext): string {
 
   if (b.traceAttachments.length > 0) {
     lines.push(
-      'Inspect a trace without the GUI:',
-      fenced(
-        [
-          'npx playwright trace open path/to/trace.zip',
-          'npx playwright trace actions --grep="expect"',
-          'npx playwright trace snapshot <n> --name after',
-        ].join('\n')
-      ),
+      'Open a trace in the trace viewer (needs a display):',
+      fenced('npx playwright show-trace path/to/trace.zip'),
       ''
     );
   }
@@ -1147,6 +1141,47 @@ async function main(): Promise<void> {
   // Re-read open/closed state from GitHub: an issue may have been closed by a human or by an
   // agent's merged PR since the last run, and the cached history has no way to know that.
   const seenThisRun = new Set(groups.keys());
+
+  // Fall back to matching by the embedded marker if history lost track of an issue number
+  // (e.g. a cold cache), so a fingerprint doesn't get a duplicate issue opened for it.
+  const existingByFingerprint = new Map<
+    string,
+    { number: number; state: 'open' | 'closed' }
+  >();
+  if (gh) {
+    try {
+      const known = await gh.fetchIssuesWithLabel(BASE_LABEL);
+      known.forEach(issue => {
+        // An agent's PR often quotes the issue body, marker included, and the issues endpoint
+        // returns PRs too -- matching one would make us comment on the PR instead of the issue.
+        if (issue.pull_request !== undefined) return;
+        const match = issue.body?.match(
+          /<!-- test-health-fingerprint: ([0-9a-f]+) -->/
+        );
+        // Results are newest-first, so the first match for a fingerprint is the live one.
+        if (match && !existingByFingerprint.has(match[1])) {
+          existingByFingerprint.set(match[1], {
+            number: issue.number,
+            state: issue.state,
+          });
+        }
+      });
+    } catch (err) {
+      console.warn(
+        `Could not list existing issues, relying on cached history only: ${
+          (err as Error).message
+        }`
+      );
+    }
+  }
+  // The per-issue refresh below is capped, so take open/closed state from this listing first;
+  // otherwise an issue skipped by the cap keeps a stale cached state through recurrence accounting.
+  Object.entries(history.fingerprints).forEach(([fp, state]) => {
+    const listed = existingByFingerprint.get(fp);
+    if (listed === undefined) return;
+    state.issueNumber ??= listed.number;
+    if (state.issueNumber === listed.number) state.issueState = listed.state;
+  });
   // Fingerprints whose closing round only added diagnostics, per the merged PR's declaration or
   // a manually applied label.
   const diagnosticsOnly = new Set<string>();
@@ -1305,39 +1340,6 @@ async function main(): Promise<void> {
       b.bundle.tests.length - a.bundle.tests.length
   );
   let assignmentAttempts = 0;
-
-  // Fall back to matching by the embedded marker if history lost track of an issue number
-  // (e.g. a cold cache), so a fingerprint doesn't get a duplicate issue opened for it.
-  const existingByFingerprint = new Map<
-    string,
-    { number: number; state: 'open' | 'closed' }
-  >();
-  if (gh) {
-    try {
-      const known = await gh.fetchIssuesWithLabel(BASE_LABEL);
-      known.forEach(issue => {
-        // An agent's PR often quotes the issue body, marker included, and the issues endpoint
-        // returns PRs too -- matching one would make us comment on the PR instead of the issue.
-        if (issue.pull_request !== undefined) return;
-        const match = issue.body?.match(
-          /<!-- test-health-fingerprint: ([0-9a-f]+) -->/
-        );
-        // Results are newest-first, so the first match for a fingerprint is the live one.
-        if (match && !existingByFingerprint.has(match[1])) {
-          existingByFingerprint.set(match[1], {
-            number: issue.number,
-            state: issue.state,
-          });
-        }
-      });
-    } catch (err) {
-      console.warn(
-        `Could not list existing issues, relying on cached history only: ${
-          (err as Error).message
-        }`
-      );
-    }
-  }
 
   // Process fingerprints one at a time (not Promise.all) to avoid racing GitHub issue
   // creation/updates for fingerprints that happen to resolve to the same issue.
