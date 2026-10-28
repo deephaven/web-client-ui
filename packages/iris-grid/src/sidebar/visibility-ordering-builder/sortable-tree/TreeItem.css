@@ -1,0 +1,139 @@
+/* Tree item 0.25rem padding, Icon button 0.25rem, half of icon size, and half pixel to offset 1px border */
+
+.visibility-ordering-list,
+.visibility-search-list {
+  .tree-item {
+    position: relative;
+    display: flex;
+    gap: var(--dh-spacer-1);
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    flex-grow: 1;
+    min-width: 0; /* Needed so column names don't grow past the edge */
+    border: var(--dh-input-border-width) solid transparent;
+    user-select: none;
+    border-radius: var(--dh-border-radius);
+    padding: 0 var(--dh-spacer-1); /* space for focus border */
+
+    svg:not(.color-swatch) {
+      color: var(--dh-color-gray-600);
+    }
+
+    &:hover {
+      background: var(--dh-color-item-list-hover-bg);
+      cursor: grab;
+    }
+
+    &.isSelected {
+      background-color: var(--dh-color-item-list-selected-bg);
+
+      &:hover {
+        background-color: var(--dh-color-item-list-selected-hover-bg);
+
+        svg:not(.color-swatch) {
+          color: var(--dh-color-fg);
+        }
+      }
+    }
+
+    &:focus {
+      outline: 0;
+      border: var(--dh-input-border-width) solid
+        var(--dh-color-input-focus-border);
+      box-shadow: var(--dh-input-focus-box-shadow);
+    }
+
+    .column-name {
+      flex-grow: 1;
+      flex-shrink: 1;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-count {
+      padding: 0 var(--dh-spacer-2);
+      border-radius: 1rem;
+      background-color: color-mix(in srgb, var(--dh-color-fg) 25%, transparent);
+      margin-right: var(--dh-spacer-1);
+    }
+  }
+
+  .item-wrapper {
+    list-style: none;
+    box-sizing: border-box;
+    margin-bottom: 1px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    &.clone {
+      pointer-events: none;
+      padding: 0;
+
+      .tree-item {
+        opacity: 1;
+        background-color: var(--dh-color-accent-bg);
+        color: var(--dh-color-accent-contrast);
+        box-shadow: var(--dh-box-shadow);
+        padding: var(--dh-spacer-1);
+
+        svg:not(.color-swatch) {
+          color: var(--dh-color-accent-contrast);
+        }
+
+        /* Stacked cards behind the dragged item when dragging multiple items */
+        &.two-dragged::before,
+        &.multiple-dragged::before,
+        &.multiple-dragged::after {
+          content: ' ';
+          background: var(--dh-color-accent-bg);
+          box-shadow: var(--dh-box-shadow);
+          border-radius: var(--dh-border-radius);
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          top: 4px;
+          left: 2px;
+          opacity: 0.8;
+          z-index: -1;
+        }
+
+        &.multiple-dragged::after {
+          top: 8px;
+          left: 4px;
+          opacity: 0.6;
+          z-index: -2;
+        }
+      }
+    }
+
+    &.ghost {
+      opacity: 0.5;
+
+      .tree-item > * {
+        box-shadow: none;
+        background-color: transparent;
+      }
+    }
+
+    &.disableInteraction {
+      pointer-events: none;
+
+      &:not(.ghost) .tree-item.isSelected {
+        opacity: 0.3;
+      }
+    }
+
+    .depth-line {
+      margin-left: calc(0.5rem + 8px + 0.5px);
+      /* Gives breathing room to the item boxes */
+      margin-right: var(--dh-spacer-1);
+      margin-top: -1px; /* removes gaps between depth lines caused by item's margin-bottom */
+      border-left: 1px solid var(--dh-color-gray-500);
+    }
+  }
+}

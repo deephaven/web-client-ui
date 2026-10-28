@@ -1,19 +1,22 @@
-# `@deephaven/eslint-config`
+# `@deephaven/stylelint-config`
 
-The eslint configuration settings used by Deephaven Data Labs.
+The stylelint configuration settings used by Deephaven Data Labs, for plain CSS
+(including native nesting and CSS modules).
 
 ## Usage
 
 Install dependencies:
+
 ```
-npm install --save-dev eslint @deephaven/eslint-config
+npm install --save-dev stylelint @deephaven/stylelint-config
 ```
 
 Also install all peer dependencies.
 
-In your package.json, add a `eslintConfig` configuration:
+In your package.json, add a `stylelint` configuration:
+
 ```
-"eslintConfig": { "extends": "@deephaven/eslint-config" }
+"stylelint": { "extends": "@deephaven/stylelint-config" }
 ```
 
 # Legal Notices

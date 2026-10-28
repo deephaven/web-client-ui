@@ -1,0 +1,196 @@
+.app-settings-menu {
+  --settings-menu-padding: var(--dh-spacer-3);
+  --settings-menu-bg: var(--dh-color-surface-bg);
+  --dh-color-hr: var(--dh-color-gray-500);
+
+  display: flex;
+  flex-direction: column;
+  background: var(--settings-menu-bg);
+  box-shadow: var(--dh-box-shadow);
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  z-index: var(--dh-z-index-modal);
+
+  .btn-delete-format-rule {
+    font-size: 18px;
+    margin-top: -7px;
+    padding-right: var(--dh-spacer-2);
+    padding-left: var(--dh-spacer-2);
+  }
+
+  .format-rule-container {
+    background: var(--dh-color-gray-400);
+    border-left: 2px solid var(--dh-color-gray-600);
+    border-radius: var(--dh-border-radius);
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    &:focus-within {
+      border-color: var(--dh-color-accent-bg);
+    }
+
+    .custom-select {
+      /* force select to shrink in Firefox flexbox */
+      min-width: 0;
+    }
+  }
+}
+
+.app-settings-menu-header {
+  --settings-menu-header-user-image-size: 40px;
+  --settings-menu-header-color: var(--dh-color-accent-contrast);
+  --input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
+    color-mix(in srgb, var(--dh-color-fg) 35%, transparent);
+  --btn-focus-bg: color-mix(in srgb, var(--dh-color-fg) 12%, transparent);
+  --btn-hover-bg: color-mix(in srgb, var(--dh-color-fg) 14%, transparent);
+  --btn-active-bg: color-mix(in srgb, var(--dh-color-fg) 28%, transparent);
+
+  display: flex;
+  justify-content: space-between;
+  background: var(--dh-color-accent-bg);
+  min-height: 60px;
+  color: var(--settings-menu-header-color);
+
+  .btn-close-settings-menu {
+    color: var(--dh-color-accent-contrast);
+    font-size: 18px;
+    /*
+     * we want the close button to occupy at least
+     * as much space as the triggering button below
+     */
+    line-height: 28px;
+    padding: 2px 12px;
+    align-self: flex-start;
+
+    &:focus {
+      &::after {
+        background: var(--btn-focus-bg);
+        border: 1px solid var(--dh-color-accent-contrast);
+        box-shadow: var(--input-btn-focus-box-shadow-over-primary);
+      }
+    }
+
+    &:hover {
+      &::after {
+        background: var(--btn-hover-bg);
+      }
+    }
+
+    &:active {
+      &::after {
+        content: '';
+        background: var(--btn-active-bg);
+      }
+    }
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+
+    .user-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: var(--settings-menu-header-user-image-size);
+      width: var(--settings-menu-header-user-image-size);
+      margin: var(--dh-spacer-3) var(--dh-spacer-2) var(--dh-spacer-3)
+        var(--dh-spacer-3);
+      background: var(--dh-color-accent-1100);
+      border-radius: var(--dh-border-radius);
+
+      svg {
+        color: var(--dh-color-contrast-dark);
+      }
+
+      img {
+        height: var(--settings-menu-header-user-image-size);
+        width: var(--settings-menu-header-user-image-size);
+        object-fit: cover;
+        position: absolute;
+        border-radius: var(--dh-border-radius);
+      }
+    }
+
+    .user-name {
+      padding-top: var(--dh-spacer-1);
+      padding-left: var(--dh-spacer-1);
+      font-weight: 600;
+    }
+
+    .operating-as-user {
+      border-radius: var(--dh-border-radius);
+      background-color: var(--dh-color-visual-orange);
+      padding: var(--dh-spacer-1) var(--dh-spacer-2);
+      margin-left: var(--dh-spacer-1);
+    }
+
+    .btn-link {
+      color: var(--settings-menu-header-color);
+      text-decoration: underline;
+      font-size: smaller;
+      padding: 0 var(--dh-spacer-1);
+      height: 28px;
+
+      &:focus {
+        background: var(--btn-focus-bg);
+        border: 1px solid var(--dh-color-accent-contrast);
+        box-shadow: var(--input-btn-focus-box-shadow-over-primary);
+      }
+
+      &:hover {
+        background: var(--btn-hover-bg);
+      }
+
+      &:active {
+        content: '';
+        background: var(--btn-active-bg);
+      }
+    }
+  }
+}
+
+.app-settings-menu-content {
+  overflow-y: auto;
+  padding: var(--settings-menu-padding);
+  .btn-collapse-trigger {
+    display: block;
+    display: flex;
+    text-align: left;
+    margin-top: var(--dh-spacer-1);
+    margin-bottom: var(--dh-spacer-1);
+    padding-top: var(--dh-spacer-2);
+    padding-bottom: var(--dh-spacer-2);
+    width: 100%;
+    color: var(--dh-color-fg);
+    &:focus,
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.app-settings-menu-description {
+  color: var(--dh-color-gray-600);
+  font-size: small;
+}
+
+.app-settings-footer {
+  .app-settings-footer-section {
+    padding: var(--settings-menu-padding) 0;
+    border-top: 1px solid var(--dh-color-hr);
+    .app-settings-footer-item:not(:last-child) {
+      padding-bottom: var(--settings-menu-padding);
+    }
+  }
+}
+
+.detailed-server-config {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: var(--dh-spacer-1) var(--dh-spacer-3);
+  text-align: left;
+  margin-bottom: var(--dh-spacer-2);
+}

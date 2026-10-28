@@ -1,0 +1,5 @@
+/* stylelint-disable property-no-unknown */
+:export {
+  handle-size: 15px;
+  popover-width: 90px;
+}

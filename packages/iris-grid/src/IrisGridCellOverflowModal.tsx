@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from '@deephaven/components';
 import { vsJson, vsListOrdered } from '@deephaven/icons';
-import './IrisGridCellOverflowModal.scss';
+import './IrisGridCellOverflowModal.css';
 
 interface IrisGridCellOverflowModalProps {
   text: string;

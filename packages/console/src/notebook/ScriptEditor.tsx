@@ -9,7 +9,7 @@ import { assertNotNull } from '@deephaven/utils';
 import type { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
 import { MonacoProviders, MonacoUtils } from '../monaco';
-import './ScriptEditor.scss';
+import './ScriptEditor.css';
 import SHORTCUTS from '../ConsoleShortcuts';
 import ScriptEditorUtils from './ScriptEditorUtils';
 

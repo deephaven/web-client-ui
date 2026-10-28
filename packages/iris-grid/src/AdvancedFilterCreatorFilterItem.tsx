@@ -18,7 +18,7 @@ import {
 import Log from '@deephaven/log';
 import classNames from 'classnames';
 import memoizeOne from 'memoize-one';
-import './AdvancedFilterCreatorFilterItem.scss';
+import './AdvancedFilterCreatorFilterItem.css';
 
 const log = Log.module('AdvancedFilterCreatorFilterItem');
 

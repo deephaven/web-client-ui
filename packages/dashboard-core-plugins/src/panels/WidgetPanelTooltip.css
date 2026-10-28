@@ -1,0 +1,44 @@
+.tab-tooltip-grid-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: first baseline;
+  max-width: 300px;
+  text-align: left;
+  column-gap: var(--dh-spacer-3);
+
+  .tab-tooltip-title {
+    font-weight: 700;
+  }
+
+  .tab-tooltip-name-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--dh-spacer-1);
+  }
+
+  .tab-tooltip-name {
+    overflow-wrap: anywhere;
+  }
+
+  hr.tab-tooltip-divider {
+    grid-column: span 2;
+    width: 100%;
+    margin: var(--dh-spacer-1) 0;
+    border-color: var(--dh-color-gray-500);
+  }
+
+  .tab-tooltip-description {
+    grid-column: span 2;
+    color: var(--dh-color-gray-600);
+    padding-bottom: var(--dh-spacer-1);
+  }
+
+  .tab-tooltip-statistic-value {
+    font-feature-settings: 'tnum';
+    text-align: right;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+}

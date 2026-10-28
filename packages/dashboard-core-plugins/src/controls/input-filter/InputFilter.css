@@ -1,0 +1,90 @@
+.input-filter-panel-component {
+  .lm_content {
+    /* Allow content to overflow above headers, so flip animation works properly */
+    overflow: visible;
+  }
+}
+
+.input-filter {
+  background: var(--dh-color-bg);
+
+  .input-filter-settings-card,
+  .input-filter-value-card {
+    position: relative;
+    overflow: auto;
+    height: 100%;
+    background: var(--dh-color-content-bg);
+  }
+
+  /* Settings side */
+  .input-filter-settings-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .input-filter-settings-content {
+    margin: auto;
+    padding: var(--dh-spacer-1);
+  }
+
+  .input-filter-settings-grid {
+    display: grid;
+    max-width: 500px;
+    grid-template-columns: max-content minmax(min-content, 350px);
+    column-gap: var(--dh-spacer-2);
+    row-gap: var(--dh-spacer-2);
+    padding-bottom: var(--dh-spacer-3);
+
+    label {
+      padding-top: calc(var(--dh-input-padding-y) + 2px);
+    }
+
+    .text-muted {
+      grid-column-start: 2;
+    }
+  }
+
+  .input-filter-settings-buttons {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Filter side */
+  .input-filter-column {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: var(--dh-spacer-2);
+    color: var(--dh-color-gray-600);
+    font-size: small;
+  }
+
+  .input-filter-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .input-filter-value-input {
+    max-width: 100%;
+    padding: var(--dh-spacer-1);
+
+    input {
+      font-size: x-large;
+      color: var(--dh-color-fg);
+      text-align: center;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--dh-color-gray-600);
+      max-width: 100%;
+
+      &:focus {
+        outline: none;
+        border-bottom: 1px solid var(--dh-color-input-focus-border);
+        box-shadow: 0 var(--dh-focus-ring-width) 0
+          color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+      }
+    }
+  }
+}

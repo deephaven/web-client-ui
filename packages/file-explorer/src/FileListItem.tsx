@@ -5,7 +5,7 @@ import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 import { type FileStorageItem, isDirectory } from './FileStorage';
-import './FileList.scss';
+import './FileList.css';
 import FileUtils, { MIME_TYPE } from './FileUtils';
 import { getPathFromItem } from './FileListUtils';
 

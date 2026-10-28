@@ -1,0 +1,64 @@
+/* Sized by the --login-box-* properties of the surrounding Login */
+.login-form {
+  max-width: calc(var(--login-box-width) * 0.5);
+  min-height: var(--login-box-min-height);
+  background: var(--dh-color-login-form-bg);
+  border-radius: 0 var(--dh-border-radius) var(--dh-border-radius) 0;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--dh-spacer-3) 0;
+
+  fieldset {
+    padding: 0;
+    margin: 0;
+  }
+
+  .flex-wrapper {
+    width: 85%;
+  }
+
+  .flex-spacer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    width: 85%;
+  }
+
+  .flex-spacer:empty {
+    content: ''; /* just to make a empty div to have height */
+  }
+
+  .status-message {
+    color: var(--dh-color-login-status-message);
+  }
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+    width: 100%;
+    overflow-wrap: anywhere;
+    margin-top: var(--dh-spacer-1);
+    margin-bottom: var(--dh-spacer-1);
+  }
+
+  .btn-primary {
+    min-width: 118px;
+  }
+
+  .is-initializing {
+    opacity: 0;
+    animation: fade-in var(--dh-transition) 1s forwards;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

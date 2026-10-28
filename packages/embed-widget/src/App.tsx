@@ -42,7 +42,7 @@ import {
   setUser,
   setServerConfigValues,
 } from '@deephaven/redux';
-import './App.scss'; // Styles for in this app
+import './App.css'; // Styles for in this app
 
 const log = Log.module('EmbedWidget.App');
 

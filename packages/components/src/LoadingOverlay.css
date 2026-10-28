@@ -1,0 +1,36 @@
+.iris-panel-message-overlay {
+  --iris-panel-icon-font-size: 64px;
+
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: pre-line;
+  overflow: hidden;
+
+  .message-content {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.2rem;
+    gap: 20px;
+    .message-icon {
+      font-size: var(--iris-panel-icon-font-size);
+      height: var(--iris-panel-icon-font-size);
+      line-height: var(--iris-panel-icon-font-size);
+      .svg-inline--fa {
+        font-size: inherit;
+      }
+    }
+    .error-action-button {
+      &:hover,
+      &:focus {
+        background: none;
+      }
+    }
+  }
+}
+
+.iris-panel-scrim-background {
+  background: color-mix(in srgb, var(--dh-color-bg) 80%, transparent);
+  backdrop-filter: blur(2px);
+}

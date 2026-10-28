@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsWarning } from '@deephaven/icons';
 import ThemeExport from './ThemeExport';
 import LoadingSpinner from './LoadingSpinner';
-import './LoadingOverlay.scss';
+import './LoadingOverlay.css';
 
 type LoadingOverlayProps = {
   isLoaded?: boolean;

@@ -1,0 +1,626 @@
+.isolated-section-query {
+  .hide-when-isolated,
+  :not(.sample-section) > h2 {
+    display: none;
+  }
+}
+
+.ui-title {
+  color: var(--dh-color-text);
+  border-bottom: 1px solid var(--dh-color-gray-800);
+  padding-bottom: 10px;
+  margin: 1.5rem 0;
+}
+
+pre {
+  color: var(--dh-color-gray-700);
+}
+
+.swatch {
+  height: 2.5rem;
+  width: 100%;
+  text-align: center;
+  line-height: 2.5rem;
+}
+
+.gray-swatch {
+  display: flex;
+  span {
+    flex: 1 0 50%;
+  }
+}
+
+/*
+ * Color swatches. The ::after content exposes the CSS variable each swatch
+ * renders so the style guide can read it (see Swatch.tsx).
+ */
+
+.swatch-primary-hover,
+.swatch-primary-dark,
+.swatch-mid,
+.swatch-content-bg,
+.swatch-background,
+.swatch-foreground,
+.swatch-secondary-hover,
+.swatch-danger-hover,
+.swatch-primary,
+.swatch-secondary,
+.swatch-success,
+.swatch-info,
+.swatch-warning,
+.swatch-danger,
+.swatch-light,
+.swatch-dark,
+.swatch-blue,
+.swatch-indigo,
+.swatch-purple,
+.swatch-pink,
+.swatch-red,
+.swatch-orange,
+.swatch-yellow,
+.swatch-green,
+.swatch-teal,
+.swatch-cyan,
+.swatch-white,
+.swatch-gray,
+.swatch-gray-dark,
+.swatch-black,
+.gray-swatch-100,
+.gray-swatch-200,
+.gray-swatch-300,
+.gray-swatch-400,
+.gray-swatch-500,
+.gray-swatch-600,
+.gray-swatch-700,
+.gray-swatch-800,
+.gray-swatch-900,
+.gray-swatch-850,
+.gray-swatch-8XX {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  text-align: left;
+  white-space: nowrap;
+  padding: 0 20px 0 36px;
+}
+
+.swatch-primary-hover::after,
+.swatch-primary-dark::after,
+.swatch-mid::after,
+.swatch-content-bg::after,
+.swatch-background::after,
+.swatch-foreground::after,
+.swatch-secondary-hover::after,
+.swatch-danger-hover::after,
+.swatch-primary::after,
+.swatch-secondary::after,
+.swatch-success::after,
+.swatch-info::after,
+.swatch-warning::after,
+.swatch-danger::after,
+.swatch-light::after,
+.swatch-dark::after,
+.swatch-blue::after,
+.swatch-indigo::after,
+.swatch-purple::after,
+.swatch-pink::after,
+.swatch-red::after,
+.swatch-orange::after,
+.swatch-yellow::after,
+.swatch-green::after,
+.swatch-teal::after,
+.swatch-cyan::after,
+.swatch-white::after,
+.swatch-gray::after,
+.swatch-gray-dark::after,
+.swatch-black::after,
+.gray-swatch-100::after,
+.gray-swatch-200::after,
+.gray-swatch-300::after,
+.gray-swatch-400::after,
+.gray-swatch-500::after,
+.gray-swatch-600::after,
+.gray-swatch-700::after,
+.gray-swatch-800::after,
+.gray-swatch-900::after,
+.gray-swatch-850::after,
+.gray-swatch-8XX::after {
+  grid-column: 2;
+}
+
+.swatch-primary-hover {
+  background-color: var(--dh-color-accent-hover-bg);
+}
+
+.swatch-primary-hover::after {
+  content: '--dh-color-accent-hover-bg';
+}
+
+.swatch-primary-dark {
+  background-color: var(--dh-color-accent-down-bg);
+}
+
+.swatch-primary-dark::after {
+  content: '--dh-color-accent-down-bg';
+}
+
+.swatch-mid {
+  background-color: var(--dh-color-gray-mid);
+}
+
+.swatch-mid::after {
+  content: '--dh-color-gray-mid';
+}
+
+.swatch-content-bg {
+  background-color: var(--dh-color-content-bg);
+  border: 1px solid var(--dh-color-gray-500);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Semantic Colors';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.swatch-content-bg::after {
+  content: '--dh-color-content-bg, #2d2a2e';
+}
+
+.swatch-background {
+  background-color: var(--dh-color-black);
+}
+
+.swatch-background::after {
+  content: '--dh-color-black, #1a171a';
+}
+
+.swatch-foreground {
+  background-color: var(--dh-color-white);
+}
+
+.swatch-foreground::after {
+  content: '--dh-color-white, #f0f0ee';
+}
+
+.swatch-secondary-hover {
+  background-color: var(--dh-color-neutral-hover-bg);
+}
+
+.swatch-secondary-hover::after {
+  content: '--dh-color-neutral-hover-bg';
+}
+
+.swatch-danger-hover {
+  background-color: var(--dh-color-negative-hover-bg);
+}
+
+.swatch-danger-hover::after {
+  content: '--dh-color-negative-hover-bg';
+}
+
+.swatch-primary {
+  background-color: var(--dh-color-accent-bg);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Brand Colors';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.swatch-primary::after {
+  content: '--dh-color-accent-bg';
+}
+
+.swatch-secondary {
+  background-color: var(--dh-color-neutral-bg);
+}
+
+.swatch-secondary::after {
+  content: '--dh-color-neutral-bg';
+}
+
+.swatch-success {
+  background-color: var(--dh-color-positive-bg);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Levels';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.swatch-success::after {
+  content: '--dh-color-positive-bg';
+}
+
+.swatch-info {
+  background-color: var(--dh-color-info-bg);
+}
+
+.swatch-info::after {
+  content: '--dh-color-info-bg';
+}
+
+.swatch-warning {
+  background-color: var(--dh-color-notice-bg);
+}
+
+.swatch-warning::after {
+  content: '--dh-color-notice-bg';
+}
+
+.swatch-danger {
+  background-color: var(--dh-color-negative-bg);
+}
+
+.swatch-danger::after {
+  content: '--dh-color-negative-bg';
+}
+
+.swatch-light {
+  background-color: var(--dh-color-neutral-bg);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Brightness';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.swatch-light::after {
+  content: '--dh-color-neutral-bg';
+}
+
+.swatch-dark {
+  background-color: var(--dh-color-neutral-bg);
+}
+
+.swatch-dark::after {
+  content: '--dh-color-neutral-bg';
+}
+
+.swatch-blue {
+  background-color: var(--dh-color-visual-blue);
+}
+
+.swatch-blue::after {
+  content: '--dh-color-visual-blue';
+}
+
+.swatch-indigo {
+  background-color: #6610f2;
+}
+
+.swatch-indigo::after {
+  content: '#6610f2';
+}
+
+.swatch-purple {
+  background-color: var(--dh-color-visual-purple);
+}
+
+.swatch-purple::after {
+  content: '--dh-color-visual-purple';
+}
+
+.swatch-pink {
+  background-color: #e83e8c;
+}
+
+.swatch-pink::after {
+  content: '#e83e8c';
+}
+
+.swatch-red {
+  background-color: var(--dh-color-visual-red);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Base Colors';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.swatch-red::after {
+  content: '--dh-color-visual-red';
+}
+
+.swatch-orange {
+  background-color: var(--dh-color-visual-orange);
+}
+
+.swatch-orange::after {
+  content: '--dh-color-visual-orange';
+}
+
+.swatch-yellow {
+  background-color: var(--dh-color-visual-yellow);
+}
+
+.swatch-yellow::after {
+  content: '--dh-color-visual-yellow';
+}
+
+.swatch-green {
+  background-color: var(--dh-color-visual-green);
+}
+
+.swatch-green::after {
+  content: '--dh-color-visual-green';
+}
+
+.swatch-teal {
+  background-color: #20c997;
+}
+
+.swatch-teal::after {
+  content: '#20c997';
+}
+
+.swatch-cyan {
+  background-color: #17a2b8;
+}
+
+.swatch-cyan::after {
+  content: '#17a2b8';
+}
+
+.swatch-white {
+  background-color: var(--dh-color-white);
+}
+
+.swatch-white::after {
+  content: '--dh-color-white, #f0f0ee';
+}
+
+.swatch-gray {
+  background-color: var(--dh-color-gray-500);
+}
+
+.swatch-gray::after {
+  content: '--dh-color-gray-500';
+}
+
+.swatch-gray-dark {
+  background-color: var(--dh-color-gray-300);
+}
+
+.swatch-gray-dark::after {
+  content: '--dh-color-gray-300';
+}
+
+.swatch-black {
+  background-color: var(--dh-color-black);
+}
+
+.swatch-black::after {
+  content: '--dh-color-black, #1a171a';
+}
+
+.gray-swatch-100 {
+  background-color: var(--dh-color-gray-900);
+  margin-top: 2.5rem;
+  position: relative;
+
+  &::before {
+    content: 'Grays';
+    color: var(--dh-color-text);
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    top: -2rem;
+  }
+}
+
+.gray-swatch-100::after {
+  content: '--dh-color-gray-900, #fcfcfa';
+}
+
+.gray-swatch-200 {
+  background-color: var(--dh-color-gray-800);
+}
+
+.gray-swatch-200::after {
+  content: '--dh-color-gray-800';
+}
+
+.gray-swatch-300 {
+  background-color: var(--dh-color-gray-700);
+}
+
+.gray-swatch-300::after {
+  content: '--dh-color-gray-700';
+}
+
+.gray-swatch-400 {
+  background-color: var(--dh-color-gray-600);
+}
+
+.gray-swatch-400::after {
+  content: '--dh-color-gray-600';
+}
+
+.gray-swatch-500 {
+  background-color: var(--dh-color-gray-500);
+}
+
+.gray-swatch-500::after {
+  content: '--dh-color-gray-500';
+}
+
+.gray-swatch-600 {
+  background-color: var(--dh-color-gray-500);
+}
+
+.gray-swatch-600::after {
+  content: '--dh-color-gray-500';
+}
+
+.gray-swatch-700 {
+  background-color: var(--dh-color-gray-400);
+}
+
+.gray-swatch-700::after {
+  content: '--dh-color-gray-400';
+}
+
+.gray-swatch-800 {
+  background-color: var(--dh-color-gray-300);
+}
+
+.gray-swatch-800::after {
+  content: '--dh-color-gray-300';
+}
+
+.gray-swatch-900 {
+  background-color: var(--dh-color-gray-75);
+}
+
+.gray-swatch-900::after {
+  content: '--dh-color-gray-75';
+}
+
+.gray-swatch-850 {
+  background-color: var(--dh-color-gray-200);
+}
+
+.gray-swatch-850::after {
+  content: '--dh-color-gray-200';
+}
+
+/*
+ * The swatch that gets this style gets rendered as N/A in the Bootstrap grays
+ * section of Styleguide. There is no Bootstrap Gray-XXX corresponding to
+ * --dh-color-gray-100, but if there were it would be a value in the 800s.
+ */
+.gray-swatch-8XX {
+  background-color: var(--dh-color-gray-100);
+}
+
+.gray-swatch-8XX::after {
+  content: '--dh-color-gray-100';
+}
+
+.style-guide-container {
+  background-color: var(--dh-color-content-bg);
+  padding: 1rem;
+}
+
+h5.sub-title {
+  color: var(--dh-color-gray-800);
+  padding-bottom: 10px;
+  margin: 2.5rem 0 1rem 0;
+}
+
+.style-guide-inputs {
+  .draggable-item-list {
+    height: 300px;
+  }
+}
+
+.navigations {
+  position: relative;
+  height: 400px;
+  width: 325px;
+  border: 1px solid var(--dh-color-input-border);
+}
+
+.icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 62px);
+  grid-auto-rows: min-content;
+  gap: 8px;
+  flex-grow: 1;
+
+  .flash {
+    position: fixed;
+    top: var(--dh-spacer-3);
+    right: var(--dh-spacer-3);
+    opacity: 0;
+    padding: var(--dh-spacer-3);
+    border-radius: var(--dh-border-radius);
+    color: var(--dh-color-fg);
+    background-color: var(--dh-color-content-bg);
+    transition: opacity 0.2s;
+    box-shadow: 0 0 4px var(--dh-color-black);
+    pointer-events: none;
+  }
+
+  .flash.in {
+    opacity: 1;
+  }
+
+  .no-result {
+    width: 200px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-color: transparent;
+    background-color: transparent;
+    height: auto;
+    padding: var(--dh-spacer-2) 2px;
+
+    .svg-inline--fa {
+      align-self: center;
+    }
+
+    &:focus {
+      border-color: var(--dh-color-accent-bg);
+    }
+  }
+
+  .card label {
+    max-width: 100%;
+    font-size: 0.8rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  /* lol vsPulse gets class fa-pulse, that makes it spins */
+  .fa-pulse {
+    animation: none;
+  }
+}
+
+#sample-section-spectrum-comparison-samples {
+  /* Approximating Spectrum input label styles for easy comparison */
+  .input-label {
+    margin: 0;
+    padding: 4px 0 5px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+}

@@ -1,0 +1,48 @@
+.console-history .console-command-result {
+  padding: 0 0 var(--dh-spacer-1) 0;
+}
+
+.console-history,
+.console-history-footer {
+  font-family: var(--dh-font-family-mono);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0;
+
+  .console-history-gutter,
+  .error-gutter {
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 30px;
+    text-align: right;
+    padding-right: 8px;
+    color: var(--dh-color-gray-600);
+    user-select: none;
+  }
+
+  .console-history-content {
+    min-width: 0;
+    flex-grow: 1;
+    overflow-wrap: break-word;
+  }
+
+  .console-history-content .error-message.expanded {
+    .error-content {
+      user-select: text;
+      user-select: contain;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      overflow: auto;
+      text-overflow: clip;
+      cursor: default;
+    }
+  }
+}
+
+.console-history-item-tooltip {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: var(--dh-spacer-1) var(--dh-spacer-3);
+  text-align: left;
+  margin-bottom: var(--dh-spacer-2);
+}

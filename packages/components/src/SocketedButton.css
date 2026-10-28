@@ -1,0 +1,157 @@
+.btn-socketed {
+  --socketed-button-bg: var(--dh-color-action-bg);
+  --socketed-button-disabled-bg: var(--dh-color-action-disabled-bg);
+  --socketed-button-disabled-border-color: var(
+    --dh-color-action-disabled-border
+  );
+  --socketed-button-socket-size: 18px;
+  --socket-button-hover-border: var(--dh-color-hover-border);
+
+  position: relative;
+  display: inline-block;
+  border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+  padding: var(--dh-input-padding-y) var(--dh-btn-padding-x);
+  color: var(--dh-color-neutral-contrast);
+  background: var(--socketed-button-bg);
+  line-height: var(--dh-input-line-height);
+  user-select: none;
+  border-radius: var(--dh-border-radius);
+  transition: var(--dh-btn-transition);
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    /* absolute positioning doesn't include border */
+    bottom: calc(-1 * var(--dh-input-border-width));
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background: var(--dh-color-content-bg);
+    width: var(--socketed-button-socket-size);
+    height: var(--socketed-button-socket-size);
+    border-radius: 50%;
+    border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+    transition: var(--dh-btn-transition);
+  }
+
+  &:focus {
+    border-color: var(--dh-color-input-focus-border);
+    box-shadow: var(--dh-input-focus-box-shadow);
+    &::after {
+      border-color: var(--dh-color-input-focus-border);
+    }
+  }
+
+  &:hover {
+    background-color: var(--dh-color-action-hover-bg);
+    border-color: var(--socket-button-hover-border);
+    &::after {
+      border-color: var(--socket-button-hover-border);
+    }
+  }
+
+  &:active {
+    border-color: var(--socket-button-hover-border);
+    background-color: var(--dh-color-action-down-bg);
+  }
+
+  .btn-socketed-icon {
+    display: none;
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    cursor: not-allowed;
+    border-color: var(--socketed-button-disabled-border-color);
+    background-color: var(--socketed-button-disabled-bg);
+  }
+
+  &:disabled::after,
+  &:disabled:hover::after {
+    border-color: var(--socketed-button-disabled-border-color);
+  }
+}
+
+.btn-socketed.btn-socketed-linked {
+  --socket-linked-color: var(--dh-color-accent-bg);
+  --socket-linked-source-color: var(--dh-color-visual-purple);
+  &::after {
+    border-color: var(--socket-linked-color);
+    background-color: var(--socket-linked-color);
+  }
+
+  &.btn-socketed-linked-source::after {
+    border-color: var(--socket-linked-source-color);
+    background-color: var(--socket-linked-source-color);
+  }
+
+  .btn-socketed-icon.linked {
+    display: block;
+    position: absolute;
+    bottom: 1px; /* looked slightly low */
+    left: 50%;
+    transform: translate(-50%, calc(var(--socketed-button-socket-size) * 0.5));
+    z-index: 1; /* appear above the circle */
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    border-color: var(--socketed-button-disabled-border-color);
+    background-color: var(--socketed-button-disabled-bg);
+  }
+
+  &:disabled::after,
+  &:disabled:hover::after {
+    background-color: var(--dh-color-accent-down-bg);
+    border-color: var(--socketed-button-disabled-border-color);
+  }
+}
+
+.btn-socketed.is-invalid,
+.btn-socketed.btn-socketed-linked.is-invalid {
+  border-color: color-mix(in srgb, var(--dh-color-negative) 85%, transparent);
+}
+
+.btn-socketed.is-invalid::after,
+.btn-socketed.btn-socketed-linked.is-invalid::after {
+  border-color: var(--dh-color-negative-bg);
+  background-color: var(--dh-color-negative-bg);
+}
+
+.btn-socketed.is-invalid .btn-socketed-icon.linked,
+.btn-socketed.btn-socketed-linked.is-invalid .btn-socketed-icon.linked {
+  display: none;
+}
+
+.btn-socketed.is-invalid .btn-socketed-icon.is-invalid,
+.btn-socketed.btn-socketed-linked.is-invalid .btn-socketed-icon.is-invalid {
+  color: var(--socketed-button-bg);
+  display: block;
+  position: absolute;
+  bottom: 1px; /* looked slightly low */
+  left: 50%;
+  transform: translate(-50%, calc(var(--socketed-button-socket-size) * 0.5));
+  z-index: 1; /* appear above the circle */
+}
+
+.btn-socketed.is-invalid:focus,
+.btn-socketed.btn-socketed-linked.is-invalid:focus {
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
+    color-mix(in srgb, var(--dh-color-negative) 35%, transparent);
+}
+
+.btn-socketed.is-invalid:disabled,
+.btn-socketed.is-invalid:disabled:hover,
+.btn-socketed.btn-socketed-linked.is-invalid:disabled,
+.btn-socketed.btn-socketed-linked.is-invalid:disabled:hover {
+  border-color: var(--socketed-button-disabled-border-color);
+  background-color: var(--socketed-button-disabled-bg);
+}
+
+.btn-socketed.is-invalid:disabled::after,
+.btn-socketed.is-invalid:disabled:hover::after,
+.btn-socketed.btn-socketed-linked.is-invalid:disabled::after,
+.btn-socketed.btn-socketed-linked.is-invalid:disabled:hover::after {
+  background-color: var(--socketed-button-disabled-bg);
+  border-color: var(--socketed-button-disabled-border-color);
+}

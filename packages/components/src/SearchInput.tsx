@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
 import Button from './Button';
-import './SearchInput.scss';
+import './SearchInput.css';
 import { GLOBAL_SHORTCUTS } from './shortcuts';
 import { ContextActions } from './context-actions';
 

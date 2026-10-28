@@ -21,7 +21,7 @@ import {
   PieIcon,
   ScatterIcon,
 } from './icons';
-import './ChartBuilder.scss';
+import './ChartBuilder.css';
 import type IrisGridModel from '../IrisGridModel';
 
 const log = Log.module('ChartBuilder');

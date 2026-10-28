@@ -1,0 +1,63 @@
+.toast-notification {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: var(--dh-color-accent-100);
+  color: var(--dh-color-text);
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 0;
+
+  &.error {
+    background: var(--dh-color-negative-bg);
+    color: var(--dh-color-text);
+  }
+
+  .message-container {
+    flex-grow: 1;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .message {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .buttons-container {
+    flex-grow: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 1em;
+  }
+}
+
+.toast-notification-slide-up-enter {
+  transform: translate3d(0, 100%, 0);
+}
+
+.toast-notification-slide-up-enter-active {
+  transform: none;
+  transition: transform var(--dh-transition) ease-out;
+}
+
+.toast-notification-slide-up-exit {
+  transform: none;
+}
+
+.toast-notification-slide-up-exit-active {
+  transform: translate3d(0, 100%, 0);
+  transition: transform var(--dh-transition) ease-out;
+}

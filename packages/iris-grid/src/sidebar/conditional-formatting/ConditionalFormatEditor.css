@@ -1,0 +1,42 @@
+.conditional-format-editor {
+  padding: var(--dh-spacer-3);
+
+  .formatter-list {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: var(--dh-spacer-2);
+  }
+
+  .formatter-type {
+    margin: 0 var(--dh-spacer-3) 0 0;
+    display: flex;
+  }
+
+  .btn-formatter-type {
+    font-size: smaller;
+    width: 100%;
+  }
+
+  .color-select {
+    padding: 0 2em 0 0.25em;
+  }
+
+  .dh-combobox {
+    width: 100%;
+  }
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+    overflow-wrap: break-word;
+    margin-bottom: var(--dh-spacer-4);
+    font-size: 1rem;
+    p {
+      margin-bottom: var(--dh-spacer-1);
+    }
+    .error-box {
+      padding: var(--dh-spacer-1);
+      border-radius: var(--dh-border-radius);
+      background: color-mix(in srgb, var(--dh-color-negative) 28%, transparent);
+    }
+  }
+}

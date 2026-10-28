@@ -11,7 +11,7 @@ import { dhNewCircleLargeFilled, vsGripper, vsTrash } from '@deephaven/icons';
 import { Button, DragUtils, Tooltip } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import './ConditionalFormattingMenu.scss';
+import './ConditionalFormattingMenu.css';
 import {
   type BaseFormatConfig,
   type FormattingRule,

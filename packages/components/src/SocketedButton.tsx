@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSlotProps } from '@react-spectrum/utils';
 import { dhExclamation, vsLink } from '@deephaven/icons';
 
-import './SocketedButton.scss';
+import './SocketedButton.css';
 
 type SocketedButtonProps = React.PropsWithChildren<{
   className?: string;
