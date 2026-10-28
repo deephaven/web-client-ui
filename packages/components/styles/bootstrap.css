@@ -1287,6 +1287,7 @@ fieldset:disabled a.btn {
 .btn-group > .btn-group:not(:first-child) {
   margin-left: -2px;
 }
+.btn-group > .btn:not(:last-child):not(.dropdown-toggle),
 .btn-group > .btn-group:not(:last-child) > .btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
@@ -1322,6 +1323,11 @@ fieldset:disabled a.btn {
 .input-group > .custom-select:focus {
   z-index: 3;
 }
+.input-group:not(.has-validation) > .form-control:not(:last-child),
+.input-group:not(.has-validation) > .custom-select:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
 .input-group > .form-control:not(:first-child),
 .input-group > .custom-select:not(:first-child) {
   border-top-left-radius: 0;
@@ -1344,6 +1350,14 @@ fieldset:disabled a.btn {
 
 .input-group-append {
   margin-left: -1px;
+}
+
+.input-group:not(.has-validation) > .input-group-append:not(:last-child) > .btn,
+.input-group
+  > .input-group-append:last-child
+  > .btn:not(:last-child):not(.dropdown-toggle) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .input-group > .input-group-append > .btn {
