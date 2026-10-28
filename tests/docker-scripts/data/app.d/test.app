@@ -7,3 +7,4 @@ file_0=common_figures.py
 file_1=common_tables.py
 file_2=multiselect_tables.py
 file_3=table_generators.py
+file_4=performance_tables.py

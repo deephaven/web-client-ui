@@ -1,5 +1,6 @@
-import { type LinkToken } from './GridUtils';
+import GridUtils, { type LinkToken } from './GridUtils';
 import MockGridModel from './MockGridModel';
+import { MAX_HASHED_STRING_LENGTH } from './fastMemoize';
 
 describe('tokensForCell', () => {
   it('should return tokens for a cell', () => {
@@ -46,6 +47,50 @@ describe('tokensForCell', () => {
     const tokens = model.tokensForCell(0, 0, text.length);
     expect(tokens).toHaveLength(2);
     expect(tokens).toEqual(expectedValue);
+  });
+
+  it('should find a link cut off by truncation in a very long text', () => {
+    const link = 'https://deephaven.io/core/docs';
+    const prefix = 'Lorem ipsum '.repeat(10);
+    const text = `${prefix}${link} ${'dolor '.repeat(5000)}`;
+    expect(text.length).toBeGreaterThan(MAX_HASHED_STRING_LENGTH);
+    const model = new MockGridModel({ editedData: [[text]] });
+
+    // The visible text ends part way through the link
+    const tokens = model.tokensForCell(0, 0, prefix.length + 10);
+    expect(tokens).toEqual([
+      expect.objectContaining({
+        type: 'url',
+        value: link,
+        start: prefix.length,
+        end: prefix.length + link.length,
+      }),
+    ]);
+  });
+
+  it('should not find links past the visible text in a very long text', () => {
+    const text = `${'Lorem ipsum '.repeat(2000)}https://deephaven.io`;
+    expect(text.length).toBeGreaterThan(MAX_HASHED_STRING_LENGTH);
+    const model = new MockGridModel({ editedData: [[text]] });
+
+    expect(model.tokensForCell(0, 0, 100)).toHaveLength(0);
+  });
+
+  it('shares a cache entry between very long texts that only differ past the link search', () => {
+    const findTokens = jest.spyOn(GridUtils, 'findTokensWithProtocolInText');
+    const base = `https://deephaven.io ${'Lorem ipsum '.repeat(2000)}`;
+    expect(base.length).toBeGreaterThan(MAX_HASHED_STRING_LENGTH);
+    const model = new MockGridModel({
+      editedData: [[`${base}1`, `${base}2`]],
+    });
+
+    const first = model.tokensForCell(0, 0, 100);
+    const second = model.tokensForCell(0, 1, 100);
+
+    expect(first).toHaveLength(1);
+    expect(second).toBe(first);
+    expect(findTokens).toHaveBeenCalledTimes(1);
+    findTokens.mockRestore();
   });
 
   it('should return an empty array for a cell with no tokens', () => {
