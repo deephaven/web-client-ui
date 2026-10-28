@@ -52,8 +52,8 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   }
 }
 
-/* The drag proxy and tab dropdown list are appended to body, outside .lm_goldenlayout */
-.lm_goldenlayout,
+/* Every element that uses these. The drag proxy and tab dropdown list are appended to body, outside .lm_goldenlayout */
+.lm_header,
 .lm_dragProxy,
 .lm_tabdropdown_list {
   --lm-tab-height: 28px;
