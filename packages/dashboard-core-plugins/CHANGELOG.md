@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.33.0](https://github.com/deephaven/web-client-ui/compare/v1.32.0...v1.33.0) (2026-10-28)
+
+### Features
+
+- DH-24072: Allow for grid scaling ([#2774](https://github.com/deephaven/web-client-ui/issues/2774)) ([894356f](https://github.com/deephaven/web-client-ui/commit/894356f89ce5e1a6832234981124d32c81bbc558))
+
 ## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
