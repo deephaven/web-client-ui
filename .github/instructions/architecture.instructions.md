@@ -1,11 +1,5 @@
 ---
-applyTo:
-  - "packages/**/*.{ts,tsx,js,jsx}"
-  - "package.json"
-  - "tsconfig.json"
-  - "lerna.json"
-  - "nx.json"
-  - ".github/workflows/**/*.yml"
+applyTo: 'packages/**/*.{ts,tsx,js,jsx},package.json,tsconfig.json,lerna.json,nx.json,.github/workflows/**/*.yml'
 ---
 
 # Systems architect review

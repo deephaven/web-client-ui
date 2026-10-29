@@ -1,0 +1,20 @@
+name: 'Copilot Code Review Setup'
+# When this file exists, Copilot code review uses it instead of copilot-setup-steps.yml,
+# so reviews skip the dependency and browser install that only agent tasks need.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-code-review.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-code-review.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
