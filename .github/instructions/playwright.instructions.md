@@ -6,11 +6,11 @@ applyTo: '**/*.spec.ts,**/*.spec.js,playwright*.config.*,playwright/**,tests/**'
 
 Use Playwright's locator/action auto-waiting.
 
-Do not use page.waitForTimeout().
-
 Do not increase retries to resolve a failure.
 
 Do not weaken assertions.
+
+Prefer to avoid using page.waitForTimeout(). If it is necessary, provide a clear explanation for why it cannot be replaced with Playwright's auto-waiting mechanisms.
 
 Prefer deterministic application state over time-based synchronization.
 
