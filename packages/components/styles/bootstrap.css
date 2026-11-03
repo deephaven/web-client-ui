@@ -2915,14 +2915,6 @@ a.text-danger:focus {
   color: var(--dh-color-gray-600) !important;
 }
 
-.text-black-50 {
-  color: color-mix(in srgb, var(--dh-color-black) 50%, transparent) !important;
-}
-
-.text-white-50 {
-  color: color-mix(in srgb, var(--dh-color-white) 50%, transparent) !important;
-}
-
 .text-hide {
   font: 0/0 a;
   color: transparent;

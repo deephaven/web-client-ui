@@ -78,7 +78,7 @@ html {
   min-height: 100%;
 }
 
-/* override */
+/* Bootstrap's black and white text utilities, following the theme's background and foreground */
 .text-black-50 {
   color: color-mix(in srgb, var(--dh-color-bg) 50%, transparent) !important;
 }
