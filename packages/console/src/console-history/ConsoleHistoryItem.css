@@ -148,7 +148,7 @@
 
 .console-command-result:first-child .console-history-actions-1 {
   /* pushed up to prevent layout shifts */
-  top: var(--dh-spacer-0);
+  top: 0;
 }
 
 .console-history-item-contextual-help-content {

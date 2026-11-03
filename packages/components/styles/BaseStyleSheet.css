@@ -2,7 +2,6 @@
 
 :root {
   /* Design tokens that do not vary by theme */
-  --dh-spacer-0: 0;
   --dh-spacer-1: 0.25rem;
   --dh-spacer-2: 0.5rem;
   --dh-spacer-3: 1rem;

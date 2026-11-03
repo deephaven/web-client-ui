@@ -1,5 +1,5 @@
 .csv-overlay {
-  margin: var(--dh-spacer-0) var(--dh-spacer-3) var(--dh-spacer-0);
+  margin: 0 var(--dh-spacer-3);
   background-color: color-mix(
     in srgb,
     var(--dh-color-content-bg) 70%,
