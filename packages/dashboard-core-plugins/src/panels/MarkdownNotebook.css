@@ -106,13 +106,13 @@
 
   .flashing {
     animation-duration: 1s;
-    animation-name: flash;
+    animation-name: notebook-run-flash;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
   }
 }
 
-@keyframes flash {
+@keyframes notebook-run-flash {
   0% {
     text-shadow:
       0 0 5px var(--dh-color-content-bg),

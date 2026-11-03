@@ -14,11 +14,11 @@
   mix-blend-mode: color-dodge;
   pointer-events: none;
   animation-duration: 0.4s;
-  animation-name: flash;
+  animation-name: screen-flash;
   animation-timing-function: ease-out;
 }
 
-@keyframes flash {
+@keyframes screen-flash {
   0% {
     opacity: 0;
   }
