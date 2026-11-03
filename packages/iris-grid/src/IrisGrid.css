@@ -3,6 +3,10 @@
 
   /* Matches header-height in IrisGridTheme.module.css */
   --iris-grid-header-height: 30px;
+  /* Also used by FilterInputField. Matches font in IrisGridTheme.module.css */
+  --iris-grid-font-size: 12px;
+  --iris-grid-font-family: 'fira sans', sans-serif;
+  --iris-grid-font-feature-settings: 'tnum';
   --table-sidebar-bg: var(--dh-color-surface-bg);
   --dh-color-hr: var(--dh-color-gray-500);
 
@@ -89,10 +93,10 @@
     /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
     font-style: normal;
     font-weight: normal;
-    font-size: 12px;
+    font-size: var(--iris-grid-font-size);
     line-height: normal;
-    font-family: 'fira sans', sans-serif;
-    font-feature-settings: 'tnum';
+    font-family: var(--iris-grid-font-family);
+    font-feature-settings: var(--iris-grid-font-feature-settings);
     transition: all var(--dh-transition-mid);
 
     .grid-settings-button {

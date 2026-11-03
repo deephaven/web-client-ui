@@ -43,9 +43,21 @@
   --settings-menu-header-color: var(--dh-color-accent-contrast);
   --input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
     color-mix(in srgb, var(--dh-color-fg) 35%, transparent);
-  --btn-focus-bg: color-mix(in srgb, var(--dh-color-fg) 12%, transparent);
-  --btn-hover-bg: color-mix(in srgb, var(--dh-color-fg) 14%, transparent);
-  --btn-active-bg: color-mix(in srgb, var(--dh-color-fg) 28%, transparent);
+  --btn-focus-bg: color-mix(
+    in srgb,
+    var(--dh-color-fg) var(--dh-focus-bg-transparency),
+    transparent
+  );
+  --btn-hover-bg: color-mix(
+    in srgb,
+    var(--dh-color-fg) var(--dh-hover-bg-transparency),
+    transparent
+  );
+  --btn-active-bg: color-mix(
+    in srgb,
+    var(--dh-color-fg) var(--dh-active-bg-transparency),
+    transparent
+  );
 
   display: flex;
   justify-content: space-between;

@@ -4,9 +4,15 @@
 
 .console-history,
 .console-history-footer {
+  /* Also used by ConsoleHistoryItem and ConsoleHistoryResultInProgress, which render inside */
+  --console-font-size: 12px;
+  --console-line-height: 18px;
+  --console-button-height: 26px;
+  --console-button-vert-margin: 4px;
+
   font-family: var(--dh-font-family-mono);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--console-font-size);
+  line-height: var(--console-line-height);
   padding: 0;
 
   .console-history-gutter,

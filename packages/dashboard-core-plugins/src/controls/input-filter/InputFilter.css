@@ -37,7 +37,9 @@
     padding-bottom: var(--dh-spacer-3);
 
     label {
-      padding-top: calc(var(--dh-input-padding-y) + 2px);
+      padding-top: calc(
+        var(--dh-input-padding-y) + 2 * var(--dh-input-border-width)
+      );
     }
 
     .text-muted {

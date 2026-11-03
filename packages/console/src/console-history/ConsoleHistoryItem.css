@@ -47,29 +47,24 @@
   align-items: center;
   justify-content: flex-end;
   max-height: calc(
-    var(--console-history-item-button-height) +
-      var(--console-history-item-button-vert-margin) +
-      var(--console-history-item-button-vert-margin)
+    var(--console-button-height) + var(--console-button-vert-margin) +
+      var(--console-button-vert-margin)
   );
 }
 
 .console-history-item-result {
-  --console-history-item-font-size: 12px;
-  --console-history-item-button-height: 26px;
-  --console-history-item-button-vert-margin: 4px;
   --error-gutter-width: 15px;
   .btn-console-object {
     display: inline-flex;
     align-items: center;
     gap: var(--dh-spacer-1);
     text-align: left;
-    font-size: var(--console-history-item-font-size);
+    font-size: var(--console-font-size);
     padding-left: var(--dh-spacer-3);
-    margin: var(--console-history-item-button-vert-margin)
-      var(--console-history-item-button-vert-margin)
-      var(--console-history-item-button-vert-margin) 0;
-    height: var(--console-history-item-button-height);
-    border-radius: var(--console-history-item-button-height);
+    margin: var(--console-button-vert-margin) var(--console-button-vert-margin)
+      var(--console-button-vert-margin) 0;
+    height: var(--console-button-height);
+    border-radius: var(--console-button-height);
   }
 
   .error-message {

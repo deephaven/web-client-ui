@@ -30,7 +30,7 @@
 
   .chart-builder-link-info {
     color: var(--dh-color-gray-600);
-    font-size: 0.875em;
+    font-size: var(--dh-small-font-size);
     padding-left: 0;
     padding-right: 0;
   }

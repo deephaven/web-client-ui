@@ -42,7 +42,11 @@
     .error-box {
       padding: var(--dh-spacer-1);
       border-radius: var(--dh-border-radius);
-      background: color-mix(in srgb, var(--dh-color-negative) 28%, transparent);
+      background: color-mix(
+        in srgb,
+        var(--dh-color-negative) var(--dh-exception-transparency),
+        transparent
+      );
     }
   }
 

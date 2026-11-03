@@ -4,7 +4,7 @@
 
 .goto-row {
   background-color: var(--dh-color-content-bg);
-  border-top: 1px solid var(--dh-color-black);
+  border-top: var(--dh-input-border-width) solid var(--dh-color-black);
   display: block;
 
   .goto-row-row {

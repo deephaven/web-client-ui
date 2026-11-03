@@ -1,28 +1,23 @@
 .console-history-result-in-progress {
-  --console-history-result-in-progress-font-size: 12px;
-  --console-history-result-in-progress-button-vert-margin: 4px;
-  --console-history-result-in-progress-button-height: 26px;
-
   user-select: none;
 
   .badge {
     background-color: var(--dh-color-gray-500);
     color: var(--dh-color-fg);
-    font-size: var(--console-history-result-in-progress-font-size);
+    font-size: var(--console-font-size);
     font-weight: var(--dh-font-weight-base);
     gap: 4px;
-    margin: var(--console-history-result-in-progress-button-vert-margin)
-      var(--console-history-result-in-progress-button-vert-margin)
-      var(--console-history-result-in-progress-button-vert-margin) 0;
-    height: var(--console-history-result-in-progress-button-height);
-    border-radius: var(--console-history-result-in-progress-button-height);
+    margin: var(--console-button-vert-margin) var(--console-button-vert-margin)
+      var(--console-button-vert-margin) 0;
+    height: var(--console-button-height);
+    border-radius: var(--console-button-height);
     display: inline-flex;
     justify-content: center;
     align-items: center;
     padding-right: 0;
 
     .console-history-result-in-progress-cancel::after {
-      border-radius: var(--console-history-result-in-progress-button-height);
+      border-radius: var(--console-button-height);
     }
   }
 

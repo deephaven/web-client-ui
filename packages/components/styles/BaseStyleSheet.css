@@ -23,7 +23,10 @@
   --dh-font-size-base: 1rem;
   --dh-font-size-sm: 0.875rem;
   --dh-font-size-lg: 1.25rem;
+  /* Relative to the parent's size, for small print such as .small */
+  --dh-small-font-size: 0.875em;
   --dh-font-weight-base: 400;
+  --dh-font-weight-bold: 700;
   --dh-line-height-base: 1.5;
   /* Stacking order for overlays, from Bootstrap */
   --dh-z-index-dropdown: 1000;
@@ -48,6 +51,7 @@
     color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
   --dh-btn-border-width: 2px;
   --dh-btn-padding-x: 1.5rem;
+  --dh-btn-border-radius: 4rem;
   --dh-btn-transition: color 0.12s ease-in-out,
     background-color 0.12s ease-in-out, border-color 0.12s ease-in-out,
     box-shadow 0.12s ease-in-out;
@@ -56,6 +60,11 @@
   --dh-tooltip-padding-y: 0.25rem;
   --dh-tooltip-padding-x: 0.5rem;
   --dh-svg-inline-icon-size: 16px;
+  /* How much of a color to mix with transparent for state and error backgrounds */
+  --dh-focus-bg-transparency: 12%;
+  --dh-hover-bg-transparency: 14%;
+  --dh-active-bg-transparency: 28%;
+  --dh-exception-transparency: 28%;
 
   color: var(--dh-color-text);
 
@@ -390,7 +399,7 @@ span.btn-disabled-wrapper {
   background: var(--dh-color-action-bg);
   border: 1px solid var(--dh-color-action-border);
   color: var(--dh-color-action-fg);
-  font-weight: 400;
+  font-weight: var(--dh-font-weight-base);
 
   .svg-inline--fa {
     align-self: center;

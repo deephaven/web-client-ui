@@ -54,7 +54,7 @@
        * the hover state of the navigation menu list and the btn-switch are both $primary
        * apply a visual outline to the btn-switch via box shadow to make it more distinct
        */
-      box-shadow: 0 0 0 1px var(--dh-color-gray-400);
+      box-shadow: 0 0 0 var(--dh-input-border-width) var(--dh-color-gray-400);
     }
   }
 }

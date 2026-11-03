@@ -28,10 +28,10 @@
     /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
     font-style: normal;
     font-weight: normal;
-    font-size: 12px;
+    font-size: var(--iris-grid-font-size);
     line-height: normal;
-    font-family: 'fira sans', sans-serif;
-    font-feature-settings: 'tnum';
+    font-family: var(--iris-grid-font-family);
+    font-feature-settings: var(--iris-grid-font-feature-settings);
   }
 
   .iris-grid-input-field {
@@ -46,10 +46,10 @@
     /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
     font-style: normal;
     font-weight: normal;
-    font-size: 12px;
+    font-size: var(--iris-grid-font-size);
     line-height: normal;
-    font-family: 'fira sans', sans-serif;
-    font-feature-settings: 'tnum';
+    font-family: var(--iris-grid-font-family);
+    font-feature-settings: var(--iris-grid-font-feature-settings);
 
     &.iris-grid-has-filter {
       /*
