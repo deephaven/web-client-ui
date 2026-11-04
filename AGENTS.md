@@ -48,11 +48,9 @@ The web UI does not work standalone — it requires a `deephaven-core` server on
 
 - Styles are plain CSS with native nesting. Shared design tokens (`--dh-spacer-*`, `--dh-border-radius`, `--dh-transition*`, `--dh-font-*`, `--dh-z-index-*`, `--dh-input-*`, `--dh-btn-*`, …) are defined in `packages/components/styles/BaseStyleSheet.css`, theme colors are `--dh-color-*`. Use them instead of hard-coded values.
 - A value used once in a file can stay hard-coded. A value used more than once in a file becomes a custom property.
-- Constants local to a component are custom properties declared on the component's root selector, not `:root`. Only tokens shared across components go on `:root`, prefixed `--dh-`. `@media` and `@container` conditions cannot use custom properties, so they use literal values.
+- Constants local to a component are custom properties declared on the component's root selector, not `:root`. Only tokens shared across components go on `:root`, prefixed `--dh-`.
 - Packages ship CSS as written (Babel copies it to `dist/`). The apps' Vite builds minify CSS with Lightning CSS (`build.cssMinify`), which also adds prefixes and lowers syntax only as needed for the browserslist targets (`build.cssTarget`).
-- Style rules nest freely, but the only at-rules that may be nested inside a style rule are conditional ones (`@media`, `@supports`, `@container`, `@layer`). `@keyframes` and `@font-face` must be top level, and keyframe names are global, so make them unique. `&` cannot stand for a pseudo-element; write those rules unnested.
 - Do not combine the `font` shorthand with `font-feature-settings` or `font-variant-*` in one rule: Lightning CSS moves the shorthand after them, and the shorthand resets them. Use longhands instead.
-- Do not nest rules under a selector list whose selectors have different specificity (e.g. `.a, .a:hover { .b {} }`): native nesting wraps the list in `:is()`, which raises the specificity of every selector to the highest one.
 
 ### Code Commenting Rules
 
