@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.33.1](https://github.com/deephaven/web-client-ui/compare/v1.33.0...v1.33.1) (2026-11-04)
+
+### Bug Fixes
+
+- **grid:** Floor fractional canvas size to prevent 1px overflow ([#2784](https://github.com/deephaven/web-client-ui/issues/2784)) ([2372d2a](https://github.com/deephaven/web-client-ui/commit/2372d2a51082688469cb052d20f6bd829341c045)), references [#2774](https://github.com/deephaven/web-client-ui/issues/2774)
+
 ## [1.33.0](https://github.com/deephaven/web-client-ui/compare/v1.32.0...v1.33.0) (2026-10-28)
 
 ### Features
