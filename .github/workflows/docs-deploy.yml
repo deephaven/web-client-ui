@@ -21,14 +21,11 @@ on:
         default: 'main'
 
 jobs:
-  docs-sync:
+  version:
     runs-on: ubuntu-24.04
-    permissions:
-      id-token: write # Required to upload to AWS
-      contents: read
-    concurrency:
-      group: docs-sync-${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      ref: ${{ steps.version.outputs.ref }}
     steps:
       - name: Version
         id: version
@@ -41,10 +38,21 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
+  docs-sync:
+    needs: version
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write # Required to upload to AWS
+      contents: read
+    # Keyed by target version so manual and automatic deploys to the same destination share a group
+    concurrency:
+      group: docs-sync-${{ github.workflow }}-${{ needs.version.outputs.version }}
+      cancel-in-progress: true
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.version.outputs.ref }}
+          ref: ${{ needs.version.outputs.ref }}
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -62,7 +70,7 @@ jobs:
         uses: deephaven/salmon-sync@v1
         with:
           source: packages/grid/build/docs
-          destination: deephaven/web-client-ui/grid/${{ steps.version.outputs.version }}
+          destination: deephaven/web-client-ui/grid/${{ needs.version.outputs.version }}
           production: true
           temporary: false
           aws-role: ${{ vars.DOCS_AWS_ROLE }}

@@ -512,6 +512,7 @@ function SelectInput({
 
   return (
     <select
+      aria-label="Team"
       autoFocus
       value={selected}
       style={{ ...style, width: '100%', height: '100%' }}
