@@ -45,17 +45,17 @@
     color-mix(in srgb, var(--dh-color-fg) 35%, transparent);
   --btn-focus-bg: color-mix(
     in srgb,
-    var(--dh-color-fg) var(--dh-focus-bg-transparency),
+    var(--dh-color-fg) var(--dh-focus-bg-opacity),
     transparent
   );
   --btn-hover-bg: color-mix(
     in srgb,
-    var(--dh-color-fg) var(--dh-hover-bg-transparency),
+    var(--dh-color-fg) var(--dh-hover-bg-opacity),
     transparent
   );
   --btn-active-bg: color-mix(
     in srgb,
-    var(--dh-color-fg) var(--dh-active-bg-transparency),
+    var(--dh-color-fg) var(--dh-active-bg-opacity),
     transparent
   );
 

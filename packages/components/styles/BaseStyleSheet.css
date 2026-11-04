@@ -17,7 +17,8 @@
     'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif;
   --dh-font-family-mono: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
     'Courier New', monospace;
-  /* Bootstrap's names, still read by plugins built for older versions */
+  /* @deprecated Bootstrap's names, still read by plugins built for older
+   * versions. Use --dh-font-family-sans and --dh-font-family-mono. */
   --font-family-sans-serif: var(--dh-font-family-sans);
   --font-family-monospace: var(--dh-font-family-mono);
   --dh-font-size-base: 1rem;
@@ -60,11 +61,11 @@
   --dh-tooltip-padding-y: 0.25rem;
   --dh-tooltip-padding-x: 0.5rem;
   --dh-svg-inline-icon-size: 16px;
-  /* How much of a color to mix with transparent for state and error backgrounds */
-  --dh-focus-bg-transparency: 12%;
-  --dh-hover-bg-transparency: 14%;
-  --dh-active-bg-transparency: 28%;
-  --dh-exception-transparency: 28%;
+  /* Opacity of state and error backgrounds, as color-mix() percentages */
+  --dh-focus-bg-opacity: 12%;
+  --dh-hover-bg-opacity: 14%;
+  --dh-active-bg-opacity: 28%;
+  --dh-exception-bg-opacity: 28%;
 
   color: var(--dh-color-text);
 
