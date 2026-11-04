@@ -647,8 +647,7 @@ pre code {
   background-color: var(--dh-color-input-bg);
   border-color: var(--dh-color-input-focus-border);
   outline: 0;
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .form-control::placeholder {
   color: var(--dh-color-input-placeholder);
@@ -726,8 +725,7 @@ textarea.form-control {
   border-color: var(--dh-color-positive-bg);
 }
 .was-validated .form-control:valid:focus-visible {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .was-validated select.form-control:valid {
@@ -754,8 +752,7 @@ textarea.form-control {
   border-color: var(--dh-color-positive-bg);
 }
 .was-validated .custom-select:valid:focus-visible {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .was-validated .custom-control-input:valid ~ .custom-control-label {
@@ -773,8 +770,7 @@ textarea.form-control {
 .was-validated
   .custom-control-input:valid:focus-visible
   ~ .custom-control-label::before {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .was-validated
   .custom-control-input:valid:focus:not(:checked)
@@ -789,8 +785,7 @@ textarea.form-control {
   border-color: var(--dh-color-positive-bg);
 }
 .was-validated .custom-file-input:valid:focus-visible ~ .custom-file-label {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .invalid-feedback {
@@ -821,8 +816,7 @@ textarea.form-control {
 }
 .was-validated .form-control:invalid:focus-visible,
 .form-control.is-invalid:focus-visible {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .was-validated select.form-control:invalid,
@@ -854,8 +848,7 @@ textarea.form-control.is-invalid {
 }
 .was-validated .custom-select:invalid:focus-visible,
 .custom-select.is-invalid:focus-visible {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .was-validated .custom-control-input:invalid ~ .custom-control-label,
@@ -877,8 +870,7 @@ textarea.form-control.is-invalid {
   .custom-control-input:invalid:focus-visible
   ~ .custom-control-label::before,
 .custom-control-input.is-invalid:focus-visible ~ .custom-control-label::before {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .was-validated
   .custom-control-input:invalid:focus:not(:checked)
@@ -898,8 +890,7 @@ textarea.form-control.is-invalid {
 }
 .was-validated .custom-file-input:invalid:focus-visible ~ .custom-file-label,
 .custom-file-input.is-invalid:focus-visible ~ .custom-file-label {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 
 .form-inline {
@@ -970,8 +961,7 @@ textarea.form-control.is-invalid {
 .btn:focus,
 .btn.focus {
   outline: 0;
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .btn.disabled,
 .btn:disabled {
@@ -1003,7 +993,7 @@ fieldset:disabled a.btn {
   color: var(--dh-color-accent-contrast);
   background-color: var(--dh-color-accent-hover-bg);
   border-color: var(--dh-color-accent-hover-bg);
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-accent-bg) 50%, transparent);
 }
 .btn-primary.disabled,
@@ -1021,7 +1011,7 @@ fieldset:disabled a.btn {
 }
 .btn-primary:not(:disabled):not(.disabled):active:focus-visible,
 .btn-primary:not(:disabled):not(.disabled).active:focus-visible {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-accent-bg) 50%, transparent);
 }
 
@@ -1043,7 +1033,7 @@ fieldset:disabled a.btn {
   color: var(--dh-color-neutral-contrast);
   background-color: var(--dh-color-neutral-hover-bg);
   border-color: var(--dh-color-neutral-hover-bg);
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-neutral-bg) 50%, transparent);
 }
 .btn-secondary.disabled,
@@ -1061,7 +1051,7 @@ fieldset:disabled a.btn {
 }
 .btn-secondary:not(:disabled):not(.disabled):active:focus-visible,
 .btn-secondary:not(:disabled):not(.disabled).active:focus-visible {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-neutral-bg) 50%, transparent);
 }
 
@@ -1083,7 +1073,7 @@ fieldset:disabled a.btn {
   color: var(--dh-color-positive-contrast);
   background-color: var(--dh-color-positive-hover-bg);
   border-color: var(--dh-color-positive-hover-bg);
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-positive-bg) 50%, transparent);
 }
 .btn-success.disabled,
@@ -1101,7 +1091,7 @@ fieldset:disabled a.btn {
 }
 .btn-success:not(:disabled):not(.disabled):active:focus-visible,
 .btn-success:not(:disabled):not(.disabled).active:focus-visible {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-positive-bg) 50%, transparent);
 }
 
@@ -1123,7 +1113,7 @@ fieldset:disabled a.btn {
   color: var(--dh-color-negative-contrast);
   background-color: var(--dh-color-negative-hover-bg);
   border-color: var(--dh-color-negative-hover-bg);
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-negative-bg) 50%, transparent);
 }
 .btn-danger.disabled,
@@ -1141,7 +1131,7 @@ fieldset:disabled a.btn {
 }
 .btn-danger:not(:disabled):not(.disabled):active:focus-visible,
 .btn-danger:not(:disabled):not(.disabled).active:focus-visible {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-negative-bg) 50%, transparent);
 }
 
@@ -1156,7 +1146,7 @@ fieldset:disabled a.btn {
 }
 .btn-outline-primary:focus,
 .btn-outline-primary.focus {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-accent-bg) 50%, transparent);
 }
 .btn-outline-primary.disabled,
@@ -1174,7 +1164,7 @@ fieldset:disabled a.btn {
 }
 .btn-outline-primary:not(:disabled):not(.disabled):active:focus,
 .btn-outline-primary:not(:disabled):not(.disabled).active:focus {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-accent-bg) 50%, transparent);
 }
 
@@ -1189,7 +1179,7 @@ fieldset:disabled a.btn {
 }
 .btn-outline-secondary:focus,
 .btn-outline-secondary.focus {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-neutral-bg) 50%, transparent);
 }
 .btn-outline-secondary.disabled,
@@ -1207,7 +1197,7 @@ fieldset:disabled a.btn {
 }
 .btn-outline-secondary:not(:disabled):not(.disabled):active:focus,
 .btn-outline-secondary:not(:disabled):not(.disabled).active:focus {
-  box-shadow: 0 0 0 0.2rem
+  box-shadow: 0 0 0 var(--dh-focus-ring-width)
     color-mix(in srgb, var(--dh-color-neutral-bg) 50%, transparent);
 }
 
@@ -1388,8 +1378,7 @@ fieldset:disabled a.btn {
   background-color: var(--dh-color-input-fg);
 }
 .custom-control-input:focus ~ .custom-control-label::before {
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
   border-color: var(--dh-color-input-focus-border);
@@ -1496,8 +1485,7 @@ fieldset:disabled a.btn {
 .custom-select:focus {
   border-color: var(--dh-color-input-focus-border);
   outline: 0;
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .custom-select:focus::-ms-value {
   color: var(--dh-color-input-fg);
@@ -1540,8 +1528,7 @@ fieldset:disabled a.btn {
 }
 .custom-file-input:focus ~ .custom-file-label {
   border-color: var(--dh-color-input-focus-border);
-  box-shadow: 0 0 0 0.2rem
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+  box-shadow: var(--dh-input-focus-box-shadow);
 }
 .custom-file-input[disabled] ~ .custom-file-label,
 .custom-file-input:disabled ~ .custom-file-label {

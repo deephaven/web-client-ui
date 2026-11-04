@@ -44,12 +44,19 @@
   --dh-input-padding-x: 0.75rem;
   /* Matches Spectrum's 32px input height with the line height above */
   --dh-input-padding-y: 0.42145rem;
+  /* Top and bottom borders together */
+  --dh-input-height-border: calc(2 * var(--dh-input-border-width));
   --dh-input-height: calc(
-    var(--dh-input-line-height) * 1em + 2 * var(--dh-input-padding-y) + 2 *
-      var(--dh-input-border-width)
+    var(--dh-input-line-height) * 1em + 2 * var(--dh-input-padding-y) +
+      var(--dh-input-height-border)
+  );
+  --dh-focus-ring-color: color-mix(
+    in srgb,
+    var(--dh-color-accent) 35%,
+    transparent
   );
   --dh-input-focus-box-shadow: 0 0 0 var(--dh-focus-ring-width)
-    color-mix(in srgb, var(--dh-color-accent) 35%, transparent);
+    var(--dh-focus-ring-color);
   --dh-btn-border-width: 2px;
   --dh-btn-padding-x: 1.5rem;
   --dh-btn-border-radius: 4rem;
