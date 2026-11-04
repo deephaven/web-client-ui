@@ -438,8 +438,8 @@ pre code {
 .container,
 .container-fluid {
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding-right: calc(var(--dh-grid-gutter-width) * 0.5);
+  padding-left: calc(var(--dh-grid-gutter-width) * 0.5);
   margin-right: auto;
   margin-left: auto;
 }
@@ -467,8 +467,8 @@ pre code {
 .row {
   display: flex;
   flex-wrap: wrap;
-  margin-right: -15px;
-  margin-left: -15px;
+  margin-right: calc(var(--dh-grid-gutter-width) * -0.5);
+  margin-left: calc(var(--dh-grid-gutter-width) * -0.5);
 }
 
 .no-gutters {
@@ -497,8 +497,8 @@ pre code {
 .col-1 {
   position: relative;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding-right: calc(var(--dh-grid-gutter-width) * 0.5);
+  padding-left: calc(var(--dh-grid-gutter-width) * 0.5);
 }
 
 .col {

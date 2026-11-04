@@ -8,6 +8,8 @@
   --dh-spacer-4: 1.5rem;
   --dh-spacer-5: 3rem;
   --dh-border-radius: 4px;
+  /* Space between grid columns, from Bootstrap; each side gets half */
+  --dh-grid-gutter-width: 30px;
   --dh-box-shadow: 0 0.1rem 1rem var(--dh-color-dropshadow);
   --dh-transition: 0.15s;
   --dh-transition-mid: 0.2s;
