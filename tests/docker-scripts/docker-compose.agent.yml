@@ -1,0 +1,6 @@
+# Publishes the core server's port to the host so Playwright and the dev server can reach it
+# on localhost:10000. The base file only exposes it to other containers.
+services:
+  dhc-server:
+    ports:
+      - 127.0.0.1:10000:10000

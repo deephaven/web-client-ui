@@ -49,8 +49,12 @@ const config: PlaywrightTestConfig = {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: 'http://localhost:4000/ide/',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /**
+     * Record every attempt and keep the ones that failed. `on-first-retry` only traces the
+     * retry, so a test that fails then passes leaves behind a trace of the attempt that
+     * succeeded - useless for diagnosing the flake. See https://playwright.dev/docs/trace-viewer
+     */
+    trace: 'retain-on-failure',
 
     /**
      * Retain videos on failure locally for easier debugging.

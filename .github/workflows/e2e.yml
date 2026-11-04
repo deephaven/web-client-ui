@@ -14,7 +14,7 @@ on:
       - 'release/**'
       - 'feature/**'
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 4 * * *'
 
 env:
   DHC_VERSION: edge
@@ -94,12 +94,16 @@ jobs:
           path: blob-report/
           retention-days: 1
 
+      # Collected even when the job is green: a test that fails and then passes on retry leaves
+      # the job successful, and those are exactly the flakes the nightly triage needs logs for.
+      # docker logs writes the container's stderr to its own stderr, so 2>&1 is required or
+      # every stderr line the server emits is silently dropped.
       - name: Dump server logs
-        if: failure()
-        run: docker logs dhc-server > /tmp/server-log.txt
+        if: ${{ !cancelled() }}
+        run: docker logs --timestamps dhc-server > /tmp/server-log.txt 2>&1
 
       - name: Upload server logs
-        if: failure()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: server-logs-${{ matrix.config }}
@@ -265,6 +269,8 @@ jobs:
     if: ${{ !cancelled() && needs.global-conditions.result == 'success' }}
     runs-on: ubuntu-22.04
     needs: [global-conditions, e2e-tests]
+    outputs:
+      report-url: ${{ steps.upload-html.outputs.artifact-url }}
 
     steps:
       - name: Download blob reports from GitHub Actions Artifacts
@@ -273,6 +279,9 @@ jobs:
           pattern: playwright-report-blob-*
 
       - name: Merge into HTML Report
+        env:
+          # The json reporter writes to stdout unless this is set.
+          PLAYWRIGHT_JSON_OUTPUT_NAME: report.json
         run: |
           mkdir -p all-blob-reports
           for dir in playwright-report-blob-*; do
@@ -295,13 +304,109 @@ jobs:
             exit 1
           fi
 
-          npx playwright merge-reports --reporter html,github ./all-blob-reports
+          npx playwright merge-reports --reporter html,github,json ./all-blob-reports
+
+      # The triage job only downloads report.json, so path-backed text attachments (such as
+      # error-context snapshots) would be unreachable there; merge-reports leaves them on disk here.
+      - name: Inline text attachments into JSON report
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const MAX_BYTES = 200000;
+          const report = JSON.parse(fs.readFileSync('report.json', 'utf8'));
+          const isText = t => /^text\//.test(t ?? '') || t === 'application/json';
+          const visit = node => {
+            if (Array.isArray(node)) return node.forEach(visit);
+            if (node === null || typeof node !== 'object') return;
+            if (Array.isArray(node.attachments)) {
+              node.attachments.forEach(a => {
+                if (!a.path || a.body !== undefined || !isText(a.contentType)) return;
+                if (!fs.existsSync(a.path) || fs.statSync(a.path).size > MAX_BYTES) return;
+                a.body = fs.readFileSync(a.path).toString('base64');
+                delete a.path;
+              });
+            }
+            Object.values(node).forEach(visit);
+          };
+          visit(report);
+          fs.writeFileSync('report.json', JSON.stringify(report));
+          EOF
 
       - name: Upload HTML report
+        id: upload-html
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report
           path: playwright-report
+          retention-days: 30
+
+      - name: Upload JSON report for triage
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-json-report
+          path: report.json
+          retention-days: 30
+
+  triage:
+    # Nightly only: PR and push runs must not open issues or write the history cache.
+    if: ${{ !cancelled() && github.event_name == 'schedule' && needs.merge-reports.result == 'success' }}
+    runs-on: ubuntu-22.04
+    needs: [merge-reports]
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Download JSON report
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: playwright-json-report
+
+      # Cache keys are immutable, so the key rotates per run and restore-keys
+      # pulls the most recent prior entry. A cold cache is not fatal - flake
+      # rates just rebuild over the next few nights.
+      - name: Restore test-health history
+        uses: actions/cache/restore@v4
+        with:
+          path: .test-health/history.json
+          key: test-health-history-${{ github.run_id }}
+          restore-keys: |
+            test-health-history-
+
+      - name: Triage failures
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Assigning Copilot needs a user-to-server token; GITHUB_TOKEN is rejected.
+          # Unset this secret to keep triage label-only.
+          COPILOT_ASSIGN_TOKEN: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
+          REPORT_ARTIFACT_URL: ${{ needs.merge-reports.outputs.report-url }}
+        run: |
+          node ./scripts/nightly-ci/nightly-flake-triage.ts \
+            --report ./report.json \
+            --history ./.test-health/history.json \
+            --out ./.test-health/decisions.json
+
+      - name: Save test-health history
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v4
+        with:
+          path: .test-health/history.json
+          key: test-health-history-${{ github.run_id }}
+
+      - name: Upload triage decisions
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-decisions
+          path: .test-health/decisions.json
           retention-days: 30
 
   e2e-results:

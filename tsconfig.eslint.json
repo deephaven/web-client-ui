@@ -7,7 +7,8 @@
     "packages/*/src/**/**.jsx",
     /* Vite config including any local overrides (e.g. vite.config.local.ts) */
     "packages/*/vite.config*.ts",
-    "tests/**/**.ts"
+    "tests/**/**.ts",
+    "scripts/nightly-ci/**/*.ts"
   ],
   "exclude": []
 }
