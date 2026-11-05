@@ -50,6 +50,9 @@ module.exports = {
   // Makes Jest transform some node_modules when needed. Usually because they are pure ESM and Jest needs CJS
   // By default, Jest ignores transforming node_modules
   // When switching to transform all of node_modules, it caused a babel error
+  // The build copies snapshots into dist/ along with the CSS, so ignore them
+  // there; otherwise Jest reports them as obsolete
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/dist/'],
   transformIgnorePatterns: [
     `node_modules/(?!(${nodeModulesToTransform.join('|')})/)`,
   ],
