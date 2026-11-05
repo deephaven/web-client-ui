@@ -19,6 +19,7 @@ The web UI does not work standalone — it requires a `deephaven-core` server on
 - `npm run test:lint` — runs ESLint and Stylelint as jest projects via `jest-runner-eslint` / `jest-runner-stylelint`. Faster than `lint:packages` when narrowed (`-- --changedSince origin/main`).
 - Single test: `npm run test:unit -- <pattern>` (matches filename or test name), or `npm run test:debug <pattern>` to attach a debugger.
 - `npm run e2e` / `npm run e2e:headed` — Playwright; requires `localhost:4000/ide/` reachable and core running. `npm run e2e:docker` builds a prod image and runs everything in docker. Snapshots are Linux-only — update CI snapshots with `npm run e2e:update-ci-snapshots`.
+- `npm run docs` — build each package's `docs/` folder into `build/docs` for publishing. A fenced block with the info string `{autodoc} SymbolName` is replaced with API reference generated from the JSDoc of that package export (see `scripts/build-docs.mjs`).
 - `DH_LOG_LEVEL=4 npm test` — enable `@deephaven/log` output in tests (suppressed by default in `jest.setup.ts`).
 
 ## Architecture
