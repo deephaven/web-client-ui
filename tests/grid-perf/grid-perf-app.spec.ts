@@ -29,6 +29,7 @@ import {
  * The perf app supports query params:
  *   - rows: Number of rows (default: 1000000)
  *   - cols: Number of columns (default: 100)
+ *   - tick: Update every cell at this interval in ms (default: off)
  */
 
 const PERF_APP_URL = 'http://localhost:4020';
@@ -94,6 +95,40 @@ test.describe('grid perf app - stress tests', () => {
 
     const result = await stopFPSMeasurement(page);
     logResults('Perf App Sustained Scroll (3s)', result, { minFps: 30 });
+  });
+});
+
+/**
+ * Every visible cell changes every 100ms, like a fully ticking table on the
+ * server. Run only these with `npm run e2e:grid-performance -- --grep "ticking"`.
+ */
+test.describe('grid perf app - ticking', () => {
+  test.skip(
+    !PERF_TESTS_ENABLED,
+    'Performance tests skipped. Set RUN_PERF_TESTS=1 to run.'
+  );
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`${PERF_APP_URL}/?rows=2000&cols=40&tick=100`);
+    await page.waitForSelector('canvas');
+  });
+
+  test('idle while ticking - 2K rows x 40 cols', async ({ page }) => {
+    await startFPSMeasurement(page);
+
+    await page.waitForTimeout(3000);
+
+    const result = await stopFPSMeasurement(page);
+    logResults('Ticking Idle (2K x 40, 100ms)', result, { minFps: 30 });
+  });
+
+  test('scroll while ticking - 2K rows x 40 cols', async ({ page }) => {
+    await startFPSMeasurement(page);
+
+    await combinedScroll(page, page.locator('canvas').first());
+
+    const result = await stopFPSMeasurement(page);
+    logResults('Ticking Scroll (2K x 40, 100ms)', result, { minFps: 30 });
   });
 });
 

@@ -40,8 +40,33 @@ The app supports query params to configure the grid:
 - `rows`: Number of rows (default: 1000000)
 - `cols`: Number of columns (default: 100)
 - `text`: `short` cell text, or `long` text that is truncated in every cell (default: `short`)
+- `tick`: Update interval in ms. When set, every cell is a double that changes on every tick and `text` is ignored (default: off)
 
 Example: `http://localhost:4020/?rows=100000&cols=50`
+
+### Ticking data
+
+`tick` mirrors a server table where every cell changes on every update, such as:
+
+```python
+from deephaven import empty_table, time_table
+
+tick = time_table("PT0.1S").update("Tick = Timestamp.toEpochMilli()").last_by().view("Tick")
+wide = (
+    empty_table(2000)
+    .update("Row = i")
+    .natural_join(tick, on=[], joins=["Tick"])
+    .update([f"C{i} = Math.sin(Tick * 0.001 + Row * 0.1 + {i}) * 1000.0" for i in range(1, 41)])
+)
+```
+
+The equivalent in the perf app is `http://localhost:4020/?rows=2000&cols=40&tick=100`. On each tick the app advances the model and calls `grid.forceUpdate()`, which is what `IrisGrid` does when its model emits an update. Cells are formatted with the default decimal format (`###,##0.0000`) when drawn. The overlay shows a live FPS readout. It covers the grid rendering only, not the JS API viewport processing or `IrisGridTableModel` overhead.
+
+Run only the ticking benchmarks with:
+
+```bash
+npm run e2e:grid-performance -- --grep "ticking"
+```
 
 ## Render breakdown
 
