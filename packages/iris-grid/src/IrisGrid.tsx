@@ -3845,9 +3845,36 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ conditionalFormats });
   }
 
+  /**
+   * Identifies the current conditional format editor session. The navigation
+   * stack remounts a popped editor page from its last rendered element, and
+   * that remounted editor reports its (stale) rule on mount. Binding each
+   * editor's update callback to a session lets those reports be ignored so
+   * they can't overwrite the preview of a newer session.
+   */
+  conditionalFormatEditSession = 0;
+
+  invalidateConditionalFormatEditors(): void {
+    this.conditionalFormatEditSession += 1;
+    this.handleConditionalFormatEditorUpdate.cancel();
+  }
+
+  getConditionalFormatEditorUpdateHandler = memoize(
+    (session: number) =>
+      (conditionalFormatPreview?: SidebarFormattingRule): void => {
+        if (session !== this.conditionalFormatEditSession) {
+          log.debug('Ignoring update from a stale conditional format editor');
+          return;
+        }
+        this.handleConditionalFormatEditorUpdate(conditionalFormatPreview);
+      },
+    { max: 1 }
+  );
+
   handleConditionalFormatCreate(): void {
     log.debug('Create new conditional format');
     const { openOptions, conditionalFormats } = this.state;
+    this.invalidateConditionalFormatEditors();
     this.setState({
       openOptions: [
         ...openOptions,
@@ -3865,6 +3892,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleConditionalFormatEdit(index: number): void {
     log.debug('Edit conditional format', index);
     const { openOptions, conditionalFormats } = this.state;
+    this.invalidateConditionalFormatEditors();
     this.setState({
       openOptions: [
         ...openOptions,
@@ -3889,6 +3917,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleConditionalFormatEditorSave(config: SidebarFormattingRule): void {
     log.debug('Save conditional format changes', config);
+    this.invalidateConditionalFormatEditors();
     this.setState(
       state => {
         if (state.conditionalFormatEditIndex === null) {
@@ -3906,6 +3935,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleConditionalFormatEditorCancel(): void {
+    this.invalidateConditionalFormatEditors();
     this.handleMenuBack();
     // Not resetting conditionalFormatPreview here
     // to prevent editor fields change during the menu transition
@@ -5482,14 +5512,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           );
         case OptionType.CONDITIONAL_FORMATTING_EDIT:
           assertNotNull(model.columns);
-          assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
               dh={model.dh}
               columns={model.columns}
               rule={conditionalFormatPreview}
               errorMessage={conditionalFormatError ?? undefined}
-              onUpdate={this.handleConditionalFormatEditorUpdate}
+              onUpdate={this.getConditionalFormatEditorUpdateHandler(
+                this.conditionalFormatEditSession
+              )}
               onSave={this.handleConditionalFormatEditorSave}
               onCancel={this.handleConditionalFormatEditorCancel}
             />
