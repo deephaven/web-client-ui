@@ -172,3 +172,40 @@ benchmarks at each port by changing `PERF_APP_URL` in
 ```bash
 npm run e2e:grid-performance -- --grep "ticking"
 ```
+
+### Server-side equivalent
+
+The perf app's `?rows=2000&cols=40&tick=100` mirrors this server table. Use
+it to check the end-to-end effect in `code-studio` against a real Deephaven
+worker, including JS API viewport processing and `IrisGridTableModel`:
+
+```python
+# Maximize-responsiveness reproducer (Core+ Python worker, iris release/2026.01 / DHC 42.5).
+# A fixed-size ticking table where EVERY cell changes every 100 ms:
+# 2,000 rows x 40 double columns.
+from deephaven import empty_table, time_table
+
+N_ROWS = 2000
+N_COLS = 40
+
+# One-row table whose Tick value changes every 100 ms.
+tick = (
+    time_table("PT0.1S")
+    .update("Tick = Timestamp.toEpochMilli()")
+    .last_by()
+    .view("Tick")
+)
+
+# The zero-key natural_join marks every left row modified on each tick,
+# so all C* columns are recomputed and resent to the browser.
+formulas = [
+    f"C{i} = Math.sin(Tick * 0.001 + Row * 0.1 + {i}) * 1000.0"
+    for i in range(1, N_COLS + 1)
+]
+wide = (
+    empty_table(N_ROWS)
+    .update("Row = i")
+    .natural_join(tick, on=[], joins=["Tick"])
+    .update(formulas)
+)
+```
