@@ -87,7 +87,7 @@ export const saveWorkspace =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    unknown,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -107,7 +107,7 @@ export const updateWorkspaceData =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    unknown,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -133,7 +133,7 @@ export const updateNotebookSettings =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    unknown,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
@@ -155,7 +155,7 @@ export const updateSettings =
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
-    never,
+    unknown,
     PayloadAction<unknown>
   > =>
   dispatch =>

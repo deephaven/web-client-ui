@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.33.0](https://github.com/deephaven/web-client-ui/compare/v1.32.0...v1.33.0) (2026-10-28)
+
+### Bug Fixes
+
+- Use unknown extra arg type in redux workspace thunks ([#2779](https://github.com/deephaven/web-client-ui/issues/2779)) ([c3a9bde](https://github.com/deephaven/web-client-ui/commit/c3a9bdea6ec36500900af6c89dabf4fdc23ddcf2))
+
 ## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
 
 ### Features

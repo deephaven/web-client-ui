@@ -107,6 +107,21 @@ export class GridRenderer {
   }
 
   /**
+   * The most characters of a string that can be drawn within a width, based on
+   * the estimated width of the narrowest character. `truncateToWidth` never
+   * reads past this many characters.
+   * @param width The width to truncate within
+   * @param fontWidthLower The estimated width of the narrowest character
+   * @returns The maximum number of characters that can fit
+   */
+  static getMaxTruncatedLength(
+    width: number,
+    fontWidthLower = DEFAULT_FONT_WIDTH / 2
+  ): number {
+    return Math.ceil(width / fontWidthLower);
+  }
+
+  /**
    * Truncate a string (if necessary) to fit in the specified width.
    * First uses the estimated font width to calculate a lower/upper bound
    * Then uses binary search within those bounds to find the exact max length
@@ -137,7 +152,10 @@ export class GridRenderer {
       Math.max(0, Math.floor(width / fontWidthUpper) - 5),
       str.length
     );
-    const hi = Math.min(Math.ceil(width / fontWidthLower), str.length);
+    const hi = Math.min(
+      GridRenderer.getMaxTruncatedLength(width, fontWidthLower),
+      str.length
+    );
 
     return GridRenderer.binaryTruncateToWidth(
       context,

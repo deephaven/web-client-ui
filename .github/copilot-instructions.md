@@ -1,10 +1,13 @@
 # Copilot Cloud Agent Instructions for `deephaven/web-client-ui`
 
+This file is read by both Copilot cloud agent and Copilot code review.
+
 ## Repository context
 
 - Use `AGENTS.md` as the authoritative source for repository setup, architecture, build/test commands, constraints, and validation workflow.
 - Do not duplicate AGENTS.md guidance in review comments; apply it.
 - Only search for additional context when AGENTS.md or the path-specific instruction files are incomplete for the files being reviewed.
+- Flaky e2e issues labeled `auto-investigate` are best handled by the `playwright-flake-investigator` custom agent in `.github/agents/`; the policy it follows lives in `.github/instructions/playwright.instructions.md`.
 
 ## Copilot code review workflow
 

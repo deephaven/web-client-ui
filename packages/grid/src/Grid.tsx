@@ -358,6 +358,29 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
+   * Get the floored layout size of an element, unaffected by CSS transforms.
+   * clientWidth/clientHeight round fractional sizes, which can make the canvas
+   * overflow its wrapper by a pixel, so read the fractional size from the
+   * computed style when available.
+   * @param element The element to get the size of
+   * @returns The floored layout width and height of the element
+   */
+  static getFlooredLayoutSize(element: HTMLElement): {
+    width: number;
+    height: number;
+  } {
+    const style = window.getComputedStyle(element);
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
+    return {
+      width: Math.floor(Number.isFinite(width) ? width : element.clientWidth),
+      height: Math.floor(
+        Number.isFinite(height) ? height : element.clientHeight
+      ),
+    };
+  }
+
+  /**
    * Get the class name from the cursor provided
    * @param cursor The grid cursor to use
    * @returns Class name with the grid-cursor prefix or null if no cursor provided
@@ -1018,8 +1041,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const width = canvasWrapper.current.clientWidth;
-    const height = canvasWrapper.current.clientHeight;
+    const { width, height } = Grid.getFlooredLayoutSize(canvasWrapper.current);
 
     // avoid triggering a dom re-calc if size hasn't changed
     if (

@@ -1753,6 +1753,28 @@ describe('css transform scale', () => {
     expect(canvas.style.height).toBe(`${VIEW_SIZE}px`);
   });
 
+  it('floors fractional wrapper sizes instead of rounding them', () => {
+    const component = makeGridComponent();
+    const canvas = component.canvas as HTMLCanvasElement;
+    const wrapper = component.canvasWrapper.current as HTMLDivElement;
+    // clientWidth/clientHeight report the rounded-up size of the fractional layout size
+    wrapper.style.width = '600.6px';
+    wrapper.style.height = '143.5px';
+    Object.defineProperty(wrapper, 'clientWidth', {
+      value: 601,
+      configurable: true,
+    });
+    Object.defineProperty(wrapper, 'clientHeight', {
+      value: 144,
+      configurable: true,
+    });
+
+    component.updateCanvas();
+
+    expect(canvas.style.width).toBe('600px');
+    expect(canvas.style.height).toBe('143px');
+  });
+
   it('follows the layout size and keeps the scale when the container resizes', () => {
     const RESIZED = 600;
     const component = makeScaledGrid(SCALE);
