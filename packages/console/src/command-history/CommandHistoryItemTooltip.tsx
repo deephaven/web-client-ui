@@ -7,7 +7,7 @@ import { type StorageListenerRemover } from '@deephaven/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsWarning } from '@deephaven/icons';
 import Code from '../common/Code';
-import './CommandHistoryItemTooltip.scss';
+import './CommandHistoryItemTooltip.css';
 import {
   type CommandHistoryStorageData,
   type CommandHistoryStorageItem,

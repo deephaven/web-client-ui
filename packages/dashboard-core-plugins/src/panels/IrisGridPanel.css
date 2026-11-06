@@ -1,0 +1,25 @@
+.iris-grid-panel.disconnected {
+  .iris-grid {
+    filter: grayscale(100%);
+    opacity: 0.18;
+  }
+}
+
+.iris-grid-panel.inactive {
+  .iris-grid {
+    filter: grayscale(100%);
+  }
+}
+
+.iris-grid-panel {
+  .iris-panel-message-overlay {
+    padding-top: 30px;
+  }
+}
+
+.iris-grid-plugin {
+  .error-message {
+    padding: var(--dh-spacer-1);
+    color: var(--dh-color-negative-bg);
+  }
+}

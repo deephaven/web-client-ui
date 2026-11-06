@@ -26,7 +26,7 @@ import CommandHistoryItem from './CommandHistoryItem';
 import CommandHistoryActions from './CommandHistoryActions';
 import ConsoleConstants from '../common/ConsoleConstants';
 
-import './CommandHistory.scss';
+import './CommandHistory.css';
 import CommandHistoryViewportUpdater from './CommandHistoryViewportUpdater';
 import SHORTCUTS from '../ConsoleShortcuts';
 import {

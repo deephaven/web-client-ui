@@ -12,7 +12,7 @@ import {
   fillToLength,
   trimTrailingMask,
 } from './MaskedInputUtils';
-import './MaskedInput.scss';
+import './MaskedInput.css';
 
 const log = Log.module('MaskedInput');
 

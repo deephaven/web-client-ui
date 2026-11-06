@@ -90,7 +90,7 @@ import {
   getColumnSelectionValidatorForDashboard,
 } from '../redux';
 import WidgetPanel from './WidgetPanel';
-import './IrisGridPanel.scss';
+import './IrisGridPanel.css';
 import {
   type Link,
   type LinkColumn,

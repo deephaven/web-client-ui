@@ -10,7 +10,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import { copyToClipboard, EMPTY_ARRAY } from '@deephaven/utils';
 import Panel, { type CorePanelProps } from './CorePanel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
-import './WidgetPanel.scss';
+import './WidgetPanel.css';
 import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 export type WidgetPanelProps = CorePanelProps & {

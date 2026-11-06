@@ -1,0 +1,48 @@
+.card-flip--show-front,
+.card-flip--show-back {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  isolation: isolate;
+  perspective: 1000px;
+}
+
+.card-flip--front,
+.card-flip--back {
+  grid-area: 1/1/2/2;
+  transform-style: flat;
+  backface-visibility: hidden;
+  transition: transform var(--dh-transition-slow) ease-in-out;
+  overflow: hidden;
+}
+
+.card-flip--show-back {
+  .card-flip--front {
+    transform: rotateY(180deg);
+  }
+  .card-flip--back {
+    transform: rotateY(0);
+  }
+}
+
+.card-flip--show-front {
+  .card-flip--front {
+    transform: rotateY(0);
+  }
+  .card-flip--back {
+    transform: rotateY(-180deg);
+  }
+}
+
+.card-flip--is-flipping {
+  /*
+   * this is applied to body during transitions
+   * so that the perspective transform doesn't cause overflow
+   */
+  overflow: hidden;
+  .card-flip--show-front,
+  .card-flip--show-back {
+    /* increase z-index while flipping so perspective appears above everything */
+    z-index: var(--dh-z-index-popover);
+  }
+}

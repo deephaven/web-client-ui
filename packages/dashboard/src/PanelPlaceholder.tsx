@@ -1,5 +1,5 @@
 import React, { type ForwardedRef } from 'react';
-import './PanelPlaceholder.scss';
+import './PanelPlaceholder.css';
 import LayoutUtils from './layout/LayoutUtils';
 import { type PanelProps } from './DashboardPlugin';
 

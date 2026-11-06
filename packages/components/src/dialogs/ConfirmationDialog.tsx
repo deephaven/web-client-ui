@@ -11,7 +11,7 @@ import {
   Form,
   Heading,
 } from '../spectrum';
-import styles from '../SpectrumComponent.module.scss';
+import styles from '../SpectrumComponent.module.css';
 
 export interface ConfirmationDialogProps {
   heading: ReactNode;

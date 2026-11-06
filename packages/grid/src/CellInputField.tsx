@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { SELECTION_DIRECTION } from './GridRange';
 import GridUtils from './GridUtils';
-import './CellInputField.scss';
+import './CellInputField.css';
 
 export type CellInputFieldProps = {
   selectionRange?: number[];

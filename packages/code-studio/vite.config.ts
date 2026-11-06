@@ -87,8 +87,8 @@ export default defineConfig(({ mode }) => {
         mode === 'development'
           ? [
               {
-                find: /^@deephaven\/(.*)\/scss\/(.*)/,
-                replacement: `${packagesDir}/$1/scss/$2`,
+                find: /^@deephaven\/(.*)\/styles\/(.*)/,
+                replacement: `${packagesDir}/$1/styles/$2`,
               },
               // Subpath entry points must precede the catch-all so they are not
               // rewritten to `<pkg>/<subpath>/src`
@@ -105,6 +105,10 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
+      // Lightning CSS minifies the CSS and lowers/prefixes it for the
+      // browserslist targets
+      cssMinify: 'lightningcss',
+      cssTarget: browserslistToEsbuild(),
       emptyOutDir: true,
       sourcemap: true,
       build: {

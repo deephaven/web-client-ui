@@ -1,6 +1,6 @@
 import React, { type ReactElement } from 'react';
 import { CopyButton, createXComponent } from '@deephaven/components';
-import './WidgetPanelTooltip.scss';
+import './WidgetPanelTooltip.css';
 import { type WidgetPanelTooltipProps } from './WidgetPanelTypes';
 
 function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {

@@ -18,7 +18,7 @@ import {
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import './IrisGridCopyHandler.scss';
+import './IrisGridCopyHandler.css';
 import type IrisGridModel from './IrisGridModel';
 import { textSnapshotFromSelection } from './IrisGridSelectionUtils';
 import { KeyedSelection } from './KeyedSelection';

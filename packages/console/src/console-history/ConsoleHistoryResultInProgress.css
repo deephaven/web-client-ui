@@ -1,0 +1,31 @@
+.console-history-result-in-progress {
+  user-select: none;
+
+  .badge {
+    background-color: var(--dh-color-gray-500);
+    color: var(--dh-color-fg);
+    font-size: var(--console-font-size);
+    font-weight: var(--dh-font-weight-base);
+    gap: 4px;
+    margin: var(--console-button-vert-margin) var(--console-button-vert-margin)
+      var(--console-button-vert-margin) 0;
+    height: var(--console-button-height);
+    border-radius: var(--console-button-height);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 0;
+
+    .console-history-result-in-progress-cancel::after {
+      border-radius: var(--console-button-height);
+    }
+  }
+
+  &.disabled {
+    .badge {
+      color: var(--dh-color-gray-700);
+      background-color: var(--dh-color-gray-400);
+      border-color: var(--dh-color-gray-400);
+    }
+  }
+}

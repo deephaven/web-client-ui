@@ -43,7 +43,7 @@ import {
   type GridSeparator,
   GridTokenMouseHandler,
 } from './mouse-handlers';
-import './Grid.scss';
+import './Grid.css';
 import {
   type GridKeyHandlerFunctionName,
   type GridKeyboardEvent,

@@ -1,0 +1,34 @@
+.command-history-item-popper {
+  padding: 0;
+  .popper-content .tooltip-content {
+    padding: 0;
+  }
+  .command-history-item-tooltip {
+    display: flex;
+    flex-direction: column;
+    max-height: 50vh;
+    max-width: 50vw;
+    text-align: left;
+    .scroll-container {
+      padding: var(--dh-spacer-2);
+      overflow: auto;
+    }
+    .result-info {
+      flex-shrink: 0;
+      border-top: 1px solid var(--dh-color-gray-500);
+      padding: var(--dh-spacer-1) var(--dh-spacer-2);
+      overflow: auto;
+      max-height: 25vh;
+      .time-wrapper {
+        text-align: right;
+        color: var(--dh-color-gray-600);
+        .time-string {
+          color: var(--dh-color-fg);
+        }
+      }
+      .error-message {
+        color: var(--dh-color-negative-bg);
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+.random-area-plot-animation-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  canvas {
+    transition: all var(--dh-transition);
+    display: block;
+
+    &.shade {
+      filter: grayscale(100%) brightness(90%);
+    }
+  }
+}

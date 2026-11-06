@@ -11,7 +11,7 @@ import { NON_BREAKING_SPACE } from '@deephaven/utils';
 import { Text } from './Text';
 import { type TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
-import stylesCommon from '../SpectrumComponent.module.scss';
+import stylesCommon from '../SpectrumComponent.module.css';
 
 export interface ItemContentProps {
   children: ReactNode;

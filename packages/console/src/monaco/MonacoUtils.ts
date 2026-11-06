@@ -13,7 +13,7 @@ import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import type * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import MonacoThemeRaw from './MonacoTheme.module.scss';
+import MonacoThemeRaw from './MonacoTheme.module.css';
 import PyLang from './lang/python';
 import GroovyLang from './lang/groovy';
 import ScalaLang from './lang/scala';

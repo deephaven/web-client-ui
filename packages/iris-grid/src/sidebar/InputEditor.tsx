@@ -2,7 +2,7 @@ import React, { Component, type ReactElement } from 'react';
 import type * as monaco from 'monaco-editor';
 import { Editor } from '@deephaven/console';
 import classNames from 'classnames';
-import './InputEditor.scss';
+import './InputEditor.css';
 
 interface InputEditorProps {
   className?: string;

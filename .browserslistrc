@@ -1,6 +1,5 @@
-last 0.5 years and Chrome > 0
-last 0.5 years and Edge > 0
-last 0.5 years and Opera > 0
-last 0.5 years and Firefox > 0
-last 1 years and Safari > 0
-Firefox ESR and not dead
+# Supported browsers, documented in README.md. Browserslist applies each
+# `and` to every query before it, so the shorter window must come first.
+Chrome > 0, Edge > 0, Opera > 0, Firefox > 0 and last 0.5 years
+Safari > 0 and last 1 years
+Firefox ESR

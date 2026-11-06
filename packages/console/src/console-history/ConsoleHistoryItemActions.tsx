@@ -3,7 +3,7 @@
  */
 import React, { memo, type ReactElement, useMemo } from 'react';
 import { Button, CopyButton, ContextualHelp } from '@deephaven/components';
-import './ConsoleHistoryItem.scss';
+import './ConsoleHistoryItem.css';
 import { vsDebugRerun } from '@deephaven/icons';
 import classNames from 'classnames';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';

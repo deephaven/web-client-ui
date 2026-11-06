@@ -15,7 +15,7 @@ import {
   isSupportedColumn,
   type ModelColumn,
 } from './ConditionalFormattingUtils';
-import './ConditionalFormatEditor.scss';
+import './ConditionalFormatEditor.css';
 
 const log = Log.module('ConditionalFormatEditor');
 

@@ -11,7 +11,7 @@ import {
 import type { KeyState } from '@deephaven/components';
 import { vsRefresh } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './ShortcutItem.scss';
+import './ShortcutItem.css';
 
 type ShortcutItemProps = {
   shortcut: Shortcut;

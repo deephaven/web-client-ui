@@ -14,7 +14,7 @@ import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
 import CsvParser from './CsvParser';
 import CsvFormats from './CsvFormats';
-import './CsvInputBar.scss';
+import './CsvInputBar.css';
 
 const log = Log.module('CsvInputBar');
 

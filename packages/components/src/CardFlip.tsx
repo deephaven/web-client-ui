@@ -1,6 +1,6 @@
 import React, { type ReactNode, useCallback, useEffect, useRef } from 'react';
 import classNames from 'classnames';
-import './CardFlip.scss';
+import './CardFlip.css';
 
 type CardFlipProps = {
   isFlipped: boolean;

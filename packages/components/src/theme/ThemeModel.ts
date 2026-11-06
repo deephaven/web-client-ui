@@ -40,7 +40,8 @@ export type ThemeIconsRequiringManualColorChanges =
   | '--dh-svg-icon-select-indicator'
   | '--dh-svg-icon-select-indicator-hover'
   | '--dh-svg-icon-select-indicator-disabled'
-  | '--dh-svg-icon-error';
+  | '--dh-svg-icon-error'
+  | '--dh-svg-icon-success';
 
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
@@ -121,6 +122,11 @@ export const TRANSPARENT_PRELOAD_DATA_VARIABLES: Partial<
   Record<ThemePreloadColorVariable, string>
 > = {
   '--dh-color-bg': 'transparent',
+  // Styles don't provide fallback colors, so text such as API load errors
+  // needs a color before the theme arrives. The parent may be light or dark,
+  // so use a mid gray that is legible on both (4.5:1 on white, 4:1 on the
+  // dark theme's background).
+  '--dh-color-fg': '#767676',
   '--dh-color-loading-spinner-primary': 'transparent',
   '--dh-color-loading-spinner-secondary': 'transparent',
 };
@@ -138,6 +144,7 @@ export const SVG_ICON_MANUAL_COLOR_MAP: Record<
   '--dh-svg-icon-select-indicator-hover': '--dh-color-selector-hover-fg',
   '--dh-svg-icon-select-indicator-disabled': '--dh-color-selector-disabled-fg',
   '--dh-svg-icon-error': '--dh-color-form-control-error',
+  '--dh-svg-icon-success': '--dh-color-positive-bg',
 };
 
 export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';

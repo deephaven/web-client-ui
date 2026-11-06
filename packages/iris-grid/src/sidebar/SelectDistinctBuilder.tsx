@@ -8,7 +8,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import { type ModelIndex } from '@deephaven/grid';
 import type IrisGridModel from '../IrisGridModel';
 
-import './SelectDistinctBuilder.scss';
+import './SelectDistinctBuilder.css';
 import { type ColumnName } from '../CommonTypes';
 
 const log = Log.module('SelectDistinctBuilder');
