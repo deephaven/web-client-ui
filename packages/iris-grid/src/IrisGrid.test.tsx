@@ -224,17 +224,17 @@ describe('handleUpdate', () => {
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 
-  component.clearEditableFilters = jest.fn();
+  component.clearAllFilters = jest.fn();
 
   keyDown('e', component);
   keyDown('e', component, { ctrlKey: true });
   keyDown('e', component, { shiftKey: true });
 
-  expect(component.clearEditableFilters).not.toHaveBeenCalled();
+  expect(component.clearAllFilters).not.toHaveBeenCalled();
 
   keyDown('e', component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.clearEditableFilters).toHaveBeenCalled();
+  expect(component.clearAllFilters).toHaveBeenCalled();
 });
 
 it('handles reverse key shortcut', () => {
@@ -1248,7 +1248,7 @@ describe('read-only sorts and quick filters', () => {
     });
 
     act(() => {
-      component.clearEditableFilters();
+      component.clearAllFilters();
     });
 
     expect(onQuickFiltersChange).not.toHaveBeenCalled();
@@ -1306,7 +1306,7 @@ describe('read-only sorts and quick filters', () => {
       />
     );
     act(() => {
-      ref.current?.clearEditableFilters();
+      ref.current?.clearAllFilters();
       ref.current?.toggleSort(0, false);
     });
 
@@ -1314,7 +1314,102 @@ describe('read-only sorts and quick filters', () => {
     expect(ref.current?.state.sorts).not.toBe(sorts);
   });
 
-  it('applies programmatic quick filter changes while quick filters are read-only', () => {
+  it('ignores input filters, links and filter sets while quick filters are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const onQuickFiltersChange = jest.fn();
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const component = makeComponent(model, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters,
+    });
+    onQuickFiltersChange.mockClear();
+    const advancedFilters = new Map([
+      [
+        1,
+        {
+          filter: null,
+          options: {
+            filterItems: [],
+            filterOperators: [],
+            invertSelection: false,
+            selectedValues: [],
+          },
+        },
+      ],
+    ]);
+
+    let didInputFiltersChange = true;
+    act(() => {
+      didInputFiltersChange = component.applyInputFilters(
+        [
+          {
+            name: model.columns[0].name,
+            type: model.columns[0].type,
+            value: 'b',
+          },
+        ],
+        true
+      );
+      component.setFilterMap(
+        new Map([
+          [
+            model.columns[0].name,
+            {
+              columnType: model.columns[0].type,
+              filterList: [
+                { operator: 'eq', text: 'b', value: 'b', startColumnIndex: 0 },
+              ],
+            },
+          ],
+        ])
+      );
+      component.setFilters({ quickFilters: new Map(), advancedFilters });
+    });
+
+    expect(didInputFiltersChange).toBe(false);
+    expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    expect(component.state.quickFilters.size).toBe(1);
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+    expect(component.state.advancedFilters).toBe(advancedFilters);
+  });
+
+  it('does not start loading for input filter prop changes while quick filters are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isQuickFiltersReadOnly
+      />
+    );
+    const startLoading = jest.spyOn(ref.current!, 'startLoading');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isQuickFiltersReadOnly
+        inputFilters={[
+          {
+            name: model.columns[0].name,
+            type: model.columns[0].type,
+            value: 'b',
+          },
+        ]}
+      />
+    );
+
+    expect(startLoading).not.toHaveBeenCalled();
+    expect(ref.current?.state.quickFilters.size).toBe(0);
+  });
+
+  it('clears read-only quick filters when clearAllFilters is forced', () => {
     const onQuickFiltersChange = jest.fn();
     const component = makeComponent(undefined, undefined, {
       isQuickFiltersReadOnly: true,
@@ -1322,22 +1417,12 @@ describe('read-only sorts and quick filters', () => {
       quickFilters: new Map([[0, { text: 'a', filter: null }]]),
     });
     onQuickFiltersChange.mockClear();
-    const quickFilters: ReadonlyQuickFilterMap = new Map([
-      [1, { text: 'b', filter: null }],
-    ]);
 
     act(() => {
-      component.setFilters({ quickFilters, advancedFilters: new Map() });
+      component.clearAllFilters(true);
     });
 
-    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
-    expect(component.state.quickFilters).toBe(quickFilters);
-
-    act(() => {
-      component.clearAllFilters();
-    });
-
-    expect(onQuickFiltersChange).toHaveBeenLastCalledWith(new Map());
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(new Map());
     expect(component.state.quickFilters.size).toBe(0);
   });
 

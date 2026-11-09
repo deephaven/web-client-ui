@@ -150,7 +150,7 @@ export function GridWidgetPlugin({
     if (irisGridRef.current == null) {
       return;
     }
-    irisGridRef.current.clearEditableFilters();
+    irisGridRef.current.clearAllFilters();
   }, []);
 
   useListener(

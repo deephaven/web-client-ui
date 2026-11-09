@@ -14,7 +14,7 @@ class ClearFilterKeyHandler extends KeyHandler {
 
   onDown(event: KeyboardEvent): boolean {
     if (IrisGridShortcuts.TABLE.CLEAR_FILTERS.matchesEvent(event)) {
-      this.irisGrid.clearEditableFilters();
+      this.irisGrid.clearAllFilters();
       return true;
     }
     return false;

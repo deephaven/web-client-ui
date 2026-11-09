@@ -1005,6 +1005,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters,
       sorts,
       isQuickFiltersControlled,
+      isQuickFiltersReadOnly,
       isSortsControlled,
       getMetricCalculator,
     } = this.props;
@@ -1031,7 +1032,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             inputFilter => !prevProps.inputFilters.includes(inputFilter)
           )
         : [];
-    if (changedInputFilters.length > 0) {
+    if (changedInputFilters.length > 0 && !isQuickFiltersReadOnly) {
       const { advancedSettings } = this.props;
       const replaceExistingFilters =
         advancedSettings.get(
@@ -1849,7 +1850,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     inputFilters: InputFilter[],
     replaceExisting = false
   ): boolean {
-    const { model } = this.props;
+    const { isQuickFiltersReadOnly, model } = this.props;
+    if (isQuickFiltersReadOnly) {
+      log.debug('Quick filters are read-only, ignoring input filters');
+      return false;
+    }
     const { advancedFilters, quickFilters } = this.state;
     const newAdvancedFilters = replaceExisting
       ? new Map()
@@ -1974,7 +1979,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   setFilterMap(filterMap: FilterMap): void {
     log.debug('setFilterMap', filterMap);
 
-    const { advancedSettings } = this.props;
+    const { advancedSettings, isQuickFiltersReadOnly } = this.props;
+    if (isQuickFiltersReadOnly) {
+      log.debug('Quick filters are read-only, ignoring setFilterMap');
+      return;
+    }
     const clearFiltersOnLinkerFilterUpdate =
       advancedSettings.get(
         AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS
@@ -2070,32 +2079,18 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Clears all quick filters, advanced filters and search, including read-only
-   * quick filters.
+   * Clears all quick filters, advanced filters and search. Read-only quick
+   * filters are kept unless `force` is set.
+   * @param force Also clear quick filters while they are read-only, for changes
+   * the user didn't make such as a rollup changing the columns
    */
-  clearAllFilters(): void {
-    this.clearFilters(true);
-  }
-
-  /**
-   * Clears the filters the user is allowed to change. Quick filters are kept
-   * while they are read-only.
-   */
-  clearEditableFilters(): void {
-    const { isQuickFiltersReadOnly } = this.props;
-    this.clearFilters(!isQuickFiltersReadOnly);
-  }
-
-  /**
-   * Clears advanced filters and search, and optionally quick filters.
-   * @param includeQuickFilters Whether to also clear the quick filters
-   */
-  clearFilters(includeQuickFilters: boolean): void {
-    log.debug('Clearing filters', includeQuickFilters);
+  clearAllFilters(force = false): void {
+    log.debug('Clearing all filters', force);
 
     const { advancedFilters, quickFilters, searchFilter } = this.state;
-    const { isQuickFiltersControlled } = this.props;
-    const canClearQuickFilters = includeQuickFilters && quickFilters.size > 0;
+    const { isQuickFiltersControlled, isQuickFiltersReadOnly } = this.props;
+    const canClearQuickFilters =
+      quickFilters.size > 0 && (force || !isQuickFiltersReadOnly);
     if (
       !canClearQuickFilters &&
       advancedFilters.size === 0 &&
@@ -2194,11 +2189,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ advancedFilters: newAdvancedFilters });
   }
 
+  /**
+   * Sets the quick and advanced filters, e.g. when applying a filter set.
+   * Quick filters are left unchanged while they are read-only.
+   * @param filters The filters to set
+   * @param filters.quickFilters The quick filters to set
+   * @param filters.advancedFilters The advanced filters to set
+   */
   setFilters({
     quickFilters,
     advancedFilters,
   }: Pick<IrisGridState, 'quickFilters' | 'advancedFilters'>): void {
-    this.requestQuickFiltersChange(quickFilters);
+    const { isQuickFiltersReadOnly } = this.props;
+    if (!isQuickFiltersReadOnly) {
+      this.requestQuickFiltersChange(quickFilters);
+    }
     this.setState({ advancedFilters });
   }
 
@@ -4309,7 +4314,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.resetGridViewState();
-    this.clearAllFilters();
+    this.clearAllFilters(true);
 
     this.startLoading(
       `Grouping by columns ${rollupConfig?.columns?.join(', ') ?? ''}...`
@@ -4335,7 +4340,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.resetGridViewState();
 
     this.showAllColumns();
-    this.clearAllFilters();
+    this.clearAllFilters(true);
     this.clearAllAggregations();
 
     this.startLoading(

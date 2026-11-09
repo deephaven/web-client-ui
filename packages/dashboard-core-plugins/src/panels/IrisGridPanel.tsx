@@ -873,7 +873,7 @@ export class IrisGridPanel extends PureComponent<
     const irisGrid = this.irisGrid.current;
     const { isDisconnected } = this.state;
     if (irisGrid != null && !isDisconnected) {
-      irisGrid.clearEditableFilters();
+      irisGrid.clearAllFilters();
     }
   }
 
