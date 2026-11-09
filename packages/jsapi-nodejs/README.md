@@ -43,6 +43,54 @@ await client.login({
 const cn = await client.getAsIdeConnection();
 ```
 
+Downloaded modules are stored in a subdirectory of `storageDir` named by
+`urlToStorageDirName(serverUrl)`, which is unique per origin (protocol, host and
+port). Earlier versions used `urlToDirectoryName`, so modules downloaded by
+those versions are not reused and will be downloaded again.
+
+## Download options
+
+`downloadFromURL(url, options)`, `loadModules` and `loadDhModules` accept
+`DownloadOptions` (passed as `downloadOptions` to the loaders):
+
+| Option         | Default   | Description                                                                                 |
+| -------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `isTrustedUrl` | trust all | Called for the initial URL and every redirect target before it is requested                 |
+| `maxRedirects` | `20`      | Maximum number of redirects to follow                                                       |
+| `retries`      | `10`      | Retries on network errors. HTTP errors, timeouts, untrusted URLs and aborts are not retried |
+| `retryDelayMs` | `1000`    | Delay between retries                                                                       |
+| `timeoutMs`    | `5000`    | Socket idle timeout per request                                                             |
+| `signal`       | none      | `AbortSignal` that cancels the in-flight request and any pending retry                      |
+| `logger`       | `console` | Object with an `error` method used for retry and failure messages                           |
+
+Downloads use `node:http` / `node:https` rather than `fetch`, so proxy and
+certificate handling applied to the Node agents (e.g. by VS Code) still applies.
+
+Errors:
+
+- `HttpError` for any non-2xx response that isn't a followed redirect, including
+  exceeding `maxRedirects` (`statusCode` is the response status)
+- `UntrustedUrlError` when `isTrustedUrl` returns `false` (`url` is the rejected
+  URL; it is never requested)
+- `DownloadTimeoutError` when the socket is idle longer than `timeoutMs`
+- `signal.reason` when aborted
+
+```typescript
+const dhc = await loadDhModules({
+  serverUrl,
+  storageDir: tmpDir,
+  targetModuleType: 'esm',
+  downloadOptions: {
+    // Don't allow plain http to remote hosts, including via redirects
+    isTrustedUrl: url =>
+      url.protocol === 'https:' || url.hostname === 'localhost',
+    retries: 2,
+    retryDelayMs: 250,
+    signal: AbortSignal.timeout(15_000),
+  },
+});
+```
+
 ## NodeHttp2gRPCTransport
 
 `NodeHttp2gRPCTransport.createFactory(config?)` returns a

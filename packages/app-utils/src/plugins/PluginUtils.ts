@@ -1,3 +1,4 @@
+import { getAuthHandlers } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   type PluginModuleMap,
@@ -17,6 +18,8 @@ import {
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 import { resolve } from './remote-component.config';
+
+export { getAuthHandlers };
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
 
@@ -131,12 +134,6 @@ export async function loadModulePlugins(
     log.error('Unable to load plugins:', e);
     return new Map();
   }
-}
-
-export function getAuthHandlers(
-  authConfigValues: Map<string, string>
-): string[] {
-  return authConfigValues.get('AuthHandlers')?.split(',') ?? [];
 }
 
 /**

@@ -1,0 +1,37 @@
+import type { dh } from '@deephaven/jsapi-types';
+
+export const AUTH_HANDLER_TYPE_ANONYMOUS =
+  'io.deephaven.auth.AnonymousAuthenticationHandler';
+
+export const AUTH_HANDLER_TYPE_PSK =
+  'io.deephaven.authentication.psk.PskAuthenticationHandler';
+
+/**
+ * Get the auth handler types configured on the server.
+ * @param authConfigValues Auth config values from the server
+ * @returns Handler types from the comma separated `AuthHandlers` value, trimmed
+ * and with empty entries removed
+ */
+export function getAuthHandlers(
+  authConfigValues: Map<string, string>
+): string[] {
+  return (authConfigValues.get('AuthHandlers') ?? '')
+    .split(',')
+    .map(handler => handler.trim())
+    .filter(handler => handler !== '');
+}
+
+/**
+ * Fetch the auth handler types configured on the server.
+ * @param client Client to fetch the auth config values from
+ * @returns Promise that resolves to the configured auth handler types
+ */
+export async function fetchAuthHandlers(
+  client: dh.CoreClient
+): Promise<string[]> {
+  const authConfigValues = (await client.getAuthConfigValues()) as [
+    string,
+    string,
+  ][];
+  return getAuthHandlers(new Map(authConfigValues));
+}

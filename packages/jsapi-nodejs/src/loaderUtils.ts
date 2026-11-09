@@ -3,7 +3,11 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
-import { downloadFromURL, urlToDirectoryName } from './serverUtils.js';
+import {
+  type DownloadOptions,
+  downloadFromURL,
+  urlToStorageDirName,
+} from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
 import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
 import { HttpError } from './errorUtils.js';
@@ -29,6 +33,7 @@ export type LoadModuleOptions = {
   serverPaths: NonEmptyArray<string>;
   storageDir: string;
   targetModuleType: 'esm' | 'cjs';
+  downloadOptions?: DownloadOptions;
 } & (
   | { download: false }
   | {
@@ -51,6 +56,7 @@ export type LoadModuleOptions = {
  * the download process. If not provided, errors will be thrown.
  * @param storageDir The directory to store the downloaded modules.
  * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
+ * @param downloadOptions Options passed to `downloadFromURL` for each module.
  * @returns The default export of the first module in `serverPaths`.
  */
 export async function loadModules<TMainModule>(
@@ -58,9 +64,18 @@ export async function loadModules<TMainModule>(
 ): Promise<TMainModule> {
   polyfillWs();
 
-  const { serverUrl, serverPaths, storageDir, targetModuleType } = options;
+  const {
+    serverUrl,
+    serverPaths,
+    storageDir,
+    targetModuleType,
+    downloadOptions,
+  } = options;
 
-  const serverStorageDir = path.join(storageDir, urlToDirectoryName(serverUrl));
+  const serverStorageDir = path.join(
+    storageDir,
+    urlToStorageDirName(serverUrl)
+  );
 
   if (options.download !== false) {
     ensureDirectoriesExist([serverStorageDir]);
@@ -89,7 +104,7 @@ export async function loadModules<TMainModule>(
     );
 
     const settledResults = await Promise.allSettled(
-      serverUrls.map(url => downloadFromURL(url))
+      serverUrls.map(url => downloadFromURL(url, downloadOptions))
     );
 
     const contents: string[] = settledResults.map((result, i) =>
@@ -97,6 +112,11 @@ export async function loadModules<TMainModule>(
         ? handleRejected(result.reason, i)
         : handleResolved(result.value, i)
     );
+
+    // Don't write anything if aborted after the downloads settled.
+    if (downloadOptions?.signal?.aborted === true) {
+      throw downloadOptions.signal.reason;
+    }
 
     // Write to disk
     const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
@@ -125,15 +145,17 @@ export async function loadModules<TMainModule>(
  * @param serverUrl The URL of the server to load from.
  * @param storageDir The directory to store the downloaded modules.
  * @param targetModuleType The type of module to load. Can be either 'esm' or 'cjs'.
+ * @param downloadOptions Options passed to `downloadFromURL` for each module.
  * @returns The default export the `jsapi/dh-core.js` module.
  */
 export async function loadDhModules({
   serverUrl,
   storageDir,
   targetModuleType,
+  downloadOptions,
 }: Pick<
   LoadModuleOptions,
-  'serverUrl' | 'storageDir' | 'targetModuleType'
+  'serverUrl' | 'storageDir' | 'targetModuleType' | 'downloadOptions'
 >): Promise<typeof DhType> {
   if (targetModuleType === 'esm') {
     // These are needed in `esm` output until JSAPI is updated to not rely on
@@ -197,6 +219,7 @@ export async function loadDhModules({
     serverPaths: [DH_CORE_MODULE, DH_INTERNAL_MODULE],
     storageDir,
     targetModuleType,
+    downloadOptions,
     // Download the module and transform it if the target module type is `cjs`.
     download: targetModuleType === 'esm' ? true : cjsDownloadTransform,
     errorTransform,
