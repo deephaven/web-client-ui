@@ -329,8 +329,6 @@ export async function hasStatusCode(
 
 /**
  * Converts url to `${hostname}_${port}` replacing `.` with `_`
- * @deprecated Use `urlToStorageDirName`. This name ignores the protocol, and
- * different hosts can map to the same name (e.g. `a.b` and `a_b`).
  * @param url The URL to convert
  */
 export function urlToDirectoryName(url: string | URL): string {
@@ -340,14 +338,4 @@ export function urlToDirectoryName(url: string | URL): string {
   }
 
   return url.host.replace(/[:.]/g, '_');
-}
-
-/**
- * Converts a url to a directory name unique to its origin (protocol, host and
- * port). The name contains no path separators or `:`, so it is valid on
- * Windows.
- * @param url The URL to convert
- */
-export function urlToStorageDirName(url: string | URL): string {
-  return encodeURIComponent(new URL(url).origin);
 }

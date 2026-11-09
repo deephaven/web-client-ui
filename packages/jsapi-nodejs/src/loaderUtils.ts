@@ -6,7 +6,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   type DownloadOptions,
   downloadFromURL,
-  urlToStorageDirName,
+  urlToDirectoryName,
 } from './serverUtils.js';
 import { polyfillWs } from './polyfillWs.js';
 import { ensureDirectoriesExist, getDownloadPaths } from './fsUtils.js';
@@ -72,10 +72,7 @@ export async function loadModules<TMainModule>(
     downloadOptions,
   } = options;
 
-  const serverStorageDir = path.join(
-    storageDir,
-    urlToStorageDirName(serverUrl)
-  );
+  const serverStorageDir = path.join(storageDir, urlToDirectoryName(serverUrl));
 
   if (options.download !== false) {
     ensureDirectoriesExist([serverStorageDir]);

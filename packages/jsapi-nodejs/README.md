@@ -43,11 +43,6 @@ await client.login({
 const cn = await client.getAsIdeConnection();
 ```
 
-Downloaded modules are stored in a subdirectory of `storageDir` named by
-`urlToStorageDirName(serverUrl)`, which is unique per origin (protocol, host and
-port). Earlier versions used `urlToDirectoryName`, so modules downloaded by
-those versions are not reused and will be downloaded again.
-
 ## Download options
 
 `downloadFromURL(url, options)`, `loadModules` and `loadDhModules` accept

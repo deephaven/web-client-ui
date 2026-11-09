@@ -5,7 +5,7 @@ import {
   HttpError,
   UntrustedUrlError,
 } from './errorUtils';
-import { downloadFromURL, urlToStorageDirName } from './serverUtils';
+import { downloadFromURL, urlToDirectoryName } from './serverUtils';
 
 type TestServer = {
   url: URL;
@@ -310,28 +310,14 @@ describe('downloadFromURL', () => {
   });
 });
 
-describe('urlToStorageDirName', () => {
-  it('distinguishes protocols on the same host', () => {
-    expect(urlToStorageDirName('http://h:1')).not.toEqual(
-      urlToStorageDirName('https://h:1')
-    );
-  });
-
-  it('distinguishes hosts that urlToDirectoryName conflated', () => {
-    expect(urlToStorageDirName('http://a_b:1')).not.toEqual(
-      urlToStorageDirName('http://a.b:1')
-    );
-  });
-
-  it('ignores the path', () => {
-    expect(
-      urlToStorageDirName('http://localhost:10000/jsapi/dh-core.js')
-    ).toEqual('http%3A%2F%2Flocalhost%3A10000');
-  });
-
-  it('contains no characters invalid in a directory name', () => {
-    expect(
-      urlToStorageDirName(new URL('https://example.com:8443/a/b'))
-    ).not.toMatch(/[:/\\]/);
+describe('urlToDirectoryName', () => {
+  it.each([
+    ['http://localhost:10000', 'localhost_10000'],
+    ['https://my.host.com', 'my_host_com'],
+    ['https://my.host.com:8443', 'my_host_com_8443'],
+    ['http://localhost:10000/jsapi/dh-core.js', 'localhost_10000'],
+  ])('converts %s to %s', (url, expected) => {
+    expect(urlToDirectoryName(url)).toEqual(expected);
+    expect(urlToDirectoryName(new URL(url))).toEqual(expected);
   });
 });
