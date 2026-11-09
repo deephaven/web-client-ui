@@ -315,20 +315,46 @@ describe('key-based view tracking', () => {
     expect(document.querySelector('.popping-view')).toBeNull();
   });
 
-  it('pops back to the popping view when it is put back on top mid-pop', () => {
+  it('mounts a new instance when the popping view is put back on top mid-pop', () => {
     const { rerender } = render(
       <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
     );
     rerender(<Stack>{[keyedItem('a', 'A')]}</Stack>);
     const poppingView = screen.getByText('B');
 
-    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
-    expect(screen.getAllByText('B')).toEqual([poppingView]);
-    expect(document.querySelector('.popping-view')).toBeNull();
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B2')]}</Stack>);
+    // The popped instance keeps animating out with its own content while the
+    // new instance is shown as the main view
+    expect(screen.getByText('B')).toBe(poppingView);
+    expect(poppingView.closest('.popping-view')).not.toBeNull();
+    expect(screen.getByText('B2').closest('.main-view')).not.toBeNull();
+    expect(screen.queryByText('A')).toBeNull();
 
     runTimers();
-    expect(screen.getByText('B')).toBe(poppingView);
-    expect(screen.queryByText('A')).toBeNull();
+    expect(screen.queryByText('B')).toBeNull();
+    expect(screen.getByText('B2')).toBeTruthy();
+    expect(document.querySelector('.popping-view')).toBeNull();
+  });
+
+  it('does not animate when the stack shrinks with the same top view', () => {
+    const { rerender } = render(
+      <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
+    );
+    const mainView = screen.getByText('B');
+
+    rerender(<Stack>{[keyedItem('b', 'B')]}</Stack>);
+    expect(screen.getByText('B')).toBe(mainView);
+    expect(document.querySelector('.popping-view')).toBeNull();
+    expect(document.querySelector('.pushing-view')).toBeNull();
+
+    // The stack is idle, so the next push animates normally
+    rerender(<Stack>{[keyedItem('b', 'B'), keyedItem('c', 'C')]}</Stack>);
+    expect(screen.getByText('C').closest('.pushing-view')).not.toBeNull();
+    expect(screen.getByText('B')).toBe(mainView);
+
+    runTimers();
+    expect(screen.getByText('C').closest('.main-view')).not.toBeNull();
+    expect(screen.queryByText('B')).toBeNull();
   });
 
   it('cancels the push when the stack returns to the main view mid-push', () => {
@@ -417,5 +443,32 @@ describe('view lifecycle', () => {
     expect(onMount).toHaveBeenCalledTimes(1);
     expect(onUnmount).toHaveBeenCalledTimes(1);
     expect(onUnmount).toHaveBeenCalledWith('b');
+  });
+
+  it('does not reuse a popped view instance when its key is pushed again mid-pop', () => {
+    const { rerender } = render(
+      <Stack>{[lifecycleItem('a'), lifecycleItem('b', 'v1')]}</Stack>
+    );
+    const poppedView = screen.getByText('b:v1');
+    rerender(<Stack>{[lifecycleItem('a')]}</Stack>);
+    onMount.mockClear();
+    onUnmount.mockClear();
+
+    // A different page is opened under the same key before the pop finishes
+    rerender(<Stack>{[lifecycleItem('a'), lifecycleItem('b', 'v2')]}</Stack>);
+
+    expect(screen.getByText('b:v1')).toBe(poppedView);
+    expect(screen.getByText('b:v2').closest('.main-view')).not.toBeNull();
+    expect(onMount).toHaveBeenCalledTimes(1);
+    expect(onMount).toHaveBeenCalledWith('b', 'v2');
+    expect(onUnmount).toHaveBeenCalledTimes(1);
+    expect(onUnmount).toHaveBeenCalledWith('a');
+
+    runTimers();
+
+    expect(screen.queryByText('b:v1')).toBeNull();
+    expect(screen.getByText('b:v2')).toBeTruthy();
+    expect(onMount).toHaveBeenCalledTimes(1);
+    expect(onUnmount).toHaveBeenCalledTimes(2);
   });
 });
