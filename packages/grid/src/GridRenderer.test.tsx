@@ -223,6 +223,35 @@ describe('getTokenBoxesForVisibleCell', () => {
   });
 });
 
+describe('TextCellRenderer.drawCellContent', () => {
+  it('leaves the cell color as the fill style after drawing a link', () => {
+    const context = makeMockContext();
+    const metrics = {
+      ...makeMockGridMetrics(),
+      allColumnWidths: new Map([[0, 1000]]),
+    };
+    const renderState = makeMockGridRenderState({
+      context,
+      metrics,
+      model: new MockGridModel({
+        editedData: [['see https://deephaven.io']],
+      }),
+    });
+    const textCellRenderer = new GridRenderer().getCellRenderer(
+      'text'
+    ) as TextCellRenderer;
+
+    textCellRenderer.drawCellContent(context, renderState, 0, 0);
+
+    expect(context.fillText).toHaveBeenLastCalledWith(
+      'https://deephaven.io',
+      expect.any(Number),
+      expect.any(Number)
+    );
+    expect(context.fillStyle).toBe(GridTheme.textColor);
+  });
+});
+
 describe('binaryTruncateToWidth', () => {
   let context;
 

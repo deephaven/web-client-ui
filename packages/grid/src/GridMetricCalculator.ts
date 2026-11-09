@@ -14,6 +14,7 @@ import type {
   SizeMap,
 } from './GridMetrics';
 import GridUtils from './GridUtils';
+import { CELL_CACHE_SIZE } from './fastMemoize';
 import { type GridFont, type GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
@@ -125,6 +126,14 @@ export class GridMetricCalculator {
    */
   static MAX_CACHED_TEXT_LENGTH = 128;
 
+  /**
+   * Entries in the text width cache for each font. Auto-sizing measures every
+   * row on a page for each visible column and for the columns needed to find
+   * the last scroll position, which is about 15,000 distinct strings per frame
+   * on a 4K display. A smaller cache is cleared partway through every frame.
+   */
+  static TEXT_WIDTH_CACHE_SIZE = CELL_CACHE_SIZE;
+
   /** The maximum column width as a percentage of the full grid */
   static MAX_COLUMN_WIDTH = 0.8;
 
@@ -176,6 +185,14 @@ export class GridMetricCalculator {
   /** List of moved column operations. Need to track the previous value so we know if modelColumns needs to be cleared. */
   protected movedColumns: readonly MoveOperation[];
 
+  /**
+   * Auto-sized column widths, excluding tree padding, computed during the
+   * current `getMetrics` call. Finding the visible columns and the last scroll
+   * positions each ask for the same column widths, and measuring a column reads
+   * every row on the page. Null outside of `getMetrics`.
+   */
+  private metricsColumnWidths: Map<ModelIndex, number> | null = null;
+
   constructor({
     userColumnWidths = new Map(),
     userRowHeights = new Map(),
@@ -220,6 +237,20 @@ export class GridMetricCalculator {
    * @returns The full metrics
    */
   getMetrics(state: GridMetricState): GridMetrics {
+    this.metricsColumnWidths = new Map();
+    try {
+      return this.calculateMetrics(state);
+    } finally {
+      this.metricsColumnWidths = null;
+    }
+  }
+
+  /**
+   * Calculate the metrics for the provided metric state
+   * @params state The state to calculate metrics for
+   * @returns The full metrics
+   */
+  protected calculateMetrics(state: GridMetricState): GridMetrics {
     const {
       left,
       top,
@@ -1741,6 +1772,13 @@ export class GridMetricCalculator {
       return cachedValue;
     }
 
+    const metricsWidth = this.metricsColumnWidths?.get(modelColumn);
+    if (metricsWidth !== undefined) {
+      return column === firstColumn
+        ? metricsWidth + treePaddingX
+        : metricsWidth;
+    }
+
     const headerWidth = this.calculateColumnHeaderWidth(
       modelColumn,
       state,
@@ -1763,6 +1801,7 @@ export class GridMetricCalculator {
       this.calculatedColumnWidths.set(modelColumn, columnWidth);
       trimMap(this.calculatedColumnWidths);
     }
+    this.metricsColumnWidths?.set(modelColumn, columnWidth);
 
     if (column === firstColumn) {
       columnWidth += treePaddingX;
@@ -1920,7 +1959,7 @@ export class GridMetricCalculator {
     if (width === undefined) {
       width = this.measureTextWidth(context, font, text);
       textWidths.set(text, width);
-      trimMap(textWidths);
+      trimMap(textWidths, GridMetricCalculator.TEXT_WIDTH_CACHE_SIZE);
     }
 
     return maxWidth !== undefined && width > maxWidth ? maxWidth : width;

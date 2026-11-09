@@ -40,16 +40,15 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
         model.colorForCell(modelColumn, modelRow, theme) || textColor;
       context.fillStyle = color;
 
-      context.save();
-
       const {
         width: textWidth,
         x: textX,
         y: textY,
       } = GridUtils.getTextRenderMetrics(state, column, row);
 
-      const fontWidthLower = fontWidthsLower.get(context.font);
-      const fontWidthUpper = fontWidthsUpper.get(context.font);
+      const { font } = context;
+      const fontWidthLower = fontWidthsLower.get(font);
+      const fontWidthUpper = fontWidthsUpper.get(font);
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
@@ -106,9 +105,9 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
             textStart = textEnd;
             if (token != null) tokenIndex += 1;
           }
+          context.fillStyle = color;
         }
       }
-      context.restore();
     }
 
     if (

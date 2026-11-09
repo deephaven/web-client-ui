@@ -1,4 +1,9 @@
-import GridMetricCalculator, { trimMap } from './GridMetricCalculator';
+import GridMetricCalculator, {
+  type GridMetricState,
+  trimMap,
+} from './GridMetricCalculator';
+import GridTheme from './GridTheme';
+import MockGridModel from './MockGridModel';
 
 describe('trimMap', () => {
   function makeMap(low = 0, high = 10): Map<number, number> {
@@ -152,6 +157,25 @@ describe('calculateTextWidth', () => {
     expect(mockContext.measureText.mock.calls.length).toBeLessThan(10);
   });
 
+  it('should keep text widths cached past the general cache size', () => {
+    const mockContext = {
+      measureText: jest.fn().mockImplementation(chars => ({
+        width: chars.length * 10,
+      })),
+    };
+    for (let i = 0; i <= GridMetricCalculator.CACHE_SIZE; i += 1) {
+      gridMetricCalculator.calculateTextWidth(mockContext, font, `${i}`);
+    }
+    const measureTextWidth = jest.spyOn(
+      gridMetricCalculator,
+      'measureTextWidth'
+    );
+
+    gridMetricCalculator.calculateTextWidth(mockContext, font, '0');
+
+    expect(measureTextWidth).not.toHaveBeenCalled();
+  });
+
   // This test checks that the calculation logic is equivalent to the native canvas one.
   // It doesn’t verify that it addresses font kerning properly, since it doesn’t actually render the text and context.measureText() just returns the text length
   it.each([
@@ -188,4 +212,72 @@ describe('calculateTextWidth', () => {
       expect(a).toEqual(b);
     }
   );
+});
+
+describe('getMetrics', () => {
+  function makeState(): GridMetricState {
+    const context = global.document
+      .createElement('canvas')
+      .getContext('2d') as CanvasRenderingContext2D;
+    return {
+      left: 0,
+      top: 0,
+      leftOffset: 0,
+      topOffset: 0,
+      width: 800,
+      height: 400,
+      context,
+      theme: GridTheme,
+      model: new MockGridModel({ rowCount: 1000, columnCount: 50 }),
+      movedColumns: [],
+      movedRows: [],
+      isDraggingHorizontalScrollBar: false,
+      isDraggingVerticalScrollBar: false,
+      draggingColumn: null,
+    };
+  }
+
+  it('measures each auto-sized column once per call', () => {
+    const calculator = new GridMetricCalculator();
+    const calculateColumnDataWidth = jest.spyOn(
+      calculator,
+      'calculateColumnDataWidth'
+    );
+
+    calculator.getMetrics(makeState());
+
+    const measuredColumns = calculateColumnDataWidth.mock.calls.map(
+      ([modelColumn]) => modelColumn
+    );
+    expect(measuredColumns.length).toBeGreaterThan(0);
+    expect(new Set(measuredColumns).size).toBe(measuredColumns.length);
+  });
+
+  it('measures columns again on the next call', () => {
+    const calculator = new GridMetricCalculator();
+    const state = makeState();
+    calculator.getMetrics(state);
+    const calculateColumnDataWidth = jest.spyOn(
+      calculator,
+      'calculateColumnDataWidth'
+    );
+
+    calculator.getMetrics(state);
+
+    expect(calculateColumnDataWidth).toHaveBeenCalled();
+  });
+
+  it('returns the same column widths as measuring each column directly', () => {
+    const calculator = new GridMetricCalculator();
+    const state = makeState();
+
+    const { visibleColumns, visibleColumnWidths } =
+      calculator.getMetrics(state);
+
+    visibleColumns.forEach(column => {
+      expect(visibleColumnWidths.get(column)).toBe(
+        calculator.getVisibleColumnWidth(column, state)
+      );
+    });
+  });
 });
