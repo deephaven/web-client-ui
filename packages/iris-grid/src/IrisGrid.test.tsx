@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { act, fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
-import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
+import { DateUtils, type Settings, TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
 import { type dh as dhType } from '@deephaven/jsapi-types';
@@ -224,17 +224,17 @@ describe('handleUpdate', () => {
 it('handles ctrl+shift+e to clear filters', () => {
   const component = makeComponent();
 
-  component.clearAllFilters = jest.fn();
+  component.clearEditableFilters = jest.fn();
 
   keyDown('e', component);
   keyDown('e', component, { ctrlKey: true });
   keyDown('e', component, { shiftKey: true });
 
-  expect(component.clearAllFilters).not.toHaveBeenCalled();
+  expect(component.clearEditableFilters).not.toHaveBeenCalled();
 
   keyDown('e', component, { ctrlKey: true, shiftKey: true });
 
-  expect(component.clearAllFilters).toHaveBeenCalled();
+  expect(component.clearEditableFilters).toHaveBeenCalled();
 });
 
 it('handles reverse key shortcut', () => {
@@ -1150,7 +1150,7 @@ describe('controlled state regression paths', () => {
 });
 
 describe('read-only sorts and quick filters', () => {
-  it('ignores sort changes while sorts are read-only', () => {
+  it('ignores user sort changes while sorts are read-only', () => {
     const model = irisGridTestUtils.makeModel();
     const sorts = [model.columns[0].sort().asc()];
     const onSortsChange = jest.fn();
@@ -1162,9 +1162,12 @@ describe('read-only sorts and quick filters', () => {
     jest.spyOn(component, 'updateSorts');
 
     act(() => {
-      component.requestSortsChange([]);
       component.sortColumn(0);
       component.toggleSort(0, false);
+      component.handleAdvancedFilterSortChange(
+        model.columns[0],
+        TableUtils.sortDirection.descending
+      );
     });
 
     expect(onSortsChange).not.toHaveBeenCalled();
@@ -1172,7 +1175,7 @@ describe('read-only sorts and quick filters', () => {
     expect(component.state.sorts).toBe(sorts);
   });
 
-  it('applies sort changes that ignore read-only', () => {
+  it('applies requested sort changes while sorts are read-only', () => {
     const model = irisGridTestUtils.makeModel();
     const onSortsChange = jest.fn();
     const component = makeComponent(model, undefined, {
@@ -1182,14 +1185,14 @@ describe('read-only sorts and quick filters', () => {
     });
 
     act(() => {
-      component.requestSortsChange([], { ignoreReadOnly: true });
+      component.requestSortsChange([]);
     });
 
     expect(onSortsChange).toHaveBeenCalledWith([]);
     expect(component.state.sorts).toEqual([]);
   });
 
-  it('ignores quick filter changes while quick filters are read-only', () => {
+  it('ignores user quick filter changes while quick filters are read-only', () => {
     const quickFilters: ReadonlyQuickFilterMap = new Map([
       [0, { text: 'a', filter: null }],
     ]);
@@ -1202,9 +1205,10 @@ describe('read-only sorts and quick filters', () => {
     onQuickFiltersChange.mockClear();
 
     act(() => {
-      component.requestQuickFiltersChange(new Map());
+      component.setQuickFilter(1, null, 'b');
       component.removeQuickFilter(0);
       component.removeColumnFilter(0);
+      component.handleFilterBarChange('b');
     });
 
     expect(onQuickFiltersChange).not.toHaveBeenCalled();
@@ -1244,7 +1248,7 @@ describe('read-only sorts and quick filters', () => {
     });
 
     act(() => {
-      component.clearAllFilters();
+      component.clearEditableFilters();
     });
 
     expect(onQuickFiltersChange).not.toHaveBeenCalled();
@@ -1302,12 +1306,39 @@ describe('read-only sorts and quick filters', () => {
       />
     );
     act(() => {
-      ref.current?.clearAllFilters();
-      ref.current?.requestSortsChange([]);
+      ref.current?.clearEditableFilters();
+      ref.current?.toggleSort(0, false);
     });
 
     expect(ref.current?.state.quickFilters.size).toBe(0);
-    expect(ref.current?.state.sorts).toEqual([]);
+    expect(ref.current?.state.sorts).not.toBe(sorts);
+  });
+
+  it('applies programmatic quick filter changes while quick filters are read-only', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters: new Map([[0, { text: 'a', filter: null }]]),
+    });
+    onQuickFiltersChange.mockClear();
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [1, { text: 'b', filter: null }],
+    ]);
+
+    act(() => {
+      component.setFilters({ quickFilters, advancedFilters: new Map() });
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(quickFilters);
+    expect(component.state.quickFilters).toBe(quickFilters);
+
+    act(() => {
+      component.clearAllFilters();
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenLastCalledWith(new Map());
+    expect(component.state.quickFilters.size).toBe(0);
   });
 
   it('clears read-only filters and sorts when a rollup changes the columns', () => {

@@ -323,7 +323,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       // this just displays the shortcut, the actual listener is in irisgrid handleKeyDown
       shortcut: SHORTCUTS.TABLE.CLEAR_FILTERS,
       action: () => {
-        this.irisGrid.clearAllFilters();
+        this.irisGrid.clearEditableFilters();
       },
       disabled: !(
         (quickFilters.size > 0 && isQuickFiltersReadOnly !== true) ||
