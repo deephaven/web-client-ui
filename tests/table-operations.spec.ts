@@ -315,6 +315,10 @@ test('organize columns', async ({ page }) => {
   await openTableOption(page, 'Organize Columns');
 
   await test.step('Search', async () => {
+    // The snapshot includes React Spectrum's hover style on the search field, which is
+    // only applied on pointerenter. If the previous click left the pointer where the
+    // field renders, no pointerenter fires, so move the pointer off before clicking.
+    await page.mouse.move(0, 0);
     await page.getByLabel('Search columns').click();
 
     // changed so the word "string" doesn't show up on screen due to a kerning issue
