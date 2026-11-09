@@ -10,6 +10,19 @@ describe('getAuthHandlers', () => {
     ]);
   });
 
+  it('splits on whitespace as well as commas', () => {
+    expect(getAuthHandlers(new Map([['AuthHandlers', 'a b, c\td']]))).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+    ]);
+  });
+
+  it('returns an empty array if AuthHandlers is empty', () => {
+    expect(getAuthHandlers(new Map([['AuthHandlers', ' , ']]))).toEqual([]);
+  });
+
   it('returns an empty array if AuthHandlers is missing', () => {
     expect(getAuthHandlers(new Map())).toEqual([]);
   });

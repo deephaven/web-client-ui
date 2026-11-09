@@ -9,15 +9,16 @@ export const AUTH_HANDLER_TYPE_PSK =
 /**
  * Get the auth handler types configured on the server.
  * @param authConfigValues Auth config values from the server
- * @returns Handler types from the comma separated `AuthHandlers` value, trimmed
- * and with empty entries removed
+ * @returns Handler types from the `AuthHandlers` value, with empty entries
+ * removed
  */
 export function getAuthHandlers(
   authConfigValues: Map<string, string>
 ): string[] {
+  // The server sends the raw property string, and itself accepts commas or
+  // spaces as separators.
   return (authConfigValues.get('AuthHandlers') ?? '')
-    .split(',')
-    .map(handler => handler.trim())
+    .split(/[\s,]+/)
     .filter(handler => handler !== '');
 }
 

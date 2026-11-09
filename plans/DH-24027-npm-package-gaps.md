@@ -98,7 +98,7 @@ export const AUTH_HANDLER_TYPE_ANONYMOUS =
 export const AUTH_HANDLER_TYPE_PSK =
   'io.deephaven.authentication.psk.PskAuthenticationHandler';
 
-/** Split the `AuthHandlers` config value on `,`, trim each entry, drop empties. */
+/** Split the `AuthHandlers` config value on commas and whitespace, drop empties. */
 export function getAuthHandlers(
   authConfigValues: Map<string, string>
 ): string[];
@@ -172,6 +172,7 @@ export async function fetchAuthHandlers(
 `AuthUtils.test.ts` cases:
 
 - [x] `getAuthHandlers(new Map([['AuthHandlers', ' a , b,,']]))` → `['a', 'b']`
+- [x] `getAuthHandlers(new Map([['AuthHandlers', 'a b, c\td']]))` → `['a', 'b', 'c', 'd']` (the server accepts spaces as separators)
 - [x] Missing key → `[]`
 - [x] `fetchAuthHandlers` with a mock client (`TestUtils.createMockProxy<dh.CoreClient>`) resolving `[['AuthHandlers', 'x,y']]` → `['x', 'y']`
 
