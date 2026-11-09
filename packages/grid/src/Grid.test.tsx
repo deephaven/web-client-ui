@@ -543,6 +543,136 @@ it('handles double clicking a cell to edit', async () => {
   expect(component.state.selection.cursorRow).toBe(row + 1);
 });
 
+describe('committing a cell edit', () => {
+  it.each([
+    ['Enter', '[Enter]', 2, 4],
+    ['Shift+Enter', '{Shift>}[Enter]{/Shift}', 2, 2],
+    ['Tab', '[Tab]', 3, 3],
+    ['Shift+Tab', '{Shift>}[Tab]{/Shift}', 1, 3],
+  ])(
+    'saves the value once when committed with %s',
+    async (_, key, expectedColumn, expectedRow) => {
+      const user = userEvent.setup();
+      const model = new MockGridModel({ isEditable: true });
+      const setValueForCell = jest.spyOn(model, 'setValueForCell');
+      const component = makeGridComponent(model);
+
+      mouseDoubleClick(2, 3, component);
+      await user.keyboard('{Control>}a{/Control}TEST');
+      await user.keyboard(key);
+
+      expect(setValueForCell).toHaveBeenCalledTimes(1);
+      expect(setValueForCell).toHaveBeenCalledWith(2, 3, 'TEST');
+      expect(component.state.editingCell).toBeNull();
+      expect(component.isFocused()).toBe(true);
+      expect(component.state.selection.cursorColumn).toBe(expectedColumn);
+      expect(component.state.selection.cursorRow).toBe(expectedRow);
+    }
+  );
+
+  it.each([
+    ['ArrowDown', 2, 4],
+    ['ArrowUp', 2, 2],
+    ['ArrowLeft', 1, 3],
+    ['ArrowRight', 3, 3],
+  ])(
+    'saves a quick edit once when committed with %s',
+    async (key, expectedColumn, expectedRow) => {
+      const user = userEvent.setup();
+      const model = new MockGridModel({ isEditable: true });
+      const setValueForCell = jest.spyOn(model, 'setValueForCell');
+      const component = makeGridComponent(model);
+
+      mouseClick(2, 3, component);
+      keyDown('T', component);
+      expect(component.state.editingCell?.isQuickEdit).toBe(true);
+      await user.keyboard(`[${key}]`);
+
+      expect(setValueForCell).toHaveBeenCalledTimes(1);
+      expect(setValueForCell).toHaveBeenCalledWith(2, 3, 'T');
+      expect(component.state.editingCell).toBeNull();
+      expect(component.isFocused()).toBe(true);
+      expect(component.state.selection.cursorColumn).toBe(expectedColumn);
+      expect(component.state.selection.cursorRow).toBe(expectedRow);
+    }
+  );
+
+  it('only fills the selected range when committed with Ctrl+Enter', async () => {
+    const user = userEvent.setup();
+    const model = new MockGridModel({ isEditable: true });
+    const setValueForCell = jest.spyOn(model, 'setValueForCell');
+    const setValueForRanges = jest.spyOn(model, 'setValueForRanges');
+    const component = makeGridComponent(model);
+
+    mouseClick(2, 3, component);
+    mouseClick(2, 4, component, { shiftKey: true });
+    keyDown('F2', component);
+    await user.keyboard('{Control>}a{/Control}TEST');
+    await user.keyboard('{Control>}[Enter]{/Control}');
+
+    expect(setValueForRanges).toHaveBeenCalledTimes(1);
+    expect(setValueForRanges).toHaveBeenCalledWith(
+      [new GridRange(2, 3, 2, 4)],
+      'TEST'
+    );
+    // MockGridModel.setValueForRanges saves each cell through setValueForCell
+    expect(setValueForCell).toHaveBeenCalledTimes(2);
+  });
+
+  it('saves the value once when the editor loses focus', async () => {
+    const user = userEvent.setup();
+    const model = new MockGridModel({ isEditable: true });
+    const setValueForCell = jest.spyOn(model, 'setValueForCell');
+    const component = makeGridComponent(model);
+
+    mouseDoubleClick(2, 3, component);
+    await user.keyboard('{Control>}a{/Control}TEST');
+    act(() => {
+      (document.activeElement as HTMLElement).blur();
+    });
+
+    expect(setValueForCell).toHaveBeenCalledTimes(1);
+    expect(setValueForCell).toHaveBeenCalledWith(2, 3, 'TEST');
+    expect(component.state.editingCell).toBeNull();
+  });
+
+  it('does not save when cancelled with Escape', async () => {
+    const user = userEvent.setup();
+    const model = new MockGridModel({ isEditable: true });
+    const setValueForCell = jest.spyOn(model, 'setValueForCell');
+    const component = makeGridComponent(model);
+
+    mouseDoubleClick(2, 3, component);
+    await user.keyboard('{Control>}a{/Control}TEST');
+    await user.keyboard('[Escape]');
+
+    expect(setValueForCell).not.toHaveBeenCalled();
+    expect(component.state.editingCell).toBeNull();
+    expect(component.isFocused()).toBe(true);
+  });
+
+  it('keeps an invalid value open on Enter, then closes it without saving on blur', async () => {
+    const user = userEvent.setup();
+    const model = new MockGridModel({ isEditable: true });
+    jest.spyOn(model, 'isValidForCell').mockReturnValue(false);
+    const setValueForCell = jest.spyOn(model, 'setValueForCell');
+    const component = makeGridComponent(model);
+
+    mouseDoubleClick(2, 3, component);
+    await user.keyboard('{Control>}a{/Control}TEST');
+    await user.keyboard('[Enter]');
+
+    expect(component.state.editingCell?.value).toBe('TEST');
+
+    act(() => {
+      (document.activeElement as HTMLElement).blur();
+    });
+
+    expect(setValueForCell).not.toHaveBeenCalled();
+    expect(component.state.editingCell).toBeNull();
+  });
+});
+
 it('handles keyboard arrow to update selection with no previous selection', () => {
   const component = makeGridComponent();
 
