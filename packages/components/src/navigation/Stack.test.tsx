@@ -2,18 +2,36 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import Stack from './Stack';
 
-// Mock the CSS transitions to appear right away, and call the entered animation after a timeout
-jest.mock('../transitions', () => ({
-  SlideTransition: jest.fn(props => {
-    if (props.in === false) {
-      return null;
-    }
+// Mock the CSS transitions to appear right away. Like the real transition, an
+// entering view calls `onEntered` and an exiting view calls `onExited` after a
+// timeout, and pending callbacks are cancelled when the transition unmounts.
+jest.mock('../transitions', () => {
+  const { useEffect } = jest.requireActual<typeof React>('react');
+  return {
+    SlideTransition: jest.fn(props => {
+      const {
+        in: inProp,
+        onEntered,
+        onExited,
+        unmountOnExit,
+        children,
+      } = props;
+      useEffect(() => {
+        const callback = inProp === true ? onEntered : onExited;
+        if (callback == null) {
+          return undefined;
+        }
+        const timeout = setTimeout(callback, 50);
+        return () => clearTimeout(timeout);
+      }, [inProp, onEntered, onExited]);
 
-    setTimeout(props.onEntered, 50);
-
-    return props.children;
-  }),
-}));
+      if (inProp === false && unmountOnExit !== true) {
+        return null;
+      }
+      return children;
+    }),
+  };
+});
 
 function makeStackItemText(index: number) {
   return `stack-text-${index}`;
@@ -295,5 +313,109 @@ describe('key-based view tracking', () => {
     expect(mainView).toBeEmptyDOMElement();
     expect(document.querySelector('.pushing-view')).toBeNull();
     expect(document.querySelector('.popping-view')).toBeNull();
+  });
+
+  it('pops back to the popping view when it is put back on top mid-pop', () => {
+    const { rerender } = render(
+      <Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>
+    );
+    rerender(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    const poppingView = screen.getByText('B');
+
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+    expect(screen.getAllByText('B')).toEqual([poppingView]);
+    expect(document.querySelector('.popping-view')).toBeNull();
+
+    runTimers();
+    expect(screen.getByText('B')).toBe(poppingView);
+    expect(screen.queryByText('A')).toBeNull();
+  });
+
+  it('cancels the push when the stack returns to the main view mid-push', () => {
+    const { rerender } = render(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+    const mainView = screen.getByText('A');
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('b', 'B')]}</Stack>);
+    rerender(<Stack>{[keyedItem('a', 'A')]}</Stack>);
+
+    expect(screen.queryByText('B')).toBeNull();
+    runTimers();
+    expect(screen.getByText('A')).toBe(mainView);
+
+    // The stack is idle again, so the next push animates normally
+    rerender(<Stack>{[keyedItem('a', 'A'), keyedItem('c', 'C')]}</Stack>);
+    expect(document.querySelector('.pushing-view')).not.toBeNull();
+    runTimers();
+    expect(screen.getByText('C')).toBeTruthy();
+    expect(screen.queryByText('A')).toBeNull();
+  });
+});
+
+describe('view lifecycle', () => {
+  const onMount = jest.fn();
+  const onUnmount = jest.fn();
+
+  function LifecycleView({ name, value }: { name: string; value: string }) {
+    React.useEffect(() => {
+      onMount(name, value);
+      return () => onUnmount(name);
+    }, [name, value]);
+    return <div>{`${name}:${value}`}</div>;
+  }
+
+  function lifecycleItem(name: string, value = 'v1') {
+    return <LifecycleView key={name} name={name} value={value} />;
+  }
+
+  function runTimers() {
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+  }
+
+  beforeEach(() => {
+    onMount.mockClear();
+    onUnmount.mockClear();
+  });
+
+  it('does not remount a pushed view when the push completes', () => {
+    const { rerender } = render(<Stack>{[lifecycleItem('a')]}</Stack>);
+    rerender(<Stack>{[lifecycleItem('a'), lifecycleItem('b')]}</Stack>);
+    const pushedView = screen.getByText('b:v1');
+    expect(pushedView.closest('.pushing-view')).not.toBeNull();
+    onMount.mockClear();
+
+    runTimers();
+
+    expect(screen.getByText('b:v1')).toBe(pushedView);
+    expect(pushedView.closest('.main-view')).not.toBeNull();
+    expect(onMount).not.toHaveBeenCalled();
+    expect(onUnmount).toHaveBeenCalledTimes(1);
+    expect(onUnmount).toHaveBeenCalledWith('a');
+  });
+
+  it('does not remount a popped view with its stale props while it animates out', () => {
+    const { rerender } = render(
+      <Stack>{[lifecycleItem('a'), lifecycleItem('b', 'v1')]}</Stack>
+    );
+    // The popped view's latest props differ from the props it mounted with
+    rerender(<Stack>{[lifecycleItem('a'), lifecycleItem('b', 'v2')]}</Stack>);
+    const poppedView = screen.getByText('b:v2');
+    onMount.mockClear();
+    onUnmount.mockClear();
+
+    rerender(<Stack>{[lifecycleItem('a')]}</Stack>);
+
+    expect(screen.getByText('b:v2')).toBe(poppedView);
+    expect(poppedView.closest('.popping-view')).not.toBeNull();
+    expect(onMount).toHaveBeenCalledTimes(1);
+    expect(onMount).toHaveBeenCalledWith('a', 'v1');
+    expect(onUnmount).not.toHaveBeenCalled();
+
+    runTimers();
+
+    expect(screen.queryByText('b:v2')).toBeNull();
+    expect(onMount).toHaveBeenCalledTimes(1);
+    expect(onUnmount).toHaveBeenCalledTimes(1);
+    expect(onUnmount).toHaveBeenCalledWith('b');
   });
 });

@@ -858,11 +858,13 @@ input[type='number']::-webkit-inner-spin-button {
   transition: opacity $transition ease-out;
 }
 
-.slide-left-enter {
+.slide-left-enter,
+.slide-left-appear {
   transform: translate3d(100%, 0, 0);
 }
 
-.slide-left-enter-active {
+.slide-left-enter-active,
+.slide-left-appear-active {
   transform: none;
   transition: transform $transition-mid ease-out;
 }
@@ -876,11 +878,13 @@ input[type='number']::-webkit-inner-spin-button {
   transition: transform $transition-mid ease-out;
 }
 
-.slide-right-enter {
+.slide-right-enter,
+.slide-right-appear {
   transform: translate3d(-100%, 0, 0);
 }
 
-.slide-right-enter-active {
+.slide-right-enter-active,
+.slide-right-appear-active {
   transform: none;
   transition: transform $transition-mid ease-out;
 }
