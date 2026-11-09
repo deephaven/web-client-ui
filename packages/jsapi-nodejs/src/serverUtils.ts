@@ -186,12 +186,23 @@ function downloadWithOptions(
             return;
           }
 
-          if (!settled) {
-            attempt(
-              new URL(location, currentUrl),
-              retriesLeft,
-              redirectCount + 1
+          // A throw here would escape the response callback as an uncaught
+          // exception instead of rejecting the download.
+          let nextUrl: URL;
+          try {
+            nextUrl = new URL(location, currentUrl);
+          } catch {
+            fail(
+              new HttpError(
+                statusCode,
+                `Invalid redirect location "${location}" from "${currentUrl}"`
+              )
             );
+            return;
+          }
+
+          if (!settled) {
+            attempt(nextUrl, retriesLeft, redirectCount + 1);
           }
           return;
         }

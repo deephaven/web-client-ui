@@ -154,6 +154,21 @@ describe('downloadFromURL', () => {
       ).rejects.toMatchObject({ name: 'HttpError', statusCode: 302 });
     });
 
+    it('rejects a redirect with an invalid Location header', async () => {
+      const server = await startServer((req, res) => {
+        res.statusCode = 302;
+        res.setHeader('Location', 'http://[bad');
+        res.end();
+      });
+
+      await expect(downloadFromURL(server.url)).rejects.toMatchObject({
+        name: 'HttpError',
+        statusCode: 302,
+        message: `Invalid redirect location "http://[bad" from "${server.url}"`,
+      });
+      expect(server.requests).toHaveLength(1);
+    });
+
     it('never requests an untrusted redirect target', async () => {
       const target = await startServer((req, res) => {
         res.end('untrusted');
