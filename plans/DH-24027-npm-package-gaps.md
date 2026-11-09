@@ -2,7 +2,7 @@
 
 Close the API gaps in `@deephaven/jsapi-nodejs` and `@deephaven/jsapi-utils` that CLI/MCP work had to build itself (parent: DH-24026).
 
-ESM import through `pathToFileURL` (DH-24025) is **already done** in `loaderUtils.ts`, and the Windows CI check for it is already in place (`.github/workflows/unit-nodejs.yml` + `node-tests/loaderUtils.test.mjs`). This plan only has to keep that test passing after the storage directory change.
+ESM import through `pathToFileURL` (DH-24025) is **already done** in `loaderUtils.ts`, and the Windows CI check for it is already in place (`.github/workflows/unit-nodejs.yml` + `node-tests/loaderUtils.test.mjs`). This plan only has to keep that test passing.
 
 ## Contract
 
@@ -80,13 +80,7 @@ Behavior, per call:
 
 ### Storage directory names
 
-- New `urlToStorageDirName(url: string | URL): string` returns `encodeURIComponent(new URL(url).origin)`.
-  - Example: `http://localhost:10000/foo` → `http%3A%2F%2Flocalhost%3A10000`.
-  - The result is valid on Windows (no `:` / `/` / `\`).
-  - `origin` drops default ports, so `https://h:443` and `https://h` share a directory.
-- `urlToDirectoryName` stays exported, unchanged, with a `@deprecated Use urlToStorageDirName` JSDoc tag.
-- `loadModules` uses `urlToStorageDirName` for `serverStorageDir`.
-  - **Behavior change:** `download: false` callers that pre-populated `<storageDir>/<host_port>` must re-download or move the files. Note this in the README and the PR description, as a `feat` and not a `BREAKING CHANGE`. Old directories are left in place and not migrated.
+`loadModules` keeps using `urlToDirectoryName` (`<host>_<port>`, `.` and `:` replaced with `_`), unchanged. Its known collisions (`http://h` vs `https://h` on default ports, and hosts differing only by `.` vs `_`) need one process to load from both origins, which no consumer does. A consumer that needs per-origin isolation passes a per-origin `storageDir`.
 
 ### `loadModules` / `loadDhModules` (`src/loaderUtils.ts`)
 
@@ -139,11 +133,10 @@ export async function fetchAuthHandlers(
 - [x] `serverUtils.ts`: follow redirects up to `maxRedirects` (default 20), checking `isTrustedUrl` before every request
 - [x] `serverUtils.ts`: timeout rejects `DownloadTimeoutError` and destroys the request
 - [x] `serverUtils.ts`: `AbortSignal` support covering in-flight requests and pending retries
-- [x] `serverUtils.ts`: add `urlToStorageDirName`; deprecate `urlToDirectoryName`
-- [x] `loaderUtils.ts`: `downloadOptions` on `LoadModuleOptions` / `loadDhModules`; switch to `urlToStorageDirName`; abort check before writing
+- [x] `loaderUtils.ts`: `downloadOptions` on `LoadModuleOptions` / `loadDhModules`; abort check before writing
 - [x] `src/serverUtils.test.ts` (Jest) covering the Validation cases below
-- [x] `node-tests/loaderUtils.test.mjs`: switch to `urlToStorageDirName`; add a `download: true` ESM test against a local `http` server
-- [x] `jsapi-nodejs/README.md`: document `DownloadOptions`, the error classes, and the storage directory change
+- [x] `node-tests/loaderUtils.test.mjs`: add a `download: true` ESM test against a local `http` server
+- [x] `jsapi-nodejs/README.md`: document `DownloadOptions`, and the error classes
 - [x] `jsapi-utils/src/AuthUtils.ts` + `AuthUtils.test.ts`; export it from `index.ts`
 - [x] `auth-plugins/src/AuthHandlerTypes.ts` re-exports the constants from `@deephaven/jsapi-utils`
 - [x] `app-utils/src/plugins/PluginUtils.ts` re-exports `getAuthHandlers` from `@deephaven/jsapi-utils`
@@ -173,8 +166,7 @@ export async function fetchAuthHandlers(
 - [x] `retries: 2, retryDelayMs: 10` against `ECONNREFUSED` rejects within 500ms after 3 attempts
 - [x] A custom `logger.error` receives the retry messages, and `console.error` is not called
 - [x] The legacy positional `downloadFromURL(url, 0, 10, logger)` still works
-- [x] `urlToStorageDirName('http://h:1')` !== `urlToStorageDirName('https://h:1')`
-- [x] `urlToStorageDirName('http://a_b:1')` !== `urlToStorageDirName('http://a.b:1')`
+- [x] `urlToDirectoryName` output is unchanged: `http://localhost:10000/jsapi/dh-core.js` → `localhost_10000`, `https://my.host.com` → `my_host_com`
 - [x] The result contains no `:`, `/` or `\`
 
 `AuthUtils.test.ts` cases:

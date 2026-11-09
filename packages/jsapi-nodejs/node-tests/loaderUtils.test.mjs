@@ -9,7 +9,7 @@ import path from 'node:path';
 import { after, before, test } from 'node:test';
 
 import { loadModules } from '../dist/loaderUtils.js';
-import { urlToStorageDirName } from '../dist/serverUtils.js';
+import { urlToDirectoryName } from '../dist/serverUtils.js';
 
 const serverUrl = new URL('http://localhost:10000/');
 
@@ -24,7 +24,7 @@ after(() => {
 });
 
 test('loadModules imports an esm module from an absolute storage path', async () => {
-  const serverStorageDir = path.join(tmpDir, urlToStorageDirName(serverUrl));
+  const serverStorageDir = path.join(tmpDir, urlToDirectoryName(serverUrl));
   fs.mkdirSync(serverStorageDir, { recursive: true });
   fs.writeFileSync(
     path.join(serverStorageDir, 'dh-core.js'),
