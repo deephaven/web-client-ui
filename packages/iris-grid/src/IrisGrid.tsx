@@ -308,6 +308,11 @@ export interface IrisGridProps {
   partitionConfig?: PartitionConfig;
   sorts: readonly SortDescriptor[];
   isSortsControlled: boolean;
+  /**
+   * Prevents the user from changing the sorts. Applied sorts are still shown.
+   * Sorts on columns that are removed (e.g. by a rollup) are still cleared.
+   */
+  isSortsReadOnly: boolean;
   onSortsChange?: (sorts: readonly SortDescriptor[]) => void;
 
   /** @deprecated use `reverse` instead */
@@ -315,6 +320,12 @@ export interface IrisGridProps {
   reverse: boolean;
   quickFilters: ReadonlyQuickFilterMap | null;
   isQuickFiltersControlled: boolean;
+  /**
+   * Prevents the user from changing the quick filters. Applied quick filters are
+   * still shown. Advanced filters and search are not affected. Quick filters on
+   * columns that are removed (e.g. by a rollup) are still cleared.
+   */
+  isQuickFiltersReadOnly: boolean;
   onQuickFiltersChange?: (quickFilters: ReadonlyQuickFilterMap) => void;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
@@ -550,10 +561,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     partitionConfig: undefined,
     quickFilters: EMPTY_MAP,
     isQuickFiltersControlled: false,
+    isQuickFiltersReadOnly: false,
     onQuickFiltersChange: undefined,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
     isSortsControlled: false,
+    isSortsReadOnly: false,
     onSortsChange: undefined,
     reverse: false,
     customColumns: EMPTY_ARRAY,
@@ -1238,6 +1251,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       column: DhType.Column,
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
+      isSortsReadOnly: boolean,
       formatter: Formatter,
       isMaximized: boolean,
       onToggleMaximize: () => void
@@ -1250,6 +1264,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         onDone={this.handleAdvancedFilterDone}
         options={advancedFilterOptions}
         sortDirection={sortDirection}
+        isSortsReadOnly={isSortsReadOnly}
         formatter={formatter}
         tableUtils={this.tableUtils}
         isMaximized={isMaximized}
@@ -2008,7 +2023,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       ? modelRange
       : [modelRange, modelRange];
     const { advancedFilters, quickFilters } = this.state;
-    const { isQuickFiltersControlled } = this.props;
+    const { isQuickFiltersControlled, isQuickFiltersReadOnly } = this.props;
     const newAdvancedFilters = new Map(advancedFilters);
     const newQuickFilters = new Map(quickFilters);
     newAdvancedFilters.forEach((_, column) => {
@@ -2024,7 +2039,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const didAdvancedFiltersChange =
       newAdvancedFilters.size !== advancedFilters.size;
-    const didQuickFiltersChange = newQuickFilters.size !== quickFilters.size;
+    const didQuickFiltersChange =
+      !isQuickFiltersReadOnly && newQuickFilters.size !== quickFilters.size;
     if (didQuickFiltersChange) {
       this.requestQuickFiltersChange(newQuickFilters);
     }
@@ -2043,26 +2059,33 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.requestQuickFiltersChange(newQuickFilters);
   }
 
-  clearAllFilters(): void {
+  /**
+   * Clears all quick filters, advanced filters and search.
+   * @param options.ignoreReadOnly Also clear quick filters when they are read-only.
+   * Used for changes the user didn't make, such as columns being removed.
+   */
+  clearAllFilters({ ignoreReadOnly = false } = {}): void {
     log.debug('Clearing all filters');
 
     const { advancedFilters, quickFilters, searchFilter } = this.state;
-    const { isQuickFiltersControlled } = this.props;
+    const { isQuickFiltersControlled, isQuickFiltersReadOnly } = this.props;
+    const canClearQuickFilters =
+      quickFilters.size > 0 && (ignoreReadOnly || !isQuickFiltersReadOnly);
     if (
-      quickFilters.size === 0 &&
+      !canClearQuickFilters &&
       advancedFilters.size === 0 &&
       searchFilter === null
     ) {
       return;
     }
 
-    if (quickFilters.size > 0) {
-      this.requestQuickFiltersChange(EMPTY_MAP);
+    if (canClearQuickFilters) {
+      this.requestQuickFiltersChange(EMPTY_MAP, { ignoreReadOnly });
     }
 
     const hasOtherFilters = advancedFilters.size > 0 || searchFilter != null;
     if (hasOtherFilters) {
-      if (quickFilters.size === 0 || isQuickFiltersControlled) {
+      if (!canClearQuickFilters || isQuickFiltersControlled) {
         this.startLoading('Clearing Filters...', { resetRanges: true });
       }
       this.setState({
@@ -2141,7 +2164,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
     this.startLoading('Rebuilding filters...', { resetRanges: true });
     if (quickFilters.size > 0) {
-      this.requestQuickFiltersChange(newQuickFilters);
+      this.requestQuickFiltersChange(newQuickFilters, { ignoreReadOnly: true });
     }
     this.setState({ advancedFilters: newAdvancedFilters });
   }
@@ -2739,11 +2762,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   focusFilterBar(column: VisibleIndex): void {
     const { movedColumns } = this.state;
-    const { model } = this.props;
+    const { isQuickFiltersReadOnly, model } = this.props;
     const { columnCount } = model;
     const modelColumn = GridUtils.getModelIndex(column, movedColumns);
 
     if (
+      isQuickFiltersReadOnly ||
       column == null ||
       columnCount <= column ||
       !model.isFilterable(modelColumn)
@@ -3087,8 +3111,21 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.forceUpdate();
   }
 
-  requestSortsChange(sorts: readonly SortDescriptor[]): void {
-    const { isSortsControlled, onSortsChange } = this.props;
+  /**
+   * Requests a sort change. Applies it unless sorts are controlled, and reports
+   * it through `onSortsChange`. Ignored while sorts are read-only.
+   * @param options.ignoreReadOnly Apply even when sorts are read-only.
+   * Used for changes the user didn't make, such as columns being removed.
+   */
+  requestSortsChange(
+    sorts: readonly SortDescriptor[],
+    { ignoreReadOnly = false } = {}
+  ): void {
+    const { isSortsControlled, isSortsReadOnly, onSortsChange } = this.props;
+    if (isSortsReadOnly && !ignoreReadOnly) {
+      log.debug('Sorts are read-only, ignoring change', sorts);
+      return;
+    }
     onSortsChange?.(sorts);
     if (!isSortsControlled) {
       this.updateSorts(sorts);
@@ -3110,8 +3147,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.grid?.forceUpdate();
   }
 
-  requestQuickFiltersChange(quickFilters: ReadonlyQuickFilterMap): void {
-    const { isQuickFiltersControlled, onQuickFiltersChange } = this.props;
+  /**
+   * Requests a quick filter change. Applies it unless quick filters are
+   * controlled, and reports it through `onQuickFiltersChange`. Ignored while
+   * quick filters are read-only.
+   * @param options.ignoreReadOnly Apply even when quick filters are read-only.
+   * Used for changes the user didn't make, such as columns being removed.
+   */
+  requestQuickFiltersChange(
+    quickFilters: ReadonlyQuickFilterMap,
+    { ignoreReadOnly = false } = {}
+  ): void {
+    const {
+      isQuickFiltersControlled,
+      isQuickFiltersReadOnly,
+      onQuickFiltersChange,
+    } = this.props;
+    if (isQuickFiltersReadOnly && !ignoreReadOnly) {
+      log.debug('Quick filters are read-only, ignoring change', quickFilters);
+      return;
+    }
     onQuickFiltersChange?.(quickFilters);
     if (!isQuickFiltersControlled) {
       this.updateQuickFilters(quickFilters);
@@ -3963,7 +4018,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         );
       if (newSorts.length !== sorts.length) {
         log.debug('removing sorts from removed custom columns...');
-        this.requestSortsChange(newSorts);
+        this.requestSortsChange(newSorts, { ignoreReadOnly: true });
       }
       if (
         newQuickFilters.size !== quickFilters.size ||
@@ -3971,7 +4026,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       ) {
         log.debug(`removing filters from removed custom columns...`);
         if (newQuickFilters.size !== quickFilters.size) {
-          this.requestQuickFiltersChange(newQuickFilters);
+          this.requestQuickFiltersChange(newQuickFilters, {
+            ignoreReadOnly: true,
+          });
         }
         if (newAdvancedFilters.size !== advancedFilters.size) {
           this.setState({ advancedFilters: newAdvancedFilters });
@@ -4231,13 +4288,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.resetGridViewState();
-    this.clearAllFilters();
+    this.clearAllFilters({ ignoreReadOnly: true });
 
     this.startLoading(
       `Grouping by columns ${rollupConfig?.columns?.join(', ') ?? ''}...`
     );
 
-    this.requestSortsChange(EMPTY_ARRAY);
+    this.requestSortsChange(EMPTY_ARRAY, { ignoreReadOnly: true });
 
     // Have to clear select distinct since rollup uses the original columns, not the current ones.
     // IrisGridProxyModel has a check to prevent model update
@@ -4257,7 +4314,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.resetGridViewState();
 
     this.showAllColumns();
-    this.clearAllFilters();
+    this.clearAllFilters({ ignoreReadOnly: true });
     this.clearAllAggregations();
 
     this.startLoading(
@@ -4266,7 +4323,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }...`
     );
 
-    this.requestSortsChange(EMPTY_ARRAY);
+    this.requestSortsChange(EMPTY_ARRAY, { ignoreReadOnly: true });
 
     this.setState({
       selectDistinctColumns: columnNames,
@@ -5053,7 +5110,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       children,
       customFilters,
       getDownloadWorker,
+      isQuickFiltersReadOnly,
       isSelectingColumn,
+      isSortsReadOnly,
       isStuckToBottom,
       isStuckToRight,
       model,
@@ -5186,15 +5245,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       metrics != null && metrics.width > 0 && metrics.height > 0;
     const isRollup = (rollupConfig?.columns?.length ?? 0) > 0;
 
-    const focusField = isFilterBarShown
-      ? this.getFilterBarInput(
-          metrics,
-          metricCalculator,
-          focusedFilterBarColumn,
-          quickFilters,
-          advancedFilters
-        )
-      : null;
+    const focusField =
+      isFilterBarShown && !isQuickFiltersReadOnly
+        ? this.getFilterBarInput(
+            metrics,
+            metricCalculator,
+            focusedFilterBarColumn,
+            quickFilters,
+            advancedFilters
+          )
+        : null;
 
     let loadingElement = null;
     if (loadingText != null) {
@@ -5402,6 +5462,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     column,
                     advancedFilterOptions,
                     sortDirection,
+                    isSortsReadOnly,
                     formatter,
                     shownAdvancedFilter === columnIndex &&
                       maximizedAdvancedFilter === columnIndex,

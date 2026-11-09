@@ -53,14 +53,19 @@ function makeMockModel({
 function makeMockIrisGrid({
   model = makeMockModel(),
   theme = createMockProxy<IrisGridThemeType>({}),
+  props = {},
+  state = {},
 }: {
   model?: IrisGridModel & ExpandableColumnGridModel;
   theme?: IrisGridThemeType;
+  props?: Partial<IrisGridProps>;
+  state?: Partial<IrisGridState>;
 } = {}): IrisGrid {
   return createMockProxy<IrisGrid>({
     props: createMockProxy<IrisGridProps>({
       model,
       theme,
+      ...props,
     }),
     state: createMockProxy<IrisGridState>({
       metrics: createMockProxy<GridMetrics>({
@@ -72,6 +77,7 @@ function makeMockIrisGrid({
       advancedFilters: new Map(),
       quickFilters: new Map(),
       columnAlignmentMap: new Map(),
+      ...state,
     }),
     getTheme: jest.fn().mockReturnValue(theme),
   });
@@ -178,4 +184,136 @@ describe('getHeaderActions', () => {
       );
     }
   );
+});
+
+describe('getHeaderActions read-only', () => {
+  const mockDh = createMockProxy<typeof dh>();
+  const mockGridPoint: GridPoint = {
+    column: 0 as ModelIndex,
+    row: null,
+    x: 0,
+    y: 0,
+    columnHeaderDepth: 0,
+  };
+
+  function getMenuItems({
+    props = {},
+    state = {},
+  }: {
+    props?: Partial<IrisGridProps>;
+    state?: Partial<IrisGridState>;
+  } = {}) {
+    const columns = makeColumns();
+    const model = createMockProxy<IrisGridModel & ExpandableColumnGridModel>({
+      ...makeMockModel({ columns }),
+      columns,
+      sort: [
+        createMockProxy<dh.Sort>({
+          column: columns[1],
+          direction: 'ASC',
+        }),
+      ],
+      isColumnSortable: jest.fn(() => true),
+      isFilterable: jest.fn(() => true),
+      isReversible: true,
+    });
+    const handler = new IrisGridContextMenuHandler(
+      makeMockIrisGrid({ model, props, state: { reverse: false, ...state } }),
+      mockDh
+    );
+    return ContextActionUtils.getMenuItems(
+      handler.getHeaderActions(0, mockGridPoint),
+      false
+    );
+  }
+
+  function isDisabled(
+    menuItems: ReturnType<typeof getMenuItems>,
+    title: string
+  ): boolean | undefined {
+    return menuItems.find(item => item.title === title)?.disabled;
+  }
+
+  it.each([false, true])(
+    'disables sort actions when isSortsReadOnly is %s',
+    isSortsReadOnly => {
+      const menuItems = getMenuItems({ props: { isSortsReadOnly } });
+
+      expect(isDisabled(menuItems, 'Sort by')).toBe(isSortsReadOnly);
+      expect(isDisabled(menuItems, 'Clear Table Sorting')).toBe(
+        isSortsReadOnly
+      );
+    }
+  );
+
+  it.each([false, true])(
+    'disables Clear Table Filters for only quick filters when isQuickFiltersReadOnly is %s',
+    isQuickFiltersReadOnly => {
+      const menuItems = getMenuItems({
+        props: { isQuickFiltersReadOnly },
+        state: {
+          quickFilters: new Map([[0, { text: 'a', filter: null }]]),
+          searchFilter: null,
+        } as Partial<IrisGridState>,
+      });
+
+      expect(isDisabled(menuItems, 'Clear Table Filters')).toBe(
+        isQuickFiltersReadOnly
+      );
+    }
+  );
+
+  it('enables Clear Table Filters for advanced filters when quick filters are read-only', () => {
+    const menuItems = getMenuItems({
+      props: { isQuickFiltersReadOnly: true },
+      state: {
+        quickFilters: new Map([[0, { text: 'a', filter: null }]]),
+        advancedFilters: new Map([
+          [
+            1,
+            {
+              filter: null,
+              options: {
+                filterItems: [],
+                filterOperators: [],
+                invertSelection: false,
+                selectedValues: [],
+              },
+            },
+          ],
+        ]),
+        searchFilter: null,
+      } as Partial<IrisGridState>,
+    });
+
+    expect(isDisabled(menuItems, 'Clear Table Filters')).toBe(false);
+  });
+});
+
+describe('getCellFilterActions read-only', () => {
+  it('returns no filter actions when quick filters are read-only', async () => {
+    const model = createMockProxy<IrisGridModel & ExpandableColumnGridModel>({
+      ...makeMockModel(),
+      isFilterable: jest.fn(() => true),
+    });
+    const irisGrid = makeMockIrisGrid({
+      model,
+      props: { isQuickFiltersReadOnly: true },
+    });
+    const handler = new IrisGridContextMenuHandler(
+      irisGrid,
+      createMockProxy<typeof dh>()
+    );
+
+    const actions = await handler.getCellFilterActions(0, {
+      column: 0,
+      row: 0,
+      x: 0,
+      y: 0,
+      columnHeaderDepth: undefined,
+    });
+
+    expect(actions).toEqual([]);
+    expect(model.isFilterable).not.toHaveBeenCalled();
+  });
 });

@@ -61,6 +61,7 @@ interface AdvancedFilterCreatorProps {
   onDone: () => void;
   options: AdvancedFilterOptions;
   sortDirection: SortDirection;
+  isSortsReadOnly: boolean;
   formatter: Formatter;
   tableUtils: TableUtils;
   isMaximized: boolean;
@@ -104,6 +105,7 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues: [],
     },
     sortDirection: null,
+    isSortsReadOnly: false,
   };
 
   static makeFilterItem(): AdvancedFilterItem {
@@ -404,9 +406,9 @@ class AdvancedFilterCreator extends PureComponent<
    * @param addToExisting Add to the existing sort, or replace the existing table sort
    */
   sortTable(direction: SortDirection, addToExisting = false): void {
-    const { column, onSortChange } = this.props;
+    const { column, isSortsReadOnly, onSortChange } = this.props;
     const { isSortable } = this.state;
-    if (isSortable) {
+    if (isSortable && !isSortsReadOnly) {
       onSortChange(column, direction, addToExisting);
     }
   }
@@ -470,6 +472,7 @@ class AdvancedFilterCreator extends PureComponent<
       column,
       model,
       sortDirection,
+      isSortsReadOnly,
       formatter,
       tableUtils,
       isMaximized,
@@ -482,8 +485,9 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues,
       valuesTable,
       valuesTableError,
-      isSortable,
+      isSortable: isColumnSortable,
     } = this.state;
+    const isSortable = isColumnSortable && !isSortsReadOnly;
     const { dh, isValuesTableAvailable } = model;
     const isBoolean = TableUtils.isBooleanType(column.type);
     const isDateType = TableUtils.isDateType(column.type);
