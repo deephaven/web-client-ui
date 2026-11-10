@@ -424,8 +424,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setPreviewStatus();
   }
 
-  getNotebookValue(): string | undefined {
-    const { changeCount, savedChangeCount, settings } = this.state;
+  getNotebookValue(
+    state: Pick<
+      NotebookPanelState,
+      'changeCount' | 'savedChangeCount' | 'settings'
+    > = this.state
+  ): string | undefined {
+    const { changeCount, savedChangeCount, settings } = state;
     const { value } = settings;
     if (changeCount !== savedChangeCount && this.notebook) {
       const notebookValue = this.notebook.getValue();
@@ -689,7 +694,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         isPreview,
         settings: initialSettings,
       } = state;
-      const value = this.getNotebookValue();
+      // Read from the updater's state; `this.state` may not include pending updates yet (e.g. content set by `load`)
+      const value = this.getNotebookValue(state);
       // notebooks with no unsaved changes have value === null in dehydrated state
       // content will be loaded from file when hydrating
       const dehydratedValue =
