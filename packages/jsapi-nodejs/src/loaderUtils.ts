@@ -104,16 +104,16 @@ export async function loadModules<TMainModule>(
       serverUrls.map(url => downloadFromURL(url, downloadOptions))
     );
 
+    // Don't transform or write anything once aborted.
+    if (downloadOptions?.signal?.aborted === true) {
+      throw downloadOptions.signal.reason;
+    }
+
     const contents: string[] = settledResults.map((result, i) =>
       result.status === 'rejected'
         ? handleRejected(result.reason, i)
         : handleResolved(result.value, i)
     );
-
-    // Don't write anything if aborted after the downloads settled.
-    if (downloadOptions?.signal?.aborted === true) {
-      throw downloadOptions.signal.reason;
-    }
 
     // Write to disk
     const downloadPaths = getDownloadPaths(serverStorageDir, serverPaths);
@@ -192,17 +192,13 @@ export async function loadDhModules({
 
   // `dh-internal.js` module is being removed from future versions of DH core,
   // but there's not a great way for this library to know whether it's present
-  // or not. Treat 404s as empty content to make things compatible with both
-  // configurations.
+  // or not. Treat any HTTP error status as empty content, since proxies and
+  // auth layers may answer a missing file with something other than 404.
   const errorTransform: PostDownloadErrorTransform = (
     serverPath: string,
     error: unknown
   ): string => {
-    if (
-      serverPath === DH_INTERNAL_MODULE &&
-      error instanceof HttpError &&
-      error.statusCode === 404
-    ) {
+    if (serverPath === DH_INTERNAL_MODULE && error instanceof HttpError) {
       return '';
     }
 

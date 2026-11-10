@@ -132,7 +132,22 @@ function downloadWithOptions(
       settle(() => reject(reason));
     }
 
+    // Redirects and retries call this from a response callback or a timer, where
+    // a throw (e.g. from a caller's `isTrustedUrl`) would be uncaught.
     function attempt(
+      currentUrl: URL,
+      retriesLeft: number,
+      redirectCount: number
+    ): void {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        startRequest(currentUrl, retriesLeft, redirectCount);
+      } catch (e) {
+        fail(e);
+      }
+    }
+
+    function startRequest(
       currentUrl: URL,
       retriesLeft: number,
       redirectCount: number
@@ -236,7 +251,7 @@ function downloadWithOptions(
           }
 
           if (retriesLeft > 0) {
-            logger.error('Retrying url:', currentUrl);
+            logger.error('Retrying url:', url);
             retryTimer = setTimeout(
               () => attempt(url, retriesLeft - 1, 0),
               retryDelayMs

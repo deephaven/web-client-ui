@@ -169,6 +169,52 @@ describe('downloadFromURL', () => {
       expect(server.requests).toHaveLength(1);
     });
 
+    it('rejects when isTrustedUrl throws for a redirect target', async () => {
+      const server = await startServer((req, res) => {
+        if (req.url === '/') {
+          res.statusCode = 302;
+          res.setHeader('Location', '/next');
+        }
+        res.end();
+      });
+
+      await expect(
+        downloadFromURL(server.url, {
+          isTrustedUrl: url => {
+            if (url.pathname === '/next') {
+              throw new Error('isTrustedUrl failed');
+            }
+            return true;
+          },
+        })
+      ).rejects.toThrow('isTrustedUrl failed');
+      expect(server.requests).toHaveLength(1);
+    });
+
+    it('retries from, and logs, the original url when a redirect target fails', async () => {
+      const refusedUrl = await getRefusedUrl();
+      const server = await startServer((req, res) => {
+        res.statusCode = 302;
+        res.setHeader('Location', refusedUrl.href);
+        res.end();
+      });
+
+      await expect(
+        downloadFromURL(server.url, {
+          retries: 1,
+          retryDelayMs: 10,
+          logger: silentLogger,
+        })
+      ).rejects.toMatchObject({ code: 'ECONNREFUSED' });
+      // Compare hrefs: Jest's equality treats any two URL objects as equal.
+      expect(
+        silentLogger.error.mock.calls
+          .filter(([msg]) => msg === 'Retrying url:')
+          .map(([, url]) => String(url))
+      ).toEqual([server.url.href]);
+      expect(server.requests).toHaveLength(2);
+    });
+
     it('never requests an untrusted redirect target', async () => {
       const target = await startServer((req, res) => {
         res.end('untrusted');

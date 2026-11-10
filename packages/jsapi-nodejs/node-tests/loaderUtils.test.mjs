@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, test } from 'node:test';
 
-import { loadModules } from '../dist/loaderUtils.js';
+import { loadDhModules, loadModules } from '../dist/loaderUtils.js';
 import { urlToDirectoryName } from '../dist/serverUtils.js';
 
 const serverUrl = new URL('http://localhost:10000/');
@@ -67,4 +67,72 @@ test('loadModules downloads and imports an esm module', async () => {
       server.close(resolve);
     });
   }
+});
+
+async function withServer(handler, callback) {
+  const server = http.createServer(handler);
+  await new Promise(resolve => {
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  try {
+    const { port } = server.address();
+    return await callback(new URL(`http://127.0.0.1:${port}/`));
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => {
+      server.close(resolve);
+    });
+  }
+}
+
+test('loadDhModules treats a non-404 error for dh-internal.js as missing', async () => {
+  await withServer(
+    (req, res) => {
+      if (req.url === '/jsapi/dh-internal.js') {
+        res.statusCode = 403;
+        res.end('forbidden');
+        return;
+      }
+      res.end('export default 44;');
+    },
+    async serverUrl => {
+      const dh = await loadDhModules({
+        serverUrl,
+        storageDir: tmpDir,
+        targetModuleType: 'esm',
+      });
+
+      assert.equal(dh, 44);
+    }
+  );
+});
+
+test('loadModules skips errorTransform once aborted', async () => {
+  const controller = new AbortController();
+  let errorTransformCalls = 0;
+
+  await withServer(
+    (req, res) => {
+      controller.abort(new Error('stop'));
+      res.end('export default 45;');
+    },
+    serverUrl =>
+      assert.rejects(
+        loadModules({
+          serverUrl,
+          serverPaths: ['jsapi/dh-core.js'],
+          storageDir: tmpDir,
+          download: true,
+          targetModuleType: 'esm',
+          downloadOptions: { signal: controller.signal },
+          errorTransform: () => {
+            errorTransformCalls += 1;
+            return '';
+          },
+        }),
+        { message: 'stop' }
+      )
+  );
+
+  assert.equal(errorTransformCalls, 0);
 });
