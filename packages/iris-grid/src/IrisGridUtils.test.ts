@@ -1325,6 +1325,64 @@ describe('migrateConditionalFormattingRule', () => {
   });
 });
 
+/**
+ * Pins the frozen default values. Stored state omits any value equal to its
+ * default, so these define what a missing key means in data already saved.
+ *
+ * - Adding a key is safe.
+ * - Never change a value: every stored state that omitted the key would load
+ *   with the new value.
+ * - Only remove a key when the property itself is no longer saved or read.
+ *   Otherwise stored state that omitted it would load without it.
+ *
+ * Values are written as literals (including the advanced settings keys) so
+ * that renaming an enum value is also caught.
+ */
+describe('frozen state defaults', () => {
+  it('has not changed IRIS_GRID_STATE_DEFAULTS', () => {
+    expect(IRIS_GRID_STATE_DEFAULTS).toEqual({
+      advancedFilters: [],
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      customColumnFormatMap: [],
+      columnAlignmentMap: [],
+      isFilterBarShown: false,
+      quickFilters: [],
+      sorts: [],
+      userColumnWidths: [],
+      userRowHeights: [],
+      customColumns: [],
+      conditionalFormats: [],
+      reverse: false,
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      invertSearchColumns: true,
+      pendingDataMap: [],
+    });
+  });
+
+  it('has not changed GRID_STATE_DEFAULTS', () => {
+    expect(GRID_STATE_DEFAULTS).toEqual({
+      isStuckToBottom: false,
+      isStuckToRight: false,
+      movedColumns: [],
+      movedRows: [],
+    });
+  });
+
+  it('has not changed IRIS_GRID_PANEL_STATE_DEFAULTS', () => {
+    expect(IRIS_GRID_PANEL_STATE_DEFAULTS).toEqual({
+      isSelectingPartition: false,
+      partitions: [],
+      advancedSettings: [
+        ['filter-control-change-clears-all-filters', false],
+        ['link-change-clears-all-filters', false],
+      ],
+    });
+  });
+});
+
 describe('remove/restore state defaults', () => {
   const model = irisGridTestUtils.makeModel(
     irisGridTestUtils.makeTable({
