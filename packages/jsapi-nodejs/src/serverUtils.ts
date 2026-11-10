@@ -186,7 +186,8 @@ function downloadWithOptions(
           return;
         }
 
-        // Discard the body so the socket is released.
+        // Discard the body so the socket can be reused. If the body stalls, the
+        // request's timeout handler closes it.
         res.resume();
 
         const { location } = res.headers;
@@ -238,15 +239,18 @@ function downloadWithOptions(
 
       req
         .on('timeout', () => {
-          if (settled) {
-            return;
+          // Only the current request can fail the download. A request that
+          // was superseded by a redirect, or whose download already settled,
+          // is just closed.
+          if (!settled && req === activeRequest) {
+            logger.error('Failed download of url:', currentUrl);
+            fail(new DownloadTimeoutError(currentUrl, timeoutMs));
           }
-          logger.error('Failed download of url:', currentUrl);
-          fail(new DownloadTimeoutError(currentUrl, timeoutMs));
           req.destroy();
         })
         .on('error', e => {
-          if (settled) {
+          // A superseded request must not start a second retry chain.
+          if (settled || req !== activeRequest) {
             return;
           }
 

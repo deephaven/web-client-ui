@@ -264,6 +264,43 @@ describe('downloadFromURL', () => {
     expect(server.requests).toHaveLength(1);
   });
 
+  describe('discarded responses with a stalled body', () => {
+    it('closes the socket of an HTTP error response', async () => {
+      const server = await startServer((req, res) => {
+        res.writeHead(500);
+        res.write('partial');
+      });
+
+      await expect(
+        downloadFromURL(server.url, { timeoutMs: 50, logger: silentLogger })
+      ).rejects.toMatchObject({ name: 'HttpError', statusCode: 500 });
+      await waitForClose(server.sockets[0]);
+    });
+
+    it("a stalled redirect body doesn't fail the next hop, and its socket is closed", async () => {
+      const server = await startServer((req, res) => {
+        if (req.url === '/') {
+          res.writeHead(302, { Location: '/next' });
+          res.write('partial');
+          return;
+        }
+        // Keep the next hop busy for longer than `timeoutMs`, without ever
+        // idling that long, so only a stale timeout could fail it.
+        res.write('a');
+        const interval = setInterval(() => res.write('a'), 10);
+        setTimeout(() => {
+          clearInterval(interval);
+          res.end('b');
+        }, 150);
+      });
+
+      await expect(
+        downloadFromURL(server.url, { timeoutMs: 50, logger: silentLogger })
+      ).resolves.toMatch(/^a+b$/);
+      await waitForClose(server.sockets[0]);
+    });
+  });
+
   describe('abort', () => {
     it('rejects without a request if already aborted', async () => {
       const server = await startServer((req, res) => {
