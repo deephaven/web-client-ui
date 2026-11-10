@@ -1460,6 +1460,84 @@ describe('remove/restore state defaults', () => {
     });
   });
 
+  describe('panel state', () => {
+    function makeIrisGridPanelPanelState() {
+      return {
+        irisGridState: makeIrisGridState(),
+        gridState: makeGridState(),
+        irisGridPanelState: {
+          ...IRIS_GRID_PANEL_STATE_DEFAULTS,
+          partitions: ['a'],
+        },
+        pluginState: null,
+      };
+    }
+
+    /** Shape of a panel with only some grid sections and its own keys */
+    function makePartialPanelState() {
+      return {
+        irisGridState: makeIrisGridState(),
+        gridState: { ...GRID_STATE_DEFAULTS },
+        ownFilter: 'filter',
+      };
+    }
+
+    it('removes defaults from each grid section and keeps other keys', () => {
+      expect(
+        IrisGridUtils.removePanelStateDefaults(makeIrisGridPanelPanelState())
+      ).toEqual({
+        irisGridState: IrisGridUtils.removeIrisGridStateDefaults(
+          makeIrisGridState()
+        ),
+        gridState: { isStuckToBottom: true },
+        irisGridPanelState: { partitions: ['a'] },
+        pluginState: null,
+      });
+    });
+
+    it('keeps a section with only default values as an empty object', () => {
+      expect(
+        IrisGridUtils.removePanelStateDefaults(makePartialPanelState())
+      ).toEqual({
+        irisGridState: IrisGridUtils.removeIrisGridStateDefaults(
+          makeIrisGridState()
+        ),
+        gridState: {},
+        ownFilter: 'filter',
+      });
+    });
+
+    it.each([
+      ['with every grid section', makeIrisGridPanelPanelState],
+      ['with some grid sections', makePartialPanelState],
+    ])(
+      'restores a panel state %s to its original value',
+      (_label, makePanelState) => {
+        expect(
+          IrisGridUtils.restorePanelStateDefaults(
+            IrisGridUtils.removePanelStateDefaults(makePanelState())
+          )
+        ).toEqual(makePanelState());
+      }
+    );
+
+    it('does not add missing sections', () => {
+      expect(
+        IrisGridUtils.restorePanelStateDefaults({ ownFilter: 'filter' })
+      ).toEqual({ ownFilter: 'filter' });
+    });
+
+    it('does not modify the input', () => {
+      const panelState = makeIrisGridPanelPanelState();
+      const removed = IrisGridUtils.removePanelStateDefaults(panelState);
+      expect(panelState).toEqual(makeIrisGridPanelPanelState());
+
+      const copy = JSON.parse(JSON.stringify(removed));
+      IrisGridUtils.restorePanelStateDefaults(removed);
+      expect(removed).toEqual(copy);
+    });
+  });
+
   describe('IrisGridPanel state', () => {
     it('removes only default values', () => {
       expect(

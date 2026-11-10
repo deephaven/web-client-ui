@@ -314,6 +314,24 @@ export const IRIS_GRID_PANEL_STATE_DEFAULTS: Readonly<DehydratedIrisGridPanelSta
     ),
   });
 
+/**
+ * The dehydrated grid sections a panel can store in its `panelState`.
+ * Panels store any subset of them, alongside their own keys.
+ */
+export type GridPanelStateSections = {
+  irisGridState?: DehydratedIrisGridState;
+  gridState?: DehydratedGridState;
+  irisGridPanelState?: DehydratedIrisGridPanelState;
+};
+
+/** A panel state with default values removed from its grid sections */
+export type GridPanelStateWithoutDefaults<T extends GridPanelStateSections> =
+  Omit<T, keyof GridPanelStateSections> & {
+    irisGridState?: Partial<DehydratedIrisGridState>;
+    gridState?: Partial<DehydratedGridState>;
+    irisGridPanelState?: Partial<DehydratedIrisGridPanelState>;
+  };
+
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object.
@@ -554,6 +572,62 @@ class IrisGridUtils {
       irisGridPanelState,
       IRIS_GRID_PANEL_STATE_DEFAULTS
     );
+  }
+
+  /**
+   * Remove default values from every grid section of a panel's state
+   * (`irisGridState`, `gridState` and `irisGridPanelState`), using the matching
+   * `remove*Defaults` function. Restore them with `restorePanelStateDefaults`.
+   *
+   * Sections that are missing stay missing, and a section with only default
+   * values becomes `{}` rather than being removed, so restoring never adds a
+   * section the panel didn't store. Other keys (e.g. `pluginState`) are kept
+   * as-is. See `removeIrisGridStateDefaults` for usage restrictions.
+   * @param panelState Panel state containing any of the grid sections
+   * @returns A new panel state without default values; the input is not modified
+   */
+  static removePanelStateDefaults<T extends GridPanelStateSections>(
+    panelState: T
+  ): GridPanelStateWithoutDefaults<T> {
+    const { irisGridState, gridState, irisGridPanelState } = panelState;
+    const result: Record<string, unknown> = { ...panelState };
+    if (irisGridState != null) {
+      result.irisGridState =
+        IrisGridUtils.removeIrisGridStateDefaults(irisGridState);
+    }
+    if (gridState != null) {
+      result.gridState = IrisGridUtils.removeGridStateDefaults(gridState);
+    }
+    if (irisGridPanelState != null) {
+      result.irisGridPanelState =
+        IrisGridUtils.removeIrisGridPanelStateDefaults(irisGridPanelState);
+    }
+    return result as GridPanelStateWithoutDefaults<T>;
+  }
+
+  /**
+   * Restore the default values removed by `removePanelStateDefaults` in every
+   * grid section that is present. Missing sections are not added.
+   * @param panelState Panel state, with or without defaults
+   * @returns A new panel state with default values filled in; the input is not modified
+   */
+  static restorePanelStateDefaults<T extends GridPanelStateSections>(
+    panelState: GridPanelStateWithoutDefaults<T>
+  ): T {
+    const { irisGridState, gridState, irisGridPanelState } = panelState;
+    const result: Record<string, unknown> = { ...panelState };
+    if (irisGridState != null) {
+      result.irisGridState =
+        IrisGridUtils.restoreIrisGridStateDefaults(irisGridState);
+    }
+    if (gridState != null) {
+      result.gridState = IrisGridUtils.restoreGridStateDefaults(gridState);
+    }
+    if (irisGridPanelState != null) {
+      result.irisGridPanelState =
+        IrisGridUtils.restoreIrisGridPanelStateDefaults(irisGridPanelState);
+    }
+    return result as T;
   }
 
   /**
