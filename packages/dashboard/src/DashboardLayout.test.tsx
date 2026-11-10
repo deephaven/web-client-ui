@@ -5,7 +5,7 @@ import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type LayoutManager } from '@deephaven/golden-layout';
 import Dashboard from './Dashboard';
 import { type DashboardLayoutConfig } from './DashboardLayout';
-import { useDashboardPanel } from './layout';
+import { LayoutUtils, useDashboardPanel } from './layout';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
@@ -378,5 +378,96 @@ describe('replacing a layout with a pending save', () => {
     unmount();
 
     expect(savedTitles()).toEqual([]);
+  });
+});
+
+describe('layouts stored without defaults', () => {
+  const makePanel = (name: string) => ({
+    type: 'react-component' as const,
+    component: TestPanel.displayName,
+    props: { metadata: { type: 'test', name } },
+    title: name,
+  });
+
+  const initialLayoutConfig: DashboardLayoutConfig = [
+    {
+      type: 'column',
+      content: [
+        {
+          type: 'stack',
+          height: 50,
+          content: [makePanel('a'), makePanel('b')],
+        },
+        {
+          type: 'row',
+          content: [
+            { type: 'stack', width: 40, content: [makePanel('c')] },
+            { type: 'stack', width: 60, content: [makePanel('d')] },
+          ],
+        },
+      ],
+    },
+  ];
+
+  /**
+   * Loads a layout into golden-layout and returns the first dehydrated layout
+   * it saves, i.e. what is compared with the stored layout after loading
+   */
+  async function loadAndGetSavedLayout(
+    layoutConfig: DashboardLayoutConfig
+  ): Promise<DashboardLayoutConfig> {
+    const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
+    const { unmount } = render(
+      <ApiContext.Provider value={dh}>
+        <Dashboard
+          layoutConfig={layoutConfig}
+          onLayoutConfigChange={onLayoutConfigChange}
+        >
+          <TestPlugin />
+        </Dashboard>
+      </ApiContext.Provider>
+    );
+    await waitFor(() => expect(onLayoutConfigChange).toHaveBeenCalled());
+    const [[savedLayoutConfig]] = onLayoutConfigChange.mock.calls;
+    unmount();
+    return savedLayoutConfig;
+  }
+
+  it('saves the restored layout when loaded with defaults removed', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const storedLayoutConfig =
+      LayoutUtils.removeLayoutConfigDefaults(savedLayoutConfig);
+    expect(JSON.stringify(storedLayoutConfig).length).toBeLessThan(
+      JSON.stringify(savedLayoutConfig).length
+    );
+
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(
+      storedLayoutConfig
+    );
+
+    expect(
+      LayoutUtils.isEqual(
+        reloadedLayoutConfig,
+        LayoutUtils.restoreLayoutConfigDefaults(storedLayoutConfig)
+      )
+    ).toBe(true);
+    expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
+      true
+    );
+  });
+
+  it('saves an identical layout when loaded with defaults restored', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const restoredLayoutConfig = LayoutUtils.restoreLayoutConfigDefaults(
+      LayoutUtils.removeLayoutConfigDefaults(savedLayoutConfig)
+    );
+
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(
+      restoredLayoutConfig
+    );
+
+    expect(
+      LayoutUtils.isEqual(reloadedLayoutConfig, restoredLayoutConfig)
+    ).toBe(true);
   });
 });
