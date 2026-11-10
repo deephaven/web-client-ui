@@ -87,7 +87,7 @@ Behavior, per call:
 - Add an optional `downloadOptions?: DownloadOptions` field to `LoadModuleOptions`.
 - `loadModules` passes it to every `downloadFromURL(url, downloadOptions)` call.
 - `loadDhModules` accepts `downloadOptions` in its `Pick<...>` and passes it to `loadModules`.
-- Any `HttpError` for `jsapi/dh-internal.js` becomes `''` (previously only 404). Proxies and auth layers can answer a missing file with 403/500, which used to resolve with the body. Every other error, including `UntrustedUrlError`, `DownloadTimeoutError` and abort reasons, reaches `errorTransform` and is rethrown by `loadDhModules`.
+- The existing 404 → `''` handling for `jsapi/dh-internal.js` stays. Every other error, including `UntrustedUrlError`, `DownloadTimeoutError` and abort reasons, reaches `errorTransform` and is rethrown by `loadDhModules`.
 - If `signal` is aborted by the time the downloads settle, nothing is transformed or written: if `signal?.aborted`, throw `signal.reason` before calling `errorTransform` / `download` transforms. (`throwIfAborted` isn't used because `engines.node` is `>=16`.)
 
 ### `@deephaven/jsapi-utils` — `src/AuthUtils.ts`
@@ -165,7 +165,7 @@ export async function fetchAuthHandlers(
 - [x] An already-aborted signal rejects without a request
 - [x] An `isTrustedUrl` that throws for a redirect target rejects the download instead of throwing uncaught
 - [x] A failed redirect target logs `'Retrying url:'` with the original URL and retries it
-- [x] `loadDhModules` treats a 403 for `dh-internal.js` as missing (`node-tests`)
+- [x] `loadDhModules` treats a 404 for `dh-internal.js` as missing (`node-tests`)
 - [x] `loadModules` doesn't call `errorTransform` once aborted (`node-tests`)
 - [x] `retries: 2, retryDelayMs: 10` against `ECONNREFUSED` rejects within 500ms after 3 attempts
 - [x] A custom `logger.error` receives the retry messages, and `console.error` is not called

@@ -85,12 +85,12 @@ async function withServer(handler, callback) {
   }
 }
 
-test('loadDhModules treats a non-404 error for dh-internal.js as missing', async () => {
+test('loadDhModules treats a 404 for dh-internal.js as missing', async () => {
   await withServer(
     (req, res) => {
       if (req.url === '/jsapi/dh-internal.js') {
-        res.statusCode = 403;
-        res.end('forbidden');
+        res.statusCode = 404;
+        res.end();
         return;
       }
       res.end('export default 44;');

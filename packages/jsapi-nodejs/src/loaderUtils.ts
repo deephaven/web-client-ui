@@ -192,13 +192,17 @@ export async function loadDhModules({
 
   // `dh-internal.js` module is being removed from future versions of DH core,
   // but there's not a great way for this library to know whether it's present
-  // or not. Treat any HTTP error status as empty content, since proxies and
-  // auth layers may answer a missing file with something other than 404.
+  // or not. Treat 404s as empty content to make things compatible with both
+  // configurations.
   const errorTransform: PostDownloadErrorTransform = (
     serverPath: string,
     error: unknown
   ): string => {
-    if (serverPath === DH_INTERNAL_MODULE && error instanceof HttpError) {
+    if (
+      serverPath === DH_INTERNAL_MODULE &&
+      error instanceof HttpError &&
+      error.statusCode === 404
+    ) {
       return '';
     }
 
