@@ -535,9 +535,10 @@ class IrisGridTableModelTemplate<
     // offset is first row of loaded data
     const pendingTop = this.viewport.top < this.viewportData.offset;
     // offset + row.length is last row of loaded data
+    // The viewport bottom is not limited by the data size, so rows past the end of the table can never load
     const pendingBottom =
       this.viewportData.offset + this.viewportData.rows.length <
-      this.viewport.bottom;
+      Math.min(this.viewport.bottom, Math.max(this.table.size, 0));
     // left column doesn't exist in data
     const pendingLeft =
       this.viewportData.rows[0].data.get(this.viewport.columns[0].index) ===
