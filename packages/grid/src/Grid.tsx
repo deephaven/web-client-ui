@@ -103,6 +103,21 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   backingStorePixelRatio?: number;
 };
 
+/** The inputs the current metrics were calculated from */
+type GridMetricsSource = {
+  state: GridState;
+  metricState: GridMetricState;
+  metricCalculator: GridMetricCalculator;
+};
+
+function isShallowEqual<T extends object>(a: T, b: T): boolean {
+  const aKeys = Object.keys(a) as (keyof T)[];
+  if (aKeys.length !== Object.keys(b).length) {
+    return false;
+  }
+  return aKeys.every(key => a[key] === b[key]);
+}
+
 export type GridProps = typeof Grid.defaultProps & {
   // Children to render in the grid
   children?: ReactNode;
@@ -412,6 +427,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   prevMetrics: GridMetrics | null;
 
   metrics: GridMetrics | null;
+
+  private metricsSource: GridMetricsSource | null = null;
 
   private renderState: GridRenderState | null;
 
@@ -1014,7 +1031,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   updateCanvas(): void {
     this.updateCanvasScale();
 
-    this.updateMetrics();
+    this.updateMetricsIfChanged();
 
     this.updateRenderState();
 
@@ -1103,11 +1120,42 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   updateMetrics(state = this.state): GridMetrics {
+    return this.calculateMetrics(state, this.getMetricState(state));
+  }
+
+  /**
+   * Update the metrics only if the state or metric inputs have changed since they were last calculated.
+   * componentDidUpdate already calculates the metrics for the state the next animation frame draws,
+   * so this avoids calculating them a second time when drawing.
+   * Calculator or model changes that don't change any of the inputs must call `updateMetrics` or `forceUpdate`.
+   */
+  private updateMetricsIfChanged(): GridMetrics {
+    const { metrics, metricsSource, metricCalculator, state } = this;
+    const metricState = this.getMetricState(state);
+    if (
+      metrics != null &&
+      metricsSource != null &&
+      metricsSource.metricCalculator === metricCalculator &&
+      isShallowEqual(metricsSource.state, state) &&
+      isShallowEqual(metricsSource.metricState, metricState)
+    ) {
+      this.prevMetrics = metrics;
+      this.updateScrollBounds();
+      return metrics;
+    }
+    return this.calculateMetrics(state, metricState);
+  }
+
+  private calculateMetrics(
+    state: GridState,
+    metricState: GridMetricState
+  ): GridMetrics {
     this.prevMetrics = this.metrics;
 
     const { metricCalculator } = this;
-    const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
+    // Copy the state as componentDidUpdate mutates it after calculating metrics
+    this.metricsSource = { state: { ...state }, metricState, metricCalculator };
     this.updateScrollBounds();
 
     return this.metrics;

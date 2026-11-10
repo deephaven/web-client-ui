@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
 import GridRange from './GridRange';
+import GridMetricCalculator from './GridMetricCalculator';
 import GridRenderer from './GridRenderer';
 import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
@@ -1815,5 +1816,82 @@ describe('css transform scale', () => {
     } as MouseEvent);
     expect(point.column).toBe(0);
     expect(point.row).toBe(0);
+  });
+});
+
+describe('metrics memoization', () => {
+  function makeSpiedGrid() {
+    const component = makeGridComponent();
+    const getMetrics = jest.spyOn(component.metricCalculator, 'getMetrics');
+    return { component, getMetrics };
+  }
+
+  it('does not recalculate metrics when drawing the state componentDidUpdate calculated', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    act(() => component.setState({ top: 5 }));
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    const { metrics } = component;
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(component.metrics).toBe(metrics);
+    expect(component.prevMetrics).toBe(metrics);
+  });
+
+  it('calculates metrics once per forced update', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateCanvas();
+    expect(getMetrics).not.toHaveBeenCalled();
+
+    act(() => component.forceUpdate());
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+  });
+
+  it('recalculates metrics when drawing a different state than was calculated', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateMetrics({ ...component.state, top: 3 });
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(2);
+    expect(getMetrics).toHaveBeenLastCalledWith(
+      expect.objectContaining({ top: 0 })
+    );
+  });
+
+  it('recalculates metrics when the canvas size changes', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+    jest
+      .spyOn(component.canvas as HTMLCanvasElement, 'clientWidth', 'get')
+      .mockReturnValue(VIEW_SIZE / 2);
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(getMetrics).toHaveBeenLastCalledWith(
+      expect.objectContaining({ width: VIEW_SIZE / 2 })
+    );
+  });
+
+  it('recalculates metrics when the metric calculator changes', () => {
+    const { component } = makeSpiedGrid();
+    const metricCalculator = new GridMetricCalculator();
+    const getMetrics = jest.spyOn(metricCalculator, 'getMetrics');
+    component.metricCalculator = metricCalculator;
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+  });
+
+  it('always recalculates metrics when updateMetrics is called directly', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateMetrics();
+    component.updateMetrics();
+    expect(getMetrics).toHaveBeenCalledTimes(2);
   });
 });
