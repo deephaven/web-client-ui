@@ -1147,6 +1147,12 @@ class IrisGridTableModelTemplate<
     }
 
     const { columns, rows } = totalsData;
+    // Totals with no groupBy over an empty table return zero rows
+    if (rows.length === 0) {
+      this.totalsDataMap = new Map();
+      this.formattedStringData = [];
+      return;
+    }
     if (rows.length !== 1) {
       log.error(
         'Unexpected number of rows received for totals table, ignoring update'
