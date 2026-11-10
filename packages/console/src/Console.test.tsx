@@ -1,6 +1,6 @@
 import React from 'react';
 import dh from '@deephaven/jsapi-shim';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Console } from './Console';
 import { type CommandHistoryStorage } from './command-history';
@@ -67,4 +67,89 @@ it('Handles arrow to prev item and back to blank', async () => {
 
   await user.keyboard('[ArrowDown]');
   expect(screen.queryByText('A')).not.toBeInTheDocument();
+});
+
+describe('stick to bottom', () => {
+  function setScrollDimensions(
+    element: HTMLElement,
+    {
+      scrollHeight,
+      clientHeight,
+      scrollTop,
+    }: { scrollHeight: number; clientHeight: number; scrollTop: number }
+  ) {
+    Object.defineProperty(element, 'scrollHeight', {
+      configurable: true,
+      value: scrollHeight,
+    });
+    Object.defineProperty(element, 'clientHeight', {
+      configurable: true,
+      value: clientHeight,
+    });
+    Object.defineProperty(element, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: scrollTop,
+    });
+  }
+
+  function setupAtBottom() {
+    const consoleRef = React.createRef<Console>();
+    makeConsoleWrapper(consoleRef);
+    const consoleComponent = consoleRef.current!;
+    const scrollPane = consoleComponent.consoleHistoryScrollPane.current!;
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 500,
+      clientHeight: 200,
+      scrollTop: 300,
+    });
+    fireEvent.scroll(scrollPane);
+    expect(consoleComponent.state.isStuckToBottom).toBe(true);
+    return { consoleComponent, scrollPane };
+  }
+
+  it('stays stuck to the bottom when a scroll event arrives after the content grew', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 300,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(true);
+  });
+
+  it('unsticks from the bottom when the user scrolls up', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 500,
+      clientHeight: 200,
+      scrollTop: 100,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(false);
+  });
+
+  it('stays unstuck when the content grows after the user scrolled up', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 500,
+      clientHeight: 200,
+      scrollTop: 100,
+    });
+    fireEvent.scroll(scrollPane);
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 100,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(false);
+  });
 });
