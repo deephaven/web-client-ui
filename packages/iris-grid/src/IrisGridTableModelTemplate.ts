@@ -159,6 +159,8 @@ class IrisGridTableModelTemplate<
     columns?: DhType.Column[];
   } | null;
 
+  private staleViewportTableColumns: readonly DhType.Column[] | null = null;
+
   viewportData: UIViewportData<R> | null;
 
   formattedStringData: (string | null)[][];
@@ -1231,6 +1233,34 @@ class IrisGridTableModelTemplate<
     return { data } as R;
   }
 
+  /**
+   * Column objects belong to the table state they were read from. After an operation that
+   * changes the table's columns, the API subscribes against the new state while `table.columns`
+   * still returns the previous state's columns, so their indexes may not exist in the new
+   * subscription. Subscribe to all columns until the viewport is set with the new state's columns.
+   */
+  invalidateViewportColumns(): void {
+    this.staleViewportTableColumns = this.table.columns;
+  }
+
+  getSubscriptionColumns(
+    columns: DhType.Column[] | undefined
+  ): DhType.Column[] | undefined {
+    const { staleViewportTableColumns } = this;
+    if (columns == null || staleViewportTableColumns == null) {
+      return columns;
+    }
+    const tableColumns = this.table.columns;
+    if (
+      tableColumns === staleViewportTableColumns ||
+      !columns.every(column => tableColumns.includes(column))
+    ) {
+      return undefined;
+    }
+    this.staleViewportTableColumns = null;
+    return columns;
+  }
+
   closeSubscription(): void {
     log.debug2('closeSubscription', this.subscription);
     if (this.subscription) {
@@ -1408,7 +1438,11 @@ class IrisGridTableModelTemplate<
         top,
         bottom
       );
-      this.applyBufferedViewport(viewportTop, viewportBottom, columns);
+      this.applyBufferedViewport(
+        viewportTop,
+        viewportBottom,
+        this.getSubscriptionColumns(columns)
+      );
     },
     APPLY_VIEWPORT_THROTTLE,
     { leading: false }
