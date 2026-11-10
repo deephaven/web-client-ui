@@ -1895,3 +1895,31 @@ describe('metrics memoization', () => {
     expect(getMetrics).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('theme', () => {
+  it('keeps a stable theme per grid when grids use different themes', () => {
+    const grid1 = makeGridComponent(new MockGridModel(), {
+      ...defaultTheme,
+      rowHeight: 10,
+    });
+    const grid2 = makeGridComponent(new MockGridModel(), {
+      ...defaultTheme,
+      rowHeight: 20,
+    });
+
+    const theme1 = grid1.getTheme();
+    const theme2 = grid2.getTheme();
+    expect(theme1.rowHeight).toBe(10);
+    expect(theme2.rowHeight).toBe(20);
+    expect(grid1.getTheme()).toBe(theme1);
+    expect(grid2.getTheme()).toBe(theme2);
+  });
+
+  it('shares the theme between grids with the same theme', () => {
+    const theme = { ...defaultTheme, rowHeight: 30 };
+    const grid1 = makeGridComponent(new MockGridModel(), theme);
+    const grid2 = makeGridComponent(new MockGridModel(), theme);
+
+    expect(grid1.getTheme()).toBe(grid2.getTheme());
+  });
+});
