@@ -1,4 +1,3 @@
-import deepEqual from 'fast-deep-equal';
 import {
   type GridMetrics,
   type GridRange,
@@ -25,6 +24,8 @@ import {
   EMPTY_ARRAY,
   EMPTY_MAP,
   isNotNullOrUndefined,
+  removeDefaultValues,
+  restoreDefaultValues,
 } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -313,34 +314,6 @@ export const IRIS_GRID_PANEL_STATE_DEFAULTS: Readonly<DehydratedIrisGridPanelSta
     ),
   });
 
-function removeStateDefaults<T extends object>(
-  state: T,
-  defaults: Readonly<Partial<T>>
-): Partial<T> {
-  const result: Partial<T> = { ...state };
-  (Object.keys(defaults) as (keyof T)[]).forEach(key => {
-    if (deepEqual(state[key], defaults[key])) {
-      delete result[key];
-    }
-  });
-  return result;
-}
-
-function restoreStateDefaults<T extends object>(
-  state: Partial<T>,
-  defaults: Readonly<Partial<T>>,
-  skipKeys: readonly string[] = []
-): T {
-  const result: Partial<T> = { ...state };
-  (Object.keys(defaults) as (keyof T & string)[]).forEach(key => {
-    if (result[key] === undefined && !skipKeys.includes(key)) {
-      // Copy so restored states never share or mutate the default values
-      result[key] = JSON.parse(JSON.stringify(defaults[key]));
-    }
-  });
-  return result as T;
-}
-
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object.
@@ -503,7 +476,7 @@ class IrisGridUtils {
   static removeIrisGridStateDefaults(
     irisGridState: DehydratedIrisGridState
   ): Partial<DehydratedIrisGridState> {
-    return removeStateDefaults(irisGridState, IRIS_GRID_STATE_DEFAULTS);
+    return removeDefaultValues(irisGridState, IRIS_GRID_STATE_DEFAULTS);
   }
 
   /**
@@ -515,7 +488,7 @@ class IrisGridUtils {
   static restoreIrisGridStateDefaults(
     irisGridState: Partial<DehydratedIrisGridState>
   ): DehydratedIrisGridState {
-    return restoreStateDefaults(irisGridState, IRIS_GRID_STATE_DEFAULTS);
+    return restoreDefaultValues(irisGridState, IRIS_GRID_STATE_DEFAULTS);
   }
 
   /**
@@ -527,7 +500,7 @@ class IrisGridUtils {
   static removeGridStateDefaults(
     gridState: DehydratedGridState
   ): Partial<DehydratedGridState> {
-    return removeStateDefaults(gridState, GRID_STATE_DEFAULTS);
+    return removeDefaultValues(gridState, GRID_STATE_DEFAULTS);
   }
 
   /**
@@ -538,7 +511,7 @@ class IrisGridUtils {
   static restoreGridStateDefaults(
     gridState: Partial<DehydratedGridState>
   ): DehydratedGridState {
-    return restoreStateDefaults(gridState, GRID_STATE_DEFAULTS);
+    return restoreDefaultValues(gridState, GRID_STATE_DEFAULTS);
   }
 
   /**
@@ -551,7 +524,7 @@ class IrisGridUtils {
   static removeIrisGridPanelStateDefaults(
     irisGridPanelState: DehydratedIrisGridPanelState
   ): Partial<DehydratedIrisGridPanelState> {
-    return removeStateDefaults<DehydratedIrisGridPanelState>(
+    return removeDefaultValues<DehydratedIrisGridPanelState>(
       irisGridPanelState,
       IRIS_GRID_PANEL_STATE_DEFAULTS
     );
@@ -570,10 +543,16 @@ class IrisGridUtils {
     const isV1 =
       (irisGridPanelState as Partial<DehydratedIrisGridPanelStateV1>)
         .partition !== undefined;
-    return restoreStateDefaults<DehydratedIrisGridPanelState>(
+    if (isV1) {
+      const { partitions, ...v1Defaults } = IRIS_GRID_PANEL_STATE_DEFAULTS;
+      return restoreDefaultValues<DehydratedIrisGridPanelState>(
+        irisGridPanelState,
+        v1Defaults
+      );
+    }
+    return restoreDefaultValues<DehydratedIrisGridPanelState>(
       irisGridPanelState,
-      IRIS_GRID_PANEL_STATE_DEFAULTS,
-      isV1 ? ['partitions'] : []
+      IRIS_GRID_PANEL_STATE_DEFAULTS
     );
   }
 
