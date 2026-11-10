@@ -248,27 +248,48 @@ describe('downloadFromURL', () => {
     });
 
     it('cancels a pending retry', async () => {
+      // Aborting rejects immediately whether or not the retry timer is
+      // cleared, so the rejection alone doesn't prove cancellation. Instead,
+      // abort after the first failure has scheduled its retry, then assert
+      // that this timer was passed to clearTimeout.
       const url = await getRefusedUrl();
       const controller = new AbortController();
-      const start = Date.now();
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+      const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+      const logger = {
+        error: jest.fn((msg: unknown) => {
+          if (msg === 'Retrying url:') {
+            // Abort once the retry delay has been scheduled.
+            queueMicrotask(() => controller.abort(new Error('stop')));
+          }
+        }),
+      };
 
-      const result = downloadFromURL(url, {
-        retries: 5,
-        retryDelayMs: 1000,
-        signal: controller.signal,
-        logger: silentLogger,
-      });
-      setTimeout(() => controller.abort(new Error('stop')), 20);
+      await expect(
+        downloadFromURL(url, {
+          retries: 5,
+          retryDelayMs: 60_000,
+          signal: controller.signal,
+          logger,
+        })
+      ).rejects.toThrow('stop');
 
-      await expect(result).rejects.toThrow('stop');
-      expect(Date.now() - start).toBeLessThan(200);
-      expect(silentLogger.error).toHaveBeenCalledTimes(1);
+      const retryTimerIndex = setTimeoutSpy.mock.calls.findIndex(
+        ([, delay]) => delay === 60_000
+      );
+      expect(retryTimerIndex).not.toBe(-1);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(
+        setTimeoutSpy.mock.results[retryTimerIndex].value
+      );
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
     });
   });
 
   it('retries network errors with the configured count and delay', async () => {
     const url = await getRefusedUrl();
-    const start = Date.now();
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
 
     await expect(
       downloadFromURL(url, {
@@ -277,11 +298,13 @@ describe('downloadFromURL', () => {
         logger: silentLogger,
       })
     ).rejects.toMatchObject({ code: 'ECONNREFUSED' });
-    expect(Date.now() - start).toBeLessThan(500);
-    expect(silentLogger.error).toHaveBeenCalledWith('Retrying url:', url);
+    expect(
+      setTimeoutSpy.mock.calls.filter(([, delay]) => delay === 10)
+    ).toHaveLength(2);
     expect(
       silentLogger.error.mock.calls.filter(([msg]) => msg === 'Retrying url:')
     ).toHaveLength(2);
+    setTimeoutSpy.mockRestore();
   });
 
   it('logs to the given logger instead of console', async () => {
