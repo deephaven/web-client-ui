@@ -158,7 +158,7 @@ import { DEFAULT_REGISTRY, IrisGridContext } from './IrisGridContextProvider';
 import IrisGridModel from './IrisGridModel';
 import { isKeyedGridModel } from './KeyedGridModel';
 import { KeyedSelection, type GetKeyedModel } from './KeyedSelection';
-import IrisGridUtils from './IrisGridUtils';
+import IrisGridUtils, { DEFAULT_AGGREGATION_SETTINGS } from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
 import {
   isPartitionedGridModel,
@@ -219,11 +219,6 @@ const SET_FILTER_DEBOUNCE = 250;
 const SEEK_ROW_DEBOUNCE = 250;
 
 const SET_CONDITIONAL_FORMAT_DEBOUNCE = 250;
-
-const DEFAULT_AGGREGATION_SETTINGS = Object.freeze({
-  aggregations: EMPTY_ARRAY,
-  showOnTop: false,
-});
 
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 

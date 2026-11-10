@@ -14,10 +14,16 @@ import { type FilterData } from './IrisGrid';
 import { IrisGridMetricCalculator } from './IrisGridMetricCalculator';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
+  type DehydratedGridState,
+  type DehydratedIrisGridState,
   type DehydratedSort,
+  GRID_STATE_DEFAULTS,
+  IRIS_GRID_PANEL_STATE_DEFAULTS,
+  IRIS_GRID_STATE_DEFAULTS,
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
+import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type Aggregation } from './sidebar/aggregations/Aggregations';
 import {
@@ -1315,6 +1321,202 @@ describe('migrateConditionalFormattingRule', () => {
         rightHandValue: 'baz',
         style,
       },
+    });
+  });
+});
+
+describe('remove/restore state defaults', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
+  /** A dehydrated IrisGrid state with every key, as produced by dehydrateIrisGridState */
+  function makeIrisGridState(): DehydratedIrisGridState {
+    return {
+      advancedFilters: [],
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      customColumnFormatMap: [],
+      columnAlignmentMap: [],
+      isFilterBarShown: true,
+      quickFilters: [[1, { text: 'foo' }]],
+      sorts: [{ column: 'name_0', direction: 'ASC', isAbs: false }],
+      userColumnWidths: [['name_2', 150]],
+      userRowHeights: [],
+      customColumns: [],
+      conditionalFormats: [],
+      reverse: false,
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      invertSearchColumns: true,
+      pendingDataMap: [],
+      frozenColumns: [],
+      columnHeaderGroups: [],
+    };
+  }
+
+  function makeGridState(): DehydratedGridState {
+    return {
+      isStuckToBottom: true,
+      isStuckToRight: false,
+      movedColumns: [],
+      movedRows: [],
+    };
+  }
+
+  describe('IrisGrid state', () => {
+    it('removes only default values', () => {
+      expect(
+        IrisGridUtils.removeIrisGridStateDefaults(makeIrisGridState())
+      ).toEqual({
+        isFilterBarShown: true,
+        quickFilters: [[1, { text: 'foo' }]],
+        sorts: [{ column: 'name_0', direction: 'ASC', isAbs: false }],
+        userColumnWidths: [['name_2', 150]],
+        frozenColumns: [],
+        columnHeaderGroups: [],
+      });
+    });
+
+    it('restores a state without defaults to its original value', () => {
+      expect(
+        IrisGridUtils.restoreIrisGridStateDefaults(
+          IrisGridUtils.removeIrisGridStateDefaults(makeIrisGridState())
+        )
+      ).toEqual(makeIrisGridState());
+    });
+
+    it('leaves a full state unchanged', () => {
+      expect(
+        IrisGridUtils.restoreIrisGridStateDefaults(makeIrisGridState())
+      ).toEqual(makeIrisGridState());
+    });
+
+    it('does not modify the input', () => {
+      const state = makeIrisGridState();
+      IrisGridUtils.removeIrisGridStateDefaults(state);
+      expect(state).toEqual(makeIrisGridState());
+
+      const removed = IrisGridUtils.removeIrisGridStateDefaults(state);
+      const copy = JSON.parse(JSON.stringify(removed));
+      IrisGridUtils.restoreIrisGridStateDefaults(removed);
+      expect(removed).toEqual(copy);
+    });
+
+    it('does not share default values between restored states', () => {
+      const restored = IrisGridUtils.restoreIrisGridStateDefaults({});
+      expect(restored.aggregationSettings).not.toBe(
+        IRIS_GRID_STATE_DEFAULTS.aggregationSettings
+      );
+      expect(restored.sorts).not.toBe(
+        IrisGridUtils.restoreIrisGridStateDefaults({}).sorts
+      );
+    });
+
+    it('matches the state dehydrated from an unmodified grid', () => {
+      const restored = IrisGridUtils.restoreIrisGridStateDefaults({});
+      const hydrated = irisGridUtils.hydrateIrisGridState(model, restored);
+      const dehydrated = irisGridUtils.dehydrateIrisGridState(model, {
+        ...hydrated,
+        metrics: {
+          userColumnWidths: hydrated.userColumnWidths,
+          userRowHeights: hydrated.userRowHeights,
+        },
+      });
+      expect(
+        IrisGridUtils.removeIrisGridStateDefaults(
+          JSON.parse(JSON.stringify(dehydrated))
+        )
+      ).toEqual({ columnHeaderGroups: [] });
+    });
+  });
+
+  describe('Grid state', () => {
+    it('removes only default values', () => {
+      expect(IrisGridUtils.removeGridStateDefaults(makeGridState())).toEqual({
+        isStuckToBottom: true,
+      });
+    });
+
+    it('restores a state without defaults to its original value', () => {
+      expect(
+        IrisGridUtils.restoreGridStateDefaults(
+          IrisGridUtils.removeGridStateDefaults(makeGridState())
+        )
+      ).toEqual(makeGridState());
+    });
+
+    it('matches the state dehydrated from an unmodified grid', () => {
+      const restored = IrisGridUtils.restoreGridStateDefaults({});
+      expect(
+        IrisGridUtils.dehydrateGridState(
+          model,
+          IrisGridUtils.hydrateGridState(model, restored)
+        )
+      ).toEqual(GRID_STATE_DEFAULTS);
+    });
+  });
+
+  describe('IrisGridPanel state', () => {
+    it('removes only default values', () => {
+      expect(
+        IrisGridUtils.removeIrisGridPanelStateDefaults({
+          ...IRIS_GRID_PANEL_STATE_DEFAULTS,
+          partitions: ['a'],
+        })
+      ).toEqual({ partitions: ['a'] });
+    });
+
+    it('keeps advanced settings that differ from the defaults', () => {
+      const advancedSettings =
+        IRIS_GRID_PANEL_STATE_DEFAULTS.advancedSettings.map(
+          ([key]): [AdvancedSettingsType, boolean] => [key, true]
+        );
+      expect(
+        IrisGridUtils.removeIrisGridPanelStateDefaults({
+          ...IRIS_GRID_PANEL_STATE_DEFAULTS,
+          advancedSettings,
+        })
+      ).toEqual({ advancedSettings });
+    });
+
+    it('restores a state without defaults to its original value', () => {
+      const state = {
+        isSelectingPartition: true,
+        partitions: ['a'],
+        advancedSettings: IRIS_GRID_PANEL_STATE_DEFAULTS.advancedSettings,
+      };
+      expect(
+        IrisGridUtils.restoreIrisGridPanelStateDefaults(
+          IrisGridUtils.removeIrisGridPanelStateDefaults(state)
+        )
+      ).toEqual(state);
+    });
+
+    it('does not add partitions to V1 state', () => {
+      const state = { partition: 'a' };
+      const restored = IrisGridUtils.restoreIrisGridPanelStateDefaults(state);
+      expect(restored).toEqual({
+        isSelectingPartition: false,
+        partition: 'a',
+        advancedSettings: IRIS_GRID_PANEL_STATE_DEFAULTS.advancedSettings,
+      });
+      expect(
+        IrisGridUtils.hydrateIrisGridPanelState(model, restored).partitions
+      ).toEqual(['a']);
+    });
+
+    it('matches the state dehydrated from an unmodified panel', () => {
+      const restored = IrisGridUtils.restoreIrisGridPanelStateDefaults({});
+      expect(
+        IrisGridUtils.dehydrateIrisGridPanelState(
+          model,
+          IrisGridUtils.hydrateIrisGridPanelState(model, restored)
+        )
+      ).toEqual(IRIS_GRID_PANEL_STATE_DEFAULTS);
     });
   });
 });
