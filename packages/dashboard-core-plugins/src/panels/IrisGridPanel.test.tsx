@@ -2,7 +2,7 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { IrisGridModelFactory } from '@deephaven/iris-grid';
+import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -64,7 +64,8 @@ function makeIrisGridPanelWrapper(
   transformTableOptions:
     | ((defaults: readonly any[]) => readonly any[])
     | undefined = undefined,
-  transformModel: ((model: any) => any) | undefined = undefined
+  transformModel: ((model: any) => any) | undefined = undefined,
+  panelState: any = undefined
 ) {
   const panel = (
     <IrisGridPanel
@@ -77,7 +78,7 @@ function makeIrisGridPanelWrapper(
       links={links}
       workspace={workspace as Workspace}
       settings={settings}
-      panelState={undefined}
+      panelState={panelState}
       getDownloadWorker={() => undefined}
       loadPlugin={() => undefined}
       transformTableOptions={transformTableOptions}
@@ -289,4 +290,148 @@ it('closes the base model if transformModel rejects', async () => {
   await expectNotLoading(container);
   expect(transformModel).toHaveBeenCalledTimes(1);
   expect(baseModel.close).toHaveBeenCalledTimes(1);
+});
+
+describe('persisted custom columns hydration', () => {
+  function makePanelState(customColumns: readonly string[]) {
+    return {
+      gridState: {},
+      irisGridState: { customColumns },
+      irisGridPanelState: {},
+    } as any;
+  }
+
+  function renderPanel({
+    makeModel,
+    transformModel,
+    panelState,
+  }: {
+    makeModel: () => any;
+    transformModel?: (model: any) => any;
+    panelState?: any;
+  }) {
+    return makeIrisGridPanelWrapper(
+      makeModel,
+      ...Array(10).fill(undefined),
+      transformModel,
+      panelState
+    );
+  }
+
+  /**
+   * The mock table's `applyCustomColumns` doesn't emit the custom columns
+   * event, so fire it to let the model emit `COLUMNS_CHANGED`.
+   */
+  function stubApplyCustomColumns(table: any): jest.Mock {
+    const applied = jest.fn((customColumns: readonly string[]) => {
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+      return customColumns;
+    });
+    // eslint-disable-next-line no-param-reassign
+    table.applyCustomColumns = applied;
+    return applied;
+  }
+
+  beforeEach(() => {
+    MockIrisGrid.mockClear();
+  });
+
+  it('applies persisted custom columns before transformModel runs', async () => {
+    const table = makeTable();
+    const applyCustomColumns = stubApplyCustomColumns(table);
+    const customColumns = ['C=0*2'];
+    const transformModel = jest.fn((model: any) => model);
+
+    await act(async () => {
+      renderPanel({
+        makeModel: makeMakeModel(table),
+        transformModel,
+        panelState: makePanelState(customColumns),
+      });
+    });
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+
+    expect(applyCustomColumns).toHaveBeenCalledTimes(1);
+    expect(applyCustomColumns).toHaveBeenCalledWith(customColumns);
+    expect(applyCustomColumns.mock.invocationCallOrder[0]).toBeLessThan(
+      transformModel.mock.invocationCallOrder[0]
+    );
+    const lastProps =
+      MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
+    expect(lastProps.model.customColumns).toEqual(customColumns);
+  });
+
+  it('does not write custom columns when none are persisted', async () => {
+    const table = makeTable();
+    const applyCustomColumns = stubApplyCustomColumns(table);
+
+    await act(async () => {
+      renderPanel({
+        makeModel: makeMakeModel(table),
+        panelState: makePanelState([]),
+      });
+    });
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+
+    expect(applyCustomColumns).not.toHaveBeenCalled();
+  });
+
+  it('skips persisted custom columns when the model does not support them', async () => {
+    const table = makeTable();
+    const applyCustomColumns = stubApplyCustomColumns(table);
+    const makeModel = async () => {
+      const model = await makeMakeModel(table)();
+      Object.defineProperty(model, 'isCustomColumnsAvailable', {
+        get: () => false,
+      });
+      return model;
+    };
+
+    await act(async () => {
+      renderPanel({
+        makeModel,
+        panelState: makePanelState(['C=0*2']),
+      });
+    });
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+
+    expect(applyCustomColumns).not.toHaveBeenCalled();
+  });
+
+  it('shows an error when applying custom columns fails', async () => {
+    const table = makeTable();
+    const error = new Error('Bad custom column expression');
+    let model: any;
+    table.applyCustomColumns = jest.fn((cc: readonly string[]) => {
+      model.dispatchEvent(
+        new CustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, { detail: error })
+      );
+      return cc;
+    });
+    // The proxy model's `close()` closes the source table.
+    table.close = jest.fn();
+    const makeModel = async () => {
+      model = await makeMakeModel(table)();
+      return model;
+    };
+    const transformModel = jest.fn((m: any) => m);
+
+    const { container } = renderPanel({
+      makeModel,
+      transformModel,
+      panelState: makePanelState(['C=bad(']),
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'Unable to open table. Error: Bad custom column expression'
+        )
+      ).toBeTruthy()
+    );
+    await expectNotLoading(container);
+
+    expect(transformModel).not.toHaveBeenCalled();
+    expect(table.close).toHaveBeenCalledTimes(1);
+    expect(MockIrisGrid).not.toHaveBeenCalled();
+  });
 });

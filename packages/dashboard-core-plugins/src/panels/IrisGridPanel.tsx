@@ -571,25 +571,74 @@ export class IrisGridPanel extends PureComponent<
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    const modelPromise =
-      transformModel != null
-        ? Promise.resolve(makeModel()).then(async model => {
-            try {
-              const transformedModel = await transformModel(model);
-              return transformedModel;
-            } catch (e) {
-              // The host owns the base model's lifecycle; if the transform
-              // rejects it never returns a model for us to close, so close
-              // the base model here to avoid leaking it.
-              model.close();
-              throw e;
-            }
-          })
-        : Promise.resolve(makeModel());
+    const modelPromise = Promise.resolve(makeModel()).then(async model => {
+      try {
+        // Custom columns must exist before the transform so it sees the full
+        // source schema; other persisted model changes stay in `modelQueue`.
+        await this.hydrateCustomColumns(model);
+        return transformModel != null ? await transformModel(model) : model;
+      } catch (e) {
+        // The host owns the base model's lifecycle; if hydration or the
+        // transform rejects it never returns a model for us to close, so
+        // close the base model here to avoid leaking it.
+        model.close();
+        throw e;
+      }
+    });
     this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
       resolved.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
+  }
+
+  /**
+   * Apply persisted custom columns to the model and wait for the schema change.
+   * Rejects on `REQUEST_FAILED` (e.g. an invalid expression) so the panel shows
+   * an error instead of hanging.
+   * @param model The base model to apply custom columns to
+   */
+  hydrateCustomColumns(model: IrisGridModel): Promise<void> {
+    const { panelState, irisGridStateOverrides } = this.state;
+    if (panelState == null) {
+      return Promise.resolve();
+    }
+    const { customColumns } = {
+      ...panelState.irisGridState,
+      ...irisGridStateOverrides,
+    };
+    if (customColumns.length === 0 || !model.isCustomColumnsAvailable) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve, reject) => {
+      const cleanup = (): void => {
+        model.removeEventListener(
+          IrisGridModel.EVENT.COLUMNS_CHANGED,
+          handleColumnsChanged
+        );
+        model.removeEventListener(
+          IrisGridModel.EVENT.REQUEST_FAILED,
+          handleRequestFailed
+        );
+      };
+      function handleColumnsChanged(): void {
+        cleanup();
+        resolve();
+      }
+      function handleRequestFailed(event: EventT): void {
+        cleanup();
+        reject((event as CustomEvent).detail);
+      }
+      model.addEventListener(
+        IrisGridModel.EVENT.COLUMNS_CHANGED,
+        handleColumnsChanged
+      );
+      model.addEventListener(
+        IrisGridModel.EVENT.REQUEST_FAILED,
+        handleRequestFailed
+      );
+      // eslint-disable-next-line no-param-reassign
+      model.customColumns = customColumns;
+    });
   }
 
   handleLoadSuccess(modelParam: IrisGridModel): void {
@@ -611,17 +660,9 @@ export class IrisGridPanel extends PureComponent<
       const { irisGridState } = panelState;
       const {
         aggregationSettings,
-        customColumns,
         selectDistinctColumns = [],
         rollupConfig,
       } = { ...irisGridState, ...irisGridStateOverrides };
-
-      if (customColumns.length > 0) {
-        modelQueue.push(m => {
-          // eslint-disable-next-line no-param-reassign
-          m.customColumns = customColumns;
-        });
-      }
 
       if (rollupConfig != null && rollupConfig.columns.length > 0) {
         // originalColumns might change by the time this model queue item is applied.
