@@ -273,6 +273,14 @@ function getTableNameFromMetadata(
   );
 }
 
+function getTablePluginName(model: IrisGridModel): string | null {
+  if (!isIrisGridTableModelTemplate(model)) {
+    return null;
+  }
+  const { pluginName } = model.table;
+  return pluginName != null && pluginName !== '' ? pluginName : null;
+}
+
 export type IrisGridPanelProps = OwnProps & StateProps;
 
 export class IrisGridPanel extends PureComponent<
@@ -571,7 +579,11 @@ export class IrisGridPanel extends PureComponent<
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
+    let pluginName: string | null = null;
     const modelPromise = Promise.resolve(makeModel()).then(async model => {
+      // Read before hydrating custom columns, since updateView drops the
+      // PluginName attribute
+      pluginName = getTablePluginName(model);
       try {
         // Custom columns must exist before the transform so it sees the full
         // source schema; other persisted model changes stay in `modelQueue`.
@@ -588,7 +600,9 @@ export class IrisGridPanel extends PureComponent<
     this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
       resolved.close()
     );
-    this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
+    this.modelPromise
+      .then(model => this.handleLoadSuccess(model, pluginName))
+      .catch(this.handleLoadError);
   }
 
   /**
@@ -641,19 +655,18 @@ export class IrisGridPanel extends PureComponent<
     });
   }
 
-  handleLoadSuccess(modelParam: IrisGridModel): void {
+  handleLoadSuccess(
+    modelParam: IrisGridModel,
+    pluginName: string | null
+  ): void {
     const model = modelParam;
     const { loadPlugin } = this.props;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
     this.irisGridUtils = new IrisGridUtils(model.dh);
 
-    // Read before modelQueue runs, since updateView drops the PluginName attribute
-    if (isIrisGridTableModelTemplate(model)) {
-      const { pluginName } = model.table;
-      if (loadPlugin != null && pluginName != null && pluginName !== '') {
-        this.setState({ Plugin: loadPlugin(pluginName) });
-      }
+    if (loadPlugin != null && pluginName != null) {
+      this.setState({ Plugin: loadPlugin(pluginName) });
     }
 
     if (panelState != null) {
