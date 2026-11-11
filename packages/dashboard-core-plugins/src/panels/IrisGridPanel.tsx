@@ -604,6 +604,9 @@ export class IrisGridPanel extends PureComponent<
         // source schema; other persisted model changes stay in `modelQueue`.
         hydrationPromise = this.hydrateCustomColumns(model);
         await hydrationPromise;
+        if (isCanceled) {
+          throw new CanceledPromiseError();
+        }
         return transformModel != null ? await transformModel(model) : model;
       } catch (e) {
         // The host owns the base model's lifecycle; if hydration or the

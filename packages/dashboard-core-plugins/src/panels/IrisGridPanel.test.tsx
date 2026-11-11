@@ -545,4 +545,34 @@ describe('persisted custom columns hydration', () => {
     expect(applyCustomColumns).not.toHaveBeenCalled();
     expect(transformModel).not.toHaveBeenCalled();
   });
+
+  it('does not start the transform when canceled as hydration completes', async () => {
+    const table = makeTable();
+    table.close = jest.fn();
+    let model: any;
+    let unmount: () => void = () => undefined;
+    table.applyCustomColumns = jest.fn((cc: readonly string[]) => {
+      // Registered after the hydration listener, so the load is canceled after
+      // hydration resolves but before the transform starts.
+      model.addEventListener(IrisGridModel.EVENT.COLUMNS_CHANGED, () =>
+        unmount()
+      );
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+      return cc;
+    });
+    const makeModel = async () => {
+      model = await makeMakeModel(table)();
+      return model;
+    };
+    const transformModel = jest.fn((m: any) => m);
+
+    ({ unmount } = renderPanel({
+      makeModel,
+      transformModel,
+      panelState: makePanelState(['C=0*2']),
+    }));
+
+    await waitFor(() => expect(table.close).toHaveBeenCalledTimes(1));
+    expect(transformModel).not.toHaveBeenCalled();
+  });
 });
