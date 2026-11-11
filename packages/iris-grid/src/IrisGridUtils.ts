@@ -372,18 +372,19 @@ class IrisGridUtils {
   }
 
   /**
-   * Import a state for Grid that was exported with {{@link dehydrateGridState}}
+   * Import a state for Grid that was exported with {{@link dehydrateGridState}}.
+   * Keys missing from the state use the values in `GRID_STATE_DEFAULTS`.
    * @param model The table model to import the state for
    * @param gridState The state of the panel that was saved
    * @returns The gridState props to set on the Grid
    */
   static hydrateGridState(
     model: IrisGridModel,
-    gridState: DehydratedGridState,
+    gridState: Partial<DehydratedGridState>,
     customColumns: readonly string[] = []
   ): HydratedGridState {
     const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
-      gridState;
+      IrisGridUtils.restoreGridStateDefaults(gridState);
 
     const { columns } = model;
     const customColumnNames =
@@ -449,25 +450,28 @@ class IrisGridUtils {
 
   /**
    * Import the saved IrisGridPanel state.
+   * Keys missing from the state use the values in `IRIS_GRID_PANEL_STATE_DEFAULTS`.
    * @param model The model the state is being hydrated with
    * @param irisGridPanelState Exported IrisGridPanel state
    * @returns The state to apply to the IrisGridPanel
    */
   static hydrateIrisGridPanelState(
     model: IrisGridModel,
-    irisGridPanelState: DehydratedIrisGridPanelState
+    irisGridPanelState: Partial<DehydratedIrisGridPanelState>
   ): {
     isSelectingPartition: boolean;
     partitions: (string | null)[];
     advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
-    const { isSelectingPartition, advancedSettings } = irisGridPanelState;
+    const restoredState =
+      IrisGridUtils.restoreIrisGridPanelStateDefaults(irisGridPanelState);
+    const { isSelectingPartition, advancedSettings } = restoredState;
 
     let partitions: (string | null)[] = [];
-    if (isPanelStateV2(irisGridPanelState)) {
-      partitions = irisGridPanelState.partitions;
-    } else if (irisGridPanelState.partition != null) {
-      partitions = [irisGridPanelState.partition];
+    if (isPanelStateV2(restoredState)) {
+      partitions = restoredState.partitions;
+    } else if (restoredState.partition != null) {
+      partitions = [restoredState.partition];
     }
 
     return {
@@ -1679,13 +1683,14 @@ class IrisGridUtils {
   }
 
   /**
-   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
+   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}.
+   * Keys missing from the state use the values in `IRIS_GRID_STATE_DEFAULTS`.
    * @param model The table model to import the state with
    * @param irisGridState The saved IrisGrid state
    */
   hydrateIrisGridState(
     model: IrisGridModel,
-    irisGridState: DehydratedIrisGridState
+    irisGridState: Partial<DehydratedIrisGridState>
   ): Omit<HydratedIrisGridState, 'metrics' | 'metricCalculator'> & {
     userColumnWidths: ModelSizeMap;
     userColumnWidthsByName: Map<ColumnName, number>;
@@ -1693,9 +1698,9 @@ class IrisGridUtils {
   } {
     const {
       advancedFilters,
-      aggregationSettings = DEFAULT_AGGREGATION_SETTINGS,
+      aggregationSettings,
       customColumnFormatMap,
-      columnAlignmentMap = [],
+      columnAlignmentMap,
       isFilterBarShown,
       quickFilters,
       sorts,
@@ -1705,17 +1710,17 @@ class IrisGridUtils {
       userRowHeights,
       reverseType,
       reverse,
-      rollupConfig = undefined,
+      rollupConfig,
       showSearchBar,
       searchValue,
       selectDistinctColumns,
       selectedSearchColumns,
-      invertSearchColumns = true,
-      pendingDataMap = [],
+      invertSearchColumns,
+      pendingDataMap,
       frozenColumns,
       columnHeaderGroups,
       partitionConfig,
-    } = irisGridState;
+    } = IrisGridUtils.restoreIrisGridStateDefaults(irisGridState);
     const { columns, formatter } = model;
     const partitionColumns = isPartitionedGridModelProvider(model)
       ? model.partitionColumns

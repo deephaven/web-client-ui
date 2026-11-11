@@ -1656,3 +1656,71 @@ describe('remove/restore state defaults', () => {
     });
   });
 });
+
+describe('hydrating state with missing keys', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
+  it.each(Object.keys(IRIS_GRID_STATE_DEFAULTS))(
+    'hydrates IrisGrid state without %s as if it had the default',
+    key => {
+      const full = IrisGridUtils.restoreIrisGridStateDefaults({});
+      const { [key as keyof DehydratedIrisGridState]: _omitted, ...partial } =
+        full;
+      expect(irisGridUtils.hydrateIrisGridState(model, partial)).toEqual(
+        irisGridUtils.hydrateIrisGridState(model, full)
+      );
+    }
+  );
+
+  it('hydrates an empty IrisGrid state', () => {
+    expect(irisGridUtils.hydrateIrisGridState(model, {})).toEqual(
+      irisGridUtils.hydrateIrisGridState(
+        model,
+        IrisGridUtils.restoreIrisGridStateDefaults({})
+      )
+    );
+  });
+
+  it.each(Object.keys(GRID_STATE_DEFAULTS))(
+    'hydrates Grid state without %s as if it had the default',
+    key => {
+      const { [key as keyof DehydratedGridState]: _omitted, ...partial } =
+        GRID_STATE_DEFAULTS;
+      expect(IrisGridUtils.hydrateGridState(model, partial)).toEqual(
+        IrisGridUtils.hydrateGridState(model, GRID_STATE_DEFAULTS)
+      );
+    }
+  );
+
+  it('hydrates an empty IrisGridPanel state', () => {
+    expect(IrisGridUtils.hydrateIrisGridPanelState(model, {})).toEqual(
+      IrisGridUtils.hydrateIrisGridPanelState(
+        model,
+        IRIS_GRID_PANEL_STATE_DEFAULTS
+      )
+    );
+  });
+
+  it('keeps the partition of V1 IrisGridPanel state with missing keys', () => {
+    expect(
+      IrisGridUtils.hydrateIrisGridPanelState(model, { partition: 'a' })
+        .partitions
+    ).toEqual(['a']);
+  });
+
+  it('keeps values that are present', () => {
+    const hydrated = irisGridUtils.hydrateIrisGridState(model, {
+      isFilterBarShown: true,
+      searchValue: 'foo',
+      invertSearchColumns: false,
+    });
+    expect(hydrated.isFilterBarShown).toBe(true);
+    expect(hydrated.searchValue).toBe('foo');
+    expect(hydrated.invertSearchColumns).toBe(false);
+    expect(hydrated.showSearchBar).toBe(false);
+  });
+});
