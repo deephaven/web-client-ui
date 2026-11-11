@@ -65,6 +65,7 @@ import {
 import {
   assertNotNull,
   type CancelablePromise,
+  CanceledPromiseError,
   type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
@@ -413,6 +414,7 @@ export class IrisGridPanel extends PureComponent<
       this.modelPromise.cancel();
       this.modelPromise = undefined;
     }
+    this.cancelHydration?.();
 
     const { model } = this.state;
     if (model) {
@@ -426,6 +428,8 @@ export class IrisGridPanel extends PureComponent<
   pluginRef: RefObject<TablePluginElement>;
 
   modelPromise?: CancelablePromise<IrisGridModel>;
+
+  cancelHydration?: () => void;
 
   irisGridState?: IrisGridState;
 
@@ -579,15 +583,27 @@ export class IrisGridPanel extends PureComponent<
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
+    this.cancelHydration?.();
+    let isCanceled = false;
+    let hydrationPromise: CancelablePromise<void> | undefined;
+    // Hydration starts after `makeModel` resolves, so it needs its own cancel.
+    this.cancelHydration = () => {
+      isCanceled = true;
+      hydrationPromise?.cancel();
+    };
     let pluginName: string | null = null;
     const modelPromise = Promise.resolve(makeModel()).then(async model => {
       // Read before hydrating custom columns, since updateView drops the
       // PluginName attribute
       pluginName = getTablePluginName(model);
       try {
+        if (isCanceled) {
+          throw new CanceledPromiseError();
+        }
         // Custom columns must exist before the transform so it sees the full
         // source schema; other persisted model changes stay in `modelQueue`.
-        await this.hydrateCustomColumns(model);
+        hydrationPromise = this.hydrateCustomColumns(model);
+        await hydrationPromise;
         return transformModel != null ? await transformModel(model) : model;
       } catch (e) {
         // The host owns the base model's lifecycle; if hydration or the
@@ -607,24 +623,37 @@ export class IrisGridPanel extends PureComponent<
 
   /**
    * Apply persisted custom columns to the model and wait for the schema change.
-   * Rejects on `REQUEST_FAILED` (e.g. an invalid expression) so the panel shows
-   * an error instead of hanging.
-   * @param model The base model to apply custom columns to
+   * Rejects on `REQUEST_FAILED` (e.g. an invalid expression). A disconnect
+   * shows the disconnected state and keeps waiting for the reconnect.
+   * @param modelParam The base model to apply custom columns to
+   * @returns Resolves once the custom columns are applied, or undefined when
+   * there is nothing to apply
    */
-  hydrateCustomColumns(model: IrisGridModel): Promise<void> {
+  hydrateCustomColumns(
+    modelParam: IrisGridModel
+  ): CancelablePromise<void> | undefined {
+    const model = modelParam;
+    if (!model.isCustomColumnsAvailable) {
+      return undefined;
+    }
     const { panelState, irisGridStateOverrides } = this.state;
     if (panelState == null) {
-      return Promise.resolve();
+      return undefined;
     }
     const { customColumns } = {
       ...panelState.irisGridState,
       ...irisGridStateOverrides,
     };
-    if (customColumns.length === 0 || !model.isCustomColumnsAvailable) {
-      return Promise.resolve();
+    if (customColumns.length === 0) {
+      return undefined;
     }
-    return new Promise<void>((resolve, reject) => {
-      const cleanup = (): void => {
+    let isPending = true;
+    let cleanup: () => void;
+    let rejectHydration: (reason: unknown) => void;
+    const promise = new Promise<void>((resolve, reject) => {
+      rejectHydration = reject;
+      cleanup = () => {
+        isPending = false;
         model.removeEventListener(
           IrisGridModel.EVENT.COLUMNS_CHANGED,
           handleColumnsChanged
@@ -632,6 +661,14 @@ export class IrisGridPanel extends PureComponent<
         model.removeEventListener(
           IrisGridModel.EVENT.REQUEST_FAILED,
           handleRequestFailed
+        );
+        model.removeEventListener(
+          IrisGridModel.EVENT.DISCONNECT,
+          this.handleDisconnect
+        );
+        model.removeEventListener(
+          IrisGridModel.EVENT.RECONNECT,
+          this.handleReconnect
         );
       };
       function handleColumnsChanged(): void {
@@ -650,9 +687,26 @@ export class IrisGridPanel extends PureComponent<
         IrisGridModel.EVENT.REQUEST_FAILED,
         handleRequestFailed
       );
-      // eslint-disable-next-line no-param-reassign
+      model.addEventListener(
+        IrisGridModel.EVENT.DISCONNECT,
+        this.handleDisconnect
+      );
+      model.addEventListener(
+        IrisGridModel.EVENT.RECONNECT,
+        this.handleReconnect
+      );
       model.customColumns = customColumns;
-    });
+    }) as CancelablePromise<void>;
+    promise.cancel = () => {
+      // After settling, the panel may have attached the same disconnect
+      // listeners to this model, so they must not be removed again.
+      if (!isPending) {
+        return;
+      }
+      cleanup();
+      rejectHydration(new CanceledPromiseError());
+    };
+    return promise;
   }
 
   handleLoadSuccess(

@@ -450,4 +450,99 @@ describe('persisted custom columns hydration', () => {
     expect(table.close).toHaveBeenCalledTimes(1);
     expect(MockIrisGrid).not.toHaveBeenCalled();
   });
+
+  it('shows the disconnected state during hydration and resumes after reconnect', async () => {
+    const table = makeTable();
+    let model: any;
+    table.applyCustomColumns = jest.fn((cc: readonly string[]) => {
+      model.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.DISCONNECT));
+      return cc;
+    });
+    table.close = jest.fn();
+    const makeModel = async () => {
+      model = await makeMakeModel(table)();
+      return model;
+    };
+    const transformModel = jest.fn((m: any) => m);
+
+    renderPanel({
+      makeModel,
+      transformModel,
+      panelState: makePanelState(['C=0*2']),
+    });
+    const disconnectedMessage =
+      'Unable to open table. Error: Table disconnected';
+    await waitFor(() =>
+      expect(screen.getByText(disconnectedMessage)).toBeTruthy()
+    );
+    expect(transformModel).not.toHaveBeenCalled();
+    expect(table.close).not.toHaveBeenCalled();
+
+    act(() => {
+      model.dispatchEvent(new CustomEvent(IrisGridModel.EVENT.RECONNECT));
+    });
+    expect(screen.queryByText(disconnectedMessage)).toBeNull();
+
+    act(() => {
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+    });
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    expect(transformModel).toHaveBeenCalledTimes(1);
+    expect(table.close).not.toHaveBeenCalled();
+  });
+
+  it('cleans up a pending hydration when the load is canceled', async () => {
+    const table = makeTable();
+    const applyCustomColumns = jest.fn((cc: readonly string[]) => cc);
+    table.applyCustomColumns = applyCustomColumns;
+    table.close = jest.fn();
+    let model: any;
+    const makeModel = async () => {
+      model = await makeMakeModel(table)();
+      jest.spyOn(model, 'removeEventListener');
+      return model;
+    };
+    const transformModel = jest.fn((m: any) => m);
+
+    const { unmount } = renderPanel({
+      makeModel,
+      transformModel,
+      panelState: makePanelState(['C=0*2']),
+    });
+    await waitFor(() => expect(applyCustomColumns).toHaveBeenCalled());
+
+    unmount();
+    await waitFor(() => expect(table.close).toHaveBeenCalledTimes(1));
+    expect(model.removeEventListener).toHaveBeenCalledWith(
+      IrisGridModel.EVENT.COLUMNS_CHANGED,
+      expect.any(Function)
+    );
+
+    table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+    await act(() => Promise.resolve());
+    expect(transformModel).not.toHaveBeenCalled();
+  });
+
+  it('skips hydration when canceled before the model resolves', async () => {
+    const table = makeTable();
+    const applyCustomColumns = stubApplyCustomColumns(table);
+    table.close = jest.fn();
+    let resolveTable: (t: unknown) => void = () => undefined;
+    const tablePromise = new Promise(resolve => {
+      resolveTable = resolve;
+    });
+    const transformModel = jest.fn((m: any) => m);
+
+    const { unmount } = renderPanel({
+      makeModel: makeMakeModel(tablePromise),
+      transformModel,
+      panelState: makePanelState(['C=0*2']),
+    });
+    unmount();
+    resolveTable(table);
+
+    await waitFor(() => expect(table.close).toHaveBeenCalledTimes(1));
+    expect(applyCustomColumns).not.toHaveBeenCalled();
+    expect(transformModel).not.toHaveBeenCalled();
+  });
 });
