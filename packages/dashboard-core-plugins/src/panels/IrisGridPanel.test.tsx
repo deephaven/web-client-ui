@@ -336,11 +336,18 @@ describe('persisted custom columns hydration', () => {
     MockIrisGrid.mockClear();
   });
 
-  it('applies persisted custom columns before transformModel runs', async () => {
+  it('waits for the custom columns schema update before transformModel runs', async () => {
     const table = makeTable();
-    const applyCustomColumns = stubApplyCustomColumns(table);
     const customColumns = ['C=0*2'];
-    const transformModel = jest.fn((model: any) => model);
+    // Server applies custom columns asynchronously; the event is fired
+    // manually below so the test controls when the schema updates.
+    const applyCustomColumns = jest.fn((cc: readonly string[]) => cc);
+    table.applyCustomColumns = applyCustomColumns;
+    let transformedColumnNames: string[] | undefined;
+    const transformModel = jest.fn((model: any) => {
+      transformedColumnNames = model.columns.map((c: any) => c.name);
+      return model;
+    });
 
     await act(async () => {
       renderPanel({
@@ -349,16 +356,25 @@ describe('persisted custom columns hydration', () => {
         panelState: makePanelState(customColumns),
       });
     });
+    await waitFor(() =>
+      expect(applyCustomColumns).toHaveBeenCalledWith(customColumns)
+    );
+
+    expect(transformModel).not.toHaveBeenCalled();
+    expect(MockIrisGrid).not.toHaveBeenCalled();
+
+    await act(async () => {
+      table.columns = [
+        ...table.columns,
+        new (dh as any).Column({ index: 1, name: 'C' }),
+      ];
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+    });
     await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
 
+    expect(transformModel).toHaveBeenCalledTimes(1);
+    expect(transformedColumnNames).toEqual(['0', 'C']);
     expect(applyCustomColumns).toHaveBeenCalledTimes(1);
-    expect(applyCustomColumns).toHaveBeenCalledWith(customColumns);
-    expect(applyCustomColumns.mock.invocationCallOrder[0]).toBeLessThan(
-      transformModel.mock.invocationCallOrder[0]
-    );
-    const lastProps =
-      MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1][0];
-    expect(lastProps.model.customColumns).toEqual(customColumns);
   });
 
   it('does not write custom columns when none are persisted', async () => {
