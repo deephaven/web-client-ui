@@ -220,6 +220,52 @@ it('applies transformModel to the built model before passing it to IrisGrid', as
   expect(lastProps.model).toBe(transformedModel);
 });
 
+it('keeps the table plugin when saved custom columns drop the PluginName attribute', async () => {
+  MockIrisGrid.mockClear();
+  const table = makeTable();
+  table.pluginName = 'TestPlugin';
+  table.applyCustomColumns = jest.fn(customColumns => {
+    // Mirrors the server: updateView does not copy PluginName
+    table.pluginName = null;
+    setTimeout(() =>
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED)
+    );
+    return customColumns;
+  });
+  const Plugin = jest.fn(() => null);
+  const loadPlugin = jest.fn(() => Plugin);
+  const panelState = {
+    gridState: {},
+    irisGridState: { customColumns: ['Foo = 1'] },
+    irisGridPanelState: {},
+    pluginState: null,
+  };
+
+  render(
+    <IrisGridPanel
+      makeModel={makeMakeModel(table)}
+      metadata={{ table: 'table' } as any}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent() as any}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      settings={{ timeZone: 'America/New_York' } as any}
+      panelState={panelState as any}
+      loadPlugin={loadPlugin as any}
+    />
+  );
+
+  await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+  expect(table.applyCustomColumns).toHaveBeenCalled();
+  expect(table.pluginName).toBeNull();
+  expect(loadPlugin).toHaveBeenCalledTimes(1);
+  expect(loadPlugin).toHaveBeenCalledWith('TestPlugin');
+  const { calls } = MockIrisGrid.mock;
+  const lastProps = calls[calls.length - 1][0];
+  expect(lastProps.children).not.toBeNull();
+});
+
 it('closes the base model if transformModel rejects', async () => {
   MockIrisGrid.mockClear();
   const baseModel = TestUtils.createMockProxy<any>({ close: jest.fn() });
