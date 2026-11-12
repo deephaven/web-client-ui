@@ -24,6 +24,7 @@ import {
   EMPTY_ARRAY,
   EMPTY_MAP,
   isNotNullOrUndefined,
+  type PartialBy,
   removeDefaultValues,
   restoreDefaultValues,
 } from '@deephaven/utils';
@@ -146,13 +147,6 @@ export interface TableSettings {
 }
 
 /**
- * Make the keys of `T` that have a value in `Defaults` optional.
- * Dehydrated state omits values equal to their defaults.
- */
-type WithOptionalDefaults<T, Defaults> = Omit<T, keyof Defaults & keyof T> &
-  Partial<Pick<T, keyof Defaults & keyof T>>;
-
-/**
  * Dehydrated IrisGrid state with every key present, as returned by
  * `IrisGridUtils.restoreIrisGridStateDefaults`
  */
@@ -187,9 +181,9 @@ export interface FullDehydratedIrisGridState {
  * Dehydrated IrisGrid state as saved: keys whose values equal
  * `IRIS_GRID_STATE_DEFAULTS` may be omitted
  */
-export type DehydratedIrisGridState = WithOptionalDefaults<
+export type DehydratedIrisGridState = PartialBy<
   FullDehydratedIrisGridState,
-  typeof IRIS_GRID_STATE_DEFAULTS
+  keyof typeof IRIS_GRID_STATE_DEFAULTS
 >;
 
 export interface FullDehydratedIrisGridPanelStateV1 {
@@ -212,14 +206,14 @@ export type FullDehydratedIrisGridPanelState =
   | FullDehydratedIrisGridPanelStateV1
   | FullDehydratedIrisGridPanelStateV2;
 
-export type DehydratedIrisGridPanelStateV1 = WithOptionalDefaults<
+export type DehydratedIrisGridPanelStateV1 = PartialBy<
   FullDehydratedIrisGridPanelStateV1,
-  typeof IRIS_GRID_PANEL_STATE_DEFAULTS
+  keyof typeof IRIS_GRID_PANEL_STATE_DEFAULTS
 >;
 
-export type DehydratedIrisGridPanelStateV2 = WithOptionalDefaults<
+export type DehydratedIrisGridPanelStateV2 = PartialBy<
   FullDehydratedIrisGridPanelStateV2,
-  typeof IRIS_GRID_PANEL_STATE_DEFAULTS
+  keyof typeof IRIS_GRID_PANEL_STATE_DEFAULTS
 >;
 
 /**
@@ -279,9 +273,9 @@ export type FullDehydratedGridState = {
  * Dehydrated Grid state as saved: keys whose values equal
  * `GRID_STATE_DEFAULTS` may be omitted
  */
-export type DehydratedGridState = WithOptionalDefaults<
+export type DehydratedGridState = PartialBy<
   FullDehydratedGridState,
-  typeof GRID_STATE_DEFAULTS
+  keyof typeof GRID_STATE_DEFAULTS
 >;
 
 /** Aggregation settings of a grid with no aggregations, used as the `IrisGrid` default */

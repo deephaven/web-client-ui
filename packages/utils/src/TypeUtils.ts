@@ -53,6 +53,20 @@ export type OnlyOneProp<T> = {
 export type UndoPartial<T> = T extends Partial<infer U> ? U : never;
 
 /**
+ * Make the given keys of `T` optional, leaving the other keys unchanged.
+ * Keys in `K` that `T` doesn't have are ignored.
+ *
+ * e.g.
+ * type A = { a: string; b: number };
+ * type B = PartialBy<A, 'b'>; // { a: string; b?: number }
+ *
+ * `Omit` doesn't distribute over unions, so for a union type apply this to
+ * each member and combine the results.
+ */
+export type PartialBy<T, K extends PropertyKey> = Omit<T, K & keyof T> &
+  Partial<Pick<T, K & keyof T>>;
+
+/**
  * Util type to extract the value from an object.
  *
  * e.g. Given
