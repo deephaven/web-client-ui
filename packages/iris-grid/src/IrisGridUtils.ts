@@ -286,28 +286,15 @@ export const DEFAULT_AGGREGATION_SETTINGS: Readonly<AggregationSettings> =
   });
 
 /**
- * Values `dehydrateIrisGridState` emits for a grid the user hasn't changed.
- * Stored state comes from `IrisGridPanel`, which passes every one of these
- * props to `IrisGrid` from its initial state (so `IrisGrid.defaultProps` don't
- * apply): empty `Map`s for `advancedFilters`, `quickFilters`,
- * `customColumnFormatMap`, `columnAlignmentMap` and `pendingDataMap` (which
- * dehydrate to `[]`), empty arrays, `false`/`''` for the flags and search value,
- * and `invertSearchColumns: true`. `IrisGridPanel` leaves
- * `selectedSearchColumns` undefined, which `IrisGrid` initializes to `[]`.
- * `hydrateIrisGridState` already falls back to the same values for
- * `aggregationSettings`, `columnAlignmentMap`, `invertSearchColumns` and
- * `pendingDataMap`.
+ * These default values are removed by `dehydrateIrisGridState` and restored by
+ * `hydrateIrisGridState`. They match the state of an unmodified `IrisGridPanel`.
  *
- * Keys whose default isn't a fixed value are intentionally not included:
- * - `frozenColumns`: undefined means "use the model's frozen columns", so `[]` is not equivalent
- * - `columnHeaderGroups`: hydrate falls back to the model's layout hints when missing
- * - `rollupConfig`, `partitionConfig`: default to undefined, which isn't serialized
- * - `reverseType`: deprecated, only present in old saved state
+ * Saved workspace state relies on these defaults to hydrate correctly. If a UI
+ * default changes, do not update these: saved rows that omit the value would
+ * hydrate incorrectly.
  *
- * Frozen here, rather than shared with the `IrisGridPanel` or `IrisGrid`
- * defaults, because stored state relies on them: changing a value would change
- * the meaning of all stored state that omits it. If a UI default changes, leave
- * these unchanged; state with the new default is then stored explicitly.
+ * Not included, because they have no fixed default: `frozenColumns`,
+ * `columnHeaderGroups`, `rollupConfig`, `partitionConfig` and `reverseType`.
  */
 export const IRIS_GRID_STATE_DEFAULTS = Object.freeze({
   advancedFilters: [],
@@ -331,10 +318,8 @@ export const IRIS_GRID_STATE_DEFAULTS = Object.freeze({
 }) satisfies Partial<FullDehydratedIrisGridState>;
 
 /**
- * Values `dehydrateGridState` emits for a grid the user hasn't changed.
- * `IrisGridPanel` initializes `isStuckToBottom` and `isStuckToRight` to `false`
- * and `movedColumns` and `movedRows` to `[]`, and passes them to `IrisGrid`.
- * See `IRIS_GRID_STATE_DEFAULTS` for why these are frozen.
+ * These default values are removed by `dehydrateGridState` and restored by
+ * `hydrateGridState`. See `IRIS_GRID_STATE_DEFAULTS`.
  */
 export const GRID_STATE_DEFAULTS = Object.freeze({
   isStuckToBottom: false,
@@ -344,11 +329,8 @@ export const GRID_STATE_DEFAULTS = Object.freeze({
 }) satisfies FullDehydratedGridState;
 
 /**
- * Values `dehydrateIrisGridPanelState` emits for a panel the user hasn't changed.
- * `IrisGridPanel` initializes `isSelectingPartition` to `false`, `partitions` to
- * `[]` and `advancedSettings` to `AdvancedSettings.DEFAULTS`, and
- * `hydrateIrisGridPanelState` merges stored settings over `AdvancedSettings.DEFAULTS`.
- * See `IRIS_GRID_STATE_DEFAULTS` for why these are frozen.
+ * These default values are removed by `dehydrateIrisGridPanelState` and restored
+ * by `hydrateIrisGridPanelState`. See `IRIS_GRID_STATE_DEFAULTS`.
  */
 export const IRIS_GRID_PANEL_STATE_DEFAULTS = Object.freeze({
   isSelectingPartition: false,
