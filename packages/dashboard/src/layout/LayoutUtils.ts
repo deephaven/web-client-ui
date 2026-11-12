@@ -619,24 +619,27 @@ class LayoutUtils {
           itemConfig.content,
           hydrateComponent
         );
+        // Copy items so golden-layout, which adds default values to the
+        // configs it is given, doesn't modify the caller's layout
+        const hydratedItem: ItemConfig = {
+          ...itemConfig,
+          content: contentConfig,
+        };
         if (
-          isStackItemConfig(itemConfig) &&
-          itemConfig.activeItemIndex != null &&
-          itemConfig.activeItemIndex >= contentConfig.length
+          isStackItemConfig(hydratedItem) &&
+          hydratedItem.activeItemIndex != null &&
+          hydratedItem.activeItemIndex >= contentConfig.length
         ) {
           log.warn(
             'Fixing bad activeItemIndex!',
-            itemConfig.activeItemIndex,
+            hydratedItem.activeItemIndex,
             itemConfig
           );
-          itemConfig.activeItemIndex = 0;
+          hydratedItem.activeItemIndex = 0;
         }
-        hydratedConfig.push({
-          ...itemConfig,
-          content: contentConfig,
-        });
+        hydratedConfig.push(hydratedItem);
       } else {
-        hydratedConfig.push(itemConfig);
+        hydratedConfig.push({ ...itemConfig });
       }
     }
 

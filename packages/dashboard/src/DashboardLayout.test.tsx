@@ -386,6 +386,16 @@ describe('replacing a layout with a pending save', () => {
   });
 });
 
+/**
+ * `dehydrateLayoutConfig` omits values equal to golden-layout's defaults and
+ * relies on golden-layout to fill them back in when a layout is loaded. These
+ * tests load layouts into a real golden-layout, so they also guard that
+ * behavior: if golden-layout changes how it fills in a missing value, a saved
+ * layout no longer saves the same way when loaded again.
+ *
+ * The layout covers each omitted key with both its default value and a
+ * non-default value.
+ */
 describe('saved layout default values', () => {
   const makePanel = (name: string) => ({
     type: 'react-component' as const,
@@ -399,6 +409,7 @@ describe('saved layout default values', () => {
       type: 'column',
       content: [
         {
+          // Active tab is the first tab, the default
           type: 'stack',
           height: 50,
           content: [makePanel('a'), makePanel('b')],
@@ -406,8 +417,31 @@ describe('saved layout default values', () => {
         {
           type: 'row',
           content: [
-            { type: 'stack', width: 40, content: [makePanel('c')] },
-            { type: 'stack', width: 60, content: [makePanel('d')] },
+            {
+              // Active tab is not the first tab
+              type: 'stack',
+              width: 40,
+              activeItemIndex: 1,
+              content: [
+                makePanel('c'),
+                { ...makePanel('e'), isClosable: false },
+              ],
+            },
+            {
+              type: 'stack',
+              width: 60,
+              content: [
+                makePanel('d'),
+                // No props, which dehydrates to `props: {}`
+                {
+                  type: 'react-component',
+                  component: TestPanel.displayName,
+                  title: 'no-props',
+                },
+              ],
+            },
+            // No tabs, so golden-layout never sets activeItemIndex
+            { type: 'stack', width: 0, content: [] },
           ],
         },
       ],
@@ -482,9 +516,26 @@ describe('saved layout default values', () => {
     expect(findDefaultValues(savedLayoutConfig as Item[])).toEqual([]);
   });
 
+  it('keeps values that differ from the defaults', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const [, row] = (savedLayoutConfig[0] as Item).content ?? [];
+    const [stackWithClosedTab, , emptyStack] = row.content ?? [];
+    expect(stackWithClosedTab.activeItemIndex).toBe(1);
+    expect(stackWithClosedTab.content?.[1].isClosable).toBe(false);
+    // golden-layout saves an empty stack without `content`
+    expect(emptyStack).toEqual({
+      type: 'stack',
+      id: expect.any(String),
+      width: 0,
+    });
+  });
+
   it('saves the same layout when a saved layout is loaded again', async () => {
     const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const savedLayoutConfigCopy = LayoutUtils.cloneLayout(savedLayoutConfig);
     const reloadedLayoutConfig = await loadAndGetSavedLayout(savedLayoutConfig);
+    // Loading must not add golden-layout's defaults to the stored layout
+    expect(savedLayoutConfig).toEqual(savedLayoutConfigCopy);
     expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
       true
     );
