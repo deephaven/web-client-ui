@@ -104,15 +104,14 @@ export const REACT_COMPONENT_ITEM_DEFAULTS = Object.freeze({
   componentState: null,
 });
 
-type LayoutItemRecord = ItemConfig & Record<string, unknown>;
-
 /**
- * Get the default values for a layout item, based on its type
- * @param item Layout item to get the defaults for
- * @returns Default value for each key that can be omitted from the item
+ * Remove the keys of a single layout item whose values equal its defaults.
+ * Does not recurse into `content`.
+ * @param item Layout item
+ * @returns A new item without default values
  */
-function getLayoutItemDefaults(item: ItemConfig): Partial<LayoutItemRecord> {
-  const defaults: Partial<LayoutItemRecord> = { ...LAYOUT_ITEM_DEFAULTS };
+function removeItemDefaults(item: ItemConfig): ItemConfig {
+  const defaults: Record<string, unknown> = { ...LAYOUT_ITEM_DEFAULTS };
   if (item.type === 'react-component') {
     // The default panel `dehydrate` always writes `props`, and writes `{}` when the
     // panel has no `metadata` or `panelState`. `hydrateLayoutConfig` treats missing
@@ -125,21 +124,11 @@ function getLayoutItemDefaults(item: ItemConfig): Partial<LayoutItemRecord> {
   if (isStackItemConfig(item) && (item.content?.length ?? 0) > 0) {
     defaults.activeItemIndex = 0;
   }
-  return defaults;
-}
-
-/**
- * Remove the keys of a single layout item whose values equal its defaults.
- * Does not recurse into `content`.
- * @param item Layout item
- * @returns A new item without default values
- */
-function removeItemDefaults<T extends ItemConfig>(item: T): T {
-  // `type` is never a default, so the result is still a full item
-  return removeDefaultValues<LayoutItemRecord>(
-    item as LayoutItemRecord,
-    getLayoutItemDefaults(item)
-  ) as unknown as T;
+  // `type`, `component` and `content` are never defaults, so the result is still an ItemConfig
+  return removeDefaultValues<ItemConfig>(
+    item,
+    defaults as Partial<ItemConfig>
+  ) as ItemConfig;
 }
 
 class LayoutUtils {
