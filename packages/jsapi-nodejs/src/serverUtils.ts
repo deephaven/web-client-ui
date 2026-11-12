@@ -28,7 +28,12 @@ export type DownloadOptions = {
   retries?: number;
   /** Delay between retries in milliseconds. Defaults to 1000. */
   retryDelayMs?: number;
-  /** Socket idle timeout in milliseconds per request. Defaults to 5000. */
+  /**
+   * Socket idle timeout in milliseconds for each request (redirects and retries
+   * are each considered distinct requests). The timeout resets whenever data
+   * arrives. For an overall deadline, pass `signal: AbortSignal.timeout(ms)`.
+   * Defaults to 5000.
+   */
   timeoutMs?: number;
   /** Aborts the in-flight request and any pending retry. */
   signal?: AbortSignal;
@@ -41,7 +46,7 @@ export type DownloadOptions = {
  * are used instead of `fetch` so that proxy and certificate handling patched
  * into the Node agents (e.g. by VS Code) still applies.
  *
- * Rejects with `HttpError` for any non-2xx response that isn't a followed
+ * Rejects with `HttpError` for any non-200 response that isn't a followed
  * redirect, `UntrustedUrlError` if `isTrustedUrl` rejects a URL,
  * `DownloadTimeoutError` if the socket times out, and `signal.reason` if
  * aborted. Only network errors are retried.
@@ -113,7 +118,6 @@ function downloadWithOptions(
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
     function onAbort(): void {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       fail(signal?.reason);
       activeRequest?.destroy();
     }
@@ -132,15 +136,16 @@ function downloadWithOptions(
       settle(() => reject(reason));
     }
 
-    // Redirects and retries call this from a response callback or a timer, where
-    // a throw (e.g. from a caller's `isTrustedUrl`) would be uncaught.
+    // Rejects the download if `startRequest` throws, e.g. if the caller's
+    // `isTrustedUrl` throws instead of returning a boolean. Redirects and
+    // retries run in a response callback or timer, where a throw would
+    // otherwise go uncaught.
     function attempt(
       currentUrl: URL,
       retriesLeft: number,
       redirectCount: number
     ): void {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         startRequest(currentUrl, retriesLeft, redirectCount);
       } catch (e) {
         fail(e);
@@ -174,7 +179,7 @@ function downloadWithOptions(
       const req = transporter.get(currentUrl, { timeout: timeoutMs }, res => {
         const statusCode = res.statusCode ?? 0;
 
-        if (statusCode >= 200 && statusCode < 300) {
+        if (statusCode === 200) {
           const chunks: Buffer[] = [];
           res.on('data', (chunk: Buffer) => {
             chunks.push(chunk);
@@ -191,48 +196,48 @@ function downloadWithOptions(
         res.resume();
 
         const { location } = res.headers;
-        if (REDIRECT_STATUS_CODES.has(statusCode) && location != null) {
-          if (redirectCount >= maxRedirects) {
-            fail(
-              new HttpError(
-                statusCode,
-                `Too many redirects (max ${maxRedirects}): "${currentUrl}"`
-              )
-            );
-            return;
-          }
-
-          // A throw here would escape the response callback as an uncaught
-          // exception instead of rejecting the download.
-          let nextUrl: URL;
-          try {
-            nextUrl = new URL(location, currentUrl);
-          } catch {
-            fail(
-              new HttpError(
-                statusCode,
-                `Invalid redirect location "${location}" from "${currentUrl}"`
-              )
-            );
-            return;
-          }
-
-          if (!settled) {
-            attempt(nextUrl, retriesLeft, redirectCount + 1);
-          }
+        if (!REDIRECT_STATUS_CODES.has(statusCode) || location == null) {
+          fail(
+            new HttpError(
+              statusCode,
+              statusCode === 404
+                ? `File not found: "${currentUrl}"`
+                : `HTTP ${statusCode} ${
+                    STATUS_CODES[statusCode] ?? ''
+                  }: "${currentUrl}"`
+            )
+          );
           return;
         }
 
-        fail(
-          new HttpError(
-            statusCode,
-            statusCode === 404
-              ? `File not found: "${currentUrl}"`
-              : `HTTP ${statusCode} ${
-                  STATUS_CODES[statusCode] ?? ''
-                }: "${currentUrl}"`
-          )
-        );
+        if (redirectCount >= maxRedirects) {
+          fail(
+            new HttpError(
+              statusCode,
+              `Too many redirects (max ${maxRedirects}): "${currentUrl}"`
+            )
+          );
+          return;
+        }
+
+        // A throw here would escape the response callback as an uncaught
+        // exception instead of rejecting the download.
+        let nextUrl: URL;
+        try {
+          nextUrl = new URL(location, currentUrl);
+        } catch {
+          fail(
+            new HttpError(
+              statusCode,
+              `Invalid redirect location "${location}" from "${currentUrl}"`
+            )
+          );
+          return;
+        }
+
+        if (!settled) {
+          attempt(nextUrl, retriesLeft, redirectCount + 1);
+        }
       });
 
       activeRequest = req;

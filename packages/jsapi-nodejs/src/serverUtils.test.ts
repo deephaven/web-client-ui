@@ -84,18 +84,21 @@ describe('downloadFromURL', () => {
     await expect(downloadFromURL(server.url)).resolves.toEqual('content');
   });
 
-  it.each([401, 500])('rejects a %s response with HttpError', async status => {
-    const server = await startServer((req, res) => {
-      res.statusCode = status;
-      res.end('error body');
-    });
+  it.each([204, 206, 401, 500])(
+    'rejects a %s response with HttpError',
+    async status => {
+      const server = await startServer((req, res) => {
+        res.statusCode = status;
+        res.end('error body');
+      });
 
-    const result = downloadFromURL(server.url, { logger: silentLogger });
+      const result = downloadFromURL(server.url, { logger: silentLogger });
 
-    await expect(result).rejects.toBeInstanceOf(HttpError);
-    await expect(result).rejects.toMatchObject({ statusCode: status });
-    expect(server.requests).toHaveLength(1);
-  });
+      await expect(result).rejects.toBeInstanceOf(HttpError);
+      await expect(result).rejects.toMatchObject({ statusCode: status });
+      expect(server.requests).toHaveLength(1);
+    }
+  );
 
   it('rejects a 404 with a file not found message', async () => {
     const server = await startServer((req, res) => {

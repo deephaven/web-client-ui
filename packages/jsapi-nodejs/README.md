@@ -54,7 +54,7 @@ const cn = await client.getAsIdeConnection();
 | `maxRedirects` | `20`      | Maximum number of redirects to follow                                                       |
 | `retries`      | `10`      | Retries on network errors. HTTP errors, timeouts, untrusted URLs and aborts are not retried |
 | `retryDelayMs` | `1000`    | Delay between retries                                                                       |
-| `timeoutMs`    | `5000`    | Socket idle timeout per request                                                             |
+| `timeoutMs`    | `5000`    | Socket idle timeout per request. Redirects and retries are each a separate request          |
 | `signal`       | none      | `AbortSignal` that cancels the in-flight request and any pending retry                      |
 | `logger`       | `console` | Object with an `error` method used for retry and failure messages                           |
 
@@ -63,7 +63,7 @@ certificate handling applied to the Node agents (e.g. by VS Code) still applies.
 
 Errors:
 
-- `HttpError` for any non-2xx response that isn't a followed redirect, including
+- `HttpError` for any non-200 response that isn't a followed redirect, including
   exceeding `maxRedirects` (`statusCode` is the response status)
 - `UntrustedUrlError` when `isTrustedUrl` returns `false` (`url` is the rejected
   URL; it is never requested)
