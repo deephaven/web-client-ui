@@ -50,6 +50,39 @@ jobs:
       - name: Publish production packages
         if: ${{ github.event_name == 'release' }}
         run: ./node_modules/.bin/lerna publish from-package --yes
+      - name: Wait for packages to be available on npm
+        # The registry CDN caches package metadata (max-age=300), so a just-published
+        # version can be missing from `npm info`/`npm install` for several minutes.
+        # The CDN varies on the Accept header, so poll the exact requests npm makes:
+        # full metadata for `npm info` (deephaven-core) and abbreviated metadata for
+        # `npm install` (enterprise), at npm's escaped scoped-package URL. Wait until
+        # every public package reports its version and `latest` dist-tag in both.
+        if: ${{ github.event_name == 'release' }}
+        timeout-minutes: 20
+        run: |
+          set -euo pipefail
+          ACCEPT_HEADERS=(
+            'application/json'
+            'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
+          )
+          is_available() {
+            local url="https://registry.npmjs.org/${1/\//%2f}"
+            for accept in "${ACCEPT_HEADERS[@]}"; do
+              curl -fsS --compressed -H "Accept: $accept" "$url" \
+                | jq -e --arg v "$2" '.versions[$v] and .["dist-tags"].latest == $v' > /dev/null \
+                || return 1
+            done
+          }
+          mapfile -t PACKAGES < <(jq -r 'select(.private != true) | "\(.name)@\(.version)"' packages/*/package.json)
+          for pkg in "${PACKAGES[@]}"; do
+            name="${pkg%@*}"
+            version="${pkg##*@}"
+            until is_available "$name" "$version"; do
+              echo "Waiting for $name@$version..."
+              sleep 15
+            done
+            echo "$name@$version is available"
+          done
       - name: Update deephaven-core
         if: ${{ github.event_name == 'release' }}
         run: |
