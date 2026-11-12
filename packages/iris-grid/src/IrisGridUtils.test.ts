@@ -1392,8 +1392,8 @@ describe('dehydrated state omits default values', () => {
 
   /** Hydrate saved IrisGrid state, then dehydrate it as IrisGrid would on save */
   function hydrateAndDehydrateIrisGridState(
-    saved: Partial<DehydratedIrisGridState>
-  ): Partial<DehydratedIrisGridState> {
+    saved: DehydratedIrisGridState
+  ): DehydratedIrisGridState {
     const hydrated = irisGridUtils.hydrateIrisGridState(model, saved);
     return JSON.parse(
       JSON.stringify(
@@ -1417,7 +1417,7 @@ describe('dehydrated state omits default values', () => {
     });
 
     it('keeps values that differ from the defaults', () => {
-      const saved: Partial<DehydratedIrisGridState> = {
+      const saved: DehydratedIrisGridState = {
         isFilterBarShown: true,
         quickFilters: [[1, { text: 'foo' }]],
         sorts: [{ column: 'name_0', direction: 'ASC', isAbs: false }],

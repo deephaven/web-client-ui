@@ -80,7 +80,7 @@ export function GridWidgetPlugin({
   const irisGridUtils = useMemo(() => new IrisGridUtils(dh), [dh]);
 
   const [state, setState] = usePersistentState<
-    Partial<DehydratedIrisGridState & DehydratedGridState> | undefined
+    (DehydratedIrisGridState & DehydratedGridState) | undefined
   >(undefined, {
     version: 1,
     type: 'GridWidgetPlugin',

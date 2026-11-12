@@ -90,7 +90,7 @@ function areIrisGridStatesEqual(
 function makeMemoizedGridStateDehydrator(): (
   model: IrisGridModel,
   gridState: HydratedGridState
-) => Partial<DehydratedGridState> {
+) => DehydratedGridState {
   return memoizeOne(
     (model: IrisGridModel, gridState: HydratedGridState) =>
       IrisGridUtils.dehydrateGridState(model, gridState),
@@ -107,7 +107,7 @@ function makeMemoizedGridStateDehydrator(): (
 function makeMemoizedIrisGridStateDehydrator(): (
   model: IrisGridModel,
   irisGridState: HydratedIrisGridState
-) => Partial<DehydratedIrisGridState> {
+) => DehydratedIrisGridState {
   return memoizeOne(
     (model: IrisGridModel, irisGridState: HydratedIrisGridState) => {
       const irisGridUtils = new IrisGridUtils(model.dh);
@@ -129,13 +129,13 @@ function makeMemoizedCombinedGridStateDehydrator(): (
   model: IrisGridModel,
   irisGridState: HydratedIrisGridState,
   gridState: HydratedGridState
-) => Partial<DehydratedIrisGridState & DehydratedGridState> {
+) => DehydratedIrisGridState & DehydratedGridState {
   return memoizeOne(
     (
       model: IrisGridModel,
       irisGridState: HydratedIrisGridState,
       gridState: HydratedGridState
-    ): Partial<DehydratedIrisGridState & DehydratedGridState> => {
+    ): DehydratedIrisGridState & DehydratedGridState => {
       const irisGridUtils = new IrisGridUtils(model.dh);
       return {
         ...irisGridUtils.dehydrateIrisGridState(model, irisGridState),

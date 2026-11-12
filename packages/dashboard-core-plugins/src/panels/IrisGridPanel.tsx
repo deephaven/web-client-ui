@@ -125,9 +125,9 @@ type ModelQueue = ModelQueueFunction[];
  * their defaults, which hydrate fills back in.
  */
 export interface PanelState {
-  gridState: Partial<DehydratedGridState>;
-  irisGridState: Partial<DehydratedIrisGridState>;
-  irisGridPanelState: Partial<DehydratedIrisGridPanelState>;
+  gridState: DehydratedGridState;
+  irisGridState: DehydratedIrisGridState;
+  irisGridPanelState: DehydratedIrisGridPanelState;
   pluginState: unknown;
 }
 
