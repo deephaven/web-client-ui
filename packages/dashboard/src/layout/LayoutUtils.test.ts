@@ -4,10 +4,7 @@ import {
   type ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import { type DashboardLayoutConfig } from '../DashboardLayout';
-import LayoutUtils, {
-  LAYOUT_ITEM_DEFAULTS,
-  type StackItemConfig,
-} from './LayoutUtils';
+import LayoutUtils, { LAYOUT_ITEM_DEFAULTS } from './LayoutUtils';
 
 function makeContentItem(type = 'root'): Partial<ContentItem> {
   const contentItems = [];
@@ -171,108 +168,84 @@ describe('isEqual', () => {
       )
     ).toBe(false);
   });
-
-  it('matches a full layout after its defaults are removed and restored', () => {
-    const restored = LayoutUtils.restoreLayoutConfigDefaults(
-      LayoutUtils.removeLayoutConfigDefaults(makeFullLayout())
-    );
-    expect(LayoutUtils.isEqual(makeFullLayout(), restored)).toBe(true);
-    expect(LayoutUtils.isEqual(makeFullLayout(), restored, true)).toBe(true);
-  });
-
-  it('detects non-default differences after defaults are removed and restored', () => {
-    const changed = makeFullLayout();
-    (changed[0].content?.[0] as StackItemConfig).activeItemIndex = 1;
-    expect(
-      LayoutUtils.isEqual(
-        LayoutUtils.restoreLayoutConfigDefaults(
-          LayoutUtils.removeLayoutConfigDefaults(makeFullLayout())
-        ),
-        changed
-      )
-    ).toBe(false);
-  });
 });
 
-/**
- * Shape of a dehydrated layout as produced by golden-layout `toConfig` and
- * `dehydrateLayoutConfig`, i.e. with every default value present
- */
-function makeFullLayout(): DashboardLayoutConfig {
-  return [
-    {
-      type: 'column',
-      id: 'column-id',
-      isClosable: true,
-      isFocusOnShow: true,
-      reorderEnabled: true,
-      title: '',
-      content: [
-        {
-          type: 'stack',
-          id: 'stack-id',
-          isClosable: true,
-          isFocusOnShow: true,
-          reorderEnabled: true,
-          title: '',
-          width: 75,
-          activeItemIndex: 0,
-          content: [
-            {
-              type: 'react-component',
-              component: 'ConsolePanel',
-              title: 'Console',
-              isClosable: false,
-              id: 'console-id',
-              props: { panelState: { itemIds: [] } },
-              componentName: 'lm-react-component',
-              isFocusOnShow: true,
-              reorderEnabled: true,
-              componentState: null,
-            },
-            {
-              type: 'react-component',
-              component: 'LogPanel',
-              title: 'Log',
-              isClosable: false,
-              id: 'log-id',
-              props: {},
-              componentName: 'lm-react-component',
-              isFocusOnShow: true,
-              reorderEnabled: true,
-              componentState: null,
-            },
-            {
-              // Panels without a registered dehydrate function have no componentState
-              type: 'react-component',
-              component: 'PluginPanel',
-              title: 'Plugin',
-              id: 'plugin-id',
-              props: { metadata: { name: 'widget' } },
-              componentName: 'lm-react-component',
-              isClosable: true,
-              isFocusOnShow: true,
-              reorderEnabled: true,
-            },
-          ],
-        },
-        {
-          type: 'stack',
-          id: 'empty-stack-id',
-          isClosable: true,
-          isFocusOnShow: true,
-          reorderEnabled: true,
-          title: '',
-          content: [],
-        },
-      ],
-    },
-  ] as DashboardLayoutConfig;
-}
+describe('dehydrateLayoutConfig', () => {
+  /** Panels are passed through as-is, to test only the layout item defaults */
+  const dehydrateComponent = (_name: string, config: unknown) => config;
 
-describe('removeLayoutConfigDefaults', () => {
+  function dehydrate(config: DashboardLayoutConfig): DashboardLayoutConfig {
+    return LayoutUtils.dehydrateLayoutConfig(
+      config,
+      dehydrateComponent as Parameters<
+        typeof LayoutUtils.dehydrateLayoutConfig
+      >[1]
+    ) as DashboardLayoutConfig;
+  }
+
+  /** Layout as produced by golden-layout `toConfig`, with every default value present */
+  function makeGoldenLayoutConfig(): DashboardLayoutConfig {
+    return [
+      {
+        type: 'column',
+        id: 'column-id',
+        isClosable: true,
+        isFocusOnShow: true,
+        reorderEnabled: true,
+        title: '',
+        content: [
+          {
+            type: 'stack',
+            id: 'stack-id',
+            isClosable: true,
+            isFocusOnShow: true,
+            reorderEnabled: true,
+            title: '',
+            width: 75,
+            activeItemIndex: 0,
+            content: [
+              {
+                type: 'react-component',
+                component: 'ConsolePanel',
+                title: 'Console',
+                isClosable: false,
+                id: 'console-id',
+                props: { panelState: { itemIds: [] } },
+                componentName: 'lm-react-component',
+                isFocusOnShow: true,
+                reorderEnabled: true,
+                componentState: null,
+              },
+              {
+                type: 'react-component',
+                component: 'LogPanel',
+                title: 'Log',
+                isClosable: false,
+                id: 'log-id',
+                props: {},
+                componentName: 'lm-react-component',
+                isFocusOnShow: true,
+                reorderEnabled: true,
+                componentState: null,
+              },
+            ],
+          },
+          {
+            type: 'stack',
+            id: 'empty-stack-id',
+            isClosable: true,
+            isFocusOnShow: true,
+            reorderEnabled: true,
+            title: '',
+            content: [],
+          },
+        ],
+      },
+    ] as DashboardLayoutConfig;
+  }
+
   it('omits default values from every layout item', () => {
-    expect(LayoutUtils.removeLayoutConfigDefaults(makeFullLayout())).toEqual([
+    expect(dehydrate(makeGoldenLayoutConfig())).toEqual([
       {
         type: 'column',
         id: 'column-id',
@@ -289,7 +262,6 @@ describe('removeLayoutConfigDefaults', () => {
                 isClosable: false,
                 id: 'console-id',
                 props: { panelState: { itemIds: [] } },
-                componentState: null,
               },
               {
                 type: 'react-component',
@@ -297,14 +269,6 @@ describe('removeLayoutConfigDefaults', () => {
                 title: 'Log',
                 isClosable: false,
                 id: 'log-id',
-                componentState: null,
-              },
-              {
-                type: 'react-component',
-                component: 'PluginPanel',
-                title: 'Plugin',
-                id: 'plugin-id',
-                props: { metadata: { name: 'widget' } },
               },
             ],
           },
@@ -334,7 +298,14 @@ describe('removeLayoutConfigDefaults', () => {
         ],
       },
     ] as DashboardLayoutConfig;
-    expect(LayoutUtils.removeLayoutConfigDefaults(config)).toEqual(config);
+    expect(dehydrate(config)).toEqual(config);
+  });
+
+  it('keeps activeItemIndex on stacks without tabs', () => {
+    const config = [
+      { type: 'stack', activeItemIndex: 0, content: [] },
+    ] as DashboardLayoutConfig;
+    expect(dehydrate(config)).toEqual(config);
   });
 
   it('only omits component defaults from react-component items', () => {
@@ -346,88 +317,13 @@ describe('removeLayoutConfigDefaults', () => {
       },
       { type: 'row', activeItemIndex: 0, props: {} },
     ] as unknown as DashboardLayoutConfig;
-    expect(LayoutUtils.removeLayoutConfigDefaults(config)).toEqual(config);
+    expect(dehydrate(config)).toEqual(config);
   });
 
   it('does not modify the input', () => {
-    const config = makeFullLayout();
-    LayoutUtils.removeLayoutConfigDefaults(config);
-    expect(config).toEqual(makeFullLayout());
-  });
-
-  it('returns an empty array for an empty layout', () => {
-    expect(LayoutUtils.removeLayoutConfigDefaults([])).toEqual([]);
-  });
-});
-
-describe('restoreLayoutConfigDefaults', () => {
-  it('restores a layout without defaults to its original shape', () => {
-    expect(
-      LayoutUtils.restoreLayoutConfigDefaults(
-        LayoutUtils.removeLayoutConfigDefaults(makeFullLayout())
-      )
-    ).toEqual(makeFullLayout());
-  });
-
-  it('leaves a full layout unchanged', () => {
-    expect(LayoutUtils.restoreLayoutConfigDefaults(makeFullLayout())).toEqual(
-      makeFullLayout()
-    );
-  });
-
-  it('does not overwrite non-default values', () => {
-    const config = [
-      {
-        type: 'stack',
-        isClosable: false,
-        title: 'Title',
-        activeItemIndex: 1,
-        content: [
-          {
-            type: 'react-component',
-            component: 'Panel',
-            componentState: { a: 1 },
-            props: { metadata: { name: 'x' } },
-          },
-        ],
-      },
-    ] as DashboardLayoutConfig;
-    expect(LayoutUtils.restoreLayoutConfigDefaults(config)).toEqual([
-      {
-        type: 'stack',
-        isClosable: false,
-        isFocusOnShow: true,
-        reorderEnabled: true,
-        title: 'Title',
-        activeItemIndex: 1,
-        content: [
-          {
-            type: 'react-component',
-            component: 'Panel',
-            componentName: 'lm-react-component',
-            componentState: { a: 1 },
-            props: { metadata: { name: 'x' } },
-            isClosable: true,
-            isFocusOnShow: true,
-            reorderEnabled: true,
-            title: '',
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('does not add activeItemIndex to empty stacks', () => {
-    expect(
-      LayoutUtils.restoreLayoutConfigDefaults([{ type: 'stack', content: [] }])
-    ).toEqual([{ ...LAYOUT_ITEM_DEFAULTS, type: 'stack', content: [] }]);
-  });
-
-  it('does not modify the input', () => {
-    const config = LayoutUtils.removeLayoutConfigDefaults(makeFullLayout());
-    const copy = LayoutUtils.cloneLayout(config);
-    LayoutUtils.restoreLayoutConfigDefaults(config);
-    expect(config).toEqual(copy);
+    const config = makeGoldenLayoutConfig();
+    dehydrate(config);
+    expect(config).toEqual(makeGoldenLayoutConfig());
   });
 });
 

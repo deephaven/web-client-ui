@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import deepEqual from 'fast-deep-equal';
 import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
@@ -6,6 +7,10 @@ import { type LayoutManager } from '@deephaven/golden-layout';
 import Dashboard from './Dashboard';
 import { type DashboardLayoutConfig } from './DashboardLayout';
 import { LayoutUtils, useDashboardPanel } from './layout';
+import {
+  LAYOUT_ITEM_DEFAULTS,
+  REACT_COMPONENT_ITEM_DEFAULTS,
+} from './layout/LayoutUtils';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
@@ -381,7 +386,7 @@ describe('replacing a layout with a pending save', () => {
   });
 });
 
-describe('layouts stored without defaults', () => {
+describe('saved layout default values', () => {
   const makePanel = (name: string) => ({
     type: 'react-component' as const,
     component: TestPanel.displayName,
@@ -409,6 +414,45 @@ describe('layouts stored without defaults', () => {
     },
   ];
 
+  type Item = Record<string, unknown> & { type: string; content?: Item[] };
+
+  function getDefaults(item: Item): Record<string, unknown> {
+    return {
+      ...LAYOUT_ITEM_DEFAULTS,
+      ...(item.type === 'react-component'
+        ? { ...REACT_COMPONENT_ITEM_DEFAULTS, props: {} }
+        : {}),
+      ...(item.type === 'stack' && (item.content?.length ?? 0) > 0
+        ? { activeItemIndex: 0 }
+        : {}),
+    };
+  }
+
+  /** Paths of every item key whose value equals its default */
+  function findDefaultValues(items: Item[], path = ''): string[] {
+    return items.flatMap((item, i) => {
+      const itemPath = `${path}[${i}]`;
+      const defaults = getDefaults(item);
+      return [
+        ...Object.keys(defaults)
+          .filter(key => deepEqual(item[key], defaults[key]))
+          .map(key => `${itemPath}.${key}`),
+        ...findDefaultValues(item.content ?? [], `${itemPath}.content`),
+      ];
+    });
+  }
+
+  /** Add every default value, as layouts were saved before defaults were omitted */
+  function addDefaultValues(items: Item[]): Item[] {
+    return items.map(item => ({
+      ...getDefaults(item),
+      ...item,
+      ...(item.content != null
+        ? { content: addDefaultValues(item.content) }
+        : {}),
+    }));
+  }
+
   /**
    * Loads a layout into golden-layout and returns the first dehydrated layout
    * it saves, i.e. what is compared with the stored layout after loading
@@ -433,41 +477,29 @@ describe('layouts stored without defaults', () => {
     return savedLayoutConfig;
   }
 
-  it('saves the restored layout when loaded with defaults removed', async () => {
+  it('saves the layout without default values', async () => {
     const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
-    const storedLayoutConfig =
-      LayoutUtils.removeLayoutConfigDefaults(savedLayoutConfig);
-    expect(JSON.stringify(storedLayoutConfig).length).toBeLessThan(
-      JSON.stringify(savedLayoutConfig).length
-    );
+    expect(findDefaultValues(savedLayoutConfig as Item[])).toEqual([]);
+  });
 
-    const reloadedLayoutConfig = await loadAndGetSavedLayout(
-      storedLayoutConfig
-    );
-
-    expect(
-      LayoutUtils.isEqual(
-        reloadedLayoutConfig,
-        LayoutUtils.restoreLayoutConfigDefaults(storedLayoutConfig)
-      )
-    ).toBe(true);
+  it('saves the same layout when a saved layout is loaded again', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(savedLayoutConfig);
     expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
       true
     );
   });
 
-  it('saves an identical layout when loaded with defaults restored', async () => {
+  it('saves a layout stored with default values without them', async () => {
     const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
-    const restoredLayoutConfig = LayoutUtils.restoreLayoutConfigDefaults(
-      LayoutUtils.removeLayoutConfigDefaults(savedLayoutConfig)
-    );
+    const olderLayoutConfig = addDefaultValues(
+      savedLayoutConfig as Item[]
+    ) as DashboardLayoutConfig;
+    expect(findDefaultValues(olderLayoutConfig as Item[])).not.toEqual([]);
 
-    const reloadedLayoutConfig = await loadAndGetSavedLayout(
-      restoredLayoutConfig
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(olderLayoutConfig);
+    expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
+      true
     );
-
-    expect(
-      LayoutUtils.isEqual(reloadedLayoutConfig, restoredLayoutConfig)
-    ).toBe(true);
   });
 });

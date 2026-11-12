@@ -25,7 +25,6 @@ import {
   assertNotNull,
   type Brand,
   removeDefaultValues,
-  restoreDefaultValues,
 } from '@deephaven/utils';
 import { type DashboardLayoutConfig } from '../DashboardLayout';
 import {
@@ -79,9 +78,8 @@ function isStackItemConfig(config: ItemConfig): config is StackItemConfig {
  * Values golden-layout fills in for any layout item missing these keys.
  * They mirror golden-layout's `itemDefaultConfig`, which
  * `AbstractContentItem._extendItemNode` applies to every item (row, column,
- * stack and component) when it is created, so every layout golden-layout saves
- * contains them. `restoreLayoutConfigDefaults` adds them back so a stored layout
- * matches the layout golden-layout saves after loading it.
+ * stack and component) when it is created, so `dehydrateLayoutConfig` can omit
+ * them: golden-layout restores them when the layout is loaded.
  *
  * Frozen here rather than read from golden-layout because stored layouts rely
  * on them: changing a value would change the meaning of every stored layout that omits them.
@@ -98,22 +96,21 @@ export const LAYOUT_ITEM_DEFAULTS = Object.freeze({
  * `LayoutManager.createContentItem` sets `componentName` to `'lm-react-component'` on every
  * `react-component` item, and `toConfig` writes it back out, so every live react component
  * has this value and it carries no information.
- *
- * `componentState: null` is intentionally not included: the default `dehydrate` sets it,
- * but panels without a registered dehydrate function omit it, so a missing value can't be
- * restored to match the live layout.
+ * The default panel `dehydrate` moves `componentState` into `props.panelState` and sets
+ * `componentState` to `null`; golden-layout treats a missing `componentState` as `{}`.
  */
 export const REACT_COMPONENT_ITEM_DEFAULTS = Object.freeze({
   componentName: 'lm-react-component',
+  componentState: null,
 });
+
+type LayoutItemRecord = ItemConfig & Record<string, unknown>;
 
 /**
  * Get the default values for a layout item, based on its type
  * @param item Layout item to get the defaults for
- * @returns Default value for each key that can be removed from or restored to the item
+ * @returns Default value for each key that can be omitted from the item
  */
-type LayoutItemRecord = ItemConfig & Record<string, unknown>;
-
 function getLayoutItemDefaults(item: ItemConfig): Partial<LayoutItemRecord> {
   const defaults: Partial<LayoutItemRecord> = { ...LAYOUT_ITEM_DEFAULTS };
   if (item.type === 'react-component') {
@@ -129,6 +126,20 @@ function getLayoutItemDefaults(item: ItemConfig): Partial<LayoutItemRecord> {
     defaults.activeItemIndex = 0;
   }
   return defaults;
+}
+
+/**
+ * Remove the keys of a single layout item whose values equal its defaults.
+ * Does not recurse into `content`.
+ * @param item Layout item
+ * @returns A new item without default values
+ */
+function removeItemDefaults<T extends ItemConfig>(item: T): T {
+  // `type` is never a default, so the result is still a full item
+  return removeDefaultValues<LayoutItemRecord>(
+    item as LayoutItemRecord,
+    getLayoutItemDefaults(item)
+  ) as unknown as T;
 }
 
 class LayoutUtils {
@@ -464,8 +475,11 @@ class LayoutUtils {
   }
 
   /**
-   * Removes dynamic props from components in the given config so this config could be serialized
-   * @param config Config objec
+   * Removes dynamic props from components in the given config so this config could be serialized.
+   * Item keys whose values equal their golden-layout defaults (`LAYOUT_ITEM_DEFAULTS`,
+   * `REACT_COMPONENT_ITEM_DEFAULTS`, empty `props`, and `activeItemIndex: 0` on stacks with
+   * tabs) are omitted; golden-layout fills them back in when the layout is loaded.
+   * @param config Config object
    * @returns Dehydrated config
    */
   static dehydrateLayoutConfig(
@@ -489,7 +503,7 @@ class LayoutUtils {
           itemConfig
         );
         if (dehydratedComponent != null) {
-          dehydratedConfig.push(dehydratedComponent);
+          dehydratedConfig.push(removeItemDefaults(dehydratedComponent));
         } else {
           log.debug2(
             `dehydrateLayoutConfig: skipping unmapped component "${itemConfig.component}"`
@@ -503,9 +517,9 @@ class LayoutUtils {
             dehydrateComponent
           ),
         };
-        dehydratedConfig.push(layoutItemConfig);
+        dehydratedConfig.push(removeItemDefaults(layoutItemConfig));
       } else {
-        dehydratedConfig.push(itemConfig);
+        dehydratedConfig.push(removeItemDefaults(itemConfig));
       }
     }
     return dehydratedConfig;
@@ -546,7 +560,7 @@ class LayoutUtils {
         isReactComponentConfig(itemConfig) &&
         itemConfig.component === 'IrisGridPanel'
       ) {
-        if (itemConfig.props.panelState != null) {
+        if (itemConfig.props?.panelState != null) {
           delete itemConfig.id;
           itemConfig.props.panelState.irisGridState.sorts = [];
           itemConfig.props.panelState.irisGridState.quickFilters = [];
@@ -582,55 +596,6 @@ class LayoutUtils {
 
   static cloneLayout(layout: DashboardLayoutConfig): DashboardLayoutConfig {
     return JSON.parse(JSON.stringify(layout));
-  }
-
-  /**
-   * Remove layout item keys whose values equal the golden-layout defaults, to
-   * reduce the size of persisted layouts. Restore them with `restoreLayoutConfigDefaults`.
-   * Panel props such as `panelState` are kept as-is.
-   *
-   * Only use this when writing a layout to storage. Do not compare a layout without
-   * defaults to one with defaults (e.g. with `isEqual`): they differ even when the
-   * layouts are equivalent. Restore defaults on stored layouts as soon as they are loaded.
-   * @param config Dehydrated layout config
-   * @returns A new layout config without default values; the input is not modified
-   */
-  static removeLayoutConfigDefaults(
-    config: DashboardLayoutConfig
-  ): DashboardLayoutConfig {
-    return config.map(item => {
-      // `type` is never a default, so the result is still a full item
-      const result = removeDefaultValues<LayoutItemRecord>(
-        item as LayoutItemRecord,
-        getLayoutItemDefaults(item)
-      ) as ItemConfig;
-      if (item.content !== undefined) {
-        result.content = LayoutUtils.removeLayoutConfigDefaults(item.content);
-      }
-      return result;
-    });
-  }
-
-  /**
-   * Restore the default values removed by `removeLayoutConfigDefaults`, so the result
-   * matches the layout golden-layout produces after loading it.
-   * Layouts that already contain every key are returned unchanged in value.
-   * @param config Layout config, with or without defaults
-   * @returns A new layout config with default values filled in; the input is not modified
-   */
-  static restoreLayoutConfigDefaults(
-    config: DashboardLayoutConfig
-  ): DashboardLayoutConfig {
-    return config.map(item => {
-      const result: ItemConfig = restoreDefaultValues<LayoutItemRecord>(
-        item as LayoutItemRecord,
-        getLayoutItemDefaults(item)
-      );
-      if (item.content !== undefined) {
-        result.content = LayoutUtils.restoreLayoutConfigDefaults(item.content);
-      }
-      return result;
-    });
   }
 
   /**

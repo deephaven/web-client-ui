@@ -39,6 +39,7 @@ import {
   type SidebarFormattingRule,
   type IrisGridState,
   type ChartBuilderSettings,
+  type DehydratedGridState,
   type DehydratedIrisGridState,
   type DehydratedIrisGridPanelState,
   type ColumnHeaderGroup,
@@ -119,27 +120,20 @@ type ModelQueueFunction = (model: IrisGridModel) => void;
 
 type ModelQueue = ModelQueueFunction[];
 
+/**
+ * Dehydrated state saved for the panel. Grid sections omit values equal to
+ * their defaults, which hydrate fills back in.
+ */
 export interface PanelState {
-  gridState: {
-    isStuckToBottom: boolean;
-    isStuckToRight: boolean;
-    movedColumns: readonly {
-      from: string | ModelIndex | [string, string] | [ModelIndex, ModelIndex];
-      to: string | ModelIndex;
-    }[];
-    movedRows: readonly MoveOperation[];
-  };
-  irisGridState: DehydratedIrisGridState;
-  irisGridPanelState: DehydratedIrisGridPanelState;
+  gridState: Partial<DehydratedGridState>;
+  irisGridState: Partial<DehydratedIrisGridState>;
+  irisGridPanelState: Partial<DehydratedIrisGridPanelState>;
   pluginState: unknown;
 }
 
-// Some of the properties in the loaded panel state may be omitted
-// even though they can't be undefined in the dehydrated state.
-// This can happen when loading the state saved before the properties were added.
+// Older saved state may use the V1 panel state shape with `partition`.
 type LoadedPanelState = PanelState & {
   irisGridPanelState: PanelState['irisGridPanelState'] & {
-    partitions?: (string | null)[];
     partition?: string | null;
   };
 };
@@ -612,9 +606,12 @@ export class IrisGridPanel extends PureComponent<
       const {
         aggregationSettings,
         customColumns,
-        selectDistinctColumns = [],
+        selectDistinctColumns,
         rollupConfig,
-      } = { ...irisGridState, ...irisGridStateOverrides };
+      } = IrisGridUtils.restoreIrisGridStateDefaults({
+        ...irisGridState,
+        ...irisGridStateOverrides,
+      });
 
       if (customColumns.length > 0) {
         modelQueue.push(m => {

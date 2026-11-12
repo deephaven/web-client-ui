@@ -2,7 +2,7 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { IrisGridModelFactory, IrisGridUtils } from '@deephaven/iris-grid';
+import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -332,20 +332,15 @@ function makeGridStateFromProps(props: Record<string, any>) {
 }
 
 /**
- * Detects drift between the state an unmodified panel saves and the frozen
- * defaults `IrisGridUtils` removes before the state is stored. What a failure
- * means depends on the assertion:
+ * Detects drift between the panel's initial state and the frozen defaults that
+ * `IrisGridUtils` omits when dehydrating. An unmodified panel should save
+ * almost nothing.
  *
- * - Unexpected leftover key: a UI default changed. Add the key to the expected
- *   leftovers; state with the new default is then stored explicitly, which only
- *   reduces the saving. Do not change the frozen default to match, since
- *   stored state relies on it (see the "frozen state defaults" tests in
- *   IrisGridUtils.test.ts).
- * - Restored state differs from the saved state: a saved property was renamed
- *   or removed but its frozen default wasn't. Restoring then adds a key the
- *   panel never saves, so a loaded dashboard never matches the live one. Remove
- *   the stale key from the frozen defaults (renamed properties also need a
- *   migration for stored values).
+ * If this fails with an unexpected key, a UI default changed. Add the key to
+ * the expected result: state with the new default is then saved explicitly,
+ * which only reduces the saving. Do not change the frozen default to match,
+ * since saved state relies on it (see the "frozen state defaults" tests in
+ * IrisGridUtils.test.ts).
  */
 describe('saved panel state of an unmodified panel', () => {
   beforeEach(() => {
@@ -396,13 +391,7 @@ describe('saved panel state of an unmodified panel', () => {
     // Compare what would be stored, i.e. without undefined values
     const storedPanelState = JSON.parse(JSON.stringify(panelState));
 
-    const withoutDefaults =
-      IrisGridUtils.removePanelStateDefaults(storedPanelState);
-
-    expect(IrisGridUtils.restorePanelStateDefaults(withoutDefaults)).toEqual(
-      storedPanelState
-    );
-    expect(withoutDefaults).toEqual({
+    expect(storedPanelState).toEqual({
       // Not frozen defaults: an empty list differs from a missing value,
       // which falls back to the model's column header groups
       irisGridState: { columnHeaderGroups: [] },
