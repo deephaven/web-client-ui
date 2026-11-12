@@ -1,3 +1,4 @@
+import diagnosticsChannel from 'node:diagnostics_channel';
 import http from 'node:http';
 import type { AddressInfo, Socket } from 'node:net';
 import {
@@ -55,6 +56,41 @@ async function getRefusedUrl(): Promise<URL> {
   const server = await startServer(() => undefined);
   await server.close();
   return server.url;
+}
+
+/**
+ * Collect client requests as they start. `serverUtils` gets its own copy of
+ * the `node:http` namespace, so spying on `http.get` here wouldn't see them.
+ */
+function trackClientRequests(): {
+  clientRequests: http.ClientRequest[];
+  stop: () => void;
+} {
+  const clientRequests: http.ClientRequest[] = [];
+  const onStart = (message: unknown): void => {
+    clientRequests.push((message as { request: http.ClientRequest }).request);
+  };
+  diagnosticsChannel.subscribe('http.client.request.start', onStart);
+  return {
+    clientRequests,
+    stop: () =>
+      diagnosticsChannel.unsubscribe('http.client.request.start', onStart),
+  };
+}
+
+/**
+ * Wait for a client request to close. Node emits a destroyed request's
+ * 'error' before its 'close', but possibly after the server sees its socket
+ * close.
+ */
+function waitForRequestClose(req: http.ClientRequest): Promise<void> {
+  return new Promise(resolve => {
+    if (req.closed) {
+      resolve();
+      return;
+    }
+    req.on('close', () => resolve());
+  });
 }
 
 function waitForClose(socket: Socket): Promise<void> {
@@ -267,6 +303,39 @@ describe('downloadFromURL', () => {
     expect(server.requests).toHaveLength(1);
   });
 
+  it('does not retry the error emitted by destroying a timed out request', async () => {
+    // Destroying the timed out request emits 'error' after the download has
+    // already rejected, so any retry is scheduled by the time it closes.
+    const retryDelayMs = 12_345;
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const { clientRequests, stop } = trackClientRequests();
+    const server = await startServer(() => {
+      // Never respond
+    });
+
+    await expect(
+      downloadFromURL(server.url, {
+        retries: 5,
+        retryDelayMs,
+        timeoutMs: 50,
+        logger: silentLogger,
+      })
+    ).rejects.toBeInstanceOf(DownloadTimeoutError);
+    expect(clientRequests).toHaveLength(1);
+    await waitForRequestClose(clientRequests[0]);
+
+    expect(
+      setTimeoutSpy.mock.calls.filter(([, delay]) => delay === retryDelayMs)
+    ).toHaveLength(0);
+    expect(silentLogger.error).not.toHaveBeenCalledWith(
+      'Retrying url:',
+      expect.anything()
+    );
+    expect(server.requests).toHaveLength(1);
+    stop();
+    setTimeoutSpy.mockRestore();
+  });
+
   describe('discarded responses with a stalled body', () => {
     it('closes the socket of an HTTP error response', async () => {
       const server = await startServer((req, res) => {
@@ -331,6 +400,37 @@ describe('downloadFromURL', () => {
         })
       ).rejects.toThrow('stop');
       await waitForClose(server.sockets[0]);
+    });
+
+    it('does not retry the error emitted by destroying an aborted request', async () => {
+      // Destroying the in-flight request emits 'error' after the download has
+      // already rejected, so any retry is scheduled by the time it closes.
+      const retryDelayMs = 12_345;
+      const controller = new AbortController();
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+      const { clientRequests, stop } = trackClientRequests();
+      const server = await startServer(() => {
+        controller.abort(new Error('stop'));
+      });
+
+      await expect(
+        downloadFromURL(server.url, {
+          retries: 5,
+          retryDelayMs,
+          signal: controller.signal,
+          logger: silentLogger,
+        })
+      ).rejects.toThrow('stop');
+      expect(clientRequests).toHaveLength(1);
+      await waitForRequestClose(clientRequests[0]);
+
+      expect(
+        setTimeoutSpy.mock.calls.filter(([, delay]) => delay === retryDelayMs)
+      ).toHaveLength(0);
+      expect(silentLogger.error).not.toHaveBeenCalled();
+      expect(server.requests).toHaveLength(1);
+      stop();
+      setTimeoutSpy.mockRestore();
     });
 
     it('cancels a pending retry', async () => {

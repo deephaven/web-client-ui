@@ -254,8 +254,11 @@ function downloadWithOptions(
           req.destroy();
         })
         .on('error', e => {
-          // A superseded request must not start a second retry chain.
-          if (settled || req !== activeRequest) {
+          // Destroying a request that has no response yet, on abort or timeout,
+          // emits 'error' after the download has settled. That must not start
+          // a retry. Once a response arrives, socket errors go to the response,
+          // so a request superseded by a redirect never reaches this handler.
+          if (settled) {
             return;
           }
 
