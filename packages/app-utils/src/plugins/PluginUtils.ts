@@ -19,8 +19,6 @@ import {
 import loadRemoteModule from './loadRemoteModule';
 import { resolve } from './remote-component.config';
 
-export { getAuthHandlers };
-
 const log = Log.module('@deephaven/app-utils.PluginUtils');
 
 /**
@@ -37,6 +35,11 @@ export type { PluginManifest };
  * @deprecated Import from `@deephaven/plugin` instead.
  */
 export { getPluginModuleValue };
+
+/**
+ * @deprecated Import from `@deephaven/jsapi-utils` instead.
+ */
+export { getAuthHandlers };
 
 /**
  * Imports a commonjs plugin module from the provided URL
