@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.33.2](https://github.com/deephaven/web-client-ui/compare/v1.33.1...v1.33.2) (2026-11-12)
+
+### Bug Fixes
+
+- DH-24300: Fix custom columns breaks Javascript table plugin ([#2814](https://github.com/deephaven/web-client-ui/issues/2814)) ([0bab596](https://github.com/deephaven/web-client-ui/commit/0bab596c9c60a0613f1e6cfcd349203960fe85bb))
+
 ## [1.33.1](https://github.com/deephaven/web-client-ui/compare/v1.33.0...v1.33.1) (2026-11-04)
 
 ### Bug Fixes
