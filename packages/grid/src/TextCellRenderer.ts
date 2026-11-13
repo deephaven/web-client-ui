@@ -40,16 +40,15 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
         model.colorForCell(modelColumn, modelRow, theme) || textColor;
       context.fillStyle = color;
 
-      context.save();
-
       const {
         width: textWidth,
         x: textX,
         y: textY,
       } = GridUtils.getTextRenderMetrics(state, column, row);
 
-      const fontWidthLower = fontWidthsLower.get(context.font);
-      const fontWidthUpper = fontWidthsUpper.get(context.font);
+      const { font } = context;
+      const fontWidthLower = fontWidthsLower.get(font);
+      const fontWidthUpper = fontWidthsUpper.get(font);
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
@@ -66,43 +65,49 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
       );
 
       if (truncatedText) {
-        let tokenIndex = 0;
-        let textStart = 0;
-        let left = textX;
-        const { actualBoundingBoxDescent } = context.measureText(truncatedText);
+        if (tokens.length === 0) {
+          // Measuring is only needed to position tokens and their underlines
+          context.fillText(truncatedText, textX, textY);
+        } else {
+          let tokenIndex = 0;
+          let textStart = 0;
+          let left = textX;
+          const { actualBoundingBoxDescent } =
+            context.measureText(truncatedText);
 
-        while (textStart < truncatedText.length) {
-          const nextToken = tokens[tokenIndex];
-          const token = textStart === nextToken?.start ? nextToken : null;
-          const textEnd =
-            token?.end ?? nextToken?.start ?? truncatedText.length;
-          const value = truncatedText.substring(textStart, textEnd);
-          const { width } = context.measureText(value);
-          const widthOfUnderline = value.endsWith('…')
-            ? width - context.measureText('…').width
-            : width;
+          while (textStart < truncatedText.length) {
+            const nextToken = tokens[tokenIndex];
+            const token = textStart === nextToken?.start ? nextToken : null;
+            const textEnd =
+              token?.end ?? nextToken?.start ?? truncatedText.length;
+            const value = truncatedText.substring(textStart, textEnd);
+            const { width } = context.measureText(value);
 
-          // Set the styling based on the token, then draw the text
-          if (token != null) {
-            context.fillStyle = theme.hyperlinkColor;
-            context.fillText(value, left, textY);
-            context.fillRect(
-              left,
-              textY + actualBoundingBoxDescent,
-              widthOfUnderline,
-              1
-            );
-          } else {
-            context.fillStyle = color;
-            context.fillText(value, left, textY);
+            // Set the styling based on the token, then draw the text
+            if (token != null) {
+              const widthOfUnderline = value.endsWith('…')
+                ? width - context.measureText('…').width
+                : width;
+              context.fillStyle = theme.hyperlinkColor;
+              context.fillText(value, left, textY);
+              context.fillRect(
+                left,
+                textY + actualBoundingBoxDescent,
+                widthOfUnderline,
+                1
+              );
+            } else {
+              context.fillStyle = color;
+              context.fillText(value, left, textY);
+            }
+
+            left += width;
+            textStart = textEnd;
+            if (token != null) tokenIndex += 1;
           }
-
-          left += width;
-          textStart = textEnd;
-          if (token != null) tokenIndex += 1;
+          context.fillStyle = color;
         }
       }
-      context.restore();
     }
 
     if (

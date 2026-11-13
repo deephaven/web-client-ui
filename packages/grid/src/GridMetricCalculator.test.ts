@@ -1,4 +1,9 @@
-import GridMetricCalculator, { trimMap } from './GridMetricCalculator';
+import GridMetricCalculator, {
+  type GridMetricState,
+  trimMap,
+} from './GridMetricCalculator';
+import GridTheme from './GridTheme';
+import MockGridModel from './MockGridModel';
 
 describe('trimMap', () => {
   function makeMap(low = 0, high = 10): Map<number, number> {
@@ -81,9 +86,9 @@ describe('calculateTextWidth', () => {
     );
 
     const charWidths = allCharWidths.get(font);
-    expect(charWidths.get('a')).toEqual(10);
+    expect(charWidths.get('ab')).toEqual(30);
+    expect(charWidths.get('bc')).toEqual(50);
     expect(charWidths.get('b')).toEqual(20);
-    expect(charWidths.get('c')).toEqual(30);
     expect(textWidth).toEqual(60);
   });
 
@@ -114,7 +119,7 @@ describe('calculateTextWidth', () => {
     expect(secondRun).toEqual(100);
   });
 
-  it('should terminate early if max width is exceeded', () => {
+  it('should clamp the result to max width', () => {
     const input = 'abcde';
     const mockContext = {
       measureText: jest.fn().mockImplementation(char => ({
@@ -130,6 +135,45 @@ describe('calculateTextWidth', () => {
     );
 
     expect(textWidth).toEqual(50);
+  });
+
+  it('should stop measuring text too long to cache once max width is exceeded', () => {
+    const input = 'ab'.repeat(GridMetricCalculator.MAX_CACHED_TEXT_LENGTH);
+    const mockContext = {
+      measureText: jest.fn().mockImplementation(chars => ({
+        width: chars.length * 10,
+      })),
+    };
+
+    const textWidth = gridMetricCalculator.calculateTextWidth(
+      mockContext,
+      font,
+      input,
+      50
+    );
+
+    expect(textWidth).toEqual(50);
+    // Only the first few characters should have been measured, not the whole string
+    expect(mockContext.measureText.mock.calls.length).toBeLessThan(10);
+  });
+
+  it('should keep text widths cached past the general cache size', () => {
+    const mockContext = {
+      measureText: jest.fn().mockImplementation(chars => ({
+        width: chars.length * 10,
+      })),
+    };
+    for (let i = 0; i <= GridMetricCalculator.CACHE_SIZE; i += 1) {
+      gridMetricCalculator.calculateTextWidth(mockContext, font, `${i}`);
+    }
+    const measureTextWidth = jest.spyOn(
+      gridMetricCalculator,
+      'measureTextWidth'
+    );
+
+    gridMetricCalculator.calculateTextWidth(mockContext, font, '0');
+
+    expect(measureTextWidth).not.toHaveBeenCalled();
   });
 
   // This test checks that the calculation logic is equivalent to the native canvas one.
@@ -168,4 +212,72 @@ describe('calculateTextWidth', () => {
       expect(a).toEqual(b);
     }
   );
+});
+
+describe('getMetrics', () => {
+  function makeState(): GridMetricState {
+    const context = global.document
+      .createElement('canvas')
+      .getContext('2d') as CanvasRenderingContext2D;
+    return {
+      left: 0,
+      top: 0,
+      leftOffset: 0,
+      topOffset: 0,
+      width: 800,
+      height: 400,
+      context,
+      theme: GridTheme,
+      model: new MockGridModel({ rowCount: 1000, columnCount: 50 }),
+      movedColumns: [],
+      movedRows: [],
+      isDraggingHorizontalScrollBar: false,
+      isDraggingVerticalScrollBar: false,
+      draggingColumn: null,
+    };
+  }
+
+  it('measures each auto-sized column once per call', () => {
+    const calculator = new GridMetricCalculator();
+    const calculateColumnDataWidth = jest.spyOn(
+      calculator,
+      'calculateColumnDataWidth'
+    );
+
+    calculator.getMetrics(makeState());
+
+    const measuredColumns = calculateColumnDataWidth.mock.calls.map(
+      ([modelColumn]) => modelColumn
+    );
+    expect(measuredColumns.length).toBeGreaterThan(0);
+    expect(new Set(measuredColumns).size).toBe(measuredColumns.length);
+  });
+
+  it('measures columns again on the next call', () => {
+    const calculator = new GridMetricCalculator();
+    const state = makeState();
+    calculator.getMetrics(state);
+    const calculateColumnDataWidth = jest.spyOn(
+      calculator,
+      'calculateColumnDataWidth'
+    );
+
+    calculator.getMetrics(state);
+
+    expect(calculateColumnDataWidth).toHaveBeenCalled();
+  });
+
+  it('returns the same column widths as measuring each column directly', () => {
+    const calculator = new GridMetricCalculator();
+    const state = makeState();
+
+    const { visibleColumns, visibleColumnWidths } =
+      calculator.getMetrics(state);
+
+    visibleColumns.forEach(column => {
+      expect(visibleColumnWidths.get(column)).toBe(
+        calculator.getVisibleColumnWidth(column, state)
+      );
+    });
+  });
 });

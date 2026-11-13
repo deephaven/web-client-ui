@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
+import memoizee from 'memoizee';
 import clamp from 'lodash.clamp';
 import { assertNotNull, EMPTY_ARRAY, getChangedKeys } from '@deephaven/utils';
 import GridMetricCalculator, {
@@ -102,6 +103,39 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   oBackingStorePixelRatio?: number;
   backingStorePixelRatio?: number;
 };
+
+/** The inputs the current metrics were calculated from */
+type GridMetricsSource = {
+  state: GridState;
+  metricState: GridMetricState;
+  metricCalculator: GridMetricCalculator;
+};
+
+function isShallowEqual<T extends object>(a: T, b: T): boolean {
+  const aKeys = Object.keys(a) as (keyof T)[];
+  if (aKeys.length !== Object.keys(b).length) {
+    return false;
+  }
+  return aKeys.every(key => a[key] === b[key]);
+}
+
+/**
+ * Check if metrics calculated from one source could differ from metrics calculated from another
+ * @param oldSource The source the current metrics were calculated from
+ * @param newSource The source to calculate the metrics from
+ * @returns True if the metrics need to be recalculated
+ */
+function isMetricsChanged(
+  oldSource: GridMetricsSource | null,
+  newSource: GridMetricsSource
+): boolean {
+  return (
+    oldSource == null ||
+    oldSource.metricCalculator !== newSource.metricCalculator ||
+    !isShallowEqual(oldSource.state, newSource.state) ||
+    !isShallowEqual(oldSource.metricState, newSource.metricState)
+  );
+}
 
 export type GridProps = typeof Grid.defaultProps & {
   // Children to render in the grid
@@ -322,15 +356,26 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   static dragTimeout = 1000;
 
-  static getTheme = memoize(
+  /** Number of distinct themes shared between all grids */
+  static THEME_CACHE_SIZE = 10;
+
+  /**
+   * Get the theme from the context and user themes. Cached across all grids so grids sharing
+   * a theme only build it once, and grids with different themes each keep a stable theme.
+   * @param contextTheme The theme from the ThemeContext
+   * @param userTheme The theme passed in as a prop
+   * @returns The combined theme
+   */
+  static getTheme = memoizee(
     (
       contextTheme: Partial<GridThemeType>,
       userTheme: Partial<GridThemeType>
-    ) => ({
+    ): GridThemeType => ({
       ...GridTheme,
       ...contextTheme,
       ...userTheme,
-    })
+    }),
+    { max: Grid.THEME_CACHE_SIZE }
   );
 
   /**
@@ -412,6 +457,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   prevMetrics: GridMetrics | null;
 
   metrics: GridMetrics | null;
+
+  private metricsSource: GridMetricsSource | null = null;
 
   private renderState: GridRenderState | null;
 
@@ -748,9 +795,17 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.removeDocumentCursor();
   }
 
+  // Avoids the shared cache lookup on every call while this grid's theme is unchanged
+  getCachedTheme = memoize(
+    (
+      contextTheme: Partial<GridThemeType>,
+      userTheme: Partial<GridThemeType>
+    ): GridThemeType => Grid.getTheme(contextTheme, userTheme)
+  );
+
   getTheme(): GridThemeType {
     const { theme } = this.props;
-    return Grid.getTheme(this.context, theme);
+    return this.getCachedTheme(this.context, theme);
   }
 
   getGridPointFromEvent(event: GridMouseEvent): GridPoint {
@@ -1014,7 +1069,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   updateCanvas(): void {
     this.updateCanvasScale();
 
-    this.updateMetrics();
+    this.updateMetricsIfChanged();
 
     this.updateRenderState();
 
@@ -1103,11 +1158,44 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   updateMetrics(state = this.state): GridMetrics {
+    return this.calculateMetrics(this.getMetricsSource(state));
+  }
+
+  /**
+   * Update the metrics only if the state or metric inputs have changed since they were last calculated.
+   * componentDidUpdate already calculates the metrics for the state the next animation frame draws,
+   * so this avoids calculating them a second time when drawing.
+   * Calculator or model changes that don't change any of the inputs must call `updateMetrics` or `forceUpdate`.
+   */
+  private updateMetricsIfChanged(): GridMetrics {
+    const { metrics } = this;
+    const metricsSource = this.getMetricsSource(this.state);
+    if (
+      metrics != null &&
+      !isMetricsChanged(this.metricsSource, metricsSource)
+    ) {
+      this.prevMetrics = metrics;
+      this.updateScrollBounds();
+      return metrics;
+    }
+    return this.calculateMetrics(metricsSource);
+  }
+
+  private getMetricsSource(state: GridState): GridMetricsSource {
+    return {
+      // Copy the state as componentDidUpdate mutates it after calculating metrics
+      state: { ...state },
+      metricState: this.getMetricState(state),
+      metricCalculator: this.metricCalculator,
+    };
+  }
+
+  private calculateMetrics(metricsSource: GridMetricsSource): GridMetrics {
     this.prevMetrics = this.metrics;
 
-    const { metricCalculator } = this;
-    const metricState = this.getMetricState(state);
+    const { metricCalculator, metricState } = metricsSource;
     this.metrics = metricCalculator.getMetrics(metricState);
+    this.metricsSource = metricsSource;
     this.updateScrollBounds();
 
     return this.metrics;

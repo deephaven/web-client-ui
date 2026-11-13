@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Grid, MockGridModel, type ModelIndex } from '@deephaven/grid';
 import { runRenderBreakdown } from './renderBreakdown';
+import TickingGridModel from './TickingGridModel';
 
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ';
@@ -19,11 +20,14 @@ class LongTextGridModel extends MockGridModel {
  * - rows: Number of rows (default: 1000000)
  * - cols: Number of columns (default: 100)
  * - text: `short` cell text, or `long` text that is truncated in every cell (default: short)
+ * - tick: Update interval in ms. When set, every cell is a double that changes
+ *   on every tick (see TickingGridModel) and `text` is ignored (default: off)
  *
  * Examples:
  *   http://localhost:4020/
  *   http://localhost:4020/?rows=10000&cols=50
  *   http://localhost:4020/?rows=100000&cols=200&text=long
+ *   http://localhost:4020/?rows=2000&cols=40&tick=100
  *
  * Exposes `window.runRenderBreakdown()`, which times the grid's draw against
  * raw canvas drawing of the same cells. See renderBreakdown.ts.
@@ -34,16 +38,55 @@ function App(): JSX.Element {
   const rowCount = parseInt(params.get('rows') ?? '1000000', 10);
   const columnCount = parseInt(params.get('cols') ?? '100', 10);
   const isLongText = params.get('text') === 'long';
+  const tickMs = parseInt(params.get('tick') ?? '0', 10);
+  const isTicking = tickMs > 0;
 
   const gridRef = useRef<Grid>(null);
+  const fpsRef = useRef<HTMLSpanElement>(null);
 
-  const model = useMemo(
-    () =>
-      isLongText
-        ? new LongTextGridModel({ rowCount, columnCount })
-        : new MockGridModel({ rowCount, columnCount }),
-    [rowCount, columnCount, isLongText]
-  );
+  const model = useMemo(() => {
+    if (isTicking) {
+      return new TickingGridModel({ rowCount, columnCount });
+    }
+    return isLongText
+      ? new LongTextGridModel({ rowCount, columnCount })
+      : new MockGridModel({ rowCount, columnCount });
+  }, [rowCount, columnCount, isLongText, isTicking]);
+
+  useEffect(() => {
+    if (!(model instanceof TickingGridModel)) return undefined;
+
+    // Same path as IrisGrid.handleUpdate when the model emits an update
+    const interval = window.setInterval(() => {
+      model.setTick(Date.now());
+      gridRef.current?.forceUpdate();
+    }, tickMs);
+    return () => window.clearInterval(interval);
+  }, [model, tickMs]);
+
+  useEffect(() => {
+    if (!isTicking) return undefined;
+
+    // Live FPS readout, written to the DOM directly to avoid re-rendering
+    let frame: number;
+    let frameCount = 0;
+    let start = performance.now();
+    const measure = (now: number) => {
+      frameCount += 1;
+      if (now - start >= 1000) {
+        if (fpsRef.current != null) {
+          fpsRef.current.textContent = `, FPS: ${Math.round(
+            (frameCount * 1000) / (now - start)
+          )}`;
+        }
+        frameCount = 0;
+        start = now;
+      }
+      frame = requestAnimationFrame(measure);
+    };
+    frame = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(frame);
+  }, [isTicking]);
 
   useEffect(() => {
     window.runRenderBreakdown = options => {
@@ -56,8 +99,8 @@ function App(): JSX.Element {
   }, []);
 
   const configInfo = `Rows: ${rowCount.toLocaleString()}, Cols: ${columnCount.toLocaleString()}${
-    isLongText ? ', Long text' : ''
-  }`;
+    isTicking ? `, Tick: ${tickMs}ms` : ''
+  }${!isTicking && isLongText ? ', Long text' : ''}`;
 
   return (
     <div
@@ -83,6 +126,7 @@ function App(): JSX.Element {
         }}
       >
         {configInfo}
+        <span ref={fpsRef} />
       </div>
       <Grid ref={gridRef} model={model} />
     </div>
