@@ -176,7 +176,7 @@ class IrisGridTableModel
     }
     this.closeSubscription();
     this.customColumnList = customColumns;
-    this.table.applyCustomColumns([...customColumns, ...this.formatColumns]);
+    this.applyTableCustomColumns([...customColumns, ...this.formatColumns]);
     this.applyViewport();
   }
 
@@ -202,8 +202,22 @@ class IrisGridTableModel
     }
     this.closeSubscription();
     this.formatColumnList = formatColumns;
-    this.table.applyCustomColumns([...this.customColumns, ...formatColumns]);
+    this.applyTableCustomColumns([...this.customColumns, ...formatColumns]);
     this.applyViewport();
+  }
+
+  private applyTableCustomColumns(
+    customColumns: (ColumnName | DhType.CustomColumn)[]
+  ): void {
+    this.applyColumnsOperation(() => {
+      const previous = this.table.customColumns.map(String);
+      this.table.applyCustomColumns(customColumns);
+      const next = this.table.customColumns.map(String);
+      return (
+        previous.length !== next.length ||
+        previous.some((column, i) => column !== next[i])
+      );
+    });
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {
