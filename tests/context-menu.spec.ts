@@ -234,8 +234,6 @@ test('go to', async ({ page }) => {
 test('open custom context menu with another custom context menu open', async ({
   page,
 }) => {
-  await page.goto('');
-
   await page.getByText('Console', { exact: true }).click({ button: 'right' });
   await expect(page.getByText('Close', { exact: true })).toHaveCount(1);
 
