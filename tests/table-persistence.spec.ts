@@ -19,7 +19,7 @@ import {
 const WORKSPACE_STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
 type LayoutItem = {
-  type: string;  npm run e2e -- --project=chromium tests/table-persistence.spec.ts
+  type: string;
   component?: string;
   props?: { metadata?: Record<string, unknown>; panelState?: PanelState };
   content?: LayoutItem[];
