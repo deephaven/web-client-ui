@@ -2,7 +2,7 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { IrisGridModelFactory } from '@deephaven/iris-grid';
+import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -289,4 +289,97 @@ it('closes the base model if transformModel rejects', async () => {
   await expectNotLoading(container);
   expect(transformModel).toHaveBeenCalledTimes(1);
   expect(baseModel.close).toHaveBeenCalledTimes(1);
+});
+
+function makeCustomColumnsPanelState(customColumns: string[]) {
+  return {
+    gridState: {},
+    irisGridState: { customColumns },
+    irisGridPanelState: {},
+    pluginState: null,
+  };
+}
+
+it('applies saved custom columns before transformModel runs', async () => {
+  MockIrisGrid.mockClear();
+  const table = makeTable();
+  table.applyCustomColumns = jest.fn(customColumns => {
+    setTimeout(() =>
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED)
+    );
+    return customColumns;
+  });
+  let customColumnCallsAtTransform = -1;
+  const transformModel = jest.fn(model => {
+    customColumnCallsAtTransform = table.applyCustomColumns.mock.calls.length;
+    return model;
+  });
+
+  render(
+    <IrisGridPanel
+      makeModel={makeMakeModel(table)}
+      metadata={{ table: 'table' } as any}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent() as any}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      settings={{ timeZone: 'America/New_York' } as any}
+      panelState={makeCustomColumnsPanelState(['Foo = 1']) as any}
+      loadPlugin={() => undefined}
+      transformModel={transformModel}
+    />
+  );
+
+  await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  expect(customColumnCallsAtTransform).toBe(1);
+  expect(table.applyCustomColumns).toHaveBeenCalledWith(['Foo = 1']);
+});
+
+it('shows an error if applying saved custom columns fails', async () => {
+  MockIrisGrid.mockClear();
+  const table = makeTable();
+  const error = new Error('Bad custom column');
+  let model: IrisGridModel | undefined;
+  table.applyCustomColumns = jest.fn(() => {
+    setTimeout(
+      () =>
+        model?.dispatchEvent(
+          new CustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
+            detail: error,
+          })
+        )
+    );
+    return [];
+  });
+  const makeModel = async () => {
+    model = await IrisGridModelFactory.makeModel(dh, table);
+    return model;
+  };
+
+  const { container } = render(
+    <IrisGridPanel
+      makeModel={makeModel}
+      metadata={{ table: 'table' } as any}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent() as any}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      settings={{ timeZone: 'America/New_York' } as any}
+      panelState={makeCustomColumnsPanelState(['Foo = 1']) as any}
+      loadPlugin={() => undefined}
+    />
+  );
+
+  await waitFor(() =>
+    expect(
+      screen.getByText('Unable to open table. Error: Bad custom column')
+    ).toBeInTheDocument()
+  );
+  expect(
+    container.querySelector('[role=progressbar].loading-spinner-large')
+  ).not.toBeInTheDocument();
+  expect(MockIrisGrid).not.toHaveBeenCalled();
 });
