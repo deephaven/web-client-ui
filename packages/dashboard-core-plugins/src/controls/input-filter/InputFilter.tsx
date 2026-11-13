@@ -17,7 +17,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import memoizee from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
-import './InputFilter.scss';
+import './InputFilter.css';
 
 const log = Log.module('InputFilter');
 const UPDATE_DEBOUNCE = 150;

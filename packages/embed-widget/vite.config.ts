@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
@@ -71,8 +72,8 @@ export default defineConfig(({ mode }) => {
         mode === 'development'
           ? [
               {
-                find: /^@deephaven\/(.*)\/scss\/(.*)/,
-                replacement: `${packagesDir}/$1/scss/$2`,
+                find: /^@deephaven\/(.*)\/styles\/(.*)/,
+                replacement: `${packagesDir}/$1/styles/$2`,
               },
               // Subpath entry points must precede the catch-all so they are not
               // rewritten to `<pkg>/<subpath>/src`
@@ -89,6 +90,10 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
+      // Lightning CSS minifies the CSS and lowers/prefixes it for the
+      // browserslist targets
+      cssMinify: 'lightningcss',
+      cssTarget: browserslistToEsbuild(),
       emptyOutDir: true,
       sourcemap: true,
     },

@@ -1,0 +1,21 @@
+.query-status-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  text-align: left;
+  display: block;
+  padding: 3px 5px;
+  background: color-mix(in srgb, var(--dh-color-content-bg) 95%, transparent);
+  color: var(--dh-color-gray-700);
+  border-top: 1px solid var(--dh-color-gray-500);
+  border-right: 1px solid var(--dh-color-gray-500);
+  min-width: 400px;
+}
+
+/* Container for widgets to fill available panel space */
+.widget-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}

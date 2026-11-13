@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { type IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronRight } from '@deephaven/icons';
-import './MenuItem.scss';
+import './MenuItem.css';
 
 import UISwitch from '../UISwitch';
 

@@ -18,7 +18,7 @@ import {
   type FileStorageTable,
   isDirectory,
 } from './FileStorage';
-import './FileList.scss';
+import './FileList.css';
 import { DEFAULT_ROW_HEIGHT, getMoveOperation } from './FileListUtils';
 import { FileListItem, type FileListRenderItemProps } from './FileListItem';
 

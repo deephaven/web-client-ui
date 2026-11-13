@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import './SelectValueList.scss';
+import './SelectValueList.css';
 import classNames from 'classnames';
 import memoize from 'memoizee';
 import Checkbox from './Checkbox';

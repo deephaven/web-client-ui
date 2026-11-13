@@ -1,0 +1,18 @@
+.new-file-modal-content {
+  .new-item-destination {
+    color: var(--dh-color-gray-600);
+  }
+
+  .file-explorer-container {
+    border: 1px solid var(--dh-color-input-border);
+    border-radius: var(--dh-border-radius);
+    overflow: hidden;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .directory-breadcrumbs {
+    color: var(--dh-color-accent-bg);
+  }
+}

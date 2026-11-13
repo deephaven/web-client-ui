@@ -5,7 +5,7 @@ import { type Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Button, FadeTransition } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
-import './AdvancedFilterCreatorSelectValue.scss';
+import './AdvancedFilterCreatorSelectValue.css';
 import { type ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {

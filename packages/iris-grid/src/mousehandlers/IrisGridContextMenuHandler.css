@@ -1,0 +1,21 @@
+.iris-grid-filter-menu-item-value {
+  user-select: none;
+  background: var(--dh-color-surface-bg);
+  border-radius: var(--dh-border-radius) var(--dh-border-radius) 0 0;
+  padding: var(--dh-input-padding-y) 2rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.iris-grid-filter-menu-subtitle {
+  color: var(--dh-color-gray-600);
+  font-size: small;
+}
+
+.advanced-filter-button-container {
+  transition: var(--dh-transition) opacity;
+}
+
+.advanced-filter-button-container.hidden {
+  opacity: 0;
+}

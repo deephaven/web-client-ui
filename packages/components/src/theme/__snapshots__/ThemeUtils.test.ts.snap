@@ -36,5 +36,6 @@ exports[`SVG_ICON_MANUAL_COLOR_MAP should match snapshot 1`] = `
   "--dh-svg-icon-select-indicator": "--dh-color-selector-fg",
   "--dh-svg-icon-select-indicator-disabled": "--dh-color-selector-disabled-fg",
   "--dh-svg-icon-select-indicator-hover": "--dh-color-selector-hover-fg",
+  "--dh-svg-icon-success": "--dh-color-positive-bg",
 }
 `;

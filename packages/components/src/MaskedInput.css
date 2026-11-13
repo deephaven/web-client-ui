@@ -1,0 +1,4 @@
+.masked-input {
+  font-family: var(--dh-font-family-sans);
+  font-variant-numeric: tabular-nums;
+}

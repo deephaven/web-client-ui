@@ -35,7 +35,7 @@ import {
   getLinksForDashboard,
   getTableMapForDashboard,
 } from '../redux';
-import './DropdownFilterPanel.scss';
+import './DropdownFilterPanel.css';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import './ItemListItem.scss';
+import './ItemListItem.css';
 import Log from '@deephaven/log';
 
 const log = Log.module('ItemListItem');

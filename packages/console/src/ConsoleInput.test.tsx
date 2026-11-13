@@ -7,7 +7,7 @@ import { type CommandHistoryStorage } from './command-history';
 
 /**
  * Mock MonacoTheme so LINE_HEIGHT resolves to a real number.
- * scss files are mocked as identity-obj-proxy by moduleNameMapper, which
+ * css files are mocked as identity-obj-proxy by moduleNameMapper, which
  * returns the property key as the value, making parseInt return NaN.
  */
 jest.mock('./monaco', () => ({

@@ -50,11 +50,14 @@ module.exports = {
   // Makes Jest transform some node_modules when needed. Usually because they are pure ESM and Jest needs CJS
   // By default, Jest ignores transforming node_modules
   // When switching to transform all of node_modules, it caused a babel error
+  // The build copies snapshots into dist/ along with the CSS, so ignore them
+  // there; otherwise Jest reports them as obsolete
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/dist/'],
   transformIgnorePatterns: [
     `node_modules/(?!(${nodeModulesToTransform.join('|')})/)`,
   ],
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.css$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       path.join(__dirname, './__mocks__/fileMock.js'),
     '^fira$': 'identity-obj-proxy',

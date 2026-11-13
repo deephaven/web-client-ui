@@ -15,7 +15,7 @@ import {
   type PopperOptions,
   Tooltip,
 } from '@deephaven/components';
-import './ConsoleStatusBar.scss';
+import './ConsoleStatusBar.css';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 
 const POPPER_OPTIONS: PopperOptions = { placement: 'bottom-end' };

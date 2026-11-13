@@ -6,7 +6,7 @@ import { TimeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
 import TimeInput, { type TimeInputElement } from './TimeInput';
 import DropdownMenu from './menu-actions/DropdownMenu';
-import './CustomTimeSelect.scss';
+import './CustomTimeSelect.css';
 
 const CUSTOM_OPTION = -1;
 

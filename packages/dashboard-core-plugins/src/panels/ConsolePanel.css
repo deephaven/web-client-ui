@@ -1,0 +1,20 @@
+.error-message pre {
+  color: var(--dh-color-negative-bg);
+}
+
+.iris-panel-console {
+  &.disconnected {
+    .console-history-result-in-progress {
+      display: none;
+    }
+    .csv-overlay {
+      display: none;
+    }
+    .csv-input-bar {
+      display: none;
+    }
+    .console-input-wrapper {
+      display: none;
+    }
+  }
+}

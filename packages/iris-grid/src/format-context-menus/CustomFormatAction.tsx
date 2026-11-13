@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Tooltip } from '@deephaven/components';
 import { DOMUtils } from '@deephaven/utils';
 
-import './CustomFormatAction.scss';
+import './CustomFormatAction.css';
 
 type CustomFormatActionProps = typeof CustomFormatAction.defaultProps & {
   forwardedProps: {

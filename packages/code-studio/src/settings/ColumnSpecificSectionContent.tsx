@@ -33,7 +33,7 @@ import {
   type WorkspaceSettings,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
-import './FormattingSectionContent.scss';
+import './FormattingSectionContent.css';
 import type { DebouncedFunc } from 'lodash';
 import {
   focusFirstInputInContainer,

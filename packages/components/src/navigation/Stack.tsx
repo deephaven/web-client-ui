@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePrevious } from '@deephaven/react-hooks';
-import './Stack.scss';
+import './Stack.css';
 import { SlideTransition } from '../transitions';
 
 export type StackProps = {

@@ -1,0 +1,6 @@
+/* Exported variables for use in GoldenLayoutThemeExport.js */
+/* stylelint-disable property-no-unknown */
+:export {
+  tab-height: 28px;
+  drag-border-width: 5px;
+}

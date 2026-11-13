@@ -1,0 +1,37 @@
+.csv-progress-container {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content max-content;
+  gap: 10px;
+  align-items: center;
+  padding: var(--dh-spacer-2);
+  background-color: var(--dh-color-surface-bg);
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.csv-input-bar-container {
+  display: flex;
+  background-color: var(--dh-color-surface-bg);
+  overflow: hidden;
+
+  > * {
+    padding-top: var(--dh-spacer-2);
+    padding-bottom: var(--dh-spacer-2);
+    margin-left: var(--dh-spacer-2);
+    margin-right: var(--dh-spacer-2);
+  }
+
+  .form-group label {
+    margin-right: var(--dh-spacer-2);
+  }
+
+  .csv-input-buttons {
+    flex-flow: row wrap;
+    margin-left: auto;
+    > *:first-child {
+      margin-right: var(--dh-spacer-1);
+    }
+  }
+}

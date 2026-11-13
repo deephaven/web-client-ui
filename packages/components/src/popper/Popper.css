@@ -1,0 +1,198 @@
+.popper-container {
+  --dh-popover-arrow-width: 5px;
+  --dh-popover-animation-scale: 0.92;
+  --dh-popover-animation-offset: 10px;
+
+  position: absolute;
+  z-index: 5000;
+
+  .spectrum-theme-provider {
+    max-height: inherit;
+  }
+}
+
+/* Override popper.js inline positioning when a maximized popper should be */
+/* centered and fixed in the viewport. */
+.popper-container.maximized {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.popper.popper-tooltip {
+  --background-color: var(--dh-color-tooltip-bg);
+}
+
+.popper {
+  --background-color: var(--dh-color-popover-bg);
+
+  background: var(--background-color);
+  color: var(--dh-color-tooltip-fg);
+  border-radius: var(--dh-border-radius);
+  box-shadow: var(--dh-box-shadow);
+  transition:
+    visibility var(--dh-transition),
+    opacity var(--dh-transition);
+  pointer-events: none;
+  outline: 0;
+  max-height: inherit;
+
+  .popper-content {
+    position: relative;
+    max-height: inherit;
+
+    /*
+     * Only with containPortals: traps stray positive z-index (e.g. Bootstrap
+     * checkboxes) so it can't paint over the portaled overlay sibling.
+     */
+    &.popper-content--contain-portals {
+      isolation: isolate;
+    }
+
+    .tooltip-content {
+      text-align: center;
+      padding: var(--dh-tooltip-padding-y) var(--dh-tooltip-padding-x);
+    }
+  }
+
+  .popper-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: var(--dh-popover-arrow-width);
+    border-color: var(--background-color);
+  }
+}
+
+.popper.interactive {
+  pointer-events: auto;
+}
+
+.popper-transition-enter {
+  opacity: 0;
+  transition: none;
+}
+
+.popper-transition-exit {
+  opacity: 0;
+  transition: all var(--dh-transition);
+}
+
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
+  transform: scale(var(--dh-popover-animation-scale))
+    translate(0, var(--dh-popover-animation-offset));
+}
+
+.popper-container[x-placement^='right']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='right']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
+  transform: scale(var(--dh-popover-animation-scale))
+    translate(calc(-1 * var(--dh-popover-animation-offset)), 0);
+}
+
+.popper-container[x-placement^='bottom']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='bottom']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
+  transform: scale(var(--dh-popover-animation-scale))
+    translate(0, calc(-1 * var(--dh-popover-animation-offset)));
+}
+
+.popper-container[x-placement^='left']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='left']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
+  transform: scale(var(--dh-popover-animation-scale))
+    translate(var(--dh-popover-animation-offset), 0);
+}
+
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
+.popper-container[x-placement^='right']
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
+.popper-container[x-placement^='bottom']
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
+.popper-container[x-placement^='left']
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper {
+  opacity: 1;
+  transform: none;
+  transition: all var(--dh-transition) ease-out;
+}
+
+.popper-container[x-placement^='top'] > .spectrum-theme-provider .popper {
+  margin-bottom: var(--dh-popover-arrow-width);
+
+  .popper-arrow {
+    border-width: var(--dh-popover-arrow-width) var(--dh-popover-arrow-width) 0
+      var(--dh-popover-arrow-width);
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    bottom: calc(-1 * var(--dh-popover-arrow-width));
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+.popper-container[x-placement^='bottom'] > .spectrum-theme-provider .popper {
+  margin-top: var(--dh-popover-arrow-width);
+
+  .popper-arrow {
+    border-width: 0 var(--dh-popover-arrow-width) var(--dh-popover-arrow-width)
+      var(--dh-popover-arrow-width);
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    top: calc(-1 * var(--dh-popover-arrow-width));
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+.popper-container[x-placement^='right'] > .spectrum-theme-provider .popper {
+  margin-left: var(--dh-popover-arrow-width);
+
+  .popper-arrow {
+    border-width: var(--dh-popover-arrow-width) var(--dh-popover-arrow-width)
+      var(--dh-popover-arrow-width) 0;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    left: calc(-1 * var(--dh-popover-arrow-width));
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.popper-container[x-placement^='left'] > .spectrum-theme-provider .popper {
+  margin-right: var(--dh-popover-arrow-width);
+
+  .popper-arrow {
+    border-width: var(--dh-popover-arrow-width) 0 var(--dh-popover-arrow-width)
+      var(--dh-popover-arrow-width);
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    right: calc(-1 * var(--dh-popover-arrow-width));
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

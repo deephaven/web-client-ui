@@ -19,7 +19,7 @@ import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
-import './NavTabList.scss';
+import './NavTabList.css';
 import {
   type ContextAction,
   type ResolvableContextAction,
@@ -507,6 +507,7 @@ function NavTabList({
               {...provided.droppableProps}
               className={classNames('nav nav-tabs', {
                 dragging: snapshot.draggingFromThisWith,
+                'dh-marching-ants': snapshot.draggingFromThisWith,
               })}
               role="tablist"
               onScroll={handleScroll}

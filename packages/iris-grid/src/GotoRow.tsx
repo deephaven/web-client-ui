@@ -19,7 +19,7 @@ import {
 import { Button, DateTimeInput, Select } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import classNames from 'classnames';
-import './GotoRow.scss';
+import './GotoRow.css';
 import { nanoid } from 'nanoid';
 import type IrisGridModel from './IrisGridModel';
 import IrisGridBottomBar from './IrisGridBottomBar';

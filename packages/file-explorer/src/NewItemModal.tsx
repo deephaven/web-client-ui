@@ -26,7 +26,7 @@ import { type FileStorageItem, type FileType } from './FileStorage';
 import type FileStorage from './FileStorage';
 import FileUtils from './FileUtils';
 
-import './NewItemModal.scss';
+import './NewItemModal.css';
 import FileExistsError from './FileExistsError';
 import FileNotFoundError from './FileNotFoundError';
 

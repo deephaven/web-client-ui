@@ -2,7 +2,7 @@
 import React, { PureComponent, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { UISwitch } from '@deephaven/components';
-import './LogLevelMenuItem.scss';
+import './LogLevelMenuItem.css';
 
 interface LogLevelMenuItemProps {
   logLevel: string;

@@ -30,7 +30,7 @@ import PanelEvent from './PanelEvent';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
 import TabEvent from './TabEvent';
-import './Panel.scss';
+import './Panel.css';
 
 const log = Log.module('Panel');
 

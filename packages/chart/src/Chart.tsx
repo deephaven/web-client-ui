@@ -40,7 +40,7 @@ import ChartModel from './ChartModel';
 import ChartErrorOverlay from './ChartErrorOverlay';
 import { type ChartTheme } from './ChartTheme';
 import ChartUtils, { type ChartModelSettings } from './ChartUtils';
-import './Chart.scss';
+import './Chart.css';
 import DownsamplingError from './DownsamplingError';
 import useChartTheme from './useChartTheme';
 
