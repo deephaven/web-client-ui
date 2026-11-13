@@ -12,7 +12,7 @@ async function setColumnAndExpectInputValue({
   expectInputValueToBe,
 }: {
   page: Page;
-  setInputValueTo?: string;
+  setInputValueTo?: { value: string; expectedRowNumber: string };
   toggleGoToRow?: boolean;
   setColumnNameTo: string;
   expectInputValueToBe: string;
@@ -21,8 +21,13 @@ async function setColumnAndExpectInputValue({
   if (setInputValueTo !== undefined) {
     const inputValue = page.locator('input[aria-label="Value Input"]');
     await expect(inputValue).toHaveCount(1);
-    await inputValue.fill(setInputValueTo);
-    await page.waitForTimeout(1000);
+    await inputValue.fill(setInputValueTo.value);
+    // Typing a value triggers a debounced, server-side seek that moves the
+    // grid cursor. The column change below reads the value from the cursor
+    // row, so wait for the seek to land (the row input tracks the cursor).
+    await expect(page.getByTestId('goto-row-input')).toHaveValue(
+      setInputValueTo.expectedRowNumber
+    );
   }
 
   if (toggleGoToRow) {
@@ -93,13 +98,13 @@ test.describe('GoToRow change column', () => {
   test('modified set value, different column type > change value', async () => {
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: 'str5',
+      setInputValueTo: { value: 'str5', expectedRowNumber: '6' },
       setColumnNameTo: 'MyInt1',
       expectInputValueToBe: '105',
     });
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: '110',
+      setInputValueTo: { value: '110', expectedRowNumber: '11' },
       setColumnNameTo: 'MyString',
       expectInputValueToBe: 'str10',
     });
@@ -127,13 +132,13 @@ test.describe('GoToRow change column', () => {
   test('modified set value, same column type > keep value', async () => {
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: '115',
+      setInputValueTo: { value: '115', expectedRowNumber: '16' },
       setColumnNameTo: 'MyInt2',
       expectInputValueToBe: '115',
     });
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: '216',
+      setInputValueTo: { value: '216', expectedRowNumber: '17' },
       setColumnNameTo: 'MyInt1',
       expectInputValueToBe: '216',
     });
@@ -142,14 +147,14 @@ test.describe('GoToRow change column', () => {
   test('modified set value, same column type, toggled GoToRow > change value', async () => {
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: '110',
+      setInputValueTo: { value: '110', expectedRowNumber: '11' },
       toggleGoToRow: true,
       setColumnNameTo: 'MyInt2',
       expectInputValueToBe: '210',
     });
     await setColumnAndExpectInputValue({
       page,
-      setInputValueTo: '212',
+      setInputValueTo: { value: '212', expectedRowNumber: '13' },
       toggleGoToRow: true,
       setColumnNameTo: 'MyInt1',
       expectInputValueToBe: '112',
