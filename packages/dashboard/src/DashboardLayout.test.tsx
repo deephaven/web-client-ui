@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import deepEqual from 'fast-deep-equal';
 import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type LayoutManager } from '@deephaven/golden-layout';
 import Dashboard from './Dashboard';
 import { type DashboardLayoutConfig } from './DashboardLayout';
-import { useDashboardPanel } from './layout';
+import { LayoutUtils, useDashboardPanel } from './layout';
+import {
+  LAYOUT_ITEM_DEFAULTS,
+  REACT_COMPONENT_ITEM_DEFAULTS,
+} from './layout/LayoutUtils';
 import {
   assertIsDashboardPluginProps,
   type DashboardPluginComponentProps,
@@ -378,5 +383,174 @@ describe('replacing a layout with a pending save', () => {
     unmount();
 
     expect(savedTitles()).toEqual([]);
+  });
+});
+
+/**
+ * `dehydrateLayoutConfig` omits values equal to golden-layout's defaults and
+ * relies on golden-layout to fill them back in when a layout is loaded. These
+ * tests load layouts into a real golden-layout, so they also guard that
+ * behavior: if golden-layout changes how it fills in a missing value, a saved
+ * layout no longer saves the same way when loaded again.
+ *
+ * The layout covers each omitted key with both its default value and a
+ * non-default value.
+ */
+describe('saved layout default values', () => {
+  const makePanel = (name: string) => ({
+    type: 'react-component' as const,
+    component: TestPanel.displayName,
+    props: { metadata: { type: 'test', name } },
+    title: name,
+  });
+
+  const initialLayoutConfig: DashboardLayoutConfig = [
+    {
+      type: 'column',
+      content: [
+        {
+          // Active tab is the first tab, the default
+          type: 'stack',
+          height: 50,
+          content: [makePanel('a'), makePanel('b')],
+        },
+        {
+          type: 'row',
+          content: [
+            {
+              // Active tab is not the first tab
+              type: 'stack',
+              width: 40,
+              activeItemIndex: 1,
+              content: [
+                makePanel('c'),
+                { ...makePanel('e'), isClosable: false },
+              ],
+            },
+            {
+              type: 'stack',
+              width: 60,
+              content: [
+                makePanel('d'),
+                // No props, which dehydrates to `props: {}`
+                {
+                  type: 'react-component',
+                  component: TestPanel.displayName,
+                  title: 'no-props',
+                },
+              ],
+            },
+            // No tabs, so golden-layout never sets activeItemIndex
+            { type: 'stack', width: 0, content: [] },
+          ],
+        },
+      ],
+    },
+  ];
+
+  type Item = Record<string, unknown> & { type: string; content?: Item[] };
+
+  function getDefaults(item: Item): Record<string, unknown> {
+    return {
+      ...LAYOUT_ITEM_DEFAULTS,
+      ...(item.type === 'react-component'
+        ? { ...REACT_COMPONENT_ITEM_DEFAULTS, props: {} }
+        : {}),
+      ...(item.type === 'stack' && (item.content?.length ?? 0) > 0
+        ? { activeItemIndex: 0 }
+        : {}),
+    };
+  }
+
+  /** Paths of every item key whose value equals its default */
+  function findDefaultValues(items: Item[], path = ''): string[] {
+    return items.flatMap((item, i) => {
+      const itemPath = `${path}[${i}]`;
+      const defaults = getDefaults(item);
+      return [
+        ...Object.keys(defaults)
+          .filter(key => deepEqual(item[key], defaults[key]))
+          .map(key => `${itemPath}.${key}`),
+        ...findDefaultValues(item.content ?? [], `${itemPath}.content`),
+      ];
+    });
+  }
+
+  /** Add every default value, as layouts were saved before defaults were omitted */
+  function addDefaultValues(items: Item[]): Item[] {
+    return items.map(item => ({
+      ...getDefaults(item),
+      ...item,
+      ...(item.content != null
+        ? { content: addDefaultValues(item.content) }
+        : {}),
+    }));
+  }
+
+  /**
+   * Loads a layout into golden-layout and returns the first dehydrated layout
+   * it saves, i.e. what is compared with the stored layout after loading
+   */
+  async function loadAndGetSavedLayout(
+    layoutConfig: DashboardLayoutConfig
+  ): Promise<DashboardLayoutConfig> {
+    const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
+    const { unmount } = render(
+      <ApiContext.Provider value={dh}>
+        <Dashboard
+          layoutConfig={layoutConfig}
+          onLayoutConfigChange={onLayoutConfigChange}
+        >
+          <TestPlugin />
+        </Dashboard>
+      </ApiContext.Provider>
+    );
+    await waitFor(() => expect(onLayoutConfigChange).toHaveBeenCalled());
+    const [[savedLayoutConfig]] = onLayoutConfigChange.mock.calls;
+    unmount();
+    return savedLayoutConfig;
+  }
+
+  it('saves the layout without default values', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    expect(findDefaultValues(savedLayoutConfig as Item[])).toEqual([]);
+  });
+
+  it('keeps values that differ from the defaults', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const [, row] = (savedLayoutConfig[0] as Item).content ?? [];
+    const [stackWithClosedTab, , emptyStack] = row.content ?? [];
+    expect(stackWithClosedTab.activeItemIndex).toBe(1);
+    expect(stackWithClosedTab.content?.[1].isClosable).toBe(false);
+    // golden-layout saves an empty stack without `content`
+    expect(emptyStack).toEqual({
+      type: 'stack',
+      id: expect.any(String),
+      width: 0,
+    });
+  });
+
+  it('saves the same layout when a saved layout is loaded again', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const savedLayoutConfigCopy = LayoutUtils.cloneLayout(savedLayoutConfig);
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(savedLayoutConfig);
+    // Loading must not add golden-layout's defaults to the stored layout
+    expect(savedLayoutConfig).toEqual(savedLayoutConfigCopy);
+    expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
+      true
+    );
+  });
+
+  it('saves a layout stored with default values without them', async () => {
+    const savedLayoutConfig = await loadAndGetSavedLayout(initialLayoutConfig);
+    const olderLayoutConfig = addDefaultValues(
+      savedLayoutConfig as Item[]
+    ) as DashboardLayoutConfig;
+    expect(findDefaultValues(olderLayoutConfig as Item[])).not.toEqual([]);
+
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(olderLayoutConfig);
+    expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
+      true
+    );
   });
 });

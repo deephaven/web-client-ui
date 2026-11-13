@@ -1,8 +1,10 @@
-import type {
-  ContentItem,
-  ReactComponentConfig,
+import {
+  itemDefaultConfig,
+  type ContentItem,
+  type ReactComponentConfig,
 } from '@deephaven/golden-layout';
-import LayoutUtils from './LayoutUtils';
+import { type DashboardLayoutConfig } from '../DashboardLayout';
+import LayoutUtils, { LAYOUT_ITEM_DEFAULTS } from './LayoutUtils';
 
 function makeContentItem(type = 'root'): Partial<ContentItem> {
   const contentItems = [];
@@ -165,6 +167,170 @@ describe('isEqual', () => {
         [makeComponentConfig({ a: 1, b: null })]
       )
     ).toBe(false);
+  });
+});
+
+describe('dehydrateLayoutConfig', () => {
+  /** Panels are passed through as-is, to test only the layout item defaults */
+  const dehydrateComponent = (_name: string, config: unknown) => config;
+
+  function dehydrate(config: DashboardLayoutConfig): DashboardLayoutConfig {
+    return LayoutUtils.dehydrateLayoutConfig(
+      config,
+      dehydrateComponent as Parameters<
+        typeof LayoutUtils.dehydrateLayoutConfig
+      >[1]
+    ) as DashboardLayoutConfig;
+  }
+
+  /** Layout as produced by golden-layout `toConfig`, with every default value present */
+  function makeGoldenLayoutConfig(): DashboardLayoutConfig {
+    return [
+      {
+        type: 'column',
+        id: 'column-id',
+        isClosable: true,
+        isFocusOnShow: true,
+        reorderEnabled: true,
+        title: '',
+        content: [
+          {
+            type: 'stack',
+            id: 'stack-id',
+            isClosable: true,
+            isFocusOnShow: true,
+            reorderEnabled: true,
+            title: '',
+            width: 75,
+            activeItemIndex: 0,
+            content: [
+              {
+                type: 'react-component',
+                component: 'ConsolePanel',
+                title: 'Console',
+                isClosable: false,
+                id: 'console-id',
+                props: { panelState: { itemIds: [] } },
+                componentName: 'lm-react-component',
+                isFocusOnShow: true,
+                reorderEnabled: true,
+                componentState: null,
+              },
+              {
+                type: 'react-component',
+                component: 'LogPanel',
+                title: 'Log',
+                isClosable: false,
+                id: 'log-id',
+                props: {},
+                componentName: 'lm-react-component',
+                isFocusOnShow: true,
+                reorderEnabled: true,
+                componentState: null,
+              },
+            ],
+          },
+          {
+            type: 'stack',
+            id: 'empty-stack-id',
+            isClosable: true,
+            isFocusOnShow: true,
+            reorderEnabled: true,
+            title: '',
+            content: [],
+          },
+        ],
+      },
+    ] as DashboardLayoutConfig;
+  }
+
+  it('omits default values from every layout item', () => {
+    expect(dehydrate(makeGoldenLayoutConfig())).toEqual([
+      {
+        type: 'column',
+        id: 'column-id',
+        content: [
+          {
+            type: 'stack',
+            id: 'stack-id',
+            width: 75,
+            content: [
+              {
+                type: 'react-component',
+                component: 'ConsolePanel',
+                title: 'Console',
+                isClosable: false,
+                id: 'console-id',
+                props: { panelState: { itemIds: [] } },
+              },
+              {
+                type: 'react-component',
+                component: 'LogPanel',
+                title: 'Log',
+                isClosable: false,
+                id: 'log-id',
+              },
+            ],
+          },
+          { type: 'stack', id: 'empty-stack-id', content: [] },
+        ],
+      },
+    ]);
+  });
+
+  it('keeps values that differ from the defaults', () => {
+    const config = [
+      {
+        type: 'stack',
+        isClosable: false,
+        isFocusOnShow: false,
+        reorderEnabled: false,
+        title: 'Title',
+        activeItemIndex: 1,
+        content: [
+          {
+            type: 'react-component',
+            component: 'Panel',
+            componentName: 'other-component',
+            componentState: { a: 1 },
+            props: { metadata: { name: 'x' } },
+          },
+        ],
+      },
+    ] as DashboardLayoutConfig;
+    expect(dehydrate(config)).toEqual(config);
+  });
+
+  it('keeps activeItemIndex on stacks without tabs', () => {
+    const config = [
+      { type: 'stack', activeItemIndex: 0, content: [] },
+    ] as DashboardLayoutConfig;
+    expect(dehydrate(config)).toEqual(config);
+  });
+
+  it('only omits component defaults from react-component items', () => {
+    const config = [
+      {
+        type: 'component',
+        componentName: 'lm-react-component',
+        componentState: null,
+      },
+      { type: 'row', activeItemIndex: 0, props: {} },
+    ] as unknown as DashboardLayoutConfig;
+    expect(dehydrate(config)).toEqual(config);
+  });
+
+  it('does not modify the input', () => {
+    const config = makeGoldenLayoutConfig();
+    dehydrate(config);
+    expect(config).toEqual(makeGoldenLayoutConfig());
+  });
+});
+
+describe('LAYOUT_ITEM_DEFAULTS', () => {
+  it('matches the defaults golden-layout applies to layout items', () => {
+    const { type, ...goldenLayoutDefaults } = itemDefaultConfig;
+    expect(LAYOUT_ITEM_DEFAULTS).toEqual(goldenLayoutDefaults);
   });
 });
 

@@ -13,8 +13,11 @@ import {
   type AdvancedFilter,
   type ColumnName,
   type DehydratedIrisGridState,
+  GRID_STATE_DEFAULTS,
+  IRIS_GRID_STATE_DEFAULTS,
   type QuickFilter,
 } from '@deephaven/iris-grid';
+import { restoreDefaultValues } from '@deephaven/utils';
 import { type GridState } from '@deephaven/grid';
 import {
   getFilterSetsForDashboard,
@@ -351,7 +354,19 @@ export class FilterSetManagerPanel extends Component<
     }
     log.debug('restoreIrisGridFilters', panelId, state, restoreFullState);
     if (restoreFullState) {
-      panel.setStateOverrides(state);
+      // The captured state omits default values, and the panel merges overrides
+      // over its current state, so a missing key would keep the current value
+      // instead of restoring the default.
+      panel.setStateOverrides({
+        irisGridState: restoreDefaultValues(
+          irisGridState,
+          IRIS_GRID_STATE_DEFAULTS
+        ),
+        gridState: restoreDefaultValues(
+          state.gridState ?? {},
+          GRID_STATE_DEFAULTS
+        ),
+      });
     } else {
       panel.setFilters({
         quickFilters: quickFilters as {
