@@ -152,4 +152,51 @@ describe('stick to bottom', () => {
 
     expect(consoleComponent.state.isStuckToBottom).toBe(false);
   });
+
+  it('unsticks from the bottom when the user scrolls up while the content grows', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 100,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(false);
+  });
+
+  it('stays stuck to the bottom when a scroll event arrives after shrinking content clamped the scroll position and then grew', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 400,
+      clientHeight: 200,
+      scrollTop: 200,
+    });
+    consoleComponent.handleHistoryResize([
+      { contentRect: { width: 100, height: 400 } } as ResizeObserverEntry,
+    ]);
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 200,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(true);
+  });
+
+  it('unsticks from the bottom when the user scrolls up past the clamp while the content shrinks', () => {
+    const { consoleComponent, scrollPane } = setupAtBottom();
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 400,
+      clientHeight: 200,
+      scrollTop: 50,
+    });
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(false);
+  });
 });
