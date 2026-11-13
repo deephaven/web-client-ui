@@ -85,6 +85,45 @@ describe('hasUniqueSelectionKeys', () => {
   });
 });
 
+// ─── isViewportPending ────────────────────────────────────────────────────────
+
+describe('isViewportPending', () => {
+  function makeLoadedModel(
+    size: number,
+    viewportBottom: number,
+    loadedRowCount: number
+  ): IrisGridTableModelTemplate {
+    const columns = irisGridTestUtils.makeColumns(3);
+    const model = makeModel(columns, size);
+    model.viewport = { top: 0, bottom: viewportBottom, columns };
+    model.viewportData = {
+      offset: 0,
+      rows: Array.from({ length: loadedRowCount }, () => ({
+        data: new Map(columns.map(c => [c.index, { value: 'x' }])),
+      })),
+    };
+    return model;
+  }
+
+  it('is pending before any data is loaded', () => {
+    const model = makeModel();
+    expect(model.isViewportPending).toBe(true);
+  });
+
+  it('is not pending when every table row is loaded and the viewport extends past the end of the table', () => {
+    expect(makeLoadedModel(13, 40, 13).isViewportPending).toBe(false);
+  });
+
+  it('is pending when rows that exist in the table have not loaded yet', () => {
+    expect(makeLoadedModel(13, 40, 5).isViewportPending).toBe(true);
+    expect(makeLoadedModel(1000, 40, 20).isViewportPending).toBe(true);
+  });
+
+  it('is not pending when the loaded rows cover the viewport of a large table', () => {
+    expect(makeLoadedModel(1000, 40, 41).isViewportPending).toBe(false);
+  });
+});
+
 // ─── createFilteredByKeysTable ────────────────────────────────────────────────
 
 describe('createFilteredByKeysTable', () => {
