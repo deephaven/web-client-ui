@@ -10,6 +10,12 @@ import type IrisGridModel from './IrisGridModel';
  * The returned model must be a drop-in for the input — the host owns its
  * lifecycle and will call `close()` on whatever this returns. May be async to
  * allow the transform to await dependencies before returning.
+ *
+ * When the host restores saved state (`IrisGridPanel`), the model arrives with
+ * saved custom columns already applied so the transform sees the full source
+ * schema; rollup and select-distinct are applied to the returned model
+ * afterwards. Hosts without saved state (e.g. `GridWidgetPlugin`) pass the
+ * freshly built model.
  */
 export type IrisGridModelTransform = (
   model: IrisGridModel
