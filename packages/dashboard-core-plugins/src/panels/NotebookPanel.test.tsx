@@ -39,3 +39,35 @@ describe('unsavedNotebookCount', () => {
     }
   );
 });
+
+describe('savePanelState', () => {
+  it('uses content from the pending state rather than the committed state', () => {
+    const Panel = NotebookPanel.WrappedComponent;
+    const props = {
+      isDashboardActive: true,
+      isPreview: false,
+      panelState: {
+        settings: { language: 'python' },
+        fileMetadata: { id: '/test.py', itemName: '/test.py' },
+      },
+    } as unknown as ConstructorParameters<typeof Panel>[0];
+    const panel = new Panel(props);
+    const setState = jest
+      .spyOn(panel, 'setState')
+      .mockImplementation(() => undefined);
+
+    panel.savePanelState();
+
+    expect(setState).toHaveBeenCalledTimes(1);
+    const updater = setState.mock.calls[0][0] as (
+      state: typeof panel.state
+    ) => Pick<typeof panel.state, 'settings'>;
+    // Simulates `load` having queued the file content in a not-yet-committed update
+    const pendingState = {
+      ...panel.state,
+      settings: { ...panel.state.settings, value: 'print("hello")' },
+    };
+    expect(panel.state.settings.value).toBeUndefined();
+    expect(updater(pendingState).settings.value).toBe('print("hello")');
+  });
+});
