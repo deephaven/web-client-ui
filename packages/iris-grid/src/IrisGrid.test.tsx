@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { act, fireEvent, render } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
-import { DateUtils, type Settings } from '@deephaven/jsapi-utils';
+import { DateUtils, type Settings, TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import { type TypeValue } from '@deephaven/filters';
+import { type dh as dhType } from '@deephaven/jsapi-types';
 import {
   type ExpandableColumnGridModel,
   GridRange,
@@ -1145,5 +1146,320 @@ describe('controlled state regression paths', () => {
     expect(onSortsChange).toHaveBeenNthCalledWith(1, []);
     expect(onSortsChange).toHaveBeenNthCalledWith(2, []);
     expect(component.state.sorts).toBe(sorts);
+  });
+});
+
+describe('read-only sorts and quick filters', () => {
+  it('ignores user sort changes while sorts are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const sorts = [model.columns[0].sort().asc()];
+    const onSortsChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isSortsReadOnly: true,
+      onSortsChange,
+      sorts,
+    });
+    jest.spyOn(component, 'updateSorts');
+
+    act(() => {
+      component.sortColumn(0);
+      component.toggleSort(0, false);
+      component.handleAdvancedFilterSortChange(
+        model.columns[0],
+        TableUtils.sortDirection.descending
+      );
+    });
+
+    expect(onSortsChange).not.toHaveBeenCalled();
+    expect(component.updateSorts).not.toHaveBeenCalled();
+    expect(component.state.sorts).toBe(sorts);
+  });
+
+  it('applies requested sort changes while sorts are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const onSortsChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isSortsReadOnly: true,
+      onSortsChange,
+      sorts: [model.columns[0].sort().asc()],
+    });
+
+    act(() => {
+      component.requestSortsChange([]);
+    });
+
+    expect(onSortsChange).toHaveBeenCalledWith([]);
+    expect(component.state.sorts).toEqual([]);
+  });
+
+  it('ignores user quick filter changes while quick filters are read-only', () => {
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters,
+    });
+    onQuickFiltersChange.mockClear();
+
+    act(() => {
+      component.setQuickFilter(1, null, 'b');
+      component.removeQuickFilter(0);
+      component.removeColumnFilter(0);
+      component.handleFilterBarChange('b');
+    });
+
+    expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+  });
+
+  it('clears advanced filters and search but keeps read-only quick filters', () => {
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters,
+    });
+    onQuickFiltersChange.mockClear();
+    act(() => {
+      component.setState({
+        advancedFilters: new Map([
+          [
+            1,
+            {
+              filter: null,
+              options: {
+                filterItems: [],
+                filterOperators: [],
+                invertSelection: false,
+                selectedValues: [],
+              },
+            },
+          ],
+        ]),
+        searchValue: 'b',
+        searchFilter: TestUtils.createMockProxy<dhType.FilterCondition>(),
+      });
+    });
+
+    act(() => {
+      component.clearAllFilters();
+    });
+
+    expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+    expect(component.state.advancedFilters.size).toBe(0);
+    expect(component.state.searchFilter).toBeUndefined();
+  });
+
+  it('ignores the clear filters shortcut for read-only quick filters', () => {
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters,
+    });
+    onQuickFiltersChange.mockClear();
+
+    act(() => {
+      keyDown('e', component, { ctrlKey: true, shiftKey: true });
+    });
+
+    expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+  });
+
+  it('clears filters and sorts again once read-only is turned off', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const sorts = [model.columns[0].sort().asc()];
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={quickFilters}
+        sorts={sorts}
+        isQuickFiltersReadOnly
+        isSortsReadOnly
+      />
+    );
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        quickFilters={quickFilters}
+        sorts={sorts}
+      />
+    );
+    act(() => {
+      ref.current?.clearAllFilters();
+      ref.current?.toggleSort(0, false);
+    });
+
+    expect(ref.current?.state.quickFilters.size).toBe(0);
+    expect(ref.current?.state.sorts).not.toBe(sorts);
+  });
+
+  it('ignores input filters, links and filter sets while quick filters are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const onQuickFiltersChange = jest.fn();
+    const quickFilters: ReadonlyQuickFilterMap = new Map([
+      [0, { text: 'a', filter: null }],
+    ]);
+    const component = makeComponent(model, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters,
+    });
+    onQuickFiltersChange.mockClear();
+    const advancedFilters = new Map([
+      [
+        1,
+        {
+          filter: null,
+          options: {
+            filterItems: [],
+            filterOperators: [],
+            invertSelection: false,
+            selectedValues: [],
+          },
+        },
+      ],
+    ]);
+
+    let didInputFiltersChange = true;
+    act(() => {
+      didInputFiltersChange = component.applyInputFilters(
+        [
+          {
+            name: model.columns[0].name,
+            type: model.columns[0].type,
+            value: 'b',
+          },
+        ],
+        true
+      );
+      component.setFilterMap(
+        new Map([
+          [
+            model.columns[0].name,
+            {
+              columnType: model.columns[0].type,
+              filterList: [
+                { operator: 'eq', text: 'b', value: 'b', startColumnIndex: 0 },
+              ],
+            },
+          ],
+        ])
+      );
+      component.setFilters({ quickFilters: new Map(), advancedFilters });
+    });
+
+    expect(didInputFiltersChange).toBe(false);
+    expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    expect(component.state.quickFilters.size).toBe(1);
+    expect(component.state.quickFilters.get(0)?.text).toBe('a');
+    expect(component.state.advancedFilters).toBe(advancedFilters);
+  });
+
+  it('does not start loading for input filter prop changes while quick filters are read-only', () => {
+    const model = irisGridTestUtils.makeModel();
+    const ref = React.createRef<IrisGrid>();
+    const { rerender } = render(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isQuickFiltersReadOnly
+      />
+    );
+    const startLoading = jest.spyOn(ref.current!, 'startLoading');
+
+    rerender(
+      <IrisGrid
+        ref={ref}
+        model={model}
+        settings={DEFAULT_SETTINGS}
+        isQuickFiltersReadOnly
+        inputFilters={[
+          {
+            name: model.columns[0].name,
+            type: model.columns[0].type,
+            value: 'b',
+          },
+        ]}
+      />
+    );
+
+    expect(startLoading).not.toHaveBeenCalled();
+    expect(ref.current?.state.quickFilters.size).toBe(0);
+  });
+
+  it('clears read-only quick filters when clearAllFilters is forced', () => {
+    const onQuickFiltersChange = jest.fn();
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+      onQuickFiltersChange,
+      quickFilters: new Map([[0, { text: 'a', filter: null }]]),
+    });
+    onQuickFiltersChange.mockClear();
+
+    act(() => {
+      component.clearAllFilters(true);
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(new Map());
+    expect(component.state.quickFilters.size).toBe(0);
+  });
+
+  it('clears read-only filters and sorts when a rollup changes the columns', () => {
+    const model = irisGridTestUtils.makeModel();
+    const onQuickFiltersChange = jest.fn();
+    const onSortsChange = jest.fn();
+    const component = makeComponent(model, undefined, {
+      isQuickFiltersReadOnly: true,
+      isSortsReadOnly: true,
+      onQuickFiltersChange,
+      onSortsChange,
+      quickFilters: new Map([[0, { text: 'a', filter: null }]]),
+      sorts: [model.columns[0].sort().asc()],
+    });
+
+    act(() => {
+      component.handleRollupChange({
+        columns: [],
+        showConstituents: true,
+        showNonAggregatedColumns: true,
+      });
+    });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(new Map());
+    expect(onSortsChange).toHaveBeenCalledWith([]);
+  });
+
+  it('does not focus the filter bar while quick filters are read-only', () => {
+    const component = makeComponent(undefined, undefined, {
+      isQuickFiltersReadOnly: true,
+    });
+
+    act(() => {
+      component.focusFilterBar(0);
+    });
+
+    expect(component.state.focusedFilterBarColumn).toBeNull();
   });
 });
