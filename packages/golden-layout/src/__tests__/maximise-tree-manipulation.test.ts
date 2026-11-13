@@ -111,4 +111,45 @@ describe('tree manipulation while an item is maximised', () => {
     expect(column.contentItems[1]).toBe(row);
     expect(row.contentItems[0]).toBe(maximised);
   });
+
+  it('promotes a maximised stack when its sibling is removed', async () => {
+    layout = await createLayout({
+      content: [
+        {
+          type: 'row',
+          isClosable: true,
+          content: [
+            { type: 'stack', content: [component()] },
+            { type: 'stack', content: [component()] },
+          ],
+        },
+      ],
+    });
+    const row = layout.root.contentItems[0];
+    const maximised = row.contentItems[0] as Stack;
+    const retainedComponent = maximised.contentItems[0];
+    maximised.toggleMaximise();
+    const placeholder = layout.root.element.find('.lm_maximise_place')[0];
+
+    row.contentItems[1].remove();
+
+    expect(layout.root.contentItems).toEqual([maximised]);
+    expect(maximised.parent).toBe(layout.root);
+    expect(maximised.isMaximised).toBe(true);
+    expect(layout.root.element.children().toArray()).toEqual([
+      maximised.element[0],
+      placeholder,
+    ]);
+    expect(row.element.parent()).toHaveLength(0);
+    expect(maximised.contentItems[0]).toBe(retainedComponent);
+    expect(
+      maximised.element[0].contains(retainedComponent.element[0])
+    ).toBe(true);
+
+    maximised.toggleMaximise();
+
+    expect(maximised.isMaximised).toBe(false);
+    expect(layout.root.element.find('.lm_maximise_place')).toHaveLength(0);
+    expectSingleRootChild(layout);
+  });
 });
