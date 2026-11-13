@@ -209,18 +209,15 @@ class IrisGridTableModel
   private applyTableCustomColumns(
     customColumns: (ColumnName | DhType.CustomColumn)[]
   ): void {
-    const previous = this.table.customColumns.map(String);
-    // Removing columns can synchronously restore an already-running ancestor state,
-    // so the stale columns must be captured before applying the operation
-    const previousColumns = this.table.columns;
-    this.table.applyCustomColumns(customColumns);
-    const next = this.table.customColumns.map(String);
-    if (
-      previous.length !== next.length ||
-      previous.some((column, i) => column !== next[i])
-    ) {
-      this.invalidateViewportColumns(previousColumns);
-    }
+    this.applyColumnsOperation(() => {
+      const previous = this.table.customColumns.map(String);
+      this.table.applyCustomColumns(customColumns);
+      const next = this.table.customColumns.map(String);
+      return (
+        previous.length !== next.length ||
+        previous.some((column, i) => column !== next[i])
+      );
+    });
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {

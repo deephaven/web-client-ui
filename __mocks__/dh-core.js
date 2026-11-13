@@ -864,6 +864,7 @@ Table.EVENT_CONNECT = 'connect';
 Table.EVENT_DISCONNECT = 'disconnect';
 Table.EVENT_RECONNECT = 'reconnect';
 Table.EVENT_RECONNECTFAILED = 'reconnectfailed';
+Table.EVENT_REQUEST_SUCCEEDED = 'requestsucceeded';
 Table.SIZE_UNCOALESCED = 'sizeuncoalesced';
 
 class TableViewportSubscription extends DeephavenObject {

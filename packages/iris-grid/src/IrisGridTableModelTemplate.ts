@@ -159,7 +159,9 @@ class IrisGridTableModelTemplate<
     columns?: DhType.Column[];
   } | null;
 
-  private staleViewportTableColumns: readonly DhType.Column[] | null = null;
+  private isViewportColumnsUnverified = false;
+
+  private staleTableColumns: readonly DhType.Column[] | null = null;
 
   viewportData: UIViewportData<R> | null;
 
@@ -217,6 +219,7 @@ class IrisGridTableModelTemplate<
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handleRequestSucceeded = this.handleRequestSucceeded.bind(this);
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
 
@@ -306,6 +309,10 @@ class IrisGridTableModelTemplate<
       this.handleRequestFailed
     );
     this.table.addEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleRequestSucceeded
+    );
+    this.table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
     );
@@ -337,6 +344,10 @@ class IrisGridTableModelTemplate<
     this.table.removeEventListener(
       dh.Client.EVENT_REQUEST_FAILED,
       this.handleRequestFailed
+    );
+    this.table.removeEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleRequestSucceeded
     );
     this.table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -395,6 +406,14 @@ class IrisGridTableModelTemplate<
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );
+  }
+
+  /**
+   * The API only fires this once the table's current state is running, so `table.columns`
+   * describes the state that new subscriptions will use.
+   */
+  handleRequestSucceeded(): void {
+    this.staleTableColumns = null;
   }
 
   handleCustomColumnsChanged(): void {
@@ -1237,27 +1256,37 @@ class IrisGridTableModelTemplate<
    * Column objects belong to the table state they were read from. After an operation that
    * changes the table's columns, the API subscribes against the new state while `table.columns`
    * still returns the previous state's columns, so their indexes may not exist in the new
-   * subscription. Subscribe to all columns until the viewport is set with the new state's columns.
+   * subscription. Subscribe to all columns until the viewport is set with columns from the
+   * table's current state.
+   * The columns are invalidated before applying the operation, since the API may synchronously
+   * restore an already-running state and report it as succeeded.
+   * @param apply Applies the operation and returns whether the table's columns may have changed
    */
-  invalidateViewportColumns(staleColumns: readonly DhType.Column[]): void {
-    this.staleViewportTableColumns = staleColumns;
+  applyColumnsOperation(apply: () => boolean): void {
+    const { isViewportColumnsUnverified, staleTableColumns } = this;
+    this.isViewportColumnsUnverified = true;
+    this.staleTableColumns = this.table.columns;
+    if (!apply()) {
+      this.isViewportColumnsUnverified = isViewportColumnsUnverified;
+      this.staleTableColumns = staleTableColumns;
+    }
   }
 
   getSubscriptionColumns(
     columns: DhType.Column[] | undefined
   ): DhType.Column[] | undefined {
-    const { staleViewportTableColumns } = this;
-    if (columns == null || staleViewportTableColumns == null) {
+    if (columns == null || !this.isViewportColumnsUnverified) {
       return columns;
     }
     const tableColumns = this.table.columns;
     if (
-      tableColumns === staleViewportTableColumns ||
+      tableColumns === this.staleTableColumns ||
       !columns.every(column => tableColumns.includes(column))
     ) {
       return undefined;
     }
-    this.staleViewportTableColumns = null;
+    this.isViewportColumnsUnverified = false;
+    this.staleTableColumns = null;
     return columns;
   }
 
