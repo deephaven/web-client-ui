@@ -231,13 +231,17 @@ export default abstract class AbstractContentItem extends EventEmitter {
     newChild = this.layoutManager._$normalizeContentItem(newChild);
 
     const index = this.contentItems.indexOf(oldChild);
-    const parentNode = oldChild.element[0].parentNode;
+    const oldElement = this.layoutManager._$getLayoutElement(oldChild)[0];
+    const parentNode = oldElement.parentNode;
 
     if (index === -1) {
       throw new Error("Can't replace child. oldChild is not child of this");
     }
 
-    parentNode?.replaceChild(newChild.element[0], oldChild.element[0]);
+    parentNode?.replaceChild(
+      this.layoutManager._$getLayoutElement(newChild)[0],
+      oldElement
+    );
 
     /*
      * Optionally destroy the old content item

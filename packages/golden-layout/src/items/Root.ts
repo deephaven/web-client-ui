@@ -36,7 +36,9 @@ export default class Root extends AbstractContentItem {
     }
 
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
-    this.childElementContainer.append(contentItem.element);
+    this.childElementContainer.append(
+      this.layoutManager._$getLayoutElement(contentItem)
+    );
     super.addChild(contentItem, index);
 
     this.callDownwards('setSize');
