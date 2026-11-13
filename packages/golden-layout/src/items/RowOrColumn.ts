@@ -105,18 +105,24 @@ export default class RowOrColumn extends AbstractContentItem {
       index = this.contentItems.length;
     }
 
+    const { layoutManager } = this;
+    const contentElement = layoutManager._$getLayoutElement(contentItem);
     if (this.contentItems.length > 0) {
       splitterElement = this._createSplitter(Math.max(0, index - 1)).element;
 
       if (index > 0) {
-        this.contentItems[index - 1].element.after(splitterElement);
-        splitterElement.after(contentItem.element);
+        layoutManager
+          ._$getLayoutElement(this.contentItems[index - 1])
+          .after(splitterElement);
+        splitterElement.after(contentElement);
       } else {
-        this.contentItems[0].element.before(splitterElement);
-        splitterElement.before(contentItem.element);
+        layoutManager
+          ._$getLayoutElement(this.contentItems[0])
+          .before(splitterElement);
+        splitterElement.before(contentElement);
       }
     } else {
-      this.childElementContainer.append(contentItem.element);
+      this.childElementContainer.append(contentElement);
     }
 
     AbstractContentItem.prototype.addChild.call(this, contentItem, index);
