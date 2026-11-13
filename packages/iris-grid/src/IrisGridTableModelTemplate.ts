@@ -1239,8 +1239,8 @@ class IrisGridTableModelTemplate<
    * still returns the previous state's columns, so their indexes may not exist in the new
    * subscription. Subscribe to all columns until the viewport is set with the new state's columns.
    */
-  invalidateViewportColumns(): void {
-    this.staleViewportTableColumns = this.table.columns;
+  invalidateViewportColumns(staleColumns: readonly DhType.Column[]): void {
+    this.staleViewportTableColumns = staleColumns;
   }
 
   getSubscriptionColumns(
