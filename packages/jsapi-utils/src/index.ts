@@ -1,3 +1,4 @@
+export * from './AuthUtils';
 export * from './ConnectionUtils';
 export * from './formatters';
 export * from './DateUtils';

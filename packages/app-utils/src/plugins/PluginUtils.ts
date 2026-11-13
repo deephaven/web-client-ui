@@ -1,3 +1,4 @@
+import { getAuthHandlers } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   type PluginModuleMap,
@@ -34,6 +35,11 @@ export type { PluginManifest };
  * @deprecated Import from `@deephaven/plugin` instead.
  */
 export { getPluginModuleValue };
+
+/**
+ * @deprecated Import from `@deephaven/jsapi-utils` instead.
+ */
+export { getAuthHandlers };
 
 /**
  * Imports a commonjs plugin module from the provided URL
@@ -131,12 +137,6 @@ export async function loadModulePlugins(
     log.error('Unable to load plugins:', e);
     return new Map();
   }
-}
-
-export function getAuthHandlers(
-  authConfigValues: Map<string, string>
-): string[] {
-  return authConfigValues.get('AuthHandlers')?.split(',') ?? [];
 }
 
 /**
