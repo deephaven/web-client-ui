@@ -280,4 +280,25 @@ describe('getMetrics', () => {
       );
     });
   });
+
+  it('uses the calculated widths of offscreen columns on later calls', () => {
+    const calculator = new GridMetricCalculator();
+    const state = makeState();
+    const { visibleColumns, lastLeft } = calculator.getMetrics(state);
+    const calculateColumnDataWidth = jest.spyOn(
+      calculator,
+      'calculateColumnDataWidth'
+    );
+
+    expect(calculator.getMetrics(state).lastLeft).toBe(lastLeft);
+
+    const visibleModelColumns = new Set(visibleColumns);
+    const measuredColumns = calculateColumnDataWidth.mock.calls.map(
+      ([modelColumn]) => modelColumn
+    );
+    expect(measuredColumns.length).toBeGreaterThan(0);
+    measuredColumns.forEach(modelColumn => {
+      expect(visibleModelColumns.has(modelColumn)).toBe(true);
+    });
+  });
 });
