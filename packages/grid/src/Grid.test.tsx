@@ -1170,6 +1170,31 @@ describe('column separators', () => {
       expect(component.state.draggingColumnSeparator).toBeDefined();
     });
 
+    it('updates the column width metrics on every drag move', () => {
+      const component = makeGridComponent(new MockGridModel(), resizableTheme);
+      const separatorX = getColumnSeparatorX(0);
+      const headerY = getColumnHeaderY();
+      const initialWidth = component.metrics?.visibleColumnWidths.get(0) ?? 0;
+      expect(initialWidth).toBeGreaterThan(0);
+
+      mouseDown(0, 0, component, {}, separatorX, headerY);
+
+      fireEvent.mouseMove(component.canvas!, {
+        clientX: separatorX + 20,
+        clientY: headerY,
+      });
+      const draggedWidth = component.metrics?.visibleColumnWidths.get(0) ?? 0;
+      expect(draggedWidth).toBeGreaterThan(initialWidth);
+
+      fireEvent.mouseMove(component.canvas!, {
+        clientX: separatorX + 40,
+        clientY: headerY,
+      });
+      expect(component.metrics?.visibleColumnWidths.get(0)).toBe(
+        draggedWidth + 20
+      );
+    });
+
     it('should complete resize on mouse up', () => {
       const component = makeGridComponent(new MockGridModel(), resizableTheme);
       const separatorX = getColumnSeparatorX(0);
@@ -1921,5 +1946,45 @@ describe('theme', () => {
     const grid2 = makeGridComponent(new MockGridModel(), theme);
 
     expect(grid1.getTheme()).toBe(grid2.getTheme());
+  });
+});
+
+describe('metrics updates', () => {
+  let frames: FrameRequestCallback[];
+
+  beforeEach(() => {
+    frames = [];
+    jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+      frames.push(cb);
+      return frames.length;
+    });
+  });
+
+  afterEach(() => {
+    jest.mocked(window.requestAnimationFrame).mockRestore();
+  });
+
+  function flushFrames() {
+    act(() => {
+      frames.splice(0).forEach(cb => cb(0));
+    });
+  }
+
+  it('redraws without recalculating metrics when only the pointer moves', () => {
+    const component = makeGridComponent();
+    flushFrames();
+    const getMetrics = jest.spyOn(component.metricCalculator, 'getMetrics');
+    const drawCanvas = jest.spyOn(component.renderer, 'drawCanvas');
+
+    mouseMove(2, 3, component);
+    flushFrames();
+
+    expect(drawCanvas).toHaveBeenCalled();
+    expect(getMetrics).not.toHaveBeenCalled();
+
+    act(() => component.forceUpdate());
+    flushFrames();
+
+    expect(getMetrics).toHaveBeenCalled();
   });
 });
