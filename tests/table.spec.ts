@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { expectCellText } from '@deephaven/playwright-grid';
 import {
   gotoPage,
   openTable,
@@ -16,8 +17,11 @@ async function waitForLoadingDone(page: Page) {
 test('can open a simple table', async ({ page }) => {
   await gotoPage(page, '');
   await openTable(page, 'simple_table');
-  // Now we should be able to check the snapshot
-  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+  const grid = page.locator('.iris-grid-panel .iris-grid');
+  // openTable only waits for the grid to mount, and a slow server can leave
+  // the first viewport pending and the cells blank when the screenshot is taken
+  await expectCellText(grid, 'x', 0, '0');
+  await expect(grid).toHaveScreenshot();
 });
 
 test('can make a non-contiguous table row selection', async ({ page }) => {
