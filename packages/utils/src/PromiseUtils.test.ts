@@ -2,6 +2,66 @@ import CanceledPromiseError from './CanceledPromiseError';
 import { PromiseUtils } from './PromiseUtils';
 import TimeoutError from './TimeoutError';
 
+describe('abortable', () => {
+  it('returns the promise unchanged without a signal', () => {
+    const promise = Promise.resolve(1);
+    expect(PromiseUtils.abortable(promise)).toBe(promise);
+  });
+
+  it('resolves with the promise', async () => {
+    const controller = new AbortController();
+    await expect(
+      PromiseUtils.abortable(Promise.resolve(1), controller.signal)
+    ).resolves.toBe(1);
+  });
+
+  it('rejects with the promise', async () => {
+    const error = new Error('failed');
+    const controller = new AbortController();
+    await expect(
+      PromiseUtils.abortable(Promise.reject(error), controller.signal)
+    ).rejects.toBe(error);
+  });
+
+  it('rejects with signal.reason on abort', async () => {
+    const controller = new AbortController();
+    const reason = new Error('aborted');
+
+    const promise = PromiseUtils.abortable(
+      new Promise(() => {
+        // Never settles
+      }),
+      controller.signal
+    );
+    controller.abort(reason);
+
+    await expect(promise).rejects.toBe(reason);
+  });
+
+  it('rejects with signal.reason if already aborted', async () => {
+    const reason = new Error('aborted');
+    await expect(
+      PromiseUtils.abortable(Promise.resolve(1), AbortSignal.abort(reason))
+    ).rejects.toBe(reason);
+  });
+
+  it.each([
+    ['resolved', () => Promise.resolve(1)],
+    ['rejected', () => Promise.reject(new Error('failed'))],
+  ])('removes its abort listener once %s', async (_label, createPromise) => {
+    const controller = new AbortController();
+    const add = jest.spyOn(controller.signal, 'addEventListener');
+    const remove = jest.spyOn(controller.signal, 'removeEventListener');
+
+    await PromiseUtils.abortable(createPromise(), controller.signal).catch(
+      () => undefined
+    );
+
+    const onAbort = add.mock.calls[0][1];
+    expect(remove).toHaveBeenCalledWith('abort', onAbort);
+  });
+});
+
 describe('makeCancelable', () => {
   it('wraps promises properly', () => {
     const makeCancelable = () => {

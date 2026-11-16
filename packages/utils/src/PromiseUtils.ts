@@ -7,6 +7,40 @@ export interface CancelablePromise<T> extends Promise<T> {
 
 export class PromiseUtils {
   /**
+   * Settle with `promise`, or reject with `signal.reason` as soon as `signal`
+   * aborts. The underlying work isn't cancelled.
+   * @param promise The promise to wait for.
+   * @param signal Optional abort signal.
+   * @returns A promise that settles with `promise` unless `signal` aborts first.
+   */
+  static abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (signal == null) {
+      return promise;
+    }
+
+    return new Promise((resolve, reject) => {
+      const onAbort = (): void => reject(signal.reason);
+
+      promise.then(
+        value => {
+          signal.removeEventListener('abort', onAbort);
+          resolve(value);
+        },
+        error => {
+          signal.removeEventListener('abort', onAbort);
+          reject(error);
+        }
+      );
+
+      if (signal.aborted) {
+        onAbort();
+      } else {
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
+    });
+  }
+
+  /**
    * Creates a promise that can be canceled by calling the `cancel` function
    * Pass an optional `cleanupFunc` to perform actions on the resolved item after promise is cancelled.
    * @param promise The item to resolve
