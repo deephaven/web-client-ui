@@ -2103,6 +2103,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   handleMouseLeave(event: React.MouseEvent): void {
     this.notifyMouseHandlers('onLeave', event, false);
+    // Blocking pointer events during a drag makes some browsers (e.g. WebKit)
+    // report the pointer leaving the canvas, possibly after the last drag
+    // event. The drag events keep the coordinates current, so keep them.
+    if (this.hasAddedBlockEvents) {
+      return;
+    }
     this.setState({ mouseX: null, mouseY: null });
   }
 
