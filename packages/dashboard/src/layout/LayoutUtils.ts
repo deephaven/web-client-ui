@@ -111,7 +111,12 @@ export const REACT_COMPONENT_ITEM_DEFAULTS = Object.freeze({
  * @returns A new item without default values
  */
 function removeItemDefaults(item: ItemConfig): ItemConfig {
-  const defaults: Record<string, unknown> = { ...LAYOUT_ITEM_DEFAULTS };
+  // `Component` fills missing keys from the host's `defaultComponentConfig`
+  // before these defaults, so they aren't reliable for components.
+  const defaults: Record<string, unknown> =
+    item.type === 'react-component' || item.type === 'component'
+      ? {}
+      : { ...LAYOUT_ITEM_DEFAULTS };
   if (item.type === 'react-component') {
     // The default panel `dehydrate` always writes `props`, and writes `{}` when the
     // panel has no `metadata` or `panelState`. `hydrateLayoutConfig` treats missing

@@ -244,7 +244,7 @@ describe('dehydrateLayoutConfig', () => {
     ] as DashboardLayoutConfig;
   }
 
-  it('omits default values from every layout item', () => {
+  it('omits default values from layout items, keeping item defaults on components', () => {
     expect(dehydrate(makeGoldenLayoutConfig())).toEqual([
       {
         type: 'column',
@@ -262,6 +262,8 @@ describe('dehydrateLayoutConfig', () => {
                 isClosable: false,
                 id: 'console-id',
                 props: { panelState: { itemIds: [] } },
+                isFocusOnShow: true,
+                reorderEnabled: true,
               },
               {
                 type: 'react-component',
@@ -269,6 +271,8 @@ describe('dehydrateLayoutConfig', () => {
                 title: 'Log',
                 isClosable: false,
                 id: 'log-id',
+                isFocusOnShow: true,
+                reorderEnabled: true,
               },
             ],
           },

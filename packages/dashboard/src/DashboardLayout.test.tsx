@@ -3,7 +3,7 @@ import deepEqual from 'fast-deep-equal';
 import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { type LayoutManager } from '@deephaven/golden-layout';
+import { type LayoutManager, type Settings } from '@deephaven/golden-layout';
 import Dashboard from './Dashboard';
 import { type DashboardLayoutConfig } from './DashboardLayout';
 import { LayoutUtils, useDashboardPanel } from './layout';
@@ -451,8 +451,10 @@ describe('saved layout default values', () => {
   type Item = Record<string, unknown> & { type: string; content?: Item[] };
 
   function getDefaults(item: Item): Record<string, unknown> {
+    const isComponent =
+      item.type === 'react-component' || item.type === 'component';
     return {
-      ...LAYOUT_ITEM_DEFAULTS,
+      ...(isComponent ? {} : LAYOUT_ITEM_DEFAULTS),
       ...(item.type === 'react-component'
         ? { ...REACT_COMPONENT_ITEM_DEFAULTS, props: {} }
         : {}),
@@ -492,13 +494,15 @@ describe('saved layout default values', () => {
    * it saves, i.e. what is compared with the stored layout after loading
    */
   async function loadAndGetSavedLayout(
-    layoutConfig: DashboardLayoutConfig
+    layoutConfig: DashboardLayoutConfig,
+    layoutSettings?: Partial<Settings>
   ): Promise<DashboardLayoutConfig> {
     const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
     const { unmount } = render(
       <ApiContext.Provider value={dh}>
         <Dashboard
           layoutConfig={layoutConfig}
+          layoutSettings={layoutSettings}
           onLayoutConfigChange={onLayoutConfigChange}
         >
           <TestPlugin />
@@ -549,6 +553,31 @@ describe('saved layout default values', () => {
     expect(findDefaultValues(olderLayoutConfig as Item[])).not.toEqual([]);
 
     const reloadedLayoutConfig = await loadAndGetSavedLayout(olderLayoutConfig);
+    expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
+      true
+    );
+  });
+
+  it('keeps component values that differ from the configured component defaults', async () => {
+    const layoutSettings = { defaultComponentConfig: { isClosable: false } };
+    const layoutConfig: DashboardLayoutConfig = [
+      {
+        type: 'stack',
+        content: [{ ...makePanel('a'), isClosable: true }, makePanel('b')],
+      },
+    ];
+    const savedLayoutConfig = await loadAndGetSavedLayout(
+      layoutConfig,
+      layoutSettings
+    );
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(
+      savedLayoutConfig,
+      layoutSettings
+    );
+    const [closable, notClosable] =
+      (reloadedLayoutConfig[0] as Item).content ?? [];
+    expect(closable.isClosable).toBe(true);
+    expect(notClosable.isClosable).toBe(false);
     expect(LayoutUtils.isEqual(reloadedLayoutConfig, savedLayoutConfig)).toBe(
       true
     );
