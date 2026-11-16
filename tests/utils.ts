@@ -2,6 +2,7 @@ import {
   type Locator,
   expect,
   type Page,
+  type TestInfo,
   chromium,
   firefox,
   webkit,
@@ -518,6 +519,90 @@ export async function markerAtCoordinates(
     },
     { x, y, color, size }
   );
+}
+
+const pageLifecycleRecorders = new WeakMap<
+  Page,
+  (testInfo: TestInfo) => Promise<void>
+>();
+
+/**
+ * Records when the page, its context, or its browser goes away. A pending action that
+ * fails with "Target page, context or browser has been closed" does not say which one
+ * closed or why, and the trace stops at that action. Call `attachPageLifecycle` in
+ * `afterEach` to stop recording and report the events if the test failed.
+ * @param page Test page to observe
+ */
+export function recordPageLifecycle(page: Page): void {
+  const context = page.context();
+  const browser = context.browser();
+  const events: string[] = [];
+  const log = (event: string) => {
+    events.push(`${new Date().toISOString()} ${event}`);
+  };
+  const onPageCrash = () => log('page crash');
+  const onPageClose = () => log('page close');
+  const onContextClose = () => log('context close');
+  const onBrowserDisconnected = () => log('browser disconnected');
+
+  log(`start browser=${browser?.browserType().name()} ${browser?.version()}`);
+  page.on('crash', onPageCrash);
+  page.on('close', onPageClose);
+  context.on('close', onContextClose);
+  browser?.on('disconnected', onBrowserDisconnected);
+
+  pageLifecycleRecorders.set(page, async (testInfo: TestInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      // A round trip to the page flushes close/crash events that arrive after the
+      // failed action, and distinguishes a dead page from a hung one.
+      let probeTimer: ReturnType<typeof setTimeout> | undefined;
+      const probe = await Promise.race([
+        page
+          .evaluate(
+            () =>
+              `readyState=${document.readyState} url=${window.location.href}`
+          )
+          .catch((e: Error) => `error=${e.message.split('\n')[0]}`),
+        new Promise<string>(resolve => {
+          probeTimer = setTimeout(
+            () => resolve('no response within 5000ms'),
+            5000
+          );
+        }),
+      ]);
+      clearTimeout(probeTimer);
+      log(`probe ${probe}`);
+      log(
+        `end status=${
+          testInfo.status
+        } pageClosed=${page.isClosed()} browserConnected=${browser?.isConnected()}`
+      );
+      await testInfo.attach('page-lifecycle', {
+        body: events.join('\n'),
+        contentType: 'text/plain',
+      });
+    }
+
+    page.off('crash', onPageCrash);
+    page.off('close', onPageClose);
+    context.off('close', onContextClose);
+    browser?.off('disconnected', onBrowserDisconnected);
+  });
+}
+
+/**
+ * Stops the recording started by `recordPageLifecycle` and attaches the recorded events
+ * to the report if the test failed.
+ * @param page Test page passed to `recordPageLifecycle`
+ * @param testInfo Info for the current test
+ */
+export async function attachPageLifecycle(
+  page: Page,
+  testInfo: TestInfo
+): Promise<void> {
+  const finish = pageLifecycleRecorders.get(page);
+  pageLifecycleRecorders.delete(page);
+  await finish?.(testInfo);
 }
 
 export default {
