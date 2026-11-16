@@ -321,6 +321,8 @@ class IrisGridTableModelTemplate<
       this.addTotalsListeners(this.totalsTable);
     }
 
+    // Request events from before listening started were missed, so stop deferring
+    this.staleTableColumns = null;
     this.applyViewport();
   }
 
@@ -358,6 +360,8 @@ class IrisGridTableModelTemplate<
       this.removeTotalsListeners(this.totalsTable);
     }
 
+    // Request events aren't observed while stopped, so the operation can't be tracked
+    this.staleTableColumns = null;
     this.closeSubscription();
   }
 
@@ -387,6 +391,7 @@ class IrisGridTableModelTemplate<
   }
 
   handleTableReconnect(): void {
+    this.releasePendingColumnsOperation();
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.RECONNECT));
   }
 
@@ -403,6 +408,7 @@ class IrisGridTableModelTemplate<
   }
 
   handleRequestFailed(event: DhType.Event<unknown>): void {
+    this.releasePendingColumnsOperation();
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );
@@ -413,7 +419,7 @@ class IrisGridTableModelTemplate<
    * describes the state that new subscriptions will use.
    */
   handleRequestSucceeded(): void {
-    this.staleTableColumns = null;
+    this.releasePendingColumnsOperation();
   }
 
   handleCustomColumnsChanged(): void {
@@ -1253,13 +1259,9 @@ class IrisGridTableModelTemplate<
   }
 
   /**
-   * Column objects belong to the table state they were read from. After an operation that
-   * changes the table's columns, the API subscribes against the new state while `table.columns`
-   * still returns the previous state's columns, so their indexes may not exist in the new
-   * subscription. Subscribe to all columns until the viewport is set with columns from the
-   * table's current state.
-   * The columns are invalidated before applying the operation, since the API may synchronously
-   * restore an already-running state and report it as succeeded.
+   * Holds the viewport while a column change is pending, since `table.columns` keeps the previous
+   * state's columns until the new state runs. Snapshots before `apply` because the API can
+   * synchronously restore a running state.
    * @param apply Applies the operation and returns whether the table's columns may have changed
    */
   applyColumnsOperation(apply: () => boolean): void {
@@ -1272,22 +1274,37 @@ class IrisGridTableModelTemplate<
     }
   }
 
+  private releasePendingColumnsOperation(): void {
+    if (this.staleTableColumns == null) {
+      return;
+    }
+    this.staleTableColumns = null;
+    this.applyViewport();
+  }
+
   getSubscriptionColumns(
     columns: DhType.Column[] | undefined
   ): DhType.Column[] | undefined {
     if (columns == null || !this.isViewportColumnsUnverified) {
       return columns;
     }
-    const tableColumns = this.table.columns;
+    const tableColumns = this.columns;
+    const indices = this.getColumnIndicesByNameMap(tableColumns);
+    const currentColumns: DhType.Column[] = [];
+    columns.forEach(column => {
+      const index = indices.get(column.name);
+      if (index != null) {
+        currentColumns.push(tableColumns[index]);
+      }
+    });
     if (
-      tableColumns === this.staleTableColumns ||
-      !columns.every(column => tableColumns.includes(column))
+      currentColumns.length === columns.length &&
+      currentColumns.every((column, i) => column === columns[i])
     ) {
-      return undefined;
+      this.isViewportColumnsUnverified = false;
+      return columns;
     }
-    this.isViewportColumnsUnverified = false;
-    this.staleTableColumns = null;
-    return columns;
+    return currentColumns;
   }
 
   closeSubscription(): void {
@@ -1460,6 +1477,19 @@ class IrisGridTableModelTemplate<
       if (!this.viewport) {
         return;
       }
+
+      // the operation is pending until the API reports it (nulls stale) or table.columns changes
+      const isColumnsOperationPending =
+        this.staleTableColumns != null &&
+        this.table.columns === this.staleTableColumns;
+
+      if (isColumnsOperationPending) {
+        log.debug2(
+          'applyViewport deferred until the columns operation completes'
+        );
+        return;
+      }
+      this.staleTableColumns = null;
 
       log.debug2('applyViewport', this.viewport);
       const { top, bottom, columns } = this.viewport;
