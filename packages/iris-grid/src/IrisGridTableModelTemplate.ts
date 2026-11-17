@@ -163,6 +163,8 @@ class IrisGridTableModelTemplate<
 
   private staleTableColumns: readonly DhType.Column[] | null = null;
 
+  private isTrackingColumnsOperation = false;
+
   viewportData: UIViewportData<R> | null;
 
   formattedStringData: (string | null)[][];
@@ -219,7 +221,8 @@ class IrisGridTableModelTemplate<
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-    this.handleRequestSucceeded = this.handleRequestSucceeded.bind(this);
+    this.handleColumnsOperationSettled =
+      this.handleColumnsOperationSettled.bind(this);
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
 
@@ -281,6 +284,7 @@ class IrisGridTableModelTemplate<
   }
 
   close(): void {
+    this.untrackColumnsOperation();
     this.table.close();
     if (this.totalsTable !== null) {
       this.totalsTable.close();
@@ -309,10 +313,6 @@ class IrisGridTableModelTemplate<
       this.handleRequestFailed
     );
     this.table.addEventListener(
-      dh.Table.EVENT_REQUEST_SUCCEEDED,
-      this.handleRequestSucceeded
-    );
-    this.table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
     );
@@ -321,8 +321,6 @@ class IrisGridTableModelTemplate<
       this.addTotalsListeners(this.totalsTable);
     }
 
-    // Request events from before listening started were missed, so stop deferring
-    this.staleTableColumns = null;
     this.applyViewport();
   }
 
@@ -348,10 +346,6 @@ class IrisGridTableModelTemplate<
       this.handleRequestFailed
     );
     this.table.removeEventListener(
-      dh.Table.EVENT_REQUEST_SUCCEEDED,
-      this.handleRequestSucceeded
-    );
-    this.table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
     );
@@ -360,8 +354,6 @@ class IrisGridTableModelTemplate<
       this.removeTotalsListeners(this.totalsTable);
     }
 
-    // Request events aren't observed while stopped, so the operation can't be tracked
-    this.staleTableColumns = null;
     this.closeSubscription();
   }
 
@@ -408,18 +400,9 @@ class IrisGridTableModelTemplate<
   }
 
   handleRequestFailed(event: DhType.Event<unknown>): void {
-    this.releasePendingColumnsOperation();
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );
-  }
-
-  /**
-   * The API only fires this once the table's current state is running, so `table.columns`
-   * describes the state that new subscriptions will use.
-   */
-  handleRequestSucceeded(): void {
-    this.releasePendingColumnsOperation();
   }
 
   handleCustomColumnsChanged(): void {
@@ -1261,17 +1244,62 @@ class IrisGridTableModelTemplate<
   /**
    * Holds the viewport while a column change is pending, since `table.columns` keeps the previous
    * state's columns until the new state runs. Snapshots before `apply` because the API can
-   * synchronously restore a running state.
+   * synchronously restore a running state. Completion is tracked from here rather than from
+   * `startListening`, so a listener restart can't drop a pending hold.
    * @param apply Applies the operation and returns whether the table's columns may have changed
    */
   applyColumnsOperation(apply: () => boolean): void {
     const { isViewportColumnsUnverified, staleTableColumns } = this;
     this.isViewportColumnsUnverified = true;
     this.staleTableColumns = this.table.columns;
+    this.trackColumnsOperation();
     if (!apply()) {
       this.isViewportColumnsUnverified = isViewportColumnsUnverified;
       this.staleTableColumns = staleTableColumns;
+      if (staleTableColumns == null) {
+        this.untrackColumnsOperation();
+      }
     }
+  }
+
+  private trackColumnsOperation(): void {
+    if (this.isTrackingColumnsOperation) {
+      return;
+    }
+    this.isTrackingColumnsOperation = true;
+    const { dh, table } = this;
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
+  }
+
+  private untrackColumnsOperation(): void {
+    if (!this.isTrackingColumnsOperation) {
+      return;
+    }
+    this.isTrackingColumnsOperation = false;
+    const { dh, table } = this;
+    table.removeEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    table.removeEventListener(
+      dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
+  }
+
+  /**
+   * The API only fires the succeeded event once the table's current state is running, and a
+   * failure rolls the table back, so `table.columns` is valid for new subscriptions either way.
+   */
+  private handleColumnsOperationSettled(): void {
+    this.releasePendingColumnsOperation();
   }
 
   private releasePendingColumnsOperation(): void {
@@ -1279,6 +1307,7 @@ class IrisGridTableModelTemplate<
       return;
     }
     this.staleTableColumns = null;
+    this.untrackColumnsOperation();
     this.applyViewport();
   }
 
@@ -1490,6 +1519,7 @@ class IrisGridTableModelTemplate<
         return;
       }
       this.staleTableColumns = null;
+      this.untrackColumnsOperation();
 
       log.debug2('applyViewport', this.viewport);
       const { top, bottom, columns } = this.viewport;

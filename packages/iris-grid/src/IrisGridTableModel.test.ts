@@ -223,8 +223,51 @@ describe('IrisGridTableModel viewport columns after custom columns change', () =
     expect(setViewportSpy).not.toHaveBeenCalled();
 
     // The table rolls back to its previous state, so its columns are unchanged
-    model.handleRequestFailed({ detail: 'failed' } as DhType.Event<unknown>);
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_FAILED);
     jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('keeps deferring when listeners restart before the pending operation completes', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    model.stopListening();
+    model.startListening();
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    const newColumns = irisGridTestUtils.makeColumns(4);
+    (table as { columns: DhType.Column[] }).columns = newColumns;
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_SUCCEEDED);
+    jest.runOnlyPendingTimers();
+
+    const subscribedColumns = lastSubscribedColumns(setViewportSpy);
+    expect(subscribedColumns).toHaveLength(columns.length);
+    subscribedColumns?.forEach((column, i) =>
+      expect(column).toBe(newColumns[i])
+    );
+  });
+
+  it('releases a pending operation that completes while listeners are stopped', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    model.stopListening();
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_FAILED);
+    model.startListening();
+    jest.runOnlyPendingTimers();
+
     expect(setViewportSpy).toHaveBeenLastCalledWith(
       expect.any(Number),
       expect.any(Number),
