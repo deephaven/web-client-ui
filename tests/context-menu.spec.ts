@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
   waitForLoadingDone,
-  openTableWithData,
+  openTable,
   expectContextMenus,
   gotoPage,
 } from './utils';
@@ -20,7 +20,7 @@ async function moveMouseAwayFromTable(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, '');
-  await openTableWithData(page, 'all_types');
+  await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'

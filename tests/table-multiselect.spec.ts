@@ -1,10 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import {
-  expectContextMenus,
-  gotoPage,
-  openTable,
-  openTableWithData,
-} from './utils';
+import { expectContextMenus, gotoPage, openTable } from './utils';
 
 const rowHeight = 19;
 const columnHeight = 30;
@@ -104,7 +99,7 @@ function runMultiSelectFilter(
 ) {
   test(`multiselect ${columnType} filters`, async ({ page }) => {
     await gotoPage(page, '');
-    await openTableWithData(page, `multiselect_${columnType}`);
+    await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
     if (gridLocation === null) {
       throw new Error('Grid location is null');
@@ -173,7 +168,7 @@ test('char formatting, non selected right click, preview formatting', async ({
   page,
 }) => {
   await gotoPage(page, '');
-  await openTableWithData(page, 'multiselect_char');
+  await openTable(page, 'multiselect_char');
   const gridLocation = await getGridLocation(page);
   if (gridLocation === null) return;
 
