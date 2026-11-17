@@ -797,6 +797,18 @@ export class LayoutManager extends EventEmitter {
   /*************************
    * PACKAGE PRIVATE
    *************************/
+
+  /**
+   * The element that marks an item's position in the layout DOM.
+   * A maximised item's element is moved to the top of the root, and a placeholder holds its place,
+   * so DOM insertions relative to the item must use the placeholder instead.
+   */
+  _$getLayoutElement(contentItem: AbstractContentItem): JQuery<HTMLElement> {
+    return contentItem === this._maximisedItem
+      ? this._maximisePlaceholder
+      : contentItem.element;
+  }
+
   _$maximiseItem(contentItem: AbstractContentItem) {
     if (this._maximisedItem !== null) {
       this._$minimiseItem(this._maximisedItem);
