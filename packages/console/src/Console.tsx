@@ -714,6 +714,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
     window.requestAnimationFrame(() => {
       pane.scrollTo({ top: pane.scrollHeight, behavior: 'instant' });
+      this.updateLastScrollTop();
     });
   }
 

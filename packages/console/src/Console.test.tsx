@@ -199,4 +199,37 @@ describe('stick to bottom', () => {
 
     expect(consoleComponent.state.isStuckToBottom).toBe(false);
   });
+
+  it('unsticks when the user scrolls up before the event for a programmatic scroll to the bottom is handled', () => {
+    const rafSpy = jest
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(callback => {
+        callback(0);
+        return 0;
+      });
+    const { consoleComponent, scrollPane } = setupAtBottom();
+    scrollPane.scrollTo = jest.fn(({ top }: ScrollToOptions) => {
+      setScrollDimensions(scrollPane, {
+        scrollHeight: 1400,
+        clientHeight: 200,
+        scrollTop: top as number,
+      });
+    });
+
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 300,
+    });
+    consoleComponent.scrollConsoleHistoryToBottom();
+    setScrollDimensions(scrollPane, {
+      scrollHeight: 1400,
+      clientHeight: 200,
+      scrollTop: 1000,
+    }); // user scrolling up
+    fireEvent.scroll(scrollPane);
+
+    expect(consoleComponent.state.isStuckToBottom).toBe(false);
+    rafSpy.mockRestore();
+  });
 });
