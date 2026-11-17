@@ -10,6 +10,7 @@ import React, {
 export type PersistentStateContextType = {
   /**
    * Adds state to be persisted.
+   * If `state.state` is `undefined`, nothing is persisted and any existing entry is removed.
    * @param hookId Unique ID for this hook instance
    * @param dhId The dhId of the component/panel.
    * @param state The state to persist. Needs to be JSON serializable.
@@ -129,7 +130,20 @@ export function PersistentStateProvider(
 
       hookOwnership.current.set(key, hookId);
 
-      if (isMounted.current && stateMap.get(key) !== state) {
+      if (!isMounted.current) {
+        return;
+      }
+
+      // An entry with undefined state loads the same as no entry, so don't write one.
+      // Removing a saved empty entry here also cleans up data saved by older versions.
+      if (state.state === undefined) {
+        if (stateMap.delete(key)) {
+          onChange([...stateMap.entries()]);
+        }
+        return;
+      }
+
+      if (stateMap.get(key) !== state) {
         stateMap.set(key, state);
         onChange([...stateMap.entries()]);
       }
