@@ -6,6 +6,7 @@ import {
   firefox,
   webkit,
 } from '@playwright/test';
+import { waitForGridData } from '@deephaven/playwright-grid';
 import os from 'node:os';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
@@ -114,6 +115,22 @@ export async function openTable(
       0
     );
   }
+}
+
+/**
+ * Opens a table and waits for its first viewport of data to load.
+ * `openTable` only waits for the grid to mount, so a slow server can leave the
+ * cells blank. Not for tables that are blank or empty by design, and expects
+ * only one table panel to be open.
+ * @param page
+ * @param name Name of the table
+ */
+export async function openTableWithData(
+  page: Page,
+  name: TableNames
+): Promise<void> {
+  await openTable(page, name);
+  await waitForGridData(page.locator('.iris-grid-panel .iris-grid'));
 }
 
 /**

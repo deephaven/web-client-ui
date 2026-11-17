@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { gotoPage, openTable } from './utils';
+import { gotoPage, openTableWithData } from './utils';
 
 // relies on previous
 test.describe.configure({ mode: 'serial' });
@@ -55,7 +55,7 @@ test.describe('GoToRow change column', () => {
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await gotoPage(page, '');
-    await openTable(page, 'ordered_int_and_offset');
+    await openTableWithData(page, 'ordered_int_and_offset');
 
     // get the grid
     const grid = await page.locator('.iris-grid-panel .iris-grid');

@@ -1,8 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-import { expectCellText } from '@deephaven/playwright-grid';
 import {
   gotoPage,
-  openTable,
+  openTableWithData,
   getColumnSeparatorPosition,
   dragColumnSeparator,
   markerAtCoordinates,
@@ -16,17 +15,13 @@ async function waitForLoadingDone(page: Page) {
 
 test('can open a simple table', async ({ page }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table');
-  const grid = page.locator('.iris-grid-panel .iris-grid');
-  // openTable only waits for the grid to mount, and a slow server can leave
-  // the first viewport pending and the cells blank when the screenshot is taken
-  await expectCellText(grid, 'x', 0, '0');
-  await expect(grid).toHaveScreenshot();
+  await openTableWithData(page, 'simple_table');
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
 test('can make a non-contiguous table row selection', async ({ page }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table');
+  await openTableWithData(page, 'simple_table');
 
   const grid = await page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -58,7 +53,7 @@ test('clicking a row in a keyed table selects all rows with the same key', async
   page,
 }) => {
   await gotoPage(page, '');
-  await openTable(page, 'keyed_table');
+  await openTableWithData(page, 'keyed_table');
 
   const grid = page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -81,7 +76,7 @@ test('ctrl+clicking rows in a keyed table selects multiple key groups', async ({
   page,
 }) => {
   await gotoPage(page, '');
-  await openTable(page, 'keyed_table');
+  await openTableWithData(page, 'keyed_table');
 
   const grid = page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -111,7 +106,7 @@ test('shift+clicking rows in a keyed table selects the range of keys', async ({
   page,
 }) => {
   await gotoPage(page, '');
-  await openTable(page, 'keyed_table');
+  await openTableWithData(page, 'keyed_table');
 
   const grid = page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -140,7 +135,7 @@ test('shift+clicking rows in a keyed table selects the range of keys', async ({
 
 test('can open a table with column header groups', async ({ page }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table_header_group');
+  await openTableWithData(page, 'simple_table_header_group');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
@@ -149,7 +144,7 @@ test('can open a table with column header groups and hidden columns', async ({
   page,
 }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table_header_group_hide');
+  await openTableWithData(page, 'simple_table_header_group_hide');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
@@ -157,7 +152,7 @@ test('can open a table with column header groups and hidden columns', async ({
 test.describe('tests simple table operations', () => {
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, '');
-    await openTable(page, 'simple_table');
+    await openTableWithData(page, 'simple_table');
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
     );
@@ -331,7 +326,7 @@ test.describe('tests simple table operations', () => {
 test.describe('column separators', () => {
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, '');
-    await openTable(page, 'simple_table');
+    await openTableWithData(page, 'simple_table');
     await waitForLoadingDone(page);
   });
 
@@ -370,7 +365,7 @@ test.describe('column group separators', () => {
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, '');
     // Open table with column groups for group separator testing
-    await openTable(page, 'simple_table_header_group');
+    await openTableWithData(page, 'simple_table_header_group');
   });
 
   test('change color on hover on level 0', async ({ page }) => {

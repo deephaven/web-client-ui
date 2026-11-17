@@ -3,6 +3,7 @@ import {
   waitForLoadingDone,
   openTableOption,
   openTable,
+  openTableWithData,
   gotoPage,
   pasteInMonaco,
   generateId,
@@ -56,7 +57,7 @@ test.beforeEach(async ({ page }) => {
 
 test('scroll with keyboard shortcuts', async ({ page }) => {
   // Use simple_table for its scrollable number of rows
-  await openTable(page, 'simple_table');
+  await openTableWithData(page, 'simple_table');
 
   const gridCanvas = page.locator('.iris-grid .grid-wrapper');
   await gridCanvas.click({ position: { x: 10, y: 80 } });

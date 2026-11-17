@@ -46,6 +46,7 @@ a viewport the grid has already scrolled away from.
 | Function                                    | Description                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------ |
 | `waitForGrid(grid)`                         | Wait until the grid has rendered and its contents can be read      |
+| `waitForGridData(grid)`                     | Wait until at least one cell in the viewport has text              |
 | `getGridDescription(grid)`                  | The grid's description of its size, selection, and viewport        |
 | `getColumnHeaderNames(grid)`                | The text of every column header in the viewport                    |
 | `getVisibleRows(grid)`                      | The visible row indexes in the viewport                            |

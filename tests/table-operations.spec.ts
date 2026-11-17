@@ -7,7 +7,7 @@ import {
   waitForLoadingDone,
   openTableOption,
   generateVarName,
-  openTable,
+  openTableWithData,
   gotoPage,
 } from './utils';
 
@@ -118,7 +118,7 @@ test.beforeEach(async ({ page }) => {
     throw error;
   });
 
-  await openTable(page, 'all_types');
+  await openTableWithData(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'
