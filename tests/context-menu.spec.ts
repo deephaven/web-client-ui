@@ -236,6 +236,10 @@ test('open custom context menu with another custom context menu open', async ({
 }) => {
   await page.goto('');
 
+  // The console input focuses itself once its editor is created, which would
+  // blur and close a context menu opened before then
+  await expect(page.locator('.console-input .monaco-editor')).toBeVisible();
+
   await page.getByText('Console', { exact: true }).click({ button: 'right' });
   await expect(page.getByText('Close', { exact: true })).toHaveCount(1);
 
