@@ -728,8 +728,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     // is only treated as the user scrolling up if the pane moved up further
     // than shrinking the content would have clamped it to.
     const maxScrollTop = scrollHeight - clientHeight;
+    // scrollTop can be fractional, so only apply tolerance if maxScrollTop changed
+    const isClamped = this.lastScrollTop > maxScrollTop;
     const isScrolledUp =
-      scrollTop < Math.min(this.lastScrollTop, maxScrollTop) - 1;
+      scrollTop <
+      Math.min(this.lastScrollTop, maxScrollTop) - (isClamped ? 1 : 0);
     this.updateLastScrollTop();
     const isAtBottom = this.isAtBottom();
     this.setState(({ isStuckToBottom }) => ({
