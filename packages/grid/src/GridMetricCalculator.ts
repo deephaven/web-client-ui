@@ -893,7 +893,7 @@ export class GridMetricCalculator {
     }
     let x = 0;
     while (lastLeft >= 0) {
-      const columnWidth = this.getVisibleColumnWidth(lastLeft, state);
+      const columnWidth = this.getScrollBoundsColumnWidth(lastLeft, state);
       x += columnWidth;
 
       if (x >= visibleWidth) {
@@ -904,6 +904,40 @@ export class GridMetricCalculator {
     }
 
     return 0;
+  }
+
+  /**
+   * Get the width of a column for calculating the scroll bounds.
+   * While calculating metrics, columns that haven't been measured in this pass are offscreen,
+   * so their last calculated width is used instead of measuring all of their visible cells.
+   * @param column Index of the column to get the width of
+   * @param state The grid metric state
+   * @returns The width of the column
+   */
+  protected getScrollBoundsColumnWidth(
+    column: VisibleIndex,
+    state: GridMetricState
+  ): number {
+    const modelColumn = this.getModelColumn(column, state);
+    const cachedWidth = this.calculatedColumnWidths.get(modelColumn);
+    if (
+      cachedWidth === undefined ||
+      this.metricsColumnWidths == null ||
+      this.metricsColumnWidths.has(modelColumn) ||
+      !state.theme.autoSizeColumns
+    ) {
+      return this.getVisibleColumnWidth(column, state);
+    }
+
+    return this.getVisibleItemSize(modelColumn, this.userColumnWidths, () => {
+      const initialWidth = this.initialColumnWidths.get(modelColumn);
+      if (initialWidth !== undefined) {
+        return initialWidth;
+      }
+      return column === this.getFirstColumn(state)
+        ? cachedWidth + this.calculateTreePaddingX(state)
+        : cachedWidth;
+    });
   }
 
   /**

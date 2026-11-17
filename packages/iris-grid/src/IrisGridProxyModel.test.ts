@@ -1,4 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
+import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -135,6 +136,89 @@ describe('IrisGridProxyModel', () => {
     expect(testSetter).toHaveBeenCalledTimes(1);
     expect(testUnderlyingSetter).toHaveBeenCalledWith('underlying');
     expect(testUnderlyingSetter).toHaveBeenCalledTimes(1);
+  });
+
+  describe('inner model methods', () => {
+    function getThis(this: unknown): unknown {
+      return this;
+    }
+
+    let underlyingPrototype: TestUnderlyingModel;
+
+    beforeEach(() => {
+      underlyingPrototype = Object.getPrototypeOf(underlyingModel);
+      Object.defineProperty(underlyingPrototype, 'testUnderlyingFunction', {
+        value: getThis,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    afterEach(() => {
+      delete (underlyingPrototype as Partial<TestUnderlyingModel>)
+        .testUnderlyingFunction;
+    });
+
+    it('runs inner model class methods against the inner model', () => {
+      expect(proxyModel.testUnderlyingFunction()).toBe(underlyingModel);
+      expect(proxyModel.testUnderlyingFunction).toBe(
+        proxyModel.testUnderlyingFunction
+      );
+    });
+
+    it('runs methods against the current inner model after it changes', () => {
+      const newModel = irisGridTestUtils.makeModel();
+      proxyModel.setModel(newModel);
+      expect(proxyModel.testUnderlyingFunction()).toBe(newModel.model);
+    });
+
+    it('returns functions set on the inner model as is', () => {
+      const spy = jest.spyOn(proxyModel, 'testUnderlyingFunction');
+      expect(proxyModel.testUnderlyingFunction).toBe(spy);
+      proxyModel.testUnderlyingFunction();
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('gets the partition base table from the original model', async () => {
+      const table = irisGridTestUtils.makeTable();
+      const partitionBaseTable = jest
+        .spyOn(underlyingModel, 'partitionBaseTable')
+        .mockResolvedValue(table);
+      const newModel = irisGridTestUtils.makeModel().model;
+      const newPartitionBaseTable = jest.spyOn(newModel, 'partitionBaseTable');
+      proxyModel.setModel(newModel);
+
+      await expect(proxyModel.partitionBaseTable()).resolves.toBe(table);
+      expect(partitionBaseTable).toHaveBeenCalled();
+      expect(newPartitionBaseTable).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('formatter and columnAlignmentMap', () => {
+    it('applies the original model options to a new inner model', () => {
+      const newModel = irisGridTestUtils.makeModel();
+      proxyModel.setModel(newModel);
+      expect(newModel.formatter).toBe(underlyingModel.formatter);
+      expect(newModel.columnAlignmentMap).toBe(
+        underlyingModel.columnAlignmentMap
+      );
+    });
+
+    it('applies option changes to the current inner model', () => {
+      const newModel = irisGridTestUtils.makeModel();
+      proxyModel.setModel(newModel);
+      const formatter = new Formatter(dh);
+      const columnAlignmentMap = new Map<string, CanvasTextAlign>([
+        ['A', 'left'],
+      ]);
+      proxyModel.formatter = formatter;
+      proxyModel.columnAlignmentMap = columnAlignmentMap;
+      expect(proxyModel.formatter).toBe(formatter);
+      expect(newModel.formatter).toBe(formatter);
+      expect(underlyingModel.formatter).toBe(formatter);
+      expect(newModel.columnAlignmentMap).toBe(columnAlignmentMap);
+      expect(underlyingModel.columnAlignmentMap).toBe(columnAlignmentMap);
+    });
   });
 
   describe('has trap', () => {

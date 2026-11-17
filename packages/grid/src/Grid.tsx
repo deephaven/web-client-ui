@@ -111,12 +111,25 @@ type GridMetricsSource = {
   metricCalculator: GridMetricCalculator;
 };
 
-function isShallowEqual<T extends object>(a: T, b: T): boolean {
+/** State that only affects what is drawn under the pointer, not the grid metrics */
+const POINTER_STATE_KEYS: ReadonlySet<string> = new Set([
+  'mouseX',
+  'mouseY',
+  'cursor',
+]);
+
+function isShallowEqual<T extends object>(
+  a: T,
+  b: T,
+  ignoredKeys?: ReadonlySet<string>
+): boolean {
   const aKeys = Object.keys(a) as (keyof T)[];
   if (aKeys.length !== Object.keys(b).length) {
     return false;
   }
-  return aKeys.every(key => a[key] === b[key]);
+  return aKeys.every(
+    key => a[key] === b[key] || ignoredKeys?.has(key as string) === true
+  );
 }
 
 /**
@@ -132,7 +145,7 @@ function isMetricsChanged(
   return (
     oldSource == null ||
     oldSource.metricCalculator !== newSource.metricCalculator ||
-    !isShallowEqual(oldSource.state, newSource.state) ||
+    !isShallowEqual(oldSource.state, newSource.state, POINTER_STATE_KEYS) ||
     !isShallowEqual(oldSource.metricState, newSource.metricState)
   );
 }
@@ -659,11 +672,20 @@ class Grid extends PureComponent<GridProps, GridState> {
     const changedProps = getChangedKeys(prevProps, this.props);
     const changedState = getChangedKeys(prevState, this.state);
     // We don't need to bother re-checking any of the metrics if no props have changed or only the children have changed
+    const isPropsUnchanged =
+      changedProps.length === 0 ||
+      (changedProps.length === 1 && changedProps[0] === 'children');
+    if (isPropsUnchanged && changedState.length === 0) {
+      return;
+    }
+
+    // Metrics are expensive to calculate and don't depend on the pointer, so
+    // hovering only needs a redraw
     if (
-      (changedProps.length === 0 ||
-        (changedProps.length === 1 && changedProps[0] === 'children')) &&
-      changedState.length === 0
+      isPropsUnchanged &&
+      changedState.every(key => POINTER_STATE_KEYS.has(key))
     ) {
+      this.requestUpdateCanvas();
       return;
     }
 
@@ -1165,6 +1187,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Update the metrics only if the state or metric inputs have changed since they were last calculated.
    * componentDidUpdate already calculates the metrics for the state the next animation frame draws,
    * so this avoids calculating them a second time when drawing.
+   * Pointer state isn't a metric input, so pointer moves don't recalculate the metrics.
    * Calculator or model changes that don't change any of the inputs must call `updateMetrics` or `forceUpdate`.
    */
   private updateMetricsIfChanged(): GridMetrics {
