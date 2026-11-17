@@ -257,7 +257,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
 
     this.updateDimensions();
-    this.updateLastScrollDimensions();
+    this.updateLastScrollTop();
 
     if (
       this.consoleHistoryScrollPane.current &&
@@ -311,10 +311,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   queuedLogMessages: ConsoleHistoryActionItem[];
 
   resizeObserver: ResizeObserver;
-
-  lastScrollHeight = 0;
-
-  lastClientHeight = 0;
 
   lastScrollTop = 0;
 
@@ -727,38 +723,31 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     assertNotNull(scrollPane);
     const { scrollHeight, clientHeight, scrollTop } = scrollPane;
     // Scroll events are dispatched on the frame after the scroll happened, so
-    // the history may have grown or shrunk since. If the dimensions changed
-    // since the last scroll/resize was handled, being away from the bottom is
-    // caused by that layout change rather than the user scrolling, unless the
-    // pane moved up further than shrinking the content would clamp it to.
-    const isLayoutChanged =
-      scrollHeight !== this.lastScrollHeight ||
-      clientHeight !== this.lastClientHeight;
+    // the history may have grown or shrunk since. Being away from the bottom
+    // is only treated as the user scrolling up if the pane moved up further
+    // than shrinking the content would have clamped it to.
     const maxScrollTop = scrollHeight - clientHeight;
     const isScrolledUp =
       scrollTop < Math.min(this.lastScrollTop, maxScrollTop) - 1;
-    this.updateLastScrollDimensions();
+    this.updateLastScrollTop();
     const isAtBottom = this.isAtBottom();
     this.setState(({ isStuckToBottom }) => ({
       isScrollDecorationShown: scrollTop > 0 && scrollHeight > clientHeight,
-      isStuckToBottom:
-        isAtBottom || (isStuckToBottom && isLayoutChanged && !isScrolledUp),
+      isStuckToBottom: isAtBottom || (isStuckToBottom && !isScrolledUp),
     }));
   }
 
-  updateLastScrollDimensions(): void {
+  updateLastScrollTop(): void {
     const scrollPane = this.consoleHistoryScrollPane.current;
     if (scrollPane == null) {
       return;
     }
-    this.lastScrollHeight = scrollPane.scrollHeight;
-    this.lastClientHeight = scrollPane.clientHeight;
     this.lastScrollTop = scrollPane.scrollTop;
   }
 
   handleHistoryResize(entries: ResizeObserverEntry[]): void {
     log.debug('handleHistoryResize', entries);
-    this.updateLastScrollDimensions();
+    this.updateLastScrollTop();
     const entry = entries[0];
     if (entry.contentRect.height > 0 && entry.contentRect.width > 0) {
       const { isStuckToBottom } = this.state;
