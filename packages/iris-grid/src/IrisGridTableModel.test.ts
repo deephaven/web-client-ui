@@ -265,6 +265,9 @@ describe('IrisGridTableModel viewport columns after custom columns change', () =
     model.customColumns = ['Test=1'];
     model.stopListening();
     fireTableEvent(table, dh.Table.EVENT_REQUEST_FAILED);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
     model.startListening();
     jest.runOnlyPendingTimers();
 

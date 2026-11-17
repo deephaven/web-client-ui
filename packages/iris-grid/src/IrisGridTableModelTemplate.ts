@@ -165,6 +165,8 @@ class IrisGridTableModelTemplate<
 
   private isTrackingColumnsOperation = false;
 
+  private isListening = false;
+
   viewportData: UIViewportData<R> | null;
 
   formattedStringData: (string | null)[][];
@@ -296,6 +298,7 @@ class IrisGridTableModelTemplate<
 
   startListening(): void {
     super.startListening();
+    this.isListening = true;
 
     const { dh } = this;
 
@@ -326,6 +329,7 @@ class IrisGridTableModelTemplate<
 
   stopListening(): void {
     super.stopListening();
+    this.isListening = false;
 
     const { dh } = this;
 
@@ -1308,7 +1312,10 @@ class IrisGridTableModelTemplate<
     }
     this.staleTableColumns = null;
     this.untrackColumnsOperation();
-    this.applyViewport();
+    // startListening reapplies the viewport on resume
+    if (this.isListening) {
+      this.applyViewport();
+    }
   }
 
   getSubscriptionColumns(
