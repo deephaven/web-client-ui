@@ -465,12 +465,18 @@ describe('popping view interaction', () => {
 
     rerender(<Stack>{[page('a')]}</Stack>);
 
-    expect(backButton.closest('.popping-view')?.hasAttribute('inert')).toBe(
+    expect(backButton.closest('.view-content')?.hasAttribute('inert')).toBe(
       true
+    );
+    expect(backButton.closest('.popping-view')?.hasAttribute('inert')).toBe(
+      false
     );
     expect(document.activeElement).toBe(document.querySelector('.main-view'));
     expect(
-      screen.getByText('a button').closest('.main-view')?.hasAttribute('inert')
+      screen
+        .getByText('a button')
+        .closest('.view-content')
+        ?.hasAttribute('inert')
     ).toBe(false);
 
     runTimers();

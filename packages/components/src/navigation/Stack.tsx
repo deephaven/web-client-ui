@@ -231,6 +231,9 @@ export function Stack({
   // Remounting would discard the view's internal state and rerun its mount
   // effects, and a popping view would rerun them with the stale props it was
   // rendered with before it was popped.
+  // Each view's content sits in the same inner `view-content` wrapper in every
+  // role. Only that wrapper is made inert, so the outer popping wrapper still
+  // absorbs pointer input instead of letting clicks reach the main view.
   return (
     <div className="navigation-stack">
       {(mainView == null || mainElement == null) && (
@@ -249,7 +252,7 @@ export function Stack({
             tabIndex={-1}
             ref={mainViewRef}
           >
-            {mainElement}
+            <div className="view-content">{mainElement}</div>
           </div>
         </SlideTransition>
       )}
@@ -260,9 +263,11 @@ export function Stack({
           onExited={popComplete}
           unmountOnExit
         >
-          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <div className="popping-view" ref={poppingViewRef} {...INERT_PROPS}>
-            {poppingView.element}
+          <div className="popping-view" ref={poppingViewRef}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <div className="view-content" {...INERT_PROPS}>
+              {poppingView.element}
+            </div>
           </div>
         </SlideTransition>
       )}
@@ -273,7 +278,9 @@ export function Stack({
           appear
           onEntered={pushComplete}
         >
-          <div className="pushing-view">{pushingElement}</div>
+          <div className="pushing-view">
+            <div className="view-content">{pushingElement}</div>
+          </div>
         </SlideTransition>
       )}
     </div>
