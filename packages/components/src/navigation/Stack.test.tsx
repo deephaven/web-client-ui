@@ -2,37 +2,6 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import Stack from './Stack';
 
-// Mock the CSS transitions to appear right away. Like the real transition, an
-// entering view calls `onEntered` and an exiting view calls `onExited` after a
-// timeout, and pending callbacks are cancelled when the transition unmounts.
-jest.mock('../transitions', () => {
-  const { useEffect } = jest.requireActual<typeof React>('react');
-  return {
-    SlideTransition: jest.fn(props => {
-      const {
-        in: inProp,
-        onEntered,
-        onExited,
-        unmountOnExit,
-        children,
-      } = props;
-      useEffect(() => {
-        const callback = inProp === true ? onEntered : onExited;
-        if (callback == null) {
-          return undefined;
-        }
-        const timeout = setTimeout(callback, 50);
-        return () => clearTimeout(timeout);
-      }, [inProp, onEntered, onExited]);
-
-      if (inProp === false && unmountOnExit !== true) {
-        return null;
-      }
-      return children;
-    }),
-  };
-});
-
 function makeStackItemText(index: number) {
   return `stack-text-${index}`;
 }
@@ -470,5 +439,54 @@ describe('view lifecycle', () => {
     expect(screen.getByText('b:v2')).toBeTruthy();
     expect(onMount).toHaveBeenCalledTimes(1);
     expect(onUnmount).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('popping view interaction', () => {
+  function runTimers() {
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+  }
+
+  function page(key: string) {
+    return (
+      <div key={key}>
+        <button type="button">{key} button</button>
+      </div>
+    );
+  }
+
+  it('makes the popping view inert and moves focus to the main view', () => {
+    const { rerender } = render(<Stack>{[page('a'), page('b')]}</Stack>);
+    const backButton = screen.getByText('b button');
+    backButton.focus();
+    expect(document.activeElement).toBe(backButton);
+
+    rerender(<Stack>{[page('a')]}</Stack>);
+
+    expect(backButton.closest('.popping-view')?.hasAttribute('inert')).toBe(
+      true
+    );
+    expect(document.activeElement).toBe(document.querySelector('.main-view'));
+    expect(
+      screen.getByText('a button').closest('.main-view')?.hasAttribute('inert')
+    ).toBe(false);
+
+    runTimers();
+    expect(screen.queryByText('b button')).toBeNull();
+  });
+
+  it('leaves focus alone when it is not in the popping view', () => {
+    const { rerender } = render(<Stack>{[page('a'), page('b')]}</Stack>);
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+
+    rerender(<Stack>{[page('a')]}</Stack>);
+
+    expect(document.activeElement).toBe(outside);
+    runTimers();
+    outside.remove();
   });
 });

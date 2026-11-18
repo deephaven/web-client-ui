@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import './Stack.scss';
 import { SlideTransition } from '../transitions';
 
@@ -48,6 +54,9 @@ function findViewByKey(
   }
   return views.find(view => getViewKey(view) === key) ?? null;
 }
+
+// React 18's types don't include `inert`
+const INERT_PROPS = { inert: '' } as React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * A view rendered by the stack. `key` identifies the child it renders, and `id`
@@ -200,6 +209,18 @@ export function Stack({
     setState(s => ({ ...s, poppingView: null }));
   }, []);
 
+  const mainViewRef = useRef<HTMLDivElement>(null);
+  const poppingViewRef = useRef<HTMLDivElement>(null);
+  const poppingViewId = poppingView?.id;
+  useLayoutEffect(
+    function moveFocusOffPoppingView() {
+      if (poppingViewRef.current?.contains(document.activeElement) === true) {
+        mainViewRef.current?.focus({ preventScroll: true });
+      }
+    },
+    [poppingViewId]
+  );
+
   const mainElement = findViewByKey(childrenArray, mainView?.key ?? null);
   const pushingElement = findViewByKey(childrenArray, pushingView?.key ?? null);
 
@@ -213,11 +234,21 @@ export function Stack({
   return (
     <div className="navigation-stack">
       {(mainView == null || mainElement == null) && (
-        <div className="main-view" data-testid={dataTestId} />
+        <div
+          className="main-view"
+          data-testid={dataTestId}
+          tabIndex={-1}
+          ref={mainViewRef}
+        />
       )}
       {mainView != null && mainElement != null && (
         <SlideTransition key={mainView.id} in>
-          <div className="main-view" data-testid={dataTestId}>
+          <div
+            className="main-view"
+            data-testid={dataTestId}
+            tabIndex={-1}
+            ref={mainViewRef}
+          >
             {mainElement}
           </div>
         </SlideTransition>
@@ -229,7 +260,10 @@ export function Stack({
           onExited={popComplete}
           unmountOnExit
         >
-          <div className="popping-view">{poppingView.element}</div>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+          <div className="popping-view" ref={poppingViewRef} {...INERT_PROPS}>
+            {poppingView.element}
+          </div>
         </SlideTransition>
       )}
       {pushingView != null && pushingElement != null && (
