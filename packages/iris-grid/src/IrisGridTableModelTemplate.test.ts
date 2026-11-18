@@ -4,6 +4,8 @@ import { Formatter } from '@deephaven/jsapi-utils';
 import { GridRange } from '@deephaven/grid';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import AggregationOperation from './sidebar/aggregations/AggregationOperation';
+import { type UITotalsTableConfig } from './CommonTypes';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
@@ -428,5 +430,46 @@ describe('textSnapshotByKeys', () => {
       false
     );
     expect(result).toBe('');
+  });
+});
+
+describe('copyTotalsData', () => {
+  let model: IrisGridTableModelTemplate;
+
+  function makeTotalsData(
+    rows: { get: (col: DhType.Column) => unknown }[]
+  ): DhType.ViewportData {
+    return {
+      columns: model.columns,
+      rows: rows.map(row => ({ ...row, getFormat: () => null })),
+    } as unknown as DhType.ViewportData;
+  }
+
+  beforeEach(() => {
+    model = makeModel(irisGridTestUtils.makeColumns(2), 5);
+    model.totals = {
+      operationMap: {},
+      operationOrder: [AggregationOperation.SUM],
+      showOnTop: true,
+      defaultOperation: AggregationOperation.SUM,
+    } as unknown as UITotalsTableConfig;
+  });
+
+  it('stores the totals row values', () => {
+    model.copyTotalsData(makeTotalsData([{ get: col => col.index + 10 }]));
+
+    expect(model.valueForCell(0, 0)).toBe(10);
+    expect(model.valueForCell(1, 0)).toBe(11);
+  });
+
+  it('clears previous totals when the totals table has no rows', () => {
+    model.copyTotalsData(makeTotalsData([{ get: col => col.index + 10 }]));
+    expect(model.textForCell(0, 0)).not.toBe('');
+
+    model.copyTotalsData(makeTotalsData([]));
+
+    expect(model.valueForCell(0, 0)).toBeUndefined();
+    expect(model.valueForCell(1, 0)).toBeUndefined();
+    expect(model.textForCell(0, 0)).toBe('');
   });
 });

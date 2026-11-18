@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { STATUS_CODES } from 'node:http';
 
 /** General Http Error class. */
@@ -8,6 +9,33 @@ export class HttpError extends Error {
   ) {
     super(message ?? STATUS_CODES[statusCode]);
     this.name = 'HttpError';
+  }
+}
+
+/** Thrown when a URL is rejected by a `DownloadOptions.isTrustedUrl` check. */
+export class UntrustedUrlError extends Error {
+  readonly url: string;
+
+  constructor(url: URL | string) {
+    const href = String(url);
+    super(`Untrusted URL: "${href}"`);
+    this.name = 'UntrustedUrlError';
+    this.url = href;
+  }
+}
+
+/** Thrown when a download request's socket is idle longer than its timeout. */
+export class DownloadTimeoutError extends Error {
+  readonly url: string;
+
+  readonly timeoutMs: number;
+
+  constructor(url: URL | string, timeoutMs: number) {
+    const href = String(url);
+    super(`Download timed out after ${timeoutMs}ms: "${href}"`);
+    this.name = 'DownloadTimeoutError';
+    this.url = href;
+    this.timeoutMs = timeoutMs;
   }
 }
 

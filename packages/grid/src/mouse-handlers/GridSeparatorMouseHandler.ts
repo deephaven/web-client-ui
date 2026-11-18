@@ -259,6 +259,10 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       }
     });
 
+    // Sizes are set on the metric calculator rather than in the grid state,
+    // so the grid needs to be told to recalculate its metrics
+    grid.forceUpdate();
+
     this.updateCursor(metrics, this.draggingIndex);
 
     return true;

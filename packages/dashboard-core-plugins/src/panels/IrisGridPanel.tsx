@@ -594,9 +594,19 @@ export class IrisGridPanel extends PureComponent<
 
   handleLoadSuccess(modelParam: IrisGridModel): void {
     const model = modelParam;
+    const { loadPlugin } = this.props;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
     this.irisGridUtils = new IrisGridUtils(model.dh);
+
+    // Read before modelQueue runs, since updateView drops the PluginName attribute
+    if (isIrisGridTableModelTemplate(model)) {
+      const { pluginName } = model.table;
+      if (loadPlugin != null && pluginName != null && pluginName !== '') {
+        this.setState({ Plugin: loadPlugin(pluginName) });
+      }
+    }
+
     if (panelState != null) {
       const { irisGridState } = panelState;
       const {
@@ -840,7 +850,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   modelInitialized(model: IrisGridModel): void {
-    const { glEventHub, loadPlugin, onModelChanged } = this.props;
+    const { glEventHub, onModelChanged } = this.props;
 
     this.modelPromise = undefined;
 
@@ -853,14 +863,6 @@ export class IrisGridPanel extends PureComponent<
 
     if (isIrisGridTableModelTemplate(model)) {
       const { table } = model;
-      const { pluginName } = table;
-
-      if (pluginName !== '') {
-        if (loadPlugin != null && pluginName != null) {
-          const Plugin = loadPlugin(pluginName);
-          this.setState({ Plugin });
-        }
-      }
       const panelId = LayoutUtils.getIdFromPanel(this);
       assertNotNull(panelId);
       emitFilterTableChanged(glEventHub, panelId, table);
