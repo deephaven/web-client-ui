@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
+
+### Bug Fixes
+
+- DH-24090: Fix stale data in totals row on empty filtered table ([#2811](https://github.com/deephaven/web-client-ui/issues/2811)) ([c846b6b](https://github.com/deephaven/web-client-ui/commit/c846b6baa92086ff33c98307c7da8d2863a52f3a))
+
+### Performance Improvements
+
+- **grid:** DH-24203: More grid performance improvements ([#2824](https://github.com/deephaven/web-client-ui/issues/2824)) ([2cd5aec](https://github.com/deephaven/web-client-ui/commit/2cd5aecf8a3e010608fb126e7d4b1bc7ade6e4e1))
+
 ## [1.33.1](https://github.com/deephaven/web-client-ui/compare/v1.33.0...v1.33.1) (2026-11-04)
 
 **Note:** Version bump only for package @deephaven/iris-grid

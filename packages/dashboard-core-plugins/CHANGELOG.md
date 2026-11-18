@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
+
+### Bug Fixes
+
+- Keep loaded notebook content when panel state save is batched with load ([#2805](https://github.com/deephaven/web-client-ui/issues/2805)) ([ebfc048](https://github.com/deephaven/web-client-ui/commit/ebfc048b10f925b348d399be41b26503bfcce095)), closes [#2798](https://github.com/deephaven/web-client-ui/issues/2798)
+
 ## [1.33.2](https://github.com/deephaven/web-client-ui/compare/v1.33.1...v1.33.2) (2026-11-12)
 
 ### Bug Fixes

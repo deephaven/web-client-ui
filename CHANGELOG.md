@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
+
+### Features
+
+- DH-24027: Added abortable util to support CLI ([#2823](https://github.com/deephaven/web-client-ui/issues/2823)) ([7e4f6db](https://github.com/deephaven/web-client-ui/commit/7e4f6db95d13f17520d222cca078812c63c16ffa))
+
+### Bug Fixes
+
+- DH-24090: Fix stale data in totals row on empty filtered table ([#2811](https://github.com/deephaven/web-client-ui/issues/2811)) ([c846b6b](https://github.com/deephaven/web-client-ui/commit/c846b6baa92086ff33c98307c7da8d2863a52f3a))
+- DH-24399: Keep panels opened while another is maximised in their layout position ([#2822](https://github.com/deephaven/web-client-ui/issues/2822)) ([7b5bf13](https://github.com/deephaven/web-client-ui/commit/7b5bf131a2cb38ddee9a50420e02cfdc10c6ca23))
+- keep console stuck to bottom when a scroll event arrives after a layout change ([#2804](https://github.com/deephaven/web-client-ui/issues/2804)) ([8002b23](https://github.com/deephaven/web-client-ui/commit/8002b23eeda0c5d6f8d67b21ecca56b26c88c7b7)), closes [#2795](https://github.com/deephaven/web-client-ui/issues/2795)
+- Keep loaded notebook content when panel state save is batched with load ([#2805](https://github.com/deephaven/web-client-ui/issues/2805)) ([ebfc048](https://github.com/deephaven/web-client-ui/commit/ebfc048b10f925b348d399be41b26503bfcce095)), closes [#2798](https://github.com/deephaven/web-client-ui/issues/2798)
+
+### Performance Improvements
+
+- DH-24203: Improve grid rendering performance for ticking tables ([#2812](https://github.com/deephaven/web-client-ui/issues/2812)) ([430c721](https://github.com/deephaven/web-client-ui/commit/430c72172434bb8e96ecf3810636602ab5f97d4b))
+- **grid:** DH-24203: More grid performance improvements ([#2824](https://github.com/deephaven/web-client-ui/issues/2824)) ([2cd5aec](https://github.com/deephaven/web-client-ui/commit/2cd5aecf8a3e010608fb126e7d4b1bc7ade6e4e1))
+
 ## [1.33.2](https://github.com/deephaven/web-client-ui/compare/v1.33.1...v1.33.2) (2026-11-12)
 
 ### Bug Fixes

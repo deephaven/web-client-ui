@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
+
+### Bug Fixes
+
+- DH-24399: Keep panels opened while another is maximised in their layout position ([#2822](https://github.com/deephaven/web-client-ui/issues/2822)) ([7b5bf13](https://github.com/deephaven/web-client-ui/commit/7b5bf131a2cb38ddee9a50420e02cfdc10c6ca23))
+
 ## [1.32.0](https://github.com/deephaven/web-client-ui/compare/v1.31.0...v1.32.0) (2026-10-19)
 
 **Note:** Version bump only for package @deephaven/golden-layout
