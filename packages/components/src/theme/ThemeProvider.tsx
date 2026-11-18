@@ -2,6 +2,7 @@ import {
   createContext,
   type ReactNode,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from 'react';
@@ -111,7 +112,11 @@ export function ThemeProvider({
     [activeThemes, selectedThemeKey, customThemes, defaultPreloadValues]
   );
 
-  useEffect(() => {
+  // Children read theme CSS variables while rendering, so the context is only
+  // published once the theme <style> tags are in the DOM. A layout effect
+  // re-renders synchronously before the browser yields, so there is never a
+  // committed state where neither the loading UI nor the children are shown.
+  useLayoutEffect(() => {
     setValue({
       activeThemes,
       selectedThemeKey,
