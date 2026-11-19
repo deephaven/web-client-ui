@@ -174,10 +174,8 @@ class IrisGridTableModel
       log.debug('Ignore same customColumns');
       return;
     }
-    this.closeSubscription();
     this.customColumnList = customColumns;
-    this.table.applyCustomColumns([...customColumns, ...this.formatColumns]);
-    this.applyViewport();
+    this.applyCustomColumns([...customColumns, ...this.formatColumns]);
   }
 
   get formatColumns(): DhType.CustomColumn[] {
@@ -200,10 +198,8 @@ class IrisGridTableModel
       log.debug('Ignore same formatColumns');
       return;
     }
-    this.closeSubscription();
     this.formatColumnList = formatColumns;
-    this.table.applyCustomColumns([...this.customColumns, ...formatColumns]);
-    this.applyViewport();
+    this.applyCustomColumns([...this.customColumns, ...formatColumns]);
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {

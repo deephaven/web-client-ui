@@ -161,6 +161,15 @@ class IrisGridTableModelTemplate<
 
   viewportData: UIViewportData<R> | null;
 
+  /** Columns used to key `viewportData` rows by model index */
+  private viewportDataColumns: readonly DhType.Column[] | null;
+
+  /**
+   * Set while a custom columns change is in flight. Viewport subscriptions resolve
+   * columns by index, which is unknown until the new table state is running.
+   */
+  private isCustomColumnsPending: boolean;
+
   formattedStringData: (string | null)[][];
 
   private pendingStringData: (string | null)[][];
@@ -215,6 +224,7 @@ class IrisGridTableModelTemplate<
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handleRequestSucceeded = this.handleRequestSucceeded.bind(this);
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
 
@@ -228,6 +238,8 @@ class IrisGridTableModelTemplate<
     this.tableUtils = new TableUtils(dh);
     this.viewport = null;
     this.viewportData = null;
+    this.viewportDataColumns = null;
+    this.isCustomColumnsPending = false;
     this.formattedStringData = [];
     this.pendingStringData = [];
     this.isSaveInProgress = false;
@@ -304,6 +316,10 @@ class IrisGridTableModelTemplate<
       this.handleRequestFailed
     );
     this.table.addEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleRequestSucceeded
+    );
+    this.table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleCustomColumnsChanged
     );
@@ -312,6 +328,8 @@ class IrisGridTableModelTemplate<
       this.addTotalsListeners(this.totalsTable);
     }
 
+    // A pending custom columns request may have resolved while not listening
+    this.isCustomColumnsPending = false;
     this.applyViewport();
   }
 
@@ -335,6 +353,10 @@ class IrisGridTableModelTemplate<
     this.table.removeEventListener(
       dh.Client.EVENT_REQUEST_FAILED,
       this.handleRequestFailed
+    );
+    this.table.removeEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleRequestSucceeded
     );
     this.table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -390,12 +412,21 @@ class IrisGridTableModelTemplate<
   }
 
   handleRequestFailed(event: DhType.Event<unknown>): void {
+    this.isCustomColumnsPending = false;
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );
   }
 
+  handleRequestSucceeded(): void {
+    if (this.isCustomColumnsPending) {
+      this.isCustomColumnsPending = false;
+      this.applyViewport();
+    }
+  }
+
   handleCustomColumnsChanged(): void {
+    this.remapViewportData();
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,
@@ -1137,7 +1168,66 @@ class IrisGridTableModelTemplate<
     }
 
     this.viewportData = this.extractViewportData(data);
+    this.viewportDataColumns = this.columns;
     this.formattedStringData = [];
+  }
+
+  /**
+   * Re-keys the cached viewport data to the current column indices, so data from the
+   * previous table state is never rendered under a different column after the
+   * column order or types change. Cells whose column was removed or changed type are dropped.
+   */
+  remapViewportData(): void {
+    const { columns, viewportData, viewportDataColumns } = this;
+    if (
+      viewportData == null ||
+      viewportDataColumns == null ||
+      viewportDataColumns === columns
+    ) {
+      return;
+    }
+
+    const indexMap = new Map<ModelIndex, ModelIndex>();
+    viewportDataColumns.forEach((column, oldIndex) => {
+      const newIndex = this.getColumnIndexByName(column.name);
+      if (newIndex != null && columns[newIndex].type === column.type) {
+        indexMap.set(oldIndex, newIndex);
+      }
+    });
+
+    this.viewportData = {
+      ...viewportData,
+      rows: viewportData.rows.map(row => {
+        const data = new Map<ModelIndex | ColumnName, CellData>();
+        row.data.forEach((cellData, key) => {
+          if (typeof key === 'string') {
+            data.set(key, cellData);
+            return;
+          }
+          const newIndex = indexMap.get(key);
+          if (newIndex != null) {
+            data.set(newIndex, cellData);
+          }
+        });
+        return { ...row, data };
+      }),
+    };
+    this.viewportDataColumns = columns;
+    this.formattedStringData = [];
+  }
+
+  /**
+   * Apply custom columns to the table. The viewport subscription is deferred until the
+   * new table state is running, as columns from the previous state may have different indices.
+   * @param customColumns Custom columns to apply
+   */
+  applyCustomColumns(
+    customColumns: (ColumnName | DhType.CustomColumn)[]
+  ): void {
+    this.closeSubscription();
+    this.isCustomColumnsPending = true;
+    this.table.applyCustomColumns(customColumns);
+    this.applyViewport();
   }
 
   copyTotalsData(totalsData: DhType.ViewportData): void {
@@ -1407,9 +1497,14 @@ class IrisGridTableModelTemplate<
       if (!this.viewport) {
         return;
       }
+      if (this.isCustomColumnsPending) {
+        log.debug2('applyViewport deferred until custom columns are applied');
+        return;
+      }
 
       log.debug2('applyViewport', this.viewport);
-      const { top, bottom, columns } = this.viewport;
+      const { top, bottom } = this.viewport;
+      const columns = this.getCurrentColumns(this.viewport.columns);
       const [viewportTop, viewportBottom] = this.getCachedViewportRowRange(
         top,
         bottom
@@ -1419,6 +1514,25 @@ class IrisGridTableModelTemplate<
     APPLY_VIEWPORT_THROTTLE,
     { leading: false }
   );
+
+  /**
+   * Resolve columns by name against the current table columns.
+   * Viewport columns may come from a previous table state with different indices.
+   * @param columns Columns to resolve
+   * @returns The current columns matching the provided column names
+   */
+  getCurrentColumns(
+    columns: DhType.Column[] | undefined
+  ): DhType.Column[] | undefined {
+    if (columns == null) {
+      return undefined;
+    }
+    const currentColumns = this.columns;
+    return columns.flatMap(column => {
+      const index = this.getColumnIndexByName(column.name);
+      return index != null ? [currentColumns[index]] : [];
+    });
+  }
 
   applyBufferedViewport(
     viewportTop: number,
