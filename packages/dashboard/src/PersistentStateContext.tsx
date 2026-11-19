@@ -153,11 +153,21 @@ export function PersistentStateProvider(
 
   const initialStateIterator = useRef(initialState[Symbol.iterator]());
 
+  // Keys that have already consumed an entry from legacy array state.
+  // Tracked separately from stateMap because entries can be removed from stateMap,
+  // and a remount must not consume another component's legacy entry.
+  const migratedKeys = useRef(new Set<PersistentStateKey>());
+
   const getState = useCallback(
     <S,>(id: string, type: string): PersistentState<S> | undefined => {
       const key = makeKey(id, type);
       const state = stateMap.get(key);
-      if (state == null && needsMigrationToMap.current) {
+      if (
+        state == null &&
+        needsMigrationToMap.current &&
+        !migratedKeys.current.has(key)
+      ) {
+        migratedKeys.current.add(key);
         const { value } = initialStateIterator.current.next();
         const stateVal = value as PersistentState<S> | undefined;
         stateMap.set(key, stateVal as PersistentState);

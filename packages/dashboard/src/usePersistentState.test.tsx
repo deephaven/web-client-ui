@@ -724,4 +724,30 @@ describe('usePersistentState migrations', () => {
       ],
     ]);
   });
+
+  test.each([false, true])(
+    'does not consume the next legacy entry when a component remounts (deleteOnUnmount: %s)',
+    deleteOnUnmount => {
+      const initialState = [
+        { type: 'test-foo', version: 1, state: undefined },
+        { type: 'test-bar', version: 1, state: 'persisted-bar' },
+      ] as unknown as [string, PersistentState][];
+
+      const { rerender } = render(
+        <BasicTestComponent label="foo" deleteOnUnmount={deleteOnUnmount} />,
+        { wrapper: createWrapper({ initialState }) }
+      );
+      rerender(<div />);
+      rerender(
+        <>
+          <BasicTestComponent label="foo" deleteOnUnmount={deleteOnUnmount} />
+          <BasicTestComponent label="bar" />
+        </>
+      );
+
+      expect(screen.queryByText('undefined')).toBeNull();
+      expect(screen.getByText('default-foo')).toBeInTheDocument();
+      expect(screen.getByText('persisted-bar')).toBeInTheDocument();
+    }
+  );
 });
