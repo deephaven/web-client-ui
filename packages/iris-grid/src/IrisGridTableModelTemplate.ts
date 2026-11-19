@@ -396,6 +396,21 @@ class IrisGridTableModelTemplate<
   }
 
   handleCustomColumnsChanged(): void {
+    if (
+      this._isColumnHeaderGroupsInitialized &&
+      this._columnHeaderGroups.length > 0
+    ) {
+      // Groups cache their children's column indexes, which change when custom
+      // columns are added or removed, and can name a removed custom column
+      this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
+        this,
+        IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(
+          this._columnHeaderGroups,
+          name => this.getColumnIndexByName(name) != null
+        )
+      ).groups;
+    }
+
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,

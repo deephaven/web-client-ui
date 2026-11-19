@@ -249,10 +249,19 @@ interface IrisGridPanelState {
   // Current grid selection for memoization in getPluginContent
   gridSelection: Selection | null;
 
-  // eslint-disable-next-line react/no-unused-state
+  // The model's columns when they last changed, so the plugin re-renders when
+  // custom columns are applied to its table in place
+  modelColumns?: readonly dh.Column[];
+
   panelState?: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
+}
+
+function getTablePluginName(model: IrisGridModel): string | null | undefined {
+  return isIrisGridTableModelTemplate(model)
+    ? model.table.pluginName
+    : undefined;
 }
 
 function getTableNameFromMetadata(
@@ -477,7 +486,10 @@ export class IrisGridPanel extends PureComponent<
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       pluginState: unknown,
-      gridSel: Selection | null
+      gridSel: Selection | null,
+      // Only a memoization key: plugins read the columns from the table
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      modelColumns: readonly dh.Column[] | undefined
     ) => {
       if (
         !model ||
@@ -571,40 +583,104 @@ export class IrisGridPanel extends PureComponent<
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    const modelPromise =
-      transformModel != null
-        ? Promise.resolve(makeModel()).then(async model => {
-            try {
-              const transformedModel = await transformModel(model);
-              return transformedModel;
-            } catch (e) {
-              // The host owns the base model's lifecycle; if the transform
-              // rejects it never returns a model for us to close, so close
-              // the base model here to avoid leaking it.
-              model.close();
-              throw e;
-            }
-          })
-        : Promise.resolve(makeModel());
+    let pluginName: string | null | undefined;
+    const modelPromise = Promise.resolve(makeModel()).then(async model => {
+      // Read before any custom columns are applied, since applying them drops
+      // the PluginName attribute
+      pluginName = getTablePluginName(model);
+      if (transformModel == null) {
+        return model;
+      }
+      try {
+        await this.applySavedCustomColumns(model);
+        const transformedModel = await transformModel(model);
+        return transformedModel;
+      } catch (e) {
+        // The host owns the base model's lifecycle; if the transform
+        // rejects it never returns a model for us to close, so close
+        // the base model here to avoid leaking it.
+        model.close();
+        throw e;
+      }
+    });
     this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
       resolved.close()
     );
-    this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
+    this.modelPromise
+      .then(model => this.handleLoadSuccess(model, pluginName))
+      .catch(this.handleLoadError);
   }
 
-  handleLoadSuccess(modelParam: IrisGridModel): void {
+  /**
+   * Gets the custom columns the panel's saved state applies to the model.
+   */
+  getSavedCustomColumns(): readonly ColumnName[] {
+    const { panelState, irisGridStateOverrides } = this.state;
+    if (panelState == null) {
+      return [];
+    }
+    const { customColumns } = {
+      ...panelState.irisGridState,
+      ...irisGridStateOverrides,
+    };
+    return customColumns ?? [];
+  }
+
+  /**
+   * Applies the saved custom columns to the model before `transformModel` gets
+   * it, so the transform sees the columns the user saw, e.g. to restore an
+   * aggregation on a custom column.
+   * @param model The model to apply the custom columns to
+   */
+  async applySavedCustomColumns(model: IrisGridModel): Promise<void> {
+    const customColumns = this.getSavedCustomColumns();
+    if (customColumns.length === 0 || !model.isCustomColumnsAvailable) {
+      return;
+    }
+    await new Promise<void>(resolve => {
+      const handleEvent = (event: EventT): void => {
+        model.removeEventListener(
+          IrisGridModel.EVENT.COLUMNS_CHANGED,
+          handleEvent
+        );
+        model.removeEventListener(
+          IrisGridModel.EVENT.REQUEST_FAILED,
+          handleEvent
+        );
+        if (event.type === IrisGridModel.EVENT.REQUEST_FAILED) {
+          // Load the model anyway, the grid shows its errors once it's loaded
+          log.error(
+            'Unable to apply saved custom columns',
+            (event as CustomEvent).detail
+          );
+        }
+        resolve();
+      };
+      model.addEventListener(IrisGridModel.EVENT.COLUMNS_CHANGED, handleEvent);
+      model.addEventListener(IrisGridModel.EVENT.REQUEST_FAILED, handleEvent);
+      // eslint-disable-next-line no-param-reassign
+      model.customColumns = [...customColumns];
+    });
+  }
+
+  /**
+   * Handles the model loading
+   * @param modelParam The loaded model
+   * @param pluginName The name of the table's plugin. Read before the model's
+   * custom columns are applied, since applying them drops the attribute.
+   */
+  handleLoadSuccess(
+    modelParam: IrisGridModel,
+    pluginName: string | null | undefined = getTablePluginName(modelParam)
+  ): void {
     const model = modelParam;
     const { loadPlugin } = this.props;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
     this.irisGridUtils = new IrisGridUtils(model.dh);
 
-    // Read before modelQueue runs, since updateView drops the PluginName attribute
-    if (isIrisGridTableModelTemplate(model)) {
-      const { pluginName } = model.table;
-      if (loadPlugin != null && pluginName != null && pluginName !== '') {
-        this.setState({ Plugin: loadPlugin(pluginName) });
-      }
+    if (loadPlugin != null && pluginName != null && pluginName !== '') {
+      this.setState({ Plugin: loadPlugin(pluginName) });
     }
 
     if (panelState != null) {
@@ -616,7 +692,14 @@ export class IrisGridPanel extends PureComponent<
         rollupConfig,
       } = { ...irisGridState, ...irisGridStateOverrides };
 
-      if (customColumns.length > 0) {
+      if (
+        customColumns.length > 0 &&
+        // applySavedCustomColumns may have applied them already
+        (customColumns.length !== model.customColumns.length ||
+          customColumns.some(
+            (column, i) => column !== `${model.customColumns[i]}`
+          ))
+      ) {
         modelQueue.push(m => {
           // eslint-disable-next-line no-param-reassign
           m.customColumns = customColumns;
@@ -741,7 +824,9 @@ export class IrisGridPanel extends PureComponent<
   handleColumnsChanged(event: EventT): void {
     const { isModelReady, model, modelQueue } = this.state;
     if (isModelReady) {
-      this.sendColumnsChange((event as CustomEvent).detail);
+      const { detail: columns } = event as CustomEvent<readonly dh.Column[]>;
+      this.setState({ modelColumns: columns });
+      this.sendColumnsChange(columns);
     } else {
       assertNotNull(model);
       this.initModelQueue(model, modelQueue);
@@ -1059,6 +1144,10 @@ export class IrisGridPanel extends PureComponent<
       return;
     }
 
+    // The plugin may not report its state again, so keep saving the state it
+    // was restored with
+    this.pluginState = panelState.pluginState ?? null;
+
     try {
       const { gridState, irisGridState, irisGridPanelState } = panelState;
       const irisGridStateOverrides = { ...originalIrisGridStateOverrides };
@@ -1261,15 +1350,24 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap,
       frozenColumns,
       columnHeaderGroups,
+      gridSelection,
+      modelColumns,
+      panelState: currentPanelState,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
     const description = model?.description ?? undefined;
-    const pluginState = panelState?.pluginState ?? null;
-    const { gridSelection } = this.state;
+    // A reopened panel's saved state is restored into its state, not its props
+    const pluginState = currentPanelState?.pluginState ?? null;
     const childrenContent =
       children ??
-      this.getPluginContent(Plugin, model, pluginState, gridSelection);
+      this.getPluginContent(
+        Plugin,
+        model,
+        pluginState,
+        gridSelection,
+        modelColumns
+      );
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
     const widgetPanelDescriptor = this.getWidgetPanelDescriptor(

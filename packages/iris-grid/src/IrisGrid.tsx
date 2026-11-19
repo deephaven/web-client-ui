@@ -3925,6 +3925,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       quickFilters,
       advancedFilters,
       selectDistinctColumns,
+      columnHeaderGroups,
     } = this.state;
 
     const { columns } = model;
@@ -3965,17 +3966,38 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         log.debug('removing sorts from removed custom columns...');
         this.requestSortsChange(newSorts);
       }
+      // Filters on later columns are re-keyed to their new index, so compare
+      // the keys, not just the number of filters
+      if (!deepEqual([...newQuickFilters.keys()], [...quickFilters.keys()])) {
+        log.debug(`updating quick filters for removed custom columns...`);
+        this.requestQuickFiltersChange(newQuickFilters);
+      }
       if (
-        newQuickFilters.size !== quickFilters.size ||
-        newAdvancedFilters.size !== advancedFilters.size
+        !deepEqual([...newAdvancedFilters.keys()], [...advancedFilters.keys()])
       ) {
-        log.debug(`removing filters from removed custom columns...`);
-        if (newQuickFilters.size !== quickFilters.size) {
-          this.requestQuickFiltersChange(newQuickFilters);
-        }
-        if (newAdvancedFilters.size !== advancedFilters.size) {
-          this.setState({ advancedFilters: newAdvancedFilters });
-        }
+        log.debug(`updating advanced filters for removed custom columns...`);
+        this.setState({ advancedFilters: newAdvancedFilters });
+      }
+      const newColumnHeaderGroups =
+        IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(
+          columnHeaderGroups,
+          name =>
+            !removedColumnNames.includes(name) &&
+            model.getColumnIndexByName(name) != null
+        );
+      if (
+        newColumnHeaderGroups.length !== columnHeaderGroups.length ||
+        newColumnHeaderGroups.some(
+          (group, i) => group !== columnHeaderGroups[i]
+        )
+      ) {
+        log.debug(`removing removed custom columns from header groups...`);
+        this.setState({
+          columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
+            model,
+            newColumnHeaderGroups
+          ).groups,
+        });
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
@@ -4005,6 +4027,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.syncColumnHeaderGroupsFromModel();
       this.updateMetrics();
 
       // Make sure stopLoading() is called after the updateMetrics call,
@@ -4012,6 +4035,27 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.stopLoading();
     } else {
       this.loadTableState();
+    }
+  }
+
+  /**
+   * Adopts the model's column header groups when they're the same groups as
+   * this grid's, so the grid has the child column indexes the model re-parsed
+   * them with after its columns changed (e.g. a custom column was removed).
+   * Groups that differ, e.g. those of a rollup that replaced the model, are
+   * left alone so this grid's groups come back when it's removed.
+   */
+  syncColumnHeaderGroupsFromModel(): void {
+    const { model } = this.props;
+    const { columnHeaderGroups } = this.state;
+    const modelGroups = model.columnHeaderGroups;
+    if (modelGroups === columnHeaderGroups) {
+      return;
+    }
+    const toConfig = (groups: readonly ColumnHeaderGroup[]) =>
+      groups.map(({ name, children }) => ({ name, children }));
+    if (deepEqual(toConfig(modelGroups), toConfig(columnHeaderGroups))) {
+      this.setState({ columnHeaderGroups: modelGroups });
     }
   }
 
