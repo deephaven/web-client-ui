@@ -354,10 +354,31 @@ describe('IrisGridTableModel viewport columns after custom columns change', () =
     (table as { customColumns: unknown }).customColumns = ['Test=1'];
     mockApplyCustomColumns(table);
 
+    setViewportSpy.mockClear();
     model.customColumns = ['Test=1'];
     jest.runOnlyPendingTimers();
     expect(setViewportSpy).toHaveBeenLastCalledWith(
       0,
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('does not hold the viewport when applying custom columns throws', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    jest.spyOn(table, 'applyCustomColumns').mockImplementation(() => {
+      throw new Error('apply failed');
+    });
+
+    expect(() => {
+      model.customColumns = ['Test=1'];
+    }).toThrow('apply failed');
+
+    setViewportSpy.mockClear();
+    model.setViewport(1, 11, columns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
       expect.any(Number),
       columns
     );

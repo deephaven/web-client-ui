@@ -163,8 +163,6 @@ class IrisGridTableModelTemplate<
 
   private staleTableColumns: readonly DhType.Column[] | null = null;
 
-  private isTrackingColumnsOperation = false;
-
   private isListening = false;
 
   viewportData: UIViewportData<R> | null;
@@ -252,6 +250,15 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
+
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
   }
 
   getMemoizedSelectionKeyColumnIndices = memoize(
@@ -286,7 +293,14 @@ class IrisGridTableModelTemplate<
   }
 
   close(): void {
-    this.untrackColumnsOperation();
+    this.table.removeEventListener(
+      this.dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    this.table.removeEventListener(
+      this.dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
     this.table.close();
     if (this.totalsTable !== null) {
       this.totalsTable.close();
@@ -1245,63 +1259,24 @@ class IrisGridTableModelTemplate<
     return { data } as R;
   }
 
-  /**
-   * Holds the viewport while a column change is pending, since `table.columns` keeps the previous
-   * state's columns until the new state runs. Snapshots before `apply` because the API can
-   * synchronously restore a running state. Completion is tracked from here rather than from
-   * `startListening`, so a listener restart can't drop a pending hold.
-   * @param apply Applies the operation and returns whether the table's columns may have changed
-   */
+  /** Holds the viewport until a column change completes; `apply` returns whether the columns may have changed. */
   applyColumnsOperation(apply: () => boolean): void {
     const { isViewportColumnsUnverified, staleTableColumns } = this;
     this.isViewportColumnsUnverified = true;
+    // Snapshot before apply, which can synchronously restore a running state
     this.staleTableColumns = this.table.columns;
-    this.trackColumnsOperation();
-    if (!apply()) {
-      this.isViewportColumnsUnverified = isViewportColumnsUnverified;
-      this.staleTableColumns = staleTableColumns;
-      if (staleTableColumns == null) {
-        this.untrackColumnsOperation();
+    let isChanged = false;
+    try {
+      isChanged = apply();
+    } finally {
+      if (!isChanged) {
+        this.isViewportColumnsUnverified = isViewportColumnsUnverified;
+        this.staleTableColumns = staleTableColumns;
       }
     }
   }
 
-  private trackColumnsOperation(): void {
-    if (this.isTrackingColumnsOperation) {
-      return;
-    }
-    this.isTrackingColumnsOperation = true;
-    const { dh, table } = this;
-    table.addEventListener(
-      dh.Table.EVENT_REQUEST_SUCCEEDED,
-      this.handleColumnsOperationSettled
-    );
-    table.addEventListener(
-      dh.Table.EVENT_REQUEST_FAILED,
-      this.handleColumnsOperationSettled
-    );
-  }
-
-  private untrackColumnsOperation(): void {
-    if (!this.isTrackingColumnsOperation) {
-      return;
-    }
-    this.isTrackingColumnsOperation = false;
-    const { dh, table } = this;
-    table.removeEventListener(
-      dh.Table.EVENT_REQUEST_SUCCEEDED,
-      this.handleColumnsOperationSettled
-    );
-    table.removeEventListener(
-      dh.Table.EVENT_REQUEST_FAILED,
-      this.handleColumnsOperationSettled
-    );
-  }
-
-  /**
-   * The API only fires the succeeded event once the table's current state is running, and a
-   * failure rolls the table back, so `table.columns` is valid for new subscriptions either way.
-   */
+  // Success means the new state is running and failure means a rollback, so table.columns is valid either way
   private handleColumnsOperationSettled(): void {
     this.releasePendingColumnsOperation();
   }
@@ -1311,7 +1286,6 @@ class IrisGridTableModelTemplate<
       return;
     }
     this.staleTableColumns = null;
-    this.untrackColumnsOperation();
     // startListening reapplies the viewport on resume
     if (this.isListening) {
       this.applyViewport();
@@ -1526,7 +1500,6 @@ class IrisGridTableModelTemplate<
         return;
       }
       this.staleTableColumns = null;
-      this.untrackColumnsOperation();
 
       log.debug2('applyViewport', this.viewport);
       const { top, bottom, columns } = this.viewport;
