@@ -136,14 +136,19 @@ interface ModelLoad {
  * reject; the panel restarts the load on reconnect instead.
  * Listeners are attached before applying: the first listener is what makes the
  * model start listening to its table, which is where the event originates.
- * @returns A promise that `cancel()` rejects with `CanceledPromiseError`,
- * releasing the listeners even if the model never emits again
+ *
+ * `cancel()` only abandons the wait: the returned promise rejects with
+ * `CanceledPromiseError`, but the listeners stay attached until the model
+ * emits. Callers must close the model after cancelling, otherwise the
+ * listeners keep it subscribed to its table.
+ * @param model The model to mutate and wait on
+ * @param apply Applies the mutation to `model`
+ * @returns A cancelable promise that resolves once the columns have changed
  */
 function applyAndWaitForColumns(
   model: IrisGridModel,
-  apply: (model: IrisGridModel) => void
+  apply: () => void
 ): CancelablePromise<void> {
-  let cancel: () => void = () => undefined;
   const promise = new Promise<void>((resolve, reject) => {
     function cleanup(): void {
       model.removeEventListener(
@@ -165,10 +170,6 @@ function applyAndWaitForColumns(
         (event as CustomEvent).detail ?? new Error('Model request failed')
       );
     }
-    cancel = () => {
-      cleanup();
-      reject(new CanceledPromiseError());
-    };
     model.addEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       handleColumnsChanged
@@ -178,13 +179,13 @@ function applyAndWaitForColumns(
       handleRequestFailed
     );
     try {
-      apply(model);
+      apply();
     } catch (e) {
       cleanup();
       reject(e);
     }
   });
-  return Object.assign(promise, { cancel: () => cancel() });
+  return PromiseUtils.makeCancelable(promise);
 }
 
 function throwIfCanceled(load: ModelLoad): void {
@@ -195,15 +196,14 @@ function throwIfCanceled(load: ModelLoad): void {
 
 /** Await a hydration step, exposing it on `load` so a cancel can reject it. */
 async function runLoadStep(
-  load: ModelLoad,
+  loadParam: ModelLoad,
   step: CancelablePromise<void>
 ): Promise<void> {
-  // eslint-disable-next-line no-param-reassign
+  const load = loadParam;
   load.step = step;
   try {
     await step;
   } finally {
-    // eslint-disable-next-line no-param-reassign
     load.step = undefined;
   }
   throwIfCanceled(load);
@@ -713,9 +713,8 @@ export class IrisGridPanel extends PureComponent<
       if (customColumns.length > 0) {
         await runLoadStep(
           load,
-          applyAndWaitForColumns(base, m => {
-            // eslint-disable-next-line no-param-reassign
-            m.customColumns = customColumns;
+          applyAndWaitForColumns(base, () => {
+            base.customColumns = customColumns;
           })
         );
       }
@@ -732,10 +731,9 @@ export class IrisGridPanel extends PureComponent<
         const { rollupConfig, aggregationSettings } = irisGridState;
         await runLoadStep(
           load,
-          applyAndWaitForColumns(model, m => {
-            // eslint-disable-next-line no-param-reassign
-            m.rollupConfig = IrisGridUtils.getModelRollupConfig(
-              m.originalColumns,
+          applyAndWaitForColumns(model, () => {
+            model.rollupConfig = IrisGridUtils.getModelRollupConfig(
+              model.originalColumns,
               rollupConfig,
               aggregationSettings
             );
@@ -746,9 +744,8 @@ export class IrisGridPanel extends PureComponent<
       if (selectDistinctColumns.length > 0) {
         await runLoadStep(
           load,
-          applyAndWaitForColumns(model, m => {
-            // eslint-disable-next-line no-param-reassign
-            m.selectDistinctColumns = selectDistinctColumns;
+          applyAndWaitForColumns(model, () => {
+            model.selectDistinctColumns = selectDistinctColumns;
           })
         );
       }
