@@ -16,6 +16,10 @@ import type IrisGridModel from './IrisGridModel';
  * schema; rollup and select-distinct are applied to the returned model
  * afterwards. Hosts without saved state (e.g. `GridWidgetPlugin`) pass the
  * freshly built model.
+ *
+ * To fail the load, reject. Hosts don't observe model events such as
+ * `REQUEST_FAILED` while the transform runs, so the transform must await any
+ * work it starts before resolving.
  */
 export type IrisGridModelTransform = (
   model: IrisGridModel
