@@ -420,10 +420,14 @@ describe('cancelling and reconnecting during hydration', () => {
   function renderPanel({
     makeModel,
     transformModel,
+    irisGridState,
   }: {
     makeModel: () => Promise<IrisGridModel>;
     transformModel?: (model: IrisGridModel) => any;
+    /** Merged over the saved custom columns state */
+    irisGridState?: Record<string, unknown>;
   }) {
+    const panelState = makeCustomColumnsPanelState(['Foo = 1']);
     const props = {
       metadata: { table: 'table' } as any,
       glContainer: makeGlComponent() as unknown as Container,
@@ -432,7 +436,10 @@ describe('cancelling and reconnecting during hydration', () => {
       inputFilters: [],
       links: [],
       settings: { timeZone: 'America/New_York' } as any,
-      panelState: makeCustomColumnsPanelState(['Foo = 1']) as any,
+      panelState: {
+        ...panelState,
+        irisGridState: { ...panelState.irisGridState, ...irisGridState },
+      } as any,
       loadPlugin: () => undefined,
       transformModel,
     };
@@ -524,6 +531,44 @@ describe('cancelling and reconnecting during hydration', () => {
     expect(screen.queryByText(/Table disconnected/)).not.toBeInTheDocument();
   });
 
+  it('ignores a disconnect from a load abandoned during its transform', async () => {
+    const first = makePendingCustomColumnsTable();
+    const second = makePendingCustomColumnsTable();
+    const { makeModel, models } = makeTrackedMakeModel([first.table]);
+    const { makeModel: nextMakeModel, models: nextModels } =
+      makeTrackedMakeModel([second.table]);
+    const transformModel = jest
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise(() => {
+            // Never settles
+          })
+      )
+      .mockImplementation(model => model);
+    const { rerenderWithMakeModel } = renderPanel({
+      makeModel,
+      transformModel,
+    });
+    await waitFor(() =>
+      expect(first.table.applyCustomColumns).toHaveBeenCalled()
+    );
+    act(() => first.fireCustomColumnsChanged());
+    await waitFor(() => expect(transformModel).toHaveBeenCalledTimes(1));
+
+    rerenderWithMakeModel(nextMakeModel);
+    await waitFor(() =>
+      expect(second.table.applyCustomColumns).toHaveBeenCalled()
+    );
+    act(() => {
+      models[0].dispatchEvent(new CustomEvent(IrisGridModel.EVENT.DISCONNECT));
+    });
+
+    act(() => second.fireCustomColumnsChanged());
+    await waitFor(() => expect(lastRenderedModel()).toBe(nextModels[0]));
+    expect(screen.queryByText(/Table disconnected/)).not.toBeInTheDocument();
+  });
+
   it('closes the previous model as soon as a reload starts', async () => {
     const first = makePendingCustomColumnsTable();
     const pending = makePendingCustomColumnsTable();
@@ -542,5 +587,102 @@ describe('cancelling and reconnecting during hydration', () => {
     );
 
     expect(models[0].close).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Stand-in for a transform's returned model that records the hydration
+   * setters it receives and reacts to each through `onSet`.
+   */
+  function makeTransformedModel(
+    onSet: (name: string, model: IrisGridModel) => void
+  ) {
+    const target = new EventTarget();
+    const model = {
+      originalColumns: [],
+      close: jest.fn(),
+      addEventListener: target.addEventListener.bind(target),
+      removeEventListener: target.removeEventListener.bind(target),
+      dispatchEvent: target.dispatchEvent.bind(target),
+    } as any;
+    ['rollupConfig', 'selectDistinctColumns'].forEach(name => {
+      Object.defineProperty(model, name, {
+        set: () => onSet(name, model),
+      });
+    });
+    return model;
+  }
+
+  const rollupState = {
+    rollupConfig: { columns: ['0'] },
+    aggregationSettings: { aggregations: [], showOnTop: false },
+    selectDistinctColumns: ['0'],
+  };
+
+  it('applies rollup and select distinct to the transformed model after the transform', async () => {
+    const { table, fireCustomColumnsChanged } = makePendingCustomColumnsTable();
+    const { makeModel } = makeTrackedMakeModel([table]);
+    const steps: string[] = [];
+    table.applyCustomColumns.mockImplementation(customColumns => {
+      steps.push('customColumns');
+      return customColumns;
+    });
+    const transformed = makeTransformedModel((name, model) => {
+      steps.push(name);
+      if (name === 'rollupConfig') {
+        setTimeout(() =>
+          model.dispatchEvent(
+            new CustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED)
+          )
+        );
+      }
+    });
+    const transformModel = jest.fn(() => {
+      steps.push('transform');
+      return transformed;
+    });
+    renderPanel({ makeModel, transformModel, irisGridState: rollupState });
+    await waitFor(() => expect(table.applyCustomColumns).toHaveBeenCalled());
+
+    act(() => fireCustomColumnsChanged());
+
+    await waitFor(() =>
+      expect(steps).toEqual([
+        'customColumns',
+        'transform',
+        'rollupConfig',
+        'selectDistinctColumns',
+      ])
+    );
+  });
+
+  it('shows a load error and closes the transformed model if the rollup fails', async () => {
+    const { table, fireCustomColumnsChanged } = makePendingCustomColumnsTable();
+    const { makeModel } = makeTrackedMakeModel([table]);
+    const onSet = jest.fn((name: string, model: IrisGridModel) => {
+      setTimeout(() =>
+        model.dispatchEvent(
+          new CustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
+            detail: new Error('Rollup failed'),
+          })
+        )
+      );
+    });
+    const transformed = makeTransformedModel(onSet);
+    renderPanel({
+      makeModel,
+      transformModel: () => transformed,
+      irisGridState: rollupState,
+    });
+    await waitFor(() => expect(table.applyCustomColumns).toHaveBeenCalled());
+
+    act(() => fireCustomColumnsChanged());
+
+    expect(
+      await screen.findByText('Unable to open table. Error: Rollup failed')
+    ).toBeInTheDocument();
+    expect(transformed.close).toHaveBeenCalledTimes(1);
+    expect(onSet).toHaveBeenCalledTimes(1);
+    expect(onSet).toHaveBeenCalledWith('rollupConfig', transformed);
+    expect(MockIrisGrid).not.toHaveBeenCalled();
   });
 });

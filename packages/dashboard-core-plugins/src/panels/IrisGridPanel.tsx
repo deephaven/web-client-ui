@@ -773,20 +773,24 @@ export class IrisGridPanel extends PureComponent<
    * @returns Function that stops watching
    */
   watchLoadConnection(model: IrisGridModel, load: ModelLoad): () => void {
+    // A canceled load can outlive its cancel while its transform settles; its
+    // connection events must not affect the panel's current load
+    const handleDisconnect = (): void => {
+      if (!load.isCanceled) {
+        this.handleDisconnect();
+      }
+    };
     const handleReconnect = (): void => {
       if (!load.isCanceled) {
         this.initModel();
       }
     };
-    model.addEventListener(
-      IrisGridModel.EVENT.DISCONNECT,
-      this.handleDisconnect
-    );
+    model.addEventListener(IrisGridModel.EVENT.DISCONNECT, handleDisconnect);
     model.addEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
     return () => {
       model.removeEventListener(
         IrisGridModel.EVENT.DISCONNECT,
-        this.handleDisconnect
+        handleDisconnect
       );
       model.removeEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
     };
