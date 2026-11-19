@@ -65,6 +65,7 @@ import {
 import {
   assertNotNull,
   type CancelablePromise,
+  CanceledPromiseError,
   type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
@@ -121,18 +122,29 @@ interface LoadedModel {
   pluginName: string | null;
 }
 
+/** State of one `loadModel` run, so it can be abandoned mid-step. */
+interface ModelLoad {
+  isCanceled: boolean;
+  /** Hydration step currently waiting on the model, if any. */
+  step?: CancelablePromise<void>;
+}
+
 /**
  * Apply a column-changing mutation and resolve once the model emits
- * `COLUMNS_CHANGED`. Rejects on `REQUEST_FAILED` or `DISCONNECT` so a failed
- * hydration step surfaces as a load error instead of a stuck spinner.
+ * `COLUMNS_CHANGED`. Rejects on `REQUEST_FAILED` so a failed hydration step
+ * surfaces as a load error instead of a stuck spinner. A disconnect does not
+ * reject; the panel restarts the load on reconnect instead.
  * Listeners are attached before applying: the first listener is what makes the
  * model start listening to its table, which is where the event originates.
+ * @returns A promise that `cancel()` rejects with `CanceledPromiseError`,
+ * releasing the listeners even if the model never emits again
  */
 function applyAndWaitForColumns(
   model: IrisGridModel,
   apply: (model: IrisGridModel) => void
-): Promise<void> {
-  return new Promise((resolve, reject) => {
+): CancelablePromise<void> {
+  let cancel: () => void = () => undefined;
+  const promise = new Promise<void>((resolve, reject) => {
     function cleanup(): void {
       model.removeEventListener(
         IrisGridModel.EVENT.COLUMNS_CHANGED,
@@ -141,10 +153,6 @@ function applyAndWaitForColumns(
       model.removeEventListener(
         IrisGridModel.EVENT.REQUEST_FAILED,
         handleRequestFailed
-      );
-      model.removeEventListener(
-        IrisGridModel.EVENT.DISCONNECT,
-        handleDisconnect
       );
     }
     function handleColumnsChanged(): void {
@@ -157,10 +165,10 @@ function applyAndWaitForColumns(
         (event as CustomEvent).detail ?? new Error('Model request failed')
       );
     }
-    function handleDisconnect(): void {
+    cancel = () => {
       cleanup();
-      reject(new Error('Table disconnected'));
-    }
+      reject(new CanceledPromiseError());
+    };
     model.addEventListener(
       IrisGridModel.EVENT.COLUMNS_CHANGED,
       handleColumnsChanged
@@ -169,7 +177,6 @@ function applyAndWaitForColumns(
       IrisGridModel.EVENT.REQUEST_FAILED,
       handleRequestFailed
     );
-    model.addEventListener(IrisGridModel.EVENT.DISCONNECT, handleDisconnect);
     try {
       apply(model);
     } catch (e) {
@@ -177,6 +184,29 @@ function applyAndWaitForColumns(
       reject(e);
     }
   });
+  return Object.assign(promise, { cancel: () => cancel() });
+}
+
+function throwIfCanceled(load: ModelLoad): void {
+  if (load.isCanceled) {
+    throw new CanceledPromiseError();
+  }
+}
+
+/** Await a hydration step, exposing it on `load` so a cancel can reject it. */
+async function runLoadStep(
+  load: ModelLoad,
+  step: CancelablePromise<void>
+): Promise<void> {
+  // eslint-disable-next-line no-param-reassign
+  load.step = step;
+  try {
+    await step;
+  } finally {
+    // eslint-disable-next-line no-param-reassign
+    load.step = undefined;
+  }
+  throwIfCanceled(load);
 }
 
 export interface PanelState {
@@ -459,10 +489,7 @@ export class IrisGridPanel extends PureComponent<
   componentWillUnmount(): void {
     this.savePanelState.cancel();
 
-    if (this.modelPromise != null) {
-      this.modelPromise.cancel();
-      this.modelPromise = undefined;
-    }
+    this.cancelModelLoad();
 
     const { model } = this.state;
     if (model) {
@@ -476,6 +503,8 @@ export class IrisGridPanel extends PureComponent<
   pluginRef: RefObject<TablePluginElement>;
 
   modelPromise?: CancelablePromise<LoadedModel>;
+
+  modelLoad?: ModelLoad;
 
   irisGridState?: IrisGridState;
 
@@ -619,20 +648,37 @@ export class IrisGridPanel extends PureComponent<
   );
 
   initModel(): void {
+    this.cancelModelLoad();
     this.setState({
       isModelReady: false,
       isLoading: true,
       error: null,
       isDisconnected: false,
+      // componentDidUpdate closes the previous model
+      model: undefined,
     });
-    if (this.modelPromise != null) {
-      this.modelPromise.cancel();
-    }
+    const load: ModelLoad = { isCanceled: false };
+    this.modelLoad = load;
     this.modelPromise = PromiseUtils.makeCancelable(
-      this.loadModel(),
+      this.loadModel(load),
       ({ model }) => model.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
+  }
+
+  /**
+   * Abandon the in-flight `loadModel`, if any. A waiting hydration step is
+   * rejected right away so `loadModel` closes its model; a running transform
+   * can't be interrupted, so its result is closed once it settles.
+   */
+  cancelModelLoad(): void {
+    if (this.modelLoad != null) {
+      this.modelLoad.isCanceled = true;
+      this.modelLoad.step?.cancel();
+      this.modelLoad = undefined;
+    }
+    this.modelPromise?.cancel();
+    this.modelPromise = undefined;
   }
 
   /**
@@ -641,12 +687,16 @@ export class IrisGridPanel extends PureComponent<
    * sees the full source schema (e.g. a persisted config referencing a custom
    * column). Rollup and select-distinct swap the inner model and run after the
    * transform so a transform that intercepts those setters sees the writes.
+   * @param load Tracks cancellation; checked after every await
    */
-  async loadModel(): Promise<LoadedModel> {
+  async loadModel(load: ModelLoad): Promise<LoadedModel> {
     const { makeModel, transformModel } = this.props;
     const base = await makeModel();
     let model = base;
+    const stopWatchingConnection = this.watchLoadConnection(base, load);
     try {
+      throwIfCanceled(load);
+
       // updateView (applyCustomColumns) drops the PluginName attribute
       const pluginName = isIrisGridTableModelTemplate(base)
         ? base.table.pluginName ?? null
@@ -661,14 +711,18 @@ export class IrisGridPanel extends PureComponent<
       const selectDistinctColumns = irisGridState?.selectDistinctColumns ?? [];
 
       if (customColumns.length > 0) {
-        await applyAndWaitForColumns(base, m => {
-          // eslint-disable-next-line no-param-reassign
-          m.customColumns = customColumns;
-        });
+        await runLoadStep(
+          load,
+          applyAndWaitForColumns(base, m => {
+            // eslint-disable-next-line no-param-reassign
+            m.customColumns = customColumns;
+          })
+        );
       }
 
       if (transformModel != null) {
         model = await transformModel(base);
+        throwIfCanceled(load);
       }
 
       if (
@@ -676,21 +730,27 @@ export class IrisGridPanel extends PureComponent<
         irisGridState.rollupConfig.columns.length > 0
       ) {
         const { rollupConfig, aggregationSettings } = irisGridState;
-        await applyAndWaitForColumns(model, m => {
-          // eslint-disable-next-line no-param-reassign
-          m.rollupConfig = IrisGridUtils.getModelRollupConfig(
-            m.originalColumns,
-            rollupConfig,
-            aggregationSettings
-          );
-        });
+        await runLoadStep(
+          load,
+          applyAndWaitForColumns(model, m => {
+            // eslint-disable-next-line no-param-reassign
+            m.rollupConfig = IrisGridUtils.getModelRollupConfig(
+              m.originalColumns,
+              rollupConfig,
+              aggregationSettings
+            );
+          })
+        );
       }
 
       if (selectDistinctColumns.length > 0) {
-        await applyAndWaitForColumns(model, m => {
-          // eslint-disable-next-line no-param-reassign
-          m.selectDistinctColumns = selectDistinctColumns;
-        });
+        await runLoadStep(
+          load,
+          applyAndWaitForColumns(model, m => {
+            // eslint-disable-next-line no-param-reassign
+            m.selectDistinctColumns = selectDistinctColumns;
+          })
+        );
       }
 
       return { model, pluginName };
@@ -699,7 +759,40 @@ export class IrisGridPanel extends PureComponent<
       // `model` is still the base it never returned.
       model.close();
       throw e;
+    } finally {
+      stopWatchingConnection();
     }
+  }
+
+  /**
+   * Reflect connection changes while `loadModel` runs, before the panel's own
+   * model listeners are attached. The base model is watched because it's the
+   * one whose table disconnects, whatever the transform wraps it in. On
+   * reconnect the load restarts from `makeModel`: the partly hydrated model is
+   * in an unknown state, and re-applying identical custom columns to it would
+   * never emit `COLUMNS_CHANGED`.
+   * @param model The base model being loaded
+   * @param load The load to restart on reconnect
+   * @returns Function that stops watching
+   */
+  watchLoadConnection(model: IrisGridModel, load: ModelLoad): () => void {
+    const handleReconnect = (): void => {
+      if (!load.isCanceled) {
+        this.initModel();
+      }
+    };
+    model.addEventListener(
+      IrisGridModel.EVENT.DISCONNECT,
+      this.handleDisconnect
+    );
+    model.addEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
+    return () => {
+      model.removeEventListener(
+        IrisGridModel.EVENT.DISCONNECT,
+        this.handleDisconnect
+      );
+      model.removeEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
+    };
   }
 
   handleLoadSuccess({ model, pluginName }: LoadedModel): void {
@@ -897,6 +990,7 @@ export class IrisGridPanel extends PureComponent<
     const { glEventHub, onModelChanged } = this.props;
 
     this.modelPromise = undefined;
+    this.modelLoad = undefined;
 
     // Columns are final (custom columns, rollup, select distinct applied), so
     // saved column-based state can be resolved against them
