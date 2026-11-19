@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.1](https://github.com/deephaven/web-client-ui/compare/v1.34.0...v1.34.1) (2026-11-19)
+
+### Bug Fixes
+
+- **grid:** Base rollup tree markers on grid metrics, not live model ([#2834](https://github.com/deephaven/web-client-ui/issues/2834)) ([6a27295](https://github.com/deephaven/web-client-ui/commit/6a272952baf14ab5665e42da63d93f9086fe9732)), closes [#2831](https://github.com/deephaven/web-client-ui/issues/2831)
+
 ## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
 
 ### Performance Improvements
