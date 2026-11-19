@@ -11,15 +11,11 @@ import type IrisGridModel from './IrisGridModel';
  * lifecycle and will call `close()` on whatever this returns. May be async to
  * allow the transform to await dependencies before returning.
  *
- * When the host restores saved state (`IrisGridPanel`), the model arrives with
- * saved custom columns already applied so the transform sees the full source
- * schema; rollup and select-distinct are applied to the returned model
- * afterwards. Hosts without saved state (e.g. `GridWidgetPlugin`) pass the
- * freshly built model.
- *
- * To fail the load, reject. Hosts don't observe model events such as
- * `REQUEST_FAILED` while the transform runs, so the transform must await any
- * work it starts before resolving.
+ * On `IrisGridPanel`, saved custom columns are applied before the transform and
+ * rollup/select distinct after it; `GridWidgetPlugin` passes the freshly built
+ * model. To fail the load, reject: hosts don't watch model events such as
+ * `REQUEST_FAILED` during the transform, so await any work started before
+ * resolving.
  */
 export type IrisGridModelTransform = (
   model: IrisGridModel

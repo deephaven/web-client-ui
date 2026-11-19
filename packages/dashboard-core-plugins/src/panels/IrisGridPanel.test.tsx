@@ -464,7 +464,7 @@ describe('cancelling and reconnecting during hydration', () => {
     MockIrisGrid.mockClear();
   });
 
-  it('closes the model and skips the transform when unmounted while a step waits', async () => {
+  it('closes the model and skips the transform when unmounted while saved custom columns are pending', async () => {
     const { table } = makePendingCustomColumnsTable();
     const { makeModel, models } = makeTrackedMakeModel([table]);
     const transformModel = jest.fn(model => model);
