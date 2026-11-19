@@ -45,11 +45,13 @@ abstract class CellRenderer {
     const columnWidth = getOrThrow(allColumnWidths, firstColumn);
     const rowY = getOrThrow(allRowYs, row);
     const rowHeight = getOrThrow(allRowHeights, row);
-    if (!isExpandableGridModel(model) || !model.isRowExpandable(row)) {
+    // Metrics can be reused for a frame drawn after the model data updates,
+    // so the metrics decide which rows have a tree marker rather than the model.
+    const treeBox = visibleRowTreeBoxes.get(row);
+    if (!isExpandableGridModel(model) || treeBox == null) {
       return;
     }
 
-    const treeBox = getOrThrow(visibleRowTreeBoxes, row);
     const color =
       mouseX != null &&
       mouseY != null &&
