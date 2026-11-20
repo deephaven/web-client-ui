@@ -134,3 +134,253 @@ describe('IrisGridTableModel delete filter construction', () => {
     expect(orSpy).not.toHaveBeenCalled();
   });
 });
+
+describe('IrisGridTableModel viewport columns after custom columns change', () => {
+  function makeModel() {
+    const columns = irisGridTestUtils.makeColumns(3);
+    const table = irisGridTestUtils.makeTable({ columns });
+    const model = new IrisGridTableModel(dh, table, new Formatter(dh));
+    // Table and subscription share one mock so the last call reflects the latest viewport request
+    const setViewportSpy = jest.fn();
+    const subscription = {
+      close: jest.fn(),
+      setViewport: setViewportSpy,
+    } as unknown as DhType.TableViewportSubscription;
+    setViewportSpy.mockReturnValue(subscription);
+    table.setViewport = setViewportSpy;
+    model.setViewport(0, 10, columns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      0,
+      expect.any(Number),
+      columns
+    );
+    return { model, table, columns, setViewportSpy };
+  }
+
+  function mockApplyCustomColumns(table: DhType.Table) {
+    jest
+      .spyOn(table, 'applyCustomColumns')
+      .mockImplementation(customColumns => {
+        // eslint-disable-next-line no-param-reassign
+        (table as { customColumns: unknown }).customColumns = customColumns;
+      });
+  }
+
+  function fireTableEvent(table: DhType.Table, name: string) {
+    (table as unknown as { fireEvent: (name: string) => void }).fireEvent(name);
+  }
+
+  function lastSubscribedColumns(setViewportSpy: jest.Mock) {
+    const { calls } = setViewportSpy.mock;
+    return calls[calls.length - 1][2] as DhType.Column[] | undefined;
+  }
+
+  it('defers the viewport until the new table state is running, then remaps its columns', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    // Viewport changes before the new table state is visible are deferred too
+    model.setViewport(1, 11, columns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    const newColumns = irisGridTestUtils.makeColumns(4);
+    (table as { columns: DhType.Column[] }).columns = newColumns;
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_SUCCEEDED);
+    jest.runOnlyPendingTimers();
+
+    // The viewport still has the previous state's columns, so they map to the new state's
+    const subscribedColumns = lastSubscribedColumns(setViewportSpy);
+    expect(subscribedColumns).toHaveLength(columns.length);
+    subscribedColumns?.forEach((column, i) =>
+      expect(column).toBe(newColumns[i])
+    );
+
+    model.setViewport(0, 10, newColumns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      newColumns
+    );
+  });
+
+  it('applies the viewport again when the pending request fails', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    // The table rolls back to its previous state, so its columns are unchanged
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_FAILED);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('keeps deferring when listeners restart before the pending operation completes', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    model.stopListening();
+    model.startListening();
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    const newColumns = irisGridTestUtils.makeColumns(4);
+    (table as { columns: DhType.Column[] }).columns = newColumns;
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_SUCCEEDED);
+    jest.runOnlyPendingTimers();
+
+    const subscribedColumns = lastSubscribedColumns(setViewportSpy);
+    expect(subscribedColumns).toHaveLength(columns.length);
+    subscribedColumns?.forEach((column, i) =>
+      expect(column).toBe(newColumns[i])
+    );
+  });
+
+  it('releases a pending operation that completes while listeners are stopped', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    model.customColumns = ['Test=1'];
+    model.stopListening();
+    fireTableEvent(table, dh.Table.EVENT_REQUEST_FAILED);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    model.startListening();
+    jest.runOnlyPendingTimers();
+
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('uses fresh columns when removing custom columns synchronously restores a previous state', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    mockApplyCustomColumns(table);
+    model.customColumns = ['Test=1'];
+    const addedColumns = irisGridTestUtils.makeColumns(4);
+    (table as { columns: DhType.Column[] }).columns = addedColumns;
+    model.setViewport(0, 10, addedColumns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      addedColumns
+    );
+
+    // Removing the custom column restores the original, already-running state synchronously
+    jest
+      .spyOn(table, 'applyCustomColumns')
+      .mockImplementation(customColumns => {
+        // eslint-disable-next-line no-param-reassign
+        (table as { customColumns: unknown }).customColumns = customColumns;
+        // eslint-disable-next-line no-param-reassign
+        (table as { columns: DhType.Column[] }).columns = columns;
+        fireTableEvent(table, dh.Table.EVENT_REQUEST_SUCCEEDED);
+      });
+
+    model.customColumns = [];
+    jest.runOnlyPendingTimers();
+    // The viewport still has the added state's columns, so the one that no longer exists is dropped
+    const subscribedColumns = lastSubscribedColumns(setViewportSpy);
+    expect(subscribedColumns).toHaveLength(columns.length);
+    subscribedColumns?.forEach((column, i) => expect(column).toBe(columns[i]));
+
+    model.setViewport(1, 11, columns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('uses the requested columns after reverting a change before its columns become visible', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    model.startListening();
+    setViewportSpy.mockClear();
+    mockApplyCustomColumns(table);
+
+    // The new state is pending, so table.columns still returns the original columns
+    model.customColumns = ['Test=1'];
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).not.toHaveBeenCalled();
+
+    // Reverting synchronously restores the original running state
+    jest
+      .spyOn(table, 'applyCustomColumns')
+      .mockImplementation(customColumns => {
+        // eslint-disable-next-line no-param-reassign
+        (table as { customColumns: unknown }).customColumns = customColumns;
+        fireTableEvent(table, dh.Table.EVENT_REQUEST_SUCCEEDED);
+      });
+
+    model.customColumns = [];
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('keeps the viewport columns when the custom columns are unchanged', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    (table as { customColumns: unknown }).customColumns = ['Test=1'];
+    mockApplyCustomColumns(table);
+
+    setViewportSpy.mockClear();
+    model.customColumns = ['Test=1'];
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      0,
+      expect.any(Number),
+      columns
+    );
+  });
+
+  it('does not hold the viewport when applying custom columns throws', () => {
+    const { model, table, columns, setViewportSpy } = makeModel();
+    jest.spyOn(table, 'applyCustomColumns').mockImplementation(() => {
+      throw new Error('apply failed');
+    });
+
+    expect(() => {
+      model.customColumns = ['Test=1'];
+    }).toThrow('apply failed');
+
+    setViewportSpy.mockClear();
+    model.setViewport(1, 11, columns);
+    jest.runOnlyPendingTimers();
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      columns
+    );
+  });
+});
