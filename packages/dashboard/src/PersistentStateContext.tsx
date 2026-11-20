@@ -10,6 +10,7 @@ import React, {
 export type PersistentStateContextType = {
   /**
    * Adds state to be persisted.
+   * If `state.state` is `undefined`, nothing is persisted and any existing entry is removed.
    * @param hookId Unique ID for this hook instance
    * @param dhId The dhId of the component/panel.
    * @param state The state to persist. Needs to be JSON serializable.
@@ -129,7 +130,20 @@ export function PersistentStateProvider(
 
       hookOwnership.current.set(key, hookId);
 
-      if (isMounted.current && stateMap.get(key) !== state) {
+      if (!isMounted.current) {
+        return;
+      }
+
+      // An entry with undefined state loads the same as no entry, so don't write one.
+      // Removing a saved empty entry here also cleans up data saved by older versions.
+      if (state.state === undefined) {
+        if (stateMap.delete(key)) {
+          onChange([...stateMap.entries()]);
+        }
+        return;
+      }
+
+      if (stateMap.get(key) !== state) {
         stateMap.set(key, state);
         onChange([...stateMap.entries()]);
       }
@@ -139,11 +153,21 @@ export function PersistentStateProvider(
 
   const initialStateIterator = useRef(initialState[Symbol.iterator]());
 
+  // Keys that have already consumed an entry from legacy array state.
+  // Tracked separately from stateMap because entries can be removed from stateMap,
+  // and a remount must not consume another component's legacy entry.
+  const migratedKeys = useRef(new Set<PersistentStateKey>());
+
   const getState = useCallback(
     <S,>(id: string, type: string): PersistentState<S> | undefined => {
       const key = makeKey(id, type);
       const state = stateMap.get(key);
-      if (state == null && needsMigrationToMap.current) {
+      if (
+        state == null &&
+        needsMigrationToMap.current &&
+        !migratedKeys.current.has(key)
+      ) {
+        migratedKeys.current.add(key);
         const { value } = initialStateIterator.current.next();
         const stateVal = value as PersistentState<S> | undefined;
         stateMap.set(key, stateVal as PersistentState);
