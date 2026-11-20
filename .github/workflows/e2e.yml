@@ -199,11 +199,11 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     # Frame timings on shared runners are noisy, so this reports numbers instead of gating.
+    # grid-perf-comment.yml posts the uploaded report on the PR.
     continue-on-error: true
     timeout-minutes: 45
     permissions:
       contents: read
-      pull-requests: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-performance-tests
       cancel-in-progress: true
@@ -244,14 +244,6 @@ jobs:
             test-results/grid-perf-results.jsonl
           retention-days: 14
           if-no-files-found: ignore
-
-      - name: Comment with report
-        # Forked PRs get a read-only token, so the comment would fail.
-        if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
-        with:
-          header: grid-perf-report
-          path: test-results/grid-perf-report.md
 
       - name: Dump server logs
         if: failure()
