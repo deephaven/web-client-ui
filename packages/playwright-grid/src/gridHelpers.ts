@@ -221,6 +221,40 @@ export async function waitForGrid(grid: Locator): Promise<void> {
 }
 
 /**
+ * Wait until the grid has loaded data into its viewport.
+ * A cell the grid has not fetched yet reads as empty, the same as a cell whose
+ * value is empty, so this only works for grids that have at least one cell with
+ * text in the first viewport.
+ * The snapshot renders every visible header and cell as page text, which
+ * would match `getByText` locators in the caller's test, so it is turned back
+ * off if this was what turned it on.
+ * @param grid Locator for the grid canvas or an element containing it
+ */
+export async function waitForGridData(grid: Locator): Promise<void> {
+  const canvas = await resolveGridCanvas(grid);
+  const snapshot = canvas.locator(`[${ATTRIBUTES.snapshot}]`);
+  const wasShowingSnapshot = (await snapshot.count()) > 0;
+
+  await expect
+    .poll(
+      async () => {
+        const shownSnapshot = await showSnapshot(canvas);
+        const cellTexts = await shownSnapshot
+          .locator(`[${ATTRIBUTES.row}]`)
+          .allTextContents();
+        return cellTexts.some(text => text.trim() !== '');
+      },
+      { message: 'Expected the grid to have loaded cell data' }
+    )
+    .toBe(true);
+
+  if (!wasShowingSnapshot) {
+    await canvas.locator(`[${ATTRIBUTES.describe}]`).dispatchEvent('click');
+    await expect(snapshot).toHaveCount(0);
+  }
+}
+
+/**
  * Get the grid's description of its size, selection, and viewport, e.g. for
  * asserting the selection.
  * @param grid Locator for the grid canvas or an element containing it
