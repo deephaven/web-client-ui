@@ -10,6 +10,12 @@ import type IrisGridModel from './IrisGridModel';
  * The returned model must be a drop-in for the input — the host owns its
  * lifecycle and will call `close()` on whatever this returns. May be async to
  * allow the transform to await dependencies before returning.
+ *
+ * On `IrisGridPanel`, saved custom columns are applied before the transform and
+ * rollup/select distinct after it; `GridWidgetPlugin` passes the freshly built
+ * model. To fail the load, reject: hosts don't watch model events such as
+ * `REQUEST_FAILED` during the transform, so await any work started before
+ * resolving.
  */
 export type IrisGridModelTransform = (
   model: IrisGridModel

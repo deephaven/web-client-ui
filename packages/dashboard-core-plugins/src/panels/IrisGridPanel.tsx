@@ -65,6 +65,7 @@ import {
 import {
   assertNotNull,
   type CancelablePromise,
+  CanceledPromiseError,
   type EventT,
   PromiseUtils,
 } from '@deephaven/utils';
@@ -115,9 +116,83 @@ const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
 
-type ModelQueueFunction = (model: IrisGridModel) => void;
+interface LoadedModel {
+  model: IrisGridModel;
+  pluginName: string | null;
+}
 
-type ModelQueue = ModelQueueFunction[];
+/** State of one `loadModel` run, so it can be abandoned mid-step. */
+interface LoadModelRun {
+  isCanceled: boolean;
+  pendingColumnsChange?: CancelablePromise<void>;
+}
+
+function throwIfCanceled(run: LoadModelRun): void {
+  if (run.isCanceled) {
+    throw new CanceledPromiseError();
+  }
+}
+
+/**
+ * Apply a column-changing mutation and wait for the model's `COLUMNS_CHANGED`;
+ * rejects on `REQUEST_FAILED`, or with `CanceledPromiseError` once `run` is
+ * canceled. Listeners are added before `apply` so the event can't be missed,
+ * and so a model with no other listeners starts listening to its table.
+ * Canceling only abandons the wait: the caller must close the model, or the
+ * listeners keep it subscribed.
+ */
+async function applyAndWaitForColumns(
+  model: IrisGridModel,
+  runParam: LoadModelRun,
+  apply: () => void
+): Promise<void> {
+  const run = runParam;
+  const change = PromiseUtils.makeCancelable(
+    new Promise<void>((resolve, reject) => {
+      function cleanup(): void {
+        model.removeEventListener(
+          IrisGridModel.EVENT.COLUMNS_CHANGED,
+          handleColumnsChanged
+        );
+        model.removeEventListener(
+          IrisGridModel.EVENT.REQUEST_FAILED,
+          handleRequestFailed
+        );
+      }
+      function handleColumnsChanged(): void {
+        cleanup();
+        resolve();
+      }
+      function handleRequestFailed(event: EventT): void {
+        cleanup();
+        reject(
+          (event as CustomEvent).detail ?? new Error('Model request failed')
+        );
+      }
+      model.addEventListener(
+        IrisGridModel.EVENT.COLUMNS_CHANGED,
+        handleColumnsChanged
+      );
+      model.addEventListener(
+        IrisGridModel.EVENT.REQUEST_FAILED,
+        handleRequestFailed
+      );
+      try {
+        apply();
+      } catch (e) {
+        cleanup();
+        reject(e);
+      }
+    })
+  );
+  run.pendingColumnsChange = change;
+  try {
+    await change;
+  } finally {
+    run.pendingColumnsChange = undefined;
+  }
+  throwIfCanceled(run);
+}
 
 export interface PanelState {
   gridState: {
@@ -241,7 +316,6 @@ interface IrisGridPanelState {
   Plugin?: TablePluginComponent;
   pluginFilters: readonly dh.FilterCondition[];
   pluginFetchColumns: readonly string[];
-  modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
   frozenColumns?: readonly ColumnName[];
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
@@ -357,7 +431,6 @@ export class IrisGridPanel extends PureComponent<
       Plugin: undefined,
       pluginFilters: [],
       pluginFetchColumns: [],
-      modelQueue: [],
       pendingDataMap: new Map(),
       frozenColumns: undefined,
 
@@ -401,10 +474,7 @@ export class IrisGridPanel extends PureComponent<
   componentWillUnmount(): void {
     this.savePanelState.cancel();
 
-    if (this.modelPromise != null) {
-      this.modelPromise.cancel();
-      this.modelPromise = undefined;
-    }
+    this.cancelLoadModelRun();
 
     const { model } = this.state;
     if (model) {
@@ -417,7 +487,9 @@ export class IrisGridPanel extends PureComponent<
 
   pluginRef: RefObject<TablePluginElement>;
 
-  modelPromise?: CancelablePromise<IrisGridModel>;
+  modelPromise?: CancelablePromise<LoadedModel>;
+
+  loadModelRun?: LoadModelRun;
 
   irisGridState?: IrisGridState;
 
@@ -561,76 +633,92 @@ export class IrisGridPanel extends PureComponent<
   );
 
   initModel(): void {
+    this.cancelLoadModelRun();
+    // A pending save needs the current model, which is cleared below
+    this.savePanelState.flush();
     this.setState({
       isModelReady: false,
       isLoading: true,
       error: null,
       isDisconnected: false,
+      // componentDidUpdate closes the previous model
+      model: undefined,
     });
-    const { makeModel, transformModel } = this.props;
-    if (this.modelPromise != null) {
-      this.modelPromise.cancel();
-    }
-    const modelPromise =
-      transformModel != null
-        ? Promise.resolve(makeModel()).then(async model => {
-            try {
-              const transformedModel = await transformModel(model);
-              return transformedModel;
-            } catch (e) {
-              // The host owns the base model's lifecycle; if the transform
-              // rejects it never returns a model for us to close, so close
-              // the base model here to avoid leaking it.
-              model.close();
-              throw e;
-            }
-          })
-        : Promise.resolve(makeModel());
-    this.modelPromise = PromiseUtils.makeCancelable(modelPromise, resolved =>
-      resolved.close()
+    const run: LoadModelRun = { isCanceled: false };
+    this.loadModelRun = run;
+    this.modelPromise = PromiseUtils.makeCancelable(
+      this.loadModel(run),
+      ({ model }) => model.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
   }
 
-  handleLoadSuccess(modelParam: IrisGridModel): void {
-    const model = modelParam;
-    const { loadPlugin } = this.props;
-    const { panelState, irisGridStateOverrides } = this.state;
-    const modelQueue: ((m: IrisGridModel) => void)[] = [];
-    this.irisGridUtils = new IrisGridUtils(model.dh);
-
-    // Read before modelQueue runs, since updateView drops the PluginName attribute
-    if (isIrisGridTableModelTemplate(model)) {
-      const { pluginName } = model.table;
-      if (loadPlugin != null && pluginName != null && pluginName !== '') {
-        this.setState({ Plugin: loadPlugin(pluginName) });
-      }
+  /**
+   * Abandon the in-flight `loadModel`. A running transform can't be
+   * interrupted; its result is closed once it settles.
+   */
+  cancelLoadModelRun(): void {
+    if (this.loadModelRun != null) {
+      this.loadModelRun.isCanceled = true;
+      this.loadModelRun.pendingColumnsChange?.cancel();
     }
+    this.modelPromise?.cancel();
+    this.clearLoadModelRun();
+  }
 
-    if (panelState != null) {
-      const { irisGridState } = panelState;
-      const {
-        aggregationSettings,
-        customColumns,
-        selectDistinctColumns = [],
-        rollupConfig,
-      } = { ...irisGridState, ...irisGridStateOverrides };
+  clearLoadModelRun(): void {
+    this.modelPromise = undefined;
+    this.loadModelRun = undefined;
+  }
+
+  /**
+   * Build the model and hydrate the parts of the saved state that change its
+   * columns. Custom columns are applied before `transformModel` so middleware
+   * sees the full source schema. Rollup and select-distinct swap the inner
+   * model and run after the transform so a transform that intercepts those
+   * setters sees the writes.
+   * @param run Tracks cancellation; checked after every await
+   */
+  async loadModel(run: LoadModelRun): Promise<LoadedModel> {
+    const { makeModel, transformModel } = this.props;
+    const base = await makeModel();
+    let model = base;
+    const stopWatchingConnection = this.watchLoadConnection(base, run);
+    try {
+      throwIfCanceled(run);
+
+      // updateView (applyCustomColumns) drops the PluginName attribute
+      const pluginName = isIrisGridTableModelTemplate(base)
+        ? base.table.pluginName ?? null
+        : null;
+
+      const { panelState, irisGridStateOverrides } = this.state;
+      const irisGridState =
+        panelState != null
+          ? { ...panelState.irisGridState, ...irisGridStateOverrides }
+          : undefined;
+      const customColumns = irisGridState?.customColumns ?? [];
+      const selectDistinctColumns = irisGridState?.selectDistinctColumns ?? [];
 
       if (customColumns.length > 0) {
-        modelQueue.push(m => {
-          // eslint-disable-next-line no-param-reassign
-          m.customColumns = customColumns;
+        await applyAndWaitForColumns(base, run, () => {
+          base.customColumns = customColumns;
         });
       }
 
-      if (rollupConfig != null && rollupConfig.columns.length > 0) {
-        // originalColumns might change by the time this model queue item is applied.
-        // Instead of pushing a static object, push the function
-        // that calculates the config based on the updated model state.
-        modelQueue.push(m => {
-          // eslint-disable-next-line no-param-reassign
-          m.rollupConfig = IrisGridUtils.getModelRollupConfig(
-            m.originalColumns,
+      if (transformModel != null) {
+        model = await transformModel(base);
+        throwIfCanceled(run);
+      }
+
+      if (
+        irisGridState?.rollupConfig != null &&
+        irisGridState.rollupConfig.columns.length > 0
+      ) {
+        const { rollupConfig, aggregationSettings } = irisGridState;
+        await applyAndWaitForColumns(model, run, () => {
+          model.rollupConfig = IrisGridUtils.getModelRollupConfig(
+            model.originalColumns,
             rollupConfig,
             aggregationSettings
           );
@@ -638,30 +726,62 @@ export class IrisGridPanel extends PureComponent<
       }
 
       if (selectDistinctColumns.length > 0) {
-        modelQueue.push(m => {
-          // eslint-disable-next-line no-param-reassign
-          m.selectDistinctColumns = selectDistinctColumns;
+        await applyAndWaitForColumns(model, run, () => {
+          model.selectDistinctColumns = selectDistinctColumns;
         });
       }
-    }
 
-    this.setState({ model, modelQueue });
-    this.initModelQueue(model, modelQueue);
+      return { model, pluginName };
+    } catch (e) {
+      // The panel owns the model only once it's returned, so close it here. If
+      // the transform rejected, `model` is still `base`.
+      model.close();
+      throw e;
+    } finally {
+      stopWatchingConnection();
+    }
   }
 
-  initModelQueue(modelParam: IrisGridModel, modelQueue: ModelQueue): void {
-    const model = modelParam;
-    if (modelQueue.length === 0) {
-      this.modelInitialized(model);
-      return;
+  /**
+   * While `loadModel` runs, show disconnects and restart the load on reconnect.
+   * Watches the base model, whose table is the one that disconnects. Restarting
+   * from `makeModel` is required: re-applying identical custom columns to the
+   * partly hydrated model would never emit `COLUMNS_CHANGED`.
+   */
+  watchLoadConnection(model: IrisGridModel, run: LoadModelRun): () => void {
+    // A canceled run can outlive its cancel while its transform settles; its
+    // connection events must not affect the panel's current run
+    const handleDisconnect = (): void => {
+      if (!run.isCanceled) {
+        this.handleDisconnect();
+      }
+    };
+    const handleReconnect = (): void => {
+      if (!run.isCanceled) {
+        this.initModel();
+      }
+    };
+    model.addEventListener(IrisGridModel.EVENT.DISCONNECT, handleDisconnect);
+    model.addEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
+    return () => {
+      model.removeEventListener(
+        IrisGridModel.EVENT.DISCONNECT,
+        handleDisconnect
+      );
+      model.removeEventListener(IrisGridModel.EVENT.RECONNECT, handleReconnect);
+    };
+  }
+
+  handleLoadSuccess({ model, pluginName }: LoadedModel): void {
+    const { loadPlugin } = this.props;
+    this.irisGridUtils = new IrisGridUtils(model.dh);
+
+    if (loadPlugin != null && pluginName != null && pluginName !== '') {
+      this.setState({ Plugin: loadPlugin(pluginName) });
     }
-    const modelChange = modelQueue.shift();
-    log.debug('initModelQueue', modelChange);
-    // Apply next model change. Triggers columnschanged event.
-    if (modelChange) {
-      modelChange(model);
-    }
-    this.setState({ modelQueue });
+
+    this.setState({ model });
+    this.modelInitialized(model);
   }
 
   handleAdvancedSettingsChange(
@@ -733,19 +853,13 @@ export class IrisGridPanel extends PureComponent<
     this.pluginState = pluginState;
     // Do not save if there is null state
     // The save will happen when the grid loads
-    if (irisGridState !== null && gridState !== null) {
+    if (irisGridState != null && gridState != null) {
       this.savePanelState();
     }
   }
 
   handleColumnsChanged(event: EventT): void {
-    const { isModelReady, model, modelQueue } = this.state;
-    if (isModelReady) {
-      this.sendColumnsChange((event as CustomEvent).detail);
-    } else {
-      assertNotNull(model);
-      this.initModelQueue(model, modelQueue);
-    }
+    this.sendColumnsChange((event as CustomEvent).detail);
   }
 
   handleTableChanged(event: EventT): void {
@@ -852,7 +966,7 @@ export class IrisGridPanel extends PureComponent<
   modelInitialized(model: IrisGridModel): void {
     const { glEventHub, onModelChanged } = this.props;
 
-    this.modelPromise = undefined;
+    this.clearLoadModelRun();
 
     // Custom columns at this point already initialized, can load state
     this.loadPanelState(model);
