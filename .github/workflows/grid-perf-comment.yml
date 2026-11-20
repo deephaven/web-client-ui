@@ -33,9 +33,13 @@ jobs:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          NUMBER=$(gh api -X GET "repos/$REPO/pulls" \
+          NUMBERS=$(gh api --paginate -X GET "repos/$REPO/pulls" \
             -f state=open -f head="$HEAD_OWNER:$HEAD_BRANCH" \
-            --jq "map(select(.head.sha == \"$HEAD_SHA\")) | .[0].number // empty")
+            --jq "map(select(.head.sha == \"$HEAD_SHA\")) | .[].number")
+          NUMBER=
+          if [[ "$NUMBERS" =~ ^[0-9]+$ ]]; then
+            NUMBER=$NUMBERS
+          fi
           echo "PR: ${NUMBER:-<none>}"
           echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
 
