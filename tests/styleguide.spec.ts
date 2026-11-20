@@ -82,15 +82,154 @@ test('UI regression test - Styleguide button section count', async ({
   });
 });
 
+const SECTION_TEST_TITLE_PREFIX = 'UI regression test - Styleguide section - ';
+
+/**
+ * Records canvas context loss so a failed screenshot can tell a lost backing
+ * store apart from a canvas that was never drawn. The events don't bubble, so
+ * they are captured on window.
+ */
+function recordCanvasContextEvents(): void {
+  const events: { type: string; time: number; className: string }[] = [];
+  Object.assign(window, { e2eCanvasContextEvents: events });
+  ['contextlost', 'contextrestored'].forEach(type => {
+    window.addEventListener(
+      type,
+      event => {
+        const target = event.target as HTMLElement | null;
+        events.push({
+          type,
+          time: performance.now(),
+          className: target?.className ?? '',
+        });
+      },
+      true
+    );
+  });
+}
+
+/**
+ * Describes every canvas in the section, including how many of its backing
+ * store pixels are drawn. A canvas with drawn pixels that screenshots as blank
+ * points at the browser's compositing; one without points at the app drawing.
+ */
+function getSectionCanvasDiagnostics(section: Element): unknown {
+  const sampleStride = 16;
+  return {
+    now: performance.now(),
+    devicePixelRatio: window.devicePixelRatio,
+    visibilityState: document.visibilityState,
+    hasFocus: document.hasFocus(),
+    fontsStatus: document.fonts.status,
+    contextEvents:
+      (window as unknown as { e2eCanvasContextEvents?: unknown })
+        .e2eCanvasContextEvents ?? null,
+    canvases: Array.from(section.querySelectorAll('canvas')).map(canvas => {
+      const rect = canvas.getBoundingClientRect();
+      const context = canvas.getContext('2d');
+      let sampledPixels = 0;
+      let drawnPixels = 0;
+      const colors = new Set<string>();
+      let readError: string | null = null;
+      if (context != null && canvas.width > 0 && canvas.height > 0) {
+        try {
+          const { data } = context.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          for (let i = 0; i < data.length; i += 4 * sampleStride) {
+            sampledPixels += 1;
+            if (data[i + 3] !== 0) {
+              drawnPixels += 1;
+            }
+            if (colors.size < 32) {
+              colors.add(
+                `${data[i]},${data[i + 1]},${data[i + 2]},${data[i + 3]}`
+              );
+            }
+          }
+        } catch (e) {
+          readError = String(e);
+        }
+      }
+      return {
+        className: canvas.className,
+        width: canvas.width,
+        height: canvas.height,
+        styleWidth: canvas.style.width,
+        styleHeight: canvas.style.height,
+        rect: {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+        },
+        isContextLost:
+          (
+            context as
+              | (CanvasRenderingContext2D & { isContextLost?: () => boolean })
+              | null
+          )?.isContextLost?.() ?? null,
+        sampledPixels,
+        drawnPixels,
+        sampleColors: Array.from(colors),
+        readError,
+      };
+    }),
+  };
+}
+
+test.afterEach(async ({ page }, testInfo) => {
+  if (
+    testInfo.status === testInfo.expectedStatus ||
+    !testInfo.title.startsWith(SECTION_TEST_TITLE_PREFIX) ||
+    page.isClosed()
+  ) {
+    return;
+  }
+
+  const id = testInfo.title.slice(SECTION_TEST_TITLE_PREFIX.length);
+  const sampleSection = page.locator(`#${id}`);
+  if ((await sampleSection.count()) === 0) {
+    return;
+  }
+
+  // Diagnostics must never replace the original failure with their own
+  try {
+    const diagnostics = await sampleSection.evaluate(
+      getSectionCanvasDiagnostics
+    );
+    await testInfo.attach('section-canvas-diagnostics', {
+      body: JSON.stringify(diagnostics, null, 2),
+      contentType: 'application/json',
+    });
+
+    // Shows whether the mismatch persisted after the assertion gave up
+    await testInfo.attach('section-after-failure', {
+      body: await sampleSection.screenshot({ animations: 'disabled' }),
+      contentType: 'image/png',
+    });
+  } catch (e) {
+    await testInfo.attach('section-canvas-diagnostics-error', {
+      body: String(e),
+      contentType: 'text/plain',
+    });
+  }
+});
+
 // Iterate over all sample sections and take a screenshot of each one.
 sampleSectionIds.forEach(id => {
-  test(`UI regression test - Styleguide section - ${id}`, async ({ page }) => {
+  test(`${SECTION_TEST_TITLE_PREFIX}${id}`, async ({ page }) => {
     // Fail quickly if console errors are detected
     page.on('console', msg => {
       if (msg.type() === 'error') {
         throw new Error(msg.text());
       }
     });
+
+    await page.addInitScript(recordCanvasContextEvents);
 
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
