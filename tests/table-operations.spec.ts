@@ -9,6 +9,8 @@ import {
   generateVarName,
   openTable,
   gotoPage,
+  recordPageLifecycle,
+  attachPageLifecycle,
 } from './utils';
 
 async function changeCondFormatComparison(
@@ -106,6 +108,8 @@ async function artificialWait(page: Page, tableNumber = 0) {
 }
 
 test.beforeEach(async ({ page }) => {
+  recordPageLifecycle(page);
+
   await gotoPage(page, '');
 
   // Fail quickly if console errors are detected
@@ -127,6 +131,10 @@ test.beforeEach(async ({ page }) => {
 
   // Wait for Table Options menu to show
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  await attachPageLifecycle(page, testInfo);
 });
 
 test('select distinct values', async ({ page }) => {
