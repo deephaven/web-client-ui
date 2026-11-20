@@ -40,6 +40,8 @@ function makeAdvancedFilterCreatorWrapper(
     column?: Column;
     formatter?: Formatter;
     isMaximized?: boolean;
+    isSortsReadOnly?: boolean;
+    onSortChange?: () => void;
     onToggleMaximize?: () => void;
   } = {}
 ) {
@@ -50,6 +52,8 @@ function makeAdvancedFilterCreatorWrapper(
     column,
     formatter,
     isMaximized,
+    isSortsReadOnly,
+    onSortChange,
     onToggleMaximize,
   } = {
     tableUtils: new TableUtils(dh),
@@ -63,6 +67,8 @@ function makeAdvancedFilterCreatorWrapper(
     column: irisGridTestUtils.makeColumn('0'), // needs to match column name in makeModel so that columnIndex can be found when rendering
     formatter: new Formatter(dh),
     isMaximized: false,
+    isSortsReadOnly: false,
+    onSortChange: () => null,
     onToggleMaximize: () => null,
     ...overrides,
   };
@@ -73,7 +79,8 @@ function makeAdvancedFilterCreatorWrapper(
       column={column}
       formatter={formatter}
       onFilterChange={() => null}
-      onSortChange={() => null}
+      onSortChange={onSortChange}
+      isSortsReadOnly={isSortsReadOnly}
       onDone={() => null}
       options={options}
       tableUtils={tableUtils}
@@ -233,3 +240,28 @@ it('marks maximize button active when isMaximized is true', () => {
 //   expect(orButtons[0]).not.toBeDisabled();
 //   expect(orButtons[1]).toBeDisabled();
 // });
+
+it.each([
+  [false, 1],
+  [true, 0],
+])(
+  'disables the sort buttons when isSortsReadOnly is %s',
+  (isSortsReadOnly, expectedCalls) => {
+    const onSortChange = jest.fn();
+    const { container } = makeAdvancedFilterCreatorWrapper({
+      isSortsReadOnly,
+      onSortChange,
+    });
+
+    const sortButtons = container.querySelectorAll<HTMLButtonElement>(
+      '.advanced-filter-menu-buttons .sort-operator'
+    );
+    const sortDescendingButton = sortButtons[0];
+
+    expect(sortDescendingButton.disabled).toBe(isSortsReadOnly);
+    expect(sortButtons[1].disabled).toBe(isSortsReadOnly);
+    fireEvent.click(sortDescendingButton);
+
+    expect(onSortChange).toHaveBeenCalledTimes(expectedCalls);
+  }
+);
