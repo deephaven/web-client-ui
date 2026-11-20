@@ -2,7 +2,11 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { IrisGridModel, IrisGridModelFactory } from '@deephaven/iris-grid';
+import {
+  IrisGridMetricCalculator,
+  IrisGridModel,
+  IrisGridModelFactory,
+} from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
@@ -421,11 +425,15 @@ describe('cancelling and reconnecting during hydration', () => {
     makeModel,
     transformModel,
     irisGridState,
+    onPanelStateUpdate,
+    loadPlugin = () => undefined,
   }: {
     makeModel: () => Promise<IrisGridModel>;
     transformModel?: (model: IrisGridModel) => any;
     /** Merged over the saved custom columns state */
     irisGridState?: Record<string, unknown>;
+    onPanelStateUpdate?: (panelState: unknown) => void;
+    loadPlugin?: (name: string) => any;
   }) {
     const panelState = makeCustomColumnsPanelState(['Foo = 1']);
     const props = {
@@ -440,8 +448,9 @@ describe('cancelling and reconnecting during hydration', () => {
         ...panelState,
         irisGridState: { ...panelState.irisGridState, ...irisGridState },
       } as any,
-      loadPlugin: () => undefined,
+      loadPlugin,
       transformModel,
+      onPanelStateUpdate,
     };
     const renderElement = (next: () => Promise<IrisGridModel>) => (
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -587,6 +596,97 @@ describe('cancelling and reconnecting during hydration', () => {
     );
 
     expect(models[0].close).toHaveBeenCalledTimes(1);
+  });
+
+  it('saves pending grid state against the previous model when a reload starts', async () => {
+    const first = makePendingCustomColumnsTable();
+    const pending = makePendingCustomColumnsTable();
+    const { makeModel, models } = makeTrackedMakeModel([first.table]);
+    const { makeModel: nextMakeModel } = makeTrackedMakeModel([pending.table]);
+    const onPanelStateUpdate = jest.fn();
+    const { rerenderWithMakeModel } = renderPanel({
+      makeModel,
+      onPanelStateUpdate,
+    });
+    await waitFor(() =>
+      expect(first.table.applyCustomColumns).toHaveBeenCalled()
+    );
+    act(() => first.fireCustomColumnsChanged());
+    await waitFor(() => expect(lastRenderedModel()).toBe(models[0]));
+    const { onStateChange } = MockIrisGrid.mock.calls[
+      MockIrisGrid.mock.calls.length - 1
+    ][0] as any;
+    // Queues the debounced save
+    act(() =>
+      onStateChange(
+        {
+          advancedFilters: new Map(),
+          aggregationSettings: { aggregations: [], showOnTop: false },
+          customColumnFormatMap: new Map(),
+          columnAlignmentMap: new Map(),
+          isFilterBarShown: false,
+          quickFilters: new Map(),
+          // The save replaces the panel state the reload hydrates from
+          customColumns: ['Foo = 1'],
+          reverse: false,
+          showSearchBar: false,
+          searchValue: '',
+          selectDistinctColumns: [],
+          selectedSearchColumns: [],
+          sorts: [],
+          invertSearchColumns: false,
+          pendingDataMap: new Map(),
+          frozenColumns: [],
+          conditionalFormats: [],
+          columnHeaderGroups: [],
+          metricCalculator: new IrisGridMetricCalculator(),
+          metrics: { userColumnWidths: new Map(), userRowHeights: new Map() },
+        },
+        {
+          isStuckToBottom: false,
+          isStuckToRight: false,
+          movedColumns: [],
+          movedRows: [],
+        }
+      )
+    );
+
+    rerenderWithMakeModel(nextMakeModel);
+    await waitFor(() =>
+      expect(pending.table.applyCustomColumns).toHaveBeenCalled()
+    );
+
+    await waitFor(() => expect(onPanelStateUpdate).toHaveBeenCalledTimes(1));
+  });
+
+  it('does not save plugin state before the grid reports its state', async () => {
+    const first = makePendingCustomColumnsTable();
+    first.table.pluginName = 'TestPlugin';
+    const pending = makePendingCustomColumnsTable();
+    const { makeModel, models } = makeTrackedMakeModel([first.table]);
+    const { makeModel: nextMakeModel } = makeTrackedMakeModel([pending.table]);
+    const onPanelStateUpdate = jest.fn();
+    const { rerenderWithMakeModel } = renderPanel({
+      makeModel,
+      onPanelStateUpdate,
+      loadPlugin: () => jest.fn(() => null),
+    });
+    await waitFor(() =>
+      expect(first.table.applyCustomColumns).toHaveBeenCalled()
+    );
+    act(() => first.fireCustomColumnsChanged());
+    await waitFor(() => expect(lastRenderedModel()).toBe(models[0]));
+    const { children: pluginContent } = MockIrisGrid.mock.calls[
+      MockIrisGrid.mock.calls.length - 1
+    ][0] as any;
+    act(() => pluginContent.props.children.props.onStateChange({}));
+
+    rerenderWithMakeModel(nextMakeModel);
+    await waitFor(() =>
+      expect(pending.table.applyCustomColumns).toHaveBeenCalled()
+    );
+
+    expect(onPanelStateUpdate).not.toHaveBeenCalled();
   });
 
   /**

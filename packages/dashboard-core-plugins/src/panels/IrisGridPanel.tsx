@@ -634,6 +634,8 @@ export class IrisGridPanel extends PureComponent<
 
   initModel(): void {
     this.cancelLoadModelRun();
+    // A pending save needs the current model, which is cleared below
+    this.savePanelState.flush();
     this.setState({
       isModelReady: false,
       isLoading: true,
@@ -851,7 +853,7 @@ export class IrisGridPanel extends PureComponent<
     this.pluginState = pluginState;
     // Do not save if there is null state
     // The save will happen when the grid loads
-    if (irisGridState !== null && gridState !== null) {
+    if (irisGridState != null && gridState != null) {
       this.savePanelState();
     }
   }
