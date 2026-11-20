@@ -134,3 +134,82 @@ describe('IrisGridTableModel delete filter construction', () => {
     expect(orSpy).not.toHaveBeenCalled();
   });
 });
+
+describe('IrisGridTableModel custom columns', () => {
+  function makeColumn(name: string, type: string, index: number) {
+    return irisGridTestUtils.makeColumn(name, type, index);
+  }
+
+  function makeListeningModel(columns: DhType.Column[]) {
+    const table = irisGridTestUtils.makeTable({ columns, size: 10 });
+    const subscription = { setViewport: jest.fn(), close: jest.fn() };
+    table.setViewport = jest.fn(() => subscription) as never;
+    table.applyCustomColumns = jest.fn() as never;
+    const model = new IrisGridTableModel(dh, table, new Formatter(dh));
+    model.addEventListener(IrisGridTableModel.EVENT.UPDATED, jest.fn());
+    return { model, table, subscription };
+  }
+
+  it('defers the viewport subscription until the custom columns request succeeds', () => {
+    const a = makeColumn('A', 'double', 0);
+    const b = makeColumn('B', 'java.lang.String', 1);
+    const { model, table } = makeListeningModel([a, b]);
+    model.setViewport(0, 5, [a, b]);
+    jest.runOnlyPendingTimers();
+    expect(table.setViewport).toHaveBeenCalled();
+    (table.setViewport as jest.Mock).mockClear();
+
+    model.customColumns = ['C=A*2'];
+    jest.runOnlyPendingTimers();
+    expect(table.applyCustomColumns).toHaveBeenCalledWith(['C=A*2']);
+    expect(table.setViewport).not.toHaveBeenCalled();
+
+    const newColumns = [
+      makeColumn('B', 'java.lang.String', 0),
+      makeColumn('A', 'double', 1),
+      makeColumn('C', 'double', 2),
+    ];
+    table.columns = newColumns;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (table as any).fireEvent(dh.Table.EVENT_REQUEST_SUCCEEDED);
+    jest.runOnlyPendingTimers();
+
+    expect(table.setViewport).toHaveBeenCalledTimes(1);
+    const [, , columns] = (table.setViewport as jest.Mock).mock.calls[0];
+    expect(columns).toEqual([newColumns[1], newColumns[0]]);
+    expect(columns[0]).toBe(newColumns[1]);
+    expect(columns[1]).toBe(newColumns[0]);
+  });
+
+  it('remaps viewport data to the new column indices when custom columns change', () => {
+    const a = makeColumn('A', 'double', 0);
+    const b = makeColumn('B', 'java.lang.String', 1);
+    const c = makeColumn('C', 'double', 2);
+    const { model, table } = makeListeningModel([a, b, c]);
+    const values = new Map<DhType.Column, unknown>([
+      [a, 1.5],
+      [b, 'text'],
+      [c, 3],
+    ]);
+    model.copyViewportData({
+      offset: 0,
+      columns: [a, b, c],
+      rows: [{ get: col => values.get(col), getFormat: () => undefined }],
+    } as unknown as DhType.ViewportData);
+    expect(model.valueForCell(0, 0)).toBe(1.5);
+
+    // C changes type and moves before A; B moves to the front
+    table.columns = [
+      makeColumn('B', 'java.lang.String', 0),
+      makeColumn('C', 'java.lang.String', 1),
+      makeColumn('A', 'double', 2),
+    ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (table as any).fireEvent(dh.Table.EVENT_CUSTOMCOLUMNSCHANGED);
+
+    expect(model.valueForCell(0, 0)).toBe('text');
+    expect(model.valueForCell(1, 0)).toBeUndefined();
+    expect(model.valueForCell(2, 0)).toBe(1.5);
+    expect(model.textForCell(2, 0)).toBe('1.5000');
+  });
+});
