@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.2](https://github.com/deephaven/web-client-ui/compare/v1.34.1...v1.34.2) (2026-11-20)
+
+### Bug Fixes
+
+- **iris-grid:** Keep caller `this` for inner model methods in IrisGridProxyModel ([#2842](https://github.com/deephaven/web-client-ui/issues/2842)) ([63c01bc](https://github.com/deephaven/web-client-ui/commit/63c01bc02e0409ee4626f2b70870af0e16d13733)), closes [#2824](https://github.com/deephaven/web-client-ui/issues/2824), references [#2824](https://github.com/deephaven/web-client-ui/issues/2824) [#2824](https://github.com/deephaven/web-client-ui/issues/2824)
+
 ## [1.34.1](https://github.com/deephaven/web-client-ui/compare/v1.34.0...v1.34.1) (2026-11-19)
 
 **Note:** Version bump only for package @deephaven/iris-grid
