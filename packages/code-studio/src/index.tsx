@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import React, { Suspense } from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss'; // Do NOT move any lower. This needs to be imported before any other styles
@@ -70,21 +71,25 @@ const rootElement = document.getElementById('root');
 assertNotNull(rootElement);
 const root = createRoot(rootElement);
 
-root.render(
-  <ApiBootstrap apiUrl={apiURL.href} setGlobally>
-    <Suspense
-      fallback={<LoadingOverlay data-testid="code-studio-index-loading" />}
-    >
-      <Provider store={store}>
-        <AppBootstrap
-          getCorePlugins={getCorePlugins}
-          serverUrl={apiURL.origin}
-          pluginsUrl={pluginsURL.href}
-          logMetadata={logMetadata}
-        >
-          <AppRoot />
-        </AppBootstrap>
-      </Provider>
-    </Suspense>
-  </ApiBootstrap>
-);
+// Render synchronously so the loading spinner is in the DOM before the page
+// load event, instead of leaving an empty root until React's scheduler runs.
+flushSync(() => {
+  root.render(
+    <ApiBootstrap apiUrl={apiURL.href} setGlobally>
+      <Suspense
+        fallback={<LoadingOverlay data-testid="code-studio-index-loading" />}
+      >
+        <Provider store={store}>
+          <AppBootstrap
+            getCorePlugins={getCorePlugins}
+            serverUrl={apiURL.origin}
+            pluginsUrl={pluginsURL.href}
+            logMetadata={logMetadata}
+          >
+            <AppRoot />
+          </AppBootstrap>
+        </Provider>
+      </Suspense>
+    </ApiBootstrap>
+  );
+});

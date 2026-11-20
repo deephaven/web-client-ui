@@ -1,4 +1,6 @@
 import React from 'react';
+import { flushSync } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { act, render } from '@testing-library/react';
 import { assertNotNull } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
@@ -87,6 +89,57 @@ describe('ThemeProvider', () => {
       }
 
       expect(component.baseElement).toMatchSnapshot();
+    }
+  );
+
+  it.each([null, customThemes])(
+    'should render children in the same task as the initial render: %o',
+    themes => {
+      // `act` flushes all pending effects and renders, which would hide a
+      // render that only shows children after a later task
+      const actGlobal = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+      const prevIsActEnvironment = actGlobal.IS_REACT_ACT_ENVIRONMENT;
+      actGlobal.IS_REACT_ACT_ENVIRONMENT = false;
+
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const root = createRoot(container);
+
+      const styleCountsOnChildRender: number[] = [];
+      function StyleCheckingChild() {
+        styleCountsOnChildRender.push(
+          container.querySelectorAll('style[data-theme-key]').length
+        );
+        return <div data-testid="theme-child">Child</div>;
+      }
+
+      try {
+        flushSync(() => {
+          root.render(
+            <ThemeProvider themes={themes}>
+              <StyleCheckingChild />
+            </ThemeProvider>
+          );
+        });
+
+        expect(
+          container.querySelector('[data-testid="theme-child"]')
+        ).not.toBeNull();
+        // Children read theme CSS variables, so active theme styles must
+        // already be in the DOM when they first render
+        expect(styleCountsOnChildRender[0]).toEqual(
+          themes == null
+            ? 0
+            : getActiveThemes(defaultSelectedThemeKey, {
+                base: getDefaultBaseThemes(),
+                custom: themes,
+              }).length
+        );
+      } finally {
+        flushSync(() => root.unmount());
+        container.remove();
+        actGlobal.IS_REACT_ACT_ENVIRONMENT = prevIsActEnvironment;
+      }
     }
   );
 
