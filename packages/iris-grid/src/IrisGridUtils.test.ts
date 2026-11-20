@@ -14,10 +14,16 @@ import { type FilterData } from './IrisGrid';
 import { IrisGridMetricCalculator } from './IrisGridMetricCalculator';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
+  type DehydratedGridState,
+  type DehydratedIrisGridState,
   type DehydratedSort,
+  GRID_STATE_DEFAULTS,
+  IRIS_GRID_PANEL_STATE_DEFAULTS,
+  IRIS_GRID_STATE_DEFAULTS,
   type LegacyDehydratedSort,
 } from './IrisGridUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
+import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type Aggregation } from './sidebar/aggregations/Aggregations';
 import {
@@ -1026,7 +1032,7 @@ describe('user column widths persistence by name', () => {
     const secondDehydrated = irisGridUtils.dehydrateIrisGridState(
       currentModel,
       {
-        ...firstDehydrated,
+        ...hydrated,
         metricCalculator: reseeded,
         metrics: {
           userColumnWidths: new Map(),
@@ -1316,5 +1322,274 @@ describe('migrateConditionalFormattingRule', () => {
         style,
       },
     });
+  });
+});
+
+/**
+ * Pins the frozen default values. Stored state omits any value equal to its
+ * default, so these define what a missing key means in data already saved.
+ *
+ * - Adding a key is safe.
+ * - Never change a value: every stored state that omitted the key would load
+ *   with the new value.
+ * - Only remove a key when the property itself is no longer saved or read.
+ *   Otherwise stored state that omitted it would load without it.
+ *
+ * Values are written as literals (including the advanced settings keys) so
+ * that renaming an enum value is also caught.
+ */
+describe('frozen state defaults', () => {
+  it('has not changed IRIS_GRID_STATE_DEFAULTS', () => {
+    expect(IRIS_GRID_STATE_DEFAULTS).toEqual({
+      advancedFilters: [],
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      customColumnFormatMap: [],
+      columnAlignmentMap: [],
+      isFilterBarShown: false,
+      quickFilters: [],
+      sorts: [],
+      userColumnWidths: [],
+      userRowHeights: [],
+      customColumns: [],
+      conditionalFormats: [],
+      reverse: false,
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      invertSearchColumns: true,
+      pendingDataMap: [],
+    });
+  });
+
+  it('has not changed GRID_STATE_DEFAULTS', () => {
+    expect(GRID_STATE_DEFAULTS).toEqual({
+      isStuckToBottom: false,
+      isStuckToRight: false,
+      movedColumns: [],
+      movedRows: [],
+    });
+  });
+
+  it('has not changed IRIS_GRID_PANEL_STATE_DEFAULTS', () => {
+    expect(IRIS_GRID_PANEL_STATE_DEFAULTS).toEqual({
+      isSelectingPartition: false,
+      partitions: [],
+      advancedSettings: [
+        ['filter-control-change-clears-all-filters', false],
+        ['link-change-clears-all-filters', false],
+      ],
+    });
+  });
+});
+
+describe('dehydrated state omits default values', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
+  /** Hydrate saved IrisGrid state, then dehydrate it as IrisGrid would on save */
+  function hydrateAndDehydrateIrisGridState(
+    saved: DehydratedIrisGridState
+  ): DehydratedIrisGridState {
+    const hydrated = irisGridUtils.hydrateIrisGridState(model, saved);
+    return JSON.parse(
+      JSON.stringify(
+        irisGridUtils.dehydrateIrisGridState(model, {
+          ...hydrated,
+          metrics: {
+            userColumnWidths: hydrated.userColumnWidths,
+            userRowHeights: hydrated.userRowHeights,
+          },
+        })
+      )
+    );
+  }
+
+  describe('IrisGrid state', () => {
+    it('omits every default value of an unmodified grid', () => {
+      // columnHeaderGroups has no fixed default, see IRIS_GRID_STATE_DEFAULTS
+      expect(hydrateAndDehydrateIrisGridState({})).toEqual({
+        columnHeaderGroups: [],
+      });
+    });
+
+    it('keeps values that differ from the defaults', () => {
+      const saved: DehydratedIrisGridState = {
+        isFilterBarShown: true,
+        quickFilters: [[1, { text: 'foo' }]],
+        sorts: [{ column: 'name_0', direction: 'ASC', isAbs: false }],
+        userColumnWidths: [['name_2', 150]],
+        invertSearchColumns: false,
+        columnHeaderGroups: [],
+      };
+      expect(hydrateAndDehydrateIrisGridState(saved)).toEqual(saved);
+    });
+
+    it('saves full-shape state without its default values', () => {
+      const full = IrisGridUtils.restoreIrisGridStateDefaults({
+        isFilterBarShown: true,
+        columnHeaderGroups: [],
+      });
+      expect(hydrateAndDehydrateIrisGridState(full)).toEqual({
+        isFilterBarShown: true,
+        columnHeaderGroups: [],
+      });
+    });
+  });
+
+  describe('Grid state', () => {
+    it('omits every default value of an unmodified grid', () => {
+      expect(
+        IrisGridUtils.dehydrateGridState(
+          model,
+          IrisGridUtils.hydrateGridState(model, {})
+        )
+      ).toEqual({});
+    });
+
+    it('keeps values that differ from the defaults', () => {
+      expect(
+        IrisGridUtils.dehydrateGridState(
+          model,
+          IrisGridUtils.hydrateGridState(model, { isStuckToBottom: true })
+        )
+      ).toEqual({ isStuckToBottom: true });
+    });
+  });
+
+  describe('IrisGridPanel state', () => {
+    it('omits every default value of an unmodified panel', () => {
+      expect(
+        IrisGridUtils.dehydrateIrisGridPanelState(
+          model,
+          IrisGridUtils.hydrateIrisGridPanelState(model, {})
+        )
+      ).toEqual({});
+    });
+
+    it('keeps values that differ from the defaults', () => {
+      const advancedSettings =
+        IRIS_GRID_PANEL_STATE_DEFAULTS.advancedSettings.map(
+          ([key]): [AdvancedSettingsType, boolean] => [key, true]
+        );
+      expect(
+        IrisGridUtils.dehydrateIrisGridPanelState(
+          model,
+          IrisGridUtils.hydrateIrisGridPanelState(model, {
+            partitions: ['a'],
+            advancedSettings,
+          })
+        )
+      ).toEqual({ partitions: ['a'], advancedSettings });
+    });
+  });
+});
+
+describe('restore state defaults', () => {
+  it('fills in every default value', () => {
+    expect(IrisGridUtils.restoreIrisGridStateDefaults({})).toEqual(
+      IRIS_GRID_STATE_DEFAULTS
+    );
+    expect(IrisGridUtils.restoreGridStateDefaults({})).toEqual(
+      GRID_STATE_DEFAULTS
+    );
+    expect(IrisGridUtils.restoreIrisGridPanelStateDefaults({})).toEqual(
+      IRIS_GRID_PANEL_STATE_DEFAULTS
+    );
+  });
+
+  it('keeps values that are present and does not modify the input', () => {
+    const saved = { searchValue: 'foo' };
+    expect(IrisGridUtils.restoreIrisGridStateDefaults(saved).searchValue).toBe(
+      'foo'
+    );
+    expect(saved).toEqual({ searchValue: 'foo' });
+  });
+
+  it('does not share default values between restored states', () => {
+    expect(IrisGridUtils.restoreIrisGridStateDefaults({}).sorts).not.toBe(
+      IrisGridUtils.restoreIrisGridStateDefaults({}).sorts
+    );
+  });
+
+  it('does not add partitions to V1 IrisGridPanel state', () => {
+    expect(
+      IrisGridUtils.restoreIrisGridPanelStateDefaults({ partition: 'a' })
+    ).toEqual({
+      isSelectingPartition: false,
+      partition: 'a',
+      advancedSettings: IRIS_GRID_PANEL_STATE_DEFAULTS.advancedSettings,
+    });
+  });
+});
+
+describe('hydrating state with missing keys', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
+  it.each(Object.keys(IRIS_GRID_STATE_DEFAULTS))(
+    'hydrates IrisGrid state without %s as if it had the default',
+    key => {
+      const full = IrisGridUtils.restoreIrisGridStateDefaults({});
+      const { [key as keyof DehydratedIrisGridState]: _omitted, ...partial } =
+        full;
+      expect(irisGridUtils.hydrateIrisGridState(model, partial)).toEqual(
+        irisGridUtils.hydrateIrisGridState(model, full)
+      );
+    }
+  );
+
+  it('hydrates an empty IrisGrid state', () => {
+    expect(irisGridUtils.hydrateIrisGridState(model, {})).toEqual(
+      irisGridUtils.hydrateIrisGridState(
+        model,
+        IrisGridUtils.restoreIrisGridStateDefaults({})
+      )
+    );
+  });
+
+  it.each(Object.keys(GRID_STATE_DEFAULTS))(
+    'hydrates Grid state without %s as if it had the default',
+    key => {
+      const { [key as keyof DehydratedGridState]: _omitted, ...partial } =
+        GRID_STATE_DEFAULTS;
+      expect(IrisGridUtils.hydrateGridState(model, partial)).toEqual(
+        IrisGridUtils.hydrateGridState(model, GRID_STATE_DEFAULTS)
+      );
+    }
+  );
+
+  it('hydrates an empty IrisGridPanel state', () => {
+    expect(IrisGridUtils.hydrateIrisGridPanelState(model, {})).toEqual(
+      IrisGridUtils.hydrateIrisGridPanelState(
+        model,
+        IRIS_GRID_PANEL_STATE_DEFAULTS
+      )
+    );
+  });
+
+  it('keeps the partition of V1 IrisGridPanel state with missing keys', () => {
+    expect(
+      IrisGridUtils.hydrateIrisGridPanelState(model, { partition: 'a' })
+        .partitions
+    ).toEqual(['a']);
+  });
+
+  it('keeps values that are present', () => {
+    const hydrated = irisGridUtils.hydrateIrisGridState(model, {
+      isFilterBarShown: true,
+      searchValue: 'foo',
+      invertSearchColumns: false,
+    });
+    expect(hydrated.isFilterBarShown).toBe(true);
+    expect(hydrated.searchValue).toBe('foo');
+    expect(hydrated.invertSearchColumns).toBe(false);
+    expect(hydrated.showSearchBar).toBe(false);
   });
 });

@@ -24,6 +24,9 @@ import {
   EMPTY_ARRAY,
   EMPTY_MAP,
   isNotNullOrUndefined,
+  type PartialBy,
+  removeDefaultValues,
+  restoreDefaultValues,
 } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -143,7 +146,11 @@ export interface TableSettings {
   partitionColumns?: ColumnName[];
 }
 
-export interface DehydratedIrisGridState {
+/**
+ * Dehydrated IrisGrid state with every key present, as returned by
+ * `IrisGridUtils.restoreIrisGridStateDefaults`
+ */
+export interface FullDehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
   customColumnFormatMap: readonly DehydratedCustomColumnFormat[];
@@ -170,18 +177,49 @@ export interface DehydratedIrisGridState {
   partitionConfig?: DehydratedPartitionConfig;
 }
 
-export interface DehydratedIrisGridPanelStateV1 {
+/**
+ * Dehydrated IrisGrid state as saved: keys whose values equal
+ * `IRIS_GRID_STATE_DEFAULTS` may be omitted
+ */
+export type DehydratedIrisGridState = PartialBy<
+  FullDehydratedIrisGridState,
+  keyof typeof IRIS_GRID_STATE_DEFAULTS
+>;
+
+export interface FullDehydratedIrisGridPanelStateV1 {
   isSelectingPartition: boolean;
   partition: string | null;
   advancedSettings: [AdvancedSettingsType, boolean][];
 }
 
-export interface DehydratedIrisGridPanelStateV2 {
+export interface FullDehydratedIrisGridPanelStateV2 {
   isSelectingPartition: boolean;
   partitions: (string | null)[];
   advancedSettings: [AdvancedSettingsType, boolean][];
 }
 
+/**
+ * Dehydrated IrisGridPanel state with every key present, as returned by
+ * `IrisGridUtils.restoreIrisGridPanelStateDefaults`
+ */
+export type FullDehydratedIrisGridPanelState =
+  | FullDehydratedIrisGridPanelStateV1
+  | FullDehydratedIrisGridPanelStateV2;
+
+export type DehydratedIrisGridPanelStateV1 = PartialBy<
+  FullDehydratedIrisGridPanelStateV1,
+  keyof typeof IRIS_GRID_PANEL_STATE_DEFAULTS
+>;
+
+export type DehydratedIrisGridPanelStateV2 = PartialBy<
+  FullDehydratedIrisGridPanelStateV2,
+  keyof typeof IRIS_GRID_PANEL_STATE_DEFAULTS
+>;
+
+/**
+ * Dehydrated IrisGridPanel state as saved: keys whose values equal
+ * `IRIS_GRID_PANEL_STATE_DEFAULTS` may be omitted
+ */
 export type DehydratedIrisGridPanelState =
   | DehydratedIrisGridPanelStateV1
   | DehydratedIrisGridPanelStateV2;
@@ -217,7 +255,11 @@ export type HydratedGridState = Pick<
   'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
 >;
 
-export type DehydratedGridState = {
+/**
+ * Dehydrated Grid state with every key present, as returned by
+ * `IrisGridUtils.restoreGridStateDefaults`
+ */
+export type FullDehydratedGridState = {
   isStuckToBottom: boolean;
   isStuckToRight: boolean;
   movedColumns: readonly {
@@ -227,13 +269,164 @@ export type DehydratedGridState = {
   movedRows: readonly MoveOperation[];
 };
 
+/**
+ * Dehydrated Grid state as saved: keys whose values equal
+ * `GRID_STATE_DEFAULTS` may be omitted
+ */
+export type DehydratedGridState = PartialBy<
+  FullDehydratedGridState,
+  keyof typeof GRID_STATE_DEFAULTS
+>;
+
+/** Aggregation settings of a grid with no aggregations, used as the `IrisGrid` default */
+export const DEFAULT_AGGREGATION_SETTINGS: Readonly<AggregationSettings> =
+  Object.freeze({
+    aggregations: EMPTY_ARRAY,
+    showOnTop: false,
+  });
+
+/**
+ * These default values are removed by `dehydrateIrisGridState` and restored by
+ * `hydrateIrisGridState`. They match the state of an unmodified `IrisGridPanel`.
+ *
+ * Saved workspace state relies on these defaults to hydrate correctly. If a UI
+ * default changes, do not update these: saved rows that omit the value would
+ * hydrate incorrectly.
+ *
+ * Not included, because they have no fixed default: `frozenColumns`,
+ * `columnHeaderGroups`, `rollupConfig`, `partitionConfig` and `reverseType`.
+ */
+export const IRIS_GRID_STATE_DEFAULTS = Object.freeze({
+  advancedFilters: [],
+  aggregationSettings: DEFAULT_AGGREGATION_SETTINGS,
+  customColumnFormatMap: [],
+  columnAlignmentMap: [],
+  isFilterBarShown: false,
+  quickFilters: [],
+  sorts: [],
+  userColumnWidths: [],
+  userRowHeights: [],
+  customColumns: [],
+  conditionalFormats: [],
+  reverse: false,
+  showSearchBar: false,
+  searchValue: '',
+  selectDistinctColumns: [],
+  selectedSearchColumns: [],
+  invertSearchColumns: true,
+  pendingDataMap: [],
+}) satisfies Partial<FullDehydratedIrisGridState>;
+
+/**
+ * These default values are removed by `dehydrateGridState` and restored by
+ * `hydrateGridState`. See `IRIS_GRID_STATE_DEFAULTS`.
+ */
+export const GRID_STATE_DEFAULTS = Object.freeze({
+  isStuckToBottom: false,
+  isStuckToRight: false,
+  movedColumns: [],
+  movedRows: [],
+}) satisfies FullDehydratedGridState;
+
+/**
+ * These default values are removed by `dehydrateIrisGridPanelState` and restored
+ * by `hydrateIrisGridPanelState`. See `IRIS_GRID_STATE_DEFAULTS`.
+ */
+export const IRIS_GRID_PANEL_STATE_DEFAULTS = Object.freeze({
+  isSelectingPartition: false,
+  partitions: [],
+  advancedSettings: AdvancedSettings.DEFAULTS.map(
+    ([key, value]): [AdvancedSettingsType, boolean] => [key, value]
+  ),
+}) satisfies FullDehydratedIrisGridPanelStateV2;
+
+function removeIrisGridStateDefaults(
+  irisGridState: FullDehydratedIrisGridState
+): DehydratedIrisGridState {
+  return removeDefaultValues<FullDehydratedIrisGridState>(
+    irisGridState,
+    IRIS_GRID_STATE_DEFAULTS
+  ) as DehydratedIrisGridState;
+}
+
+function removeGridStateDefaults(
+  gridState: FullDehydratedGridState
+): DehydratedGridState {
+  return removeDefaultValues(gridState, GRID_STATE_DEFAULTS);
+}
+
+function removeIrisGridPanelStateDefaults(
+  irisGridPanelState: FullDehydratedIrisGridPanelState
+): DehydratedIrisGridPanelState {
+  return removeDefaultValues<FullDehydratedIrisGridPanelState>(
+    irisGridPanelState,
+    IRIS_GRID_PANEL_STATE_DEFAULTS
+  ) as DehydratedIrisGridPanelState;
+}
+
 class IrisGridUtils {
+  /**
+   * Fill in the values `dehydrateIrisGridState` omits because they equal
+   * `IRIS_GRID_STATE_DEFAULTS`. Use this when reading saved state other than
+   * through `hydrateIrisGridState`, which already does this.
+   * @param irisGridState Saved IrisGrid state
+   * @returns A new state with every default value present; the input is not modified
+   */
+  static restoreIrisGridStateDefaults(
+    irisGridState: DehydratedIrisGridState
+  ): FullDehydratedIrisGridState {
+    return restoreDefaultValues<FullDehydratedIrisGridState>(
+      irisGridState,
+      IRIS_GRID_STATE_DEFAULTS
+    );
+  }
+
+  /**
+   * Fill in the values `dehydrateGridState` omits because they equal
+   * `GRID_STATE_DEFAULTS`. See `restoreIrisGridStateDefaults`.
+   * @param gridState Saved Grid state
+   * @returns A new state with every default value present; the input is not modified
+   */
+  static restoreGridStateDefaults(
+    gridState: DehydratedGridState
+  ): FullDehydratedGridState {
+    return restoreDefaultValues<FullDehydratedGridState>(
+      gridState,
+      GRID_STATE_DEFAULTS
+    );
+  }
+
+  /**
+   * Fill in the values `dehydrateIrisGridPanelState` omits because they equal
+   * `IRIS_GRID_PANEL_STATE_DEFAULTS`. See `restoreIrisGridStateDefaults`.
+   * State saved in the older V1 format (with `partition`) is not given
+   * `partitions`, which would make it load as V2 and ignore `partition`.
+   * @param irisGridPanelState Saved IrisGridPanel state
+   * @returns A new state with every default value present; the input is not modified
+   */
+  static restoreIrisGridPanelStateDefaults(
+    irisGridPanelState: DehydratedIrisGridPanelState
+  ): FullDehydratedIrisGridPanelState {
+    if (isPanelStateV1(irisGridPanelState)) {
+      const { partitions, ...v1Defaults } = IRIS_GRID_PANEL_STATE_DEFAULTS;
+      return restoreDefaultValues<FullDehydratedIrisGridPanelStateV1>(
+        irisGridPanelState,
+        v1Defaults
+      );
+    }
+    return restoreDefaultValues<FullDehydratedIrisGridPanelStateV2>(
+      irisGridPanelState,
+      IRIS_GRID_PANEL_STATE_DEFAULTS
+    );
+  }
+
   /**
    * Exports the state from Grid component to a JSON stringifiable object.
    * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the Grid state for
    * @param gridState The state of the Grid to export
-   * @returns An object that can be stringified and imported with {{@link hydrateGridState}}
+   * @returns An object that can be stringified and imported with {{@link hydrateGridState}}.
+   *   Values equal to `GRID_STATE_DEFAULTS` are omitted.
    */
   static dehydrateGridState(
     model: IrisGridModel,
@@ -244,7 +437,7 @@ class IrisGridUtils {
 
     const { columns } = model;
 
-    return {
+    return removeGridStateDefaults({
       isStuckToBottom,
       isStuckToRight,
       movedColumns: [...movedColumns]
@@ -263,11 +456,12 @@ class IrisGridUtils {
             : columns[from].name,
         })),
       movedRows: [...movedRows],
-    };
+    });
   }
 
   /**
-   * Import a state for Grid that was exported with {{@link dehydrateGridState}}
+   * Import a state for Grid that was exported with {{@link dehydrateGridState}}.
+   * Keys missing from the state use the values in `GRID_STATE_DEFAULTS`.
    * @param model The table model to import the state for
    * @param gridState The state of the panel that was saved
    * @returns The gridState props to set on the Grid
@@ -278,7 +472,7 @@ class IrisGridUtils {
     customColumns: readonly string[] = []
   ): HydratedGridState {
     const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
-      gridState;
+      IrisGridUtils.restoreGridStateDefaults(gridState);
 
     const { columns } = model;
     const customColumnNames =
@@ -320,7 +514,8 @@ class IrisGridUtils {
    * Export the IrisGridPanel state.
    * @param model The table model the state is being dehydrated with
    * @param irisGridPanelState The current IrisGridPanel state
-   * @returns The dehydrated IrisGridPanel state
+   * @returns The dehydrated IrisGridPanel state. Values equal to
+   *   `IRIS_GRID_PANEL_STATE_DEFAULTS` are omitted.
    */
   static dehydrateIrisGridPanelState(
     model: IrisGridModel,
@@ -335,15 +530,16 @@ class IrisGridUtils {
       irisGridPanelState;
 
     // Return value will be serialized, should not contain undefined
-    return {
+    return removeIrisGridPanelStateDefaults({
       isSelectingPartition,
       partitions,
       advancedSettings: [...advancedSettings],
-    };
+    });
   }
 
   /**
    * Import the saved IrisGridPanel state.
+   * Keys missing from the state use the values in `IRIS_GRID_PANEL_STATE_DEFAULTS`.
    * @param model The model the state is being hydrated with
    * @param irisGridPanelState Exported IrisGridPanel state
    * @returns The state to apply to the IrisGridPanel
@@ -356,13 +552,15 @@ class IrisGridUtils {
     partitions: (string | null)[];
     advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
-    const { isSelectingPartition, advancedSettings } = irisGridPanelState;
+    const restoredState =
+      IrisGridUtils.restoreIrisGridPanelStateDefaults(irisGridPanelState);
+    const { isSelectingPartition, advancedSettings } = restoredState;
 
     let partitions: (string | null)[] = [];
-    if (isPanelStateV2(irisGridPanelState)) {
-      partitions = irisGridPanelState.partitions;
-    } else if (irisGridPanelState.partition != null) {
-      partitions = [irisGridPanelState.partition];
+    if (isPanelStateV2(restoredState)) {
+      partitions = restoredState.partitions;
+    } else if (restoredState.partition != null) {
+      partitions = [restoredState.partition];
     }
 
     return {
@@ -414,24 +612,27 @@ class IrisGridUtils {
    * @param  panelState The dehydrated panel state
    * @returns A dehydrated table settings object, { partition, partitionColumn, advancedFilters, quickFilters, sorts }
    */
-  static extractTableSettings<AF, QF, S>(
+  static extractTableSettings(
     panelState: {
-      irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
+      irisGridState: DehydratedIrisGridState;
       irisGridPanelState: DehydratedIrisGridPanelState;
     },
     inputFilters: InputFilter[] = []
   ): {
     partitions: unknown[];
-    advancedFilters: AF;
+    advancedFilters: FullDehydratedIrisGridState['advancedFilters'];
     inputFilters: InputFilter[];
-    quickFilters: QF;
-    sorts: S;
+    quickFilters: FullDehydratedIrisGridState['quickFilters'];
+    sorts: FullDehydratedIrisGridState['sorts'];
   } {
-    const { irisGridPanelState, irisGridState } = panelState;
+    const irisGridPanelState = IrisGridUtils.restoreIrisGridPanelStateDefaults(
+      panelState.irisGridPanelState
+    );
     const partitions = isPanelStateV2(irisGridPanelState)
       ? irisGridPanelState.partitions
       : [irisGridPanelState.partition];
-    const { advancedFilters, quickFilters, sorts } = irisGridState;
+    const { advancedFilters, quickFilters, sorts } =
+      IrisGridUtils.restoreIrisGridStateDefaults(panelState.irisGridState);
 
     return {
       advancedFilters,
@@ -1308,13 +1509,14 @@ class IrisGridUtils {
    * See IrisGridCacheUtil for memoization and comparing dehydrated states.
    * @param model The table model to export the state for
    * @param irisGridState The current state of the IrisGrid
+   * @returns The dehydrated state. Values equal to `IRIS_GRID_STATE_DEFAULTS` are omitted.
    */
   dehydrateIrisGridState(
     model: IrisGridModel,
     irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
     const {
-      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
+      aggregationSettings = DEFAULT_AGGREGATION_SETTINGS,
       advancedFilters,
       customColumnFormatMap,
       columnAlignmentMap = EMPTY_MAP,
@@ -1363,7 +1565,7 @@ class IrisGridUtils {
             .map(([columnIndex, width]) => [columns[columnIndex].name, width]);
 
     // Return value will be serialized, should not contain undefined
-    return {
+    return removeIrisGridStateDefaults({
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
       aggregationSettings,
       customColumnFormatMap: [...customColumnFormatMap],
@@ -1393,7 +1595,7 @@ class IrisGridUtils {
         partitionColumns,
         partitionConfig
       ),
-    };
+    });
   }
 
   /**
@@ -1424,7 +1626,8 @@ class IrisGridUtils {
   }
 
   /**
-   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
+   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}.
+   * Keys missing from the state use the values in `IRIS_GRID_STATE_DEFAULTS`.
    * @param model The table model to import the state with
    * @param irisGridState The saved IrisGrid state
    */
@@ -1438,9 +1641,9 @@ class IrisGridUtils {
   } {
     const {
       advancedFilters,
-      aggregationSettings = { aggregations: [], showOnTop: false },
+      aggregationSettings,
       customColumnFormatMap,
-      columnAlignmentMap = [],
+      columnAlignmentMap,
       isFilterBarShown,
       quickFilters,
       sorts,
@@ -1450,17 +1653,17 @@ class IrisGridUtils {
       userRowHeights,
       reverseType,
       reverse,
-      rollupConfig = undefined,
+      rollupConfig,
       showSearchBar,
       searchValue,
       selectDistinctColumns,
       selectedSearchColumns,
-      invertSearchColumns = true,
-      pendingDataMap = [],
+      invertSearchColumns,
+      pendingDataMap,
       frozenColumns,
       columnHeaderGroups,
       partitionConfig,
-    } = irisGridState;
+    } = IrisGridUtils.restoreIrisGridStateDefaults(irisGridState);
     const { columns, formatter } = model;
     const partitionColumns = isPartitionedGridModelProvider(model)
       ? model.partitionColumns
