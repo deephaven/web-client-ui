@@ -266,6 +266,90 @@ it('keeps the table plugin when saved custom columns drop the PluginName attribu
   expect(lastProps.children).not.toBeNull();
 });
 
+function makeCustomColumnsTable() {
+  const table = makeTable();
+  table.applyCustomColumns = jest.fn(customColumns => {
+    setTimeout(() =>
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED)
+    );
+    return customColumns;
+  });
+  return table;
+}
+
+it('passes the plugin state restored into the panel state to the plugin', async () => {
+  MockIrisGrid.mockClear();
+  const table = makeTable();
+  table.pluginName = 'TestPlugin';
+  const Plugin = jest.fn(() => null);
+  const pluginState = { filter: 'saved' };
+  const panelState = {
+    gridState: {},
+    irisGridState: { customColumns: [] },
+    irisGridPanelState: {},
+    pluginState,
+  };
+
+  render(
+    <IrisGridPanel
+      // Golden Layout restores a reopened panel's saved state into its state
+      ref={panel => panel?.setState({ panelState } as any)}
+      makeModel={makeMakeModel(table)}
+      metadata={{ table: 'table' } as any}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent() as any}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      settings={{ timeZone: 'America/New_York' } as any}
+      panelState={undefined}
+      loadPlugin={(() => Plugin) as any}
+    />
+  );
+
+  await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+  const { calls } = MockIrisGrid.mock;
+  const { children } = calls[calls.length - 1][0];
+  expect(children.props.children.props.pluginState).toBe(pluginState);
+});
+
+it('applies the saved custom columns before transformModel', async () => {
+  MockIrisGrid.mockClear();
+  const table = makeCustomColumnsTable();
+  const customColumns = ['Foo = 1'];
+  const transformModel = jest.fn(model => {
+    expect(model.customColumns).toEqual(customColumns);
+    return model;
+  });
+  const panelState = {
+    gridState: {},
+    irisGridState: { customColumns },
+    irisGridPanelState: {},
+    pluginState: null,
+  };
+
+  render(
+    <IrisGridPanel
+      makeModel={makeMakeModel(table)}
+      metadata={{ table: 'table' } as any}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent() as any}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      settings={{ timeZone: 'America/New_York' } as any}
+      panelState={panelState as any}
+      loadPlugin={() => undefined as any}
+      transformModel={transformModel}
+    />
+  );
+
+  await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+  expect(transformModel).toHaveBeenCalledTimes(1);
+  // The panel doesn't apply them again once the model is transformed
+  expect(table.applyCustomColumns).toHaveBeenCalledTimes(1);
+});
+
 it('closes the base model if transformModel rejects', async () => {
   MockIrisGrid.mockClear();
   const baseModel = TestUtils.createMockProxy<any>({ close: jest.fn() });

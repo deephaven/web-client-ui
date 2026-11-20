@@ -403,6 +403,64 @@ describe('removeSortsInColumns', () => {
   });
 });
 
+describe('removeFiltersInColumns', () => {
+  it('removes filters on removed columns and re-keys the later ones', () => {
+    const { columns } = makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    });
+    const filters = new Map([
+      [0, 'a'],
+      [2, 'b'],
+      [4, 'c'],
+    ]);
+    expect(
+      IrisGridUtils.removeFiltersInColumns(columns, filters, [
+        'name_1',
+        'name_2',
+      ])
+    ).toEqual(
+      new Map([
+        [0, 'a'],
+        [2, 'c'],
+      ])
+    );
+  });
+});
+
+describe('removeMissingColumnsFromColumnHeaderGroups', () => {
+  const columnNames = ['A', 'B', 'C'];
+  const isColumn = (name: string) => columnNames.includes(name);
+
+  it('keeps groups whose children all exist', () => {
+    const groups = [
+      { name: 'Inner', children: ['A', 'B'], color: null },
+      { name: 'Outer', children: ['Inner', 'C'], color: '#fff' },
+    ];
+    const result = IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(
+      groups,
+      isColumn
+    );
+    expect(result).toEqual(groups);
+    expect(result[0]).toBe(groups[0]);
+    expect(result[1]).toBe(groups[1]);
+  });
+
+  it('removes missing children and the groups they empty', () => {
+    const groups = [
+      { name: 'Empty', children: ['Missing'], color: null },
+      { name: 'Parent', children: ['Empty'], color: null },
+      { name: 'Partial', children: ['A', 'Missing'], color: '#fff' },
+      { name: 'Mixed', children: ['Empty', 'B'], color: null },
+    ];
+    expect(
+      IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(groups, isColumn)
+    ).toEqual([
+      { name: 'Partial', children: ['A'], color: '#fff' },
+      { name: 'Mixed', children: ['B'], color: null },
+    ]);
+  });
+});
+
 describe('getPrevVisibleColumns', () => {
   const columns = irisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex < 0', () => {
@@ -1047,6 +1105,55 @@ describe('user column widths persistence by name', () => {
     );
     expect(restored.userColumnWidthsByName.get('name_2')).toBe(0);
     expect(restored.userColumnWidths.get(2)).toBe(0);
+  });
+});
+
+describe('column header groups hydration', () => {
+  it('drops saved group children the model no longer has', () => {
+    const model = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({
+        columns: irisGridTestUtils.makeColumns(3, 'name_'),
+      })
+    );
+    const dehydrated = irisGridUtils.dehydrateIrisGridState(model, {
+      advancedFilters: new Map(),
+      aggregationSettings: { aggregations: [], showOnTop: false },
+      customColumnFormatMap: new Map(),
+      columnAlignmentMap: new Map(),
+      isFilterBarShown: false,
+      quickFilters: new Map(),
+      customColumns: [],
+      reverse: false,
+      rollupConfig: undefined,
+      showSearchBar: false,
+      searchValue: '',
+      selectDistinctColumns: [],
+      selectedSearchColumns: [],
+      sorts: [],
+      invertSearchColumns: false,
+      pendingDataMap: new Map(),
+      frozenColumns: [],
+      conditionalFormats: [],
+      columnHeaderGroups: [],
+      partitionConfig: undefined,
+      metricCalculator: new IrisGridMetricCalculator(),
+      metrics: {
+        userColumnWidths: new Map(),
+        userRowHeights: new Map(),
+      } as Partial<GridMetrics>,
+    });
+
+    const { columnHeaderGroups } = irisGridUtils.hydrateIrisGridState(model, {
+      ...dehydrated,
+      columnHeaderGroups: [
+        { name: 'Kept', children: ['name_0', 'Removed'], color: null },
+        { name: 'Gone', children: ['Removed'], color: null },
+      ],
+    });
+
+    expect(
+      columnHeaderGroups.map(({ name, children }) => ({ name, children }))
+    ).toEqual([{ name: 'Kept', children: ['name_0'] }]);
   });
 });
 

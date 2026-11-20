@@ -508,17 +508,74 @@ class IrisGridUtils {
     return sorts.filter(sort => !columnNames.includes(sort.column.name));
   }
 
+  /**
+   * Removes the filters on removed columns. Filters are keyed by model column
+   * index, so filters on the remaining columns are re-keyed to the index their
+   * column has once the removed columns are gone.
+   * @param columns The columns before the removal
+   * @param filters The filters, keyed by index in `columns`
+   * @param removedColumnNames The names of the removed columns
+   * @returns The remaining filters, keyed by their new column index
+   */
   static removeFiltersInColumns<T>(
     columns: readonly DhType.Column[],
     filters: ReadonlyMap<number, T>,
     removedColumnNames: readonly ColumnName[]
   ): Map<number, T> {
-    const columnNames = columns.map(({ name }) => name);
-    const newFilter = new Map(filters);
-    removedColumnNames.forEach(columnName =>
-      newFilter.delete(columnNames.indexOf(columnName))
-    );
-    return newFilter;
+    const remainingColumnNames = columns
+      .map(({ name }) => name)
+      .filter(name => !removedColumnNames.includes(name));
+    const newFilters = new Map<number, T>();
+    filters.forEach((filter, columnIndex) => {
+      const columnName = columns[columnIndex]?.name;
+      const newColumnIndex =
+        columnName != null ? remainingColumnNames.indexOf(columnName) : -1;
+      if (newColumnIndex >= 0) {
+        newFilters.set(newColumnIndex, filter);
+      }
+    });
+    return newFilters;
+  }
+
+  /**
+   * Removes the children of column header groups that are neither a column
+   * nor another group, and then the groups left without children.
+   * @param groups The column header groups
+   * @param isColumn Whether a child name is a column
+   * @returns The groups that still have children, with only those children
+   */
+  static removeMissingColumnsFromColumnHeaderGroups(
+    groups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[],
+    isColumn: (name: ColumnName) => boolean
+  ): (DhType.ColumnGroup | ColumnHeaderGroup)[] {
+    let result = [...groups];
+    let isChanged = true;
+    // Removing an empty group can empty its parent, so repeat until stable
+    while (isChanged) {
+      isChanged = false;
+      const groupNames = new Set(result.map(({ name }) => name));
+      const nextResult: (DhType.ColumnGroup | ColumnHeaderGroup)[] = [];
+      for (let i = 0; i < result.length; i += 1) {
+        const group = result[i];
+        const children = (group.children ?? []).filter(
+          child => groupNames.has(child) || isColumn(child)
+        );
+        if (children.length !== (group.children ?? []).length) {
+          isChanged = true;
+          if (children.length > 0) {
+            nextResult.push({
+              name: group.name,
+              children,
+              color: group.color ?? null,
+            });
+          }
+        } else {
+          nextResult.push(group);
+        }
+      }
+      result = nextResult;
+    }
+    return result;
   }
 
   static removeColumnFromMovedColumns(
@@ -1528,7 +1585,12 @@ class IrisGridUtils {
       frozenColumns,
       columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
         model,
-        columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
+        // Saved groups can name columns the model no longer has, e.g. a
+        // removed custom column or one that a select distinct drops
+        IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(
+          columnHeaderGroups ?? model.layoutHints?.columnGroups ?? [],
+          name => model.getColumnIndexByName(name) != null
+        )
       ).groups,
       partitionConfig: this.hydratePartitionConfig(
         partitionColumns,
