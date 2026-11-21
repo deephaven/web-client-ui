@@ -10,7 +10,7 @@ import React, {
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
-import './FileListItemEditor.scss';
+import './FileListItemEditor.css';
 import { type FileStorageItem } from './FileStorage';
 
 const log = Log.module('FileListItemEditor');

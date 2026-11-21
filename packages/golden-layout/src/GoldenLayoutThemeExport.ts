@@ -1,4 +1,4 @@
-import GoldenLayout from './GoldenLayout.module.scss';
+import GoldenLayout from './GoldenLayout.module.css';
 
 // parseInt for unitless values, stripping "px"
 export default Object.freeze({

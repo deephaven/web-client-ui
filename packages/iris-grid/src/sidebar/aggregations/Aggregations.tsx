@@ -23,7 +23,7 @@ import { type ModelIndex } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import AggregationOperation from './AggregationOperation';
 import AggregationUtils, { SELECTABLE_OPTIONS } from './AggregationUtils';
-import './Aggregations.scss';
+import './Aggregations.css';
 
 const log = Log.module('Aggregations');
 

@@ -10,7 +10,7 @@ import { Button } from '@deephaven/components';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
 import { type ColumnName, type InputFilter } from '@deephaven/iris-grid';
-import './ChartFilterOverlay.scss';
+import './ChartFilterOverlay.css';
 
 export type ColumnMap = Map<ColumnName, { name: string; type: string }>;
 

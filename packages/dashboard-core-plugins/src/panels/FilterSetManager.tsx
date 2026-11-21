@@ -33,7 +33,7 @@ import {
   Select,
 } from '@deephaven/components';
 
-import './FilterSetManager.scss';
+import './FilterSetManager.css';
 
 const log = Log.module('FilterSetManager');
 

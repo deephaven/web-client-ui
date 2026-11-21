@@ -11,7 +11,7 @@ import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { type Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';
-import './AggregationEdit.scss';
+import './AggregationEdit.css';
 import { type DisplayColumn } from '../../IrisGridModel';
 
 interface AggregationEditItem {

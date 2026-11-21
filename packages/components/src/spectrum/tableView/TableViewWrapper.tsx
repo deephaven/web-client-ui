@@ -11,7 +11,7 @@ import {
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import cl from 'classnames';
 import { useSpectrumThemeProvider } from '../../theme';
-import './TableViewWrapper.scss';
+import './TableViewWrapper.css';
 
 export interface TableViewWrapperProps<T> extends SpectrumTableProps<T> {
   /** Total number of logical rows represented by a windowed collection. */

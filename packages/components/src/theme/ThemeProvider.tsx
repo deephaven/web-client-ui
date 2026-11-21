@@ -16,7 +16,7 @@ import {
   getDefaultSelectedThemeKey,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
-import './theme-svg.scss';
+import './theme-svg.css';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -90,7 +90,7 @@ export function ThemeProvider({
       }
 
       // Override fill color for certain inline SVGs (the originals are provided
-      // by theme-svg.scss)
+      // by theme-svg.css)
       overrideSVGFillColors(defaultPreloadValues);
 
       const preloadStyleContent =

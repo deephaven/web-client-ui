@@ -1,6 +1,6 @@
 import type { ItemElement, StyleProps } from '@react-types/shared';
 import { ActionBar } from './spectrum';
-import commonStyles from './SpectrumComponent.module.scss';
+import commonStyles from './SpectrumComponent.module.css';
 
 // The action bar will still show the item count + a clear selection button
 // even if there are no actions. Our only consumer is currently the ACL Editor,

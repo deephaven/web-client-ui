@@ -11,7 +11,7 @@ import {
 } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import './CrossColumnSearch.scss';
+import './CrossColumnSearch.css';
 import { type ColumnName } from './CommonTypes';
 import { type DisplayColumn } from './IrisGridModel';
 

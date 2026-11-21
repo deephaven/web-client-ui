@@ -1,0 +1,19 @@
+.cell-overflow-modal {
+  .modal-title {
+    /* Title wrapper rendered by ModalHeader */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .overflow-modal-title {
+      margin: 0;
+      flex-grow: 1;
+    }
+  }
+
+  .modal-body {
+    max-height: 80vh;
+    flex-shrink: 1;
+  }
+}

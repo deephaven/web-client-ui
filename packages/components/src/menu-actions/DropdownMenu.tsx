@@ -34,7 +34,7 @@ import { type PopperOptions } from 'popper.js';
 import { Popper } from '../popper';
 import Menu, { type MenuOptions } from './Menu';
 import { type ContextAction } from '../context-actions/ContextActionUtils';
-import './DropdownMenu.scss';
+import './DropdownMenu.css';
 
 export type DropdownAction = ContextAction & { actions?: never };
 

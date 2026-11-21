@@ -22,7 +22,7 @@ import {
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import useTableColumn from './useTableColumn';
 
-import './TableInput.scss';
+import './TableInput.css';
 
 const log = Log.module('TableInput');
 

@@ -9,7 +9,7 @@ import {
   isDirectory,
 } from './FileStorage';
 import type FileStorage from './FileStorage';
-import './FileExplorer.scss';
+import './FileExplorer.css';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';
 import FileExistsError from './FileExistsError';

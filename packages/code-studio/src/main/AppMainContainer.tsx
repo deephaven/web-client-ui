@@ -98,7 +98,7 @@ import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
-import './AppMainContainer.scss';
+import './AppMainContainer.css';
 import WidgetList, { type WindowMouseEvent } from './WidgetList';
 import {
   getFormattedPluginInfo,

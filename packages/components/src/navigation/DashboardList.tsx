@@ -12,7 +12,7 @@ import { EMPTY_ARRAY } from '@deephaven/utils';
 import { Button } from '../Button';
 import SearchInput from '../SearchInput';
 import type { NavTabItem } from './NavTabList';
-import './DashboardList.scss';
+import './DashboardList.css';
 import { GLOBAL_SHORTCUTS } from '../shortcuts';
 
 export interface DashboardListProps {

@@ -1,0 +1,31 @@
+.chart-filter-overlay {
+  .chart-filter-overlay-content {
+    .waiting-filter-list {
+      margin-top: var(--dh-spacer-2);
+      margin-bottom: var(--dh-spacer-4);
+
+      .waiting-filter-item {
+        svg {
+          margin-right: var(--dh-spacer-2);
+          color: var(--dh-color-visual-green);
+        }
+
+        &.is-invalid {
+          svg {
+            color: var(--dh-color-gray-600);
+          }
+        }
+      }
+    }
+    .btn {
+      margin-bottom: var(--dh-spacer-3);
+      margin-right: var(--dh-spacer-3);
+    }
+    &.chart-filter-waiting-filter {
+      .info-message,
+      .waiting-filter-list {
+        text-align: left;
+      }
+    }
+  }
+}

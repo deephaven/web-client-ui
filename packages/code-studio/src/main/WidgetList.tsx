@@ -16,7 +16,7 @@ import {
 } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './WidgetList.scss';
+import './WidgetList.css';
 
 const MINIMUM_DRAG_DISTANCE = 10;
 

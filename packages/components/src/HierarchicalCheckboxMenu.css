@@ -1,0 +1,41 @@
+.hcm-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--dh-input-padding-x);
+  justify-content: space-between;
+  border-radius: var(--dh-border-radius);
+  border: var(--dh-input-border-width) solid var(--dh-color-input-border);
+  color: var(--dh-color-input-fg);
+  background-color: var(--dh-color-selector-bg);
+  padding: var(--dh-input-padding-y) var(--dh-input-padding-x);
+  font-weight: var(--dh-font-weight-base);
+
+  .cs-caret {
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+}
+
+.hcm-btn:focus {
+  border-color: var(--dh-color-input-focus-border);
+}
+
+.hcm-btn:hover:not(:disabled) {
+  border-color: var(--dh-color-input-hover-border);
+  color: var(--dh-color-selector-hover-fg);
+  background-color: var(--dh-color-selector-hover-bg);
+  .cs-caret {
+    background-color: var(--dh-color-selector-hover-fg);
+  }
+}
+
+.hcm-menu-container {
+  padding: var(--dh-spacer-2);
+  .hcm-parent {
+    font-weight: bold;
+  }
+  .hcm-child {
+    margin-left: var(--dh-spacer-3);
+  }
+}

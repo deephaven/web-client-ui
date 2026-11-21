@@ -8,7 +8,7 @@ import ConnectedIrisGridPanel, {
   type PanelState,
 } from './IrisGridPanel';
 import { PandasReloadButton } from './PandasReloadButton';
-import './PandasPanel.scss';
+import './PandasPanel.css';
 
 export interface PandasPanelProps extends IrisGridPanelOwnProps {
   panelState: PanelState | null;

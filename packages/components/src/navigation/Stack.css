@@ -1,0 +1,25 @@
+.navigation-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  .main-view,
+  .popping-view,
+  .pushing-view {
+    width: 100%;
+    height: 100%;
+    background: var(--dh-color-content-bg);
+    position: absolute;
+  }
+
+  .pushing-view,
+  .popping-view {
+    box-shadow: -4px 0 8px
+      color-mix(in srgb, var(--dh-color-black) 45%, transparent);
+  }
+
+  .popping-view {
+    left: 100%;
+  }
+}

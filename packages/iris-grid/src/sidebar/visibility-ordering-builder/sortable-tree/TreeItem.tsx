@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
 import type { FlattenedItem } from './types';
-import './TreeItem.scss';
+import './TreeItem.css';
 
 export interface TreeItemProps<T> {
   clone?: boolean;

@@ -1,0 +1,96 @@
+.iris-grid-bottom-bar {
+  --iris-grid-bottom-bar-height: 50px;
+  --iris-grid-bottom-bar-ease-out-bounce-back: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.275
+  );
+
+  position: absolute;
+  bottom: calc(-1 * var(--iris-grid-bottom-bar-height));
+  left: 0;
+  right: 0;
+  height: calc(var(--iris-grid-bottom-bar-height) * 2);
+  background-color: var(--dh-color-surface-bg);
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 50px;
+
+  .status-message,
+  .error-message {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-weight: 600;
+    margin-right: 1em;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: -4px;
+    user-select: none;
+    span {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .svg-inline--fa {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .error-message {
+    color: var(--dh-color-negative-bg);
+  }
+
+  .buttons-container {
+    flex-grow: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .btn {
+      min-width: 10rem;
+      .svg-inline--fa,
+      .loading-spinner {
+        margin: 0 var(--dh-spacer-1) 0 0;
+      }
+    }
+
+    .btn:not(:last-child) {
+      margin-right: 0.5em;
+    }
+  }
+}
+
+.iris-grid-bottom-bar-slide-up-enter {
+  transform: translate3d(0, 100%, 0);
+}
+
+.iris-grid-bottom-bar-slide-up-enter-active {
+  transform: initial;
+  transition: transform var(--dh-transition-long)
+    var(--iris-grid-bottom-bar-ease-out-bounce-back);
+}
+
+.iris-grid-bottom-bar-slide-up-enter-done {
+  position: relative;
+  bottom: 0;
+  padding-bottom: 0;
+  height: var(--iris-grid-bottom-bar-height);
+  transition: transform var(--dh-transition-long)
+    var(--iris-grid-bottom-bar-ease-out-bounce-back);
+}
+
+.iris-grid-bottom-bar-slide-up-exit {
+  transform: initial;
+}
+
+.iris-grid-bottom-bar-slide-up-exit-active {
+  transform: translate3d(0, 100%, 0);
+  transition: transform var(--dh-transition-long)
+    var(--iris-grid-bottom-bar-ease-out-bounce-back);
+}

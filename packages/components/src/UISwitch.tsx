@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import './UISwitch.scss';
+import './UISwitch.css';
 
 export type UISwitchProps = {
   on: boolean;

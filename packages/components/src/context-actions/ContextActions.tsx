@@ -10,7 +10,7 @@ import ContextActionUtils, {
   isPromise,
 } from './ContextActionUtils';
 import GlobalContextActions from './GlobalContextActions';
-import './ContextActions.scss';
+import './ContextActions.css';
 
 const log = Log.module('ContextActions');
 

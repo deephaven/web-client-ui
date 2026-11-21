@@ -5,7 +5,7 @@ import React, { type ReactElement } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
-import './ConsoleHistory.scss';
+import './ConsoleHistory.css';
 import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 interface ConsoleHistoryProps {

@@ -23,7 +23,7 @@ import {
   type LinkType,
 } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
-import './LinkerOverlayContent.scss';
+import './LinkerOverlayContent.css';
 import { type LinkTargetProps } from './LinkerEvent';
 
 const log = Log.module('LinkerOverlayContent');

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { ThemeExport } from '@deephaven/components';
-import './IrisGridBottomBar.scss';
+import './IrisGridBottomBar.css';
 
 export type IrisGridBottomBarProps = {
   animation?: string;

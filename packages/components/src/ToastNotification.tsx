@@ -4,7 +4,7 @@ import { CSSTransition } from 'react-transition-group';
 import { vsClose } from '@deephaven/icons';
 import Button from './Button';
 import ThemeExport from './ThemeExport';
-import './ToastNotification.scss';
+import './ToastNotification.css';
 import { FadeTransition } from './transitions';
 
 type ToastNotificationProps = {

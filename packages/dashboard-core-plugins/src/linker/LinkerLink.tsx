@@ -17,7 +17,7 @@ import {
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import './LinkerLink.scss';
+import './LinkerLink.css';
 import { type LinkType } from './LinkerUtils';
 
 const log = Log.module('LinkerLink');

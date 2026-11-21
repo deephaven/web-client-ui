@@ -2,7 +2,7 @@ import React, { useRef, useCallback, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 
-import './CommandHistoryItem.scss';
+import './CommandHistoryItem.css';
 import CommandHistoryItemTooltip from './CommandHistoryItemTooltip';
 import { type CommandHistoryStorageItem } from './CommandHistoryStorage';
 import type CommandHistoryStorage from './CommandHistoryStorage';

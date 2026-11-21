@@ -1,0 +1,38 @@
+/* stylelint-disable */
+
+:export {
+  gray-100: var(--dh-color-gray-900);
+  gray-200: var(--dh-color-gray-800);
+  gray-300: var(--dh-color-gray-700);
+  gray-400: var(--dh-color-gray-600);
+  gray-500: var(--dh-color-gray-500);
+  gray-600: var(--dh-color-gray-500);
+  gray-700: var(--dh-color-gray-400);
+  gray-800: var(--dh-color-gray-300);
+  gray-850: var(--dh-color-gray-200);
+  gray-900: var(--dh-color-gray-75);
+  black: var(--dh-color-black);
+  white: var(--dh-color-white);
+  yellow: var(--dh-color-visual-yellow);
+  green: var(--dh-color-visual-green);
+  blue: var(--dh-color-visual-blue);
+  purple: var(--dh-color-visual-purple);
+  orange: var(--dh-color-visual-orange);
+  red: var(--dh-color-visual-red);
+  primary: var(--dh-color-accent-bg);
+  primary-hover: var(--dh-color-accent-hover-bg);
+  primary-dark: var(--dh-color-accent-down-bg);
+  secondary: var(--dh-color-neutral-bg);
+  success: var(--dh-color-visual-green);
+  info: var(--dh-color-visual-yellow);
+  warning: var(--dh-color-visual-orange);
+  danger: var(--dh-color-negative-bg);
+  light: var(--dh-color-gray-light);
+  mid: var(--dh-color-gray-mid);
+  dark: var(--dh-color-gray-dark);
+  text-muted: var(--dh-color-gray-600);
+  content-bg: var(--dh-color-content-bg);
+  background: var(--dh-color-bg);
+  foreground: var(--dh-color-fg);
+  transition: var(--dh-transition);
+}

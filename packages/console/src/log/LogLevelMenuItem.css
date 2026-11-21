@@ -1,0 +1,36 @@
+.log-level-menu-item {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  height: 22px;
+  user-select: none;
+
+  .btn-switch {
+    margin-right: 0.5rem;
+  }
+}
+
+.log-level-menu-item.ERROR,
+.log-level-menu-item.FATAL,
+.log-level-menu-item.STDERR {
+  color: var(--dh-color-negative-bg);
+}
+
+.log-level-menu-item.INFO {
+  color: var(--dh-color-visual-blue);
+}
+
+.log-level-menu-item.STDOUT {
+  color: var(--dh-color-fg);
+}
+
+.log-level-menu-item.WARN {
+  color: var(--dh-color-visual-yellow);
+}
+
+.log-level-menu-item.DEBUG {
+  color: var(--dh-color-visual-purple);
+}
+
+.log-level-menu-item.TRACE {
+  color: var(--dh-color-visual-green);
+}

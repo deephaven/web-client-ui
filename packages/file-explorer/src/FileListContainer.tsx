@@ -10,7 +10,7 @@ import {
   isDirectory,
 } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
-import './FileExplorer.scss';
+import './FileExplorer.css';
 import FileUtils from './FileUtils';
 import FileListItemEditor from './FileListItemEditor';
 

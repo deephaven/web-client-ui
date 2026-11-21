@@ -7,7 +7,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { type CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isEditableGridModel, isExpandableGridModel } from '@deephaven/grid';
-import './ColumnStatistics.scss';
+import './ColumnStatistics.css';
 import { type DisplayColumn } from './IrisGridModel';
 import type IrisGridModel from './IrisGridModel';
 

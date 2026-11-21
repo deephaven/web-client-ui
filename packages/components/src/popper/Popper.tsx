@@ -22,7 +22,7 @@ import { CSSTransition } from 'react-transition-group';
 import PopperJs, { type PopperOptions, type ReferenceObject } from 'popper.js';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import ThemeExport from '../ThemeExport';
-import './Popper.scss';
+import './Popper.css';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 const POPPER_CLASS_NAME = 'popper';

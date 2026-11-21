@@ -12,7 +12,7 @@ import cl from 'classnames';
 import { useSpectrumThemeProvider } from '../../theme';
 import { Flex } from '../layout';
 import { separateSpectrumProps } from '../utils';
-import './ListViewWrapper.scss';
+import './ListViewWrapper.css';
 
 export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
   /** Handler that is called when the picker is scrolled. */

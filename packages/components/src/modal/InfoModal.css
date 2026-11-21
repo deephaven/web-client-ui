@@ -1,0 +1,21 @@
+.info-modal {
+  text-align: center;
+  padding-bottom: 18px;
+  .message-icon {
+    font-size: 120px;
+    text-align: center;
+    line-height: 1;
+    .svg-inline--fa {
+      font-size: inherit;
+    }
+  }
+  .message-header {
+    font-size: 24px;
+    .svg-inline--fa {
+      font-size: inherit;
+    }
+  }
+  .message-content {
+    font-style: italic;
+  }
+}

@@ -7,7 +7,10 @@ module.exports = withLocalConfig({
       displayName: 'eslint',
       runner: 'jest-runner-eslint',
       testMatch: ['<rootDir>/packages/*/src/**/*.{js,jsx,ts,tsx}'],
-      testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
+      testPathIgnorePatterns: [
+        '<rootDir>/packages/golden-layout/*',
+        '<rootDir>/packages/[^/]+/dist/',
+      ],
       testEnvironment: 'node',
     },
     {
@@ -15,11 +18,14 @@ module.exports = withLocalConfig({
       runner: 'jest-runner-stylelint',
       testMatch: [
         '<rootDir>/packages/*/src/**/*.css',
-        '<rootDir>/packages/*/src/**/*.scss',
-        '<rootDir>/packages/*/scss/**/*.scss',
+        '<rootDir>/packages/*/styles/**/*.css',
       ],
-      testPathIgnorePatterns: ['<rootDir>/packages/golden-layout/*'],
-      moduleFileExtensions: ['css', 'scss'],
+      testPathIgnorePatterns: [
+        '<rootDir>/packages/golden-layout/*',
+        '<rootDir>/packages/components/styles/bootstrap.css',
+        '<rootDir>/packages/[^/]+/dist/',
+      ],
+      moduleFileExtensions: ['css'],
       testEnvironment: 'node',
     },
   ],

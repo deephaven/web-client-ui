@@ -1,0 +1,144 @@
+/* The element that is currently being dragged with the mouse */
+.draggable-item-list-dragging-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 var(--dh-spacer-2);
+
+  .item-list-item-content {
+    background-color: var(--dh-color-accent-bg);
+    box-shadow: var(--dh-box-shadow);
+    border-radius: var(--dh-border-radius);
+    margin: 0 0 var(--dh-spacer-1) 0;
+    padding: var(--dh-spacer-1) var(--dh-spacer-2);
+    position: relative;
+    color: var(--dh-color-accent-contrast);
+    .btn {
+      color: var(--dh-color-accent-contrast);
+    }
+  }
+
+  &:focus {
+    outline: 0;
+  }
+
+  /* Stacked cards behind the dragged item when dragging multiple items */
+  &.two-dragged .item-list-item-content::before,
+  &.multiple-dragged .item-list-item-content::before,
+  &.multiple-dragged .item-list-item-content::after {
+    content: ' ';
+    background: var(--dh-color-accent-bg);
+    box-shadow: var(--dh-box-shadow);
+    border-radius: var(--dh-border-radius);
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 4px;
+    left: 2px;
+    opacity: 0.8;
+    z-index: -1;
+  }
+
+  &.multiple-dragged .item-list-item-content::after {
+    /* It looked weird with 8px */
+    top: 7px;
+    left: 4px;
+    opacity: 0.6;
+    z-index: -2;
+  }
+
+  .fa-grip-vertical {
+    color: var(--dh-color-gray-mid);
+  }
+
+  .title {
+    flex-grow: 1;
+  }
+
+  .number-badge {
+    padding: 0 var(--dh-spacer-2);
+    border-radius: 1rem;
+    background-color: color-mix(in srgb, var(--dh-color-fg) 25%, transparent);
+    margin-right: var(--dh-spacer-1);
+  }
+}
+
+.draggable-item-list {
+  --draggable-item-hover-bg: var(--dh-color-item-list-hover-bg);
+  --draggable-item-border: var(--dh-input-border-width) solid transparent;
+  .item-list-item {
+    padding: 0;
+    display: flex;
+
+    .draggable-item-list-item {
+      display: flex;
+      flex-grow: 1;
+      flex-direction: row;
+      outline: none;
+    }
+
+    .item-list-item-content {
+      border-radius: var(--dh-border-radius);
+      margin: 0 var(--dh-spacer-2) 1px var(--dh-spacer-2);
+      padding: calc(var(--dh-spacer-1) * 0.5) var(--dh-spacer-1) 0
+        var(--dh-spacer-2);
+      border: var(--draggable-item-border);
+      line-height: var(--dh-input-line-height);
+
+      &:hover {
+        background-color: var(--draggable-item-hover-bg);
+      }
+    }
+
+    &.keyboard-active {
+      .item-list-item-content {
+        background-color: transparent;
+
+        &:hover {
+          background-color: var(--draggable-item-hover-bg);
+        }
+      }
+    }
+
+    &.active {
+      /* stylelint-disable-next-line no-descending-specificity */
+      .item-list-item-content {
+        background-color: var(--dh-color-item-list-selected-bg);
+
+        &:hover {
+          background-color: var(--dh-color-item-list-selected-hover-bg);
+        }
+      }
+    }
+  }
+
+  &.is-dragging-from-this,
+  &.is-dragging-over {
+    .item-list-item {
+      .draggable-item-list-item {
+        &:focus {
+          .item-list-item-content {
+            outline: 0;
+            border: var(--draggable-item-border);
+            box-shadow: none;
+          }
+        }
+        .item-list-item-content:hover {
+          background-color: transparent;
+        }
+      }
+    }
+
+    .item-list-item.active {
+      .draggable-item-list-item {
+        .item-list-item-content {
+          background-color: var(--dh-color-item-list-selected-bg);
+        }
+      }
+    }
+  }
+}
+
+.draggable-item-list-dragging-item-container:focus {
+  outline: 0;
+}

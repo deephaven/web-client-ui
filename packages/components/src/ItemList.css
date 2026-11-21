@@ -1,0 +1,11 @@
+.item-list-scroll-pane {
+  /* no point in padding, it will be ignored by list scrollToItem(last) */
+  border: 1px solid var(--dh-color-input-border);
+  border-radius: var(--dh-border-radius);
+  &:focus {
+    outline: none;
+  }
+  .item-list-inner-element {
+    position: relative;
+  }
+}

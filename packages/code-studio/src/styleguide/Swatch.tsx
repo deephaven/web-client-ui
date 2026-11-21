@@ -11,9 +11,9 @@ export interface SwatchProps {
 export function Swatch({ className, children }: SwatchProps): JSX.Element {
   const ref = useContrastFgColorRef<HTMLDivElement>();
 
-  // The `swatch-color` mixin parses and exposes the value of css var expressions
-  // via a :after { content } selector. The value will be surrounded in double
-  // quotes e.g.
+  // The swatch classes in StyleGuide.css expose the css var expression each
+  // swatch renders via a :after { content } selector. The value will be
+  // surrounded in double quotes e.g.
   // var(--dh-color-red-500) is exposed as "--dh-color-red-500"
   // var(--dh-color-gray-900, #fcfcfa) is exposed as "--dh-color-gray-900, #fcfcfa"
   const dhColor = useDhColorFromPseudoContent(ref, ':after');

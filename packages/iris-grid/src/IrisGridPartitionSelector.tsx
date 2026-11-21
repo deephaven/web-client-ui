@@ -8,7 +8,7 @@ import { Picker } from '@deephaven/jsapi-components';
 import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
-import './IrisGridPartitionSelector.scss';
+import './IrisGridPartitionSelector.css';
 import {
   type PartitionConfig,
   type PartitionedGridModel,

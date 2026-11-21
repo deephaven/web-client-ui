@@ -25,6 +25,7 @@ function makeItemList({
   onSelect = jest.fn(),
   onSelectionChange = jest.fn(),
   onViewportChange = jest.fn(),
+  scrollPaneClassName = undefined as string | undefined,
 } = {}) {
   return render(
     <ItemList
@@ -37,12 +38,20 @@ function makeItemList({
       onSelect={onSelect}
       onSelectionChange={onSelectionChange}
       onViewportChange={onViewportChange}
+      scrollPaneClassName={scrollPaneClassName}
     />
   );
 }
 
 it('mounts and unmounts properly', () => {
   makeItemList();
+});
+
+it('adds scrollPaneClassName to the scroll pane', () => {
+  const { container } = makeItemList({ scrollPaneClassName: 'test-class' });
+  expect(container.querySelector('.item-list-scroll-pane')).toHaveClass(
+    'test-class'
+  );
 });
 
 describe('mouse', () => {

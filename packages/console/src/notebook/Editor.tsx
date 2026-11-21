@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
-import './Editor.scss';
+import './Editor.css';
 
 export interface EditorProps {
   className: string;

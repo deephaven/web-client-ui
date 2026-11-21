@@ -11,7 +11,7 @@ import {
   vsTrash,
 } from '@deephaven/icons';
 import type ColumnHeaderGroup from '../../ColumnHeaderGroup';
-import './VisibilityOrderingGroup.scss';
+import './VisibilityOrderingGroup.css';
 
 interface VisibilityOrderingGroupProps {
   group: ColumnHeaderGroup;

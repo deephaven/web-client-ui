@@ -63,7 +63,7 @@ import ChartFilterOverlay, { type ColumnMap } from './ChartFilterOverlay';
 import ChartColumnSelectorOverlay, {
   type SelectorColumn,
 } from './ChartColumnSelectorOverlay';
-import './ChartPanel.scss';
+import './ChartPanel.css';
 import { type Link, type LinkFilterMap } from '../linker/LinkerUtils';
 import { type PanelState as IrisGridPanelState } from './IrisGridPanel';
 import {

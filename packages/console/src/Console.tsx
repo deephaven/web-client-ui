@@ -29,7 +29,7 @@ import LogLevel from './log/LogLevel';
 import ConsoleInput from './ConsoleInput';
 import CsvOverlay from './csv/CsvOverlay';
 import CsvInputBar from './csv/CsvInputBar';
-import './Console.scss';
+import './Console.css';
 import ConsoleStatusBar from './ConsoleStatusBar';
 import {
   type CommandHistoryStorage,

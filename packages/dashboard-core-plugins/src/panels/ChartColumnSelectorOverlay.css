@@ -1,0 +1,13 @@
+.chart-column-selector-overlay {
+  .chart-panel-overlay-content {
+    .waiting-column-select-list {
+      margin-top: var(--dh-spacer-2);
+      margin-bottom: var(--dh-spacer-4);
+
+      .btn-chart-column-selector {
+        margin-bottom: var(--dh-spacer-3);
+        margin-right: var(--dh-spacer-3);
+      }
+    }
+  }
+}

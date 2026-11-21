@@ -13,8 +13,8 @@ import TimeInput, {
   type SelectionSegment,
   type TimeInputElement,
 } from './TimeInput';
-import StyleExports from './TimeSlider.module.scss';
-import './TimeSlider.scss';
+import StyleExports from './TimeSlider.module.css';
+import './TimeSlider.css';
 
 const HANDLE_SIZE = parseInt(StyleExports['handle-size'], 10);
 const POPOVER_WIDTH = parseInt(StyleExports['popover-width'], 10);

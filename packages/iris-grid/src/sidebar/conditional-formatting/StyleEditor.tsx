@@ -18,7 +18,7 @@ import {
   getColorForStyleConfig,
 } from './ConditionalFormattingUtils';
 
-import './StyleEditor.scss';
+import './StyleEditor.css';
 
 const log = Log.module('StyleEditor');
 

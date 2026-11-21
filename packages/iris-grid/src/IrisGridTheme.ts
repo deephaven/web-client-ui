@@ -10,7 +10,7 @@ import {
   type NullableGridColor,
 } from '@deephaven/grid/src/GridTheme';
 import { ColorUtils } from '@deephaven/utils';
-import IrisGridThemeRaw from './IrisGridTheme.module.scss';
+import IrisGridThemeRaw from './IrisGridTheme.module.css';
 
 const log = Log.module('IrisGridTheme');
 

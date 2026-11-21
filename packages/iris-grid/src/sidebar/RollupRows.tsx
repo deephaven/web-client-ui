@@ -30,7 +30,7 @@ import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import './RollupRows.scss';
+import './RollupRows.css';
 import type { dh } from '@deephaven/jsapi-types';
 import type IrisGridModel from '../IrisGridModel';
 import { type ColumnName } from '../CommonTypes';
@@ -514,6 +514,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
                 {(provided, snapshot) => (
                   <div
                     className={classNames('placeholder', 'text-muted', {
+                      'dh-marching-ants': dragSource != null,
                       'is-dragging-from-this': snapshot.draggingFromThisWith,
                       'is-dragging-over': snapshot.isDraggingOver,
                       'is-dropping': snapshot.draggingOverWith,
@@ -532,6 +533,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
               <DraggableItemList
                 draggingItemClassName="rollup-rows-dragging-grouped-item"
                 draggablePrefix={GROUPED_LIST_ID}
+                isDropTarget={dragSource != null}
                 droppableId={GROUPED_LIST_ID}
                 itemCount={columns.length}
                 items={columns}
@@ -587,6 +589,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
             <DraggableItemList
               className="rollup-available-grouping-columns"
               draggablePrefix={UNGROUPED_LIST_ID}
+              isDropTarget={
+                dragSource != null &&
+                dragSource.droppableId !== UNGROUPED_LIST_ID
+              }
               droppableId={UNGROUPED_LIST_ID}
               itemCount={ungroupedColumns.length}
               items={ungroupedColumns}

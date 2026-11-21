@@ -1,6 +1,6 @@
 import React from 'react';
 import { RandomAreaPlotAnimation } from '@deephaven/components';
-import './Login.scss';
+import './Login.css';
 
 interface LoginProps {
   /** What to show in the login input part of the login form. */

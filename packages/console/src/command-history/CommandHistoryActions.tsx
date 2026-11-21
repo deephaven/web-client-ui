@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsArrowLeft, vsCircleLargeFilled } from '@deephaven/icons';
-import './CommandHistoryActions.scss';
+import './CommandHistoryActions.css';
 import { type HistoryAction } from './CommandHistoryTypes';
 
 interface CommandHistoryActionsProps {

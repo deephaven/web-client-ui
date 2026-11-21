@@ -22,23 +22,11 @@
       "cache": true
     },
     "build:babel": {
-      "inputs": [
-        "build",
-        "!{projectRoot}/**/*.scss",
-        "{workspaceRoot}/babel.config.js"
-      ],
+      "inputs": ["build", "{workspaceRoot}/babel.config.js"],
       "outputs": [
         "{projectRoot}/dist/**/*.js",
-        "{projectRoot}/dist/**/*.js.map"
-      ],
-      "cache": true
-    },
-    "build:sass": {
-      "inputs": ["{projectRoot}/**/*.scss"],
-      "outputs": [
-        "{projectRoot}/css",
-        "{projectRoot}/dist/**/*.css",
-        "{projectRoot}/dist/**/*.css.map"
+        "{projectRoot}/dist/**/*.js.map",
+        "{projectRoot}/dist/**/*.css"
       ],
       "cache": true
     },

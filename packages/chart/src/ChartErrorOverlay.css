@@ -1,0 +1,12 @@
+.chart-error-overlay {
+  .chart-error-overlay-content {
+    .btn {
+      margin-top: var(--dh-spacer-3);
+      margin-right: var(--dh-spacer-3);
+    }
+    .info-message,
+    .waiting-filter-list {
+      text-align: left;
+    }
+  }
+}

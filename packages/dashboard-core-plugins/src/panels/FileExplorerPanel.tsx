@@ -15,7 +15,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import Panel from './CorePanel';
 import { NotebookEvent } from '../events';
 import { type CoreConsoleSession } from '../ConsoleEvents';
-import './FileExplorerPanel.scss';
+import './FileExplorerPanel.css';
 import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('FileExplorerPanel');

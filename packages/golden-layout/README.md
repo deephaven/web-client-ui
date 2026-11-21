@@ -9,7 +9,7 @@ This is a fork of [https://golden-layout.com/](https://golden-layout.com/) from 
 
 ## Build
 
-`npm run build` converts SCSS to `src/css` and combines the JS files into the `dist/` folder.
+`npm run build` compiles the JS files into the `dist/` folder. Stylesheets are published as written in `styles/`.
 
 ## Development
 
