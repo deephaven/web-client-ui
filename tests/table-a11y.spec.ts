@@ -21,11 +21,11 @@ const ATTRIBUTES = {
 type Rect = { x: number; y: number; width: number; height: number };
 
 async function getRect(locator: Locator): Promise<Rect> {
-  const [x, y, width, height] = (
-    (await locator.getAttribute(ATTRIBUTES.rect)) ?? ''
-  )
-    .split(',')
-    .map(Number);
+  const value = await locator.getAttribute(ATTRIBUTES.rect);
+  const [x, y, width, height] = (value ?? '').split(',').map(Number);
+  if (![x, y, width, height].every(Number.isFinite)) {
+    throw new Error(`Invalid ${ATTRIBUTES.rect} "${value}" on ${locator}`);
+  }
   return { x, y, width, height };
 }
 
@@ -326,12 +326,14 @@ test('reports column headers where they are painted when the filter bar is shown
   );
 
   // The filter bar is drawn between the headers and the cells, pushing only the cells down
+  let cellAfter = cellBefore;
   await expect
-    .poll(async () => (await getRect(cell)).y)
+    .poll(async () => {
+      cellAfter = await getRect(cell);
+      return cellAfter.y;
+    })
     .toBeGreaterThan(cellBefore.y);
   const headerAfter = await getRect(header);
   expect(headerAfter).toEqual(headerBefore);
-  expect(headerAfter.y + headerAfter.height).toBeLessThan(
-    (await getRect(cell)).y
-  );
+  expect(headerAfter.y + headerAfter.height).toBeLessThan(cellAfter.y);
 });
