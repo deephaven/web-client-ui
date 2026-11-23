@@ -37,23 +37,29 @@ Columns and rows are addressed by _visible_ index, i.e. what is currently on
 screen. Anything outside of the viewport is not addressable, so scroll it into
 view first.
 
+Column header groups are addressed by name, and optionally by `depth`, which is
+1 for the row of groups directly above the bottom level headers.
+
 Each helper turns the grid's accessibility snapshot on before it reads. Once on,
 the grid keeps the snapshot in sync with the viewport, so a helper never reports
 a viewport the grid has already scrolled away from.
 
 ## API
 
-| Function                                    | Description                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------ |
-| `waitForGrid(grid)`                         | Wait until the grid has rendered and its contents can be read      |
-| `getGridDescription(grid)`                  | The grid's description of its size, selection, and viewport        |
-| `getColumnHeaderNames(grid)`                | The text of every column header in the viewport                    |
-| `getVisibleRows(grid)`                      | The visible row indexes in the viewport                            |
-| `getCellText(grid, column, row)`            | The text rendered in a cell                                        |
-| `getCellRect(grid, column, row)`            | The bounds of a cell, relative to the top left of the canvas       |
-| `getCellLocation(grid, column, row)`        | The centre of a cell in page coordinates, for `page.mouse` actions |
-| `clickCell(grid, column, row, options?)`    | Click the centre of a cell                                         |
-| `getColumnHeaderText(grid, column)`         | The text of a column header                                        |
-| `clickColumnHeader(grid, column, options?)` | Click the centre of a column header                                |
-| `expectCellText(grid, column, row, text)`   | Assert a cell's text, retrying until it matches                    |
-| `expectColumnHeaderNames(grid, names)`      | Assert the visible column headers, retrying until they match       |
+| Function                                         | Description                                                                 |
+| ------------------------------------------------ | --------------------------------------------------------------------------- |
+| `waitForGrid(grid)`                              | Wait until the grid has rendered and its contents can be read               |
+| `getGridDescription(grid)`                       | The grid's description of its size, selection, and viewport                 |
+| `getColumnHeaderNames(grid)`                     | The text of every bottom level column header in the viewport                |
+| `getColumnHeaderGroupNames(grid, options?)`      | The text of every column header group in the viewport, top to bottom        |
+| `getColumnHeaderGroupRect(grid, name, options?)` | The bounds of a column header group, relative to the top left of the canvas |
+| `clickColumnHeaderGroup(grid, name, options?)`   | Click the centre of a column header group                                   |
+| `getVisibleRows(grid)`                           | The visible row indexes in the viewport                                     |
+| `getCellText(grid, column, row)`                 | The text rendered in a cell                                                 |
+| `getCellRect(grid, column, row)`                 | The bounds of a cell, relative to the top left of the canvas                |
+| `getCellLocation(grid, column, row)`             | The centre of a cell in page coordinates, for `page.mouse` actions          |
+| `clickCell(grid, column, row, options?)`         | Click the centre of a cell                                                  |
+| `getColumnHeaderText(grid, column)`              | The text of a column header                                                 |
+| `clickColumnHeader(grid, column, options?)`      | Click the centre of a column header                                         |
+| `expectCellText(grid, column, row, text)`        | Assert a cell's text, retrying until it matches                             |
+| `expectColumnHeaderNames(grid, names)`           | Assert the visible column headers, retrying until they match                |
