@@ -287,6 +287,30 @@ function getColumnGroups(
 ): GridA11yColumnGroupSnapshot[] {
   const groups: GridA11yColumnGroupSnapshot[] = [];
   const runs: GridA11yHeaderColumn[][] = [];
+  // Hidden columns are left out of the snapshot but are still walked by the
+  // renderer, so a hidden column from another group splits the boxes either side
+  const isSameGroupThrough = (
+    from: VisibleIndex,
+    to: VisibleIndex
+  ): boolean => {
+    for (let column = from; column < to; column += 1) {
+      const modelColumn = metrics.modelColumns.get(column);
+      const nextModelColumn = metrics.modelColumns.get(column + 1);
+      if (
+        modelColumn == null ||
+        nextModelColumn == null ||
+        !GridUtils.isSameColumnGroupAtDepth(
+          model,
+          depth,
+          modelColumn,
+          nextModelColumn
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
   headerColumns.forEach(headerColumn => {
     const run = runs.at(-1);
     const prev = run?.at(-1);
@@ -296,12 +320,7 @@ function getColumnGroups(
       run != null &&
       prev != null &&
       prev.isFloating === headerColumn.isFloating &&
-      GridUtils.isSameColumnGroupAtDepth(
-        model,
-        depth,
-        prev.modelColumn,
-        headerColumn.modelColumn
-      )
+      isSameGroupThrough(prev.column, headerColumn.column)
     ) {
       run.push(headerColumn);
     } else {

@@ -1,4 +1,4 @@
-/* eslint class-methods-use-this: "off" */
+/* eslint class-methods-use-this: "off", max-classes-per-file: "off" */
 import { type IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { createGridA11ySnapshot, getGridA11ySummary } from './GridA11yUtils';
 import type GridMetrics from './GridMetrics';
@@ -62,18 +62,30 @@ class GroupedGridModel extends GridModel {
   }
 
   textForColumnHeader(column: ModelIndex, depth = 0): string | undefined {
-    return depth === 0
-      ? `${column}`
-      : this.getColumnHeaderGroup(column, depth)?.name;
+    return depth === 0 ? `${column}` : this.findGroup(column, depth)?.name;
   }
 
   getColumnHeaderGroup(
     modelIndex: ModelIndex,
     depth: number
   ): IColumnHeaderGroup | undefined {
+    return this.findGroup(modelIndex, depth);
+  }
+
+  protected findGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
     return this.groups.find(
       group => group.depth === depth && group.children.includes(modelIndex)
     );
+  }
+}
+
+/** Groups columns by header text alone, like models without group objects */
+class TextGroupedGridModel extends GroupedGridModel {
+  getColumnHeaderGroup(): IColumnHeaderGroup | undefined {
+    return undefined;
   }
 }
 
@@ -885,6 +897,29 @@ describe('createGridA11ySnapshot column header groups', () => {
       width: COLUMN_WIDTH * 1.5,
       height: HEADER_HEIGHT,
     });
+  });
+
+  it('keeps groups with the same text apart when a hidden column of another group is between them', () => {
+    const model = new TextGroupedGridModel([
+      { name: 'A', depth: 1, children: [0] },
+      { name: 'B', depth: 1, children: [1] },
+      { name: 'A', depth: 1, children: [2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ hiddenColumns: [1], columnHeaderMaxDepth: 2 })
+    );
+
+    expect(
+      snapshot.columnGroups[0].groups.map(({ text, startColumn, span }) => ({
+        text,
+        startColumn,
+        span,
+      }))
+    ).toEqual([
+      { text: 'A', startColumn: 0, span: 1 },
+      { text: 'A', startColumn: 2, span: 1 },
+    ]);
   });
 
   it('leaves out columns collapsed to nothing on screen', () => {
