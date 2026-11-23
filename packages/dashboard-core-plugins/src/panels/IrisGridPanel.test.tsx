@@ -6,6 +6,7 @@ import {
   IrisGridMetricCalculator,
   IrisGridModel,
   IrisGridModelFactory,
+  IrisGridUtils,
 } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
@@ -694,7 +695,8 @@ describe('cancelling and reconnecting during hydration', () => {
    * setters it receives and reacts to each through `onSet`.
    */
   function makeTransformedModel(
-    onSet: (name: string, model: IrisGridModel) => void
+    onSet: (name: string, model: IrisGridModel) => void,
+    values: Record<string, unknown> = {}
   ) {
     const target = new EventTarget();
     const model = {
@@ -706,6 +708,7 @@ describe('cancelling and reconnecting during hydration', () => {
     } as any;
     ['rollupConfig', 'selectDistinctColumns'].forEach(name => {
       Object.defineProperty(model, name, {
+        get: () => values[name],
         set: () => onSet(name, model),
       });
     });
@@ -753,6 +756,32 @@ describe('cancelling and reconnecting during hydration', () => {
         'selectDistinctColumns',
       ])
     );
+  });
+
+  it('skips rollup and select distinct the transform already restored', async () => {
+    const { table, fireCustomColumnsChanged } = makePendingCustomColumnsTable();
+    const { makeModel } = makeTrackedMakeModel([table]);
+    // Setters that ignore an equal value never emit COLUMNS_CHANGED
+    const onSet = jest.fn();
+    const transformed = makeTransformedModel(onSet, {
+      rollupConfig: IrisGridUtils.getModelRollupConfig(
+        [],
+        rollupState.rollupConfig as any,
+        rollupState.aggregationSettings as any
+      ),
+      selectDistinctColumns: [...rollupState.selectDistinctColumns],
+    });
+    renderPanel({
+      makeModel,
+      transformModel: () => transformed,
+      irisGridState: rollupState,
+    });
+    await waitFor(() => expect(table.applyCustomColumns).toHaveBeenCalled());
+
+    act(() => fireCustomColumnsChanged());
+
+    await waitFor(() => expect(lastRenderedModel()).toBe(transformed));
+    expect(onSet).not.toHaveBeenCalled();
   });
 
   it('shows a load error and closes the transformed model if the rollup fails', async () => {

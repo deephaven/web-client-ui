@@ -7,6 +7,7 @@ import React, {
   type RefObject,
 } from 'react';
 import memoize from 'memoize-one';
+import deepEqual from 'fast-deep-equal';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import {
@@ -716,16 +717,24 @@ export class IrisGridPanel extends PureComponent<
         irisGridState.rollupConfig.columns.length > 0
       ) {
         const { rollupConfig, aggregationSettings } = irisGridState;
-        await applyAndWaitForColumns(model, run, () => {
-          model.rollupConfig = IrisGridUtils.getModelRollupConfig(
-            model.originalColumns,
-            rollupConfig,
-            aggregationSettings
-          );
-        });
+        const modelRollupConfig = IrisGridUtils.getModelRollupConfig(
+          model.originalColumns,
+          rollupConfig,
+          aggregationSettings
+        );
+        // Setters ignore an equal value without emitting COLUMNS_CHANGED, e.g.
+        // when the transform already restored the same rollup
+        if (!deepEqual(model.rollupConfig, modelRollupConfig)) {
+          await applyAndWaitForColumns(model, run, () => {
+            model.rollupConfig = modelRollupConfig;
+          });
+        }
       }
 
-      if (selectDistinctColumns.length > 0) {
+      if (
+        selectDistinctColumns.length > 0 &&
+        !deepEqual(model.selectDistinctColumns, selectDistinctColumns)
+      ) {
         await applyAndWaitForColumns(model, run, () => {
           model.selectDistinctColumns = selectDistinctColumns;
         });
