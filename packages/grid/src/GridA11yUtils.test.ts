@@ -87,7 +87,7 @@ class GroupedGridModel extends GridModel {
  * were scrolled so nothing is hidden underneath them, until `leftOffset` or
  * `topOffset` scrolls them back under.
  * `barHeight` adds a bar between the column headers and the grid content, like
- * the IrisGrid filter bar.
+ * the IrisGrid filter bar. `columnWidths` overrides the width of any column.
  */
 function makeMetrics({
   columns = [0, 1, 2],
@@ -104,12 +104,13 @@ function makeMetrics({
   horizontalBarHeight = 0,
   columnHeaderMaxDepth = 1,
   barHeight = 0,
+  columnWidths = {} as Record<number, number>,
 } = {}): GridMetrics {
   const allColumnWidths = new Map<number, number>();
   const allColumnXs = new Map<number, number>();
   const modelColumns = new Map<number, number>();
   const widthOf = (column: number): number =>
-    hiddenColumns.includes(column) ? 0 : COLUMN_WIDTH;
+    hiddenColumns.includes(column) ? 0 : columnWidths[column] ?? COLUMN_WIDTH;
   const setColumn = (column: number, columnX: number): void => {
     allColumnWidths.set(column, widthOf(column));
     allColumnXs.set(column, columnX);
@@ -177,6 +178,7 @@ function makeMetrics({
     visibleRows: rows,
     floatingColumns: [...floatingLeftColumns, ...floatingRightColumns],
     floatingRows: [...floatingTopRows, ...floatingBottomRows],
+    floatingLeftColumnCount: floatingLeftColumns.length,
     allColumnWidths,
     allColumnXs,
     allRowHeights,
@@ -821,6 +823,45 @@ describe('createGridA11ySnapshot column header groups', () => {
           height: HEADER_HEIGHT,
         },
       }),
+    ]);
+  });
+
+  it('keeps frozen and scrolling groups whole when a scrolling column runs under the frozen columns', () => {
+    const model = new GroupedGridModel(
+      [
+        { name: 'Frozen', depth: 1, children: [0, 1] },
+        { name: 'Scrolling', depth: 1, children: [2, 3] },
+      ],
+      10
+    );
+    // Column 2 starts left of frozen column 1, but is only visible right of the frozen pane
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [2, 3],
+        floatingLeftColumns: [0, 1],
+        columnWidths: { 2: 3 * COLUMN_WIDTH },
+        leftOffset: 1.5 * COLUMN_WIDTH,
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([0, 1, 2, 3]);
+    expect(
+      snapshot.columnGroups[0].groups.map(({ text, span, rect }) => ({
+        text,
+        span,
+        x: rect.x,
+        width: rect.width,
+      }))
+    ).toEqual([
+      { text: 'Frozen', span: 2, x: ROW_HEADER_WIDTH, width: 2 * COLUMN_WIDTH },
+      {
+        text: 'Scrolling',
+        span: 2,
+        x: ROW_HEADER_WIDTH + 2 * COLUMN_WIDTH,
+        width: 2.5 * COLUMN_WIDTH,
+      },
     ]);
   });
 

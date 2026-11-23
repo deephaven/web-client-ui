@@ -431,12 +431,21 @@ export function createGridA11ySnapshot(
   // Floating columns/rows are pinned to the edges of the grid and can also
   // appear in the visible ranges, so dedupe them and describe everything in
   // the order it appears on screen
+  // Scrolling columns slide underneath the frozen left columns, so x alone
+  // would interleave the two; order by pane first, as they are painted
+  const getColumnPane = (column: VisibleIndex): number => {
+    if (!floatingColumns.has(column)) {
+      return 1;
+    }
+    return column < metrics.floatingLeftColumnCount ? 0 : 2;
+  };
   const snapshotColumns = [
     ...new Set([...metrics.floatingColumns, ...metrics.visibleColumns]),
   ]
     .filter(column => !isHiddenColumn(column))
     .sort(
       (a, b) =>
+        getColumnPane(a) - getColumnPane(b) ||
         (metrics.allColumnXs.get(a) ?? 0) - (metrics.allColumnXs.get(b) ?? 0)
     );
 

@@ -293,7 +293,7 @@ it('describes column header groups above the bottom level headers', async () => 
   ).toEqual(['0', '1', '2']);
 
   const all = screen.getByText('All');
-  expect(all).toHaveAttribute('scope', 'colgroup');
+  expect(all).toHaveAttribute('scope', 'col');
   expect(all).toHaveAttribute('colspan', '3');
   expect(all).toHaveAttribute('data-grid-header-group', 'All');
   expect(all).toHaveAttribute('data-grid-depth', '2');

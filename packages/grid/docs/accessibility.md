@@ -85,13 +85,13 @@ Rows and columns that are collapsed to nothing on screen are left out. The botto
 
 ## Column header groups
 
-For a grid with column groups, each group depth gets its own row in the `<thead>`, above the bottom level headers and ordered top to bottom as on screen. Each group is a `<th scope="colgroup">` spanning the columns it covers, and columns without a group at that depth are filled with an empty `<td>` so the groups line up with their columns. Depths with no groups in the viewport are left out, but `aria-rowindex` always counts every header row, so row numbers are stable as the grid scrolls.
+For a grid with column groups, each group depth gets its own row in the `<thead>`, above the bottom level headers and ordered top to bottom as on screen. Each group is a `<th scope="col">` with a `colspan` covering its columns, which makes it a header for every column it spans. `scope="colgroup"` is not used, as it only applies inside `<colgroup>` elements, and group boundaries differ at each depth. Columns without a group at that depth are filled with an empty `<td>` so the groups line up with their columns. Depths with no groups in the viewport are left out, but `aria-rowindex` always counts every header row, so row numbers are stable as the grid scrolls.
 
 ```html
 <thead>
   <tr aria-rowindex="1">
     <th
-      scope="colgroup"
+      scope="col"
       colspan="3"
       aria-colindex="1"
       data-grid-column="0"
@@ -105,7 +105,7 @@ For a grid with column groups, each group depth gets its own row in the `<thead>
   <tr aria-rowindex="2">
     <td colspan="1"></td>
     <th
-      scope="colgroup"
+      scope="col"
       colspan="2"
       aria-colindex="2"
       data-grid-column="1"

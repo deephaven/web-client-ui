@@ -106,7 +106,7 @@ export function GridA11yFallback({
                   cells.push(
                     <th
                       key={startColumn}
-                      scope="colgroup"
+                      scope="col"
                       colSpan={span}
                       aria-colindex={startColumn + 1}
                       {...{
