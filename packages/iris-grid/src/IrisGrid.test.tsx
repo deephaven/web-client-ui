@@ -841,6 +841,9 @@ describe('setAdvancedFilter', () => {
     const table = irisGridTestUtils.makeTable();
     const applyFilter = jest.spyOn(table, 'applyFilter');
     const component = makeComponent(irisGridTestUtils.makeModel(table));
+    act(() => {
+      component.setState({ hoverAdvancedFilter: 0 });
+    });
     const callsBefore = applyFilter.mock.calls.length;
     const filter = irisGridTestUtils
       .makeColumn()
@@ -862,6 +865,8 @@ describe('setAdvancedFilter', () => {
       });
     });
 
+    // Confirms the deferred update was flushed, so the updater replay happened
+    expect(component.state.hoverAdvancedFilter).toBeNull();
     expect(applyFilter.mock.calls.length - callsBefore).toBe(1);
   });
 });
