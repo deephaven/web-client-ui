@@ -32,6 +32,7 @@ function makeSnapshot(iterator: unknown): DhType.SubscriptionTableData {
   return TestUtils.createMockProxy<DhType.SubscriptionTableData>({
     added: TestUtils.createMockProxy<DhType.RangeSet>({
       iterator: () => iterator as ReturnType<DhType.RangeSet['iterator']>,
+      size: ROWS.length,
     }),
     getData: jest.fn(
       (row: unknown, column: DhType.Column) => `${row}-${column.name}`
@@ -39,21 +40,43 @@ function makeSnapshot(iterator: unknown): DhType.SubscriptionTableData {
   });
 }
 
+/**
+ * Mirrors JS API iterators that report `done` as whether more values remain
+ * after the returned one, instead of whether the iterator is exhausted.
+ */
+function makeInvertedDoneIterator(): { next: () => IteratorResult<number> } {
+  let index = 0;
+  return {
+    next: () => {
+      const value = ROWS[index];
+      index += 1;
+      return { value, done: index < ROWS.length } as IteratorResult<number>;
+    },
+  };
+}
+
 describe('convertSnapshotIntoCsv', () => {
-  it('reads rows from an iterator with hasNext', () => {
-    let index = 0;
-    // Older JS API iterators report `done` incorrectly, so only `hasNext` can be trusted
-    const iterator = {
-      hasNext: () => index < ROWS.length,
+  it('reads rows from an iterator with hasNext that reports done incorrectly', () => {
+    const iterator = makeInvertedDoneIterator();
+    let remaining = ROWS.length;
+    const legacyIterator = {
+      hasNext: () => remaining > 0,
       next: () => {
-        const value = ROWS[index];
-        index += 1;
-        return { value, done: index < ROWS.length };
+        remaining -= 1;
+        return iterator.next();
       },
     };
 
     expect(
-      makeTableSaver().convertSnapshotIntoCsv(makeSnapshot(iterator))
+      makeTableSaver().convertSnapshotIntoCsv(makeSnapshot(legacyIterator))
+    ).toBe(EXPECTED_CSV);
+  });
+
+  it('reads rows from an iterator without hasNext that reports done incorrectly', () => {
+    expect(
+      makeTableSaver().convertSnapshotIntoCsv(
+        makeSnapshot(makeInvertedDoneIterator())
+      )
     ).toBe(EXPECTED_CSV);
   });
 

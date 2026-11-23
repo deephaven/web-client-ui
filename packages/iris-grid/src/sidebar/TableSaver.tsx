@@ -502,21 +502,11 @@ export default class TableSaver extends PureComponent<
     const snapshotIterator = snapshot.added.iterator();
     const { dh, formatter } = this.props;
 
-    // Older JS API iterators expose `hasNext` and don't report `done` correctly,
-    // newer ones are standard JS iterators without `hasNext`.
+    // Bounded by size rather than `hasNext` or `done`: newer JS API iterators
+    // don't expose `hasNext`, and some JS API versions report `done` incorrectly.
     const rows = [];
-    if (typeof snapshotIterator.hasNext === 'function') {
-      while (snapshotIterator.hasNext()) {
-        rows.push(snapshotIterator.next().value);
-      }
-    } else {
-      for (
-        let result = snapshotIterator.next();
-        result.done !== true;
-        result = snapshotIterator.next()
-      ) {
-        rows.push(result.value);
-      }
+    for (let i = 0; i < snapshot.added.size; i += 1) {
+      rows.push(snapshotIterator.next().value);
     }
 
     assertNotNull(this.columns);
