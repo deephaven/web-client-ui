@@ -836,6 +836,36 @@ describe('Advanced Filter', () => {
   );
 });
 
+describe('setAdvancedFilter', () => {
+  it('applies the filter to the model once when a lower priority update is pending', () => {
+    const table = irisGridTestUtils.makeTable();
+    const applyFilter = jest.spyOn(table, 'applyFilter');
+    const component = makeComponent(irisGridTestUtils.makeModel(table));
+    const callsBefore = applyFilter.mock.calls.length;
+    const filter = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('a'));
+
+    act(() => {
+      // Like the advanced filter button's mouseleave firing right before the
+      // click on Done: React renders the filter update first and re-runs
+      // any state updaters when it later applies the skipped update
+      React.startTransition(() => {
+        component.setState({ hoverAdvancedFilter: null });
+      });
+      component.setAdvancedFilter(0, filter, {
+        filterItems: [{ selectedType: 'eq', value: 'a' }],
+        filterOperators: [],
+        invertSelection: true,
+        selectedValues: [],
+      });
+    });
+
+    expect(applyFilter.mock.calls.length - callsBefore).toBe(1);
+  });
+});
+
 describe('updateQuickFilters', () => {
   it('stores the map reference directly (no cloning) when called with a map', () => {
     const component = makeComponent();

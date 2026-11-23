@@ -1914,18 +1914,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.startLoading('Filtering...', { resetRanges: true });
 
-    this.setState(({ advancedFilters }) => {
-      const newAdvancedFilters = new Map(advancedFilters);
-      if (filter == null) {
-        newAdvancedFilters.delete(modelIndex);
-      } else {
-        newAdvancedFilters.set(modelIndex, {
-          filter,
-          options,
-        });
-      }
-      return { advancedFilters: newAdvancedFilters };
-    });
+    // Build the map once rather than in a setState updater: React may re-run
+    // an updater, and a new Map per run would re-apply the filter to the model
+    const { advancedFilters: prevAdvancedFilters } = this.state;
+    const advancedFilters = new Map(prevAdvancedFilters);
+    if (filter == null) {
+      advancedFilters.delete(modelIndex);
+    } else {
+      advancedFilters.set(modelIndex, { filter, options });
+    }
+    this.setState({ advancedFilters });
   }
 
   /**
