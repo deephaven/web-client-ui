@@ -869,6 +869,32 @@ describe('setAdvancedFilter', () => {
     expect(component.state.hoverAdvancedFilter).toBeNull();
     expect(applyFilter.mock.calls.length - callsBefore).toBe(1);
   });
+
+  it('keeps both filters when called for two columns in the same batch', () => {
+    const component = makeComponent();
+    const options = {
+      filterItems: [{ selectedType: 'eq', value: 'a' }],
+      filterOperators: [],
+      invertSelection: true,
+      selectedValues: [],
+    };
+    const filter0 = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('a'));
+    const filter1 = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('b'));
+
+    act(() => {
+      component.setAdvancedFilter(0, filter0, options);
+      component.setAdvancedFilter(1, filter1, options);
+    });
+
+    expect(component.state.advancedFilters.get(0)?.filter).toBe(filter0);
+    expect(component.state.advancedFilters.get(1)?.filter).toBe(filter1);
+  });
 });
 
 describe('updateQuickFilters', () => {
