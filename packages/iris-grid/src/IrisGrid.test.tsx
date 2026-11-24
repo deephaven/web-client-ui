@@ -836,6 +836,67 @@ describe('Advanced Filter', () => {
   );
 });
 
+describe('setAdvancedFilter', () => {
+  it('applies the filter to the model once when a lower priority update is pending', () => {
+    const table = irisGridTestUtils.makeTable();
+    const applyFilter = jest.spyOn(table, 'applyFilter');
+    const component = makeComponent(irisGridTestUtils.makeModel(table));
+    act(() => {
+      component.setState({ hoverAdvancedFilter: 0 });
+    });
+    const callsBefore = applyFilter.mock.calls.length;
+    const filter = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('a'));
+
+    act(() => {
+      // Like the advanced filter button's mouseleave firing right before the
+      // click on Done: React renders the filter update first and re-runs
+      // any state updaters when it later applies the skipped update
+      React.startTransition(() => {
+        component.setState({ hoverAdvancedFilter: null });
+      });
+      component.setAdvancedFilter(0, filter, {
+        filterItems: [{ selectedType: 'eq', value: 'a' }],
+        filterOperators: [],
+        invertSelection: true,
+        selectedValues: [],
+      });
+    });
+
+    // Confirms the deferred update was flushed, so the updater replay happened
+    expect(component.state.hoverAdvancedFilter).toBeNull();
+    expect(applyFilter.mock.calls.length - callsBefore).toBe(1);
+  });
+
+  it('keeps both filters when called for two columns in the same batch', () => {
+    const component = makeComponent();
+    const options = {
+      filterItems: [{ selectedType: 'eq', value: 'a' }],
+      filterOperators: [],
+      invertSelection: true,
+      selectedValues: [],
+    };
+    const filter0 = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('a'));
+    const filter1 = irisGridTestUtils
+      .makeColumn()
+      .filter()
+      .eq(dh.FilterValue.ofString('b'));
+
+    act(() => {
+      component.setAdvancedFilter(0, filter0, options);
+      component.setAdvancedFilter(1, filter1, options);
+    });
+
+    expect(component.state.advancedFilters.get(0)?.filter).toBe(filter0);
+    expect(component.state.advancedFilters.get(1)?.filter).toBe(filter1);
+  });
+});
+
 describe('updateQuickFilters', () => {
   it('stores the map reference directly (no cloning) when called with a map', () => {
     const component = makeComponent();

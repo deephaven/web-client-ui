@@ -1218,6 +1218,35 @@ describe('column separators', () => {
       expect(component.state.draggingColumnSeparator).toBeNull();
     });
 
+    it('keeps the mouse position when the pointer leaves the canvas due to blocked events during a drag', () => {
+      const component = makeGridComponent(new MockGridModel(), resizableTheme);
+      const separatorX = getColumnSeparatorX(0);
+      const headerY = getColumnHeaderY();
+      const newX = separatorX + 50;
+
+      mouseDown(0, 0, component, {}, separatorX, headerY);
+      fireEvent.mouseMove(window, { clientX: newX, clientY: headerY });
+      expect(document.documentElement).toHaveClass('grid-block-events');
+
+      fireEvent.mouseLeave(component.canvas!, {
+        clientX: newX,
+        clientY: headerY,
+      });
+      expect(component.state.mouseX).toBe(newX);
+      expect(component.state.mouseY).toBe(headerY);
+
+      fireEvent.mouseUp(window, { clientX: newX, clientY: headerY, button: 0 });
+      expect(component.state.mouseX).toBe(newX);
+      expect(component.state.mouseY).toBe(headerY);
+
+      fireEvent.mouseLeave(component.canvas!, {
+        clientX: newX,
+        clientY: headerY,
+      });
+      expect(component.state.mouseX).toBeNull();
+      expect(component.state.mouseY).toBeNull();
+    });
+
     it('should not initiate resize when not over separator', () => {
       const component = makeGridComponent(new MockGridModel(), resizableTheme);
       const centerX = getClientX(0); // Center of column, not separator

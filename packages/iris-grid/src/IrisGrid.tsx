@@ -1909,18 +1909,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.startLoading('Filtering...', { resetRanges: true });
 
-    this.setState(({ advancedFilters }) => {
-      const newAdvancedFilters = new Map(advancedFilters);
-      if (filter == null) {
-        newAdvancedFilters.delete(modelIndex);
-      } else {
-        newAdvancedFilters.set(modelIndex, {
-          filter,
-          options,
-        });
-      }
-      return { advancedFilters: newAdvancedFilters };
-    });
+    // React may replay this updater with the same input when a lower priority
+    // update is pending. Memoize on the input map so replays return the same
+    // reference and the filter is not re-applied to the model.
+    const buildAdvancedFilters = memoize(
+      (
+        advancedFilters: ReadonlyAdvancedFilterMap
+      ): ReadonlyAdvancedFilterMap => {
+        const newAdvancedFilters = new Map(advancedFilters);
+        if (filter == null) {
+          newAdvancedFilters.delete(modelIndex);
+        } else {
+          newAdvancedFilters.set(modelIndex, { filter, options });
+        }
+        return newAdvancedFilters;
+      },
+      { max: 1 }
+    );
+    this.setState(({ advancedFilters }) => ({
+      advancedFilters: buildAdvancedFilters(advancedFilters),
+    }));
   }
 
   /**
