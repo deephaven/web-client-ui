@@ -24,6 +24,10 @@
     height: 100%;
   }
 
+  .pushing-view > .view-content {
+    pointer-events: none;
+  }
+
   .pushing-view,
   .popping-view {
     box-shadow: -4px 0 8px black-opacity(45);
