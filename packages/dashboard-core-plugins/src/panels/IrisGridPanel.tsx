@@ -490,7 +490,7 @@ export class IrisGridPanel extends PureComponent<
 
   modelPromise?: CancelablePromise<LoadedModel>;
 
-  loadModelRun?: LoadModelRun;
+  private loadModelRun?: LoadModelRun;
 
   irisGridState?: IrisGridState;
 
@@ -658,7 +658,7 @@ export class IrisGridPanel extends PureComponent<
    * Abandon the in-flight `loadModel`. A running transform can't be
    * interrupted; its result is closed once it settles.
    */
-  cancelLoadModelRun(): void {
+  private cancelLoadModelRun(): void {
     if (this.loadModelRun != null) {
       this.loadModelRun.isCanceled = true;
       this.loadModelRun.pendingColumnsChange?.cancel();
@@ -667,7 +667,7 @@ export class IrisGridPanel extends PureComponent<
     this.clearLoadModelRun();
   }
 
-  clearLoadModelRun(): void {
+  private clearLoadModelRun(): void {
     this.modelPromise = undefined;
     this.loadModelRun = undefined;
   }
@@ -680,7 +680,7 @@ export class IrisGridPanel extends PureComponent<
    * setters sees the writes.
    * @param run Tracks cancellation; checked after every await
    */
-  async loadModel(run: LoadModelRun): Promise<LoadedModel> {
+  private async loadModel(run: LoadModelRun): Promise<LoadedModel> {
     const { makeModel, transformModel } = this.props;
     const base = await makeModel();
     let model = base;
@@ -731,8 +731,13 @@ export class IrisGridPanel extends PureComponent<
         }
       }
 
+      // The setter drops names missing from the source. With none left it
+      // swaps back to the unchanged original model and emits no COLUMNS_CHANGED.
+      const hasSelectDistinctColumn = selectDistinctColumns.some(name =>
+        model.originalColumns.some(column => column.name === name)
+      );
       if (
-        selectDistinctColumns.length > 0 &&
+        hasSelectDistinctColumn &&
         !deepEqual(model.selectDistinctColumns, selectDistinctColumns)
       ) {
         await applyAndWaitForColumns(model, run, () => {
@@ -757,7 +762,10 @@ export class IrisGridPanel extends PureComponent<
    * from `makeModel` is required: re-applying identical custom columns to the
    * partly hydrated model would never emit `COLUMNS_CHANGED`.
    */
-  watchLoadConnection(model: IrisGridModel, run: LoadModelRun): () => void {
+  private watchLoadConnection(
+    model: IrisGridModel,
+    run: LoadModelRun
+  ): () => void {
     // A canceled run can outlive its cancel while its transform settles; its
     // connection events must not affect the panel's current run
     const handleDisconnect = (): void => {

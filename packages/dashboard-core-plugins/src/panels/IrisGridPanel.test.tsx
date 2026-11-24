@@ -690,6 +690,8 @@ describe('cancelling and reconnecting during hydration', () => {
     expect(onPanelStateUpdate).not.toHaveBeenCalled();
   });
 
+  const transformedColumns = [{ name: '0' }] as any[];
+
   /**
    * Stand-in for a transform's returned model that records the hydration
    * setters it receives and reacts to each through `onSet`.
@@ -700,7 +702,7 @@ describe('cancelling and reconnecting during hydration', () => {
   ) {
     const target = new EventTarget();
     const model = {
-      originalColumns: [],
+      originalColumns: transformedColumns,
       close: jest.fn(),
       addEventListener: target.addEventListener.bind(target),
       removeEventListener: target.removeEventListener.bind(target),
@@ -765,7 +767,7 @@ describe('cancelling and reconnecting during hydration', () => {
     const onSet = jest.fn();
     const transformed = makeTransformedModel(onSet, {
       rollupConfig: IrisGridUtils.getModelRollupConfig(
-        [],
+        transformedColumns,
         rollupState.rollupConfig as any,
         rollupState.aggregationSettings as any
       ),
@@ -775,6 +777,28 @@ describe('cancelling and reconnecting during hydration', () => {
       makeModel,
       transformModel: () => transformed,
       irisGridState: rollupState,
+    });
+    await waitFor(() => expect(table.applyCustomColumns).toHaveBeenCalled());
+
+    act(() => fireCustomColumnsChanged());
+
+    await waitFor(() => expect(lastRenderedModel()).toBe(transformed));
+    expect(onSet).not.toHaveBeenCalled();
+  });
+
+  it('skips select distinct when no saved column exists on the source', async () => {
+    const { table, fireCustomColumnsChanged } = makePendingCustomColumnsTable();
+    const { makeModel } = makeTrackedMakeModel([table]);
+    // The real setter swaps to the unchanged original model and never emits
+    // COLUMNS_CHANGED
+    const onSet = jest.fn();
+    const transformed = makeTransformedModel(onSet, {
+      selectDistinctColumns: [],
+    });
+    renderPanel({
+      makeModel,
+      transformModel: () => transformed,
+      irisGridState: { selectDistinctColumns: ['Gone'] },
     });
     await waitFor(() => expect(table.applyCustomColumns).toHaveBeenCalled());
 
