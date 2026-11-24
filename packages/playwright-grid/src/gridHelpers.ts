@@ -70,6 +70,10 @@ function parseRect(value: string | null): GridA11yRect | null {
     return null;
   }
   const [x, y, width, height] = value.split(',').map(Number);
+  // Fail here rather than letting NaN reach a click position or assertion
+  if (![x, y, width, height].every(Number.isFinite)) {
+    throw new Error(`Invalid ${ATTRIBUTES.rect} "${value}".`);
+  }
   return { x, y, width, height };
 }
 

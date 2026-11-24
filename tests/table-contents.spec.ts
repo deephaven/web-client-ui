@@ -83,10 +83,12 @@ test('can open a table with column header groups', async ({ page }) => {
   await expectColumnHeaderNames(grid, ['x', 'y', 'z']);
   await expectCellText(grid, 'x', 0, '0');
 
-  expect(await getColumnHeaderGroupNames(grid)).toEqual(['All', 'YandZ']);
-  expect(await getColumnHeaderGroupNames(grid, { depth: 1 })).toEqual([
-    'YandZ',
-  ]);
+  await expect
+    .poll(() => getColumnHeaderGroupNames(grid))
+    .toEqual(['All', 'YandZ']);
+  await expect
+    .poll(() => getColumnHeaderGroupNames(grid, { depth: 1 }))
+    .toEqual(['YandZ']);
   const [group, cell] = await Promise.all([
     getColumnHeaderGroupRect(grid, 'YandZ'),
     getCellRect(grid, 'y', 0),
