@@ -814,6 +814,7 @@ describe('cancelling and reconnecting during hydration', () => {
     const target = new EventTarget();
     const model = {
       originalColumns: transformedColumns,
+      received: {} as Record<string, unknown>,
       close: jest.fn(),
       addEventListener: target.addEventListener.bind(target),
       removeEventListener: target.removeEventListener.bind(target),
@@ -822,7 +823,10 @@ describe('cancelling and reconnecting during hydration', () => {
     ['rollupConfig', 'selectDistinctColumns'].forEach(name => {
       Object.defineProperty(model, name, {
         get: () => values[name],
-        set: () => onSet(name, model),
+        set: value => {
+          model.received[name] = value;
+          onSet(name, model);
+        },
       });
     });
     return model;
@@ -869,6 +873,35 @@ describe('cancelling and reconnecting during hydration', () => {
         'selectDistinctColumns',
       ])
     );
+  });
+
+  it('hydrates a rollup saved without the default aggregation settings', async () => {
+    const { makeModel } = makeTrackedMakeModel([makeTable()]);
+    const transformed = makeTransformedModel((name, model) => {
+      setTimeout(() =>
+        model.dispatchEvent(
+          new CustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED)
+        )
+      );
+    });
+    renderPanel({
+      makeModel,
+      transformModel: () => transformed,
+      // Slim state omits values equal to the defaults
+      irisGridState: {
+        customColumns: undefined,
+        rollupConfig: { columns: ['0'] },
+      },
+    });
+
+    await waitFor(() => expect(lastRenderedModel()).toBe(transformed));
+    expect(transformed.received).toEqual({
+      rollupConfig: IrisGridUtils.getModelRollupConfig(
+        transformedColumns,
+        { columns: ['0'] } as any,
+        { aggregations: [], showOnTop: false }
+      ),
+    });
   });
 
   it('skips rollup and select distinct the transform already restored', async () => {

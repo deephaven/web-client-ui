@@ -582,4 +582,30 @@ describe('saved layout default values', () => {
       true
     );
   });
+
+  it('does not apply a configured default component state to a reloaded panel', async () => {
+    const layoutSettings = {
+      defaultComponentConfig: { componentState: { panelState: { foo: 'x' } } },
+    };
+    // Saved panels omit `componentState: null`; loading must not fill it in
+    const layoutConfig: DashboardLayoutConfig = [
+      { type: 'stack', content: [makePanel('a')] },
+    ];
+    const savedLayoutConfig = await loadAndGetSavedLayout(
+      [
+        {
+          type: 'stack',
+          content: [{ ...makePanel('a'), componentState: null }],
+        },
+      ],
+      layoutSettings
+    );
+    expect(JSON.stringify(savedLayoutConfig)).not.toContain('foo');
+
+    const reloadedLayoutConfig = await loadAndGetSavedLayout(
+      layoutConfig,
+      layoutSettings
+    );
+    expect(JSON.stringify(reloadedLayoutConfig)).not.toContain('foo');
+  });
 });

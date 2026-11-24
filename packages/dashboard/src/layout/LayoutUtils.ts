@@ -97,7 +97,8 @@ export const LAYOUT_ITEM_DEFAULTS = Object.freeze({
  * `react-component` item, and `toConfig` writes it back out, so every live react component
  * has this value and it carries no information.
  * The default panel `dehydrate` moves `componentState` into `props.panelState` and sets
- * `componentState` to `null`; golden-layout treats a missing `componentState` as `{}`.
+ * `componentState` to `null`. `hydrateLayoutConfig` restores the `null`, because a missing
+ * `componentState` would be filled from the host's `defaultComponentConfig`.
  */
 export const REACT_COMPONENT_ITEM_DEFAULTS = Object.freeze({
   componentName: 'lm-react-component',
@@ -613,12 +614,20 @@ class LayoutUtils {
     for (let i = 0; i < config.length; i += 1) {
       const itemConfig = config[i];
       if (isReactComponentConfig(itemConfig)) {
-        const { component, props = {} } = itemConfig;
-        hydratedConfig.push({
+        const {
+          component,
+          props = {},
+          componentState = null,
+        } = itemConfig as PanelConfig;
+        const hydratedPanel: PanelConfig = {
           ...itemConfig,
           id: itemConfig?.id ?? nanoid(),
+          // Not `undefined`, so `Component` doesn't fill it in from the host's
+          // `defaultComponentConfig`, which would be applied over the saved `panelState`
+          componentState,
           props: hydrateComponent(component, props),
-        });
+        };
+        hydratedConfig.push(hydratedPanel);
       } else if (itemConfig.content !== undefined) {
         const contentConfig = LayoutUtils.hydrateLayoutConfig(
           itemConfig.content,
