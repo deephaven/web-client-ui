@@ -1,5 +1,9 @@
+/* eslint class-methods-use-this: "off", max-classes-per-file: "off" */
+import { type IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { createGridA11ySnapshot, getGridA11ySummary } from './GridA11yUtils';
 import type GridMetrics from './GridMetrics';
+import { type ModelIndex } from './GridMetrics';
+import GridModel from './GridModel';
 import GridRange from './GridRange';
 import MockGridModel from './MockGridModel';
 import { RangedSelection } from './RangedSelection';
@@ -21,6 +25,70 @@ const ROW_HEADER_WIDTH = 30;
 const MAX_X = 600;
 const MAX_Y = 200;
 
+type TestColumnGroup = { name: string; depth: number; children: number[] };
+
+/** A model whose columns are grouped by the given groups, which are matched by identity */
+class GroupedGridModel extends GridModel {
+  private readonly groups: readonly (TestColumnGroup & IColumnHeaderGroup)[];
+
+  private readonly numColumns: number;
+
+  constructor(groups: TestColumnGroup[], columnCount = 3) {
+    super();
+    this.groups = groups.map(group => ({
+      ...group,
+      getVisibleRange: () => [
+        Math.min(...group.children),
+        Math.max(...group.children),
+      ],
+    }));
+    this.numColumns = columnCount;
+  }
+
+  get rowCount(): number {
+    return 100;
+  }
+
+  get columnCount(): number {
+    return this.numColumns;
+  }
+
+  get columnHeaderMaxDepth(): number {
+    return Math.max(0, ...this.groups.map(({ depth }) => depth)) + 1;
+  }
+
+  textForCell(column: ModelIndex, row: ModelIndex): string {
+    return `${column},${row}`;
+  }
+
+  textForColumnHeader(column: ModelIndex, depth = 0): string | undefined {
+    return depth === 0 ? `${column}` : this.findGroup(column, depth)?.name;
+  }
+
+  getColumnHeaderGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return this.findGroup(modelIndex, depth);
+  }
+
+  protected findGroup(
+    modelIndex: ModelIndex,
+    depth: number
+  ): IColumnHeaderGroup | undefined {
+    return this.groups.find(
+      group => group.depth === depth && group.children.includes(modelIndex)
+    );
+  }
+}
+
+/** Groups columns by header text alone, like models without group objects */
+class TextGroupedGridModel extends GroupedGridModel {
+  getColumnHeaderGroup(): IColumnHeaderGroup | undefined {
+    return undefined;
+  }
+}
+
 /**
  * Make metrics for a viewport of the given size, laid out left to right and
  * top to bottom. Any column in `hiddenColumns` is collapsed to zero width, and
@@ -30,6 +98,8 @@ const MAX_Y = 200;
  * column or row. Scrollable items start after the frozen panes, as if the grid
  * were scrolled so nothing is hidden underneath them, until `leftOffset` or
  * `topOffset` scrolls them back under.
+ * `barHeight` adds a bar between the column headers and the grid content, like
+ * the IrisGrid filter bar. `columnWidths` overrides the width of any column.
  */
 function makeMetrics({
   columns = [0, 1, 2],
@@ -44,12 +114,15 @@ function makeMetrics({
   topOffset = 0,
   verticalBarWidth = 0,
   horizontalBarHeight = 0,
+  columnHeaderMaxDepth = 1,
+  barHeight = 0,
+  columnWidths = {} as Record<number, number>,
 } = {}): GridMetrics {
   const allColumnWidths = new Map<number, number>();
   const allColumnXs = new Map<number, number>();
   const modelColumns = new Map<number, number>();
   const widthOf = (column: number): number =>
-    hiddenColumns.includes(column) ? 0 : COLUMN_WIDTH;
+    hiddenColumns.includes(column) ? 0 : columnWidths[column] ?? COLUMN_WIDTH;
   const setColumn = (column: number, columnX: number): void => {
     allColumnWidths.set(column, widthOf(column));
     allColumnXs.set(column, columnX);
@@ -111,11 +184,13 @@ function makeMetrics({
     setRow(row, y);
   });
 
+  const gridY = columnHeaderMaxDepth * HEADER_HEIGHT + barHeight;
   return {
     visibleColumns: columns,
     visibleRows: rows,
     floatingColumns: [...floatingLeftColumns, ...floatingRightColumns],
     floatingRows: [...floatingTopRows, ...floatingBottomRows],
+    floatingLeftColumnCount: floatingLeftColumns.length,
     allColumnWidths,
     allColumnXs,
     allRowHeights,
@@ -123,10 +198,11 @@ function makeMetrics({
     modelColumns,
     modelRows,
     gridX: ROW_HEADER_WIDTH,
-    gridY: HEADER_HEIGHT,
+    gridY,
     columnHeaderHeight: HEADER_HEIGHT,
+    columnHeaderMaxDepth,
     width: ROW_HEADER_WIDTH + MAX_X,
-    height: HEADER_HEIGHT + MAX_Y,
+    height: gridY + MAX_Y,
     verticalBarWidth,
     horizontalBarHeight,
     floatingLeftWidth,
@@ -633,6 +709,292 @@ describe('createGridA11ySnapshot', () => {
 
     expect(snapshot.description).toBe(
       'Grid with 100 rows and 3 columns. 1 cell selected. Showing rows 1 to 2, columns 0, 1, 2.'
+    );
+  });
+});
+
+describe('createGridA11ySnapshot column header groups', () => {
+  it('has a single header row and no groups when the model has none', () => {
+    const model = new MockGridModel({ rowCount: 100, columnCount: 3 });
+    const snapshot = createGridA11ySnapshot(model, makeMetrics());
+
+    expect(snapshot.headerRowCount).toBe(1);
+    expect(snapshot.columnGroups).toEqual([]);
+  });
+
+  it('describes a group spanning the columns it covers, above the bottom level headers', () => {
+    const model = new GroupedGridModel([
+      { name: 'A', depth: 1, children: [1, 2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columnHeaderMaxDepth: 2 })
+    );
+
+    expect(snapshot.headerRowCount).toBe(2);
+    // Column 0 has no group, so nothing is described above it
+    expect(snapshot.columnGroups).toEqual([
+      {
+        depth: 1,
+        groups: [
+          {
+            startColumn: 1,
+            endColumn: 2,
+            span: 2,
+            depth: 1,
+            text: 'A',
+            rect: {
+              x: ROW_HEADER_WIDTH + COLUMN_WIDTH,
+              y: 0,
+              width: 2 * COLUMN_WIDTH,
+              height: HEADER_HEIGHT,
+            },
+          },
+        ],
+      },
+    ]);
+    expect(snapshot.columns[1].rect.y).toBe(HEADER_HEIGHT);
+  });
+
+  it('orders group rows top to bottom', () => {
+    const model = new GroupedGridModel([
+      { name: 'All', depth: 2, children: [0, 1, 2] },
+      { name: 'YandZ', depth: 1, children: [1, 2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columnHeaderMaxDepth: 3 })
+    );
+
+    expect(
+      snapshot.columnGroups.map(({ depth, groups }) => ({
+        depth,
+        groups: groups.map(({ text, rect }) => ({ text, y: rect.y })),
+      }))
+    ).toEqual([
+      { depth: 2, groups: [{ text: 'All', y: 0 }] },
+      { depth: 1, groups: [{ text: 'YandZ', y: HEADER_HEIGHT }] },
+    ]);
+    expect(snapshot.columns[0].rect.y).toBe(2 * HEADER_HEIGHT);
+  });
+
+  it('keeps adjacent groups with the same name separate', () => {
+    const model = new GroupedGridModel([
+      { name: 'A', depth: 1, children: [0] },
+      { name: 'A', depth: 1, children: [1, 2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columnHeaderMaxDepth: 2 })
+    );
+
+    expect(
+      snapshot.columnGroups[0].groups.map(({ startColumn, span }) => ({
+        startColumn,
+        span,
+      }))
+    ).toEqual([
+      { startColumn: 0, span: 1 },
+      { startColumn: 1, span: 2 },
+    ]);
+  });
+
+  it('splits a group at the frozen column boundary', () => {
+    const model = new GroupedGridModel(
+      [{ name: 'A', depth: 1, children: [0, 1, 2, 3] }],
+      10
+    );
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [2, 3],
+        floatingLeftColumns: [0],
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(snapshot.columnGroups[0].groups).toEqual([
+      expect.objectContaining({
+        startColumn: 0,
+        span: 1,
+        rect: {
+          x: ROW_HEADER_WIDTH,
+          y: 0,
+          width: COLUMN_WIDTH,
+          height: HEADER_HEIGHT,
+        },
+      }),
+      expect.objectContaining({
+        startColumn: 2,
+        endColumn: 3,
+        span: 2,
+        rect: {
+          x: ROW_HEADER_WIDTH + COLUMN_WIDTH,
+          y: 0,
+          width: 2 * COLUMN_WIDTH,
+          height: HEADER_HEIGHT,
+        },
+      }),
+    ]);
+  });
+
+  it('keeps frozen and scrolling groups whole when a scrolling column runs under the frozen columns', () => {
+    const model = new GroupedGridModel(
+      [
+        { name: 'Frozen', depth: 1, children: [0, 1] },
+        { name: 'Scrolling', depth: 1, children: [2, 3] },
+      ],
+      10
+    );
+    // Column 2 starts left of frozen column 1, but is only visible right of the frozen pane
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [2, 3],
+        floatingLeftColumns: [0, 1],
+        columnWidths: { 2: 3 * COLUMN_WIDTH },
+        leftOffset: 1.5 * COLUMN_WIDTH,
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(snapshot.columns.map(({ column }) => column)).toEqual([0, 1, 2, 3]);
+    expect(
+      snapshot.columnGroups[0].groups.map(({ text, span, rect }) => ({
+        text,
+        span,
+        x: rect.x,
+        width: rect.width,
+      }))
+    ).toEqual([
+      { text: 'Frozen', span: 2, x: ROW_HEADER_WIDTH, width: 2 * COLUMN_WIDTH },
+      {
+        text: 'Scrolling',
+        span: 2,
+        x: ROW_HEADER_WIDTH + 2 * COLUMN_WIDTH,
+        width: 2.5 * COLUMN_WIDTH,
+      },
+    ]);
+  });
+
+  it('keeps groups in the left and right frozen panes apart when nothing scrolls between them', () => {
+    const model = new GroupedGridModel(
+      [{ name: 'All', depth: 1, children: [0, 1, 2, 3, 4] }],
+      5
+    );
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [1, 2, 3],
+        hiddenColumns: [1, 2, 3],
+        floatingLeftColumns: [0],
+        floatingRightColumns: [4],
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(
+      snapshot.columnGroups[0].groups.map(({ startColumn, span, rect }) => ({
+        startColumn,
+        span,
+        x: rect.x,
+        width: rect.width,
+      }))
+    ).toEqual([
+      { startColumn: 0, span: 1, x: ROW_HEADER_WIDTH, width: COLUMN_WIDTH },
+      {
+        startColumn: 4,
+        span: 1,
+        x: ROW_HEADER_WIDTH + MAX_X - COLUMN_WIDTH,
+        width: COLUMN_WIDTH,
+      },
+    ]);
+  });
+
+  it('clips groups that run past the edges of the canvas', () => {
+    const model = new GroupedGridModel(
+      [{ name: 'A', depth: 1, children: [0, 1] }],
+      10
+    );
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [0, 1, 2, 3, 4, 5, 6],
+        leftOffset: COLUMN_WIDTH / 2,
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(snapshot.columnGroups[0].groups[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: 0,
+      width: COLUMN_WIDTH * 1.5,
+      height: HEADER_HEIGHT,
+    });
+  });
+
+  it('keeps groups with the same text apart when a hidden column of another group is between them', () => {
+    const model = new TextGroupedGridModel([
+      { name: 'A', depth: 1, children: [0] },
+      { name: 'B', depth: 1, children: [1] },
+      { name: 'A', depth: 1, children: [2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ hiddenColumns: [1], columnHeaderMaxDepth: 2 })
+    );
+
+    expect(
+      snapshot.columnGroups[0].groups.map(({ text, startColumn, span }) => ({
+        text,
+        startColumn,
+        span,
+      }))
+    ).toEqual([
+      { text: 'A', startColumn: 0, span: 1 },
+      { text: 'A', startColumn: 2, span: 1 },
+    ]);
+  });
+
+  it('leaves out columns collapsed to nothing on screen', () => {
+    const model = new GroupedGridModel([
+      { name: 'A', depth: 1, children: [0, 1] },
+      { name: 'B', depth: 1, children: [2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ hiddenColumns: [1, 2], columnHeaderMaxDepth: 2 })
+    );
+
+    expect(snapshot.columnGroups[0].groups).toEqual([
+      expect.objectContaining({
+        text: 'A',
+        startColumn: 0,
+        endColumn: 0,
+        span: 1,
+      }),
+    ]);
+  });
+
+  it('positions headers where they are painted when a bar sits above the grid content', () => {
+    const barHeight = 40;
+    const model = new GroupedGridModel([
+      { name: 'A', depth: 1, children: [0, 1, 2] },
+    ]);
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({ columnHeaderMaxDepth: 2, barHeight })
+    );
+
+    expect(snapshot.columnGroups[0].groups[0].rect.y).toBe(0);
+    expect(snapshot.columns[0].rect).toEqual({
+      x: ROW_HEADER_WIDTH,
+      y: HEADER_HEIGHT,
+      width: COLUMN_WIDTH,
+      height: HEADER_HEIGHT,
+    });
+    expect(snapshot.rows[0].cells[0].rect.y).toBe(
+      2 * HEADER_HEIGHT + barHeight
     );
   });
 });

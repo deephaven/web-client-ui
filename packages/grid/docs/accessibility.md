@@ -43,6 +43,7 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
               aria-colindex="1"
               data-grid-column="0"
               data-grid-header="x"
+              data-grid-depth="0"
               data-grid-rect="30,0,100,30"
             >
               x
@@ -69,16 +70,59 @@ The snapshot is a plain `<table>` rather than a set of `div`s with ARIA roles. F
 
 The attribute names are exported as `GRID_A11Y_ATTRIBUTES` and typed as `GridA11yAttributes`, so external tooling can declare them without importing the grid runtime:
 
-| Attribute                 | On                | Description                                                              |
-| ------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| `data-grid-a11y-describe` | button            | The button that toggles the snapshot on and off                          |
-| `data-grid-a11y-snapshot` | snapshot root     | Present only while the snapshot is on                                    |
-| `data-grid-column`        | headers and cells | Visible column index                                                     |
-| `data-grid-row`           | cells             | Visible row index                                                        |
-| `data-grid-header`        | headers           | Header text, for looking a column up by name                             |
-| `data-grid-rect`          | headers and cells | `x,y,width,height` relative to the top left of the canvas, in CSS pixels |
+| Attribute                 | On                        | Description                                                              |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------------ |
+| `data-grid-a11y-describe` | button                    | The button that toggles the snapshot on and off                          |
+| `data-grid-a11y-snapshot` | snapshot root             | Present only while the snapshot is on                                    |
+| `data-grid-column`        | headers, groups and cells | Visible column index. For a group, the first column it covers            |
+| `data-grid-row`           | cells                     | Visible row index                                                        |
+| `data-grid-header`        | headers                   | Header text, for looking a column up by name                             |
+| `data-grid-header-group`  | groups                    | Header group text, for looking a group up by name                        |
+| `data-grid-depth`         | headers and groups        | Header depth, `0` for the bottom level headers                           |
+| `data-grid-rect`          | headers, groups and cells | `x,y,width,height` relative to the top left of the canvas, in CSS pixels |
 
-Rows and columns that are collapsed to nothing on screen are left out, and the column header rect covers the bottom level of the header, which is the row that handles sorting. For a grid with column groups, higher level headers are not in the snapshot.
+Rows and columns that are collapsed to nothing on screen are left out. The bottom level column headers, which handle sorting and which cells belong to, are the only cells with `data-grid-header`, and are always the last row of the `<thead>`.
+
+## Column header groups
+
+For a grid with column groups, each group depth gets its own row in the `<thead>`, above the bottom level headers and ordered top to bottom as on screen. Each group is a `<th scope="col">` with a `colspan` covering its columns, which makes it a header for every column it spans. `scope="colgroup"` is not used, as it only applies inside `<colgroup>` elements, and group boundaries differ at each depth. Columns without a group at that depth are filled with an empty `<td>` so the groups line up with their columns. Depths with no groups in the viewport are left out, but `aria-rowindex` always counts every header row, so row numbers are stable as the grid scrolls.
+
+```html
+<thead>
+  <tr aria-rowindex="1">
+    <th
+      scope="col"
+      colspan="3"
+      aria-colindex="1"
+      data-grid-column="0"
+      data-grid-header-group="All"
+      data-grid-depth="2"
+      data-grid-rect="30,0,300,30"
+    >
+      All
+    </th>
+  </tr>
+  <tr aria-rowindex="2">
+    <td colspan="1"></td>
+    <th
+      scope="col"
+      colspan="2"
+      aria-colindex="2"
+      data-grid-column="1"
+      data-grid-header-group="YandZ"
+      data-grid-depth="1"
+      data-grid-rect="130,30,200,30"
+    >
+      YandZ
+    </th>
+  </tr>
+  <tr aria-rowindex="3">
+    <!-- bottom level headers -->
+  </tr>
+</thead>
+```
+
+A group split by the frozen columns is painted as two boxes, so it is described as two groups.
 
 ## Locating a cell on screen
 
@@ -137,7 +181,7 @@ Each helper accepts a locator for the grid canvas or for any element containing 
 
 The fallback content is rendered from two functions, which are also useful on their own in unit tests:
 
-| Function                                                 | Description                                                         |
-| -------------------------------------------------------- | ------------------------------------------------------------------- |
-| `getGridA11ySummary(model, selectedRanges)`              | The one line summary of the grid size and selection                 |
-| `createGridA11ySnapshot(model, metrics, selectedRanges)` | The text and bounds of every column header and cell in the viewport |
+| Function                                                 | Description                                                                        |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `getGridA11ySummary(model, selectedRanges)`              | The one line summary of the grid size and selection                                |
+| `createGridA11ySnapshot(model, metrics, selectedRanges)` | The text and bounds of every column header, header group, and cell in the viewport |

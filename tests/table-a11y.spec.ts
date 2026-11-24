@@ -13,8 +13,21 @@ const ATTRIBUTES = {
   column: 'data-grid-column',
   row: 'data-grid-row',
   header: 'data-grid-header',
+  headerGroup: 'data-grid-header-group',
+  depth: 'data-grid-depth',
   rect: 'data-grid-rect',
 };
+
+type Rect = { x: number; y: number; width: number; height: number };
+
+async function getRect(locator: Locator): Promise<Rect> {
+  const value = await locator.getAttribute(ATTRIBUTES.rect);
+  const [x, y, width, height] = (value ?? '').split(',').map(Number);
+  if (![x, y, width, height].every(Number.isFinite)) {
+    throw new Error(`Invalid ${ATTRIBUTES.rect} "${value}" on ${locator}`);
+  }
+  return { x, y, width, height };
+}
 
 function getCanvas(page: Page): Locator {
   return page.locator('.iris-grid-panel .iris-grid canvas.grid-canvas');
@@ -222,17 +235,105 @@ test('leaves hidden columns out of the description', async ({ page }) => {
   const snapshot = await describeContents(getCanvas(page));
 
   // y and z are hidden by the layout hints, so they are not on screen to describe
-  await expect(snapshot.locator('th')).toHaveText(['x']);
+  await expect(snapshot.locator(`[${ATTRIBUTES.header}]`)).toHaveText(['x']);
 });
 
-test('describes only the bottom level of grouped column headers', async ({
+test('describes grouped column headers above the bottom level headers', async ({
   page,
 }) => {
   await openTable(page, 'simple_table_header_group');
   await waitForLoadingDone(page);
 
   const snapshot = await describeContents(getCanvas(page));
+  const table = snapshot.locator('table');
 
-  // The YandZ/All groups sit above the sortable headers, which are what cells belong to
-  await expect(snapshot.locator('th')).toHaveText(['x', 'y', 'z']);
+  // Cells belong to the bottom level headers, so those stay the only `data-grid-header` cells
+  await expect(snapshot.locator(`[${ATTRIBUTES.header}]`)).toHaveText([
+    'x',
+    'y',
+    'z',
+  ]);
+  await expect(table.locator('thead tr:last-child th')).toHaveText([
+    'x',
+    'y',
+    'z',
+  ]);
+  await expect(table).toHaveAttribute('aria-rowcount', '103');
+
+  const all = snapshot.locator(`[${ATTRIBUTES.headerGroup}="All"]`);
+  const yAndZ = snapshot.locator(`[${ATTRIBUTES.headerGroup}="YandZ"]`);
+  await expect(all).toHaveAttribute(ATTRIBUTES.depth, '2');
+  await expect(all).toHaveAttribute('colspan', '3');
+  await expect(yAndZ).toHaveAttribute(ATTRIBUTES.depth, '1');
+  await expect(yAndZ).toHaveAttribute('colspan', '2');
+  await expect(yAndZ).toHaveAttribute(ATTRIBUTES.column, '1');
+
+  const [allRect, yAndZRect, x, y, z] = await Promise.all([
+    getRect(all),
+    getRect(yAndZ),
+    getRect(snapshot.locator(`[${ATTRIBUTES.header}="x"]`)),
+    getRect(snapshot.locator(`[${ATTRIBUTES.header}="y"]`)),
+    getRect(snapshot.locator(`[${ATTRIBUTES.header}="z"]`)),
+  ]);
+
+  // Each header row sits directly above the next
+  expect(allRect.y + allRect.height).toBe(yAndZRect.y);
+  expect(yAndZRect.y + yAndZRect.height).toBe(y.y);
+
+  // Groups span the headers of their children
+  expect(yAndZRect.x).toBe(y.x);
+  expect(yAndZRect.x + yAndZRect.width).toBe(z.x + z.width);
+  expect(allRect.x).toBe(x.x);
+  expect(allRect.x + allRect.width).toBeGreaterThanOrEqual(z.x + z.width);
+});
+
+test('leaves out groups whose columns are all hidden', async ({ page }) => {
+  await openTable(page, 'simple_table_header_group_hide');
+  await waitForLoadingDone(page);
+
+  const snapshot = await describeContents(getCanvas(page));
+
+  await expect(snapshot.locator(`[${ATTRIBUTES.headerGroup}]`)).toHaveText([
+    'All',
+  ]);
+});
+
+test('reports column headers where they are painted when the filter bar is shown', async ({
+  page,
+}) => {
+  await openTable(page, 'simple_table');
+  await waitForLoadingDone(page);
+
+  // Open the options first, in case the sidebar resizes the grid
+  await page.locator('data-testid=btn-iris-grid-settings-button-table').click();
+  const quickFiltersItem = page.locator('data-testid=menu-item-Quick Filters');
+  await expect(quickFiltersItem).toBeVisible();
+
+  const canvas = getCanvas(page);
+  const snapshot = await describeContents(canvas);
+  const header = snapshot.locator(`[${ATTRIBUTES.header}="x"]`);
+  const cell = snapshot.locator(
+    `[${ATTRIBUTES.row}="0"][${ATTRIBUTES.column}="0"]`
+  );
+  const [headerBefore, cellBefore] = await Promise.all([
+    getRect(header),
+    getRect(cell),
+  ]);
+
+  await quickFiltersItem.click();
+  await expect(quickFiltersItem.locator('.btn.btn-switch.active')).toHaveCount(
+    1
+  );
+
+  // The filter bar is drawn between the headers and the cells, pushing only the cells down
+  let cellAfter = cellBefore;
+  await expect
+    .poll(async () => {
+      cellAfter = await getRect(cell);
+      return cellAfter.y;
+    })
+    .toBeGreaterThan(cellBefore.y);
+  const headerAfter = await getRect(header);
+  expect(headerAfter).toEqual(headerBefore);
+  expect(headerAfter.y + headerAfter.height).toBeLessThan(cellAfter.y);
 });

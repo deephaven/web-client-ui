@@ -1,6 +1,7 @@
 import type GridMetrics from './GridMetrics';
-import { type VisibleIndex } from './GridMetrics';
+import { type ModelIndex, type VisibleIndex } from './GridMetrics';
 import type GridModel from './GridModel';
+import GridUtils from './GridUtils';
 import type { Selection } from './Selection';
 
 /**
@@ -21,8 +22,14 @@ export const GRID_A11Y_ATTRIBUTES = {
   /** Visible row index. On cells */
   row: 'data-grid-row',
 
-  /** Header text. On column headers */
+  /** Header text. On bottom level column headers */
   header: 'data-grid-header',
+
+  /** Header group text. On column header groups */
+  headerGroup: 'data-grid-header-group',
+
+  /** Header depth, 0 for bottom level headers. On column headers and column header groups */
+  depth: 'data-grid-depth',
 
   /** Bounds as `x,y,width,height`, relative to the top left of the canvas, in CSS pixels */
   rect: 'data-grid-rect',
@@ -44,6 +51,28 @@ export type GridA11yColumnSnapshot = {
   column: VisibleIndex;
   text: string;
   rect: GridA11yRect;
+};
+
+/** A column header group spanning one or more columns in an accessibility snapshot */
+export type GridA11yColumnGroupSnapshot = {
+  /** First visible column the group covers on screen */
+  startColumn: VisibleIndex;
+
+  /** Last visible column the group covers on screen */
+  endColumn: VisibleIndex;
+
+  /** Number of snapshot columns the group covers */
+  span: number;
+
+  depth: number;
+  text: string;
+  rect: GridA11yRect;
+};
+
+/** A row of column header groups at one depth in an accessibility snapshot */
+export type GridA11yColumnGroupRowSnapshot = {
+  depth: number;
+  groups: readonly GridA11yColumnGroupSnapshot[];
 };
 
 /** A cell in an accessibility snapshot */
@@ -74,6 +103,16 @@ export type GridA11ySnapshot = {
   /** The number of columns in the whole grid, not just the viewport */
   columnCount: number;
 
+  /** The number of column header rows, including the bottom level headers */
+  headerRowCount: number;
+
+  /**
+   * Column header group rows in the viewport, top to bottom (deepest first).
+   * Depths with no groups in the viewport are left out.
+   */
+  columnGroups: readonly GridA11yColumnGroupRowSnapshot[];
+
+  /** Bottom level column headers */
   columns: readonly GridA11yColumnSnapshot[];
   rows: readonly GridA11yRowSnapshot[];
 };
@@ -105,16 +144,16 @@ type GridA11yBounds = {
 
 /**
  * Clip a rect to the bounds it is painted in and move it onto the canvas.
- * @param rect The rect, relative to the top left of the grid content area
- * @param bounds The bounds the rect is painted in
- * @param metrics Metrics of the last render
+ * @param rect The rect, relative to the origin
+ * @param bounds The bounds the rect is painted in, relative to the origin
+ * @param origin Where the origin sits, relative to the top left of the canvas
  * @returns The visible part of the rect relative to the top left of the
  * canvas, or null if none of it can be interacted with
  */
 function clipGridA11yRect(
   { x, y, width, height }: GridA11yRect,
   { left, top, right, bottom }: GridA11yBounds,
-  metrics: GridMetrics
+  origin: { x: number; y: number }
 ): GridA11yRect | null {
   const clippedX = Math.max(x, left);
   const clippedY = Math.max(y, top);
@@ -125,8 +164,8 @@ function clipGridA11yRect(
   }
 
   return {
-    x: metrics.gridX + clippedX,
-    y: metrics.gridY + clippedY,
+    x: origin.x + clippedX,
+    y: origin.y + clippedY,
     width: clippedWidth,
     height: clippedHeight,
   };
@@ -179,44 +218,157 @@ function getCellRect(
       right: isFloatingColumn ? right : right - floatingRightWidth,
       bottom: isFloatingRow ? bottom : bottom - floatingBottomHeight,
     },
-    metrics
+    { x: gridX, y: gridY }
   );
 }
 
 /**
- * Get the bounds of a bottom level column header, relative to the top left of the canvas.
+ * Get the bounds of a column header or header group, relative to the top left of the canvas.
  * @param metrics Metrics of the last render
- * @param column Visible column index of the header
- * @param isFloatingColumn Whether the column is frozen to the left or right
+ * @param x Left of the header, relative to the left of the grid content area
+ * @param width Width of the header
+ * @param depth Depth of the header, 0 for bottom level headers
+ * @param isFloatingColumn Whether the header is frozen to the left or right
  * @returns The bounds of the header, or null if none of it is interactable
  */
 function getColumnHeaderRect(
   metrics: GridMetrics,
-  column: VisibleIndex,
+  x: number,
+  width: number,
+  depth: number,
   isFloatingColumn: boolean
 ): GridA11yRect | null {
-  const x = metrics.allColumnXs.get(column);
-  const width = metrics.allColumnWidths.get(column);
-  if (x == null || width == null) {
-    return null;
-  }
+  const {
+    gridX,
+    columnHeaderHeight,
+    columnHeaderMaxDepth,
+    floatingLeftWidth,
+    floatingRightWidth,
+  } = metrics;
 
-  const { gridX, columnHeaderHeight, floatingLeftWidth, floatingRightWidth } =
-    metrics;
-
+  // Header rows are painted down from the top of the canvas, not up from the
+  // grid content, as bars such as the IrisGrid filter bar sit between the two
+  const y = (columnHeaderMaxDepth - depth - 1) * columnHeaderHeight;
   // Headers sit above the grid content, so the scroll bars never cover them
   const right = metrics.width - gridX;
   return clipGridA11yRect(
-    // The bottom level header sits directly above the grid content
-    { x, y: -columnHeaderHeight, width, height: columnHeaderHeight },
+    { x, y, width, height: columnHeaderHeight },
     {
       left: isFloatingColumn ? 0 : floatingLeftWidth,
-      top: -columnHeaderHeight,
+      top: y,
       right: isFloatingColumn ? right : right - floatingRightWidth,
-      bottom: 0,
+      bottom: y + columnHeaderHeight,
     },
-    metrics
+    { x: gridX, y: 0 }
   );
+}
+
+/** The part of the grid a column is painted in. Each is painted separately */
+type GridA11yColumnPane = 'left' | 'scrolling' | 'right';
+
+/** Panes in the order they appear on screen */
+const COLUMN_PANE_ORDER: Record<GridA11yColumnPane, number> = {
+  left: 0,
+  scrolling: 1,
+  right: 2,
+};
+
+/** A bottom level header in the snapshot, along with what groups are built from */
+type GridA11yHeaderColumn = {
+  column: VisibleIndex;
+  modelColumn: ModelIndex;
+  pane: GridA11yColumnPane;
+};
+
+/**
+ * Get the column header groups at one depth, built from the bottom level
+ * headers in the snapshot so each group spans whole snapshot columns.
+ * @param model The model being displayed
+ * @param metrics Metrics of the last render
+ * @param headerColumns The bottom level headers in the snapshot, in on screen order
+ * @param depth The depth to get the groups at, 1 or more
+ * @returns The groups at this depth, left to right
+ */
+function getColumnGroups(
+  model: GridModel,
+  metrics: GridMetrics,
+  headerColumns: readonly GridA11yHeaderColumn[],
+  depth: number
+): GridA11yColumnGroupSnapshot[] {
+  const groups: GridA11yColumnGroupSnapshot[] = [];
+  const runs: GridA11yHeaderColumn[][] = [];
+  // Hidden columns are left out of the snapshot but are still walked by the
+  // renderer, so a hidden column from another group splits the boxes either side
+  const isSameGroupThrough = (
+    from: VisibleIndex,
+    to: VisibleIndex
+  ): boolean => {
+    for (let column = from; column < to; column += 1) {
+      const modelColumn = metrics.modelColumns.get(column);
+      const nextModelColumn = metrics.modelColumns.get(column + 1);
+      if (
+        modelColumn == null ||
+        nextModelColumn == null ||
+        !GridUtils.isSameColumnGroupAtDepth(
+          model,
+          depth,
+          modelColumn,
+          nextModelColumn
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+  headerColumns.forEach(headerColumn => {
+    const run = runs.at(-1);
+    const prev = run?.at(-1);
+    // Each pane is painted separately, so a group split by a frozen boundary
+    // is two boxes on screen
+    if (
+      run != null &&
+      prev != null &&
+      prev.pane === headerColumn.pane &&
+      isSameGroupThrough(prev.column, headerColumn.column)
+    ) {
+      run.push(headerColumn);
+    } else {
+      runs.push([headerColumn]);
+    }
+  });
+
+  runs.forEach(run => {
+    const first = run[0];
+    const last = run[run.length - 1];
+    // Columns without a group at this depth have no text, and nothing is painted there
+    const text = model.textForColumnHeader(first.modelColumn, depth);
+    const left = metrics.allColumnXs.get(first.column);
+    const lastX = metrics.allColumnXs.get(last.column);
+    const lastWidth = metrics.allColumnWidths.get(last.column);
+    if (text == null || left == null || lastX == null || lastWidth == null) {
+      return;
+    }
+    const rect = getColumnHeaderRect(
+      metrics,
+      left,
+      lastX + lastWidth - left,
+      depth,
+      first.pane !== 'scrolling'
+    );
+    if (rect == null) {
+      return;
+    }
+    groups.push({
+      startColumn: first.column,
+      endColumn: last.column,
+      span: run.length,
+      depth,
+      text,
+      rect,
+    });
+  });
+  return groups;
 }
 
 /**
@@ -308,12 +460,22 @@ export function createGridA11ySnapshot(
   // Floating columns/rows are pinned to the edges of the grid and can also
   // appear in the visible ranges, so dedupe them and describe everything in
   // the order it appears on screen
+  // Scrolling columns slide underneath the frozen left columns, so x alone
+  // would interleave the two; order by pane first, as they are painted
+  const getColumnPane = (column: VisibleIndex): GridA11yColumnPane => {
+    if (!floatingColumns.has(column)) {
+      return 'scrolling';
+    }
+    return column < metrics.floatingLeftColumnCount ? 'left' : 'right';
+  };
   const snapshotColumns = [
     ...new Set([...metrics.floatingColumns, ...metrics.visibleColumns]),
   ]
     .filter(column => !isHiddenColumn(column))
     .sort(
       (a, b) =>
+        COLUMN_PANE_ORDER[getColumnPane(a)] -
+          COLUMN_PANE_ORDER[getColumnPane(b)] ||
         (metrics.allColumnXs.get(a) ?? 0) - (metrics.allColumnXs.get(b) ?? 0)
     );
 
@@ -325,22 +487,35 @@ export function createGridA11ySnapshot(
       (a, b) => (metrics.allRowYs.get(a) ?? 0) - (metrics.allRowYs.get(b) ?? 0)
     );
 
+  const headerColumns: GridA11yHeaderColumn[] = [];
   snapshotColumns.forEach(column => {
     const modelColumn = metrics.modelColumns.get(column);
-    const rect = getColumnHeaderRect(
-      metrics,
-      column,
-      floatingColumns.has(column)
-    );
-    if (modelColumn == null || rect == null) {
+    const x = metrics.allColumnXs.get(column);
+    const width = metrics.allColumnWidths.get(column);
+    if (modelColumn == null || x == null || width == null) {
       return;
     }
+    const isFloating = floatingColumns.has(column);
+    const rect = getColumnHeaderRect(metrics, x, width, 0, isFloating);
+    if (rect == null) {
+      return;
+    }
+    headerColumns.push({ column, modelColumn, pane: getColumnPane(column) });
     columns.push({
       column,
       text: model.textForColumnHeader(modelColumn, 0) ?? '',
       rect,
     });
   });
+
+  const headerRowCount = Math.max(1, metrics.columnHeaderMaxDepth);
+  const columnGroups: GridA11yColumnGroupRowSnapshot[] = [];
+  for (let depth = headerRowCount - 1; depth >= 1; depth -= 1) {
+    const groups = getColumnGroups(model, metrics, headerColumns, depth);
+    if (groups.length > 0) {
+      columnGroups.push({ depth, groups });
+    }
+  }
 
   snapshotRows.forEach(row => {
     const modelRow = metrics.modelRows.get(row);
@@ -385,6 +560,8 @@ export function createGridA11ySnapshot(
     description: `${getGridA11ySummary(model, selection)} ${viewport}`,
     rowCount,
     columnCount,
+    headerRowCount,
+    columnGroups,
     columns,
     rows,
   };
