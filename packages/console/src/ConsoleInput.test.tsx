@@ -184,3 +184,28 @@ describe('ConsoleInput session transition', () => {
     expect(session2.closeDocument).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('ConsoleInput initial focus', () => {
+  it('focuses the editor once it is initialized when nothing else has focus', async () => {
+    const session = makeSession();
+    const ref = React.createRef<ConsoleInput>();
+    const { container } = await renderConsoleInput(session, ref);
+
+    expect(container.querySelector('textarea')).toHaveFocus();
+  });
+
+  it('leaves focus alone when it moved elsewhere before the editor initialized', async () => {
+    const other = document.createElement('button');
+    document.body.appendChild(other);
+    other.focus();
+    try {
+      const session = makeSession();
+      const ref = React.createRef<ConsoleInput>();
+      await renderConsoleInput(session, ref);
+
+      expect(other).toHaveFocus();
+    } finally {
+      other.remove();
+    }
+  });
+});
