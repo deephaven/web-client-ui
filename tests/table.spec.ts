@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import {
   gotoPage,
   openTable,
+  openTableWithData,
   getColumnSeparatorPosition,
   dragColumnSeparator,
   markerAtCoordinates,
@@ -15,8 +16,7 @@ async function waitForLoadingDone(page: Page) {
 
 test('can open a simple table', async ({ page }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table');
-  // Now we should be able to check the snapshot
+  await openTableWithData(page, 'simple_table');
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
@@ -136,7 +136,7 @@ test('shift+clicking rows in a keyed table selects the range of keys', async ({
 
 test('can open a table with column header groups', async ({ page }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table_header_group');
+  await openTableWithData(page, 'simple_table_header_group');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
@@ -145,7 +145,7 @@ test('can open a table with column header groups and hidden columns', async ({
   page,
 }) => {
   await gotoPage(page, '');
-  await openTable(page, 'simple_table_header_group_hide');
+  await openTableWithData(page, 'simple_table_header_group_hide');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
