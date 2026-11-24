@@ -9,41 +9,19 @@ import './Stack.scss';
 import { SlideTransition } from '../transitions';
 
 export type StackProps = {
-  /**
-   * Stack views to animate between. Each child must be a React element with a
-   * stable `key`; views are tracked by that key across re-renders (primitive
-   * nodes such as strings/numbers are not supported).
-   */
+  /** Views to animate between. Each child needs a stable `key`; views are tracked by it. */
   children: React.ReactElement | React.ReactElement[];
   'data-testid'?: string;
 };
 
-/**
- * Returns the React `key` for an element, or `null` for non-elements.
- *
- * The parent that renders the stack may re-render frequently (e.g. an
- * `IrisGrid` re-renders on every table tick) and hand us brand-new element
- * objects that represent the same logical view. Tracking the animating views
- * by `key` (rather than by element reference) means those re-renders neither
- * retrigger the slide animation nor churn state every frame.
- *
- * Children are always run through `React.Children.toArray`, which assigns a
- * stable key to every element, so element views always have a key.
- */
+/** Returns the React `key` of an element, or `null` for non-elements. */
 function getViewKey(node: React.ReactNode): React.Key | null {
   return React.isValidElement(node) ? node.key : null;
 }
 
 /**
- * Finds the child that currently represents the view identified by `key`.
- *
- * Returning the *current* element (instead of a stored copy) keeps the rendered
- * view's content live: when a parent re-renders with a new element instance for
- * the same logical view, the view's latest props are forwarded to the mounted
- * component. This matters for prop-driven panels such as the "Organize Columns"
- * (`VisibilityOrderingBuilder`) sidebar, whose list contents and Undo/Redo state
- * arrive entirely via props from the grid - freezing those props would stop the
- * panel from reflecting moves, hides, groupings, and undo/redo.
+ * Finds the current element for `key`, so a view's props stay live when the
+ * parent re-renders (e.g. undo/redo state in `VisibilityOrderingBuilder`).
  */
 function findViewByKey(
   views: readonly React.ReactNode[],
@@ -59,22 +37,16 @@ function findViewByKey(
 const INERT_PROPS = { inert: '' } as React.HTMLAttributes<HTMLDivElement>;
 
 /**
- * A view rendered by the stack. `key` identifies the child it renders, and `id`
- * identifies the mounted instance. A view keeps its `id` while it moves from
- * pushing to main to popping, so it stays mounted. A view that is popped and
- * put back on top gets a new `id`, so it mounts as a new page instead of
- * reusing the state of the instance that is still animating out.
+ * `key` identifies the child to render. `id` identifies the mounted instance:
+ * it stays the same through pushing, main and popping, and a re-pushed key gets
+ * a new one so it doesn't reuse the instance that is still animating out.
  */
 type StackView = {
   key: React.Key;
   id: number;
 };
 
-/**
- * The popping view has already been removed from `children`, so we keep the
- * element instance itself - it is only animating out and its content does not
- * need to stay live.
- */
+/** Kept as an element because the popping view is already gone from `children`. */
 type PoppingView = {
   element: React.ReactNode;
   id: number;
@@ -85,11 +57,8 @@ type PoppingView = {
  * `pushingView` - A view that's currently being pushed. Slides from off screen right to overtop of `mainView`.
  * `poppingView` - A view that's currently being popped. Slides from overtop of `mainView` to right off screen.
  *
- * The views are tracked by `key`, not element identity, so that frequent
- * parent re-renders (which produce new-but-equivalent elements) neither
- * retrigger animations nor freeze content. The element actually rendered is
- * always looked up from the latest children via `findViewByKey`, keeping each
- * view's props live.
+ * Views are tracked by `key` rather than element identity, so parents that
+ * re-render with equivalent elements don't retrigger animations.
  */
 type StackState = {
   /** The children this state was derived from */
@@ -114,13 +83,8 @@ function getInitialState(
 }
 
 /**
- * Sets the proper pushing/popping views when the stack changes, which kicks
- * off their animation. Completion is handled in `Stack`'s `pushComplete` or
- * `popComplete`, and then the stack is in an idle state again.
- *
- * Views are compared by `key` (see `getViewKey`) so that a parent that
- * re-renders with new element instances for the same logical view does not
- * retrigger animations or churn state on every render.
+ * Sets the pushing/popping views when the stack changes, which starts their
+ * animation. `pushComplete` and `popComplete` return the stack to idle.
  */
 function getNextState(
   state: StackState,
@@ -142,8 +106,7 @@ function getNextState(
   };
 
   if (pushingView !== null) {
-    // We're mid-push. Keep the pushing view pointed at the current top view,
-    // but don't start a new animation.
+    // Mid-push: retarget the pushing view without starting a new animation
     if (topChildKey === mainViewKey) {
       // The stack went back to the main view before the push completed
       next.pushingView = null;
@@ -190,10 +153,8 @@ export function Stack({
   );
   const [state, setState] = useState(() => getInitialState(childrenArray));
 
-  // The state is adjusted while rendering rather than in an effect, so a render
-  // where `children` changed is never committed with stale views. Committing
-  // one would unmount a view whose key is missing from `children` and remount
-  // it once an effect caught up.
+  // Adjusted during render rather than in an effect so a commit never has a
+  // view key that is missing from `children`, which would unmount the view.
   let currentState = state;
   if (childrenArray !== state.childrenArray) {
     currentState = getNextState(state, childrenArray);
@@ -224,16 +185,10 @@ export function Stack({
   const mainElement = findViewByKey(childrenArray, mainView?.key ?? null);
   const pushingElement = findViewByKey(childrenArray, pushingView?.key ?? null);
 
-  // Every view is rendered as a sibling in the same parent, keyed by its
-  // instance `id` and ordered from the bottom of the stack to the top. When a
-  // view changes role (pushing -> main -> popping) only its wrapper's class
-  // changes, so React keeps the view mounted instead of remounting it.
-  // Remounting would discard the view's internal state and rerun its mount
-  // effects, and a popping view would rerun them with the stale props it was
-  // rendered with before it was popped.
-  // Each view's content sits in the same inner `view-content` wrapper in every
-  // role. Only that wrapper is made inert, so the outer popping wrapper still
-  // absorbs pointer input instead of letting clicks reach the main view.
+  // Views are keyed by `id` and keep the same inner `view-content` wrapper in
+  // every role, so changing role only changes the outer class and the view
+  // stays mounted. Only the popping `view-content` is inert; the outer wrapper
+  // still absorbs pointer input so clicks don't reach the main view.
   return (
     <div className="navigation-stack">
       {(mainView == null || mainElement == null) && (
