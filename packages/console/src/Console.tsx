@@ -257,6 +257,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
 
     this.updateDimensions();
+    this.updateLastScrollTop();
 
     if (
       this.consoleHistoryScrollPane.current &&
@@ -310,6 +311,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   queuedLogMessages: ConsoleHistoryActionItem[];
 
   resizeObserver: ResizeObserver;
+
+  lastScrollTop = 0;
 
   initConsoleLogging(): void {
     const { session } = this.props;
@@ -711,6 +714,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
     window.requestAnimationFrame(() => {
       pane.scrollTo({ top: pane.scrollHeight, behavior: 'instant' });
+      this.updateLastScrollTop();
     });
   }
 
@@ -718,16 +722,36 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     log.debug('handleScrollPaneScroll', event);
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
-    this.setState({
-      isScrollDecorationShown:
-        scrollPane.scrollTop > 0 &&
-        scrollPane.scrollHeight > scrollPane.clientHeight,
-      isStuckToBottom: this.isAtBottom(),
-    });
+    const { scrollHeight, clientHeight, scrollTop } = scrollPane;
+    // Scroll events are dispatched on the frame after the scroll happened, so
+    // the history may have grown or shrunk since. Being away from the bottom
+    // is only treated as the user scrolling up if the pane moved up further
+    // than shrinking the content would have clamped it to.
+    const maxScrollTop = scrollHeight - clientHeight;
+    // scrollTop can be fractional, so only apply tolerance if maxScrollTop changed
+    const isClamped = this.lastScrollTop > maxScrollTop;
+    const isScrolledUp =
+      scrollTop <
+      Math.min(this.lastScrollTop, maxScrollTop) - (isClamped ? 1 : 0);
+    this.updateLastScrollTop();
+    const isAtBottom = this.isAtBottom();
+    this.setState(({ isStuckToBottom }) => ({
+      isScrollDecorationShown: scrollTop > 0 && scrollHeight > clientHeight,
+      isStuckToBottom: isAtBottom || (isStuckToBottom && !isScrolledUp),
+    }));
+  }
+
+  updateLastScrollTop(): void {
+    const scrollPane = this.consoleHistoryScrollPane.current;
+    if (scrollPane == null) {
+      return;
+    }
+    this.lastScrollTop = scrollPane.scrollTop;
   }
 
   handleHistoryResize(entries: ResizeObserverEntry[]): void {
     log.debug('handleHistoryResize', entries);
+    this.updateLastScrollTop();
     const entry = entries[0];
     if (entry.contentRect.height > 0 && entry.contentRect.width > 0) {
       const { isStuckToBottom } = this.state;

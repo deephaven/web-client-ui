@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { TestUtils } from '@deephaven/test-utils';
 import Grid, { type GridProps } from './Grid';
 import GridRange from './GridRange';
+import GridMetricCalculator from './GridMetricCalculator';
 import GridRenderer from './GridRenderer';
 import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
 import GridUtils from './GridUtils';
@@ -1169,6 +1170,31 @@ describe('column separators', () => {
       expect(component.state.draggingColumnSeparator).toBeDefined();
     });
 
+    it('updates the column width metrics on every drag move', () => {
+      const component = makeGridComponent(new MockGridModel(), resizableTheme);
+      const separatorX = getColumnSeparatorX(0);
+      const headerY = getColumnHeaderY();
+      const initialWidth = component.metrics?.visibleColumnWidths.get(0) ?? 0;
+      expect(initialWidth).toBeGreaterThan(0);
+
+      mouseDown(0, 0, component, {}, separatorX, headerY);
+
+      fireEvent.mouseMove(component.canvas!, {
+        clientX: separatorX + 20,
+        clientY: headerY,
+      });
+      const draggedWidth = component.metrics?.visibleColumnWidths.get(0) ?? 0;
+      expect(draggedWidth).toBeGreaterThan(initialWidth);
+
+      fireEvent.mouseMove(component.canvas!, {
+        clientX: separatorX + 40,
+        clientY: headerY,
+      });
+      expect(component.metrics?.visibleColumnWidths.get(0)).toBe(
+        draggedWidth + 20
+      );
+    });
+
     it('should complete resize on mouse up', () => {
       const component = makeGridComponent(new MockGridModel(), resizableTheme);
       const separatorX = getColumnSeparatorX(0);
@@ -1815,5 +1841,150 @@ describe('css transform scale', () => {
     } as MouseEvent);
     expect(point.column).toBe(0);
     expect(point.row).toBe(0);
+  });
+});
+
+describe('metrics memoization', () => {
+  function makeSpiedGrid() {
+    const component = makeGridComponent();
+    const getMetrics = jest.spyOn(component.metricCalculator, 'getMetrics');
+    return { component, getMetrics };
+  }
+
+  it('does not recalculate metrics when drawing the state componentDidUpdate calculated', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    act(() => component.setState({ top: 5 }));
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    const { metrics } = component;
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(component.metrics).toBe(metrics);
+    expect(component.prevMetrics).toBe(metrics);
+  });
+
+  it('calculates metrics once per forced update', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateCanvas();
+    expect(getMetrics).not.toHaveBeenCalled();
+
+    act(() => component.forceUpdate());
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+  });
+
+  it('recalculates metrics when drawing a different state than was calculated', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateMetrics({ ...component.state, top: 3 });
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(2);
+    expect(getMetrics).toHaveBeenLastCalledWith(
+      expect.objectContaining({ top: 0 })
+    );
+  });
+
+  it('recalculates metrics when the canvas size changes', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+    jest
+      .spyOn(component.canvas as HTMLCanvasElement, 'clientWidth', 'get')
+      .mockReturnValue(VIEW_SIZE / 2);
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(getMetrics).toHaveBeenLastCalledWith(
+      expect.objectContaining({ width: VIEW_SIZE / 2 })
+    );
+  });
+
+  it('recalculates metrics when the metric calculator changes', () => {
+    const { component } = makeSpiedGrid();
+    const metricCalculator = new GridMetricCalculator();
+    const getMetrics = jest.spyOn(metricCalculator, 'getMetrics');
+    component.metricCalculator = metricCalculator;
+
+    component.updateCanvas();
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+  });
+
+  it('always recalculates metrics when updateMetrics is called directly', () => {
+    const { component, getMetrics } = makeSpiedGrid();
+
+    component.updateMetrics();
+    component.updateMetrics();
+    expect(getMetrics).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('theme', () => {
+  it('keeps a stable theme per grid when grids use different themes', () => {
+    const grid1 = makeGridComponent(new MockGridModel(), {
+      ...defaultTheme,
+      rowHeight: 10,
+    });
+    const grid2 = makeGridComponent(new MockGridModel(), {
+      ...defaultTheme,
+      rowHeight: 20,
+    });
+
+    const theme1 = grid1.getTheme();
+    const theme2 = grid2.getTheme();
+    expect(theme1.rowHeight).toBe(10);
+    expect(theme2.rowHeight).toBe(20);
+    expect(grid1.getTheme()).toBe(theme1);
+    expect(grid2.getTheme()).toBe(theme2);
+  });
+
+  it('shares the theme between grids with the same theme', () => {
+    const theme = { ...defaultTheme, rowHeight: 30 };
+    const grid1 = makeGridComponent(new MockGridModel(), theme);
+    const grid2 = makeGridComponent(new MockGridModel(), theme);
+
+    expect(grid1.getTheme()).toBe(grid2.getTheme());
+  });
+});
+
+describe('metrics updates', () => {
+  let frames: FrameRequestCallback[];
+
+  beforeEach(() => {
+    frames = [];
+    jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+      frames.push(cb);
+      return frames.length;
+    });
+  });
+
+  afterEach(() => {
+    jest.mocked(window.requestAnimationFrame).mockRestore();
+  });
+
+  function flushFrames() {
+    act(() => {
+      frames.splice(0).forEach(cb => cb(0));
+    });
+  }
+
+  it('redraws without recalculating metrics when only the pointer moves', () => {
+    const component = makeGridComponent();
+    flushFrames();
+    const getMetrics = jest.spyOn(component.metricCalculator, 'getMetrics');
+    const drawCanvas = jest.spyOn(component.renderer, 'drawCanvas');
+
+    mouseMove(2, 3, component);
+    flushFrames();
+
+    expect(drawCanvas).toHaveBeenCalled();
+    expect(getMetrics).not.toHaveBeenCalled();
+
+    act(() => component.forceUpdate());
+    flushFrames();
+
+    expect(getMetrics).toHaveBeenCalled();
   });
 });

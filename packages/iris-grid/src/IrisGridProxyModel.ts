@@ -98,32 +98,97 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.partition = null;
     this.selectDistinct = [];
 
-    // eslint-disable-next-line no-constructor-return
-    return new Proxy(this, {
+    // The prototype is fixed, so how a prop resolves against it can be cached.
+    // The get trap runs for every model access while rendering each cell, so
+    // avoiding repeated descriptor lookups is significant.
+    const PROTO_GETTER = 1;
+    const PROTO_PROP = 2;
+    const PROTO_NONE = 3;
+    const protoLookupCache = new Map<PropertyKey, number>();
+    const getProtoLookup = (target: object, prop: PropertyKey): number => {
+      let lookup = protoLookupCache.get(prop);
+      if (lookup === undefined) {
+        const proto = Object.getPrototypeOf(target);
+        const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+        if (descriptor?.get != null) {
+          lookup = PROTO_GETTER;
+        } else if (descriptor != null) {
+          lookup = PROTO_PROP;
+        } else {
+          lookup = PROTO_NONE;
+        }
+        protoLookupCache.set(prop, lookup);
+      }
+      return lookup;
+    };
+
+    // Inner model class methods called on this proxy run against the inner
+    // model so their internal `this` accesses don't go back through this trap,
+    // which would otherwise run for every property read while rendering each
+    // cell. Models wrapping this proxy (e.g. deephaven.ui's UITableModel) call
+    // these methods with themselves as `this`, which is kept so their overrides
+    // apply (e.g. `textForCell` calling an overridden `formatForCell`).
+    // Functions that are own properties of the inner model (e.g. arrow function
+    // fields, or spies replacing a method) are returned as is.
+    let boundModel: IrisGridModel | null = null;
+    const boundMethods = new Map<
+      PropertyKey,
+      { fn: (...args: unknown[]) => unknown; bound: unknown }
+    >();
+    const getBoundMethod = (
+      innerModel: IrisGridModel,
+      prop: PropertyKey,
+      fn: (...args: unknown[]) => unknown
+    ): unknown => {
+      if (boundModel !== innerModel) {
+        boundModel = innerModel;
+        boundMethods.clear();
+      }
+      const cached = boundMethods.get(prop);
+      if (cached?.fn === fn) {
+        return cached.bound;
+      }
+      const bound = function boundInnerMethod(
+        this: unknown,
+        ...args: unknown[]
+      ): unknown {
+        return fn.apply(
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          this === proxy || this == null ? innerModel : this,
+          args
+        );
+      };
+      boundMethods.set(prop, { fn, bound });
+      return bound;
+    };
+
+    const proxy = new Proxy(this, {
       // We want to use any properties on the proxy model if defined
       // If not, then proxy to the underlying model
       get(target, prop, receiver) {
-        // Does this class have a getter for the prop
-        // Getter functions are on the prototype
-        const proxyHasGetter =
-          Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), prop)
-            ?.get != null;
+        const protoLookup = getProtoLookup(target, prop);
 
-        if (proxyHasGetter) {
+        // Getter functions are on the prototype
+        if (protoLookup === PROTO_GETTER) {
           return Reflect.get(target, prop, receiver);
         }
 
-        // Does this class implement the property
-        const proxyHasProp = Object.prototype.hasOwnProperty.call(target, prop);
+        if (
+          protoLookup === PROTO_PROP ||
+          Object.prototype.hasOwnProperty.call(target, prop)
+        ) {
+          return Reflect.get(target, prop);
+        }
 
-        // Does the class implement a function for the property
-        const proxyHasFn = Object.prototype.hasOwnProperty.call(
-          Object.getPrototypeOf(target),
-          prop
-        );
-
-        const trueTarget = proxyHasProp || proxyHasFn ? target : target.model;
-        return Reflect.get(trueTarget, prop);
+        const { model: innerModel } = target;
+        const value = Reflect.get(innerModel, prop);
+        if (
+          typeof value !== 'function' ||
+          Object.prototype.hasOwnProperty.call(innerModel, prop)
+        ) {
+          return value;
+        }
+        return getBoundMethod(innerModel, prop, value);
       },
       set(target, prop, value) {
         const proxyHasSetter =
@@ -148,6 +213,9 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         return Reflect.has(target.model, prop);
       },
     });
+
+    // eslint-disable-next-line no-constructor-return
+    return proxy;
   }
 
   close(): void {
@@ -177,6 +245,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       oldModel.close();
     }
 
+    this.syncModelOptions(model);
     this.model = model;
 
     if (this.listenerCount > 0) {
@@ -395,6 +464,13 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.originalModel.partitionKeysTable();
   }
 
+  partitionBaseTable(): Promise<DhType.Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionBaseTable();
+  }
+
   partitionMergedTable(): Promise<DhType.Table> {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
@@ -512,6 +588,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   set formatter(formatter: Formatter) {
     this.originalModel.formatter = formatter;
+    this.syncModelOptions(this.model);
   }
 
   get columnAlignmentMap(): ReadonlyMap<string, CanvasTextAlign> {
@@ -520,6 +597,29 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   set columnAlignmentMap(columnAlignmentMap: Map<string, CanvasTextAlign>) {
     this.originalModel.columnAlignmentMap = columnAlignmentMap;
+    this.syncModelOptions(this.model);
+  }
+
+  /**
+   * Inner model methods run against the inner model, so it needs the same
+   * formatter and alignment as the original model.
+   */
+  private syncModelOptions(model: IrisGridModel): void {
+    if (model === this.originalModel) {
+      return;
+    }
+    const { formatter, columnAlignmentMap } = this.originalModel;
+    if (model.formatter !== formatter) {
+      // eslint-disable-next-line no-param-reassign
+      model.formatter = formatter;
+    }
+    if (model.columnAlignmentMap !== columnAlignmentMap) {
+      // eslint-disable-next-line no-param-reassign
+      model.columnAlignmentMap = columnAlignmentMap as Map<
+        string,
+        CanvasTextAlign
+      >;
+    }
   }
 
   setViewport = (
