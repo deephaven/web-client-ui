@@ -877,6 +877,40 @@ describe('createGridA11ySnapshot column header groups', () => {
     ]);
   });
 
+  it('keeps groups in the left and right frozen panes apart when nothing scrolls between them', () => {
+    const model = new GroupedGridModel(
+      [{ name: 'All', depth: 1, children: [0, 1, 2, 3, 4] }],
+      5
+    );
+    const snapshot = createGridA11ySnapshot(
+      model,
+      makeMetrics({
+        columns: [1, 2, 3],
+        hiddenColumns: [1, 2, 3],
+        floatingLeftColumns: [0],
+        floatingRightColumns: [4],
+        columnHeaderMaxDepth: 2,
+      })
+    );
+
+    expect(
+      snapshot.columnGroups[0].groups.map(({ startColumn, span, rect }) => ({
+        startColumn,
+        span,
+        x: rect.x,
+        width: rect.width,
+      }))
+    ).toEqual([
+      { startColumn: 0, span: 1, x: ROW_HEADER_WIDTH, width: COLUMN_WIDTH },
+      {
+        startColumn: 4,
+        span: 1,
+        x: ROW_HEADER_WIDTH + MAX_X - COLUMN_WIDTH,
+        width: COLUMN_WIDTH,
+      },
+    ]);
+  });
+
   it('clips groups that run past the edges of the canvas', () => {
     const model = new GroupedGridModel(
       [{ name: 'A', depth: 1, children: [0, 1] }],

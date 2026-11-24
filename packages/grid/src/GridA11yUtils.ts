@@ -263,11 +263,21 @@ function getColumnHeaderRect(
   );
 }
 
+/** The part of the grid a column is painted in. Each is painted separately */
+type GridA11yColumnPane = 'left' | 'scrolling' | 'right';
+
+/** Panes in the order they appear on screen */
+const COLUMN_PANE_ORDER: Record<GridA11yColumnPane, number> = {
+  left: 0,
+  scrolling: 1,
+  right: 2,
+};
+
 /** A bottom level header in the snapshot, along with what groups are built from */
 type GridA11yHeaderColumn = {
   column: VisibleIndex;
   modelColumn: ModelIndex;
-  isFloating: boolean;
+  pane: GridA11yColumnPane;
 };
 
 /**
@@ -314,12 +324,12 @@ function getColumnGroups(
   headerColumns.forEach(headerColumn => {
     const run = runs.at(-1);
     const prev = run?.at(-1);
-    // Frozen columns are painted separately from the scrolling columns, so a
-    // group split by the frozen boundary is two boxes on screen
+    // Each pane is painted separately, so a group split by a frozen boundary
+    // is two boxes on screen
     if (
       run != null &&
       prev != null &&
-      prev.isFloating === headerColumn.isFloating &&
+      prev.pane === headerColumn.pane &&
       isSameGroupThrough(prev.column, headerColumn.column)
     ) {
       run.push(headerColumn);
@@ -344,7 +354,7 @@ function getColumnGroups(
       left,
       lastX + lastWidth - left,
       depth,
-      first.isFloating
+      first.pane !== 'scrolling'
     );
     if (rect == null) {
       return;
@@ -452,11 +462,11 @@ export function createGridA11ySnapshot(
   // the order it appears on screen
   // Scrolling columns slide underneath the frozen left columns, so x alone
   // would interleave the two; order by pane first, as they are painted
-  const getColumnPane = (column: VisibleIndex): number => {
+  const getColumnPane = (column: VisibleIndex): GridA11yColumnPane => {
     if (!floatingColumns.has(column)) {
-      return 1;
+      return 'scrolling';
     }
-    return column < metrics.floatingLeftColumnCount ? 0 : 2;
+    return column < metrics.floatingLeftColumnCount ? 'left' : 'right';
   };
   const snapshotColumns = [
     ...new Set([...metrics.floatingColumns, ...metrics.visibleColumns]),
@@ -464,7 +474,8 @@ export function createGridA11ySnapshot(
     .filter(column => !isHiddenColumn(column))
     .sort(
       (a, b) =>
-        getColumnPane(a) - getColumnPane(b) ||
+        COLUMN_PANE_ORDER[getColumnPane(a)] -
+          COLUMN_PANE_ORDER[getColumnPane(b)] ||
         (metrics.allColumnXs.get(a) ?? 0) - (metrics.allColumnXs.get(b) ?? 0)
     );
 
@@ -489,7 +500,7 @@ export function createGridA11ySnapshot(
     if (rect == null) {
       return;
     }
-    headerColumns.push({ column, modelColumn, isFloating });
+    headerColumns.push({ column, modelColumn, pane: getColumnPane(column) });
     columns.push({
       column,
       text: model.textForColumnHeader(modelColumn, 0) ?? '',
