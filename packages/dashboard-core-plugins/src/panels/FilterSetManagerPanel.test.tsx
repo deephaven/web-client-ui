@@ -174,6 +174,64 @@ describe('FilterSetManagerPanel', () => {
     expect(dropdown).toHaveValue('ID 3');
     expect(setFiltersMock).toBeCalled();
   });
+
+  it('Restores omitted defaults when applying a full-state filter set', async () => {
+    const user = userEvent.setup();
+    const filterSets = [
+      {
+        id: 'ID 1',
+        title: 'SET 1',
+        restoreFullState: false,
+        panels: [],
+      },
+      {
+        id: 'ID 2',
+        title: 'SET 2',
+        restoreFullState: true,
+        panels: [
+          {
+            panelId: 'IrisGridPanel1',
+            state: {
+              irisGridState: { reverse: true, quickFilters: undefined },
+              gridState: { isStuckToBottom: true },
+            },
+            type: 'IrisGridPanel',
+          },
+        ],
+      },
+    ];
+    const setStateOverridesMock = jest.fn();
+    const { getByTestId } = renderFilterSetManagerPanel({
+      filterSets,
+      panelState: { isValueShown: true },
+      panelMap: new Map([
+        [
+          'IrisGridPanel1',
+          {
+            props: { glContainer: { _config: { id: 'IrisGridPanel1' } } },
+            setStateOverrides: setStateOverridesMock,
+          },
+        ],
+      ]),
+      tableMap: new Map([['IrisGridPanel1', 'IrisGridPanel1Table']]),
+    });
+
+    await user.selectOptions(getByTestId('value-card-filter-select'), 'ID 2');
+
+    expect(setStateOverridesMock).toHaveBeenCalledWith({
+      irisGridState: expect.objectContaining({
+        reverse: true,
+        sorts: [],
+        quickFilters: [],
+        searchValue: '',
+      }),
+      gridState: expect.objectContaining({
+        isStuckToBottom: true,
+        isStuckToRight: false,
+        movedColumns: [],
+      }),
+    });
+  });
 });
 
 describe('changeFilterIndexesToColumnNames', () => {

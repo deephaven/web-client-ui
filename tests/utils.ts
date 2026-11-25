@@ -52,9 +52,12 @@ export async function gotoPage(
   }
 ): Promise<void> {
   await page.goto(url, options);
+  // A restoring panel shows several spinners at once (e.g. the panel and the
+  // lazy grid). `not.toBeVisible` throws a strict mode violation for that, so
+  // wait for all of them to be gone instead.
   await expect(
     page.getByRole('progressbar', { name: 'Loading...', exact: true })
-  ).not.toBeVisible();
+  ).toHaveCount(0);
 }
 
 /**

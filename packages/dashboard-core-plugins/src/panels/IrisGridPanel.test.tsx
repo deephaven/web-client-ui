@@ -296,6 +296,117 @@ it('closes the base model if transformModel rejects', async () => {
   expect(baseModel.close).toHaveBeenCalledTimes(1);
 });
 
+/**
+ * Build the state IrisGrid reports through `onStateChange` from the props the
+ * panel passes it, as the IrisGrid constructor does for the persisted keys.
+ * IrisGrid is mocked in these tests, so this stands in for the real grid.
+ */
+function makeIrisGridStateFromProps(props: Record<string, any>) {
+  return {
+    advancedFilters: new Map(props.advancedFilters),
+    aggregationSettings: props.aggregationSettings,
+    customColumnFormatMap: new Map(props.customColumnFormatMap),
+    columnAlignmentMap: new Map(props.columnAlignmentMap),
+    conditionalFormats: props.conditionalFormats,
+    customColumns: props.customColumns,
+    frozenColumns: props.frozenColumns,
+    invertSearchColumns: props.invertSearchColumns,
+    isFilterBarShown: props.isFilterBarShown,
+    partitionConfig: props.partitionConfig,
+    pendingDataMap: props.pendingDataMap ?? new Map(),
+    quickFilters: new Map(props.quickFilters),
+    reverse: props.reverse,
+    rollupConfig: props.rollupConfig,
+    searchValue: props.searchValue,
+    selectDistinctColumns: props.selectDistinctColumns,
+    selectedSearchColumns: props.selectedSearchColumns ?? [],
+    showSearchBar: props.showSearchBar,
+    sorts: props.sorts,
+    columnHeaderGroups:
+      props.columnHeaderGroups ?? props.model.initialColumnHeaderGroups,
+  };
+}
+
+function makeGridStateFromProps(props: Record<string, any>) {
+  return {
+    isStuckToBottom: props.isStuckToBottom,
+    isStuckToRight: props.isStuckToRight,
+    movedColumns: props.movedColumns,
+    movedRows: props.movedRows,
+  };
+}
+
+/**
+ * Detects drift between the panel's initial state and the frozen defaults that
+ * `IrisGridUtils` omits when dehydrating. An unmodified panel should save
+ * almost nothing.
+ *
+ * If this fails with an unexpected key, a UI default changed. Add the key to
+ * the expected result: state with the new default is then saved explicitly,
+ * which only reduces the saving. Do not change the frozen default to match,
+ * since saved state relies on it (see the "frozen state defaults" tests in
+ * IrisGridUtils.test.ts).
+ */
+describe('saved panel state of an unmodified panel', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('matches the frozen defaults', async () => {
+    const onPanelStateUpdate = jest.fn();
+    MockIrisGrid.mockClear();
+    render(
+      <IrisGridPanel
+        makeModel={makeMakeModel()}
+        metadata={{ table: 'table' }}
+        glContainer={makeGlComponent() as unknown as Container}
+        glEventHub={makeGlComponent()}
+        user={TestUtils.REGULAR_USER}
+        inputFilters={[]}
+        links={[]}
+        workspace={{} as Workspace}
+        settings={{ timeZone: 'America/New_York' }}
+        panelState={undefined}
+        getDownloadWorker={() => undefined}
+        loadPlugin={() => undefined}
+        onPanelStateUpdate={onPanelStateUpdate}
+      />
+    );
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    const props = (
+      MockIrisGrid.mock.calls[
+        MockIrisGrid.mock.calls.length - 1
+      ] as unknown as [Record<string, any>]
+    )[0];
+
+    act(() => {
+      props.onStateChange(
+        makeIrisGridStateFromProps(props),
+        makeGridStateFromProps(props)
+      );
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(onPanelStateUpdate).toHaveBeenCalledTimes(1);
+    const [panelState] = onPanelStateUpdate.mock.calls[0];
+    // Compare what would be stored, i.e. without undefined values
+    const storedPanelState = JSON.parse(JSON.stringify(panelState));
+
+    expect(storedPanelState).toEqual({
+      // Not frozen defaults: an empty list differs from a missing value,
+      // which falls back to the model's column header groups
+      irisGridState: { columnHeaderGroups: [] },
+      gridState: {},
+      irisGridPanelState: {},
+      pluginState: null,
+    });
+  });
+});
+
 function makeCustomColumnsPanelState(customColumns: string[]) {
   return {
     gridState: {},
@@ -703,6 +814,7 @@ describe('cancelling and reconnecting during hydration', () => {
     const target = new EventTarget();
     const model = {
       originalColumns: transformedColumns,
+      received: {} as Record<string, unknown>,
       close: jest.fn(),
       addEventListener: target.addEventListener.bind(target),
       removeEventListener: target.removeEventListener.bind(target),
@@ -711,7 +823,10 @@ describe('cancelling and reconnecting during hydration', () => {
     ['rollupConfig', 'selectDistinctColumns'].forEach(name => {
       Object.defineProperty(model, name, {
         get: () => values[name],
-        set: () => onSet(name, model),
+        set: value => {
+          model.received[name] = value;
+          onSet(name, model);
+        },
       });
     });
     return model;
@@ -758,6 +873,35 @@ describe('cancelling and reconnecting during hydration', () => {
         'selectDistinctColumns',
       ])
     );
+  });
+
+  it('hydrates a rollup saved without the default aggregation settings', async () => {
+    const { makeModel } = makeTrackedMakeModel([makeTable()]);
+    const transformed = makeTransformedModel((name, model) => {
+      setTimeout(() =>
+        model.dispatchEvent(
+          new CustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED)
+        )
+      );
+    });
+    renderPanel({
+      makeModel,
+      transformModel: () => transformed,
+      // Slim state omits values equal to the defaults
+      irisGridState: {
+        customColumns: undefined,
+        rollupConfig: { columns: ['0'] },
+      },
+    });
+
+    await waitFor(() => expect(lastRenderedModel()).toBe(transformed));
+    expect(transformed.received).toEqual({
+      rollupConfig: IrisGridUtils.getModelRollupConfig(
+        transformedColumns,
+        { columns: ['0'] } as any,
+        { aggregations: [], showOnTop: false }
+      ),
+    });
   });
 
   it('skips rollup and select distinct the transform already restored', async () => {
