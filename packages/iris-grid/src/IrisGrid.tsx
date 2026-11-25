@@ -983,6 +983,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   componentDidUpdate(prevProps: IrisGridProps, prevState: IrisGridState): void {
+    // TMPDIAG
+    {
+      const changedP = Object.keys(this.props).filter(k => (this.props as any)[k] !== (prevProps as any)[k]);
+      const changedS = Object.keys(this.state).filter(k => (this.state as any)[k] !== (prevState as any)[k]);
+      // eslint-disable-next-line no-console
+      console.info('TMPDIAG IrisGrid.cDU props', changedP.join(','), 'state', changedS.join(','));
+    }
     const {
       inputFilters,
       isSelectingColumn,

@@ -455,6 +455,13 @@ export class IrisGridPanel extends PureComponent<
     prevProps: IrisGridPanelProps,
     prevState: IrisGridPanelState
   ): void {
+    // TMPDIAG
+    {
+      const changedP = Object.keys(this.props).filter(k => (this.props as any)[k] !== (prevProps as any)[k]);
+      const changedS = Object.keys(this.state).filter(k => (this.state as any)[k] !== (prevState as any)[k]);
+      // eslint-disable-next-line no-console
+      console.info('TMPDIAG IrisGridPanel.cDU props', changedP.join(','), 'state', changedS.join(','), new Error().stack?.split('\n').slice(1,4).join(' | '));
+    }
     const { model } = this.state;
     const { makeModel } = this.props;
     if (model !== prevState.model) {
