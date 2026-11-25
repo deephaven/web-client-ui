@@ -1,4 +1,4 @@
-# This workflow will perform unit tests of the web application and update code coverage reports
+# This workflow will perform unit tests of the web application
 
 name: Unit Tests
 
@@ -84,11 +84,3 @@ jobs:
         run: |
           npm run test:unit -- --cacheDirectory $PWD/.jest-cache
           npm run test:lint -- --lastCommit --cacheDirectory $PWD/.jest-cache
-
-      - name: Codecov report
-        uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage
-          flags: unit
