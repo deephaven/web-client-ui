@@ -263,7 +263,6 @@ describe('usePersistentState', () => {
       { wrapper: createWrapper({ onChange: mockOnChange }) }
     );
 
-    expect(mockOnChange).toHaveBeenCalledTimes(1);
     expect(mockOnChange).toHaveBeenLastCalledWith([
       [
         'test-panel::test-foo',
@@ -273,11 +272,11 @@ describe('usePersistentState', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Set' }));
     expect(mockOnChange).toHaveBeenLastCalledWith([
+      ['test-panel::test-undefined', expect.objectContaining({ state: 'set' })],
       [
         'test-panel::test-foo',
         expect.objectContaining({ state: 'default-foo' }),
       ],
-      ['test-panel::test-undefined', expect.objectContaining({ state: 'set' })],
     ]);
 
     await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
@@ -297,6 +296,61 @@ describe('usePersistentState', () => {
         expect.objectContaining({ state: 'updated-foo' }),
       ],
     ]);
+  });
+
+  it('should not persist a saved undefined state for a component that has not mounted', async () => {
+    const mockOnChange = jest.fn();
+
+    const { rerender } = render(
+      <>
+        <BasicTestComponent key="bar" label="bar" />
+        <BasicTestComponent key="baz" label="baz" />
+      </>,
+      {
+        wrapper: createWrapper({
+          onChange: mockOnChange,
+          initialState: [
+            [
+              'test-panel::test-foo',
+              { type: 'test-foo', version: 1, state: undefined },
+            ],
+            [
+              'test-panel::test-bar',
+              { type: 'test-bar', version: 1, state: 'persisted-bar' },
+            ],
+          ],
+        }),
+      }
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
+    ]);
+
+    rerender(<BasicTestComponent key="bar" label="bar" />);
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+    ]);
+
+    // The entry is kept in memory, so a component that mounts later still loads it
+    rerender(
+      <>
+        <BasicTestComponent key="foo" label="foo" />
+        <BasicTestComponent key="bar" label="bar" />
+      </>
+    );
+    expect(screen.getByText('undefined')).toBeInTheDocument();
   });
 
   it('should still detect duplicate hooks with undefined state', () => {
@@ -745,9 +799,11 @@ describe('usePersistentState migrations', () => {
         </>
       );
 
-      expect(screen.queryByText('undefined')).toBeNull();
-      expect(screen.getByText('default-foo')).toBeInTheDocument();
-      expect(screen.getByText('persisted-bar')).toBeInTheDocument();
+      // With deleteOnUnmount: false, foo keeps its undefined state for the session
+      expect(
+        screen.getByText(deleteOnUnmount ? 'default-foo' : 'undefined')
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('persisted-bar')).toHaveLength(1);
     }
   );
 });

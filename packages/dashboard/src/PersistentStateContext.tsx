@@ -10,7 +10,7 @@ import React, {
 export type PersistentStateContextType = {
   /**
    * Adds state to be persisted.
-   * If `state.state` is `undefined`, nothing is persisted and any existing entry is removed.
+   * If `state.state` is `undefined`, it is kept for this session but left out of the state passed to `onChange`.
    * @param hookId Unique ID for this hook instance
    * @param dhId The dhId of the component/panel.
    * @param state The state to persist. Needs to be JSON serializable.
@@ -80,6 +80,19 @@ function makeKey(dhId: string, type: string): PersistentStateKey {
 type PersistentStateKey = string;
 
 /**
+ * Gets the entries to persist. Entries with undefined state are left out because they
+ * load the same as no entry. They stay in the map so a component that mounts later
+ * in the session still loads them.
+ */
+function getPersistableEntries(
+  stateMap: Map<PersistentStateKey, PersistentState>
+): [PersistentStateKey, PersistentState][] {
+  return [...stateMap.entries()].filter(
+    ([, value]) => value?.state !== undefined
+  );
+}
+
+/**
  * Tracks all calls to the usePersistentState hook below this provider.
  * Keeps track of the state based on dhId and state type, and calls onChange when the state changes.
  * Limit to one state per (dhId, type) pair.
@@ -134,18 +147,9 @@ export function PersistentStateProvider(
         return;
       }
 
-      // An entry with undefined state loads the same as no entry, so don't write one.
-      // Removing a saved empty entry here also cleans up data saved by older versions.
-      if (state.state === undefined) {
-        if (stateMap.delete(key)) {
-          onChange([...stateMap.entries()]);
-        }
-        return;
-      }
-
       if (stateMap.get(key) !== state) {
         stateMap.set(key, state);
-        onChange([...stateMap.entries()]);
+        onChange(getPersistableEntries(stateMap));
       }
     },
     [isMounted, onChange, stateMap]
@@ -189,7 +193,7 @@ export function PersistentStateProvider(
         stateMap.delete(key);
         hookOwnership.current.delete(key);
         if (isMounted.current) {
-          onChange([...stateMap.entries()]);
+          onChange(getPersistableEntries(stateMap));
         }
       }
     },
