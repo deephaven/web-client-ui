@@ -143,11 +143,7 @@ export function PersistentStateProvider(
 
       hookOwnership.current.set(key, hookId);
 
-      if (!isMounted.current) {
-        return;
-      }
-
-      if (stateMap.get(key) !== state) {
+      if (isMounted.current && stateMap.get(key) !== state) {
         stateMap.set(key, state);
         onChange(getPersistableEntries(stateMap));
       }

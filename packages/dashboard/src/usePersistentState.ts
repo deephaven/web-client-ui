@@ -77,6 +77,7 @@ function migrateState(
  * track all calls to this hook and persist the value for future page loads.
  * Primarily used in Deephaven UI so we can persist state of multiple components within a panel.
  * A state of `undefined` is not persisted, so setting the state to `undefined` will reload as the initial state.
+ * Use `null` to persist an empty value that differs from the initial state.
  *
  * @param initialState The initial state if there is no previously persisted state.
  * @param config.type The type of the state. This identifier is used to validate the state being rehydrated. Should be unique to your component.
