@@ -175,7 +175,9 @@ class IrisGridTableModel
       return;
     }
     this.customColumnList = customColumns;
-    this.applyCustomColumns([...customColumns, ...this.formatColumns]);
+    this.applyOperation(() =>
+      this.table.applyCustomColumns([...customColumns, ...this.formatColumns])
+    );
   }
 
   get formatColumns(): DhType.CustomColumn[] {
@@ -199,7 +201,9 @@ class IrisGridTableModel
       return;
     }
     this.formatColumnList = formatColumns;
-    this.applyCustomColumns([...this.customColumns, ...formatColumns]);
+    this.applyOperation(() =>
+      this.table.applyCustomColumns([...this.customColumns, ...formatColumns])
+    );
   }
 
   updateFrozenColumns(columns: ColumnName[]): void {

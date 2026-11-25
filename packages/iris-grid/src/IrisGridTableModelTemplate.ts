@@ -161,14 +161,11 @@ class IrisGridTableModelTemplate<
 
   viewportData: UIViewportData<R> | null;
 
-  /** Columns used to key `viewportData` rows by model index */
-  private viewportDataColumns: readonly DhType.Column[] | null;
-
   /**
-   * Set while a custom columns change is in flight. Viewport subscriptions resolve
+   * Set while a table operation is in flight. Viewport subscriptions resolve
    * columns by index, which is unknown until the new table state is running.
    */
-  private isCustomColumnsPending: boolean;
+  private isOperationPending: boolean;
 
   formattedStringData: (string | null)[][];
 
@@ -238,8 +235,7 @@ class IrisGridTableModelTemplate<
     this.tableUtils = new TableUtils(dh);
     this.viewport = null;
     this.viewportData = null;
-    this.viewportDataColumns = null;
-    this.isCustomColumnsPending = false;
+    this.isOperationPending = false;
     this.formattedStringData = [];
     this.pendingStringData = [];
     this.isSaveInProgress = false;
@@ -328,8 +324,8 @@ class IrisGridTableModelTemplate<
       this.addTotalsListeners(this.totalsTable);
     }
 
-    // A pending custom columns request may have resolved while not listening
-    this.isCustomColumnsPending = false;
+    // A pending request may have resolved while not listening
+    this.isOperationPending = false;
     this.applyViewport();
   }
 
@@ -412,15 +408,15 @@ class IrisGridTableModelTemplate<
   }
 
   handleRequestFailed(event: DhType.Event<unknown>): void {
-    this.isCustomColumnsPending = false;
+    this.isOperationPending = false;
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, event)
     );
   }
 
   handleRequestSucceeded(): void {
-    if (this.isCustomColumnsPending) {
-      this.isCustomColumnsPending = false;
+    if (this.isOperationPending) {
+      this.isOperationPending = false;
       this.applyViewport();
     }
   }
@@ -1168,7 +1164,6 @@ class IrisGridTableModelTemplate<
     }
 
     this.viewportData = this.extractViewportData(data);
-    this.viewportDataColumns = this.columns;
     this.formattedStringData = [];
   }
 
@@ -1178,17 +1173,13 @@ class IrisGridTableModelTemplate<
    * column order or types change. Cells whose column was removed or changed type are dropped.
    */
   remapViewportData(): void {
-    const { columns, viewportData, viewportDataColumns } = this;
-    if (
-      viewportData == null ||
-      viewportDataColumns == null ||
-      viewportDataColumns === columns
-    ) {
+    const { columns, viewportData } = this;
+    if (viewportData == null || viewportData.columns === columns) {
       return;
     }
 
     const indexMap = new Map<ModelIndex, ModelIndex>();
-    viewportDataColumns.forEach((column, oldIndex) => {
+    viewportData.columns.forEach((column, oldIndex) => {
       const newIndex = this.getColumnIndexByName(column.name);
       if (newIndex != null && columns[newIndex].type === column.type) {
         indexMap.set(oldIndex, newIndex);
@@ -1197,6 +1188,7 @@ class IrisGridTableModelTemplate<
 
     this.viewportData = {
       ...viewportData,
+      columns,
       rows: viewportData.rows.map(row => {
         const data = new Map<ModelIndex | ColumnName, CellData>();
         row.data.forEach((cellData, key) => {
@@ -1212,21 +1204,18 @@ class IrisGridTableModelTemplate<
         return { ...row, data };
       }),
     };
-    this.viewportDataColumns = columns;
     this.formattedStringData = [];
   }
 
   /**
-   * Apply custom columns to the table. The viewport subscription is deferred until the
+   * Apply an operation to the table. The viewport subscription is deferred until the
    * new table state is running, as columns from the previous state may have different indices.
-   * @param customColumns Custom columns to apply
+   * @param apply Applies the operation to the table
    */
-  applyCustomColumns(
-    customColumns: (ColumnName | DhType.CustomColumn)[]
-  ): void {
+  applyOperation(apply: () => void): void {
     this.closeSubscription();
-    this.isCustomColumnsPending = true;
-    this.table.applyCustomColumns(customColumns);
+    this.isOperationPending = true;
+    apply();
     this.applyViewport();
   }
 
@@ -1300,6 +1289,7 @@ class IrisGridTableModelTemplate<
     const newData: UIViewportData<R> = {
       offset: data.offset,
       rows: [],
+      columns: this.columns,
     };
 
     const { columns } = data;
@@ -1497,8 +1487,8 @@ class IrisGridTableModelTemplate<
       if (!this.viewport) {
         return;
       }
-      if (this.isCustomColumnsPending) {
-        log.debug2('applyViewport deferred until custom columns are applied');
+      if (this.isOperationPending) {
+        log.debug2('applyViewport deferred until the operation is applied');
         return;
       }
 
