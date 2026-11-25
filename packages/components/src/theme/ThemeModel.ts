@@ -122,11 +122,6 @@ export const TRANSPARENT_PRELOAD_DATA_VARIABLES: Partial<
   Record<ThemePreloadColorVariable, string>
 > = {
   '--dh-color-bg': 'transparent',
-  // Styles don't provide fallback colors, so text such as API load errors
-  // needs a color before the theme arrives. The parent may be light or dark,
-  // so use a mid gray that is legible on both (4.5:1 on white, 4:1 on the
-  // dark theme's background).
-  '--dh-color-fg': '#767676',
   '--dh-color-loading-spinner-primary': 'transparent',
   '--dh-color-loading-spinner-secondary': 'transparent',
 };
