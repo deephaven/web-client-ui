@@ -455,13 +455,6 @@ export class IrisGridPanel extends PureComponent<
     prevProps: IrisGridPanelProps,
     prevState: IrisGridPanelState
   ): void {
-    // TMPDIAG
-    {
-      const changedP = Object.keys(this.props).filter(k => (this.props as any)[k] !== (prevProps as any)[k]);
-      const changedS = Object.keys(this.state).filter(k => (this.state as any)[k] !== (prevState as any)[k]);
-      // eslint-disable-next-line no-console
-      console.info('TMPDIAG IrisGridPanel.cDU props', changedP.join(','), 'state', changedS.join(','), new Error().stack?.split('\n').slice(1,4).join(' | '));
-    }
     const { model } = this.state;
     const { makeModel } = this.props;
     if (model !== prevState.model) {
@@ -813,11 +806,22 @@ export class IrisGridPanel extends PureComponent<
     value: boolean
   ): void {
     log.debug('handleAdvancedSettingsChange', key, value);
-    this.setState(({ advancedSettings }) =>
-      advancedSettings.get(key) === value
-        ? null
-        : { advancedSettings: new Map(advancedSettings).set(key, value) }
-    );
+    // React re-runs this updater whenever it is rebased over a pending lower
+    // priority update. Returning the same Map for the same base state keeps the
+    // IrisGrid prop stable, otherwise IrisGrid's state change callback re-renders
+    // the panel and replays the updater with a new Map indefinitely.
+    let base: Map<AdvancedSettingsType, boolean> | undefined;
+    let next: Map<AdvancedSettingsType, boolean> | undefined;
+    this.setState(({ advancedSettings }) => {
+      if (advancedSettings.get(key) === value) {
+        return null;
+      }
+      if (next === undefined || base !== advancedSettings) {
+        base = advancedSettings;
+        next = new Map(advancedSettings).set(key, value);
+      }
+      return { advancedSettings: next };
+    });
   }
 
   handlePluginFilter(filters: InputFilter[]): void {

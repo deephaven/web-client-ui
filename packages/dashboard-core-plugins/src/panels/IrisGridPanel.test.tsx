@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
+import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import {
+  AdvancedSettingsType,
   IrisGridMetricCalculator,
   IrisGridModel,
   IrisGridModelFactory,
@@ -12,6 +14,7 @@ import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
 import { type Workspace } from '@deephaven/redux';
+import { assertNotNull } from '@deephaven/utils';
 import { IrisGridPanel } from './IrisGridPanel';
 
 const MockIrisGrid: React.FC & jest.Mock = jest.fn(() => null);
@@ -196,6 +199,69 @@ it('passes undefined transformTableOptions when the prop is omitted', async () =
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBeUndefined();
+});
+
+it('keeps a stable advancedSettings map when the change is rebased over a pending update', async () => {
+  MockIrisGrid.mockClear();
+  // IrisGrid reports its state to the panel on every update, which schedules a
+  // panel update during the commit
+  MockIrisGrid.mockImplementation(({ onStateChange }) => {
+    React.useLayoutEffect(() => {
+      onStateChange({}, {});
+    });
+    return null;
+  });
+  const ref = React.createRef<IrisGridPanel>();
+  try {
+    render(
+      <IrisGridPanel
+        ref={ref}
+        makeModel={makeMakeModel()}
+        metadata={{ type: 'Table', name: 'table' }}
+        glContainer={makeGlComponent() as unknown as Container}
+        glEventHub={makeGlComponent()}
+        user={TestUtils.REGULAR_USER}
+        inputFilters={[]}
+        links={[]}
+        workspace={{} as Workspace}
+        settings={{ timeZone: 'America/New_York' }}
+        panelState={undefined}
+        getDownloadWorker={() => undefined}
+        loadPlugin={() => undefined}
+      />
+    );
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    const panel = ref.current;
+    assertNotNull(panel);
+    const { calls } = MockIrisGrid.mock;
+    const { onAdvancedSettingsChange } = calls[calls.length - 1][0];
+    MockIrisGrid.mockClear();
+
+    act(() => {
+      // A lower priority panel update (e.g. the debounced panel state save) is
+      // still pending when the setting is toggled, so the toggle is rebased
+      React.startTransition(() => {
+        panel.setState({ isLoaded: true });
+      });
+      flushSync(() => {
+        onAdvancedSettingsChange(
+          AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS,
+          true
+        );
+      });
+    });
+
+    const advancedSettingsMaps = new Set(
+      MockIrisGrid.mock.calls.map(([props]) => props.advancedSettings)
+    );
+    expect(advancedSettingsMaps.size).toBe(1);
+    const [advancedSettings] = advancedSettingsMaps;
+    expect(
+      advancedSettings.get(AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS)
+    ).toBe(true);
+  } finally {
+    MockIrisGrid.mockImplementation(() => null);
+  }
 });
 
 it('applies transformModel to the built model before passing it to IrisGrid', async () => {
