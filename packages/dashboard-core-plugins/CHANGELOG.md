@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.3](https://github.com/deephaven/web-client-ui/compare/v1.34.2...v1.34.3) (2026-11-25)
+
+### Bug Fixes
+
+- DH-24324: Move model transform after custom columns in the model queue ([#2821](https://github.com/deephaven/web-client-ui/issues/2821)) ([ba00829](https://github.com/deephaven/web-client-ui/commit/ba008292e9ee6c6b09c491ef705e29d316f787d0))
+
 ## [1.34.2](https://github.com/deephaven/web-client-ui/compare/v1.34.1...v1.34.2) (2026-11-20)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

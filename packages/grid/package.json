@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/grid",
-  "version": "1.34.1",
+  "version": "1.34.3",
   "description": "Deephaven React grid component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

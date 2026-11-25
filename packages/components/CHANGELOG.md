@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.3](https://github.com/deephaven/web-client-ui/compare/v1.34.2...v1.34.3) (2026-11-25)
+
+### Bug Fixes
+
+- Keep Stack views mounted across push and pop transitions ([#2789](https://github.com/deephaven/web-client-ui/issues/2789)) ([4883379](https://github.com/deephaven/web-client-ui/commit/48833794247a767513e08dd86fcca48d9356ac29)), closes [#2785](https://github.com/deephaven/web-client-ui/issues/2785) [#2793](https://github.com/deephaven/web-client-ui/issues/2793)
+
 ## [1.34.0](https://github.com/deephaven/web-client-ui/compare/v1.33.2...v1.34.0) (2026-11-18)
 
 **Note:** Version bump only for package @deephaven/components

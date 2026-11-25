@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.3](https://github.com/deephaven/web-client-ui/compare/v1.34.2...v1.34.3) (2026-11-25)
+
+### Bug Fixes
+
+- Keep grid hover coordinates when WebKit reports a leave during a drag ([#2825](https://github.com/deephaven/web-client-ui/issues/2825)) ([70fd8db](https://github.com/deephaven/web-client-ui/commit/70fd8dbf20bc164ba552d729e61d0f984b908288)), closes [#2819](https://github.com/deephaven/web-client-ui/issues/2819)
+
 ## [1.34.1](https://github.com/deephaven/web-client-ui/compare/v1.34.0...v1.34.1) (2026-11-19)
 
 ### Bug Fixes

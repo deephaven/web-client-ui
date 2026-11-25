@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.34.3](https://github.com/deephaven/web-client-ui/compare/v1.34.2...v1.34.3) (2026-11-25)
+
+### Bug Fixes
+
+- DH-24324: Move model transform after custom columns in the model queue ([#2821](https://github.com/deephaven/web-client-ui/issues/2821)) ([ba00829](https://github.com/deephaven/web-client-ui/commit/ba008292e9ee6c6b09c491ef705e29d316f787d0))
+- DH-24490: Fix advancedFilter applying same filter multiple times ([#2849](https://github.com/deephaven/web-client-ui/issues/2849)) ([31931ad](https://github.com/deephaven/web-client-ui/commit/31931ad1b2ad3452ff46bfdad36ff39a8021d806))
+- **iris-grid:** DH-24329: Don't overwrite quick filter input while typing ([#2847](https://github.com/deephaven/web-client-ui/issues/2847)) ([84e3ba1](https://github.com/deephaven/web-client-ui/commit/84e3ba1791649d8c6222532278826c229372043e))
+- Support standard JS RangeSet iterators in CSV download ([#2846](https://github.com/deephaven/web-client-ui/issues/2846)) ([3b430ca](https://github.com/deephaven/web-client-ui/commit/3b430ca37731c49fc42796fe526eb4df3bf0f8ad)), closes [#2844](https://github.com/deephaven/web-client-ui/issues/2844), references [deephaven-core#8300](https://github.com/deephaven-core/issues/8300) [#2842](https://github.com/deephaven/web-client-ui/issues/2842)
+
 ## [1.34.2](https://github.com/deephaven/web-client-ui/compare/v1.34.1...v1.34.2) (2026-11-20)
 
 ### Bug Fixes
