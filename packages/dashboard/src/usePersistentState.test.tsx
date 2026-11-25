@@ -202,9 +202,11 @@ describe('usePersistentState', () => {
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
-  it('should persist explicit undefined', () => {
+  it('should load a saved undefined state and remove the empty entry', () => {
+    const mockOnChange = jest.fn();
     render(FooBarBaz, {
       wrapper: createWrapper({
+        onChange: mockOnChange,
         initialState: [
           [
             'test-panel::test-foo',
@@ -221,6 +223,151 @@ describe('usePersistentState', () => {
     expect(screen.getByText('undefined')).toBeInTheDocument();
     expect(screen.getByText('persisted-bar')).toBeInTheDocument();
     expect(screen.getByText('default-baz')).toBeInTheDocument();
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'persisted-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
+    ]);
+  });
+
+  it('should not persist undefined state', async () => {
+    function UndefinedComponent() {
+      const [state, setState] = usePersistentState<string | undefined>(
+        undefined,
+        { type: 'test-undefined', version: 1 }
+      );
+      return (
+        <div>
+          <span>{`${state}`}</span>
+          <button type="button" onClick={() => setState('set')}>
+            Set
+          </button>
+          <button type="button" onClick={() => setState(undefined)}>
+            Clear
+          </button>
+        </div>
+      );
+    }
+    const mockOnChange = jest.fn();
+
+    render(
+      <>
+        <UndefinedComponent />
+        <BasicTestComponent label="foo" />
+      </>,
+      { wrapper: createWrapper({ onChange: mockOnChange }) }
+    );
+
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+    ]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Set' }));
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      ['test-panel::test-undefined', expect.objectContaining({ state: 'set' })],
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+    ]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'default-foo' }),
+      ],
+    ]);
+
+    mockOnChange.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'Update foo' }));
+    expect(mockOnChange).toHaveBeenCalledTimes(1);
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-foo',
+        expect.objectContaining({ state: 'updated-foo' }),
+      ],
+    ]);
+  });
+
+  it('should not persist a saved undefined state for a component that has not mounted', async () => {
+    const mockOnChange = jest.fn();
+
+    const { rerender } = render(
+      <>
+        <BasicTestComponent key="bar" label="bar" />
+        <BasicTestComponent key="baz" label="baz" />
+      </>,
+      {
+        wrapper: createWrapper({
+          onChange: mockOnChange,
+          initialState: [
+            [
+              'test-panel::test-foo',
+              { type: 'test-foo', version: 1, state: undefined },
+            ],
+            [
+              'test-panel::test-bar',
+              { type: 'test-bar', version: 1, state: 'persisted-bar' },
+            ],
+          ],
+        }),
+      }
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update bar' }));
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+      [
+        'test-panel::test-baz',
+        expect.objectContaining({ state: 'default-baz' }),
+      ],
+    ]);
+
+    rerender(<BasicTestComponent key="bar" label="bar" />);
+    expect(mockOnChange).toHaveBeenLastCalledWith([
+      [
+        'test-panel::test-bar',
+        expect.objectContaining({ state: 'updated-bar' }),
+      ],
+    ]);
+
+    // The entry is kept in memory, so a component that mounts later still loads it
+    rerender(
+      <>
+        <BasicTestComponent key="foo" label="foo" />
+        <BasicTestComponent key="bar" label="bar" />
+      </>
+    );
+    expect(screen.getByText('undefined')).toBeInTheDocument();
+  });
+
+  it('should still detect duplicate hooks with undefined state', () => {
+    function UndefinedComponent() {
+      usePersistentState(undefined, { type: 'test-dup', version: 1 });
+      return null;
+    }
+    TestUtils.disableConsoleOutput();
+    expect(() =>
+      render(
+        <>
+          <UndefinedComponent />
+          <UndefinedComponent />
+        </>,
+        { wrapper: createWrapper({}) }
+      )
+    ).toThrow(/Detected multiple persistent states of type test-dup/);
   });
 
   it('should trigger onChange when a component unmounts', async () => {
@@ -631,4 +778,32 @@ describe('usePersistentState migrations', () => {
       ],
     ]);
   });
+
+  test.each([false, true])(
+    'does not consume the next legacy entry when a component remounts (deleteOnUnmount: %s)',
+    deleteOnUnmount => {
+      const initialState = [
+        { type: 'test-foo', version: 1, state: undefined },
+        { type: 'test-bar', version: 1, state: 'persisted-bar' },
+      ] as unknown as [string, PersistentState][];
+
+      const { rerender } = render(
+        <BasicTestComponent label="foo" deleteOnUnmount={deleteOnUnmount} />,
+        { wrapper: createWrapper({ initialState }) }
+      );
+      rerender(<div />);
+      rerender(
+        <>
+          <BasicTestComponent label="foo" deleteOnUnmount={deleteOnUnmount} />
+          <BasicTestComponent label="bar" />
+        </>
+      );
+
+      // With deleteOnUnmount: false, foo keeps its undefined state for the session
+      expect(
+        screen.getByText(deleteOnUnmount ? 'default-foo' : 'undefined')
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('persisted-bar')).toHaveLength(1);
+    }
+  );
 });

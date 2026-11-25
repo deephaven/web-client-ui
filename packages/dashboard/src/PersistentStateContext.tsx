@@ -10,6 +10,7 @@ import React, {
 export type PersistentStateContextType = {
   /**
    * Adds state to be persisted.
+   * If `state.state` is `undefined`, it is kept for this session but left out of the state passed to `onChange`.
    * @param hookId Unique ID for this hook instance
    * @param dhId The dhId of the component/panel.
    * @param state The state to persist. Needs to be JSON serializable.
@@ -79,6 +80,19 @@ function makeKey(dhId: string, type: string): PersistentStateKey {
 type PersistentStateKey = string;
 
 /**
+ * Gets the entries to persist. Entries with undefined state are left out because they
+ * load the same as no entry. They stay in the map so a component that mounts later
+ * in the session still loads them.
+ */
+function getPersistableEntries(
+  stateMap: Map<PersistentStateKey, PersistentState>
+): [PersistentStateKey, PersistentState][] {
+  return [...stateMap.entries()].filter(
+    ([, value]) => value?.state !== undefined
+  );
+}
+
+/**
  * Tracks all calls to the usePersistentState hook below this provider.
  * Keeps track of the state based on dhId and state type, and calls onChange when the state changes.
  * Limit to one state per (dhId, type) pair.
@@ -131,7 +145,7 @@ export function PersistentStateProvider(
 
       if (isMounted.current && stateMap.get(key) !== state) {
         stateMap.set(key, state);
-        onChange([...stateMap.entries()]);
+        onChange(getPersistableEntries(stateMap));
       }
     },
     [isMounted, onChange, stateMap]
@@ -139,11 +153,21 @@ export function PersistentStateProvider(
 
   const initialStateIterator = useRef(initialState[Symbol.iterator]());
 
+  // Keys that have already consumed an entry from legacy array state.
+  // Tracked separately from stateMap because entries can be removed from stateMap,
+  // and a remount must not consume another component's legacy entry.
+  const migratedKeys = useRef(new Set<PersistentStateKey>());
+
   const getState = useCallback(
     <S,>(id: string, type: string): PersistentState<S> | undefined => {
       const key = makeKey(id, type);
       const state = stateMap.get(key);
-      if (state == null && needsMigrationToMap.current) {
+      if (
+        state == null &&
+        needsMigrationToMap.current &&
+        !migratedKeys.current.has(key)
+      ) {
+        migratedKeys.current.add(key);
         const { value } = initialStateIterator.current.next();
         const stateVal = value as PersistentState<S> | undefined;
         stateMap.set(key, stateVal as PersistentState);
@@ -165,7 +189,7 @@ export function PersistentStateProvider(
         stateMap.delete(key);
         hookOwnership.current.delete(key);
         if (isMounted.current) {
-          onChange([...stateMap.entries()]);
+          onChange(getPersistableEntries(stateMap));
         }
       }
     },
