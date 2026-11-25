@@ -166,6 +166,18 @@ describe('IrisGridProxyModel', () => {
       );
     });
 
+    it('runs inner model class methods against a model wrapping the proxy', () => {
+      // Mirrors models like deephaven.ui's UITableModel, which forward props
+      // they don't implement to the proxy, and rely on inherited methods
+      // calling their overrides through `this`
+      const wrappingModel = new Proxy(
+        {},
+        { get: (target, prop) => Reflect.get(proxyModel, prop) }
+      ) as TestProxyModel;
+
+      expect(wrappingModel.testUnderlyingFunction()).toBe(wrappingModel);
+    });
+
     it('runs methods against the current inner model after it changes', () => {
       const newModel = irisGridTestUtils.makeModel();
       proxyModel.setModel(newModel);

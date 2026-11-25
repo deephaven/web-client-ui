@@ -1,44 +1,27 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { usePrevious } from '@deephaven/react-hooks';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import './Stack.scss';
 import { SlideTransition } from '../transitions';
 
 export type StackProps = {
-  /**
-   * Stack views to animate between. Each child must be a React element with a
-   * stable `key`; views are tracked by that key across re-renders (primitive
-   * nodes such as strings/numbers are not supported).
-   */
+  /** Views to animate between. Each child needs a stable `key`; views are tracked by it. */
   children: React.ReactElement | React.ReactElement[];
   'data-testid'?: string;
 };
 
-/**
- * Returns the React `key` for an element, or `null` for non-elements.
- *
- * The parent that renders the stack may re-render frequently (e.g. an
- * `IrisGrid` re-renders on every table tick) and hand us brand-new element
- * objects that represent the same logical view. Tracking the animating views
- * by `key` (rather than by element reference) means those re-renders neither
- * retrigger the slide animation nor churn state every frame.
- *
- * Children are always run through `React.Children.toArray`, which assigns a
- * stable key to every element, so element views always have a key.
- */
+/** Returns the React `key` of an element, or `null` for non-elements. */
 function getViewKey(node: React.ReactNode): React.Key | null {
   return React.isValidElement(node) ? node.key : null;
 }
 
 /**
- * Finds the child that currently represents the view identified by `key`.
- *
- * Returning the *current* element (instead of a stored copy) keeps the rendered
- * view's content live: when a parent re-renders with a new element instance for
- * the same logical view, the view's latest props are forwarded to the mounted
- * component. This matters for prop-driven panels such as the "Organize Columns"
- * (`VisibilityOrderingBuilder`) sidebar, whose list contents and Undo/Redo state
- * arrive entirely via props from the grid - freezing those props would stop the
- * panel from reflecting moves, hides, groupings, and undo/redo.
+ * Finds the current element for `key`, so a view's props stay live when the
+ * parent re-renders (e.g. undo/redo state in `VisibilityOrderingBuilder`).
  */
 function findViewByKey(
   views: readonly React.ReactNode[],
@@ -48,6 +31,112 @@ function findViewByKey(
     return null;
   }
   return views.find(view => getViewKey(view) === key) ?? null;
+}
+
+// React 18's types don't include `inert`
+const INERT_PROPS = { inert: '' } as React.HTMLAttributes<HTMLDivElement>;
+
+/**
+ * `key` identifies the child to render. `id` identifies the mounted instance:
+ * it stays the same through pushing, main and popping, and a re-pushed key gets
+ * a new one so it doesn't reuse the instance that is still animating out.
+ */
+type StackView = {
+  key: React.Key;
+  id: number;
+};
+
+/** Kept as an element because the popping view is already gone from `children`. */
+type PoppingView = {
+  element: React.ReactNode;
+  id: number;
+};
+
+/**
+ * `mainView` - The main view of the stack, stationary, filling the container.
+ * `pushingView` - A view that's currently being pushed. Slides from off screen right to overtop of `mainView`.
+ * `poppingView` - A view that's currently being popped. Slides from overtop of `mainView` to right off screen.
+ *
+ * Views are tracked by `key` rather than element identity, so parents that
+ * re-render with equivalent elements don't retrigger animations.
+ */
+type StackState = {
+  /** The children this state was derived from */
+  childrenArray: readonly React.ReactNode[];
+  nextViewId: number;
+  mainView: StackView | null;
+  pushingView: StackView | null;
+  poppingView: PoppingView | null;
+};
+
+function getInitialState(
+  childrenArray: readonly React.ReactNode[]
+): StackState {
+  const key = getViewKey(childrenArray[childrenArray.length - 1]);
+  return {
+    childrenArray,
+    nextViewId: 1,
+    mainView: key == null ? null : { key, id: 0 },
+    pushingView: null,
+    poppingView: null,
+  };
+}
+
+/**
+ * Sets the pushing/popping views when the stack changes, which starts their
+ * animation. `pushComplete` and `popComplete` return the stack to idle.
+ */
+function getNextState(
+  state: StackState,
+  childrenArray: readonly React.ReactNode[]
+): StackState {
+  const { mainView, pushingView, poppingView } = state;
+  const prevChildrenArray = state.childrenArray;
+  const mainViewKey = mainView?.key ?? null;
+  const topChildKey = getViewKey(childrenArray[childrenArray.length - 1]);
+  const next: StackState = { ...state, childrenArray };
+
+  const createView = (): StackView | null => {
+    if (topChildKey == null) {
+      return null;
+    }
+    const view = { key: topChildKey, id: next.nextViewId };
+    next.nextViewId += 1;
+    return view;
+  };
+
+  if (pushingView !== null) {
+    // Mid-push: retarget the pushing view without starting a new animation
+    if (topChildKey === mainViewKey) {
+      // The stack went back to the main view before the push completed
+      next.pushingView = null;
+    } else if (topChildKey !== pushingView.key) {
+      // A different view was pushed mid-animation - animate to it instead
+      next.pushingView = createView();
+    }
+  } else if (topChildKey === mainViewKey) {
+    // The top view is unchanged, so there is nothing to animate
+  } else if (
+    poppingView !== null ||
+    childrenArray.length === prevChildrenArray.length ||
+    prevChildrenArray.length === 0
+  ) {
+    // Mid-pop, or the stack is the same size or was empty - just update the
+    // main view without starting a new animation
+    next.mainView = createView();
+  } else if (childrenArray.length > prevChildrenArray.length) {
+    // Stack has grown - start the push animation
+    next.pushingView = createView();
+  } else {
+    // Stack has shrunk - start the pop animation
+    next.mainView = createView();
+    const poppingElement = findViewByKey(prevChildrenArray, mainViewKey);
+    if (mainView !== null && poppingElement != null) {
+      next.poppingView = { element: poppingElement, id: mainView.id };
+    }
+  }
+
+  return next;
 }
 
 /**
@@ -62,117 +151,93 @@ export function Stack({
     () => React.Children.toArray(children),
     [children]
   );
-  const prevChildrenArray = usePrevious(childrenArray);
+  const [state, setState] = useState(() => getInitialState(childrenArray));
 
-  // The animating views are tracked by `key`, not element identity, so that
-  // frequent parent re-renders (which produce new-but-equivalent elements)
-  // neither retrigger animations nor freeze content. The element actually
-  // rendered is always looked up from the latest `childrenArray` via
-  // `findViewByKey`, keeping each view's props live.
-  const [mainViewKey, setMainViewKey] = useState<React.Key | null>(() =>
-    getViewKey(childrenArray[childrenArray.length - 1])
-  );
-
-  const [pushingViewKey, setPushingViewKey] = useState<React.Key | null>(null);
-
-  // The popping view has already been removed from `children`, so we keep the
-  // element instance itself - it is only animating out and its content does not
-  // need to stay live.
-  const [poppingView, setPoppingView] = useState<React.ReactNode>(null);
-
-  /**
-   * To do the animation effect, we just need to set the proper pushing/popping views when the stack changes.
-   * `mainView` - The main view of the stack, stationary, filling the container.
-   * `pushingView` - A view that's currently being pushed. Slides from off screen right to overtop of `mainView`.
-   * `poppingView` - A view that's currently being popped. Slides from overtop of `mainView` to right off screen.
-   *
-   * When the `pushingView` or `poppingView` is set, that will kick off their animation.
-   * Completion of the animation is handled in `pushComplete` or `popComplete`, and then the stack is in an idle state again.
-   *
-   * Views are compared by `key` (see `getViewKey`) so that a parent that
-   * re-renders with new element instances for the same logical view does not
-   * retrigger animations or churn state on every render.
-   */
-  useEffect(
-    function initAnimation() {
-      if (
-        prevChildrenArray === undefined ||
-        childrenArray === prevChildrenArray
-      ) {
-        return;
-      }
-      const topChildKey = getViewKey(childrenArray[childrenArray.length - 1]);
-
-      if (pushingViewKey !== null || poppingView !== null) {
-        // We're mid-animation. Keep the animating view pointed at the current
-        // top view, but don't start a new animation.
-        if (pushingViewKey !== null) {
-          if (topChildKey !== pushingViewKey) {
-            // A different view was pushed mid-animation - animate to it instead
-            setPushingViewKey(topChildKey);
-          }
-        } else if (topChildKey !== mainViewKey) {
-          setMainViewKey(topChildKey);
-        }
-      } else if (
-        childrenArray.length === prevChildrenArray.length ||
-        prevChildrenArray.length === 0
-      ) {
-        // Stack is the same size or we've just mounted - just update the view
-        if (topChildKey !== mainViewKey) {
-          setMainViewKey(topChildKey);
-        }
-      } else if (childrenArray.length > prevChildrenArray.length) {
-        // Stack has grown - start the push animation
-        setPushingViewKey(topChildKey);
-      } else {
-        // Stack has shrunk - start the pop animation
-        setMainViewKey(topChildKey);
-        setPoppingView(prevChildrenArray[prevChildrenArray.length - 1]);
-      }
-    },
-    [childrenArray, prevChildrenArray, pushingViewKey, poppingView, mainViewKey]
-  );
+  // Adjusted during render rather than in an effect so a commit never has a
+  // view key that is missing from `children`, which would unmount the view.
+  let currentState = state;
+  if (childrenArray !== state.childrenArray) {
+    currentState = getNextState(state, childrenArray);
+    setState(currentState);
+  }
+  const { mainView, pushingView, poppingView } = currentState;
 
   const pushComplete = useCallback(() => {
-    setMainViewKey(pushingViewKey);
-    setPushingViewKey(null);
-  }, [pushingViewKey]);
-
-  const popComplete = useCallback(() => {
-    setPoppingView(null);
+    setState(s => ({ ...s, mainView: s.pushingView, pushingView: null }));
   }, []);
 
-  const mainView = findViewByKey(childrenArray, mainViewKey);
-  const pushingView = findViewByKey(childrenArray, pushingViewKey);
+  const popComplete = useCallback(() => {
+    setState(s => ({ ...s, poppingView: null }));
+  }, []);
 
+  const mainViewRef = useRef<HTMLDivElement>(null);
+  const poppingViewRef = useRef<HTMLDivElement>(null);
+  const poppingViewId = poppingView?.id;
+  useLayoutEffect(
+    function moveFocusOffPoppingView() {
+      if (poppingViewRef.current?.contains(document.activeElement) === true) {
+        mainViewRef.current?.focus({ preventScroll: true });
+      }
+    },
+    [poppingViewId]
+  );
+
+  const mainElement = findViewByKey(childrenArray, mainView?.key ?? null);
+  const pushingElement = findViewByKey(childrenArray, pushingView?.key ?? null);
+
+  // Views are keyed by `id` and keep the same inner `view-content` wrapper in
+  // every role, so changing role only changes the outer class and the view
+  // stays mounted. Only the popping `view-content` is inert; the outer wrapper
+  // still absorbs pointer input so clicks don't reach the main view.
   return (
     <div className="navigation-stack">
-      <div className="main-view" data-testid={dataTestId}>
-        {mainView}
-      </div>
-
-      <SlideTransition
-        direction="right"
-        in={poppingView != null}
-        onEntered={popComplete}
-      >
-        {/* Without the fragment, the transition doesn't work. Without the conditional render, the stack is blank */}
-        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
-        <>
-          {poppingView != null && (
-            <div className="popping-view">{poppingView}</div>
-          )}
-        </>
-      </SlideTransition>
-      <SlideTransition in={pushingView != null} onEntered={pushComplete}>
-        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
-        <>
-          {pushingView != null && (
-            <div className="pushing-view">{pushingView}</div>
-          )}
-        </>
-      </SlideTransition>
+      {(mainView == null || mainElement == null) && (
+        <div
+          className="main-view"
+          data-testid={dataTestId}
+          tabIndex={-1}
+          ref={mainViewRef}
+        />
+      )}
+      {mainView != null && mainElement != null && (
+        <SlideTransition key={mainView.id} in>
+          <div
+            className="main-view"
+            data-testid={dataTestId}
+            tabIndex={-1}
+            ref={mainViewRef}
+          >
+            <div className="view-content">{mainElement}</div>
+          </div>
+        </SlideTransition>
+      )}
+      {poppingView != null && (
+        <SlideTransition
+          key={poppingView.id}
+          in={false}
+          onExited={popComplete}
+          unmountOnExit
+        >
+          <div className="popping-view" ref={poppingViewRef}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <div className="view-content" {...INERT_PROPS}>
+              {poppingView.element}
+            </div>
+          </div>
+        </SlideTransition>
+      )}
+      {pushingView != null && pushingElement != null && (
+        <SlideTransition
+          key={pushingView.id}
+          in
+          appear
+          onEntered={pushComplete}
+        >
+          <div className="pushing-view">
+            <div className="view-content">{pushingElement}</div>
+          </div>
+        </SlideTransition>
+      )}
     </div>
   );
 }

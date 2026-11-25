@@ -15,12 +15,21 @@
     position: absolute;
   }
 
+  .main-view {
+    outline: none;
+  }
+
+  .view-content {
+    width: 100%;
+    height: 100%;
+  }
+
+  .pushing-view > .view-content {
+    pointer-events: none;
+  }
+
   .pushing-view,
   .popping-view {
     box-shadow: -4px 0 8px black-opacity(45);
-  }
-
-  .popping-view {
-    left: 100%;
   }
 }

@@ -122,9 +122,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       return lookup;
     };
 
-    // Inner model class methods are returned bound to the inner model so their
-    // internal `this` accesses don't go back through this trap, which would
-    // otherwise run for every property read while rendering each cell.
+    // Inner model class methods called on this proxy run against the inner
+    // model so their internal `this` accesses don't go back through this trap,
+    // which would otherwise run for every property read while rendering each
+    // cell. Models wrapping this proxy (e.g. deephaven.ui's UITableModel) call
+    // these methods with themselves as `this`, which is kept so their overrides
+    // apply (e.g. `textForCell` calling an overridden `formatForCell`).
     // Functions that are own properties of the inner model (e.g. arrow function
     // fields, or spies replacing a method) are returned as is.
     let boundModel: IrisGridModel | null = null;
@@ -145,13 +148,21 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       if (cached?.fn === fn) {
         return cached.bound;
       }
-      const bound = fn.bind(innerModel);
+      const bound = function boundInnerMethod(
+        this: unknown,
+        ...args: unknown[]
+      ): unknown {
+        return fn.apply(
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          this === proxy || this == null ? innerModel : this,
+          args
+        );
+      };
       boundMethods.set(prop, { fn, bound });
       return bound;
     };
 
-    // eslint-disable-next-line no-constructor-return
-    return new Proxy(this, {
+    const proxy = new Proxy(this, {
       // We want to use any properties on the proxy model if defined
       // If not, then proxy to the underlying model
       get(target, prop, receiver) {
@@ -202,6 +213,9 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         return Reflect.has(target.model, prop);
       },
     });
+
+    // eslint-disable-next-line no-constructor-return
+    return proxy;
   }
 
   close(): void {

@@ -293,7 +293,17 @@ export class ConsoleInput extends PureComponent<
 
     MonacoUtils.registerPasteHandler(this.commandEditor);
 
-    this.commandEditor.focus();
+    // Monaco loads asynchronously, so the user may have moved focus elsewhere
+    // (e.g. into an open popper menu) by now. Taking focus then would blur,
+    // and close, whatever they are interacting with.
+    const { activeElement } = element.ownerDocument;
+    if (
+      activeElement == null ||
+      activeElement === element.ownerDocument.body ||
+      element.contains(activeElement)
+    ) {
+      this.commandEditor.focus();
+    }
 
     this.resizeObserver.observe(element);
   }

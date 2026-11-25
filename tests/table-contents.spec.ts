@@ -4,7 +4,10 @@ import {
   clickColumnHeader,
   expectCellText,
   expectColumnHeaderNames,
+  getCellRect,
   getCellText,
+  getColumnHeaderGroupNames,
+  getColumnHeaderGroupRect,
   getColumnHeaderNames,
   getGridDescription,
   getVisibleRows,
@@ -79,6 +82,19 @@ test('can open a table with column header groups', async ({ page }) => {
   // Grouping changes the headers above the columns, not the columns themselves
   await expectColumnHeaderNames(grid, ['x', 'y', 'z']);
   await expectCellText(grid, 'x', 0, '0');
+
+  await expect
+    .poll(() => getColumnHeaderGroupNames(grid))
+    .toEqual(['All', 'YandZ']);
+  await expect
+    .poll(() => getColumnHeaderGroupNames(grid, { depth: 1 }))
+    .toEqual(['YandZ']);
+  const [group, cell] = await Promise.all([
+    getColumnHeaderGroupRect(grid, 'YandZ'),
+    getCellRect(grid, 'y', 0),
+  ]);
+  // The group sits above the bottom level header, which sits above the cells
+  expect(group.y + group.height).toBeLessThan(cell.y);
 });
 
 test('can open a table with column header groups and hidden columns', async ({

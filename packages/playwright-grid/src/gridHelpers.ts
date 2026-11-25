@@ -13,6 +13,8 @@ const ATTRIBUTES = {
   column: 'data-grid-column',
   row: 'data-grid-row',
   header: 'data-grid-header',
+  headerGroup: 'data-grid-header-group',
+  depth: 'data-grid-depth',
   rect: 'data-grid-rect',
 } as const satisfies GridA11yAttributes;
 
@@ -68,6 +70,10 @@ function parseRect(value: string | null): GridA11yRect | null {
     return null;
   }
   const [x, y, width, height] = value.split(',').map(Number);
+  // Fail here rather than letting NaN reach a click position or assertion
+  if (![x, y, width, height].every(Number.isFinite)) {
+    throw new Error(`Invalid ${ATTRIBUTES.rect} "${value}".`);
+  }
   return { x, y, width, height };
 }
 
@@ -238,6 +244,7 @@ export async function getGridDescription(grid: Locator): Promise<string> {
 
 /**
  * Get the text of every column header currently in the viewport, in visible order.
+ * Only includes bottom level headers, not the groups above them.
  * @param grid Locator for the grid canvas or an element containing it
  * @returns The visible column header names
  */
@@ -252,6 +259,101 @@ export async function getColumnHeaderNames(grid: Locator): Promise<string[]> {
       ATTRIBUTES.header
     );
   return headers;
+}
+
+/** Options for looking up a column header group */
+export type ColumnHeaderGroupOptions = {
+  /** Depth of the group, 1 for the row directly above the bottom level headers. Matches any depth when omitted */
+  depth?: number;
+};
+
+/**
+ * Build the selector for column header groups.
+ * @param name Text of the group, or undefined to match any group
+ * @param depth Depth of the group, or undefined to match any depth
+ * @returns The selector
+ */
+function getColumnHeaderGroupSelector(
+  name: string | undefined,
+  depth: number | undefined
+): string {
+  const nameSelector =
+    name == null
+      ? `[${ATTRIBUTES.headerGroup}]`
+      : `[${ATTRIBUTES.headerGroup}="${escapeAttributeValue(name)}"]`;
+  const depthSelector = depth == null ? '' : `[${ATTRIBUTES.depth}="${depth}"]`;
+  return `${nameSelector}${depthSelector}`;
+}
+
+/**
+ * Get the text of every column header group currently in the viewport, top to
+ * bottom then left to right.
+ * @param grid Locator for the grid canvas or an element containing it
+ * @param options Lookup options, e.g. `{ depth: 1 }` for a single row of groups
+ * @returns The visible column header group names
+ */
+export async function getColumnHeaderGroupNames(
+  grid: Locator,
+  { depth }: ColumnHeaderGroupOptions = {}
+): Promise<string[]> {
+  const canvas = await resolveGridCanvas(grid);
+  const snapshot = await showSnapshot(canvas);
+  return snapshot
+    .locator(getColumnHeaderGroupSelector(undefined, depth))
+    .evaluateAll(
+      (elements, attribute) =>
+        elements.map(element => element.getAttribute(attribute) ?? ''),
+      ATTRIBUTES.headerGroup
+    );
+}
+
+/**
+ * Get the bounds of a column header group, relative to the top left of the grid canvas.
+ * Groups split by the frozen columns appear twice, in which case this is the leftmost part.
+ * @param grid Locator for the grid canvas or an element containing it
+ * @param name Text of the group
+ * @param options Lookup options, e.g. `{ depth: 1 }` to tell apart groups with the same name
+ * @returns The bounds of the group
+ */
+export async function getColumnHeaderGroupRect(
+  grid: Locator,
+  name: string,
+  { depth }: ColumnHeaderGroupOptions = {}
+): Promise<GridA11yRect> {
+  const canvas = await resolveGridCanvas(grid);
+  const snapshot = await showSnapshot(canvas);
+  const group = snapshot.locator(getColumnHeaderGroupSelector(name, depth));
+  const rect =
+    (await group.count()) > 0
+      ? parseRect(await group.first().getAttribute(ATTRIBUTES.rect))
+      : null;
+  if (rect == null) {
+    throw new Error(
+      `No column header group "${name}"${
+        depth == null ? '' : ` at depth ${depth}`
+      } is currently in the viewport.`
+    );
+  }
+  return rect;
+}
+
+/**
+ * Click the centre of a column header group.
+ * @param grid Locator for the grid canvas or an element containing it
+ * @param name Text of the group
+ * @param options Lookup and Playwright click options
+ */
+export async function clickColumnHeaderGroup(
+  grid: Locator,
+  name: string,
+  { depth, ...options }: ColumnHeaderGroupOptions & GridClickOptions = {}
+): Promise<void> {
+  const canvas = await resolveGridCanvas(grid);
+  const rect = await getColumnHeaderGroupRect(canvas, name, { depth });
+  await canvas.click({
+    ...options,
+    position: { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+  });
 }
 
 /**

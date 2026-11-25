@@ -1,0 +1,65 @@
+# Posts the grid performance report from e2e.yml as a PR comment.
+#
+# Runs from forks only get a read-only token, so e2e.yml can't comment on them.
+# This workflow runs from the default branch with a write token after the e2e
+# workflow finishes, so it can comment on any PR. It must never check out or run
+# code from the PR: the report artifact is only read as the comment body.
+
+name: Grid Performance Comment
+
+on:
+  workflow_run:
+    workflows: ['Build and End-to-end Tests']
+    types: [completed]
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      pull-requests: write
+
+    steps:
+      - name: Find pull request
+        id: pr
+        # workflow_run.pull_requests is empty for forks, so look the PR up by its
+        # head. Requiring the head SHA to match skips runs for outdated commits so
+        # they can't overwrite a newer report.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          NUMBERS=$(gh api --paginate -X GET "repos/$REPO/pulls" \
+            -f state=open -f head="$HEAD_OWNER:$HEAD_BRANCH" \
+            --jq "map(select(.head.sha == \"$HEAD_SHA\")) | .[].number")
+          NUMBER=
+          if [[ "$NUMBERS" =~ ^[0-9]+$ ]]; then
+            NUMBER=$NUMBERS
+          fi
+          echo "PR: ${NUMBER:-<none>}"
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Download report
+        id: download
+        if: steps.pr.outputs.number != ''
+        # The run may not have produced a report, e.g. if the build failed
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: grid-perf-report
+          path: grid-perf-report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Comment with report
+        if: steps.download.outcome == 'success'
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: grid-perf-report
+          number_force: ${{ steps.pr.outputs.number }}
+          path: grid-perf-report/grid-perf-report.md
+          ignore_empty: true

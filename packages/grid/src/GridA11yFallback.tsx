@@ -14,6 +14,13 @@ export type GridA11yFallbackProps = {
   registerDrawListener: (listener: GridDrawListener) => () => void;
 };
 
+/** Fills columns with no group at a depth, so the groups line up with the columns they span */
+function GroupGapCell({ span }: { span: number }): JSX.Element {
+  // Has no content to label, it only keeps the table columns aligned
+  // eslint-disable-next-line jsx-a11y/control-has-associated-label
+  return <td colSpan={span} />;
+}
+
 /**
  * The fallback content of the grid canvas. Never painted, but assistive
  * technology and browser automation read it in place of the pixels.
@@ -54,6 +61,14 @@ export function GridA11yFallback({
     return createGridA11ySnapshot(model, metrics, selection);
   }, [renderState]);
 
+  // Group cells span whole snapshot columns, so look up where each column sits
+  // in the header row to fill the gaps between groups
+  const columnPositions = useMemo(
+    () =>
+      new Map(snapshot?.columns.map(({ column }, index) => [column, index])),
+    [snapshot]
+  );
+
   return (
     <>
       {/* Kept out of the tab order so sighted keyboard users are not sent to an element they cannot see */}
@@ -70,11 +85,60 @@ export function GridA11yFallback({
         <div {...{ [GRID_A11Y_ATTRIBUTES.snapshot]: '' }}>
           <p role="status">{snapshot.description}</p>
           <table
-            aria-rowcount={snapshot.rowCount + 1}
+            aria-rowcount={snapshot.rowCount + snapshot.headerRowCount}
             aria-colcount={snapshot.columnCount}
           >
             <thead>
-              <tr aria-rowindex={1}>
+              {/* ARIA indexes are one based, and header rows are numbered top to bottom */}
+              {snapshot.columnGroups.map(({ depth, groups }) => {
+                const cells: JSX.Element[] = [];
+                let position = 0;
+                groups.forEach(({ startColumn, span, text, rect }) => {
+                  const start = columnPositions.get(startColumn) ?? position;
+                  if (start > position) {
+                    cells.push(
+                      <GroupGapCell
+                        key={`gap-${position}`}
+                        span={start - position}
+                      />
+                    );
+                  }
+                  cells.push(
+                    <th
+                      key={startColumn}
+                      scope="col"
+                      colSpan={span}
+                      aria-colindex={startColumn + 1}
+                      {...{
+                        [GRID_A11Y_ATTRIBUTES.column]: startColumn,
+                        [GRID_A11Y_ATTRIBUTES.headerGroup]: text,
+                        [GRID_A11Y_ATTRIBUTES.depth]: depth,
+                        [GRID_A11Y_ATTRIBUTES.rect]: formatGridA11yRect(rect),
+                      }}
+                    >
+                      {text}
+                    </th>
+                  );
+                  position = start + span;
+                });
+                if (position < snapshot.columns.length) {
+                  cells.push(
+                    <GroupGapCell
+                      key={`gap-${position}`}
+                      span={snapshot.columns.length - position}
+                    />
+                  );
+                }
+                return (
+                  <tr
+                    key={depth}
+                    aria-rowindex={snapshot.headerRowCount - depth}
+                  >
+                    {cells}
+                  </tr>
+                );
+              })}
+              <tr aria-rowindex={snapshot.headerRowCount}>
                 {snapshot.columns.map(({ column, text, rect }) => (
                   <th
                     key={column}
@@ -83,6 +147,7 @@ export function GridA11yFallback({
                     {...{
                       [GRID_A11Y_ATTRIBUTES.column]: column,
                       [GRID_A11Y_ATTRIBUTES.header]: text,
+                      [GRID_A11Y_ATTRIBUTES.depth]: 0,
                       [GRID_A11Y_ATTRIBUTES.rect]: formatGridA11yRect(rect),
                     }}
                   >
@@ -92,9 +157,9 @@ export function GridA11yFallback({
               </tr>
             </thead>
             <tbody>
-              {/* ARIA indexes are one based and count the header row */}
+              {/* Body rows are numbered after all of the header rows */}
               {snapshot.rows.map(({ row, cells }) => (
-                <tr key={row} aria-rowindex={row + 2}>
+                <tr key={row} aria-rowindex={row + snapshot.headerRowCount + 1}>
                   {cells.map(({ column, text, rect }) => (
                     <td
                       key={column}
