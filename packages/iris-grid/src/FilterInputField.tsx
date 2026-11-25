@@ -80,10 +80,10 @@ class FilterInputField extends PureComponent<
 
   componentDidUpdate(prevProps: FilterInputFieldProps): void {
     const { debounceMs, value } = this.props;
-    if (prevProps.value !== value) {
-      this.debouncedSendUpdate.cancel();
-      this.initialValue = value;
-      this.setState({ value, isChanged: false });
+    // Controlled values may echo back stale partial text while the user is
+    // still typing, so only sync when there are no in-progress edits.
+    if (prevProps.value !== value && !this.isEditing()) {
+      this.syncValueFromProps();
     }
     if (prevProps.debounceMs !== debounceMs) {
       this.debouncedSendUpdate.flush();
@@ -104,12 +104,36 @@ class FilterInputField extends PureComponent<
 
   debouncedSendUpdate: DebouncedFunc<(value: string) => void>;
 
+  isUpdatePending = false;
+
   // clear filters needs to be able to reset the value externally
   // and due to the way this component handles its own debouncing
   // this was easier than moving state up.
   setValue(value: string): void {
+    this.cancelUpdate();
     this.initialValue = value;
-    this.setState({ value });
+    this.setState({ value, isChanged: false });
+  }
+
+  isEditing(): boolean {
+    const { isChanged } = this.state;
+    return (
+      this.isUpdatePending ||
+      (isChanged &&
+        this.inputField != null &&
+        this.inputField === this.inputField.ownerDocument.activeElement)
+    );
+  }
+
+  syncValueFromProps(): void {
+    const { value } = this.props;
+    this.initialValue = value;
+    this.setState({ value, isChanged: false });
+  }
+
+  cancelUpdate(): void {
+    this.debouncedSendUpdate.cancel();
+    this.isUpdatePending = false;
   }
 
   focus(): void {
@@ -120,11 +144,12 @@ class FilterInputField extends PureComponent<
     const { value } = event.target;
     this.setState({ value, isChanged: true });
 
+    this.isUpdatePending = true;
     this.debouncedSendUpdate(value);
   }
 
   handleCancel(): void {
-    this.debouncedSendUpdate.cancel();
+    this.cancelUpdate();
     const { initialValue } = this;
     const { isChanged } = this.state;
     if (isChanged) {
@@ -148,6 +173,7 @@ class FilterInputField extends PureComponent<
 
   handleBlur(event: React.FocusEvent<HTMLInputElement>): void {
     const { relatedTarget } = event;
+    const hadPendingUpdate = this.isUpdatePending;
     // handleCommit results in a call that steals focus
     if (
       relatedTarget != null &&
@@ -166,6 +192,13 @@ class FilterInputField extends PureComponent<
     } else {
       // clear both, blurred elsewhere
       this.handleCommit(true, true);
+    }
+
+    // Prop changes skipped while focused need to be applied now. If an update
+    // was just flushed, its resulting prop change will sync the value instead,
+    // avoiding a flash of the older prop value.
+    if (!hadPendingUpdate) {
+      this.syncValueFromProps();
     }
   }
 
@@ -206,6 +239,7 @@ class FilterInputField extends PureComponent<
   }
 
   sendUpdate(value: string): void {
+    this.isUpdatePending = false;
     const { onChange } = this.props;
     onChange(value);
   }
