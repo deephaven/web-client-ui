@@ -1,4 +1,7 @@
 .iris-grid-input-autosized-wrapper {
+  /* The hidden ::after sizes the input, so both need the same padding */
+  --filter-input-padding: 3px 2px 3px 3px;
+
   position: absolute;
   display: inline-grid;
   height: 100%;
@@ -19,7 +22,7 @@
     width: auto;
     height: 100%;
     border: var(--dh-input-border-width) solid;
-    padding: 3px 2px 3px 3px;
+    padding: var(--filter-input-padding);
     margin-right: 24px; /* leave space for filter-button */
     overflow: hidden;
     visibility: hidden;
@@ -41,7 +44,7 @@
     border: 1px solid var(--dh-color-input-border);
     width: 100%;
     height: 100%;
-    padding: 3px 2px 3px 3px;
+    padding: var(--filter-input-padding);
     border-radius: 1px;
     /* Not the font shorthand: Lightning CSS moves it after font-feature-settings, which it resets */
     font-style: normal;

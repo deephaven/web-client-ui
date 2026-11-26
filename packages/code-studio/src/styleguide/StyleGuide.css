@@ -151,14 +151,17 @@ pre {
   content: '--dh-color-gray-mid';
 }
 
-.swatch-content-bg {
-  background-color: var(--dh-color-content-bg);
-  border: 1px solid var(--dh-color-gray-500);
+.swatch-content-bg,
+.swatch-primary,
+.swatch-success,
+.swatch-light,
+.swatch-red,
+.gray-swatch-100 {
+  /* First swatch of each group, labelled with the group name */
   margin-top: 2.5rem;
   position: relative;
 
   &::before {
-    content: 'Semantic Colors';
     color: var(--dh-color-text);
     display: block;
     position: absolute;
@@ -167,8 +170,17 @@ pre {
   }
 }
 
+.swatch-content-bg {
+  background-color: var(--dh-color-content-bg);
+  border: 1px solid var(--dh-color-gray-500);
+
+  &::before {
+    content: 'Semantic Colors';
+  }
+}
+
 .swatch-content-bg::after {
-  content: '--dh-color-content-bg, #2d2a2e';
+  content: '--dh-color-content-bg';
 }
 
 .swatch-background {
@@ -176,7 +188,7 @@ pre {
 }
 
 .swatch-background::after {
-  content: '--dh-color-black, #1a171a';
+  content: '--dh-color-black';
 }
 
 .swatch-foreground {
@@ -184,7 +196,7 @@ pre {
 }
 
 .swatch-foreground::after {
-  content: '--dh-color-white, #f0f0ee';
+  content: '--dh-color-white';
 }
 
 .swatch-secondary-hover {
@@ -205,16 +217,9 @@ pre {
 
 .swatch-primary {
   background-color: var(--dh-color-accent-bg);
-  margin-top: 2.5rem;
-  position: relative;
 
   &::before {
     content: 'Brand Colors';
-    color: var(--dh-color-text);
-    display: block;
-    position: absolute;
-    font-size: 10px;
-    top: -2rem;
   }
 }
 
@@ -232,16 +237,9 @@ pre {
 
 .swatch-success {
   background-color: var(--dh-color-positive-bg);
-  margin-top: 2.5rem;
-  position: relative;
 
   &::before {
     content: 'Levels';
-    color: var(--dh-color-text);
-    display: block;
-    position: absolute;
-    font-size: 10px;
-    top: -2rem;
   }
 }
 
@@ -275,16 +273,9 @@ pre {
 
 .swatch-light {
   background-color: var(--dh-color-neutral-bg);
-  margin-top: 2.5rem;
-  position: relative;
 
   &::before {
     content: 'Brightness';
-    color: var(--dh-color-text);
-    display: block;
-    position: absolute;
-    font-size: 10px;
-    top: -2rem;
   }
 }
 
@@ -334,16 +325,9 @@ pre {
 
 .swatch-red {
   background-color: var(--dh-color-visual-red);
-  margin-top: 2.5rem;
-  position: relative;
 
   &::before {
     content: 'Base Colors';
-    color: var(--dh-color-text);
-    display: block;
-    position: absolute;
-    font-size: 10px;
-    top: -2rem;
   }
 }
 
@@ -396,7 +380,7 @@ pre {
 }
 
 .swatch-white::after {
-  content: '--dh-color-white, #f0f0ee';
+  content: '--dh-color-white';
 }
 
 .swatch-gray {
@@ -420,26 +404,19 @@ pre {
 }
 
 .swatch-black::after {
-  content: '--dh-color-black, #1a171a';
+  content: '--dh-color-black';
 }
 
 .gray-swatch-100 {
   background-color: var(--dh-color-gray-900);
-  margin-top: 2.5rem;
-  position: relative;
 
   &::before {
     content: 'Grays';
-    color: var(--dh-color-text);
-    display: block;
-    position: absolute;
-    font-size: 10px;
-    top: -2rem;
   }
 }
 
 .gray-swatch-100::after {
-  content: '--dh-color-gray-900, #fcfcfa';
+  content: '--dh-color-gray-900';
 }
 
 .gray-swatch-200 {

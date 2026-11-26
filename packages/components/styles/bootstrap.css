@@ -7,8 +7,8 @@
 /*
  * Precompiled subset of Bootstrap 4.6.2 with Deephaven overrides applied.
  * Colors are mapped to --dh-color-* theme variables, so this file is theme
- * independent. Bootstrap is no longer compiled from source; edit rules here
- * directly, or better, move them into the components that use them.
+ * independent. This file is maintained by hand: edit rules here directly, or
+ * better, move them into the components that use them.
  *
  * Only classes applied by web-client-ui or Enterprise are included, including
  * classes applied by third-party code (e.g. Monaco, Plotly, reactstrap Modal
