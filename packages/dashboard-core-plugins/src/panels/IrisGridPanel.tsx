@@ -806,22 +806,11 @@ export class IrisGridPanel extends PureComponent<
     value: boolean
   ): void {
     log.debug('handleAdvancedSettingsChange', key, value);
-    // React re-runs this updater whenever it is rebased over a pending lower
-    // priority update. Returning the same Map for the same base state keeps the
-    // IrisGrid prop stable, otherwise IrisGrid's state change callback re-renders
-    // the panel and replays the updater with a new Map indefinitely.
-    let base: Map<AdvancedSettingsType, boolean> | undefined;
-    let next: Map<AdvancedSettingsType, boolean> | undefined;
-    this.setState(({ advancedSettings }) => {
-      if (advancedSettings.get(key) === value) {
-        return null;
-      }
-      if (next === undefined || base !== advancedSettings) {
-        base = advancedSettings;
-        next = new Map(advancedSettings).set(key, value);
-      }
-      return { advancedSettings: next };
-    });
+    this.setState(({ advancedSettings }) =>
+      advancedSettings.get(key) === value
+        ? null
+        : { advancedSettings: new Map(advancedSettings).set(key, value) }
+    );
   }
 
   handlePluginFilter(filters: InputFilter[]): void {
@@ -862,8 +851,13 @@ export class IrisGridPanel extends PureComponent<
     this.irisGridState = irisGridState;
     this.gridState = gridState;
 
-    // Grid sends it's first state change after it's finished loading
-    this.setState({ isLoaded: true, isLoading: false });
+    // Grid sends its first state change after it's finished loading. IrisGrid
+    // reports state on every update, so skip the update once loaded to avoid
+    // scheduling a panel render from within IrisGrid's commit phase.
+    const { isLoaded, isLoading } = this.state;
+    if (!isLoaded || isLoading) {
+      this.setState({ isLoaded: true, isLoading: false });
+    }
 
     this.savePanelState();
 

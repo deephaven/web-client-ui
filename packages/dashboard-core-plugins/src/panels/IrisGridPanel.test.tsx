@@ -201,10 +201,10 @@ it('passes undefined transformTableOptions when the prop is omitted', async () =
   expect(lastProps.transformTableOptions).toBeUndefined();
 });
 
-it('keeps a stable advancedSettings map when the change is rebased over a pending update', async () => {
+it('does not loop when the advancedSettings change is rebased over a pending update', async () => {
   MockIrisGrid.mockClear();
-  // IrisGrid reports its state to the panel on every update, which schedules a
-  // panel update during the commit
+  // IrisGrid reports its state to the panel on every update. Throws React's
+  // maximum update depth error if that report schedules panel updates forever.
   MockIrisGrid.mockImplementation(({ onStateChange }) => {
     React.useLayoutEffect(() => {
       onStateChange({}, {});
@@ -251,11 +251,8 @@ it('keeps a stable advancedSettings map when the change is rebased over a pendin
       });
     });
 
-    const advancedSettingsMaps = new Set(
-      MockIrisGrid.mock.calls.map(([props]) => props.advancedSettings)
-    );
-    expect(advancedSettingsMaps.size).toBe(1);
-    const [advancedSettings] = advancedSettingsMaps;
+    const { calls: updateCalls } = MockIrisGrid.mock;
+    const { advancedSettings } = updateCalls[updateCalls.length - 1][0];
     expect(
       advancedSettings.get(AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS)
     ).toBe(true);
