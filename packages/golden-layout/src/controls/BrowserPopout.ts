@@ -186,9 +186,10 @@ export default class BrowserPopout extends EventEmitter {
       }
     }
 
+    // pagehide replaces unload, which browsers are deprecating and Chrome blocks by default
     $(this._popoutWindow)
       .on('load', this._positionWindow.bind(this))
-      .on('unload beforeunload', this._onClose.bind(this));
+      .on('pagehide beforeunload', this._onClose.bind(this));
 
     /**
      * Polling the childwindow to find out if GoldenLayout has been initialised
@@ -275,7 +276,7 @@ export default class BrowserPopout extends EventEmitter {
   }
 
   /**
-   * Invoked 50ms after the window unload event
+   * Invoked 50ms after the window pagehide or beforeunload event
    */
   _onClose() {
     setTimeout(this.emit.bind(this, 'closed'), 50);
