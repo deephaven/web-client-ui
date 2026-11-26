@@ -15,7 +15,7 @@ module.exports = withLocalConfig({
     },
     {
       displayName: 'stylelint',
-      runner: 'jest-runner-stylelint',
+      runner: '<rootDir>/scripts/jest-runner-stylelint/index.cjs',
       testMatch: [
         '<rootDir>/packages/*/src/**/*.css',
         '<rootDir>/packages/*/styles/**/*.css',
