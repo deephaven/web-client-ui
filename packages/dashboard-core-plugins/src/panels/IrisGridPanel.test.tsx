@@ -271,6 +271,101 @@ it('keeps the table plugin when saved custom columns drop the PluginName attribu
   expect(lastProps.children).not.toBeNull();
 });
 
+describe('table plugin', () => {
+  const savedPluginState = { filter: 'saved' };
+
+  function Plugin() {
+    return null;
+  }
+
+  function makePluginTable() {
+    const table = makeTable();
+    table.pluginName = 'TestPlugin';
+    return table;
+  }
+
+  function renderPluginPanel({
+    table = makePluginTable(),
+    onPanelStateUpdate,
+  }: {
+    table?: ReturnType<typeof makeTable>;
+    onPanelStateUpdate?: (panelState: unknown) => void;
+  } = {}) {
+    const panelState = {
+      gridState: {},
+      irisGridState: {},
+      irisGridPanelState: {},
+      pluginState: savedPluginState,
+    };
+    render(
+      <IrisGridPanel
+        // Golden Layout restores a reopened panel's saved state into its state
+        ref={panel => panel?.setState({ panelState } as any)}
+        makeModel={makeMakeModel(table)}
+        metadata={{ table: 'table' } as any}
+        glContainer={makeGlComponent() as unknown as Container}
+        glEventHub={makeGlComponent() as any}
+        user={TestUtils.REGULAR_USER}
+        inputFilters={[]}
+        links={[]}
+        settings={{ timeZone: 'America/New_York' } as any}
+        panelState={undefined}
+        loadPlugin={(() => Plugin) as any}
+        onPanelStateUpdate={onPanelStateUpdate}
+      />
+    );
+  }
+
+  function lastIrisGridProps() {
+    const { calls } = MockIrisGrid.mock;
+    return calls[calls.length - 1][0] as Record<string, any>;
+  }
+
+  beforeEach(() => {
+    MockIrisGrid.mockClear();
+  });
+
+  it('passes the plugin state restored into the panel state to the plugin', async () => {
+    renderPluginPanel();
+
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    const { children } = lastIrisGridProps();
+    expect(children.props.children.props.pluginState).toBe(savedPluginState);
+  });
+
+  it('saves the restored plugin state until the plugin reports a new one', async () => {
+    const onPanelStateUpdate = jest.fn();
+    renderPluginPanel({ onPanelStateUpdate });
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    const props = lastIrisGridProps();
+
+    act(() => {
+      props.onStateChange(
+        makeIrisGridStateFromProps(props),
+        makeGridStateFromProps(props)
+      );
+    });
+
+    await waitFor(() => expect(onPanelStateUpdate).toHaveBeenCalledTimes(1));
+    expect(onPanelStateUpdate.mock.calls[0][0].pluginState).toBe(
+      savedPluginState
+    );
+  });
+
+  it('re-renders the plugin when the model columns change', async () => {
+    const table = makePluginTable();
+    renderPluginPanel({ table });
+    await waitFor(() => expect(lastIrisGridProps().children).not.toBeNull());
+    const { children } = lastIrisGridProps();
+
+    act(() => {
+      table.fireEvent((dh as any).Table.EVENT_CUSTOMCOLUMNSCHANGED);
+    });
+
+    expect(lastIrisGridProps().children).not.toBe(children);
+  });
+});
+
 it('closes the base model if transformModel rejects', async () => {
   MockIrisGrid.mockClear();
   const baseModel = TestUtils.createMockProxy<any>({ close: jest.fn() });
