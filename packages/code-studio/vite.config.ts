@@ -109,11 +109,9 @@ export default defineConfig(({ mode }) => {
       // browserslist targets
       cssMinify: 'lightningcss',
       cssTarget: browserslistToEsbuild(),
+      target: browserslistToEsbuild(),
       emptyOutDir: true,
       sourcemap: true,
-      build: {
-        target: browserslistToEsbuild(),
-      },
     },
     optimizeDeps: {
       exclude: ['@astral-sh/ruff-wasm-web'], // Needed so the wasm file works in dev mode

@@ -94,6 +94,7 @@ export default defineConfig(({ mode }) => {
       // browserslist targets
       cssMinify: 'lightningcss',
       cssTarget: browserslistToEsbuild(),
+      target: browserslistToEsbuild(),
       emptyOutDir: true,
       sourcemap: true,
     },
