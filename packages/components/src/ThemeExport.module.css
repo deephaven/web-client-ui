@@ -34,5 +34,7 @@
   content-bg: var(--dh-color-content-bg);
   background: var(--dh-color-bg);
   foreground: var(--dh-color-fg);
-  transition: var(--dh-transition);
+  /* A literal for JS consumers that parse it. ThemeExport.test.ts checks that
+   * it matches --dh-transition. */
+  transition: 0.15s;
 }
