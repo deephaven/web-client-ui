@@ -4036,11 +4036,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   remapFiltersToModelColumns(): void {
     const oldColumns = this.columnsBeforeCustomColumnsChange;
-    this.columnsBeforeCustomColumnsChange = undefined;
-    if (oldColumns == null) {
+    const { model } = this.props;
+    // Applying custom columns gives the model a new columns array. Changes
+    // that keep the array, e.g. freezing a column, don't complete the change.
+    if (oldColumns == null || oldColumns === model.columns) {
       return;
     }
-    const { model } = this.props;
+    this.columnsBeforeCustomColumnsChange = undefined;
     const { quickFilters, advancedFilters } = this.state;
     const newQuickFilters = IrisGridUtils.remapFiltersToColumns(
       quickFilters,

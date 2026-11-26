@@ -1095,12 +1095,15 @@ describe('removing custom columns', () => {
     newColumnNames,
     quickFilterColumn,
     advancedFilterColumn,
+    frozenColumnsBeforeChange,
   }: {
     columnNames: string[];
     customColumns: string[];
     newColumnNames: string[];
     quickFilterColumn: string;
     advancedFilterColumn: string;
+    /** Columns to freeze before the table reports its new columns */
+    frozenColumnsBeforeChange?: string[];
   }) {
     const columns = columnNames.map((name, index) =>
       irisGridTestUtils.makeColumn(name, undefined, index)
@@ -1132,6 +1135,14 @@ describe('removing custom columns', () => {
     expect(onQuickFiltersChange).not.toHaveBeenCalled();
     expect(component.state.customColumns).not.toEqual(customColumns);
 
+    if (frozenColumnsBeforeChange != null) {
+      // Reports a columns change without changing the columns
+      act(() => {
+        model.updateFrozenColumns(frozenColumnsBeforeChange);
+      });
+      expect(onQuickFiltersChange).not.toHaveBeenCalled();
+    }
+
     act(() => {
       table.columns = newColumnNames.map(name =>
         columns.find(column => column.name === name)
@@ -1156,6 +1167,25 @@ describe('removing custom columns', () => {
       new Map([[1, quickFilter]])
     );
     expect(component.state.quickFilters).toEqual(new Map([[1, quickFilter]]));
+    expect(component.state.advancedFilters).toEqual(
+      new Map([[2, advancedFilter]])
+    );
+  });
+
+  it('moves filters when a column is frozen before the new columns arrive', () => {
+    const { component, onQuickFiltersChange, quickFilter, advancedFilter } =
+      removeCustomColumnA({
+        columnNames: ['X', 'A', 'B', 'C'],
+        customColumns: ['A=1', 'B=2', 'C=3'],
+        newColumnNames: ['X', 'B', 'C'],
+        quickFilterColumn: 'B',
+        advancedFilterColumn: 'C',
+        frozenColumnsBeforeChange: ['X'],
+      });
+
+    expect(onQuickFiltersChange).toHaveBeenCalledWith(
+      new Map([[1, quickFilter]])
+    );
     expect(component.state.advancedFilters).toEqual(
       new Map([[2, advancedFilter]])
     );
