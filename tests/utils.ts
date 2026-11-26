@@ -276,6 +276,11 @@ export async function pasteInMonaco(
   const isMac = os.platform() === 'darwin';
   const modifier = isMac ? 'Meta' : 'Control';
 
+  // The editor is created once Monaco loads, so it may not exist yet. It focuses
+  // itself when created, so wait for it before copying or it can steal focus from
+  // the temporary textarea below.
+  await locator.locator('textarea').waitFor({ state: 'attached' });
+
   // Create a hidden textarea with the contents to paste
   const inputId = await page.evaluate(async evalText => {
     const tempInput = document.createElement('textarea');
@@ -284,6 +289,8 @@ export async function pasteInMonaco(
     tempInput.style.width = '0';
     tempInput.style.height = '0';
     document.body.appendChild(tempInput);
+    // select() doesn't move focus in Firefox
+    tempInput.focus();
     tempInput.select();
     return tempInput.id;
   }, text);
@@ -295,9 +302,6 @@ export async function pasteInMonaco(
   await page.evaluate(id => {
     document.getElementById(id)?.remove();
   }, inputId);
-
-  // The editor is created once Monaco loads, so it may not exist yet
-  await locator.locator('textarea').waitFor({ state: 'attached' });
 
   // Focus monaco
   await locator.click();
@@ -314,12 +318,16 @@ export async function pasteInMonaco(
       element.dispatchEvent(clipboardEvent);
     }, text);
   } else {
+    // Firefox ignores synthetic paste events, so it must use the real clipboard
     await page.keyboard.press(`${modifier}+V`);
   }
 
-  if (text.length > 0) {
-    // Sanity check the paste happened
-    await expect(locator.locator('textarea')).not.toBeEmpty();
+  // Firefox applies keyboard pastes asynchronously, and Monaco's hidden textarea
+  // is not empty even when the editor is, so wait for the editor to render the text.
+  // Only visible lines are rendered and the editor scrolls to the cursor, so check the last line.
+  const lastLine = text.trimEnd().split('\n').pop()?.trim() ?? '';
+  if (lastLine.length > 0) {
+    await expect(locator.locator('.view-lines')).toContainText(lastLine);
   }
 }
 

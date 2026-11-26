@@ -509,7 +509,7 @@ export class LayoutManager extends EventEmitter {
     }
     this._onUnload();
     $(window).off('resize', this._onResize);
-    $(window).off('unload beforeunload', this._onUnload);
+    $(window).off('pagehide beforeunload', this._onUnload);
     $(window).off('blur.lm').off('focus.lm');
     $(window).off('keydown', this._windowKeydown);
     this.root.callDownwards('_$destroy', [], true);
@@ -1046,8 +1046,9 @@ export class LayoutManager extends EventEmitter {
     if (this._isFullPage) {
       $(window).resize(this._onResize);
     }
+    // pagehide replaces unload, which browsers are deprecating and Chrome blocks by default
     $(window)
-      .on('unload beforeunload', this._onUnload)
+      .on('pagehide beforeunload', this._onUnload)
       .on('blur.lm', this._windowBlur)
       .on('focus.lm', this._windowFocus)
       .on('keydown', this._windowKeydown);
