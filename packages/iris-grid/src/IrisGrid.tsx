@@ -3968,17 +3968,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         log.debug('removing sorts from removed custom columns...');
         this.requestSortsChange(newSorts);
       }
+      // Filters on later columns are re-keyed to their new index, so compare
+      // the keys, not just the number of filters
+      if (!deepEqual([...newQuickFilters.keys()], [...quickFilters.keys()])) {
+        log.debug(`updating quick filters for removed custom columns...`);
+        this.requestQuickFiltersChange(newQuickFilters);
+      }
       if (
-        newQuickFilters.size !== quickFilters.size ||
-        newAdvancedFilters.size !== advancedFilters.size
+        !deepEqual([...newAdvancedFilters.keys()], [...advancedFilters.keys()])
       ) {
-        log.debug(`removing filters from removed custom columns...`);
-        if (newQuickFilters.size !== quickFilters.size) {
-          this.requestQuickFiltersChange(newQuickFilters);
-        }
-        if (newAdvancedFilters.size !== advancedFilters.size) {
-          this.setState({ advancedFilters: newAdvancedFilters });
-        }
+        log.debug(`updating advanced filters for removed custom columns...`);
+        this.setState({ advancedFilters: newAdvancedFilters });
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
