@@ -994,6 +994,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
       this.startListening(model);
+      this.columnsBeforeCustomColumnsChange = undefined;
     }
 
     // The renderer and mouse handlers flow through memoized getters in
@@ -1109,6 +1110,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   grid: Grid | null;
+
+  // The columns the filters are keyed by while a custom columns change is pending
+  columnsBeforeCustomColumnsChange?: readonly DhType.Column[];
 
   lastFocusedFilterBarColumn?: number;
 
@@ -3968,17 +3972,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         log.debug('removing sorts from removed custom columns...');
         this.requestSortsChange(newSorts);
       }
-      // Filters on later columns are re-keyed to their new index, so compare
-      // the keys, not just the number of filters
-      if (!deepEqual([...newQuickFilters.keys()], [...quickFilters.keys()])) {
-        log.debug(`updating quick filters for removed custom columns...`);
-        this.requestQuickFiltersChange(newQuickFilters);
-      }
       if (
-        !deepEqual([...newAdvancedFilters.keys()], [...advancedFilters.keys()])
+        newQuickFilters.size !== quickFilters.size ||
+        newAdvancedFilters.size !== advancedFilters.size
       ) {
-        log.debug(`updating advanced filters for removed custom columns...`);
-        this.setState({ advancedFilters: newAdvancedFilters });
+        log.debug(`removing filters from removed custom columns...`);
+        if (newQuickFilters.size !== quickFilters.size) {
+          this.requestQuickFiltersChange(newQuickFilters);
+        }
+        if (newAdvancedFilters.size !== advancedFilters.size) {
+          this.setState({ advancedFilters: newAdvancedFilters });
+        }
       }
       if (!deepEqual(movedColumns, newMovedColumns)) {
         log.debug(
@@ -3996,6 +4000,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
+    if (!deepEqual(oldCustomColumns, customColumns)) {
+      // Keep the columns the filters are keyed by until the model has the new
+      // columns. Keep the earliest, if the model hasn't changed them yet.
+      this.columnsBeforeCustomColumnsChange ??= columns;
+    }
+
     this.setState({ customColumns });
     if (customColumns.length > 0) {
       // If there are no custom columns, the change handler never fires
@@ -4008,6 +4018,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.remapFiltersToModelColumns();
       this.updateMetrics();
 
       // Make sure stopLoading() is called after the updateMetrics call,
@@ -4015,6 +4026,41 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.stopLoading();
     } else {
       this.loadTableState();
+    }
+  }
+
+  /**
+   * Re-keys the filters to the model's columns after custom columns changed
+   * them. Columns can move, e.g. removing an added custom column moves the
+   * columns after it, while removing one that replaced a column moves none.
+   */
+  remapFiltersToModelColumns(): void {
+    const oldColumns = this.columnsBeforeCustomColumnsChange;
+    this.columnsBeforeCustomColumnsChange = undefined;
+    if (oldColumns == null) {
+      return;
+    }
+    const { model } = this.props;
+    const { quickFilters, advancedFilters } = this.state;
+    const newQuickFilters = IrisGridUtils.remapFiltersToColumns(
+      quickFilters,
+      oldColumns,
+      model.columns
+    );
+    const newAdvancedFilters = IrisGridUtils.remapFiltersToColumns(
+      advancedFilters,
+      oldColumns,
+      model.columns
+    );
+    if (!deepEqual([...newQuickFilters.keys()], [...quickFilters.keys()])) {
+      log.debug('re-keying quick filters to the new columns');
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
+    if (
+      !deepEqual([...newAdvancedFilters.keys()], [...advancedFilters.keys()])
+    ) {
+      log.debug('re-keying advanced filters to the new columns');
+      this.setState({ advancedFilters: newAdvancedFilters });
     }
   }
 
