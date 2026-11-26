@@ -467,13 +467,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   componentWillUnmount(): void {
-    try {
-      // A pending save has the panel's latest state, e.g. a filter just typed
-      // before its dashboard was closed
-      this.savePanelState.flush();
-    } catch (e) {
-      log.error('Unable to save panel state on unmount', e);
-    }
+    this.flushPanelState();
 
     this.cancelLoadModelRun();
 
@@ -1293,6 +1287,18 @@ export class IrisGridPanel extends PureComponent<
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
+    }
+  }
+
+  /**
+   * Saves a pending panel state now. A pending save has the panel's latest
+   * state, e.g. a filter just typed before its dashboard was closed.
+   */
+  flushPanelState(): void {
+    try {
+      this.savePanelState.flush();
+    } catch (e) {
+      log.error('Unable to save panel state', e);
     }
   }
 
