@@ -724,7 +724,7 @@ class IrisGridUtils {
 
   /**
    * Removes the children of column header groups that are neither a column
-   * nor another group, and then the groups left without children.
+   * nor another group, and then the groups without children.
    * @param groups The column header groups
    * @param isColumn Whether a child name is a column
    * @returns The groups that still have children, with only those children
@@ -745,15 +745,17 @@ class IrisGridUtils {
         const children = (group.children ?? []).filter(
           child => groupNames.has(child) || isColumn(child)
         );
-        if (children.length !== (group.children ?? []).length) {
+        if (children.length === 0) {
+          // Parsing drops empty groups, which would leave their parents
+          // naming an unknown child
           isChanged = true;
-          if (children.length > 0) {
-            nextResult.push({
-              name: group.name,
-              children,
-              color: group.color ?? null,
-            });
-          }
+        } else if (children.length !== (group.children ?? []).length) {
+          isChanged = true;
+          nextResult.push({
+            name: group.name,
+            children,
+            color: group.color ?? null,
+          });
         } else {
           nextResult.push(group);
         }

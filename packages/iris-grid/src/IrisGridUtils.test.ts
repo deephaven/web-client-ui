@@ -441,6 +441,17 @@ describe('removeMissingColumnsFromColumnHeaderGroups', () => {
       { name: 'Mixed', children: ['B'], color: null },
     ]);
   });
+
+  it('removes groups that are already empty from their parents', () => {
+    const groups = [
+      { name: 'Empty', children: [], color: null },
+      { name: 'NoChildren', color: null },
+      { name: 'Parent', children: ['Empty', 'NoChildren', 'A'], color: null },
+    ] as DhType.ColumnGroup[];
+    expect(
+      IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(groups, isColumn)
+    ).toEqual([{ name: 'Parent', children: ['A'], color: null }]);
+  });
 });
 
 describe('getPrevVisibleColumns', () => {
@@ -1108,6 +1119,25 @@ describe('column header groups hydration', () => {
     expect(
       columnHeaderGroups.map(({ name, children }) => ({ name, children }))
     ).toEqual([{ name: 'Kept', children: ['name_0'] }]);
+  });
+
+  it('drops saved groups that are empty from their parents', () => {
+    const model = irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({
+        columns: irisGridTestUtils.makeColumns(3, 'name_'),
+      })
+    );
+
+    const { columnHeaderGroups } = irisGridUtils.hydrateIrisGridState(model, {
+      columnHeaderGroups: [
+        { name: 'Empty', children: [], color: null },
+        { name: 'Parent', children: ['Empty', 'name_0'], color: null },
+      ],
+    });
+
+    expect(
+      columnHeaderGroups.map(({ name, children }) => ({ name, children }))
+    ).toEqual([{ name: 'Parent', children: ['name_0'] }]);
   });
 });
 
