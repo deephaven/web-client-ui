@@ -237,21 +237,24 @@ it('does not loop when the advancedSettings change is rebased over a pending upd
     const { onAdvancedSettingsChange } = calls[calls.length - 1][0];
     MockIrisGrid.mockClear();
 
-    act(() => {
-      // A lower priority panel update (e.g. the debounced panel state save) is
-      // still pending when the setting is toggled, so the toggle is rebased
-      React.startTransition(() => {
-        panel.setState({ isLoaded: true });
-      });
-      flushSync(() => {
-        onAdvancedSettingsChange(
-          AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS,
-          true
-        );
-      });
-    });
+    // The pending lower priority update forces the toggle to be rebased.
+    // Throws React's maximum update depth error if the rebase loops.
+    expect(() =>
+      act(() => {
+        React.startTransition(() => {
+          panel.setState({ isDisconnected: false });
+        });
+        flushSync(() => {
+          onAdvancedSettingsChange(
+            AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS,
+            true
+          );
+        });
+      })
+    ).not.toThrow();
 
     const { calls: updateCalls } = MockIrisGrid.mock;
+    expect(updateCalls.length).toBeLessThan(10);
     const { advancedSettings } = updateCalls[updateCalls.length - 1][0];
     expect(
       advancedSettings.get(AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS)
