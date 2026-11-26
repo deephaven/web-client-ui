@@ -144,11 +144,16 @@ it('shows the loading spinner until grid is ready', async () => {
 
   await expectLoading(container);
   const params = (
-    MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1] as unknown as {
-      onStateChange: (param1: unknown, param2: unknown) => any;
-    }[]
+    MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1] as unknown as [
+      Record<string, any>,
+    ]
   )[0];
-  act(() => params.onStateChange({}, {}));
+  act(() =>
+    params.onStateChange(
+      makeIrisGridStateFromProps(params),
+      makeGridStateFromProps(params)
+    )
+  );
 
   await expectNotLoading(container);
 });
@@ -415,6 +420,46 @@ function makeCustomColumnsPanelState(customColumns: string[]) {
     pluginState: null,
   };
 }
+
+it('saves its pending panel state when it unmounts', async () => {
+  const onPanelStateUpdate = jest.fn();
+  MockIrisGrid.mockClear();
+  const { unmount } = render(
+    <IrisGridPanel
+      makeModel={makeMakeModel()}
+      metadata={{ table: 'table' }}
+      glContainer={makeGlComponent() as unknown as Container}
+      glEventHub={makeGlComponent()}
+      user={TestUtils.REGULAR_USER}
+      inputFilters={[]}
+      links={[]}
+      workspace={{} as Workspace}
+      settings={{ timeZone: 'America/New_York' }}
+      panelState={undefined}
+      getDownloadWorker={() => undefined}
+      loadPlugin={() => undefined}
+      onPanelStateUpdate={onPanelStateUpdate}
+    />
+  );
+  await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+  const props = (
+    MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1] as unknown as [
+      Record<string, any>,
+    ]
+  )[0];
+  // Queues the debounced save
+  act(() => {
+    props.onStateChange(
+      makeIrisGridStateFromProps(props),
+      makeGridStateFromProps(props)
+    );
+  });
+  expect(onPanelStateUpdate).not.toHaveBeenCalled();
+
+  unmount();
+
+  expect(onPanelStateUpdate).toHaveBeenCalledTimes(1);
+});
 
 it('applies saved custom columns before transformModel runs', async () => {
   MockIrisGrid.mockClear();

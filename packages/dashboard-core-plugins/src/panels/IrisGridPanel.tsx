@@ -467,7 +467,13 @@ export class IrisGridPanel extends PureComponent<
   }
 
   componentWillUnmount(): void {
-    this.savePanelState.cancel();
+    try {
+      // A pending save has the panel's latest state, e.g. a filter just typed
+      // before its dashboard was closed
+      this.savePanelState.flush();
+    } catch (e) {
+      log.error('Unable to save panel state on unmount', e);
+    }
 
     this.cancelLoadModelRun();
 

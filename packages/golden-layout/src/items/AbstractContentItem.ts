@@ -71,7 +71,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
 
   tab?: Tab;
 
-  private _pendingEventPropagations: Record<string, boolean>;
+  private _pendingEventPropagations: Record<string, BubblingEvent | undefined>;
   private _throttledEvents: string[];
 
   constructor(
@@ -627,9 +627,9 @@ export default abstract class AbstractContentItem extends EventEmitter {
     if (this._throttledEvents.indexOf(name) === -1) {
       this.layoutManager.emit(name, event.origin);
     } else {
-      if (this._pendingEventPropagations[name] !== true) {
-        this._pendingEventPropagations[name] = true;
-        animFrame(this._propagateEventToLayoutManager.bind(this, name, event));
+      if (this._pendingEventPropagations[name] == null) {
+        this._pendingEventPropagations[name] = event;
+        animFrame(this._propagateEventToLayoutManager.bind(this, name));
       }
     }
   }
@@ -639,8 +639,21 @@ export default abstract class AbstractContentItem extends EventEmitter {
    *
    * @param name the name of the event
    */
-  _propagateEventToLayoutManager(name: string, event: BubblingEvent) {
-    this._pendingEventPropagations[name] = false;
+  _propagateEventToLayoutManager(name: string) {
+    const event = this._pendingEventPropagations[name];
+    if (event == null) {
+      return;
+    }
+    this._pendingEventPropagations[name] = undefined;
     this.layoutManager.emit(name, event);
+  }
+
+  /**
+   * Emits the batched events still waiting for an animation frame now
+   */
+  _flushEventPropagationsToLayoutManager() {
+    Object.keys(this._pendingEventPropagations).forEach(name =>
+      this._propagateEventToLayoutManager(name)
+    );
   }
 }

@@ -30,6 +30,8 @@ export default class ReactComponentHandler {
         nextContext: any
       ) => void)
     | undefined = undefined;
+  private _originalComponentWillUnmount: (() => void) | undefined = undefined;
+  private _isDestroyed = false;
   private _initialState: unknown;
   private _reactClass: React.ComponentClass;
 
@@ -105,6 +107,9 @@ export default class ReactComponentHandler {
       this._originalComponentWillUpdate =
         this._reactComponent.componentWillUpdate;
       this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
+      this._originalComponentWillUnmount =
+        this._reactComponent.componentWillUnmount;
+      this._reactComponent.componentWillUnmount = this._onUnmount.bind(this);
       const state = this._container.getState();
       if (state) {
         this._reactComponent.setState(state);
@@ -116,6 +121,7 @@ export default class ReactComponentHandler {
    * Removes the component from the DOM and thus invokes React's unmount lifecycle
    */
   _destroy() {
+    this._isDestroyed = true;
     this._container.layoutManager.removeReactChild(
       this._key(),
       this._portalComponent
@@ -136,6 +142,40 @@ export default class ReactComponentHandler {
       nextState,
       undefined
     );
+  }
+
+  /**
+   * Applies the state a class component sets while it unmounts, e.g. when it
+   * flushes a debounced save, to GoldenLayout. React ignores state updates
+   * made while unmounting, so they never reach `componentWillUpdate`.
+   */
+  _onUnmount() {
+    const component = this._reactComponent as Component<
+      unknown,
+      Record<string, unknown>
+    >;
+    let nextState = component.state;
+    let isChanged = false;
+    // Shadows the prototype's setState while the component unmounts
+    component.setState = update => {
+      const partialState =
+        typeof update === 'function'
+          ? update(nextState, component.props)
+          : update;
+      if (partialState != null) {
+        nextState = { ...nextState, ...partialState };
+        isChanged = true;
+      }
+    };
+    try {
+      this._originalComponentWillUnmount?.call(component);
+    } finally {
+      delete (component as Partial<Component>).setState;
+    }
+    // A destroyed container's panel was closed, so its state is not saved
+    if (isChanged && !this._isDestroyed) {
+      this._container.setState(nextState);
+    }
   }
 
   /**
