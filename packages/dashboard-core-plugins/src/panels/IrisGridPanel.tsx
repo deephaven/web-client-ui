@@ -318,7 +318,10 @@ interface IrisGridPanelState {
   // Current grid selection for memoization in getPluginContent
   gridSelection: Selection | null;
 
-  // eslint-disable-next-line react/no-unused-state
+  // The model's columns when they last changed, so the plugin re-renders when
+  // custom columns are applied to its table in place
+  modelColumns?: readonly dh.Column[];
+
   panelState?: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
@@ -544,7 +547,10 @@ export class IrisGridPanel extends PureComponent<
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       pluginState: unknown,
-      gridSel: Selection | null
+      gridSel: Selection | null,
+      // Only a memoization key: plugins read the columns from the table
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      modelColumns: readonly dh.Column[] | undefined
     ) => {
       if (
         !model ||
@@ -878,7 +884,9 @@ export class IrisGridPanel extends PureComponent<
   }
 
   handleColumnsChanged(event: EventT): void {
-    this.sendColumnsChange((event as CustomEvent).detail);
+    const { detail: columns } = event as CustomEvent<readonly dh.Column[]>;
+    this.setState({ modelColumns: columns });
+    this.sendColumnsChange(columns);
   }
 
   handleTableChanged(event: EventT): void {
@@ -1192,6 +1200,10 @@ export class IrisGridPanel extends PureComponent<
       return;
     }
 
+    // The plugin may not report its state again, so keep saving the state it
+    // was restored with
+    this.pluginState = panelState.pluginState ?? null;
+
     try {
       const { gridState, irisGridState, irisGridPanelState } = panelState;
       const irisGridStateOverrides = { ...originalIrisGridStateOverrides };
@@ -1394,15 +1406,24 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap,
       frozenColumns,
       columnHeaderGroups,
+      gridSelection,
+      modelColumns,
+      panelState: currentPanelState,
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
     const description = model?.description ?? undefined;
-    const pluginState = panelState?.pluginState ?? null;
-    const { gridSelection } = this.state;
+    // A reopened panel's saved state is restored into its state, not its props
+    const pluginState = currentPanelState?.pluginState ?? null;
     const childrenContent =
       children ??
-      this.getPluginContent(Plugin, model, pluginState, gridSelection);
+      this.getPluginContent(
+        Plugin,
+        model,
+        pluginState,
+        gridSelection,
+        modelColumns
+      );
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
     const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
