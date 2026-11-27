@@ -722,6 +722,34 @@ class IrisGridUtils {
     return newFilter;
   }
 
+  /**
+   * Re-keys filters to the index their column has in a new set of columns.
+   * Filters are keyed by model column index, and changing custom columns can
+   * move columns, e.g. removing an added column moves the columns after it.
+   * @param filters The filters, keyed by index in `oldColumns`
+   * @param oldColumns The columns the filters are keyed by
+   * @param newColumns The columns to key the filters by
+   * @returns The filters keyed by index in `newColumns`, without the filters
+   * on columns that `newColumns` doesn't have
+   */
+  static remapFiltersToColumns<T>(
+    filters: ReadonlyMap<number, T>,
+    oldColumns: readonly DhType.Column[],
+    newColumns: readonly DhType.Column[]
+  ): Map<number, T> {
+    const newColumnNames = newColumns.map(({ name }) => name);
+    const newFilters = new Map<number, T>();
+    filters.forEach((filter, columnIndex) => {
+      const columnName = oldColumns[columnIndex]?.name;
+      const newColumnIndex =
+        columnName != null ? newColumnNames.indexOf(columnName) : -1;
+      if (newColumnIndex >= 0) {
+        newFilters.set(newColumnIndex, filter);
+      }
+    });
+    return newFilters;
+  }
+
   static removeColumnFromMovedColumns(
     columns: readonly DhType.Column[],
     movedColumns: readonly MoveOperation[],

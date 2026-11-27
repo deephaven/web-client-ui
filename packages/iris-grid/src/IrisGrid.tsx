@@ -994,6 +994,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
       this.startListening(model);
+      this.modelColumns = undefined;
     }
 
     // The renderer and mouse handlers flow through memoized getters in
@@ -1109,6 +1110,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   grid: Grid | null;
+
+  // The columns the filters are keyed by while a custom columns change is pending
+  private modelColumns?: readonly DhType.Column[];
 
   lastFocusedFilterBarColumn?: number;
 
@@ -3996,6 +4000,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
     }
 
+    if (!deepEqual(oldCustomColumns, customColumns)) {
+      // Keep the columns the filters are keyed by until the model has the new
+      // columns. Keep the earliest, if the model hasn't changed them yet.
+      this.modelColumns ??= columns;
+    }
+
     this.setState({ customColumns });
     if (customColumns.length > 0) {
       // If there are no custom columns, the change handler never fires
@@ -4008,6 +4018,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('Model columns changed');
     const { isReady } = this.state;
     if (isReady) {
+      this.remapFiltersToModelColumns();
       this.updateMetrics();
 
       // Make sure stopLoading() is called after the updateMetrics call,
@@ -4015,6 +4026,43 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.stopLoading();
     } else {
       this.loadTableState();
+    }
+  }
+
+  /**
+   * Re-keys the filters to the model's columns after custom columns changed
+   * them. Columns can move, e.g. removing an added custom column moves the
+   * columns after it, while removing one that replaced a column moves none.
+   */
+  private remapFiltersToModelColumns(): void {
+    const oldColumns = this.modelColumns;
+    const { model } = this.props;
+    // Applying custom columns gives the model a new columns array. Changes
+    // that keep the array, e.g. freezing a column, don't complete the change.
+    if (oldColumns == null || oldColumns === model.columns) {
+      return;
+    }
+    this.modelColumns = undefined;
+    const { quickFilters, advancedFilters } = this.state;
+    const newQuickFilters = IrisGridUtils.remapFiltersToColumns(
+      quickFilters,
+      oldColumns,
+      model.columns
+    );
+    const newAdvancedFilters = IrisGridUtils.remapFiltersToColumns(
+      advancedFilters,
+      oldColumns,
+      model.columns
+    );
+    if (!deepEqual([...newQuickFilters.keys()], [...quickFilters.keys()])) {
+      log.debug('re-keying quick filters to the new columns');
+      this.requestQuickFiltersChange(newQuickFilters);
+    }
+    if (
+      !deepEqual([...newAdvancedFilters.keys()], [...advancedFilters.keys()])
+    ) {
+      log.debug('re-keying advanced filters to the new columns');
+      this.setState({ advancedFilters: newAdvancedFilters });
     }
   }
 

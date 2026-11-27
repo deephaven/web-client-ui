@@ -409,6 +409,38 @@ describe('removeSortsInColumns', () => {
   });
 });
 
+describe('remapFiltersToColumns', () => {
+  const [a, b, c] = irisGridTestUtils.makeColumns(3, 'name_');
+  const filters = new Map([
+    [1, 'b'],
+    [2, 'c'],
+  ]);
+
+  it('moves filters to the new index of their column', () => {
+    expect(
+      IrisGridUtils.remapFiltersToColumns(filters, [a, b, c], [b, c])
+    ).toEqual(
+      new Map([
+        [0, 'b'],
+        [1, 'c'],
+      ])
+    );
+  });
+
+  it('keeps filters on columns that did not move', () => {
+    // e.g. removing a custom column that replaced `a`
+    expect(
+      IrisGridUtils.remapFiltersToColumns(filters, [a, b, c], [a, b, c])
+    ).toEqual(filters);
+  });
+
+  it('removes filters on columns that are gone', () => {
+    expect(
+      IrisGridUtils.remapFiltersToColumns(filters, [a, b, c], [a, c])
+    ).toEqual(new Map([[1, 'c']]));
+  });
+});
+
 describe('getPrevVisibleColumns', () => {
   const columns = irisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex < 0', () => {
