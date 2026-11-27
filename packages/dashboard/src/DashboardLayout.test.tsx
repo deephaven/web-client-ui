@@ -16,6 +16,7 @@ import {
   type DashboardPluginComponentProps,
 } from './DashboardPlugin';
 import PanelEvent from './PanelEvent';
+import usePersistentState from './usePersistentState';
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
@@ -643,9 +644,11 @@ describe('closing a dashboard with a pending panel state', () => {
     }
 
     componentWillUnmount(): void {
-      if (this.pendingPanelState !== undefined) {
+      const { pendingPanelState } = this;
+      if (pendingPanelState !== undefined) {
+        // Like NotebookPanel, which saves with an updater function
         // eslint-disable-next-line react/no-unused-state
-        this.setState({ panelState: this.pendingPanelState });
+        this.setState(() => ({ panelState: pendingPanelState }));
       }
     }
 
@@ -656,6 +659,19 @@ describe('closing a dashboard with a pending panel state', () => {
     }
   }
 
+  let setFunctionalPanelState: ((state: string) => void) | null = null;
+
+  /** Saves its state the way functional panels do, with usePersistentState */
+  function FunctionalTestPanel() {
+    const [state, setState] = usePersistentState('initial', {
+      type: 'FunctionalTestPanel',
+      version: 1,
+    });
+    setFunctionalPanelState = setState;
+    return <div>{state}</div>;
+  }
+  FunctionalTestPanel.displayName = 'FunctionalTestPanel';
+
   function StatefulTestPlugin(props: Partial<DashboardPluginComponentProps>) {
     assertIsDashboardPluginProps(props);
     useDashboardPanel({
@@ -664,10 +680,16 @@ describe('closing a dashboard with a pending panel state', () => {
       supportedTypes: ['stateful'],
       dashboardProps: props,
     });
+    useDashboardPanel({
+      componentName: FunctionalTestPanel.displayName,
+      component: FunctionalTestPanel,
+      supportedTypes: ['functional'],
+      dashboardProps: props,
+    });
     return null;
   }
 
-  function renderDashboard() {
+  function renderDashboard(component = 'StatefulTestPanel', type = 'stateful') {
     const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
     const { unmount } = render(
       <ApiContext.Provider value={dh}>
@@ -677,10 +699,11 @@ describe('closing a dashboard with a pending panel state', () => {
               type: 'stack',
               content: [
                 {
+                  id: 'panel',
                   type: 'react-component',
-                  component: StatefulTestPanel.displayName,
-                  props: { metadata: { type: 'stateful' } },
-                  title: 'stateful',
+                  component,
+                  props: { metadata: { type } },
+                  title: type,
                 },
               ],
             },
@@ -699,7 +722,16 @@ describe('closing a dashboard with a pending panel state', () => {
       onLayoutConfigChange.mock.calls.map(([config]) =>
         LayoutUtils.getPanelComponentState(config[0].content![0])
       );
-    return { savedPanelStates, unmount };
+    const savedPersistedStates = () =>
+      onLayoutConfigChange.mock.calls.map(
+        ([config]) =>
+          (
+            config[0].content![0] as {
+              persistedState?: [string, { state: unknown }][];
+            }
+          ).persistedState?.map(([, { state }]) => state)
+      );
+    return { savedPanelStates, savedPersistedStates, unmount };
   }
 
   it('saves a panel state whose stateChanged is still pending', () => {
@@ -721,5 +753,40 @@ describe('closing a dashboard with a pending panel state', () => {
     unmount();
 
     expect(savedPanelStates()).toEqual(['unmounting']);
+  });
+
+  it('saves a functional panel state whose stateChanged is still pending', () => {
+    const { savedPersistedStates, unmount } = renderDashboard(
+      FunctionalTestPanel.displayName,
+      'functional'
+    );
+
+    act(() => {
+      setFunctionalPanelState!('pending');
+    });
+    unmount();
+
+    expect(savedPersistedStates()).toEqual([['pending']]);
+  });
+
+  it('keeps a functional panel state when the panel unmounts', () => {
+    const { savedPersistedStates, unmount } = renderDashboard(
+      FunctionalTestPanel.displayName,
+      'functional'
+    );
+
+    act(() => {
+      setFunctionalPanelState!('saved');
+    });
+    runFrame();
+    // Saves on the throttle's trailing edge
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(savedPersistedStates()).toEqual([['saved']]);
+    unmount();
+
+    // Unmounting doesn't save the panel without its state
+    expect(savedPersistedStates()).toEqual([['saved']]);
   });
 });
