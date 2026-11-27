@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
+import { flushSync } from 'react-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import {
+  AdvancedSettingsType,
   IrisGridMetricCalculator,
   IrisGridModel,
   IrisGridModelFactory,
@@ -12,6 +14,7 @@ import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
 import { type Workspace } from '@deephaven/redux';
+import { assertNotNull } from '@deephaven/utils';
 import { IrisGridPanel } from './IrisGridPanel';
 
 const MockIrisGrid: React.FC & jest.Mock = jest.fn(() => null);
@@ -196,6 +199,69 @@ it('passes undefined transformTableOptions when the prop is omitted', async () =
   expect(calls.length).toBeGreaterThan(0);
   const lastProps = calls[calls.length - 1][0];
   expect(lastProps.transformTableOptions).toBeUndefined();
+});
+
+it('does not loop when the advancedSettings change is rebased over a pending update', async () => {
+  MockIrisGrid.mockClear();
+  // IrisGrid reports its state to the panel on every update. Throws React's
+  // maximum update depth error if that report schedules panel updates forever.
+  MockIrisGrid.mockImplementation(({ onStateChange }) => {
+    React.useLayoutEffect(() => {
+      onStateChange({}, {});
+    });
+    return null;
+  });
+  const ref = React.createRef<IrisGridPanel>();
+  try {
+    render(
+      <IrisGridPanel
+        ref={ref}
+        makeModel={makeMakeModel()}
+        metadata={{ type: 'Table', name: 'table' }}
+        glContainer={makeGlComponent() as unknown as Container}
+        glEventHub={makeGlComponent()}
+        user={TestUtils.REGULAR_USER}
+        inputFilters={[]}
+        links={[]}
+        workspace={{} as Workspace}
+        settings={{ timeZone: 'America/New_York' }}
+        panelState={undefined}
+        getDownloadWorker={() => undefined}
+        loadPlugin={() => undefined}
+      />
+    );
+    await waitFor(() => expect(MockIrisGrid).toHaveBeenCalled());
+    const panel = ref.current;
+    assertNotNull(panel);
+    const { calls } = MockIrisGrid.mock;
+    const { onAdvancedSettingsChange } = calls[calls.length - 1][0];
+    MockIrisGrid.mockClear();
+
+    // The pending lower priority update forces the toggle to be rebased.
+    // Throws React's maximum update depth error if the rebase loops.
+    expect(() =>
+      act(() => {
+        React.startTransition(() => {
+          panel.setState({ isDisconnected: false });
+        });
+        flushSync(() => {
+          onAdvancedSettingsChange(
+            AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS,
+            true
+          );
+        });
+      })
+    ).not.toThrow();
+
+    const { calls: updateCalls } = MockIrisGrid.mock;
+    expect(updateCalls.length).toBeLessThan(10);
+    const { advancedSettings } = updateCalls[updateCalls.length - 1][0];
+    expect(
+      advancedSettings.get(AdvancedSettingsType.LINK_CHANGE_CLEARS_ALL_FILTERS)
+    ).toBe(true);
+  } finally {
+    MockIrisGrid.mockImplementation(() => null);
+  }
 });
 
 it('applies transformModel to the built model before passing it to IrisGrid', async () => {
