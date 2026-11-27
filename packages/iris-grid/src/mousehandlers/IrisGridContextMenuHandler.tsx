@@ -197,7 +197,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { irisGrid } = this;
     const { column: visibleIndex } = gridPoint;
     assertNotNull(visibleIndex);
-    const { model } = irisGrid.props;
+    const { isQuickFiltersReadOnly, isSortsReadOnly, model } = irisGrid.props;
     const { columns } = model;
     const column = columns[modelIndex];
 
@@ -224,7 +224,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
       !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
-    const isColumnSortable = model.isColumnSortable(modelIndex);
+    const isColumnSortable =
+      model.isColumnSortable(modelIndex) && isSortsReadOnly !== true;
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -325,7 +326,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         this.irisGrid.clearAllFilters();
       },
       disabled: !(
-        quickFilters.size > 0 ||
+        (quickFilters.size > 0 && isQuickFiltersReadOnly !== true) ||
         advancedFilters.size > 0 ||
         searchFilter != null
       ),
@@ -362,8 +363,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     actions.push({
       title: 'Clear Table Sorting',
       disabled:
+        isSortsReadOnly === true ||
         // reverse is a type of sort, but special and needs to be exluded despite being part of model.sort
-        modelSort.length === 0 || (reverse && modelSort.length === 1),
+        modelSort.length === 0 ||
+        (reverse && modelSort.length === 1),
       group: IrisGridContextMenuHandler.GROUP_SORT,
       action: () => {
         this.irisGrid.sortColumn(
@@ -630,7 +633,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   ): Promise<ContextAction[]> {
     const { dh, irisGrid } = this;
     const { row: rowIndex, column: columnIndex } = gridPoint;
-    const { model } = irisGrid.props;
+    const { isQuickFiltersReadOnly, model } = irisGrid.props;
+    if (isQuickFiltersReadOnly === true) return [];
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
     assertNotNull(modelRow);
