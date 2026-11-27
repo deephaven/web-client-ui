@@ -159,6 +159,12 @@ class IrisGridTableModelTemplate<
     columns?: DhType.Column[];
   } | null;
 
+  private isViewportColumnsUnverified = false;
+
+  private staleTableColumns: readonly DhType.Column[] | null = null;
+
+  private isListening = false;
+
   viewportData: UIViewportData<R> | null;
 
   formattedStringData: (string | null)[][];
@@ -215,6 +221,8 @@ class IrisGridTableModelTemplate<
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handleColumnsOperationSettled =
+      this.handleColumnsOperationSettled.bind(this);
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
 
@@ -242,6 +250,15 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
+
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    table.addEventListener(
+      dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
   }
 
   getMemoizedSelectionKeyColumnIndices = memoize(
@@ -276,6 +293,14 @@ class IrisGridTableModelTemplate<
   }
 
   close(): void {
+    this.table.removeEventListener(
+      this.dh.Table.EVENT_REQUEST_SUCCEEDED,
+      this.handleColumnsOperationSettled
+    );
+    this.table.removeEventListener(
+      this.dh.Table.EVENT_REQUEST_FAILED,
+      this.handleColumnsOperationSettled
+    );
     this.table.close();
     if (this.totalsTable !== null) {
       this.totalsTable.close();
@@ -287,6 +312,7 @@ class IrisGridTableModelTemplate<
 
   startListening(): void {
     super.startListening();
+    this.isListening = true;
 
     const { dh } = this;
 
@@ -317,6 +343,7 @@ class IrisGridTableModelTemplate<
 
   stopListening(): void {
     super.stopListening();
+    this.isListening = false;
 
     const { dh } = this;
 
@@ -374,6 +401,7 @@ class IrisGridTableModelTemplate<
   }
 
   handleTableReconnect(): void {
+    this.releasePendingColumnsOperation();
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.RECONNECT));
   }
 
@@ -1237,6 +1265,64 @@ class IrisGridTableModelTemplate<
     return { data } as R;
   }
 
+  /** Holds the viewport until a column change completes; `apply` returns whether the columns may have changed. */
+  applyColumnsOperation(apply: () => boolean): void {
+    const { isViewportColumnsUnverified, staleTableColumns } = this;
+    this.isViewportColumnsUnverified = true;
+    // Snapshot before apply, which can synchronously restore a running state
+    this.staleTableColumns = this.table.columns;
+    let isChanged = false;
+    try {
+      isChanged = apply();
+    } finally {
+      if (!isChanged) {
+        this.isViewportColumnsUnverified = isViewportColumnsUnverified;
+        this.staleTableColumns = staleTableColumns;
+      }
+    }
+  }
+
+  // Success means the new state is running and failure means a rollback, so table.columns is valid either way
+  private handleColumnsOperationSettled(): void {
+    this.releasePendingColumnsOperation();
+  }
+
+  private releasePendingColumnsOperation(): void {
+    if (this.staleTableColumns == null) {
+      return;
+    }
+    this.staleTableColumns = null;
+    // startListening reapplies the viewport on resume
+    if (this.isListening) {
+      this.applyViewport();
+    }
+  }
+
+  getSubscriptionColumns(
+    columns: DhType.Column[] | undefined
+  ): DhType.Column[] | undefined {
+    if (columns == null || !this.isViewportColumnsUnverified) {
+      return columns;
+    }
+    const tableColumns = this.columns;
+    const indices = this.getColumnIndicesByNameMap(tableColumns);
+    const currentColumns: DhType.Column[] = [];
+    columns.forEach(column => {
+      const index = indices.get(column.name);
+      if (index != null) {
+        currentColumns.push(tableColumns[index]);
+      }
+    });
+    if (
+      currentColumns.length === columns.length &&
+      currentColumns.every((column, i) => column === columns[i])
+    ) {
+      this.isViewportColumnsUnverified = false;
+      return columns;
+    }
+    return currentColumns;
+  }
+
   closeSubscription(): void {
     log.debug2('closeSubscription', this.subscription);
     if (this.subscription) {
@@ -1408,13 +1494,30 @@ class IrisGridTableModelTemplate<
         return;
       }
 
+      // the operation is pending until the API reports it (nulls stale) or table.columns changes
+      const isColumnsOperationPending =
+        this.staleTableColumns != null &&
+        this.table.columns === this.staleTableColumns;
+
+      if (isColumnsOperationPending) {
+        log.debug2(
+          'applyViewport deferred until the columns operation completes'
+        );
+        return;
+      }
+      this.staleTableColumns = null;
+
       log.debug2('applyViewport', this.viewport);
       const { top, bottom, columns } = this.viewport;
       const [viewportTop, viewportBottom] = this.getCachedViewportRowRange(
         top,
         bottom
       );
-      this.applyBufferedViewport(viewportTop, viewportBottom, columns);
+      this.applyBufferedViewport(
+        viewportTop,
+        viewportBottom,
+        this.getSubscriptionColumns(columns)
+      );
     },
     APPLY_VIEWPORT_THROTTLE,
     { leading: false }
