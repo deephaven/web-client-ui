@@ -994,7 +994,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (model !== prevProps.model) {
       this.stopListening(prevProps.model);
       this.startListening(model);
-      this.columnsBeforeCustomColumnsChange = undefined;
+      this.modelColumns = undefined;
     }
 
     // The renderer and mouse handlers flow through memoized getters in
@@ -1112,7 +1112,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   grid: Grid | null;
 
   // The columns the filters are keyed by while a custom columns change is pending
-  columnsBeforeCustomColumnsChange?: readonly DhType.Column[];
+  private modelColumns?: readonly DhType.Column[];
 
   lastFocusedFilterBarColumn?: number;
 
@@ -4003,7 +4003,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (!deepEqual(oldCustomColumns, customColumns)) {
       // Keep the columns the filters are keyed by until the model has the new
       // columns. Keep the earliest, if the model hasn't changed them yet.
-      this.columnsBeforeCustomColumnsChange ??= columns;
+      this.modelColumns ??= columns;
     }
 
     this.setState({ customColumns });
@@ -4034,15 +4034,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * them. Columns can move, e.g. removing an added custom column moves the
    * columns after it, while removing one that replaced a column moves none.
    */
-  remapFiltersToModelColumns(): void {
-    const oldColumns = this.columnsBeforeCustomColumnsChange;
+  private remapFiltersToModelColumns(): void {
+    const oldColumns = this.modelColumns;
     const { model } = this.props;
     // Applying custom columns gives the model a new columns array. Changes
     // that keep the array, e.g. freezing a column, don't complete the change.
     if (oldColumns == null || oldColumns === model.columns) {
       return;
     }
-    this.columnsBeforeCustomColumnsChange = undefined;
+    this.modelColumns = undefined;
     const { quickFilters, advancedFilters } = this.state;
     const newQuickFilters = IrisGridUtils.remapFiltersToColumns(
       quickFilters,
