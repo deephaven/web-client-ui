@@ -161,6 +161,7 @@ export interface UIRow {
 export type UIViewportData<R extends UIRow = UIRow> = {
   offset: number;
   rows: R[];
+  columns: readonly dh.Column[];
 };
 export type RowData<T = unknown> = Map<number, { value: T }>;
 
