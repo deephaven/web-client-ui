@@ -52,6 +52,8 @@ export function CellInputField({
   const inputField = useRef<HTMLTextAreaElement>(null);
   // Use a ref for `isCancelled` as we need to know when it's cancelled after it's called by the event handlers as well
   const isCancelled = useRef<boolean>(false);
+  // Committing returns focus to the grid, which blurs this field during onDone
+  const isCommitting = useRef<boolean>(false);
   const [initialValue] = useState(propsValue);
   const [isChanged, setIsChanged] = useState(false);
   const [isQuickEdit, setIsQuickEdit] = useState(propsIsQuickEdit);
@@ -108,13 +110,18 @@ export function CellInputField({
 
   const handleCommit = useCallback(
     (direction?: SELECTION_DIRECTION | null, fillRange = false) => {
-      onDone(value, { direction, fillRange });
+      isCommitting.current = true;
+      try {
+        onDone(value, { direction, fillRange });
+      } finally {
+        isCommitting.current = false;
+      }
     },
     [onDone, value]
   );
 
   const handleBlur = useCallback(() => {
-    if (isCancelled.current) {
+    if (isCancelled.current || isCommitting.current) {
       return;
     }
 

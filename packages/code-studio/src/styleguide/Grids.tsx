@@ -16,6 +16,7 @@ import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
 import PluginErrorExample from './grid-examples/PluginErrorExample';
+import EditSaveLogExample from './grid-examples/EditSaveLogExample';
 import SampleSection from './SampleSection';
 import { SAMPLE_SECTION_E2E_IGNORE } from './constants';
 
@@ -95,6 +96,15 @@ function Grids(): ReactElement {
           height={500}
         >
           <PluginErrorExample />
+        </SampleSection>
+        {/* e2e-only: logs each save to check edits are saved once. */}
+        <SampleSection
+          name="grids-edit-save-log"
+          className={SAMPLE_SECTION_E2E_IGNORE}
+          component={Flex}
+          height={300}
+        >
+          <EditSaveLogExample />
         </SampleSection>
       </ThemeContext.Provider>
     </div>
