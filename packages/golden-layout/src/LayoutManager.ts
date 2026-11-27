@@ -507,6 +507,8 @@ export class LayoutManager extends EventEmitter {
     if (this.isInitialised === false || !this.root) {
       return;
     }
+    // Listeners get the last state changes while the layout can still save them
+    this.root._flushEventPropagationsToLayoutManager();
     this._onUnload();
     $(window).off('resize', this._onResize);
     $(window).off('unload beforeunload', this._onUnload);

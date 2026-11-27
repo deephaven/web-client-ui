@@ -62,6 +62,11 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
   }
 
   componentWillUnmount(): void {
+    // This panel saves the grid's state, and unmounts before the grid does.
+    // Flush the grid's pending save now, while this panel's state can still
+    // be saved.
+    this.irisGridRef.current?.flushPanelState();
+
     if (this.model != null) {
       this.stopListening(this.model);
     }

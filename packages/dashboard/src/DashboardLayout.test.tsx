@@ -16,6 +16,7 @@ import {
   type DashboardPluginComponentProps,
 } from './DashboardPlugin';
 import PanelEvent from './PanelEvent';
+import usePersistentState from './usePersistentState';
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
@@ -118,6 +119,56 @@ const waitRAF = () =>
         requestAnimationFrame(() => resolve());
       })
   );
+
+/**
+ * Golden-layout emits `stateChanged` on the next animation frame. Queues the
+ * frames, with fake timers, so a test runs them when it chooses.
+ * @returns A function that runs the queued frames
+ */
+function mockAnimationFrames(): { runFrame: () => void } {
+  let frames = new Map<number, FrameRequestCallback>();
+  let nextFrameId = 1;
+  let requestFrameSpy: jest.SpyInstance;
+  let cancelFrameSpy: jest.SpyInstance;
+
+  function runFrame() {
+    const due = [...frames.values()];
+    frames.clear();
+    act(() => {
+      due.forEach(callback => callback(performance.now()));
+    });
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers({
+      now: 0,
+      doNotFake: ['requestAnimationFrame', 'cancelAnimationFrame'],
+    });
+    frames = new Map();
+    nextFrameId = 1;
+    requestFrameSpy = jest
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(callback => {
+        const id = nextFrameId;
+        nextFrameId += 1;
+        frames.set(id, callback);
+        return id;
+      });
+    cancelFrameSpy = jest
+      .spyOn(window, 'cancelAnimationFrame')
+      .mockImplementation(id => {
+        frames.delete(id);
+      });
+  });
+
+  afterEach(() => {
+    requestFrameSpy.mockRestore();
+    cancelFrameSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
+  return { runFrame };
+}
 
 beforeEach(() => {
   mountCounts.clear();
@@ -268,49 +319,9 @@ describe('replacing a layout with a pending save', () => {
     },
   ];
 
-  // Golden-layout emits `stateChanged` on the next animation frame. Frames
-  // are queued and run on request so the tests control whether the throttle
+  // Frames are run on request so the tests control whether the throttle
   // deadline or the replacement's `stateChanged` lands first.
-  let frames = new Map<number, FrameRequestCallback>();
-  let nextFrameId = 1;
-  let requestFrameSpy: jest.SpyInstance;
-  let cancelFrameSpy: jest.SpyInstance;
-
-  function runFrame() {
-    const due = [...frames.values()];
-    frames.clear();
-    act(() => {
-      due.forEach(callback => callback(performance.now()));
-    });
-  }
-
-  beforeEach(() => {
-    jest.useFakeTimers({
-      now: 0,
-      doNotFake: ['requestAnimationFrame', 'cancelAnimationFrame'],
-    });
-    frames = new Map();
-    nextFrameId = 1;
-    requestFrameSpy = jest
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation(callback => {
-        const id = nextFrameId;
-        nextFrameId += 1;
-        frames.set(id, callback);
-        return id;
-      });
-    cancelFrameSpy = jest
-      .spyOn(window, 'cancelAnimationFrame')
-      .mockImplementation(id => {
-        frames.delete(id);
-      });
-  });
-
-  afterEach(() => {
-    requestFrameSpy.mockRestore();
-    cancelFrameSpy.mockRestore();
-    jest.useRealTimers();
-  });
+  const { runFrame } = mockAnimationFrames();
 
   /**
    * Renders layout `a`, queues a throttled save describing it, then replaces
@@ -377,12 +388,12 @@ describe('replacing a layout with a pending save', () => {
     expect(savedTitles()).toEqual(['b']);
   });
 
-  it('does not save the replaced layout when unmounting flushes the save', () => {
+  it('saves the replacing layout, not the replaced one, when unmounting flushes the save', () => {
     const { savedTitles, unmount } = renderAndReplaceLayout();
 
     unmount();
 
-    expect(savedTitles()).toEqual([]);
+    expect(savedTitles()).toEqual(['b']);
   });
 });
 
@@ -607,5 +618,175 @@ describe('saved layout default values', () => {
       layoutSettings
     );
     expect(JSON.stringify(reloadedLayoutConfig)).not.toContain('foo');
+  });
+});
+
+describe('closing a dashboard with a pending panel state', () => {
+  const { runFrame } = mockAnimationFrames();
+
+  /**
+   * Saves its panel state the way class panels do, by setting `panelState`
+   * in its React state, which golden-layout reads. Like a debounced save, a
+   * pending state is saved when the panel unmounts.
+   */
+  class StatefulTestPanel extends React.PureComponent<
+    Record<string, unknown>,
+    { panelState?: unknown }
+  > {
+    static displayName = 'StatefulTestPanel';
+
+    static instance: StatefulTestPanel | null = null;
+
+    constructor(props: Record<string, unknown>) {
+      super(props);
+      this.state = {};
+      StatefulTestPanel.instance = this;
+    }
+
+    componentWillUnmount(): void {
+      const { pendingPanelState } = this;
+      if (pendingPanelState !== undefined) {
+        // Like NotebookPanel, which saves with an updater function
+        // eslint-disable-next-line react/no-unused-state
+        this.setState(() => ({ panelState: pendingPanelState }));
+      }
+    }
+
+    pendingPanelState: unknown;
+
+    render(): JSX.Element {
+      return <div />;
+    }
+  }
+
+  let setFunctionalPanelState: ((state: string) => void) | null = null;
+
+  /** Saves its state the way functional panels do, with usePersistentState */
+  function FunctionalTestPanel() {
+    const [state, setState] = usePersistentState('initial', {
+      type: 'FunctionalTestPanel',
+      version: 1,
+    });
+    setFunctionalPanelState = setState;
+    return <div>{state}</div>;
+  }
+  FunctionalTestPanel.displayName = 'FunctionalTestPanel';
+
+  function StatefulTestPlugin(props: Partial<DashboardPluginComponentProps>) {
+    assertIsDashboardPluginProps(props);
+    useDashboardPanel({
+      componentName: StatefulTestPanel.displayName,
+      component: StatefulTestPanel,
+      supportedTypes: ['stateful'],
+      dashboardProps: props,
+    });
+    useDashboardPanel({
+      componentName: FunctionalTestPanel.displayName,
+      component: FunctionalTestPanel,
+      supportedTypes: ['functional'],
+      dashboardProps: props,
+    });
+    return null;
+  }
+
+  function renderDashboard(component = 'StatefulTestPanel', type = 'stateful') {
+    const onLayoutConfigChange = jest.fn<void, [DashboardLayoutConfig]>();
+    const { unmount } = render(
+      <ApiContext.Provider value={dh}>
+        <Dashboard
+          layoutConfig={[
+            {
+              type: 'stack',
+              content: [
+                {
+                  id: 'panel',
+                  type: 'react-component',
+                  component,
+                  props: { metadata: { type } },
+                  title: type,
+                },
+              ],
+            },
+          ]}
+          onLayoutConfigChange={onLayoutConfigChange}
+        >
+          <StatefulTestPlugin />
+        </Dashboard>
+      </ApiContext.Provider>
+    );
+    runFrame();
+    expect(onLayoutConfigChange).toHaveBeenCalled();
+    onLayoutConfigChange.mockClear();
+
+    const savedPanelStates = () =>
+      onLayoutConfigChange.mock.calls.map(([config]) =>
+        LayoutUtils.getPanelComponentState(config[0].content![0])
+      );
+    const savedPersistedStates = () =>
+      onLayoutConfigChange.mock.calls.map(
+        ([config]) =>
+          (
+            config[0].content![0] as {
+              persistedState?: [string, { state: unknown }][];
+            }
+          ).persistedState?.map(([, { state }]) => state)
+      );
+    return { savedPanelStates, savedPersistedStates, unmount };
+  }
+
+  it('saves a panel state whose stateChanged is still pending', () => {
+    const { savedPanelStates, unmount } = renderDashboard();
+
+    act(() => {
+      // eslint-disable-next-line react/no-unused-state
+      StatefulTestPanel.instance!.setState({ panelState: 'pending' });
+    });
+    unmount();
+
+    expect(savedPanelStates()).toEqual(['pending']);
+  });
+
+  it('saves a panel state the panel sets when it unmounts', () => {
+    const { savedPanelStates, unmount } = renderDashboard();
+
+    StatefulTestPanel.instance!.pendingPanelState = 'unmounting';
+    unmount();
+
+    expect(savedPanelStates()).toEqual(['unmounting']);
+  });
+
+  it('saves a functional panel state whose stateChanged is still pending', () => {
+    const { savedPersistedStates, unmount } = renderDashboard(
+      FunctionalTestPanel.displayName,
+      'functional'
+    );
+
+    act(() => {
+      setFunctionalPanelState!('pending');
+    });
+    unmount();
+
+    expect(savedPersistedStates()).toEqual([['pending']]);
+  });
+
+  it('keeps a functional panel state when the panel unmounts', () => {
+    const { savedPersistedStates, unmount } = renderDashboard(
+      FunctionalTestPanel.displayName,
+      'functional'
+    );
+
+    act(() => {
+      setFunctionalPanelState!('saved');
+    });
+    runFrame();
+    // Saves on the throttle's trailing edge
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(savedPersistedStates()).toEqual([['saved']]);
+    unmount();
+
+    // Unmounting doesn't save the panel without its state
+    expect(savedPersistedStates()).toEqual([['saved']]);
   });
 });
