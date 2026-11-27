@@ -4,6 +4,7 @@ import { Formatter } from '@deephaven/jsapi-utils';
 import { GridRange } from '@deephaven/grid';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import IrisGridUtils from './IrisGridUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { type UITotalsTableConfig } from './CommonTypes';
 
@@ -471,5 +472,29 @@ describe('copyTotalsData', () => {
     expect(model.valueForCell(0, 0)).toBeUndefined();
     expect(model.valueForCell(1, 0)).toBeUndefined();
     expect(model.textForCell(0, 0)).toBe('');
+  });
+});
+
+describe('handleCustomColumnsChanged', () => {
+  it('removes missing columns from column header groups and re-indexes them', () => {
+    const columns = irisGridTestUtils.makeColumns(3, 'name_');
+    const model = makeModel(columns);
+    model.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(model, [
+      { name: 'Group', children: ['name_1', 'name_2'], color: null },
+    ]).groups;
+
+    (model.table as { columns: DhType.Column[] }).columns = [
+      columns[0],
+      columns[2],
+    ];
+    model.handleCustomColumnsChanged();
+
+    expect(
+      model.columnHeaderGroups.map(({ name, children, childIndexes }) => ({
+        name,
+        children,
+        childIndexes,
+      }))
+    ).toEqual([{ name: 'Group', children: ['name_2'], childIndexes: [1] }]);
   });
 });

@@ -722,6 +722,49 @@ class IrisGridUtils {
     return newFilter;
   }
 
+  /**
+   * Removes the children of column header groups that are neither a column
+   * nor another group, and then the groups without children.
+   * @param groups The column header groups
+   * @param isColumn Whether a child name is a column
+   * @returns The groups that still have children, with only those children
+   */
+  static removeMissingColumnsFromColumnHeaderGroups(
+    groups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[],
+    isColumn: (name: ColumnName) => boolean
+  ): (DhType.ColumnGroup | ColumnHeaderGroup)[] {
+    let result = [...groups];
+    let isChanged = true;
+    // Removing an empty group can empty its parent, so repeat until stable
+    while (isChanged) {
+      isChanged = false;
+      const groupNames = new Set(result.map(({ name }) => name));
+      const nextResult: (DhType.ColumnGroup | ColumnHeaderGroup)[] = [];
+      for (let i = 0; i < result.length; i += 1) {
+        const group = result[i];
+        const children = (group.children ?? []).filter(
+          child => groupNames.has(child) || isColumn(child)
+        );
+        if (children.length === 0) {
+          // Parsing drops empty groups, which would leave their parents
+          // naming an unknown child
+          isChanged = true;
+        } else if (children.length !== (group.children ?? []).length) {
+          isChanged = true;
+          nextResult.push({
+            name: group.name,
+            children,
+            color: group.color ?? null,
+          });
+        } else {
+          nextResult.push(group);
+        }
+      }
+      result = nextResult;
+    }
+    return result;
+  }
+
   static removeColumnFromMovedColumns(
     columns: readonly DhType.Column[],
     movedColumns: readonly MoveOperation[],
@@ -1731,7 +1774,12 @@ class IrisGridUtils {
       frozenColumns,
       columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
         model,
-        columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
+        // Saved groups can name columns the model no longer has, e.g. a
+        // removed custom column or one that a select distinct drops
+        IrisGridUtils.removeMissingColumnsFromColumnHeaderGroups(
+          columnHeaderGroups ?? model.layoutHints?.columnGroups ?? [],
+          name => model.getColumnIndexByName(name) != null
+        )
       ).groups,
       partitionConfig: this.hydratePartitionConfig(
         partitionColumns,
