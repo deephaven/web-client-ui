@@ -4048,7 +4048,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Groups that differ, e.g. those of a rollup that replaced the model, are
    * left alone so this grid's groups come back when it's removed.
    */
-  syncColumnHeaderGroupsFromModel(): void {
+  private syncColumnHeaderGroupsFromModel(): void {
     const { model } = this.props;
     const { columnHeaderGroups } = this.state;
     const modelGroups = model.columnHeaderGroups;
